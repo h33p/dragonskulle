@@ -19,6 +19,7 @@
 	<lwjgl.version>3.2.3</lwjgl.version>
 	<joml.version>1.9.20</joml.version>
 	<spotless.version>2.7.0</spotless.version>
+	<exec.mainClass>org.dragonskulle.App</exec.mainClass>
 </properties>
 
 <!-- Pick correct platform-specific dependencies -->
@@ -249,8 +250,6 @@
 				<artifactId>spotless-maven-plugin</artifactId>
 				<version>${spotless.version}</version>
 				<configuration>
-					<!-- optional: limit format enforcement to just the files changed by this feature branch -->
-					<ratchetFrom>origin/main</ratchetFrom>
 					<formats>
 						<!-- you can define as many formats as you want, each is independent -->
 						<format>
@@ -282,7 +281,7 @@
 							optionally, Spotless can set copyright years by digging
 						through git history (see "license" section below) -->
 						<licenseHeader>
-							<content>/* (C)$YEAR */</content>  <!-- or <file>${basedir}/license-header</file> -->
+							<content>/* (C) $YEAR DragonSkulle */</content>  <!-- or <file>${basedir}/license-header</file> -->
 						</licenseHeader>
 					</java>
 				</configuration>
