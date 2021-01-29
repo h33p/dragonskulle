@@ -1,8 +1,9 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
+
 import org.dragonskulle.renderer.RenderedApp;
 
-public class App extends RenderedApp
-{
+public class App extends RenderedApp {
     private static final int WIDTH = 1600;
     private static final int HEIGHT = 900;
 
