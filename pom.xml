@@ -21,7 +21,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>renderer</module>
+		<module>engine</module>
 		<module>game</module>
 	</modules>
 

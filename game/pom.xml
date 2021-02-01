@@ -18,7 +18,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.dragonskulle</groupId>
-			<artifactId>renderer</artifactId>
+			<artifactId>engine</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
