@@ -1,5 +1,6 @@
 */target/*
 *.swp
 .idea
+*/.settings/*
 */*.project
 *.iml
