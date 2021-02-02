@@ -8,21 +8,19 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
-
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.Getter;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-
 public class RenderedApp {
 
-    private long window;
-    VkInstance instance;
+    @Getter private long window;
+
+    private VkInstance instance;
 
     /** Entrypoint of the app instance */
     public void run(int width, int height, String appName) {
@@ -70,7 +68,8 @@ public class RenderedApp {
             createInfo.pApplicationInfo(appInfo);
             // set required GLFW extensions
             createInfo.ppEnabledExtensionNames(glfwGetRequiredInstanceExtensions());
-            createInfo.ppEnabledLayerNames(useValidationLayers ? debugValidationLayers(stack): null);
+            createInfo.ppEnabledLayerNames(
+                    useValidationLayers ? debugValidationLayers(stack) : null);
 
             PointerBuffer instancePtr = stack.mallocPointer(1);
 
@@ -82,21 +81,26 @@ public class RenderedApp {
         }
     }
 
-    /** Returns validation layers used for debugging
+    /**
+     * Returns validation layers used for debugging
      *
-     * Throws if the layers were not available
-    */
+     * <p>Throws if the layers were not available
+     */
     private PointerBuffer debugValidationLayers(MemoryStack stack) {
-        String[] wantedLayers = {
-            "VK_LAYER_KHRONOS_validation"
-        };
+        String[] wantedLayers = {"VK_LAYER_KHRONOS_validation"};
         Set<String> wantedSet = new HashSet<>(Arrays.asList(wantedLayers));
         IntBuffer propertyCount = stack.ints(1);
         vkEnumerateInstanceLayerProperties(propertyCount, null);
-        VkLayerProperties.Buffer properties = VkLayerProperties.mallocStack(propertyCount.get(0), stack);
+        VkLayerProperties.Buffer properties =
+                VkLayerProperties.mallocStack(propertyCount.get(0), stack);
         vkEnumerateInstanceLayerProperties(propertyCount, properties);
 
-        boolean containsAll = wantedSet.isEmpty() || properties.stream().map(VkLayerProperties::layerNameString).filter(wantedSet::remove).anyMatch(__ -> wantedSet.isEmpty());
+        boolean containsAll =
+                wantedSet.isEmpty()
+                        || properties.stream()
+                                .map(VkLayerProperties::layerNameString)
+                                .filter(wantedSet::remove)
+                                .anyMatch(__ -> wantedSet.isEmpty());
 
         return null;
     }

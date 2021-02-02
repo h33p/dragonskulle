@@ -11,5 +11,6 @@ public class App extends RenderedApp {
     public static void main(String[] args) {
         App app = new App();
         app.run(WIDTH, HEIGHT, "CS:J");
+        System.out.println(((RenderedApp) app).getWindow());
     }
 }
