@@ -6,3 +6,5 @@
 .project
 .settings
 *.iml
+.classpath
+bin/
