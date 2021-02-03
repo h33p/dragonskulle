@@ -5,12 +5,17 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.vulkan.EXTDebugUtils.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.Getter;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -21,17 +26,47 @@ public class RenderedApp {
     @Getter private long window;
 
     private VkInstance instance;
+    private long debugMessenger;
+
+    public static final Logger LOGGER = Logger.getLogger("render");
+
+    /** VK logging entrypoint */
+    private static int debugCallback(
+            int messageSeverity, int messageType, long pCallbackData, long pUserData) {
+        VkDebugUtilsMessengerCallbackDataEXT callbackData =
+                VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData);
+
+        Level level = Level.FINE;
+
+        if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+            level = Level.SEVERE;
+        } else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+            level = Level.WARNING;
+        } else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+            level = Level.INFO;
+        }
+
+        LOGGER.log(level, callbackData.pMessageString());
+
+        return VK_FALSE;
+    }
 
     /** Entrypoint of the app instance */
     public void run(int width, int height, String appName) {
+        boolean useValidationLayers = true;
         initWindow(width, height, appName);
-        initVulkan(appName);
+        initVulkan(appName, useValidationLayers);
+        if (useValidationLayers) {
+            setupDebugLogging();
+        }
         mainLoop();
         cleanup();
     }
 
     /** Creates a GLFW window */
     private void initWindow(int width, int height, String appName) {
+        LOGGER.info("Initialize GLFW window");
+
         if (!glfwInit()) {
             throw new RuntimeException("Cannot initialize GLFW");
         }
@@ -47,8 +82,8 @@ public class RenderedApp {
     }
 
     /** initialize Vulkan context */
-    private void initVulkan(String appName) {
-        boolean useValidationLayers = true;
+    private void initVulkan(String appName, boolean useValidationLayers) {
+        LOGGER.info("Initialize VK Context");
 
         try (MemoryStack stack = stackPush()) {
             // Prepare basic Vulkan App information
@@ -67,17 +102,57 @@ public class RenderedApp {
             createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
             createInfo.pApplicationInfo(appInfo);
             // set required GLFW extensions
-            createInfo.ppEnabledExtensionNames(glfwGetRequiredInstanceExtensions());
-            createInfo.ppEnabledLayerNames(
-                    useValidationLayers ? debugValidationLayers(stack) : null);
+            createInfo.ppEnabledExtensionNames(
+                    getExtensions(createInfo, useValidationLayers, stack));
+
+            // use validation layers if enabled, and setup debugging
+            if (useValidationLayers) {
+                setupDebugValidationLayers(createInfo, stack);
+                // setup logging for instance creation
+                VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = createDebugLoggingInfo(stack);
+                createInfo.pNext(debugCreateInfo.address());
+            }
 
             PointerBuffer instancePtr = stack.mallocPointer(1);
 
-            if (vkCreateInstance(createInfo, null, instancePtr) != VK_SUCCESS) {
-                throw new RuntimeException("Failed to create VK instance");
+            int result = vkCreateInstance(createInfo, null, instancePtr);
+
+            if (result != VK_SUCCESS) {
+                throw new RuntimeException(
+                        String.format("Failed to create VK instance. Error: %x", -result));
             }
 
             instance = new VkInstance(instancePtr.get(0), createInfo);
+        }
+    }
+
+    private void mainLoop() {
+        LOGGER.info("Enter main loop");
+        while (!glfwWindowShouldClose(window)) {
+            glfwPollEvents();
+        }
+    }
+
+    private void cleanup() {
+        LOGGER.info("Cleanup");
+        destroyDebugMessanger();
+        vkDestroyInstance(instance, null);
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+
+    /** Returns required extensions for the VK context */
+    private PointerBuffer getExtensions(
+            VkInstanceCreateInfo createInfo, boolean useValidationLayers, MemoryStack stack) {
+        PointerBuffer glfwExtensions = glfwGetRequiredInstanceExtensions();
+
+        if (useValidationLayers) {
+            PointerBuffer extensions = stack.mallocPointer(glfwExtensions.capacity() + 1);
+            extensions.put(glfwExtensions);
+            extensions.put(stack.UTF8(VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
+            return extensions.rewind();
+        } else {
+            return glfwExtensions;
         }
     }
 
@@ -86,9 +161,13 @@ public class RenderedApp {
      *
      * <p>Throws if the layers were not available
      */
-    private PointerBuffer debugValidationLayers(MemoryStack stack) {
+    private void setupDebugValidationLayers(VkInstanceCreateInfo createInfo, MemoryStack stack) {
+        LOGGER.info("Setup VK validation layers");
+
         String[] wantedLayers = {"VK_LAYER_KHRONOS_validation"};
-        Set<String> wantedSet = new HashSet<>(Arrays.asList(wantedLayers));
+        List<String> wantedList = Arrays.asList(wantedLayers);
+        Set<String> wantedSet = new HashSet<>(wantedList);
+
         IntBuffer propertyCount = stack.ints(1);
         vkEnumerateInstanceLayerProperties(propertyCount, null);
         VkLayerProperties.Buffer properties =
@@ -102,18 +181,51 @@ public class RenderedApp {
                                 .filter(wantedSet::remove)
                                 .anyMatch(__ -> wantedSet.isEmpty());
 
-        return null;
-    }
-
-    private void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
+        if (containsAll) {
+            PointerBuffer buffer = stack.mallocPointer(wantedLayers.length);
+            wantedList.stream().map(stack::UTF8).forEach(buffer::put);
+            createInfo.ppEnabledLayerNames(buffer.rewind());
+        } else {
+            throw new RuntimeException("Some VK validation layers were not found!");
         }
     }
 
-    private void cleanup() {
-        vkDestroyInstance(instance, null);
-        glfwDestroyWindow(window);
-        glfwTerminate();
+    /** Creates default debug messenger info for logging */
+    private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
+                VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
+
+        // Initialize debug callback parameters
+        debugCreateInfo.sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT);
+        debugCreateInfo.messageSeverity(
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+                        | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+                        | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+                        | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT);
+        debugCreateInfo.messageType(
+                VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                        | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                        | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
+        debugCreateInfo.pfnUserCallback(RenderedApp::debugCallback);
+
+        return debugCreateInfo;
+    }
+
+    /** Initializes debugMessenger to receive VK log messages */
+    private void setupDebugLogging() {
+        MemoryStack stack = MemoryStack.stackGet();
+        LongBuffer pDebugMessenger = stack.longs(0);
+        if (vkCreateDebugUtilsMessengerEXT(
+                        instance, createDebugLoggingInfo(stack), null, pDebugMessenger)
+                != VK_SUCCESS) {
+            throw new RuntimeException("Failed to initialize debug messenger");
+        }
+        debugMessenger = pDebugMessenger.get();
+    }
+
+    /** Destroys debugMessenger if exists */
+    private void destroyDebugMessanger() {
+        if (debugMessenger == 0) return;
+        vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, null);
     }
 }
