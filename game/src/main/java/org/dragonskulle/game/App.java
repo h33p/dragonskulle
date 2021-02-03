@@ -10,7 +10,7 @@ public class App extends RenderedApp {
     /** Entrypoint of the program. Creates and runs one app instance */
     public static void main(String[] args) {
         App app = new App();
-        app.run(WIDTH, HEIGHT, "CS:J");
+        app.run(WIDTH, HEIGHT, "Germany");
         System.out.println(((RenderedApp) app).getWindow());
     }
 }

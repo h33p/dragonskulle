@@ -7,4 +7,5 @@
 .settings
 *.iml
 .classpath
+*/.factorypath
 bin/
