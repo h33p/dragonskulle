@@ -1,0 +1,59 @@
+#Report:
+- Introduction.
+- Requirements.
+- Software design.
+    - Description of the software architecture of your system.
+    - Any design patterns used.
+    - Justification for the selected architecture and patterns.
+    - UML diagrams should be included.
+    - In the main body of the report place an overall UML diagram for the system.
+        - Subsystem UML diagrams should be included as an appendix.
+- Interface design.
+    - Discuss the HCI (Human-computer interaction) design used.
+    - Any principles behind the HCI design.
+    - Any HCI considerations.
+- Software engineering.
+    - Any software engineering processes and principles used and adopted.
+    - Development methodology used.
+- Risk analysis.
+    - Analysis of the risks associated with the chosen:
+        - Development methodology.
+        - Software engineering practices
+        - Software design.
+        - etc.
+- Evaluation
+    - Evaluation of the project
+        - Strengths and weaknesses.
+        - What has been learned, what could have been done better.
+- Summary
+- Teamwork
+    - An evaluation of how well the team worked together must be provided.
+- Individual contributions.
+    - Each team member must submit an quantified evaluation of the contributions of all team members (including themselves).
+    - This will be a global percentage (not a percentage for individual components). e.g. 16.667% each would be equal contribution.
+    - If we decide on a single document, only one needs to be submitted- else you can do your own.
+        - You can submit this as part of the appendix or separately.
+- Individual reflections.
+    - Each team member must write one side of A4 with their own reflections on the team and on their own contribution. These must all be included in the report.
+- Compulsory appendix.
+    - The coding standards adopted by the team.
+
+##Test Report:
+- Test plan.
+- Test results.
+
+- Main body of this document should outline:
+    - The testing strategy.
+    - The principles used.
+    - The test results.
+    - Any other relevant discussion about the testing.
+    - Details of user testing undertaken.
+- Appendix:
+    - Test report.
+    - Name of each JUnit test class.
+    - Results of user testing.
+- Must contain evidence of the coverage achieved by the tests.
+## Note:
+    - You do not need to produce a formal requirements document.
+        - You still need to understand all the behaviour, being as specific as possible.
+        - Essensially you still need requirements, but not to the extent of a full formal document.
