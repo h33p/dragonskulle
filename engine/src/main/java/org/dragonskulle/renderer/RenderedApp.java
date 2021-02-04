@@ -3,6 +3,7 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
+import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
@@ -30,6 +31,13 @@ public class RenderedApp {
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
+    public static final boolean DEBUG_MODE;
+
+    static {
+        String line = System.getenv("DEBUG_RENDERER");
+        DEBUG_MODE = line != null && line.equals("true");
+    }
+
     /** VK logging entrypoint */
     private static int debugCallback(
             int messageSeverity, int messageType, long pCallbackData, long pUserData) {
@@ -53,10 +61,10 @@ public class RenderedApp {
 
     /** Entrypoint of the app instance */
     public void run(int width, int height, String appName) {
-        boolean useValidationLayers = true;
+        DEBUG.set(DEBUG_MODE);
         initWindow(width, height, appName);
-        initVulkan(appName, useValidationLayers);
-        if (useValidationLayers) {
+        initVulkan(appName);
+        if (DEBUG_MODE) {
             setupDebugLogging();
         }
         mainLoop();
@@ -82,7 +90,7 @@ public class RenderedApp {
     }
 
     /** initialize Vulkan context */
-    private void initVulkan(String appName, boolean useValidationLayers) {
+    private void initVulkan(String appName) {
         LOGGER.info("Initialize VK Context");
 
         try (MemoryStack stack = stackPush()) {
@@ -102,11 +110,10 @@ public class RenderedApp {
             createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
             createInfo.pApplicationInfo(appInfo);
             // set required GLFW extensions
-            createInfo.ppEnabledExtensionNames(
-                    getExtensions(createInfo, useValidationLayers, stack));
+            createInfo.ppEnabledExtensionNames(getExtensions(createInfo, stack));
 
             // use validation layers if enabled, and setup debugging
-            if (useValidationLayers) {
+            if (DEBUG_MODE) {
                 setupDebugValidationLayers(createInfo, stack);
                 // setup logging for instance creation
                 VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = createDebugLoggingInfo(stack);
@@ -143,10 +150,10 @@ public class RenderedApp {
 
     /** Returns required extensions for the VK context */
     private PointerBuffer getExtensions(
-            VkInstanceCreateInfo createInfo, boolean useValidationLayers, MemoryStack stack) {
+            VkInstanceCreateInfo createInfoMemoryStack, MemoryStack stack) {
         PointerBuffer glfwExtensions = glfwGetRequiredInstanceExtensions();
 
-        if (useValidationLayers) {
+        if (DEBUG_MODE) {
             PointerBuffer extensions = stack.mallocPointer(glfwExtensions.capacity() + 1);
             extensions.put(glfwExtensions);
             extensions.put(stack.UTF8(VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
