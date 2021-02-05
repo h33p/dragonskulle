@@ -2,11 +2,14 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
 import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
+import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
+import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR;
 import static org.lwjgl.vulkan.VK10.*;
 
 import com.codepoetics.protonpack.StreamUtils;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import lombok.Getter;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -29,11 +33,13 @@ public class RenderedApp {
     @Getter private long window;
 
     private VkInstance instance;
+    private long surface;
     private long debugMessenger;
 
     private PhysicalDevice physicalDevice;
     private VkDevice device;
     private VkQueue graphicsQueue;
+    private VkQueue presentQueue;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
@@ -69,19 +75,14 @@ public class RenderedApp {
 
     private class QueueFamilyIndices {
         Integer graphicsFamily;
-
-        QueueFamilyIndices(VkQueueFamilyProperties.Buffer buf) {
-            StreamUtils.zipWithIndex(buf.stream().map(VkQueueFamilyProperties::queueFlags))
-                    .takeWhile(__ -> !isComplete())
-                    .forEach(
-                            i -> {
-                                if ((i.getValue() & VK_QUEUE_GRAPHICS_BIT) != 0)
-                                    graphicsFamily = Integer.valueOf((int) i.getIndex());
-                            });
-        }
+        Integer presentFamily;
 
         boolean isComplete() {
-            return graphicsFamily != null;
+            return graphicsFamily != null && presentFamily != null;
+        }
+
+        int[] uniqueFamilies() {
+            return IntStream.of(graphicsFamily, presentFamily).distinct().toArray();
         }
     }
 
@@ -133,6 +134,7 @@ public class RenderedApp {
         LOGGER.info("Cleanup");
         vkDestroyDevice(device, null);
         destroyDebugMessanger();
+        vkDestroySurfaceKHR(instance, surface, null);
         vkDestroyInstance(instance, null);
         glfwDestroyWindow(window);
         glfwTerminate();
@@ -167,6 +169,7 @@ public class RenderedApp {
             if (DEBUG_MODE) {
                 setupDebugLogging();
             }
+            createSurface(stack);
             setupPhysicalDevice(stack);
             setupLogicalDevice(stack);
         }
@@ -306,6 +309,18 @@ public class RenderedApp {
         debugMessenger = pDebugMessenger.get();
     }
 
+    /// Setup window surface
+
+    private void createSurface(MemoryStack stack) {
+        LongBuffer pSurface = stack.callocLong(1);
+        int result = glfwCreateWindowSurface(instance, window, null, pSurface);
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create windows surface! %x", -result));
+        }
+        surface = pSurface.get(0);
+    }
+
     /// Physical device setup
 
     /** Sets up one physical device for use */
@@ -374,7 +389,28 @@ public class RenderedApp {
         // Check maximum texture sizes, prioritize largest
         physdev.score += physdev.properties.limits().maxImageDimension2D();
 
-        physdev.indices = new QueueFamilyIndices(getQueueFamilyProperties(device, stack));
+        QueueFamilyIndices indices = new QueueFamilyIndices();
+
+        VkQueueFamilyProperties.Buffer buf = getQueueFamilyProperties(device, stack);
+
+        IntBuffer presentSupport = stack.ints(0);
+
+        StreamUtils.zipWithIndex(buf.stream().map(VkQueueFamilyProperties::queueFlags))
+                .takeWhile(__ -> !indices.isComplete())
+                .forEach(
+                        i -> {
+                            if ((i.getValue() & VK_QUEUE_GRAPHICS_BIT) != 0)
+                                indices.graphicsFamily = Integer.valueOf((int) i.getIndex());
+
+                            vkGetPhysicalDeviceSurfaceSupportKHR(
+                                    device, (int) i.getIndex(), surface, presentSupport);
+
+                            if (presentSupport.get(0) == VK_TRUE) {
+                                indices.presentFamily = (int) i.getIndex();
+                            }
+                        });
+
+        physdev.indices = indices;
 
         return physdev;
     }
@@ -395,12 +431,23 @@ public class RenderedApp {
     /** Creates a logical device with required features */
     private void setupLogicalDevice(MemoryStack stack) {
         LOGGER.info("Setup logical device");
-        VkDeviceQueueCreateInfo.Buffer queueCreateInfo =
-                VkDeviceQueueCreateInfo.callocStack(1, stack);
-        queueCreateInfo.sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO);
-        queueCreateInfo.queueFamilyIndex(physicalDevice.indices.graphicsFamily);
+
         FloatBuffer queuePriority = stack.floats(1.0f);
-        queueCreateInfo.pQueuePriorities(queuePriority);
+
+        int[] families = physicalDevice.indices.uniqueFamilies();
+
+        VkDeviceQueueCreateInfo.Buffer queueCreateInfo =
+                VkDeviceQueueCreateInfo.callocStack(families.length, stack);
+
+        IntStream.range(0, families.length)
+                .forEach(
+                        i -> {
+                            queueCreateInfo
+                                    .get(i)
+                                    .sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO);
+                            queueCreateInfo.get(i).queueFamilyIndex(families[i]);
+                            queueCreateInfo.get(i).pQueuePriorities(queuePriority);
+                        });
 
         VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
 
@@ -425,6 +472,8 @@ public class RenderedApp {
         PointerBuffer pQueue = stack.callocPointer(1);
         vkGetDeviceQueue(device, physicalDevice.indices.graphicsFamily, 0, pQueue);
         graphicsQueue = new VkQueue(pQueue.get(0), device);
+        vkGetDeviceQueue(device, physicalDevice.indices.presentFamily, 0, pQueue);
+        presentQueue = new VkQueue(pQueue.get(0), device);
     }
 
     /// Cleanup code
