@@ -9,6 +9,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
 import static org.lwjgl.vulkan.VK10.*;
 
+import com.codepoetics.protonpack.StreamUtils;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.Arrays;
@@ -29,13 +30,57 @@ public class RenderedApp {
     private VkInstance instance;
     private long debugMessenger;
 
+    private PhysicalDevice physicalDevice;
+
     public static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE;
+    private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
     static {
         String line = System.getenv("DEBUG_RENDERER");
         DEBUG_MODE = line != null && line.equals("true");
+    }
+
+    private class PhysicalDevice implements Comparable<PhysicalDevice> {
+        VkPhysicalDevice device;
+        VkPhysicalDeviceProperties properties;
+        VkPhysicalDeviceFeatures features;
+
+        int score;
+        QueueFamilyIndices indices;
+
+        PhysicalDevice(VkPhysicalDevice d) {
+            device = d;
+        }
+
+        @Override
+        public int compareTo(PhysicalDevice other) {
+            return score == other.score ? 0 : score < other.score ? 1 : -1;
+        }
+    }
+
+    private class QueueFamilyIndices {
+        Integer graphicsFamily;
+
+        QueueFamilyIndices(VkQueueFamilyProperties.Buffer buf) {
+            StreamUtils.zipWithIndex(buf.stream().map(VkQueueFamilyProperties::queueFlags))
+                    .takeWhile(__ -> !isComplete())
+                    .forEach(
+                            i -> {
+                                if ((i.getValue() & VK_QUEUE_GRAPHICS_BIT) != 0)
+                                    graphicsFamily = Integer.valueOf((int) i.getIndex());
+                            });
+        }
+
+        boolean isComplete() {
+            return graphicsFamily != null;
+        }
+    }
+
+    private static String envString(String key, String defaultVal) {
+        String envLine = System.getenv(key);
+        return envLine == null ? defaultVal : envLine;
     }
 
     /** VK logging entrypoint */
@@ -64,9 +109,6 @@ public class RenderedApp {
         DEBUG.set(DEBUG_MODE);
         initWindow(width, height, appName);
         initVulkan(appName);
-        if (DEBUG_MODE) {
-            setupDebugLogging();
-        }
         mainLoop();
         cleanup();
     }
@@ -89,48 +131,130 @@ public class RenderedApp {
         }
     }
 
-    /** initialize Vulkan context */
+    /** initialize Vulkan context. Throw on error */
     private void initVulkan(String appName) {
         LOGGER.info("Initialize VK Context");
 
         try (MemoryStack stack = stackPush()) {
-            // Prepare basic Vulkan App information
-            VkApplicationInfo appInfo = VkApplicationInfo.callocStack(stack);
-
-            appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
-            appInfo.pApplicationName(stack.UTF8Safe(appName));
-            appInfo.applicationVersion(VK_MAKE_VERSION(0, 0, 1));
-            appInfo.pEngineName(stack.UTF8Safe("DragonSkulle Engine"));
-            appInfo.engineVersion(VK_MAKE_VERSION(0, 0, 1));
-            appInfo.apiVersion(VK_API_VERSION_1_0);
-
-            // Prepare a Vulkan instance information
-            VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.callocStack(stack);
-
-            createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
-            createInfo.pApplicationInfo(appInfo);
-            // set required GLFW extensions
-            createInfo.ppEnabledExtensionNames(getExtensions(createInfo, stack));
-
-            // use validation layers if enabled, and setup debugging
+            setupInstance(appName, stack);
             if (DEBUG_MODE) {
-                setupDebugValidationLayers(createInfo, stack);
-                // setup logging for instance creation
-                VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = createDebugLoggingInfo(stack);
-                createInfo.pNext(debugCreateInfo.address());
+                setupDebugLogging();
             }
-
-            PointerBuffer instancePtr = stack.mallocPointer(1);
-
-            int result = vkCreateInstance(createInfo, null, instancePtr);
-
-            if (result != VK_SUCCESS) {
-                throw new RuntimeException(
-                        String.format("Failed to create VK instance. Error: %x", -result));
+            physicalDevice = pickPhysicalDevice(TARGET_GPU, stack);
+            if (physicalDevice == null) {
+                throw new RuntimeException("Failed to find compatible GPU!");
             }
-
-            instance = new VkInstance(instancePtr.get(0), createInfo);
+            LOGGER.info(
+                    String.format("Picked GPU: %s", physicalDevice.properties.deviceNameString()));
         }
+    }
+
+    private PhysicalDevice pickPhysicalDevice(String targetDevice, MemoryStack stack) {
+        PhysicalDevice[] devices = enumeratePhysicalDevices(stack);
+
+        if (devices.length == 0) return null;
+        else if (targetDevice == null) return devices[0];
+
+        for (PhysicalDevice d : devices) {
+            if (d.properties.deviceNameString().contains(targetDevice)) {
+                return d;
+            }
+        }
+
+        return null;
+    }
+
+    /** Collect all compatible physical GPUs into an array, sorted by decreasing score */
+    private PhysicalDevice[] enumeratePhysicalDevices(MemoryStack stack) {
+        IntBuffer physDevCount = stack.ints(0);
+        vkEnumeratePhysicalDevices(instance, physDevCount, null);
+        PointerBuffer devices = stack.mallocPointer(physDevCount.get(0));
+        vkEnumeratePhysicalDevices(instance, physDevCount, devices);
+
+        return java.util.stream.IntStream.range(0, devices.capacity())
+                .mapToObj(devices::get)
+                .map(d -> new VkPhysicalDevice(d, instance))
+                .map(d -> collectPhysicalDeviceInfo(d, stack))
+                .filter(this::isPhysicalDeviceSuitable)
+                .sorted()
+                .toArray(PhysicalDevice[]::new);
+    }
+
+    /** check whether the device in question is suitable for us */
+    private boolean isPhysicalDeviceSuitable(PhysicalDevice device) {
+        return device.indices.isComplete();
+    }
+
+    private PhysicalDevice collectPhysicalDeviceInfo(VkPhysicalDevice device, MemoryStack stack) {
+        PhysicalDevice physdev = new PhysicalDevice(device);
+
+        physdev.properties = VkPhysicalDeviceProperties.callocStack(stack);
+        physdev.features = VkPhysicalDeviceFeatures.callocStack(stack);
+
+        vkGetPhysicalDeviceProperties(device, physdev.properties);
+        vkGetPhysicalDeviceFeatures(device, physdev.features);
+
+        physdev.score = 0;
+
+        // Prioritize dedicated graphics cards
+        if (physdev.properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            physdev.score += 5000;
+
+        // Check maximum texture sizes, prioritize largest
+        physdev.score += physdev.properties.limits().maxImageDimension2D();
+
+        physdev.indices = new QueueFamilyIndices(getQueueFamilyProperties(device, stack));
+
+        return physdev;
+    }
+
+    private VkQueueFamilyProperties.Buffer getQueueFamilyProperties(
+            VkPhysicalDevice device, MemoryStack stack) {
+        IntBuffer length = stack.ints(0);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, length, null);
+        VkQueueFamilyProperties.Buffer props =
+                VkQueueFamilyProperties.callocStack(length.get(0), stack);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, length, props);
+        return props;
+    }
+
+    private void setupInstance(String appName, MemoryStack stack) {
+        // Prepare basic Vulkan App information
+        VkApplicationInfo appInfo = VkApplicationInfo.callocStack(stack);
+
+        appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
+        appInfo.pApplicationName(stack.UTF8Safe(appName));
+        appInfo.applicationVersion(VK_MAKE_VERSION(0, 0, 1));
+        appInfo.pEngineName(stack.UTF8Safe("DragonSkulle Engine"));
+        appInfo.engineVersion(VK_MAKE_VERSION(0, 0, 1));
+        appInfo.apiVersion(VK_API_VERSION_1_0);
+
+        // Prepare a Vulkan instance information
+        VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.callocStack(stack);
+
+        createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
+        createInfo.pApplicationInfo(appInfo);
+        // set required GLFW extensions
+        createInfo.ppEnabledExtensionNames(getExtensions(createInfo, stack));
+
+        // use validation layers if enabled, and setup debugging
+        if (DEBUG_MODE) {
+            setupDebugValidationLayers(createInfo, stack);
+            // setup logging for instance creation
+            VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = createDebugLoggingInfo(stack);
+            createInfo.pNext(debugCreateInfo.address());
+        }
+
+        PointerBuffer instancePtr = stack.mallocPointer(1);
+
+        int result = vkCreateInstance(createInfo, null, instancePtr);
+
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create VK instance. Error: %x", -result));
+        }
+
+        instance = new VkInstance(instancePtr.get(0), createInfo);
     }
 
     private void mainLoop() {
@@ -175,11 +299,7 @@ public class RenderedApp {
         List<String> wantedList = Arrays.asList(wantedLayers);
         Set<String> wantedSet = new HashSet<>(wantedList);
 
-        IntBuffer propertyCount = stack.ints(1);
-        vkEnumerateInstanceLayerProperties(propertyCount, null);
-        VkLayerProperties.Buffer properties =
-                VkLayerProperties.mallocStack(propertyCount.get(0), stack);
-        vkEnumerateInstanceLayerProperties(propertyCount, properties);
+        VkLayerProperties.Buffer properties = getInstanceLayerProperties(stack);
 
         boolean containsAll =
                 wantedSet.isEmpty()
@@ -195,6 +315,15 @@ public class RenderedApp {
         } else {
             throw new RuntimeException("Some VK validation layers were not found!");
         }
+    }
+
+    private VkLayerProperties.Buffer getInstanceLayerProperties(MemoryStack stack) {
+        IntBuffer propertyCount = stack.ints(1);
+        vkEnumerateInstanceLayerProperties(propertyCount, null);
+        VkLayerProperties.Buffer properties =
+                VkLayerProperties.mallocStack(propertyCount.get(0), stack);
+        vkEnumerateInstanceLayerProperties(propertyCount, properties);
+        return properties;
     }
 
     /** Creates default debug messenger info for logging */
