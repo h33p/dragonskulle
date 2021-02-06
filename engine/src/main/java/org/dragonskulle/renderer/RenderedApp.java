@@ -39,8 +39,11 @@ public class RenderedApp {
     private VkDevice device;
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
+    private VkSurfaceFormatKHR surfaceFormat;
+    private VkExtent2D extent;
     private long swapchain;
     private long[] swapchainImages;
+    private long[] swapchainImageViews;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
@@ -217,6 +220,9 @@ public class RenderedApp {
 
     private void cleanup() {
         LOGGER.info("Cleanup");
+        for (long imageView : swapchainImageViews) {
+            vkDestroyImageView(device, imageView, null);
+        }
         vkDestroySwapchainKHR(device, swapchain, null);
         vkDestroyDevice(device, null);
         destroyDebugMessanger();
@@ -259,6 +265,7 @@ public class RenderedApp {
             setupPhysicalDevice(stack);
             setupLogicalDevice(stack);
             setupSwapchain(stack);
+            setupImageViews(stack);
         }
     }
 
@@ -603,9 +610,9 @@ public class RenderedApp {
     void setupSwapchain(MemoryStack stack) {
         LOGGER.info("Setup swapchain");
 
-        VkSurfaceFormatKHR surfaceFormat = physicalDevice.swapchainSupport.chooseSurfaceFormat();
+        surfaceFormat = physicalDevice.swapchainSupport.chooseSurfaceFormat();
         int presentMode = physicalDevice.swapchainSupport.choosePresentMode();
-        VkExtent2D extent = physicalDevice.swapchainSupport.chooseExtent(window, stack);
+        extent = physicalDevice.swapchainSupport.chooseExtent(window, stack);
         int imageCount = physicalDevice.swapchainSupport.chooseImageCount();
 
         VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
@@ -659,6 +666,47 @@ public class RenderedApp {
 
         swapchainImages =
                 IntStream.range(0, pImageCount.get(0)).mapToLong(pSwapchainImages::get).toArray();
+    }
+
+    /// Image view setup
+
+    private void setupImageViews(MemoryStack stack) {
+        LOGGER.info("Setup image views");
+
+        VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.callocStack(stack);
+        createInfo.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
+        createInfo.viewType(VK_IMAGE_VIEW_TYPE_2D);
+        createInfo.format(surfaceFormat.format());
+
+        createInfo.components().r(VK_COMPONENT_SWIZZLE_IDENTITY);
+        createInfo.components().g(VK_COMPONENT_SWIZZLE_IDENTITY);
+        createInfo.components().b(VK_COMPONENT_SWIZZLE_IDENTITY);
+        createInfo.components().a(VK_COMPONENT_SWIZZLE_IDENTITY);
+
+        createInfo.subresourceRange().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
+        createInfo.subresourceRange().baseMipLevel(0);
+        createInfo.subresourceRange().levelCount(1);
+        createInfo.subresourceRange().baseArrayLayer(0);
+        createInfo.subresourceRange().layerCount(1);
+
+        LongBuffer imageView = stack.longs(0);
+
+        swapchainImageViews =
+                Arrays.stream(swapchainImages)
+                        .map(
+                                i -> {
+                                    createInfo.image(i);
+                                    int result =
+                                            vkCreateImageView(device, createInfo, null, imageView);
+                                    if (result != VK_SUCCESS) {
+                                        throw new RuntimeException(
+                                                String.format(
+                                                        "Failed to create image view for %x! Error: %x",
+                                                        i, -result));
+                                    }
+                                    return imageView.get(0);
+                                })
+                        .toArray();
     }
 
     /// Cleanup code
