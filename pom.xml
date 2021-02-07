@@ -23,7 +23,8 @@
 	<modules>
 		<module>engine</module>
 		<module>game</module>
-	</modules>
+        <module>network</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
