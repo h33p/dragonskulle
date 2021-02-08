@@ -45,6 +45,7 @@ public class RenderedApp {
     private long swapchain;
     private long[] swapchainImages;
     private long[] swapchainImageViews;
+    private long[] framebuffers;
 
     private long renderPass;
     private long pipelineLayout;
@@ -224,6 +225,9 @@ public class RenderedApp {
 
     private void cleanup() {
         LOGGER.info("Cleanup");
+        for (long framebuffer : framebuffers) {
+            vkDestroyFramebuffer(device, framebuffer, null);
+        }
         vkDestroyPipeline(device, graphicsPipeline, null);
         vkDestroyPipelineLayout(device, pipelineLayout, null);
         vkDestroyRenderPass(device, renderPass, null);
@@ -275,6 +279,7 @@ public class RenderedApp {
             setupImageViews(stack);
             setupRenderPass(stack);
             setupGraphicsPipeline(stack);
+            setupFramebuffers(stack);
         }
     }
 
@@ -893,6 +898,42 @@ public class RenderedApp {
 
         fragShader.free();
         vertShader.free();
+    }
+
+    /// Framebuffer setup
+
+    private void setupFramebuffers(MemoryStack stack) {
+        LOGGER.info("Setup framebuffers");
+
+        var createInfo = VkFramebufferCreateInfo.callocStack(stack);
+        createInfo.sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO);
+
+        createInfo.renderPass(renderPass);
+        createInfo.width(extent.width());
+        createInfo.height(extent.height());
+        createInfo.layers(1);
+
+        LongBuffer attachment = stack.longs(0);
+        LongBuffer framebuffer = stack.longs(0);
+
+        framebuffers =
+                Arrays.stream(swapchainImageViews)
+                        .map(
+                                i -> {
+                                    attachment.put(i);
+                                    createInfo.pAttachments(attachment.rewind());
+                                    int result =
+                                            vkCreateFramebuffer(
+                                                    device, createInfo, null, framebuffer);
+                                    if (result != VK_SUCCESS) {
+                                        throw new RuntimeException(
+                                                String.format(
+                                                        "Failed to create framebuffer for %x! Error: %x",
+                                                        i, -result));
+                                    }
+                                    return framebuffer.get(0);
+                                })
+                        .toArray();
     }
 
     /// Cleanup code
