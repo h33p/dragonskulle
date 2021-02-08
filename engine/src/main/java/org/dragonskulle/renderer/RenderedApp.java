@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
+import lombok.var;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -83,8 +84,7 @@ public class RenderedApp {
         public VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
             IntBuffer propertyCount = stack.ints(0);
             vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, null);
-            VkExtensionProperties.Buffer properties =
-                    VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
+            var properties = VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
             vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, properties);
             return properties;
         }
@@ -261,11 +261,12 @@ public class RenderedApp {
             if (DEBUG_MODE) {
                 setupDebugLogging();
             }
-            createSurface(stack);
+            setupSurface(stack);
             setupPhysicalDevice(stack);
             setupLogicalDevice(stack);
             setupSwapchain(stack);
             setupImageViews(stack);
+            setupGraphicsPipeline(stack);
         }
     }
 
@@ -273,7 +274,7 @@ public class RenderedApp {
 
     private void setupInstance(String appName, MemoryStack stack) {
         // Prepare basic Vulkan App information
-        VkApplicationInfo appInfo = VkApplicationInfo.callocStack(stack);
+        var appInfo = VkApplicationInfo.callocStack(stack);
 
         appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
         appInfo.pApplicationName(stack.UTF8Safe(appName));
@@ -283,7 +284,7 @@ public class RenderedApp {
         appInfo.apiVersion(VK_API_VERSION_1_0);
 
         // Prepare a Vulkan instance information
-        VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.callocStack(stack);
+        var createInfo = VkInstanceCreateInfo.callocStack(stack);
 
         createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
         createInfo.pApplicationInfo(appInfo);
@@ -370,8 +371,7 @@ public class RenderedApp {
 
     /** Creates default debug messenger info for logging */
     private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
-                VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
+        var debugCreateInfo = VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
 
         // Initialize debug callback parameters
         debugCreateInfo.sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT);
@@ -405,7 +405,7 @@ public class RenderedApp {
 
     /// Setup window surface
 
-    private void createSurface(MemoryStack stack) {
+    private void setupSurface(MemoryStack stack) {
         LongBuffer pSurface = stack.callocLong(1);
         int result = glfwCreateWindowSurface(instance, window, null, pSurface);
         if (result != VK_SUCCESS) {
@@ -521,8 +521,7 @@ public class RenderedApp {
             VkPhysicalDevice device, MemoryStack stack) {
         IntBuffer length = stack.ints(0);
         vkGetPhysicalDeviceQueueFamilyProperties(device, length, null);
-        VkQueueFamilyProperties.Buffer props =
-                VkQueueFamilyProperties.callocStack(length.get(0), stack);
+        var props = VkQueueFamilyProperties.callocStack(length.get(0), stack);
         vkGetPhysicalDeviceQueueFamilyProperties(device, length, props);
         return props;
     }
@@ -562,8 +561,7 @@ public class RenderedApp {
 
         int[] families = physicalDevice.indices.uniqueFamilies();
 
-        VkDeviceQueueCreateInfo.Buffer queueCreateInfo =
-                VkDeviceQueueCreateInfo.callocStack(families.length, stack);
+        var queueCreateInfo = VkDeviceQueueCreateInfo.callocStack(families.length, stack);
 
         IntStream.range(0, families.length)
                 .forEach(
@@ -575,9 +573,9 @@ public class RenderedApp {
                             queueCreateInfo.get(i).pQueuePriorities(queuePriority);
                         });
 
-        VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
+        var deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
 
-        VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
+        var createInfo = VkDeviceCreateInfo.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);
         createInfo.pQueueCreateInfos(queueCreateInfo);
         createInfo.pEnabledFeatures(deviceFeatures);
@@ -615,7 +613,7 @@ public class RenderedApp {
         extent = physicalDevice.swapchainSupport.chooseExtent(window, stack);
         int imageCount = physicalDevice.swapchainSupport.chooseImageCount();
 
-        VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
+        var createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR);
         createInfo.surface(surface);
         createInfo.minImageCount(imageCount);
@@ -673,7 +671,7 @@ public class RenderedApp {
     private void setupImageViews(MemoryStack stack) {
         LOGGER.info("Setup image views");
 
-        VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.callocStack(stack);
+        var createInfo = VkImageViewCreateInfo.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
         createInfo.viewType(VK_IMAGE_VIEW_TYPE_2D);
         createInfo.format(surfaceFormat.format());
@@ -707,6 +705,32 @@ public class RenderedApp {
                                     return imageView.get(0);
                                 })
                         .toArray();
+    }
+
+    /// Graphics pipeline setup
+
+    private void setupGraphicsPipeline(MemoryStack stack) {
+        LOGGER.info("Setup graphics pipeline");
+        Shader vertShader = Shader.getShader("shaderc/vert.spv", device);
+        Shader fragShader = Shader.getShader("shaderc/frag.spv", device);
+
+        var shaderStages = VkPipelineShaderStageCreateInfo.callocStack(2, stack);
+
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
+        vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
+        vertShaderStageInfo.stage(VK_SHADER_STAGE_VERTEX_BIT);
+        vertShaderStageInfo.module(vertShader.getModule());
+        vertShaderStageInfo.pName(stack.UTF8("main"));
+        // We will need pSpecializationInfo here to configure constants
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(0);
+        fragShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
+        fragShaderStageInfo.stage(VK_SHADER_STAGE_FRAGMENT_BIT);
+        fragShaderStageInfo.module(fragShader.getModule());
+        fragShaderStageInfo.pName(stack.UTF8("main"));
+
+        fragShader.free();
+        vertShader.free();
     }
 
     /// Cleanup code
