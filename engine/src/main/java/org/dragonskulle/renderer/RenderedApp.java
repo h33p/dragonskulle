@@ -46,6 +46,7 @@ public class RenderedApp {
     private long[] swapchainImages;
     private long[] swapchainImageViews;
 
+    private long renderPass;
     private long pipelineLayout;
 
     public static final Logger LOGGER = Logger.getLogger("render");
@@ -223,6 +224,7 @@ public class RenderedApp {
     private void cleanup() {
         LOGGER.info("Cleanup");
         vkDestroyPipelineLayout(device, pipelineLayout, null);
+        vkDestroyRenderPass(device, renderPass, null);
         for (long imageView : swapchainImageViews) {
             vkDestroyImageView(device, imageView, null);
         }
@@ -269,6 +271,7 @@ public class RenderedApp {
             setupLogicalDevice(stack);
             setupSwapchain(stack);
             setupImageViews(stack);
+            setupRenderPass(stack);
             setupGraphicsPipeline(stack);
         }
     }
@@ -427,7 +430,6 @@ public class RenderedApp {
         if (physicalDevice == null) {
             throw new RuntimeException("Failed to find compatible GPU!");
         }
-        physicalDevice.swapchainSupport.chooseSurfaceFormat();
         LOGGER.info(String.format("Picked GPU: %s", physicalDevice.properties.deviceNameString()));
     }
 
@@ -708,6 +710,49 @@ public class RenderedApp {
                                     return imageView.get(0);
                                 })
                         .toArray();
+    }
+
+    /// Render pass setup
+
+    private void setupRenderPass(MemoryStack stack) {
+        LOGGER.info("Setup render pass");
+
+        var colorAttachment = VkAttachmentDescription.callocStack(1, stack);
+        colorAttachment.format(surfaceFormat.format());
+        colorAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
+        colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
+        colorAttachment.storeOp(VK_ATTACHMENT_STORE_OP_STORE);
+        // We don't use stencils yet
+        colorAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+        colorAttachment.stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
+        // We present the image after rendering, and don't care what it was,
+        // since we clear it anyways.
+        colorAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
+        colorAttachment.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+        var colorAttachmentRef = VkAttachmentReference.callocStack(1, stack);
+        colorAttachmentRef.attachment(0);
+        colorAttachmentRef.layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+        var subpass = VkSubpassDescription.callocStack(1, stack);
+        subpass.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS);
+        subpass.pColorAttachments(colorAttachmentRef);
+
+        var renderPassInfo = VkRenderPassCreateInfo.callocStack(stack);
+        renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
+        renderPassInfo.pAttachments(colorAttachment);
+        renderPassInfo.pSubpasses(subpass);
+
+        LongBuffer pRenderPass = stack.longs(0);
+
+        int result = vkCreateRenderPass(device, renderPassInfo, null, pRenderPass);
+
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create render pass! Err: %x", -result));
+        }
+
+        renderPass = pRenderPass.get(0);
     }
 
     /// Graphics pipeline setup
