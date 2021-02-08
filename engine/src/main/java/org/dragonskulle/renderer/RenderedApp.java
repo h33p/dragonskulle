@@ -48,6 +48,7 @@ public class RenderedApp {
 
     private long renderPass;
     private long pipelineLayout;
+    private long graphicsPipeline;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
@@ -223,6 +224,7 @@ public class RenderedApp {
 
     private void cleanup() {
         LOGGER.info("Cleanup");
+        vkDestroyPipeline(device, graphicsPipeline, null);
         vkDestroyPipelineLayout(device, pipelineLayout, null);
         vkDestroyRenderPass(device, renderPass, null);
         for (long imageView : swapchainImageViews) {
@@ -773,7 +775,7 @@ public class RenderedApp {
         vertShaderStageInfo.pName(stack.UTF8("main"));
         // We will need pSpecializationInfo here to configure constants
 
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(0);
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(1);
         fragShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
         fragShaderStageInfo.stage(VK_SHADER_STAGE_FRAGMENT_BIT);
         fragShaderStageInfo.module(fragShader.getModule());
@@ -856,6 +858,38 @@ public class RenderedApp {
         }
 
         pipelineLayout = pPipelineLayout.get(0);
+
+        // Actual pipeline!
+
+        var pipelineInfo = VkGraphicsPipelineCreateInfo.callocStack(1, stack);
+        pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
+        pipelineInfo.pStages(shaderStages);
+
+        pipelineInfo.pVertexInputState(vertexInputInfo);
+        pipelineInfo.pInputAssemblyState(inputAssembly);
+        pipelineInfo.pViewportState(viewportState);
+        pipelineInfo.pRasterizationState(rasterizer);
+        pipelineInfo.pMultisampleState(multisampling);
+        pipelineInfo.pColorBlendState(colorBlending);
+
+        pipelineInfo.layout(pipelineLayout);
+        pipelineInfo.renderPass(renderPass);
+        pipelineInfo.subpass(0);
+
+        // We don't have base pipeline
+        pipelineInfo.basePipelineHandle(VK_NULL_HANDLE);
+        pipelineInfo.basePipelineIndex(-1);
+
+        LongBuffer pPipeline = stack.longs(0);
+
+        result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, pipelineInfo, null, pPipeline);
+
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create graphics pipeline! Err: %x", -result));
+        }
+
+        graphicsPipeline = pPipeline.get(0);
 
         fragShader.free();
         vertShader.free();
