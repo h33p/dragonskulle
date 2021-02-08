@@ -46,6 +46,8 @@ public class RenderedApp {
     private long[] swapchainImages;
     private long[] swapchainImageViews;
 
+    private long pipelineLayout;
+
     public static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE;
@@ -220,6 +222,7 @@ public class RenderedApp {
 
     private void cleanup() {
         LOGGER.info("Cleanup");
+        vkDestroyPipelineLayout(device, pipelineLayout, null);
         for (long imageView : swapchainImageViews) {
             vkDestroyImageView(device, imageView, null);
         }
@@ -714,6 +717,8 @@ public class RenderedApp {
         Shader vertShader = Shader.getShader("shaderc/vert.spv", device);
         Shader fragShader = Shader.getShader("shaderc/frag.spv", device);
 
+        // Programmable pipelines
+
         var shaderStages = VkPipelineShaderStageCreateInfo.callocStack(2, stack);
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
@@ -728,6 +733,84 @@ public class RenderedApp {
         fragShaderStageInfo.stage(VK_SHADER_STAGE_FRAGMENT_BIT);
         fragShaderStageInfo.module(fragShader.getModule());
         fragShaderStageInfo.pName(stack.UTF8("main"));
+
+        // Fixed function pipelines
+
+        var vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack(stack);
+        vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
+
+        var inputAssembly = VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);
+        inputAssembly.sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO);
+        inputAssembly.topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        inputAssembly.primitiveRestartEnable(false);
+
+        var viewport = VkViewport.callocStack(1, stack);
+        viewport.x(0.0f);
+        viewport.y(0.0f);
+        viewport.width((float) extent.width());
+        viewport.height((float) extent.height());
+        viewport.minDepth(0.0f);
+        viewport.maxDepth(1.0f);
+
+        // Render entire viewport at once
+        var scissor = VkRect2D.callocStack(1, stack);
+        scissor.offset().x(0);
+        scissor.offset().y(0);
+        scissor.extent(extent);
+
+        var viewportState = VkPipelineViewportStateCreateInfo.callocStack(stack);
+        viewportState.sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO);
+        viewportState.pViewports(viewport);
+        viewportState.pScissors(scissor);
+
+        var rasterizer = VkPipelineRasterizationStateCreateInfo.callocStack(stack);
+        rasterizer.sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO);
+        rasterizer.depthClampEnable(false);
+        rasterizer.rasterizerDiscardEnable(false);
+        rasterizer.polygonMode(VK_POLYGON_MODE_FILL);
+        rasterizer.lineWidth(1.0f);
+        rasterizer.cullMode(VK_CULL_MODE_BACK_BIT);
+        rasterizer.frontFace(VK_FRONT_FACE_CLOCKWISE);
+
+        // Used for shadowmaps, which we currently don't have...
+        rasterizer.depthBiasEnable(false);
+
+        // TODO: Enable MSAA once we check for features etc...
+        var multisampling = VkPipelineMultisampleStateCreateInfo.callocStack(stack);
+        multisampling.sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
+        multisampling.sampleShadingEnable(false);
+        multisampling.rasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
+
+        // TODO: Depth blend with VkPipelineDepthStencilStateCreateInfo
+
+        var colorBlendAttachment = VkPipelineColorBlendAttachmentState.callocStack(1, stack);
+        colorBlendAttachment.colorWriteMask(
+                VK_COLOR_COMPONENT_R_BIT
+                        | VK_COLOR_COMPONENT_G_BIT
+                        | VK_COLOR_COMPONENT_B_BIT
+                        | VK_COLOR_COMPONENT_A_BIT);
+        colorBlendAttachment.blendEnable(false);
+
+        var colorBlending = VkPipelineColorBlendStateCreateInfo.callocStack(stack);
+        colorBlending.sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO);
+        colorBlending.logicOpEnable(false);
+        colorBlending.pAttachments(colorBlendAttachment);
+
+        // TODO: Dynamic states
+
+        var pipelineLayoutInfo = VkPipelineLayoutCreateInfo.callocStack(stack);
+        pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
+
+        LongBuffer pPipelineLayout = stack.longs(0);
+
+        int result = vkCreatePipelineLayout(device, pipelineLayoutInfo, null, pPipelineLayout);
+
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create pipeline layout! Err: %x", -result));
+        }
+
+        pipelineLayout = pPipelineLayout.get(0);
 
         fragShader.free();
         vertShader.free();
