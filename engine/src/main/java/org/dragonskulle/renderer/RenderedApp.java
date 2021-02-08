@@ -51,6 +51,9 @@ public class RenderedApp {
     private long pipelineLayout;
     private long graphicsPipeline;
 
+    private long commandPool;
+    private VkCommandBuffer[] commandBuffers;
+
     public static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE;
@@ -225,6 +228,7 @@ public class RenderedApp {
 
     private void cleanup() {
         LOGGER.info("Cleanup");
+        vkDestroyCommandPool(device, commandPool, null);
         for (long framebuffer : framebuffers) {
             vkDestroyFramebuffer(device, framebuffer, null);
         }
@@ -280,6 +284,8 @@ public class RenderedApp {
             setupRenderPass(stack);
             setupGraphicsPipeline(stack);
             setupFramebuffers(stack);
+            setupCommandPool(stack);
+            setupCommandBuffers(stack);
         }
     }
 
@@ -463,7 +469,7 @@ public class RenderedApp {
         PointerBuffer devices = stack.mallocPointer(physDevCount.get(0));
         vkEnumeratePhysicalDevices(instance, physDevCount, devices);
 
-        return java.util.stream.IntStream.range(0, devices.capacity())
+        return IntStream.range(0, devices.capacity())
                 .mapToObj(devices::get)
                 .map(d -> new VkPhysicalDevice(d, instance))
                 .map(d -> collectPhysicalDeviceInfo(d, stack))
@@ -934,6 +940,101 @@ public class RenderedApp {
                                     return framebuffer.get(0);
                                 })
                         .toArray();
+    }
+
+    /// Command pool setup
+
+    private void setupCommandPool(MemoryStack stack) {
+        LOGGER.info("Setup command pool");
+        var poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
+        poolInfo.sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO);
+        poolInfo.queueFamilyIndex(physicalDevice.indices.graphicsFamily);
+
+        LongBuffer pCommandPool = stack.longs(0);
+
+        int result = vkCreateCommandPool(device, poolInfo, null, pCommandPool);
+
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create command pool! Err: %x", -result));
+        }
+
+        commandPool = pCommandPool.get(0);
+    }
+
+    /// Command buffer setup
+
+    private void setupCommandBuffers(MemoryStack stack) {
+        LOGGER.info("Setup command buffers");
+
+        var allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
+        allocInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);
+        allocInfo.commandPool(commandPool);
+        allocInfo.level(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        allocInfo.commandBufferCount(framebuffers.length);
+
+        PointerBuffer buffers = stack.mallocPointer(allocInfo.commandBufferCount());
+
+        int result = vkAllocateCommandBuffers(device, allocInfo, buffers);
+
+        if (result != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to create command buffers! Err: %x", -result));
+        }
+
+        commandBuffers =
+                IntStream.range(0, buffers.capacity())
+                        .mapToObj(buffers::get)
+                        .map(d -> new VkCommandBuffer(d, device))
+                        .toArray(VkCommandBuffer[]::new);
+
+        // Record the command buffers
+        var beginInfo = VkCommandBufferBeginInfo.callocStack(stack);
+        beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
+
+        int len = commandBuffers.length;
+
+        for (int i = 0; i < len; i++) {
+            long fb = framebuffers[i];
+            VkCommandBuffer cb = commandBuffers[i];
+
+            int res = vkBeginCommandBuffer(cb, beginInfo);
+
+            if (res != VK_SUCCESS) {
+                String format =
+                        String.format("Failed to begin recording command buffer! Err: %x", res);
+                throw new RuntimeException(format);
+            }
+
+            var renderPassInfo = VkRenderPassBeginInfo.callocStack(stack);
+            renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
+            renderPassInfo.renderPass(renderPass);
+            renderPassInfo.framebuffer(fb);
+
+            renderPassInfo.renderArea().offset().clear();
+            renderPassInfo.renderArea().extent(extent);
+
+            var clearColour = VkClearValue.callocStack(1, stack);
+            renderPassInfo.pClearValues(clearColour);
+
+            // This is the beginning :)
+            vkCmdBeginRenderPass(cb, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+            vkCmdDraw(cb, 3, 1, 0, 0);
+
+            vkCmdEndRenderPass(cb);
+
+            // And this is the end
+            res = vkEndCommandBuffer(cb);
+
+            if (res != VK_SUCCESS) {
+                String format =
+                        String.format("Failed to end recording command buffer! Err: %x", res);
+                throw new RuntimeException(format);
+            }
+        }
     }
 
     /// Cleanup code
