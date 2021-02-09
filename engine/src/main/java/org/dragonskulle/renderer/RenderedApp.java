@@ -54,6 +54,9 @@ public class RenderedApp {
     private long commandPool;
     private VkCommandBuffer[] commandBuffers;
 
+    private FrameContext[] frames;
+    private long[] imagesInFlight;
+
     public static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE;
@@ -66,9 +69,19 @@ public class RenderedApp {
     private static Set<String> DEVICE_EXTENSIONS =
             Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
 
+    private static final long UINT64_MAX = -1L;
+
+    private static final int FRAMES_IN_FLIGHT = 4;
+
     static {
         String line = System.getenv("DEBUG_RENDERER");
         DEBUG_MODE = line != null && line.equals("true");
+    }
+
+    private class FrameContext {
+        private long imageAvailableSemaphore;
+        private long renderFinishedSemaphore;
+        private long inFlightFence;
     }
 
     private class PhysicalDevice implements Comparable<PhysicalDevice> {
@@ -221,13 +234,47 @@ public class RenderedApp {
 
     private void mainLoop() {
         LOGGER.info("Enter main loop");
+        int frameIndex = 0;
+        int frameCounter = 0;
+        int seconds = 0;
+        int startSecondFrame = 0;
+        double lastElapsed = (double) System.currentTimeMillis() * 0.001;
+        long startTime = System.currentTimeMillis();
         while (!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
+            try (MemoryStack stack = stackPush()) {
+                glfwPollEvents();
+                drawFrame(stack, frames[frameIndex]);
+            }
+            frameIndex = (frameIndex + 1) % FRAMES_IN_FLIGHT;
+
+            // Debug FPS counter
+            frameCounter++;
+            long curtime = System.currentTimeMillis();
+            long elapsedMillis = curtime - startTime;
+            double elapsed = elapsedMillis * 0.001;
+            int curSeconds = (int) (elapsedMillis / 1000);
+            if (curSeconds > seconds) {
+                LOGGER.info(
+                        String.format(
+                                "FPS: %.2f",
+                                (double) (frameCounter - startSecondFrame)
+                                        / (elapsed - lastElapsed)));
+                seconds = curSeconds;
+                startSecondFrame = frameCounter;
+                lastElapsed = elapsed;
+            }
         }
+
+        vkDeviceWaitIdle(device);
     }
 
     private void cleanup() {
         LOGGER.info("Cleanup");
+        for (FrameContext frame : frames) {
+            vkDestroySemaphore(device, frame.renderFinishedSemaphore, null);
+            vkDestroySemaphore(device, frame.imageAvailableSemaphore, null);
+            vkDestroyFence(device, frame.inFlightFence, null);
+        }
         vkDestroyCommandPool(device, commandPool, null);
         for (long framebuffer : framebuffers) {
             vkDestroyFramebuffer(device, framebuffer, null);
@@ -245,6 +292,67 @@ public class RenderedApp {
         vkDestroyInstance(instance, null);
         glfwDestroyWindow(window);
         glfwTerminate();
+    }
+
+    /// The main rendering
+
+    private void drawFrame(MemoryStack stack, FrameContext ctx) {
+
+        vkWaitForFences(device, ctx.inFlightFence, true, UINT64_MAX);
+
+        IntBuffer imageIndex = stack.ints(0);
+        vkAcquireNextImageKHR(
+                device,
+                swapchain,
+                UINT64_MAX,
+                ctx.imageAvailableSemaphore,
+                VK_NULL_HANDLE,
+                imageIndex);
+        final int image = imageIndex.get(0);
+
+        if (imagesInFlight[image] != 0)
+            vkWaitForFences(device, imagesInFlight[image], true, UINT64_MAX);
+
+        imagesInFlight[image] = ctx.inFlightFence;
+
+        var submitInfo = VkSubmitInfo.callocStack(stack);
+        submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
+
+        LongBuffer waitSemaphores = stack.longs(ctx.imageAvailableSemaphore);
+        IntBuffer waitStages = stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        PointerBuffer commandBuffer = stack.pointers(commandBuffers[image]);
+
+        submitInfo.waitSemaphoreCount(1);
+        submitInfo.pWaitSemaphores(waitSemaphores);
+        submitInfo.pWaitDstStageMask(waitStages);
+        submitInfo.pCommandBuffers(commandBuffer);
+
+        LongBuffer signalSemaphores = stack.longs(ctx.renderFinishedSemaphore);
+        submitInfo.pSignalSemaphores(signalSemaphores);
+
+        vkResetFences(device, ctx.inFlightFence);
+
+        int res = vkQueueSubmit(graphicsQueue, submitInfo, ctx.inFlightFence);
+
+        if (res != VK_SUCCESS) {
+            throw new RuntimeException(
+                    String.format("Failed to submit draw command buffer! Ret: %x", -res));
+        }
+
+        LongBuffer swapchains = stack.longs(swapchain);
+
+        var presentInfo = VkPresentInfoKHR.callocStack(stack);
+        presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
+        presentInfo.pWaitSemaphores(signalSemaphores);
+        presentInfo.swapchainCount(1);
+        presentInfo.pSwapchains(swapchains);
+        presentInfo.pImageIndices(imageIndex);
+
+        res = vkQueuePresentKHR(presentQueue, presentInfo);
+
+        if (res != VK_SUCCESS) {
+            throw new RuntimeException(String.format("Failed to present image! Ret: %x", -res));
+        }
     }
 
     /// Setup code
@@ -286,6 +394,7 @@ public class RenderedApp {
             setupFramebuffers(stack);
             setupCommandPool(stack);
             setupCommandBuffers(stack);
+            setupSyncObjects(stack);
         }
     }
 
@@ -749,12 +858,24 @@ public class RenderedApp {
 
         var subpass = VkSubpassDescription.callocStack(1, stack);
         subpass.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS);
+        subpass.colorAttachmentCount(1);
         subpass.pColorAttachments(colorAttachmentRef);
 
         var renderPassInfo = VkRenderPassCreateInfo.callocStack(stack);
         renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
         renderPassInfo.pAttachments(colorAttachment);
         renderPassInfo.pSubpasses(subpass);
+
+        // Make render passes wait for COLOR_ATTACHMENT_OUTPUT stage
+        var dependency = VkSubpassDependency.callocStack(1, stack);
+        dependency.srcSubpass(VK_SUBPASS_EXTERNAL);
+        dependency.dstSubpass(0);
+        dependency.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dependency.srcAccessMask(0);
+        dependency.dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dependency.dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+        renderPassInfo.pDependencies(dependency);
 
         LongBuffer pRenderPass = stack.longs(0);
 
@@ -992,6 +1113,16 @@ public class RenderedApp {
         var beginInfo = VkCommandBufferBeginInfo.callocStack(stack);
         beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
 
+        var renderPassInfo = VkRenderPassBeginInfo.callocStack(stack);
+        renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
+        renderPassInfo.renderPass(renderPass);
+
+        renderPassInfo.renderArea().offset().clear();
+        renderPassInfo.renderArea().extent(extent);
+
+        var clearColor = VkClearValue.callocStack(1, stack);
+        renderPassInfo.pClearValues(clearColor);
+
         int len = commandBuffers.length;
 
         for (int i = 0; i < len; i++) {
@@ -1006,16 +1137,7 @@ public class RenderedApp {
                 throw new RuntimeException(format);
             }
 
-            var renderPassInfo = VkRenderPassBeginInfo.callocStack(stack);
-            renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
-            renderPassInfo.renderPass(renderPass);
             renderPassInfo.framebuffer(fb);
-
-            renderPassInfo.renderArea().offset().clear();
-            renderPassInfo.renderArea().extent(extent);
-
-            var clearColour = VkClearValue.callocStack(1, stack);
-            renderPassInfo.pClearValues(clearColour);
 
             // This is the beginning :)
             vkCmdBeginRenderPass(cb, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -1035,6 +1157,50 @@ public class RenderedApp {
                 throw new RuntimeException(format);
             }
         }
+    }
+
+    /// Setup synchronization semaphores
+
+    private void setupSyncObjects(MemoryStack stack) {
+
+        frames = new FrameContext[FRAMES_IN_FLIGHT];
+        imagesInFlight = new long[commandBuffers.length];
+
+        var fenceInfo = VkFenceCreateInfo.callocStack(stack);
+        fenceInfo.sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
+        fenceInfo.flags(VK_FENCE_CREATE_SIGNALED_BIT);
+
+        var semaphoreInfo = VkSemaphoreCreateInfo.callocStack(stack);
+        semaphoreInfo.sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);
+
+        IntStream.range(0, FRAMES_IN_FLIGHT)
+                .forEach(
+                        i -> {
+                            var ctx = new FrameContext();
+
+                            LongBuffer pSync = stack.longs(0, 0, 0);
+
+                            int res1 = vkCreateSemaphore(device, semaphoreInfo, null, pSync);
+                            int res2 =
+                                    vkCreateSemaphore(
+                                            device, semaphoreInfo, null, pSync.position(1));
+                            int res3 = vkCreateFence(device, fenceInfo, null, pSync.position(2));
+
+                            if (res1 != VK_SUCCESS || res2 != VK_SUCCESS || res3 != VK_SUCCESS) {
+                                throw new RuntimeException(
+                                        String.format(
+                                                "Failed to create semaphores! Err: %x %x",
+                                                -res1, -res2, -res2));
+                            }
+
+                            pSync.rewind();
+
+                            ctx.imageAvailableSemaphore = pSync.get(0);
+                            ctx.renderFinishedSemaphore = pSync.get(1);
+                            ctx.inFlightFence = pSync.get(2);
+
+                            frames[i] = ctx;
+                        });
     }
 
     /// Cleanup code
