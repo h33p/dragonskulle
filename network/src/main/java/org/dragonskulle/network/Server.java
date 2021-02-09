@@ -1,4 +1,5 @@
 package org.dragonskulle.network;
+//based on https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,41 +61,37 @@ public class Server {
     private Runnable client_runner(Socket sock) {
         return () -> {
             try {
+                boolean connected = false;
+                String stream = "";
                 this.sockets.addClient(sock);
                 BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
                 //create client as object
-                System.out.println("Attempting to create client");
                 ClientInstance client = new ClientInstance(sock.getInetAddress(), sock.getPort());
-                System.out.println("Created client");
-                System.out.println(client.toString());
-//something funky happening here
                 serverListener.clientConnected(client, out);
-
-                System.out.println("Connected client");
-
-                while (open) {
+                connected = sock.isConnected();
+                while (connected) {
                     try {
-                        serverListener.receivedInput(client, in.readLine());
+                        stream = in.readLine();
+                        if(stream==null){
+                            throw new IOException();
+                        }
+                        serverListener.receivedInput(client, stream);
+
                     } catch (IOException e) {
                         //if client disconnected, remove it
-                        serverListener.clientDisconnected(client);
                         try {
-                            if (!sock.isClosed()) {
-                                sock.shutdownOutput();
-                                sock.close();
-                            }
+                            connected = this.sockets.terminateClient(sock); //close and remove
+                            serverListener.clientDisconnected(client);
                         } catch (Exception exception) {
                             exception.printStackTrace();
                         }
-                        this.sockets.removeClient(sock);
-                        return;
+                        break;
                     }
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
-            this.sockets.terminateClient(sock); //close and remove
         };
     }
 }

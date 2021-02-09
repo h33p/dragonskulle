@@ -81,13 +81,14 @@ public class SocketStore {
         return null;
     }
 
-    public void terminateClient(Socket sock) {
+    public boolean terminateClient(Socket sock) throws IOException {
         //if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
         this.store.remove(sock);
+        return true;
     }
 
-    public void removeClient(Socket sock) {
+    public void removeClient(Socket sock) throws IOException {
         //only remove client from store as socket has closed
         if (!sock.isClosed()) {
             this.terminateClient(sock);

@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class CreateClient {
     static String ip;
-    static int port;
+    static String port;
     static Client client;
     static String command;
 
@@ -13,10 +13,16 @@ public class CreateClient {
         System.out.println("Enter IP: ");
         ip = scanner.nextLine();
         System.out.println("Enter Port: ");
-        port = scanner.nextInt();
+        port = scanner.nextLine();
         System.out.println("Creating client");
         ClientListener clientEars = new ClientEars();
-        client = new Client(ip, port, clientEars);
+        if(ip.equals(port)){
+            client = new Client("127.0.0.1", 7000, clientEars);
+        }else {
+            client = new Client(ip, Integer.parseInt(port), clientEars);
+        }
+        System.out.println("Commands are (K)ill and (S)end");
+
 
         OUTER_LOOP:
         while (true) {

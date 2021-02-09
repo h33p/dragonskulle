@@ -7,18 +7,12 @@ public class StartServer {
     final static int port = 7000;
 
     StartServer() {
-        serverListener = new ServerEars();
     }
 
     public static void main(String[] args) {
         attachShutDownHook();
+        serverListener = new ServerEars();
         server = new Server(port, serverListener);
-        StartServer runner = new StartServer();
-
-
-        while (true) {
-            serverListener.viewLog();
-        }
     }
 
     public static void attachShutDownHook() {

@@ -11,5 +11,4 @@ public interface ServerListener {
 
     void serverClosed();
 
-    void viewLog();
 }
