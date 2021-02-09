@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
-import lombok.var;
+//import lombok.var;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -105,7 +105,7 @@ public class RenderedApp {
         public VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
             IntBuffer propertyCount = stack.ints(0);
             vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, null);
-            var properties = VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
+            VkExtensionProperties.Buffer properties = VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
             vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, properties);
             return properties;
         }
@@ -315,7 +315,7 @@ public class RenderedApp {
 
         imagesInFlight[image] = ctx.inFlightFence;
 
-        var submitInfo = VkSubmitInfo.callocStack(stack);
+        VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
         submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
 
         LongBuffer waitSemaphores = stack.longs(ctx.imageAvailableSemaphore);
@@ -341,7 +341,7 @@ public class RenderedApp {
 
         LongBuffer swapchains = stack.longs(swapchain);
 
-        var presentInfo = VkPresentInfoKHR.callocStack(stack);
+        VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
         presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
         presentInfo.pWaitSemaphores(signalSemaphores);
         presentInfo.swapchainCount(1);
@@ -402,7 +402,7 @@ public class RenderedApp {
 
     private void setupInstance(String appName, MemoryStack stack) {
         // Prepare basic Vulkan App information
-        var appInfo = VkApplicationInfo.callocStack(stack);
+        VkApplicationInfo appInfo = VkApplicationInfo.callocStack(stack);
 
         appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
         appInfo.pApplicationName(stack.UTF8Safe(appName));
@@ -412,7 +412,7 @@ public class RenderedApp {
         appInfo.apiVersion(VK_API_VERSION_1_0);
 
         // Prepare a Vulkan instance information
-        var createInfo = VkInstanceCreateInfo.callocStack(stack);
+        VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.callocStack(stack);
 
         createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
         createInfo.pApplicationInfo(appInfo);
@@ -499,7 +499,7 @@ public class RenderedApp {
 
     /** Creates default debug messenger info for logging */
     private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
-        var debugCreateInfo = VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
 
         // Initialize debug callback parameters
         debugCreateInfo.sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT);
@@ -648,7 +648,7 @@ public class RenderedApp {
             VkPhysicalDevice device, MemoryStack stack) {
         IntBuffer length = stack.ints(0);
         vkGetPhysicalDeviceQueueFamilyProperties(device, length, null);
-        var props = VkQueueFamilyProperties.callocStack(length.get(0), stack);
+        VkQueueFamilyProperties.Buffer props = VkQueueFamilyProperties.callocStack(length.get(0), stack);
         vkGetPhysicalDeviceQueueFamilyProperties(device, length, props);
         return props;
     }
@@ -688,7 +688,7 @@ public class RenderedApp {
 
         int[] families = physicalDevice.indices.uniqueFamilies();
 
-        var queueCreateInfo = VkDeviceQueueCreateInfo.callocStack(families.length, stack);
+        VkDeviceQueueCreateInfo.Buffer queueCreateInfo = VkDeviceQueueCreateInfo.callocStack(families.length, stack);
 
         IntStream.range(0, families.length)
                 .forEach(
@@ -700,9 +700,9 @@ public class RenderedApp {
                             queueCreateInfo.get(i).pQueuePriorities(queuePriority);
                         });
 
-        var deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
+        VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
 
-        var createInfo = VkDeviceCreateInfo.callocStack(stack);
+        VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);
         createInfo.pQueueCreateInfos(queueCreateInfo);
         createInfo.pEnabledFeatures(deviceFeatures);
@@ -740,7 +740,7 @@ public class RenderedApp {
         extent = physicalDevice.swapchainSupport.chooseExtent(window, stack);
         int imageCount = physicalDevice.swapchainSupport.chooseImageCount();
 
-        var createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
+        VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR);
         createInfo.surface(surface);
         createInfo.minImageCount(imageCount);
@@ -798,7 +798,7 @@ public class RenderedApp {
     private void setupImageViews(MemoryStack stack) {
         LOGGER.info("Setup image views");
 
-        var createInfo = VkImageViewCreateInfo.callocStack(stack);
+        VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
         createInfo.viewType(VK_IMAGE_VIEW_TYPE_2D);
         createInfo.format(surfaceFormat.format());
@@ -839,7 +839,7 @@ public class RenderedApp {
     private void setupRenderPass(MemoryStack stack) {
         LOGGER.info("Setup render pass");
 
-        var colorAttachment = VkAttachmentDescription.callocStack(1, stack);
+        VkAttachmentDescription.Buffer colorAttachment = VkAttachmentDescription.callocStack(1, stack);
         colorAttachment.format(surfaceFormat.format());
         colorAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
         colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
@@ -852,22 +852,22 @@ public class RenderedApp {
         colorAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
         colorAttachment.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        var colorAttachmentRef = VkAttachmentReference.callocStack(1, stack);
+        VkAttachmentReference.Buffer colorAttachmentRef = VkAttachmentReference.callocStack(1, stack);
         colorAttachmentRef.attachment(0);
         colorAttachmentRef.layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-        var subpass = VkSubpassDescription.callocStack(1, stack);
+        VkSubpassDescription.Buffer subpass = VkSubpassDescription.callocStack(1, stack);
         subpass.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS);
         subpass.colorAttachmentCount(1);
         subpass.pColorAttachments(colorAttachmentRef);
 
-        var renderPassInfo = VkRenderPassCreateInfo.callocStack(stack);
+        VkRenderPassCreateInfo renderPassInfo = VkRenderPassCreateInfo.callocStack(stack);
         renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
         renderPassInfo.pAttachments(colorAttachment);
         renderPassInfo.pSubpasses(subpass);
 
         // Make render passes wait for COLOR_ATTACHMENT_OUTPUT stage
-        var dependency = VkSubpassDependency.callocStack(1, stack);
+        VkSubpassDependency.Buffer dependency = VkSubpassDependency.callocStack(1, stack);
         dependency.srcSubpass(VK_SUBPASS_EXTERNAL);
         dependency.dstSubpass(0);
         dependency.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -898,7 +898,7 @@ public class RenderedApp {
 
         // Programmable pipelines
 
-        var shaderStages = VkPipelineShaderStageCreateInfo.callocStack(2, stack);
+        VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.callocStack(2, stack);
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
         vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
@@ -915,15 +915,15 @@ public class RenderedApp {
 
         // Fixed function pipelines
 
-        var vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack(stack);
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack(stack);
         vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
 
-        var inputAssembly = VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);
         inputAssembly.sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO);
         inputAssembly.topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         inputAssembly.primitiveRestartEnable(false);
 
-        var viewport = VkViewport.callocStack(1, stack);
+        VkViewport.Buffer viewport = VkViewport.callocStack(1, stack);
         viewport.x(0.0f);
         viewport.y(0.0f);
         viewport.width((float) extent.width());
@@ -932,17 +932,17 @@ public class RenderedApp {
         viewport.maxDepth(1.0f);
 
         // Render entire viewport at once
-        var scissor = VkRect2D.callocStack(1, stack);
+        VkRect2D.Buffer scissor = VkRect2D.callocStack(1, stack);
         scissor.offset().x(0);
         scissor.offset().y(0);
         scissor.extent(extent);
 
-        var viewportState = VkPipelineViewportStateCreateInfo.callocStack(stack);
+        VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.callocStack(stack);
         viewportState.sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO);
         viewportState.pViewports(viewport);
         viewportState.pScissors(scissor);
 
-        var rasterizer = VkPipelineRasterizationStateCreateInfo.callocStack(stack);
+        VkPipelineRasterizationStateCreateInfo rasterizer = VkPipelineRasterizationStateCreateInfo.callocStack(stack);
         rasterizer.sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO);
         rasterizer.depthClampEnable(false);
         rasterizer.rasterizerDiscardEnable(false);
@@ -955,14 +955,14 @@ public class RenderedApp {
         rasterizer.depthBiasEnable(false);
 
         // TODO: Enable MSAA once we check for features etc...
-        var multisampling = VkPipelineMultisampleStateCreateInfo.callocStack(stack);
+        VkPipelineMultisampleStateCreateInfo multisampling = VkPipelineMultisampleStateCreateInfo.callocStack(stack);
         multisampling.sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
         multisampling.sampleShadingEnable(false);
         multisampling.rasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
 
         // TODO: Depth blend with VkPipelineDepthStencilStateCreateInfo
 
-        var colorBlendAttachment = VkPipelineColorBlendAttachmentState.callocStack(1, stack);
+        VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment = VkPipelineColorBlendAttachmentState.callocStack(1, stack);
         colorBlendAttachment.colorWriteMask(
                 VK_COLOR_COMPONENT_R_BIT
                         | VK_COLOR_COMPONENT_G_BIT
@@ -970,14 +970,14 @@ public class RenderedApp {
                         | VK_COLOR_COMPONENT_A_BIT);
         colorBlendAttachment.blendEnable(false);
 
-        var colorBlending = VkPipelineColorBlendStateCreateInfo.callocStack(stack);
+        VkPipelineColorBlendStateCreateInfo colorBlending = VkPipelineColorBlendStateCreateInfo.callocStack(stack);
         colorBlending.sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO);
         colorBlending.logicOpEnable(false);
         colorBlending.pAttachments(colorBlendAttachment);
 
         // TODO: Dynamic states
 
-        var pipelineLayoutInfo = VkPipelineLayoutCreateInfo.callocStack(stack);
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.callocStack(stack);
         pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
 
         LongBuffer pPipelineLayout = stack.longs(0);
@@ -993,7 +993,7 @@ public class RenderedApp {
 
         // Actual pipeline!
 
-        var pipelineInfo = VkGraphicsPipelineCreateInfo.callocStack(1, stack);
+        VkGraphicsPipelineCreateInfo.Buffer pipelineInfo = VkGraphicsPipelineCreateInfo.callocStack(1, stack);
         pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
         pipelineInfo.pStages(shaderStages);
 
@@ -1032,7 +1032,7 @@ public class RenderedApp {
     private void setupFramebuffers(MemoryStack stack) {
         LOGGER.info("Setup framebuffers");
 
-        var createInfo = VkFramebufferCreateInfo.callocStack(stack);
+        VkFramebufferCreateInfo createInfo = VkFramebufferCreateInfo.callocStack(stack);
         createInfo.sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO);
 
         createInfo.renderPass(renderPass);
@@ -1067,7 +1067,7 @@ public class RenderedApp {
 
     private void setupCommandPool(MemoryStack stack) {
         LOGGER.info("Setup command pool");
-        var poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
+        VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
         poolInfo.sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO);
         poolInfo.queueFamilyIndex(physicalDevice.indices.graphicsFamily);
 
@@ -1088,7 +1088,7 @@ public class RenderedApp {
     private void setupCommandBuffers(MemoryStack stack) {
         LOGGER.info("Setup command buffers");
 
-        var allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
+        VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
         allocInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);
         allocInfo.commandPool(commandPool);
         allocInfo.level(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -1110,17 +1110,17 @@ public class RenderedApp {
                         .toArray(VkCommandBuffer[]::new);
 
         // Record the command buffers
-        var beginInfo = VkCommandBufferBeginInfo.callocStack(stack);
+        VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack);
         beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
 
-        var renderPassInfo = VkRenderPassBeginInfo.callocStack(stack);
+        VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.callocStack(stack);
         renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
         renderPassInfo.renderPass(renderPass);
 
         renderPassInfo.renderArea().offset().clear();
         renderPassInfo.renderArea().extent(extent);
 
-        var clearColor = VkClearValue.callocStack(1, stack);
+        VkClearValue.Buffer clearColor = VkClearValue.callocStack(1, stack);
         renderPassInfo.pClearValues(clearColor);
 
         int len = commandBuffers.length;
@@ -1166,17 +1166,17 @@ public class RenderedApp {
         frames = new FrameContext[FRAMES_IN_FLIGHT];
         imagesInFlight = new long[commandBuffers.length];
 
-        var fenceInfo = VkFenceCreateInfo.callocStack(stack);
+        VkFenceCreateInfo fenceInfo = VkFenceCreateInfo.callocStack(stack);
         fenceInfo.sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
         fenceInfo.flags(VK_FENCE_CREATE_SIGNALED_BIT);
 
-        var semaphoreInfo = VkSemaphoreCreateInfo.callocStack(stack);
+        VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.callocStack(stack);
         semaphoreInfo.sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);
 
         IntStream.range(0, FRAMES_IN_FLIGHT)
                 .forEach(
                         i -> {
-                            var ctx = new FrameContext();
+                            FrameContext ctx = new FrameContext();
 
                             LongBuffer pSync = stack.longs(0, 0, 0);
 

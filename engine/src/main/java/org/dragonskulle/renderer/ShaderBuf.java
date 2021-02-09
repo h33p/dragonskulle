@@ -3,18 +3,19 @@ package org.dragonskulle.renderer;
 
 import java.nio.ByteBuffer;
 import lombok.Getter;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.lwjgl.system.MemoryUtil;
 
-public class ShaderResource {
+public class ShaderBuf {
 
     @Getter private ByteBuffer buffer;
 
-    public static ShaderResource getShaderResource(String name) {
+    public static Resource<ShaderBuf> getResource(String name) {
         return ResourceManager.getResource(
-                ShaderResource.class,
+                ShaderBuf.class,
                 (buffer) -> {
-                    ShaderResource ret = new ShaderResource();
+                    ShaderBuf ret = new ShaderBuf();
                     ret.buffer = MemoryUtil.memAlloc(buffer.length);
                     ret.buffer.put(buffer);
                     ret.buffer.rewind();
