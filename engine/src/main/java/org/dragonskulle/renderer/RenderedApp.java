@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
-//import lombok.var;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -73,6 +72,8 @@ public class RenderedApp {
 
     private static final int FRAMES_IN_FLIGHT = 4;
 
+    private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_MAILBOX_KHR);
+
     static {
         String line = System.getenv("DEBUG_RENDERER");
         DEBUG_MODE = line != null && line.equals("true");
@@ -105,7 +106,8 @@ public class RenderedApp {
         public VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
             IntBuffer propertyCount = stack.ints(0);
             vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, null);
-            VkExtensionProperties.Buffer properties = VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
+            VkExtensionProperties.Buffer properties =
+                    VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
             vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, properties);
             return properties;
         }
@@ -157,12 +159,11 @@ public class RenderedApp {
 
             // Prioritized tripple buffered VSync, or use no vsync
             // We need configuration for this.
-            for (int i = 0;
-                    presentMode != VK_PRESENT_MODE_MAILBOX_KHR && i < presentModes.capacity();
-                    i++) {
+            for (int i = 0; presentMode != VBLANK_MODE && i < presentModes.capacity(); i++) {
                 int pm = presentModes.get(i);
-                if (pm == VK_PRESENT_MODE_MAILBOX_KHR || pm == VK_PRESENT_MODE_FIFO_KHR)
-                    presentMode = pm;
+                if (pm == VBLANK_MODE
+                        || pm == VK_PRESENT_MODE_MAILBOX_KHR
+                        || pm == VK_PRESENT_MODE_IMMEDIATE_KHR) presentMode = pm;
             }
 
             return presentMode;
@@ -198,6 +199,16 @@ public class RenderedApp {
     private static String envString(String key, String defaultVal) {
         String envLine = System.getenv(key);
         return envLine == null ? defaultVal : envLine;
+    }
+
+    private static int envInt(String key, int defaultVal) {
+        String envLine = System.getenv(key);
+        if (envLine == null) return defaultVal;
+        try {
+            return Integer.parseInt(envLine);
+        } catch (Exception e) {
+            return defaultVal;
+        }
     }
 
     /** VK logging entrypoint */
@@ -499,7 +510,8 @@ public class RenderedApp {
 
     /** Creates default debug messenger info for logging */
     private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
+                VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
 
         // Initialize debug callback parameters
         debugCreateInfo.sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT);
@@ -648,7 +660,8 @@ public class RenderedApp {
             VkPhysicalDevice device, MemoryStack stack) {
         IntBuffer length = stack.ints(0);
         vkGetPhysicalDeviceQueueFamilyProperties(device, length, null);
-        VkQueueFamilyProperties.Buffer props = VkQueueFamilyProperties.callocStack(length.get(0), stack);
+        VkQueueFamilyProperties.Buffer props =
+                VkQueueFamilyProperties.callocStack(length.get(0), stack);
         vkGetPhysicalDeviceQueueFamilyProperties(device, length, props);
         return props;
     }
@@ -688,7 +701,8 @@ public class RenderedApp {
 
         int[] families = physicalDevice.indices.uniqueFamilies();
 
-        VkDeviceQueueCreateInfo.Buffer queueCreateInfo = VkDeviceQueueCreateInfo.callocStack(families.length, stack);
+        VkDeviceQueueCreateInfo.Buffer queueCreateInfo =
+                VkDeviceQueueCreateInfo.callocStack(families.length, stack);
 
         IntStream.range(0, families.length)
                 .forEach(
@@ -839,7 +853,8 @@ public class RenderedApp {
     private void setupRenderPass(MemoryStack stack) {
         LOGGER.info("Setup render pass");
 
-        VkAttachmentDescription.Buffer colorAttachment = VkAttachmentDescription.callocStack(1, stack);
+        VkAttachmentDescription.Buffer colorAttachment =
+                VkAttachmentDescription.callocStack(1, stack);
         colorAttachment.format(surfaceFormat.format());
         colorAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
         colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
@@ -852,7 +867,8 @@ public class RenderedApp {
         colorAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
         colorAttachment.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        VkAttachmentReference.Buffer colorAttachmentRef = VkAttachmentReference.callocStack(1, stack);
+        VkAttachmentReference.Buffer colorAttachmentRef =
+                VkAttachmentReference.callocStack(1, stack);
         colorAttachmentRef.attachment(0);
         colorAttachmentRef.layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -893,12 +909,19 @@ public class RenderedApp {
 
     private void setupGraphicsPipeline(MemoryStack stack) {
         LOGGER.info("Setup graphics pipeline");
-        Shader vertShader = Shader.getShader("shaderc/vert.spv", device);
-        Shader fragShader = Shader.getShader("shaderc/frag.spv", device);
+
+        Shader vertShader = Shader.getShader("shader", ShaderKind.VERTEX_SHADER, device);
+
+        if (vertShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
+
+        Shader fragShader = Shader.getShader("shader", ShaderKind.FRAGMENT_SHADER, device);
+
+        if (fragShader == null) throw new RuntimeException("Failed to retrieve fragment shader!");
 
         // Programmable pipelines
 
-        VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.callocStack(2, stack);
+        VkPipelineShaderStageCreateInfo.Buffer shaderStages =
+                VkPipelineShaderStageCreateInfo.callocStack(2, stack);
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
         vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
@@ -915,10 +938,12 @@ public class RenderedApp {
 
         // Fixed function pipelines
 
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack(stack);
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo =
+                VkPipelineVertexInputStateCreateInfo.callocStack(stack);
         vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
 
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly = VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly =
+                VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);
         inputAssembly.sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO);
         inputAssembly.topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         inputAssembly.primitiveRestartEnable(false);
@@ -937,12 +962,14 @@ public class RenderedApp {
         scissor.offset().y(0);
         scissor.extent(extent);
 
-        VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.callocStack(stack);
+        VkPipelineViewportStateCreateInfo viewportState =
+                VkPipelineViewportStateCreateInfo.callocStack(stack);
         viewportState.sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO);
         viewportState.pViewports(viewport);
         viewportState.pScissors(scissor);
 
-        VkPipelineRasterizationStateCreateInfo rasterizer = VkPipelineRasterizationStateCreateInfo.callocStack(stack);
+        VkPipelineRasterizationStateCreateInfo rasterizer =
+                VkPipelineRasterizationStateCreateInfo.callocStack(stack);
         rasterizer.sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO);
         rasterizer.depthClampEnable(false);
         rasterizer.rasterizerDiscardEnable(false);
@@ -955,14 +982,16 @@ public class RenderedApp {
         rasterizer.depthBiasEnable(false);
 
         // TODO: Enable MSAA once we check for features etc...
-        VkPipelineMultisampleStateCreateInfo multisampling = VkPipelineMultisampleStateCreateInfo.callocStack(stack);
+        VkPipelineMultisampleStateCreateInfo multisampling =
+                VkPipelineMultisampleStateCreateInfo.callocStack(stack);
         multisampling.sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
         multisampling.sampleShadingEnable(false);
         multisampling.rasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
 
         // TODO: Depth blend with VkPipelineDepthStencilStateCreateInfo
 
-        VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment = VkPipelineColorBlendAttachmentState.callocStack(1, stack);
+        VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment =
+                VkPipelineColorBlendAttachmentState.callocStack(1, stack);
         colorBlendAttachment.colorWriteMask(
                 VK_COLOR_COMPONENT_R_BIT
                         | VK_COLOR_COMPONENT_G_BIT
@@ -970,14 +999,16 @@ public class RenderedApp {
                         | VK_COLOR_COMPONENT_A_BIT);
         colorBlendAttachment.blendEnable(false);
 
-        VkPipelineColorBlendStateCreateInfo colorBlending = VkPipelineColorBlendStateCreateInfo.callocStack(stack);
+        VkPipelineColorBlendStateCreateInfo colorBlending =
+                VkPipelineColorBlendStateCreateInfo.callocStack(stack);
         colorBlending.sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO);
         colorBlending.logicOpEnable(false);
         colorBlending.pAttachments(colorBlendAttachment);
 
         // TODO: Dynamic states
 
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.callocStack(stack);
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo =
+                VkPipelineLayoutCreateInfo.callocStack(stack);
         pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
 
         LongBuffer pPipelineLayout = stack.longs(0);
@@ -993,7 +1024,8 @@ public class RenderedApp {
 
         // Actual pipeline!
 
-        VkGraphicsPipelineCreateInfo.Buffer pipelineInfo = VkGraphicsPipelineCreateInfo.callocStack(1, stack);
+        VkGraphicsPipelineCreateInfo.Buffer pipelineInfo =
+                VkGraphicsPipelineCreateInfo.callocStack(1, stack);
         pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
         pipelineInfo.pStages(shaderStages);
 

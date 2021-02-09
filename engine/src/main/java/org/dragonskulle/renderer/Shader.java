@@ -2,6 +2,7 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.util.shaderc.Shaderc.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
@@ -16,13 +17,16 @@ public class Shader implements NativeResource {
     private VkDevice device;
     @Getter private long module;
 
-    public static Shader getShader(String name, VkDevice device) {
-        RenderedApp.LOGGER.info("Get shader... " + name);
+    public static Shader getShader(String name, ShaderKind kind, VkDevice device) {
+        RenderedApp.LOGGER.fine("Get shader... " + name);
 
-        try (Resource<ShaderBuf> res = ShaderBuf.getResource(name)) {
-            if (res == null) return null;
+        String spirvName = String.format("shaderc/%s.%s.spv", name, kind.toString());
+        String glslName = String.format("shaders/%s.%s", name, kind.toString());
 
-            ShaderBuf resource = res.get();
+        try (Resource<ShaderBuf> res = ShaderBuf.getResource(spirvName)) {
+            ShaderBuf resource = res != null ? res.get() : ShaderBuf.compileShader(glslName, kind);
+
+            if (resource == null) return null;
 
             try (MemoryStack stack = stackPush()) {
                 Shader ret = new Shader();
