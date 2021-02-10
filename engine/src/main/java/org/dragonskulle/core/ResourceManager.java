@@ -2,6 +2,7 @@
 package org.dragonskulle.core;
 
 import java.io.InputStream;
+import java.util.*;
 import java.util.HashMap;
 import lombok.Getter;
 
@@ -138,7 +139,7 @@ public class ResourceManager {
      */
     public static <T> T loadResource(IResourceLoader<T> loader, String name) {
         try (InputStream inputStream = CLASS_LOADER.getResourceAsStream(name)) {
-            byte[] buffer = inputStream.readAllBytes();
+            byte[] buffer = readAllBytes(inputStream);
             return loader.loadFromBuffer(buffer);
         } catch (Exception e) {
             return null;
@@ -156,5 +157,30 @@ public class ResourceManager {
         CountedResource<T> inst = new CountedResource<T>(name, ret);
         loadedResources.put(name, inst);
         return inst.incRefCount(type);
+    }
+
+    /** Essentially Java 9 readAllBytes */
+    private static byte[] readAllBytes(InputStream stream) throws Exception {
+        List<byte[]> chunks = new ArrayList<byte[]>();
+        int n = 0;
+        int total = 0;
+        final int CHUNK_SIZE = 4096;
+        while (n >= 0) {
+            byte[] chunk = new byte[CHUNK_SIZE];
+            n = stream.read(chunk);
+            if (n > 0) {
+                total += n;
+                if (n == CHUNK_SIZE) chunks.add(chunk);
+                else chunks.add(Arrays.copyOfRange(chunk, 0, n));
+            }
+        }
+
+        byte[] result = new byte[total];
+        int offset = 0;
+        for (byte[] c : chunks) {
+            System.arraycopy(c, 0, result, offset, c.length);
+            offset += c.length;
+        }
+        return result;
     }
 }
