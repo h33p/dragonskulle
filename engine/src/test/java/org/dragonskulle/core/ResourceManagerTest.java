@@ -1,0 +1,235 @@
+/* (C) 2021 DragonSkulle */
+package org.dragonskulle.core;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+/** Unit tests for Resource Manager. */
+public class ResourceManagerTest {
+    /** First class for simple text resource loading */
+    private static class TestBytes {
+        private byte[] buf;
+
+        private static final IResourceLoader<TestBytes> LOADER = TestBytes::new;
+
+        private TestBytes(byte[] buf) {
+            this.buf = buf;
+        }
+
+        public static String resourcePath(String name) {
+            return "text/" + name;
+        }
+
+        public static Resource<TestBytes> getResource(String name) {
+            return ResourceManager.getResource(TestBytes.class, LOADER, resourcePath(name));
+        }
+
+        public static void unlinkResource(String name) {
+            ResourceManager.unlinkResource(resourcePath(name));
+        }
+    }
+
+    /** Second class for simple text resource loading */
+    private static class TestLines implements AutoCloseable {
+        private String[] lines;
+        private boolean wasClosed = false;
+
+        private TestLines(byte[] buf) {
+            lines = (new String(buf)).split("\\r?\\n");
+        }
+
+        public static Resource<TestLines> getResource(String name) {
+            return ResourceManager.getResource(TestLines.class, TestLines::new, "text/" + name);
+        }
+
+        @Override
+        public void close() {
+            assertFalse(wasClosed);
+            wasClosed = true;
+        }
+    }
+
+    /** Simple test for seeing if loading works */
+    @Test
+    public void simpleLoad() {
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res != null);
+            assertNotNull(res.get() != null);
+        }
+
+        try (Resource<TestLines> res = TestLines.getResource("b.txt")) {
+            assertNotNull(res != null);
+            assertNotNull(res.get() != null);
+            TestLines lines = res.get();
+            assertEquals(1, lines.lines.length);
+        }
+    }
+
+    /**
+     * Test property of cached loading
+     *
+     * <p>It should be possible to load a resource, and get() call should point to the same object.
+     */
+    @Test
+    public void cachedLoad() {
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res);
+            assertNotNull(res.get());
+
+            try (Resource<TestBytes> res2 = TestBytes.getResource("a.txt")) {
+                assertNotNull(res2);
+                assertNotNull(res2.get());
+                assertSame(res.get(), res2.get());
+            }
+        }
+
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res);
+            assertNotNull(res.get());
+
+            try (Resource<TestBytes> res2 = TestBytes.getResource("a.txt")) {
+                assertNotNull(res2);
+                assertNotNull(res2.get());
+                assertSame(res.get(), res2.get());
+            }
+        }
+
+        try (Resource<TestLines> res = TestLines.getResource("a.txt")) {
+            assertNotNull(res);
+            assertNotNull(res.get());
+
+            try (Resource<TestLines> res2 = TestLines.getResource("a.txt")) {
+                assertNotNull(res2);
+                assertNotNull(res2.get());
+                assertSame(res.get(), res2.get());
+            }
+        }
+    }
+
+    /**
+     * Test property of trying to load the same resource as different types
+     *
+     * <p>Second resource should simply fail to load.
+     */
+    @Test
+    public void cachedTypeSafety() {
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res);
+            assertNotNull(res.get());
+
+            try (Resource<TestLines> res2 = TestLines.getResource("a.txt")) {
+                assertNull(res2);
+            }
+        }
+    }
+
+    /**
+     * Test property of caching working, and resource being freed
+     *
+     * <p>Second resource should simply fail to load. But the third one should succeed.
+     */
+    @Test
+    public void cachedFreeTypeSafety() {
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res);
+            assertNotNull(res.get());
+
+            try (Resource<TestLines> res2 = TestLines.getResource("a.txt")) {
+                assertNull(res2);
+            }
+        }
+
+        try (Resource<TestLines> res = TestLines.getResource("a.txt")) {
+            assertNotNull(res);
+            assertNotNull(res.get());
+
+            try (Resource<TestBytes> res2 = TestBytes.getResource("a.txt")) {
+                assertNull(res2);
+            }
+        }
+    }
+
+    /**
+     * Test whether unlinking functions as expected
+     *
+     * <p>Loading second resource after unlinking should yield different reference, and loading a
+     * third instance of the resource should yield the same reference as the second. Loading the
+     * fourth reference after the first one is freed should yield the same reference as the 2nd, and
+     * the 3rd. After freeing all these references the new reference should be unique.
+     */
+    @Test
+    public void unlinking() {
+        Resource<TestBytes> res1 = TestBytes.getResource("a.txt");
+
+        assertNotNull(res1);
+
+        TestBytes.unlinkResource("a.txt");
+
+        Resource<TestBytes> res2 = TestBytes.getResource("a.txt");
+        assertNotNull(res2);
+        assertNotSame(res1.get(), res2.get());
+
+        Resource<TestBytes> res3 = TestBytes.getResource("a.txt");
+        assertNotNull(res3);
+        assertSame(res2.get(), res3.get());
+
+        res1.free();
+
+        Resource<TestBytes> res4 = TestBytes.getResource("a.txt");
+        assertNotNull(res4);
+        assertSame(res3.get(), res4.get());
+
+        TestBytes cached = res2.get();
+        res2.free();
+        res3.free();
+        res4.free();
+
+        Resource<TestBytes> res5 = TestBytes.getResource("a.txt");
+        assertNotNull(res4);
+        assertNotSame(cached, res5.get());
+
+        res5.free();
+    }
+
+    /**
+     * Test whether reloading functions as expected
+     *
+     * <p>Upon reload, all {@code Resource} instances should point to a new instance of {@code
+     * TestBytes}.
+     */
+    @Test
+    public void reloading() {
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res);
+
+            try (Resource<TestBytes> res2 = TestBytes.getResource("a.txt")) {
+                assertNotNull(res2);
+                assertSame(res.get(), res2.get());
+                TestBytes cached = res.get();
+                assertTrue(res.reload(TestBytes.LOADER));
+                assertNotSame(cached, res.get());
+                assertSame(res.get(), res2.get());
+                assertEquals(cached.buf.length, res.get().buf.length);
+            }
+        }
+    }
+
+    /**
+     * Test whether resource gets automatically closed
+     *
+     * <p>This will use try-with-resources syntax to automatically close the resource. It is
+     * strongly discouraged against taking the reference out of Resource for this very reason - the
+     * instance can be closed at any point when the reference count drops to 0.
+     */
+    @Test
+    public void autoClose() {
+        TestLines lines = null;
+        try (Resource<TestLines> res = TestLines.getResource("a.txt")) {
+            assertNotNull(res);
+            lines = res.get();
+        }
+        assertNotNull(lines);
+        assertTrue(lines.wasClosed);
+    }
+}
