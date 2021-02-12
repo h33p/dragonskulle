@@ -17,6 +17,7 @@ public class Time {
 
     /**
      * Get the current system time in seconds
+     *
      * @return The current time in seconds
      */
     static double getTimeInSeconds() {

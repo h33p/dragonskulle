@@ -80,6 +80,14 @@ public class Engine {
                 switchToNewScene();
             }
 
+            if (mActiveScene.getSceneUpdated()) {
+
+                // TODO: If the scene has updated, cache all of the components, and if any new
+                //      components are found, call the onAwake and onStart methods
+
+                mActiveScene.setSceneUpdated(false);
+            }
+
             // Calculate time for last frame
             mCurTime = Time.getTimeInSeconds();
             double deltaTime = mCurTime - mPrevTime;
