@@ -258,6 +258,13 @@ public class GameObject {
     }
 
     /**
+     * Getter for mReference
+     *
+     * @return mReference
+     */
+    public Reference<GameObject> getReference() { return mReference; }
+
+    /**
      * Getter for mChildren, used for testing
      *
      * @return mChildren
