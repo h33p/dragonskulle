@@ -1,5 +1,7 @@
 package org.dragonskulle.core;
 
+import org.lwjgl.system.CallbackI;
+
 /**
  * Used for referencing GameObjects
  *
@@ -36,4 +38,20 @@ public class Reference<T> {
      * @return mObject
      */
     public T get() { return mObject; }
+
+
+    /**
+     * Override equals so that it compares the underlying object as opposed to the Reference itself
+     *
+     * @param obj Object to compare to
+     * @return True if the underlying object is equal, False if not
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Reference<?>) {
+            return mObject.equals(((Reference<?>)obj).mObject);
+        } else {
+            return false;
+        }
+    }
 }
