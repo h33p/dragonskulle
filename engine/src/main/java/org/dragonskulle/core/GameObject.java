@@ -3,6 +3,7 @@ package org.dragonskulle.core;
 
 import org.dragonskulle.components.Component;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,14 +70,14 @@ public class GameObject {
         mChildren.addAll(object.mChildren);
     }
 
-    // TODO: Should all get(Component, child etc) return WeakReference<>?
-
     /**
      * Get all components
      * @return mComponents
      */
-    public ArrayList<Component> getComponents() {
-        return mComponents;
+    public ArrayList<WeakReference<Component>> getComponents() {
+        return mComponents.stream()
+                .map(WeakReference::new)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -86,10 +87,11 @@ public class GameObject {
      * @param <T> Type of component to be returned
      * @return A new ArrayList containing all components of type T, or null if none were found
      */
-    public <T extends Component> ArrayList<T> getComponents(Class<T> type) {
-        ArrayList<T> ret = mComponents.stream()
+    public <T extends Component> ArrayList<WeakReference<T>> getComponents(Class<T> type) {
+        ArrayList<WeakReference<T>> ret = mComponents.stream()
                 .filter(type::isInstance)
                 .map(type::cast)
+                .map(WeakReference::new)
                 .collect(Collectors.toCollection(ArrayList::new));
 
         return ret.isEmpty() ? null : ret;
@@ -102,10 +104,11 @@ public class GameObject {
      * @param <T> Type of component to be returned
      * @return The first component of type T found, or null if none were found
      */
-    public <T extends Component> T getComponent(Class<T> type) {
+    public <T extends Component> WeakReference<T> getComponent(Class<T> type) {
         return mComponents.stream()
                 .filter(type::isInstance)
                 .map(type::cast)
+                .map(WeakReference::new)
                 .findFirst()
                 .orElse(null);
     }
@@ -117,9 +120,10 @@ public class GameObject {
      * @param <I> Interface to search by
      * @return A new list containing all components that implement the interface I, or null
      */
-    public <I> ArrayList<Component> getComponentsByIface(Class<I> iface) {
-        ArrayList<Component> ret = mComponents.stream()
+    public <I> ArrayList<WeakReference<Component>> getComponentsByIface(Class<I> iface) {
+        ArrayList<WeakReference<Component>> ret = mComponents.stream()
                 .filter(iface::isInstance)
+                .map(WeakReference::new)
                 .collect(Collectors.toCollection(ArrayList::new));
 
         return ret.isEmpty() ? null : ret;
@@ -131,8 +135,10 @@ public class GameObject {
      *
      * @return List containing all children, children's children etc..
      */
-    ArrayList<GameObject> getAllChildren() {
-        ArrayList<GameObject> ret = new ArrayList<>(mChildren);
+    ArrayList<WeakReference<GameObject>> getAllChildren() {
+        ArrayList<WeakReference<GameObject>> ret = mChildren.stream()
+                .map(WeakReference::new)
+                .collect(Collectors.toCollection(ArrayList::new));
 
         for (GameObject child : mChildren) {
             ret.addAll(child.getAllChildren());

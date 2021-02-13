@@ -5,6 +5,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -148,15 +149,15 @@ public class Engine {
             mActiveScene.updateComponentsList();
 
             // Iterate through them, calling onAwake on all that implement it
-            for (Component component : mActiveScene.getComponents()) {
-                if (component instanceof IOnAwake) {
+            for (WeakReference<Component> component : mActiveScene.getComponents()) {
+                if (component.get() instanceof IOnAwake) {
                     ((IOnAwake) component).onAwake();
                 }
             }
 
             // Then go through again, calling onStart on all the implement it
-            for (Component component : mActiveScene.getComponents()) {
-                if (component instanceof IOnStart) {
+            for (WeakReference<Component> component : mActiveScene.getComponents()) {
+                if (component.get() instanceof IOnStart) {
                     ((IOnStart) component).onStart();
                 }
             }

@@ -3,7 +3,9 @@ package org.dragonskulle.core;
 
 import org.dragonskulle.components.Component;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Scene class
@@ -22,7 +24,7 @@ public class Scene {
     // In the future it might be a good idea to further break this down
     // for each interface of components and only update the cache when the scene is updated
     // This won't affect the use of the engine so won't introduce any conflicts
-    private final ArrayList<Component> mComponents = new ArrayList<>();
+    private final ArrayList<WeakReference<Component>> mComponents = new ArrayList<>();
 
     private final String mName;
 
@@ -53,6 +55,9 @@ public class Scene {
         mGameObjects.remove(object);
     }
 
+    /**
+     * Iterates through all GameObjects in the scene and collects their components
+     */
     public void updateComponentsList() {
         mComponents.clear();
 
@@ -60,7 +65,11 @@ public class Scene {
 
             mComponents.addAll(root.getComponents());
 
-            for (GameObject child : root.getAllChildren()) {
+            for (WeakReference<GameObject> childRef : root.getAllChildren()) {
+                GameObject child = childRef.get();
+                if (child == null) {
+                    continue;
+                }
                 mComponents.addAll(child.getComponents());
             }
         }
@@ -81,5 +90,5 @@ public class Scene {
      */
     public String getName() { return mName; }
 
-    public ArrayList<Component> getComponents() { return mComponents; }
+    public ArrayList<WeakReference<Component>> getComponents() { return mComponents; }
 }
