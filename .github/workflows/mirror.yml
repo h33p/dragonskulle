@@ -13,8 +13,6 @@ jobs:
       - uses: actions/checkout@v1
       - uses: spyoungtech/mirror-action@master
         with:
-          GIT_USERNAME: ${{ secrets.GITLAB_USER }}
-          GIT_PASSWORD: ${{ secrets.GITLAB_TOKEN }}
           REMOTE: ${{ secrets.GITLAB_REPO  }}
-          PUSH_ALL_REFS: "false"
+          PUSH_ALL_REFS: "true"
 
