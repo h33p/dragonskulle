@@ -2,6 +2,7 @@
 package org.dragonskulle.components;
 
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 
 /**
  * Abstract class for a Component
@@ -16,15 +17,25 @@ import org.dragonskulle.core.GameObject;
  */
 public abstract class Component {
 
+    private final Reference<Component> mReference = new Reference<>(this);
+
     private GameObject mGameObject;
     private boolean mEnabled;
 
     /**
-     * Destroy a component, override to handle destroying of specific components
+     * Base implementation of destroy, cannot be overridden but calls the overridable method
      */
-    public void destroy() {
+    public final void destroy() {
         mGameObject = null;
+        mReference.clear();
+
+        onDestroy();
     }
+
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
+    private void onDestroy() {}
 
     /**
      * Getter for mGameObject

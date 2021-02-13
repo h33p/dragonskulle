@@ -24,7 +24,7 @@ public class Scene {
     // In the future it might be a good idea to further break this down
     // for each interface of components and only update the cache when the scene is updated
     // This won't affect the use of the engine so won't introduce any conflicts
-    private final ArrayList<WeakReference<Component>> mComponents = new ArrayList<>();
+    private final ArrayList<Reference<Component>> mComponents = new ArrayList<>();
 
     private final String mName;
 
@@ -65,7 +65,7 @@ public class Scene {
 
             mComponents.addAll(root.getComponents());
 
-            for (WeakReference<GameObject> childRef : root.getAllChildren()) {
+            for (Reference<GameObject> childRef : root.getAllChildren()) {
                 GameObject child = childRef.get();
                 if (child == null) {
                     continue;
@@ -90,5 +90,5 @@ public class Scene {
      */
     public String getName() { return mName; }
 
-    public ArrayList<WeakReference<Component>> getComponents() { return mComponents; }
+    public ArrayList<Reference<Component>> getComponents() { return mComponents; }
 }

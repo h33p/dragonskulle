@@ -2,11 +2,12 @@
 package org.dragonskulle.core;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -96,8 +97,9 @@ public class Engine {
 
             // TODO: Process inputs here before any updates are performed
 
+            // TODO: Need a way to track new components this frame to call awake/start
 
-            // TODO: Frame updates should be called here
+            frameUpdate(deltaTime);
 
             // Perform all updates that we can fit in the time since last frame
             // Means that multiple fixed updates can happen before the next frame
@@ -105,14 +107,12 @@ public class Engine {
             while (cumulativeTime > UPDATE_TIME) {
                 cumulativeTime -= UPDATE_TIME;
 
-                // TODO: perform all fixed updates here
-
+                fixedUpdate(UPDATE_TIME);
             }
 
-            // TODO: Late frame updates should be called here
-
-
             // TODO: Perform actual rendering after all updates
+
+            lateFrameUpdate(deltaTime);
 
             frames++;
             if (secondTimer > 1.0) {
@@ -126,6 +126,51 @@ public class Engine {
         }
 
         cleanup();
+    }
+
+    /**
+     * Do all frameUpdates on components that implement it
+     * @param deltaTime Time change since last frame
+     */
+    private void frameUpdate(double deltaTime) {
+        mActiveScene.updateComponentsList();
+
+        for (Reference<Component> componentRef : mActiveScene.getComponents()) {
+            Component component = componentRef.get();
+            if (component instanceof IFrameUpdate) {
+                ((IFrameUpdate)component).frameUpdate(deltaTime);
+            }
+        }
+    }
+
+    /**
+     * Do all Fixed Updates on components that implement it
+     * @param deltaTime Time change
+     */
+    private void fixedUpdate(double deltaTime) {
+        mActiveScene.updateComponentsList();
+
+        for (Reference<Component> componentRef : mActiveScene.getComponents()) {
+            Component component = componentRef.get();
+            if (component instanceof IFixedUpdate) {
+                ((IFixedUpdate)component).fixedUpdate(UPDATE_TIME);
+            }
+        }
+    }
+
+    /**
+     * Do all Late Frame Updates on components that implement it
+     * @param deltaTime Time change sicne last frame
+     */
+    private void lateFrameUpdate(double deltaTime) {
+        mActiveScene.updateComponentsList();
+
+        for (Reference<Component> componentRef : mActiveScene.getComponents()) {
+            Component component = componentRef.get();
+            if (component instanceof ILateFrameUpdate) {
+                ((ILateFrameUpdate)component).lateFrameUpdate(deltaTime);
+            }
+        }
     }
 
     /**
@@ -149,16 +194,16 @@ public class Engine {
             mActiveScene.updateComponentsList();
 
             // Iterate through them, calling onAwake on all that implement it
-            for (WeakReference<Component> component : mActiveScene.getComponents()) {
+            for (Reference<Component> component : mActiveScene.getComponents()) {
                 if (component.get() instanceof IOnAwake) {
-                    ((IOnAwake) component).onAwake();
+                    ((IOnAwake)component).onAwake();
                 }
             }
 
             // Then go through again, calling onStart on all the implement it
-            for (WeakReference<Component> component : mActiveScene.getComponents()) {
+            for (Reference<Component> component : mActiveScene.getComponents()) {
                 if (component.get() instanceof IOnStart) {
-                    ((IOnStart) component).onStart();
+                    ((IOnStart)component).onStart();
                 }
             }
         }
