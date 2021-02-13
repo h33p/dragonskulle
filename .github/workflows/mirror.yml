@@ -1,0 +1,20 @@
+# This workflow will mirror the repo to Gitlab using secret tokens
+
+name: Mirror to gitlab
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: spyoungtech/mirror-action@master
+        with:
+          GIT_USERNAME: ${{ secrets.GITLAB_USER }}
+          GIT_PASSWORD: ${{ secrets.GITLAB_TOKEN }}
+          REMOTE: ${{ secrets.GITLAB_REPO  }}
+          PUSH_ALL_REFS: "false"
+
