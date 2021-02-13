@@ -3,7 +3,6 @@ package org.dragonskulle.core;
 
 import org.dragonskulle.components.Component;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,6 +73,7 @@ public class GameObject {
 
     /**
      * Get all components
+     *
      * @return mComponents
      */
     public ArrayList<Reference<Component>> getComponents() {
@@ -259,12 +259,14 @@ public class GameObject {
 
     /**
      * Getter for mChildren, used for testing
+     *
      * @return mChildren
      */
     protected ArrayList<GameObject> getChildren() { return mChildren; }
 
     /**
      * Getter for mRoot, used for testing
+     *
      * @return mRoot
      */
     protected GameObject getRoot() { return mRoot; }

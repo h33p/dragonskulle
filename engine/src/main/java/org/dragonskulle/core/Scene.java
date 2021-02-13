@@ -3,9 +3,9 @@ package org.dragonskulle.core;
 
 import org.dragonskulle.components.Component;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Scene class
@@ -18,15 +18,11 @@ import java.util.Objects;
 public class Scene {
     private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
 
-    // For now I'm just going to have a list of all components in each scene
-    // This will be updated each frame before any updates
-    // So that only one iteration through all objects is required each frame
-    // In the future it might be a good idea to further break this down
-    // for each interface of components and only update the cache when the scene is updated
-    // This won't affect the use of the engine so won't introduce any conflicts
     private final ArrayList<Reference<Component>> mComponents = new ArrayList<>();
 
     private final String mName;
+
+    private boolean mSceneChanged;
 
     /**
      * Constructor for a Scene
@@ -90,5 +86,26 @@ public class Scene {
      */
     public String getName() { return mName; }
 
+    /**
+     * Get a list of references to all components
+     *
+     * @return mComponents
+     */
     public ArrayList<Reference<Component>> getComponents() { return mComponents; }
+
+    /**
+     * Get a list of all enabled components in the scene
+     *
+     * @return A new ArrayList containing all of the enabled components
+     */
+    public ArrayList<Reference<Component>> getEnabledComponents() {
+        Predicate<? super Reference<Component>> enabledComponents = (Reference<Component> ref) -> {
+            Component component = ref.get();
+            return component != null && component.getEnabled();
+        };
+
+        return mComponents.stream()
+                .filter(enabledComponents)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 }

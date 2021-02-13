@@ -135,7 +135,7 @@ public class Engine {
     private void frameUpdate(double deltaTime) {
         mActiveScene.updateComponentsList();
 
-        for (Reference<Component> componentRef : mActiveScene.getComponents()) {
+        for (Reference<Component> componentRef : mActiveScene.getEnabledComponents()) {
             Component component = componentRef.get();
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate)component).frameUpdate(deltaTime);
@@ -150,7 +150,7 @@ public class Engine {
     private void fixedUpdate(double deltaTime) {
         mActiveScene.updateComponentsList();
 
-        for (Reference<Component> componentRef : mActiveScene.getComponents()) {
+        for (Reference<Component> componentRef : mActiveScene.getEnabledComponents()) {
             Component component = componentRef.get();
             if (component instanceof IFixedUpdate) {
                 ((IFixedUpdate)component).fixedUpdate(UPDATE_TIME);
@@ -165,7 +165,7 @@ public class Engine {
     private void lateFrameUpdate(double deltaTime) {
         mActiveScene.updateComponentsList();
 
-        for (Reference<Component> componentRef : mActiveScene.getComponents()) {
+        for (Reference<Component> componentRef : mActiveScene.getEnabledComponents()) {
             Component component = componentRef.get();
             if (component instanceof ILateFrameUpdate) {
                 ((ILateFrameUpdate)component).lateFrameUpdate(deltaTime);
