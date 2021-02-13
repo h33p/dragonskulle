@@ -22,7 +22,7 @@ public class GameObject {
     private final ArrayList<Component> mComponents = new ArrayList<>();
     private final ArrayList<GameObject> mChildren = new ArrayList<>();
 
-    private Scene mScene;
+    private GameObject mRoot;
     private GameObject mParent;
     // TODO: Make transform component and add one here
     private final String mName;
@@ -30,47 +30,26 @@ public class GameObject {
     private final boolean mActive;
 
     /**
-     * Constructor for GameObject, doesn't set mScene, mParent and defaults mActive to true
+     * Constructor for GameObject, defaults mActive to true
      *
      * @param name The name of the object
      */
     public GameObject(String name) {
-        mScene = null;
+        mRoot = null;
         mParent = null;
         mName = name;
         mActive = true;
     }
 
     /**
-     * Constructor for GameObject, doesn't set mScene, or mParent
+     * Constructor for GameObject
      *
      * @param name The name of the object
      * @param active Whether the object is active or not
      */
     public GameObject(String name, boolean active) {
-        mScene = null;
+        mRoot = null;
         mParent = null;
-        mName = name;
-        mActive = active;
-    }
-
-    /**
-     * Constructor for GameObject, defaults mActive to true
-     *
-     * @param scene Scene for the object
-     * @param parent The objects parent
-     * @param name The name of the object
-     */
-    public GameObject(Scene scene, GameObject parent, String name) {
-        mScene = scene;
-        mParent = parent;
-        mName = name;
-        mActive = true;
-    }
-
-    public GameObject(Scene scene, GameObject parent, String name, boolean active) {
-        mScene = scene;
-        mParent = parent;
         mName = name;
         mActive = active;
     }
@@ -81,7 +60,7 @@ public class GameObject {
      * @param object The GameObject to copy
      */
     public GameObject(GameObject object) {
-        mScene = object.mScene;
+        mRoot = object.mRoot;
         mParent = object.mParent;
         mName = object.mName;
         mActive = object.mActive;
@@ -90,6 +69,15 @@ public class GameObject {
         mChildren.addAll(object.mChildren);
     }
 
+    // TODO: Should all get(Component, child etc) return WeakReference<>?
+
+    /**
+     * Get all components
+     * @return mComponents
+     */
+    public ArrayList<Component> getComponents() {
+        return mComponents;
+    }
 
     /**
      *  Get all components of a given type T
@@ -104,15 +92,11 @@ public class GameObject {
                 .map(type::cast)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if (ret.isEmpty()) {
-            return null;
-        } else {
-            return ret;
-        }
+        return ret.isEmpty() ? null : ret;
     }
 
     /**
-     * Get the first component of type T
+     * Get the first component of type T found
      *
      * @param type Class object of T
      * @param <T> Type of component to be returned
@@ -127,8 +111,22 @@ public class GameObject {
     }
 
     /**
-     * Recursively get all children of a game object
+     * Get a list of all components that implement the interface I
      *
+     * @param iface Class object of the interface I
+     * @param <I> Interface to search by
+     * @return A new list containing all components that implement the interface I, or null
+     */
+    public <I> ArrayList<Component> getComponentsByIface(Class<I> iface) {
+        ArrayList<Component> ret = mComponents.stream()
+                .filter(iface::isInstance)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return ret.isEmpty() ? null : ret;
+    }
+
+    /**
+     * Recursively get all children of a game object
      * List is ordered in breadth-first order
      *
      * @return List containing all children, children's children etc..
@@ -144,40 +142,57 @@ public class GameObject {
     }
 
     /**
-     * Add a component to the GameObject, making sure that the component's owner is set to this
-     * and if it isn't, the Component is not added.
-     *
-     * If a component is added, the scene's updated flag is set to true
+     * Add a component to the GameObject.
+     * If the component's GameObject is null, it is set to this
+     * If the component's GameObject is another GameObject, the component is removed from that
+     * GameObject and is set to this.
      *
      * @param component Component to be added
      */
     public void addComponent(Component component) {
-        if (component.getGameObject() == this) {
-            mComponents.add(component);
+        GameObject obj = component.getGameObject();
 
-            mScene.setSceneUpdated(true);
+        if (obj == null) {
+            // GameObject not set
+            component.setGameObject(this);
+        } else if (obj != this) {
+            // GameObject is some other object
+            obj.removeComponent(component);
+            component.setGameObject(this);
         }
+
+        // Add the component and set scene updated to true
+        mComponents.add(component);
     }
 
     /**
-     * Add a child to the GameObject
+     * Add a child to the GameObject. Setting the parent to this and the root to this.mRoot
      *
      * @param child GameObject to be added as a child
      */
     public void addChild(GameObject child) {
-        child.mScene = mScene;
+        // If this doesn't have a parent, it must be a root object so set the child's root to this
+        if (mRoot == null) {
+            child.mRoot = this;
+        } else {
+            child.mRoot = mRoot;
+        }
         child.mParent = this;
         mChildren.add(child);
     }
 
     /**
-     * Add a list of children to the GameObject
+     * Add a list of children to the GameObject, setting the parent to this and the root to
+     * mRoot, or this if mRoot is null
      *
      * @param children List of GameObject to be added
      */
     public void addChildren(List<GameObject> children) {
+
+        GameObject root = (mRoot == null) ? this : mRoot;
+
         for (GameObject child : children) {
-            child.mScene = mScene;
+            child.mRoot = root;
             child.mParent = this;
         }
         mChildren.addAll(children);
@@ -185,28 +200,24 @@ public class GameObject {
 
     /**
      * Remove component from the GameObject.
-     *
-     * If a component is removed, the scene's updated flag is set to true
+     * If a component is removed, the scene's updated flag is set to true. Set's the component's
+     * GameObject to null
      *
      * @param component Component to be removed
      */
     public void removeComponent(Component component) {
         if (mComponents.remove(component)) {
-            mScene.setSceneUpdated(true);
+            component.setGameObject(null);
         }
     }
 
     /**
      * Remove a child from the GameObject.
      *
-     * If a GameObject is removed, the scene's updated flag is set to true
-     *
      * @param child GameObject to be removed
      */
     public void removeChild(GameObject child) {
-        if (mChildren.remove(child)) {
-            mScene.setSceneUpdated(true);
-        }
+        mChildren.remove(child);
     }
 
     /**
@@ -219,7 +230,7 @@ public class GameObject {
         // the iteration occurs without error
         ArrayList<GameObject> children = new ArrayList<>(mChildren);
 
-        // First destroy the children, then the components and then remove ourselves from our parent
+        // First destroy the children and the components
         for (GameObject child : children) {
             child.destroy();
         }
@@ -233,5 +244,24 @@ public class GameObject {
             mParent.removeChild(this);
         }
     }
+
+    /**
+     * Getter for mChildren, used for testing
+     * @return mChildren
+     */
+    protected ArrayList<GameObject> getChildren() { return mChildren; }
+
+    /**
+     * Getter for mRoot, used for testing
+     * @return mRoot
+     */
+    protected GameObject getRoot() { return mRoot; }
+
+    /**
+     * Getter for mParent, used for testing
+     *
+     * @return mParent
+     */
+    protected GameObject getParent() { return mParent; }
 
 }

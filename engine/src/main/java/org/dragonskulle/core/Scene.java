@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import org.dragonskulle.components.Component;
+
 import java.util.ArrayList;
 
 /**
@@ -9,14 +11,20 @@ import java.util.ArrayList;
  * @author Harry Stoltz
  *      <p>
  *          Represents a single scene in a game, storing a list of all GameObjects in that scene.
- *          Allows for adding and removing of GameObjects.
  *      </p>
  */
 public class Scene {
     private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
-    private final String mName;
 
-    private boolean mSceneUpdated = false;
+    // For now I'm just going to have a list of all components in each scene
+    // This will be updated each frame before any updates
+    // So that only one iteration through all objects is required each frame
+    // In the future it might be a good idea to further break this down
+    // for each interface of components and only update the cache when the scene is updated
+    // This won't affect the use of the engine so won't introduce any conflicts
+    private final ArrayList<Component> mComponents = new ArrayList<>();
+
+    private final String mName;
 
     /**
      * Constructor for a Scene
@@ -28,13 +36,12 @@ public class Scene {
     }
 
     /**
-     * Add a single game object to the scene
+     * Add a new root object to the scene
      *
      * @param object The GameObject to be added to the scene
      */
-    public void addGameObject(GameObject object) {
+    public void addRootObject(GameObject object) {
         mGameObjects.add(object);
-        mSceneUpdated = true;
     }
 
     /**
@@ -42,9 +49,22 @@ public class Scene {
      *
      * @param object The GameObject to be removed from the scene
      */
-    public void destroyGameObject(GameObject object) {
+    public void destroyRootObject(GameObject object) {
         mGameObjects.remove(object);
-        mSceneUpdated = true;
+    }
+
+    public void updateComponentsList() {
+        mComponents.clear();
+
+        for (GameObject root : mGameObjects) {
+
+            mComponents.addAll(root.getComponents());
+
+            for (GameObject child : root.getAllChildren()) {
+                mComponents.addAll(child.getComponents());
+            }
+        }
+
     }
 
     /**
@@ -52,7 +72,7 @@ public class Scene {
      *
      * @return mGameObjects
      */
-    public ArrayList<GameObject> getGameObjects() { return mGameObjects; }
+    public ArrayList<GameObject> getRootObjects() { return mGameObjects; }
 
     /**
      * Getter for mName
@@ -61,17 +81,5 @@ public class Scene {
      */
     public String getName() { return mName; }
 
-    /**
-     * Getter for mSceneUpdated
-     *
-     * @return mSceneUpdated
-     */
-    public boolean getSceneUpdated() { return mSceneUpdated; }
-
-    /**
-     * Setter for mSceneUpdated
-     *
-      * @param val New value of mSceneUpdated
-     */
-    public void setSceneUpdated(boolean val) { mSceneUpdated = val; }
+    public ArrayList<Component> getComponents() { return mComponents; }
 }

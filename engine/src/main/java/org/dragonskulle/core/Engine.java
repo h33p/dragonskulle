@@ -1,6 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.IOnStart;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -80,14 +85,6 @@ public class Engine {
                 switchToNewScene();
             }
 
-            if (mActiveScene.getSceneUpdated()) {
-
-                // TODO: If the scene has updated, cache all of the components, and if any new
-                //      components are found, call the onAwake and onStart methods
-
-                mActiveScene.setSceneUpdated(false);
-            }
-
             // Calculate time for last frame
             mCurTime = Time.getTimeInSeconds();
             double deltaTime = mCurTime - mPrevTime;
@@ -131,8 +128,9 @@ public class Engine {
     }
 
     /**
-     * Finish the loading of a new scene. If the scene has never been active before, call the
-     * onAwake and onStart methods if they are implemented
+     * Finish the loading of a new scene.
+     * If the scene has never been active before, call the onAwake and onStart methods
+     * if they are implemented
      */
     private void switchToNewScene() {
         // Add the currently active scene to inactive scenes and remove the new scene from
@@ -145,7 +143,23 @@ public class Engine {
 
         // Scene has never been active before
         if (!sceneWasInactive) {
-            // TODO: Call onAwake and onStart on all components that implement them
+
+            // Get the initial list of components in the scene
+            mActiveScene.updateComponentsList();
+
+            // Iterate through them, calling onAwake on all that implement it
+            for (Component component : mActiveScene.getComponents()) {
+                if (component instanceof IOnAwake) {
+                    ((IOnAwake) component).onAwake();
+                }
+            }
+
+            // Then go through again, calling onStart on all the implement it
+            for (Component component : mActiveScene.getComponents()) {
+                if (component instanceof IOnStart) {
+                    ((IOnStart) component).onStart();
+                }
+            }
         }
     }
 
