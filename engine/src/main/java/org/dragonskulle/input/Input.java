@@ -33,6 +33,7 @@ public class Input {
 
 		new KeyboardListener(window, buttons);
 		new MouseButtonListener(window, buttons);
+		new MouseScrollListener(window, buttons);
 		
 		
 		GLFWCursorPosCallback mousePosition = new GLFWCursorPosCallback() {
@@ -44,17 +45,9 @@ public class Input {
 			}
 		};
 		
-		GLFWScrollCallback scroll = new GLFWScrollCallback() {
-			
-			@Override
-			public void invoke(long window, double xoffset, double yoffset) {
-				//System.out.println("Mouse scroll.");
-				//System.out.println(String.format("xoffset: %f\nyoffset: %f", xoffset, yoffset));
-			}
-		};
+		
 		
 		GLFW.glfwSetCursorPosCallback(window, mousePosition);
-		GLFW.glfwSetScrollCallback(window, scroll);
 		
 		// For infinite mouse movement.
 		// GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
@@ -64,5 +57,10 @@ public class Input {
 	
 	public boolean isActivated(Action action) {
 		return actions.isActivated(action);
+	}
+	
+	public void resetScroll() {
+		buttons.released(Scroll.UP);
+		buttons.released(Scroll.DOWN);
 	}
 }

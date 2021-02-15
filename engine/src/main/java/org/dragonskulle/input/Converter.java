@@ -29,6 +29,8 @@ class Converter {
 		buttonToAction.put(GLFW.GLFW_KEY_W, getActionList(Action.UP));
 		buttonToAction.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.UP));
 		
+		buttonToAction.put(Scroll.UP, getActionList(Action.UP));
+		
 		generateActionToButton();
 	}
 	

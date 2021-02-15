@@ -11,5 +11,9 @@ public enum Action {
 	LEFT,
 	RIGHT,
 	ACTION_1,
-	ACTION_2
+	ACTION_2,
+	ZOOM_IN,
+	ZOOM_OUT,
+	SCROLL_UP,
+	SCROLL_DOWN
 }
