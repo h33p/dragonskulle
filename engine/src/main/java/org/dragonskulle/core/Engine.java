@@ -217,6 +217,13 @@ public class Engine {
     }
 
     /**
+     * Getter for mActiveScene
+     *
+     * @return mActiveScene
+     */
+    public Scene getActiveScene() { return mActiveScene; }
+
+    /**
      * Get the single instance of the engine
      *
      * @return The Engine instance

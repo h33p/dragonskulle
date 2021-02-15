@@ -2,6 +2,7 @@
 package org.dragonskulle.core;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.Transform;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,58 @@ public class GameObject {
 
     private GameObject mRoot;
     private GameObject mParent;
-    // TODO: Make transform component and add one here
+    private Transform mTransform = new Transform();
     private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
-    private final boolean mActive;
+    private boolean mActive;
+
+    /**
+     * Create a clone of a GameObject. The cloned GameObject's position is used
+     *
+     * @param object GameObject to be copied
+     * @return The new instance of the GameObject
+     */
+    public static GameObject instantiate(GameObject object) {
+        return new GameObject(object);
+    }
+
+    /**
+     * Create a clone of a GameObject, providing a new transform for the object
+     *
+     * @param object GameObject to be copied
+     * @param transform New transform for the object
+     * @return The new instance of the GameObject
+     */
+    public static GameObject instantiate(GameObject object, Transform transform) {
+        GameObject instance = new GameObject(object);
+        instance.mTransform = transform;
+        return instance;
+    }
+
+    /**
+     * Find an instance of a GameObject with a given name in the currently active scene. This is
+     * very slow and should not be used in any update loops. Instead, you should get all references
+     * to necessary GameObject's in onAwake or onStart and save them for future use.
+     *
+     * @param name Name of the object to search for
+     * @return A reference to the first GameObject found, or null if nothing is found
+     */
+    public static Reference<GameObject> FindObjectByName(String name) {
+        Scene activeScene = Engine.getInstance().getActiveScene();
+
+        for (GameObject root : activeScene.getRootObjects()) {
+
+            for (GameObject obj : root.getAllChildren()) {
+
+                if (obj.mName.equals(name)) {
+                    return obj.getReference();
+                }
+            }
+        }
+        return null;
+    }
+
+    // TODO: GetComponentsIn(Parent/Children)
 
     /**
      * Constructor for GameObject, defaults mActive to true
@@ -62,10 +111,15 @@ public class GameObject {
      * @param object The GameObject to copy
      */
     public GameObject(GameObject object) {
+
+        // TODO: Rewrite this so that all children and components are new objects just with the same
+        //       values etc
+
         mRoot = object.mRoot;
         mParent = object.mParent;
         mName = object.mName;
         mActive = object.mActive;
+        mTransform = object.mTransform;
 
         mComponents.addAll(object.mComponents);
         mChildren.addAll(object.mChildren);
@@ -137,10 +191,8 @@ public class GameObject {
      *
      * @return List containing all children, children's children etc..
      */
-    ArrayList<Reference<GameObject>> getAllChildren() {
-        ArrayList<Reference<GameObject>> ret = mChildren.stream()
-                .map(Reference::new)
-                .collect(Collectors.toCollection(ArrayList::new));
+    ArrayList<GameObject> getAllChildren() {
+        ArrayList<GameObject> ret = new ArrayList<>(mChildren);
 
         for (GameObject child : mChildren) {
             ret.addAll(child.getAllChildren());
@@ -258,6 +310,28 @@ public class GameObject {
     }
 
     /**
+     * Getter for mActive
+     *
+     * @return mActive
+     */
+    public boolean getActive() { return mActive; }
+
+    /**
+     * Setter for mActive
+     *
+     * @param val New value for mActive
+     */
+    public void setActive(boolean val) { mActive = val; }
+
+
+    /**
+     * Getter for mTransform
+     *
+     * @return mTransform
+     */
+    public Transform getTransform() { return mTransform; }
+
+    /**
      * Getter for mReference
      *
      * @return mReference
@@ -284,5 +358,4 @@ public class GameObject {
      * @return mParent
      */
     protected GameObject getParent() { return mParent; }
-
 }

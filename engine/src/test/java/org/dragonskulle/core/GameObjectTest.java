@@ -47,7 +47,7 @@ public class GameObjectTest {
         child1.addChild(child2);
 
 
-        boolean val = child2.getRoot().getAllChildren().contains(child2.getReference());
+        boolean val = child2.getRoot().getAllChildren().contains(child2);
 
         Assert.assertTrue("Child's root did not contain the child in all children", val);
 
@@ -89,24 +89,32 @@ public class GameObjectTest {
             root.addChild(child);
         }
 
-        for (Reference<GameObject> childRef : root.getAllChildren()) {
-            // This won't be null since we just created the objects
-            GameObject child = childRef.get();
-
+        for (GameObject child: root.getAllChildren()) {
             Assert.assertNotNull("Non-Root GameObject did not have a root", child.getRoot());
         }
-
     }
 
     /**
-     * Test whether every GameObject has a transform or not
+     * Test whether a GameObject always has a transform
      */
     @Test
     public void transformNeverNull() {
+
+        // Test both constructors for objects
         GameObject obj = new GameObject("obj");
 
-        // TODO: Uncomment this when Transforms have been implemented
-        //Assert.assertNotNull(obj.getTransform());
+        Assert.assertNotNull("GameObject did not have a transform",  obj.getTransform());
+
+        obj = new GameObject("obj", true);
+
+        Assert.assertNotNull("GameObject did not have a transform", obj.getTransform());
+
+
+        // Then check whether using the copy constructor still has a transform
+
+        GameObject objClone = new GameObject(obj);
+
+        Assert.assertNotNull("GameObject did not have a transform after cloning", obj.getTransform());
     }
 
     /*

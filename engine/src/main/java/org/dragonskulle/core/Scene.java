@@ -61,11 +61,8 @@ public class Scene {
 
             mComponents.addAll(root.getComponents());
 
-            for (Reference<GameObject> childRef : root.getAllChildren()) {
-                GameObject child = childRef.get();
-                if (child == null) {
-                    continue;
-                }
+            for (GameObject child : root.getAllChildren()) {
+
                 mComponents.addAll(child.getComponents());
             }
         }
