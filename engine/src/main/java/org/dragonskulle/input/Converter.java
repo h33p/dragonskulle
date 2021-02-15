@@ -6,8 +6,11 @@ import java.util.Map.Entry;
 
 import org.lwjgl.glfw.GLFW;
 
-import lombok.Getter;
-
+/**
+ * Converts between which buttons and {@link Action}s.
+ * 
+ * @author Craig Wilbourne
+ */
 class Converter {
 	
 	/** Key: Button <br/>
@@ -21,15 +24,16 @@ class Converter {
 	private final HashMap<Action, ArrayList<Integer>> actionToButton = new HashMap<Action, ArrayList<Integer>>();
 	
 	public Converter() {
+		// Currently hard-coded values:
 		buttonToAction.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.ACTION_1));
 		buttonToAction.put(GLFW.GLFW_KEY_W, getActionList(Action.UP));
-		
-		
 		
 		generateActionToButton();
 	}
 	
-	/** Using {@link #buttonToAction} generate the contents of {@link #actionToButton}*/
+	/**
+	 * Use {@link #buttonToAction} to generate the contents of {@link #actionToButton}.
+	 */
 	private void generateActionToButton() {
 		for (Entry<Integer, ArrayList<Action>> entry : buttonToAction.entrySet()) {
 			for (Action action : entry.getValue()) {
@@ -45,7 +49,12 @@ class Converter {
 		}
 	}
 	
-	// Temporary function to generate an arraylist of actions.
+	/**
+	 * Temporary function to easily generate an ArrayList of {@link Action}s.
+	 * TODO: Remove.
+	 * @param selectedActions
+	 * @return
+	 */
 	private ArrayList<Action> getActionList(Action... selectedActions){
 		ArrayList<Action> list = new ArrayList<Action>();
 		
@@ -57,8 +66,8 @@ class Converter {
 	}
 	
 	/**
-	 * @param button
-	 * @return The {@link Action}s associated with the button.
+	 * @param button The button being targeted.
+	 * @return An {@code ArrayList} of {@link Action}s associated with the button, or an empty {@code ArrayList}.
 	 */
 	public ArrayList<Action> getActions(Integer button) {
 		if(!buttonToAction.containsKey(button)) {
@@ -68,8 +77,8 @@ class Converter {
 	}
 	
 	/***
-	 * @param action
-	 * @return The buttons associated with the {@link Action}.
+	 * @param action The action being targeted.
+	 * @return An {@code ArrayList} of buttons associated with the {@link Action}, or an empty {@code ArrayList}.
 	 */
 	public ArrayList<Integer> getButtons(Action action) {
 		if(!actionToButton.containsKey(action)) {

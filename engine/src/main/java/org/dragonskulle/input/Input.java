@@ -31,34 +31,19 @@ public class Input {
 	
 	private long window;
 	
-	private Actions actions = new Actions();
-	private Buttons buttons = new Buttons();
 	
 	/** Convert between buttons and actions. */
 	private Converter converter = new Converter();
+	
+	private Actions actions = new Actions();
+	private Buttons buttons = new Buttons(converter, actions);
 	
 	public Input(long window) {
 		LOGGER.log(Level.INFO, "Input constructor.");
 		
 		this.window = window;
-		
-		LOGGER.log(Level.INFO, "Window: " + window);
-		
 
-		//buttonToAction.put(265, getActionList(Action.UP, Action.ACTION_1));
-		//buttonToAction.put(87, getActionList(Action.UP));
-		
-		
-		//LOGGER.info(converter.getActionToButton().toString());
-		//LOGGER.info(converter.getButtonToAction().toString());
-		
-		/*
-		 * key: e.g. glfw.GLFW_KEY_W
-		 * action: GLFW_PRESS, GLFW_REPEAT, GLFW_RELEASE
-		 * mods: See modifier key flags (e.g. shift held).
-		 */
-		
-		KeyListener keyListener = new KeyListener(window, converter, buttons, actions);
+		new KeyboardListener(window, buttons);
 		
 		GLFWMouseButtonCallback mouseButton = new GLFWMouseButtonCallback() {
 			
