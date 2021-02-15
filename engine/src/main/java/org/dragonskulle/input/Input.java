@@ -1,14 +1,10 @@
 package org.dragonskulle.input;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
@@ -35,9 +31,11 @@ public class Input {
 	
 	private long window;
 	
-	private StorageHandler storageHandler = new StorageHandler();
-	private ButtonHandler buttonHandler = new ButtonHandler();
-	private ActionHandler actionHandler = new ActionHandler();
+	private Actions actions = new Actions();
+	private Buttons buttons = new Buttons();
+	
+	/** Convert between buttons and actions. */
+	private Converter converter = new Converter();
 	
 	public Input(long window) {
 		LOGGER.log(Level.INFO, "Input constructor.");
@@ -51,8 +49,8 @@ public class Input {
 		//buttonToAction.put(87, getActionList(Action.UP));
 		
 		
-		LOGGER.info(storageHandler.getActionToButton().toString());
-		LOGGER.info(storageHandler.getButtonToAction().toString());
+		//LOGGER.info(converter.getActionToButton().toString());
+		//LOGGER.info(converter.getButtonToAction().toString());
 		
 		/*
 		 * key: e.g. glfw.GLFW_KEY_W
@@ -60,7 +58,7 @@ public class Input {
 		 * mods: See modifier key flags (e.g. shift held).
 		 */
 		
-		KeyListener keyListener = new KeyListener(window, storageHandler, buttonHandler, actionHandler);
+		KeyListener keyListener = new KeyListener(window, converter, buttons, actions);
 		
 		GLFWMouseButtonCallback mouseButton = new GLFWMouseButtonCallback() {
 			
@@ -70,10 +68,10 @@ public class Input {
 				
 				if(action == GLFW.GLFW_PRESS) {
 					//buttons.put(button, true);
-					buttonHandler.setActivated(button, true);
+					buttons.setActivated(button, true);
 				} else if(action == GLFW.GLFW_RELEASE) {
 					//buttons.put(button, false);
-					buttonHandler.setActivated(button, false);
+					buttons.setActivated(button, false);
 				}
 				
 				//LOGGER.info(actions.toString());
@@ -110,6 +108,6 @@ public class Input {
 	}
 	
 	public boolean isActivated(Action action) {
-		return actionHandler.isActivated(action);
+		return actions.isActivated(action);
 	}
 }

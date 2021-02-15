@@ -10,14 +10,14 @@ class KeyListener {
 
 	public static final Logger LOGGER = Logger.getLogger("KeyListener");
 	
-	private StorageHandler storageHandler;
-	private ButtonHandler buttonHandler;
-	private ActionHandler actionHandler;
+	private Converter converter;	
+	private Buttons buttons;
+	private Actions actions;
 	
-	public KeyListener(long window, StorageHandler storageHandler, ButtonHandler buttonHandler, ActionHandler actionHandler) {
-		this.storageHandler = storageHandler;
-		this.buttonHandler = buttonHandler;
-		this.actionHandler = actionHandler;
+	public KeyListener(long window, Converter converter, Buttons buttons, Actions actions) {
+		this.converter = converter;
+		this.buttons = buttons;
+		this.actions = actions;
 		
 		GLFW.glfwSetKeyCallback(window, create());
 	}
@@ -41,43 +41,36 @@ class KeyListener {
 	}
 	
 	private void keyDown(Integer key) {
-		buttonHandler.setActivated(key, true);
+		buttons.setActivated(key, true);
 		
-		if(storageHandler.getButtonToAction().containsKey(key)) {
-			ArrayList<Action> selectedActions = storageHandler.getButtonToAction().get(key);
-			
-			for (Action selectedAction : selectedActions) {
-				actionHandler.setActivated(selectedAction, true);
-			}						
+		ArrayList<Action> selectedActions = converter.getActions(key);
+		
+		for (Action selectedAction : selectedActions) {
+			actions.setActivated(selectedAction, true);
 		}
 	}
 	
 	private void keyUp(Integer key) {
-		buttonHandler.setActivated(key, false);
+		buttons.setActivated(key, false);
 		
-		if(storageHandler.getButtonToAction().containsKey(key)) {
-			ArrayList<Action> selectedActions = storageHandler.getButtonToAction().get(key);
+		ArrayList<Action> selectedActions = converter.getActions(key);
+		
+		for (Action selectedAction : selectedActions) {
+			ArrayList<Integer> selectedButtons = converter.getButtons(selectedAction);
 			
-			for (Action selectedAction : selectedActions) {
-				ArrayList<Integer> buttonsCauseAction = storageHandler.getActionToButton().get(selectedAction);
-				if(buttonsCauseAction == null) {
-					LOGGER.severe("buttonsCauseAction is null!");
-					return;
+			Boolean remove = true;
+			for(Integer selectedButton : selectedButtons) {
+				if(buttons.contains(selectedButton) && buttons.isActivated(selectedButton) == true) {
+					// Another button is currently activated, so do not set action to false.
+					remove = false;
+					break;
 				}
-				
-				Boolean remove = true;
-				for(Integer selectedButton : buttonsCauseAction) {
-					if(buttonHandler.contains(selectedButton) && buttonHandler.isActivated(selectedButton) == true) {
-						// Another button is currently activated, so do not set action to false.
-						remove = false;
-						break;
-					}
-				}
-				
-				if(remove) {
-					actionHandler.setActivated(selectedAction, false);
-				}
-			}					
+			}
+			
+			if(remove) {
+				actions.setActivated(selectedAction, false);
+				System.out.print("REMOVED");
+			}
 		}
 	}
 	
