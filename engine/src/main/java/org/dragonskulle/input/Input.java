@@ -17,18 +17,6 @@ public class Input {
 	
 	public static final Logger LOGGER = Logger.getLogger("input");	
 	
-	
-	
-	/** Key: Button <br/>
-	 *  Value: {@link Action}s the Button activates.
-	 * */
-	//private static final HashMap<Integer, ArrayList<Action>> buttonToAction = new HashMap<Integer, ArrayList<Action>>();
-	
-	/** Key: {@link Action} <br/>
-	 *  Value: Buttons that activate the Action.
-	 * */
-	//private static final HashMap<Action, ArrayList<Integer>> actionToButton = new HashMap<Action, ArrayList<Integer>>();
-	
 	private long window;
 	
 	
@@ -44,24 +32,8 @@ public class Input {
 		this.window = window;
 
 		new KeyboardListener(window, buttons);
+		new MouseButtonListener(window, buttons);
 		
-		GLFWMouseButtonCallback mouseButton = new GLFWMouseButtonCallback() {
-			
-			@Override
-			public void invoke(long window, int button, int action, int mods) {
-				//System.out.println(String.format("button: %d\naction: %d\nmods: %d", button, action, mods));
-				
-				if(action == GLFW.GLFW_PRESS) {
-					//buttons.put(button, true);
-					buttons.setActivated(button, true);
-				} else if(action == GLFW.GLFW_RELEASE) {
-					//buttons.put(button, false);
-					buttons.setActivated(button, false);
-				}
-				
-				//LOGGER.info(actions.toString());
-			}
-		};
 		
 		GLFWCursorPosCallback mousePosition = new GLFWCursorPosCallback() {
 			
@@ -81,8 +53,6 @@ public class Input {
 			}
 		};
 		
-		
-		GLFW.glfwSetMouseButtonCallback(window, mouseButton);
 		GLFW.glfwSetCursorPosCallback(window, mousePosition);
 		GLFW.glfwSetScrollCallback(window, scroll);
 		

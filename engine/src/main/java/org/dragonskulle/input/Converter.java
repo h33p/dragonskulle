@@ -27,6 +27,7 @@ class Converter {
 		// Currently hard-coded values:
 		buttonToAction.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.ACTION_1));
 		buttonToAction.put(GLFW.GLFW_KEY_W, getActionList(Action.UP));
+		buttonToAction.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.UP));
 		
 		generateActionToButton();
 	}
