@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.Pointer;
 import org.lwjgl.vulkan.*;
 
 public class RenderedApp {
@@ -55,6 +56,8 @@ public class RenderedApp {
 
     private FrameContext[] frames;
     private long[] imagesInFlight;
+
+    private boolean framebufferResized = false;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
@@ -171,16 +174,29 @@ public class RenderedApp {
 
         /** Choose a compatible resolution, targetting current window resolution */
         public VkExtent2D chooseExtent(long window, MemoryStack stack) {
-            IntBuffer res = stack.ints(0, 0);
-            glfwGetFramebufferSize(window, res, res.position(1));
+            IntBuffer x = stack.ints(0);
+            IntBuffer y = stack.ints(0);
+            glfwGetFramebufferSize(window, x, y);
+
+            LOGGER.info(String.format("Extent TRY: %dx%d", x.get(0), y.get(0)));
+            LOGGER.info(
+                    String.format(
+                            "MAX: %dx%d",
+                            capabilities.maxImageExtent().width(),
+                            capabilities.maxImageExtent().height()));
+            LOGGER.info(
+                    String.format(
+                            "MIN: %dx%d",
+                            capabilities.minImageExtent().width(),
+                            capabilities.minImageExtent().height()));
 
             VkExtent2D extent = VkExtent2D.mallocStack(stack);
             extent.set(
                     Integer.max(
-                            Integer.min(res.get(0), capabilities.maxImageExtent().width()),
+                            Integer.min(x.get(0), capabilities.maxImageExtent().width()),
                             capabilities.minImageExtent().width()),
                     Integer.max(
-                            Integer.min(res.get(1), capabilities.maxImageExtent().height()),
+                            Integer.min(y.get(0), capabilities.maxImageExtent().height()),
                             capabilities.minImageExtent().height()));
 
             LOGGER.info(String.format("Extent: %dx%d", extent.width(), extent.height()));
@@ -286,9 +302,22 @@ public class RenderedApp {
             vkDestroySemaphore(device, frame.imageAvailableSemaphore, null);
             vkDestroyFence(device, frame.inFlightFence, null);
         }
+        cleanupSwapchain();
         vkDestroyCommandPool(device, commandPool, null);
+        vkDestroyDevice(device, null);
+        destroyDebugMessanger();
+        vkDestroySurfaceKHR(instance, surface, null);
+        vkDestroyInstance(instance, null);
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+
+    private void cleanupSwapchain() {
         for (long framebuffer : framebuffers) {
             vkDestroyFramebuffer(device, framebuffer, null);
+        }
+        try (MemoryStack stack = stackPush()) {
+            vkFreeCommandBuffers(device, commandPool, toPointerBuffer(commandBuffers, stack));
         }
         vkDestroyPipeline(device, graphicsPipeline, null);
         vkDestroyPipelineLayout(device, pipelineLayout, null);
@@ -297,12 +326,40 @@ public class RenderedApp {
             vkDestroyImageView(device, imageView, null);
         }
         vkDestroySwapchainKHR(device, swapchain, null);
-        vkDestroyDevice(device, null);
-        destroyDebugMessanger();
-        vkDestroySurfaceKHR(instance, surface, null);
-        vkDestroyInstance(instance, null);
-        glfwDestroyWindow(window);
-        glfwTerminate();
+    }
+
+    private void recreateSwapchain() {
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer x = stack.ints(0);
+            IntBuffer y = stack.ints(0);
+            glfwGetFramebufferSize(window, x, y);
+            LOGGER.info(String.format("%d %d", x.get(0), y.get(0)));
+            while (x.get(0) == 0 || y.get(0) == 0) {
+                LOGGER.info(String.format("%d %d", x.get(0), y.get(0)));
+                glfwGetFramebufferSize(window, x, y);
+                // TODO: WHY???
+                glfwWaitEvents();
+            }
+        }
+
+        vkDeviceWaitIdle(device);
+
+        cleanupSwapchain();
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+                physicalDevice.device, surface, physicalDevice.swapchainSupport.capabilities);
+
+        createSwapchainObjects();
+    }
+
+    private void createSwapchainObjects() {
+        try (MemoryStack stack = stackPush()) {
+            setupSwapchain(stack);
+            setupImageViews(stack);
+            setupRenderPass(stack);
+            setupGraphicsPipeline(stack);
+            setupFramebuffers(stack);
+            setupCommandBuffers(stack);
+        }
     }
 
     /// The main rendering
@@ -312,14 +369,20 @@ public class RenderedApp {
         vkWaitForFences(device, ctx.inFlightFence, true, UINT64_MAX);
 
         IntBuffer imageIndex = stack.ints(0);
-        vkAcquireNextImageKHR(
-                device,
-                swapchain,
-                UINT64_MAX,
-                ctx.imageAvailableSemaphore,
-                VK_NULL_HANDLE,
-                imageIndex);
+        int res =
+                vkAcquireNextImageKHR(
+                        device,
+                        swapchain,
+                        UINT64_MAX,
+                        ctx.imageAvailableSemaphore,
+                        VK_NULL_HANDLE,
+                        imageIndex);
         final int image = imageIndex.get(0);
+
+        if (res == VK_ERROR_OUT_OF_DATE_KHR) {
+            recreateSwapchain();
+            return;
+        }
 
         if (imagesInFlight[image] != 0)
             vkWaitForFences(device, imagesInFlight[image], true, UINT64_MAX);
@@ -343,7 +406,7 @@ public class RenderedApp {
 
         vkResetFences(device, ctx.inFlightFence);
 
-        int res = vkQueueSubmit(graphicsQueue, submitInfo, ctx.inFlightFence);
+        res = vkQueueSubmit(graphicsQueue, submitInfo, ctx.inFlightFence);
 
         if (res != VK_SUCCESS) {
             throw new RuntimeException(
@@ -361,9 +424,18 @@ public class RenderedApp {
 
         res = vkQueuePresentKHR(presentQueue, presentInfo);
 
-        if (res != VK_SUCCESS) {
+        if (res == VK_ERROR_OUT_OF_DATE_KHR || framebufferResized) {
+            LOGGER.info("RESIZE");
+            framebufferResized = false;
+            recreateSwapchain();
+            return;
+        } else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
             throw new RuntimeException(String.format("Failed to present image! Ret: %x", -res));
         }
+    }
+
+    private void onFramebufferResize(long window, int width, int height) {
+        framebufferResized = true;
     }
 
     /// Setup code
@@ -377,13 +449,15 @@ public class RenderedApp {
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         window = glfwCreateWindow(width, height, appName, NULL, NULL);
 
         if (window == NULL) {
             throw new RuntimeException("Cannot create window");
         }
+
+        glfwSetFramebufferSizeCallback(window, this::onFramebufferResize);
     }
 
     /** initialize Vulkan context. Throw on error */
@@ -398,13 +472,8 @@ public class RenderedApp {
             setupSurface(stack);
             setupPhysicalDevice(stack);
             setupLogicalDevice(stack);
-            setupSwapchain(stack);
-            setupImageViews(stack);
-            setupRenderPass(stack);
-            setupGraphicsPipeline(stack);
-            setupFramebuffers(stack);
             setupCommandPool(stack);
-            setupCommandBuffers(stack);
+            createSwapchainObjects();
             setupSyncObjects(stack);
         }
     }
@@ -495,6 +564,13 @@ public class RenderedApp {
     private PointerBuffer toPointerBuffer(Collection<String> collection, MemoryStack stack) {
         PointerBuffer buffer = stack.mallocPointer(collection.size());
         collection.stream().map(stack::UTF8).forEach(buffer::put);
+        return buffer.rewind();
+    }
+
+    /** Utility for converting a collection of pointer types to pointer buffer */
+    private <T extends Pointer> PointerBuffer toPointerBuffer(T[] array, MemoryStack stack) {
+        PointerBuffer buffer = stack.mallocPointer(array.length);
+        Arrays.stream(array).forEach(buffer::put);
         return buffer.rewind();
     }
 
