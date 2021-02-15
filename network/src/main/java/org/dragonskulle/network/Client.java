@@ -21,57 +21,7 @@ public class Client {
             socket = new Socket(ip, port);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            Thread clientThread = new Thread(new Runnable() {
-                public void run() {
-                    while (open) {
-                        try {
-                            String s = in.readLine();
-                            if (s == null) {
-                                open = false;
-                                clientListener.disconnected();
-                                try {
-                                    if (socket != null) socket.close();
-                                } catch (Exception exception) {
-                                    exception.printStackTrace();
-                                }
-                                try {
-                                    if (in != null) in.close();
-                                } catch (Exception exception) {
-                                    exception.printStackTrace();
-                                }
-                                try {
-                                    if (out != null) out.close();
-                                } catch (Exception exception) {
-                                    exception.printStackTrace();
-                                }
-                                return;
-                            }
-                            clientListener.receivedInput(s);
-                        } catch (IOException exception) {
-                            open = false;
-                            clientListener.serverClosed();
-                            try {
-                                socket.close();
-                            } catch (Exception exception1) {
-                                exception.printStackTrace();
-                            }
-                            try {
-                                in.close();
-                            } catch (Exception exception1) {
-                                exception.printStackTrace();
-                            }
-                            try {
-                                out.close();
-                            } catch (Exception exception1) {
-                                exception.printStackTrace();
-                            }
-                            return;
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
-                    }
-                }
-            });
+            Thread clientThread = new Thread(this.client_runner());
             clientThread.setName("Client Connection");
             clientThread.setDaemon(true);
             clientThread.start();
@@ -112,5 +62,58 @@ public class Client {
 
     public boolean isConnected() {
         return open;
+    }
+
+    private Runnable client_runner() {
+        return () -> {
+            while (open) {
+                try {
+                    String s = in.readLine();
+                    if (s == null) {
+                        System.out.println("Received Null from server, server has died");
+                        open = false;
+                        clientListener.disconnected();
+                        try {
+                            if (socket != null) socket.close();
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
+                        try {
+                            if (in != null) in.close();
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
+                        try {
+                            if (out != null) out.close();
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
+                        break;
+                    }
+                    clientListener.receivedInput(s);
+                } catch (IOException exception) {
+                    open = false;
+                    clientListener.serverClosed();
+                    try {
+                        socket.close();
+                    } catch (Exception exception1) {
+                        exception.printStackTrace();
+                    }
+                    try {
+                        in.close();
+                    } catch (Exception exception1) {
+                        exception.printStackTrace();
+                    }
+                    try {
+                        out.close();
+                    } catch (Exception exception1) {
+                        exception.printStackTrace();
+                    }
+                    break;
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+            }
+        };
     }
 }

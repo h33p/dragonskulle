@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Server {
     private int port;
@@ -15,6 +16,7 @@ public class Server {
     private ServerListener serverListener;
     private final SocketStore sockets = new SocketStore();
     private Thread serverThread;
+    private server_runner serverRunner;
 
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
@@ -27,12 +29,37 @@ public class Server {
             } else {
                 this.port = port;
             }
-
-            serverThread = new Thread(this.server_runner());
+            serverRunner = new server_runner();
+            serverThread = new Thread(this.serverRunner);
             serverThread.setDaemon(true);
             serverThread.setName("Server");
             System.out.println("[S] Starting server");
             serverThread.start();
+
+            String command;
+            Scanner scanner = new Scanner(System.in);
+            String[] input;
+            OUTER_LOOP:
+            while (true) {
+                System.out.println("Enter Command: (B)roadcast -s {message} | (K)ill");
+                command = scanner.nextLine();
+                input = command.split(" -s ");
+                switch (input[0].toUpperCase()) {
+                    case ("B"):
+                        try {
+                            System.out.println("Broadcasting {" + input[1] + "}");
+                            this.sockets.broadcast(input[1]);
+                        } catch (IndexOutOfBoundsException e) {
+                            System.out.println("Please provide -s tag");
+                        }
+                        break;
+                    case ("K"):
+                        System.out.println("Killing Server");
+                        this.dispose();
+                        break OUTER_LOOP;
+                    default:
+                }
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,28 +68,51 @@ public class Server {
 
     public void dispose() {
         open = false;
-        this.sockets.close();
-        serverListener.serverClosed();
-        serverListener = null;
+        try {
+            this.serverRunner.cancel();
+            this.serverThread.join();
+            this.sockets.close();
+            if(serverListener != null){
+                this.serverListener.serverClosed();
+                this.serverListener = null;
+            }
+        } catch (InterruptedException e) {
+            System.out.println(ConsoleColors.err("Error disposing"));
+            System.out.println(e.toString());
+        }
+
     }
 
-    private Runnable server_runner() {
-        return () -> {
-            while (open) {
-                final Socket client_socket = this.sockets.acceptClient();
-                Thread clientThread = new Thread(this.client_runner(client_socket));
-                clientThread.setDaemon(true);
-                clientThread.setName("Client " + client_socket.getInetAddress().toString());
-                clientThread.start();
+    private class server_runner implements Runnable {
+        volatile boolean open = true;
+
+        @Override
+        public void run() {
+            while (open && !Thread.currentThread().isInterrupted()) {
+                final Socket client_socket = sockets.acceptClient();
+                if (client_socket != null) {
+                    Thread clientThread = new Thread(client_runner(client_socket));
+                    clientThread.setDaemon(true);
+                    clientThread.setName("Client " + client_socket.getInetAddress().toString());
+                    clientThread.start();
+                }
             }
-        };
+        }
+
+        public void cancel() {
+            this.open = false;
+        }
     }
 
     private Runnable client_runner(Socket sock) {
+        if (sock == null) {
+            return () -> {
+            };
+        }
         return () -> {
             try {
-                boolean connected = false;
-                String stream = "";
+                boolean connected;
+                String stream;
                 this.sockets.addClient(sock);
                 BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
@@ -73,7 +123,7 @@ public class Server {
                 while (connected) {
                     try {
                         stream = in.readLine();
-                        if(stream==null){
+                        if (stream == null) {
                             throw new IOException();
                         }
                         serverListener.receivedInput(client, stream);
@@ -81,12 +131,12 @@ public class Server {
                     } catch (IOException e) {
                         //if client disconnected, remove it
                         try {
-                            connected = this.sockets.terminateClient(sock); //close and remove
+                            this.sockets.terminateClient(sock); //close and remove
                             serverListener.clientDisconnected(client);
                         } catch (Exception exception) {
                             exception.printStackTrace();
                         }
-                        break;
+                        connected = false;
                     }
                 }
             } catch (Exception exception) {

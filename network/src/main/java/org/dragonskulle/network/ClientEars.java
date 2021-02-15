@@ -13,7 +13,7 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void receivedInput(String msg) {
-        System.out.println("[Client] Recieved Input");
+        System.out.println("[Client] Received Input {" + msg + "}");
     }
 
     @Override
@@ -23,7 +23,7 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void disconnected() {
-        System.out.println("[Client] Disconected from server");
+        System.out.println("[Client] Disconnected from server");
     }
 
     @Override

@@ -12,7 +12,7 @@ public class ServerEars implements ServerListener {
         log = new ListenableQueue<>(new LinkedList<>());
         log.registerListener((e)->System.out.println("[SE-LOG] "+ log.poll()));
         alive_timer = new Timer();
-        alive_timer.schedule(new LogServerAlive(), 0, 5000);
+        alive_timer.schedule(new LogServerAlive(), 0, 15000);
     }
 
     @Override
@@ -28,12 +28,12 @@ public class ServerEars implements ServerListener {
     @Override
     public void receivedInput(ClientInstance client, String msg) {
         log.add("Received Input From Client: " + msg);
-
     }
 
     @Override
     public void serverClosed() {
         log.add("Server Closed");
+        this.alive_timer.cancel();
     }
 
 }
