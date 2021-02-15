@@ -4,7 +4,6 @@ package org.dragonskulle.core;
 import org.dragonskulle.components.Component;
 
 import java.util.ArrayList;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
 public class Scene {
     private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
 
-    private final ArrayList<Reference<Component>> mComponents = new ArrayList<>();
+    private final ArrayList<Component> mComponents = new ArrayList<>();
 
     private final String mName;
 
@@ -48,7 +47,39 @@ public class Scene {
      * @param object The GameObject to be removed from the scene
      */
     public void destroyRootObject(GameObject object) {
-        mGameObjects.remove(object);
+        if (mGameObjects.remove(object)) {
+            object.destroy();
+        }
+    }
+
+    /**
+     * Get a list of all of the new components in the scene since the last frame
+     *
+     * @return A list containing all of the new components found
+     */
+    public ArrayList<Component> getNewComponents() {
+        ArrayList<Component> ret = new ArrayList<>();
+
+        // TODO: This is currently really inefficient so I'm sure there is a better way to do it
+
+        for (GameObject root : mGameObjects) {
+
+            for (Component component : root.getComponents()) {
+                if (!mComponents.contains(component)) {
+                    ret.add(component);
+                }
+            }
+
+            for (GameObject child : root.getAllChildren()) {
+
+                for (Component component : child.getComponents()) {
+                    if (!mComponents.contains(component)) {
+                        ret.add(component);
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     /**
@@ -88,21 +119,16 @@ public class Scene {
      *
      * @return mComponents
      */
-    public ArrayList<Reference<Component>> getComponents() { return mComponents; }
+    protected ArrayList<Component> getComponents() { return mComponents; }
 
     /**
      * Get a list of all enabled components in the scene
      *
      * @return A new ArrayList containing all of the enabled components
      */
-    public ArrayList<Reference<Component>> getEnabledComponents() {
-        Predicate<? super Reference<Component>> enabledComponents = (Reference<Component> ref) -> {
-            Component component = ref.get();
-            return component != null && component.getEnabled();
-        };
-
+    protected ArrayList<Component> getEnabledComponents() {
         return mComponents.stream()
-                .filter(enabledComponents)
+                .filter(Component::getEnabled)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 }

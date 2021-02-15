@@ -8,6 +8,7 @@ import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -30,9 +31,6 @@ public class Engine {
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
     private Scene mActiveScene = null;
     private Scene mNewScene = null;
-
-    private double mPrevTime = 0;
-    private double mCurTime = 0;
 
     // TODO: Maintain a cache of all active components with each interface type so that we don't
     //       have to iterate through all game objects and components 5 times each frame
@@ -74,7 +72,7 @@ public class Engine {
      */
     private void mainLoop() {
 
-        mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getTimeInSeconds();
 
         // Basic frame counter
         int frames = 0;
@@ -87,8 +85,10 @@ public class Engine {
                 switchToNewScene();
             }
 
+            onStartAndAwake(mActiveScene.getNewComponents());
+
             // Calculate time for last frame
-            mCurTime = Time.getTimeInSeconds();
+            double mCurTime = Time.getTimeInSeconds();
             double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
@@ -97,7 +97,6 @@ public class Engine {
 
             // TODO: Process inputs here before any updates are performed
 
-            // TODO: Need a way to track new components this frame to call awake/start
 
             frameUpdate(deltaTime);
 
@@ -107,7 +106,7 @@ public class Engine {
             while (cumulativeTime > UPDATE_TIME) {
                 cumulativeTime -= UPDATE_TIME;
 
-                fixedUpdate(UPDATE_TIME);
+                fixedUpdate();
             }
 
             // TODO: Perform actual rendering after all updates
@@ -129,14 +128,35 @@ public class Engine {
     }
 
     /**
+     * Call onStart and onAwake for all components that implement it
+     *
+     * @param components List of components to be checked
+     */
+    private void onStartAndAwake(ArrayList<Component> components) {
+
+        // Iterate through them, calling onAwake on all that implement it
+        for (Component component : components) {
+            if (component instanceof IOnAwake) {
+                ((IOnAwake)component).onAwake();
+            }
+        }
+
+        // Then go through again, calling onStart on all the implement it
+        for (Component component : components) {
+            if (component instanceof IOnStart) {
+                ((IOnStart)component).onStart();
+            }
+        }
+    }
+
+    /**
      * Do all frameUpdates on components that implement it
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(double deltaTime) {
         mActiveScene.updateComponentsList();
 
-        for (Reference<Component> componentRef : mActiveScene.getEnabledComponents()) {
-            Component component = componentRef.get();
+        for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate)component).frameUpdate(deltaTime);
             }
@@ -145,13 +165,11 @@ public class Engine {
 
     /**
      * Do all Fixed Updates on components that implement it
-     * @param deltaTime Time change
      */
-    private void fixedUpdate(double deltaTime) {
+    private void fixedUpdate() {
         mActiveScene.updateComponentsList();
 
-        for (Reference<Component> componentRef : mActiveScene.getEnabledComponents()) {
-            Component component = componentRef.get();
+        for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFixedUpdate) {
                 ((IFixedUpdate)component).fixedUpdate(UPDATE_TIME);
             }
@@ -160,13 +178,12 @@ public class Engine {
 
     /**
      * Do all Late Frame Updates on components that implement it
-     * @param deltaTime Time change sicne last frame
+     * @param deltaTime Time change since last frame
      */
     private void lateFrameUpdate(double deltaTime) {
         mActiveScene.updateComponentsList();
 
-        for (Reference<Component> componentRef : mActiveScene.getEnabledComponents()) {
-            Component component = componentRef.get();
+        for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof ILateFrameUpdate) {
                 ((ILateFrameUpdate)component).lateFrameUpdate(deltaTime);
             }
@@ -188,24 +205,13 @@ public class Engine {
         mNewScene = null;
 
         // Scene has never been active before
+        // Or do we still need to call awake and start even if it has been active before?
         if (!sceneWasInactive) {
 
             // Get the initial list of components in the scene
             mActiveScene.updateComponentsList();
 
-            // Iterate through them, calling onAwake on all that implement it
-            for (Reference<Component> component : mActiveScene.getComponents()) {
-                if (component.get() instanceof IOnAwake) {
-                    ((IOnAwake)component).onAwake();
-                }
-            }
-
-            // Then go through again, calling onStart on all the implement it
-            for (Reference<Component> component : mActiveScene.getComponents()) {
-                if (component.get() instanceof IOnStart) {
-                    ((IOnStart)component).onStart();
-                }
-            }
+            onStartAndAwake(mActiveScene.getComponents());
         }
     }
 

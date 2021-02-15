@@ -126,17 +126,6 @@ public class GameObject {
     }
 
     /**
-     * Get all components
-     *
-     * @return mComponents
-     */
-    public ArrayList<Reference<Component>> getComponents() {
-        return mComponents.stream()
-                .map(Reference::new)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
      *  Get all components of a given type T
      *
      * @param type Class object of T
@@ -191,7 +180,7 @@ public class GameObject {
      *
      * @return List containing all children, children's children etc..
      */
-    ArrayList<GameObject> getAllChildren() {
+    protected ArrayList<GameObject> getAllChildren() {
         ArrayList<GameObject> ret = new ArrayList<>(mChildren);
 
         for (GameObject child : mChildren) {
@@ -310,6 +299,22 @@ public class GameObject {
     }
 
     /**
+     * Getter for mChildren, should only be used by the engine
+     *
+     * @return mChildren
+     */
+    protected ArrayList<GameObject> getChildren() { return mChildren; }
+
+    /**
+     * Getter for mComponents, should only be used by the engine
+     *
+     * @return mComponents
+     */
+    protected ArrayList<Component> getComponents() {
+        return mComponents;
+    }
+
+    /**
      * Getter for mActive
      *
      * @return mActive
@@ -337,13 +342,6 @@ public class GameObject {
      * @return mReference
      */
     public Reference<GameObject> getReference() { return mReference; }
-
-    /**
-     * Getter for mChildren, used for testing
-     *
-     * @return mChildren
-     */
-    protected ArrayList<GameObject> getChildren() { return mChildren; }
 
     /**
      * Getter for mRoot, used for testing

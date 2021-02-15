@@ -1,9 +1,7 @@
 package org.dragonskulle.core;
 
-import org.lwjgl.system.CallbackI;
-
 /**
- * Used for referencing GameObjects
+ * Used for referencing GameObjects and Components
  *
  * @author Harry Stoltz
  *      <p>
