@@ -109,6 +109,8 @@ public class Client {
                     } catch (Exception exception1) {
                         exception.printStackTrace();
                     }
+                    this.dispose();
+                    Thread.currentThread().interrupt();
                     break;
                 } catch (Exception exception) {
                     exception.printStackTrace();
