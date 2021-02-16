@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
 import java.io.IOException;
@@ -9,8 +10,7 @@ public class SocketStore {
     private ServerSocket server;
     private final ArrayList<Socket> store;
     PrintWriter printWriter;
-    final static int so_timeout = 3000;
-
+    static final int so_timeout = 3000;
 
     public SocketStore() {
         this.store = new ArrayList<>();
@@ -19,10 +19,13 @@ public class SocketStore {
     public void broadcast(String msg) {
         for (Socket connection : store) {
             try {
-                if(connection.isClosed()){
+                if (connection.isClosed()) {
                     System.out.println("Client socket output has closed");
                 }
-                printWriter = new PrintWriter(connection.getOutputStream(), true); //must be better way to do this
+                printWriter =
+                        new PrintWriter(
+                                connection.getOutputStream(),
+                                true); // must be better way to do this
                 printWriter.println(msg);
             } catch (IOException e) {
                 System.out.println("Error in broadcasting");
@@ -40,16 +43,14 @@ public class SocketStore {
             System.out.println("Failed to create server");
             e.printStackTrace();
         }
-
     }
 
     public void addClient(Socket sock) {
-        //TODO add check for invalid socket
+        // TODO add check for invalid socket
         System.out.println("Adding client");
         System.out.println("Socket :" + sock.toString());
         this.store.add(sock);
     }
-
 
     public int getServerPort() {
         return this.server.getLocalPort();
@@ -61,14 +62,13 @@ public class SocketStore {
         } catch (Exception ignored) {
         }
 
-
-//        for (Socket sock : this.store) {
-//            try {
-//                sock.close();
-//            } catch (Exception exception) {
-//                exception.printStackTrace();
-//            }
-//        }
+        //        for (Socket sock : this.store) {
+        //            try {
+        //                sock.close();
+        //            } catch (Exception exception) {
+        //                exception.printStackTrace();
+        //            }
+        //        }
 
         this.store.clear();
         this.server = null;
@@ -102,14 +102,14 @@ public class SocketStore {
     }
 
     public boolean terminateClient(Socket sock) {
-        //if client connection failed, close the socket and remove
+        // if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
         this.store.remove(sock);
         return true;
     }
 
     public void removeClient(Socket sock) {
-        //only remove client from store as socket has closed
+        // only remove client from store as socket has closed
         if (!sock.isClosed()) {
             this.terminateClient(sock);
         } else {

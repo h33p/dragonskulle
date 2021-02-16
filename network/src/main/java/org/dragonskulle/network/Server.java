@@ -1,5 +1,7 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
-//based on https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
+// based on
+// https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +24,8 @@ public class Server {
         System.out.println("[S] Setting up server");
         serverListener = listener;
         try {
-            ServerSocket server_sock = new ServerSocket(port, 0, InetAddress.getByName(null)); //sets up on localhost
+            ServerSocket server_sock =
+                    new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
             sockets.initServer(server_sock);
             if (this.port == 0) {
                 this.port = sockets.getServerPort();
@@ -72,7 +75,7 @@ public class Server {
             this.serverRunner.cancel();
             this.serverThread.join();
             this.sockets.close();
-            if(serverListener != null){
+            if (serverListener != null) {
                 this.serverListener.serverClosed();
                 this.serverListener = null;
             }
@@ -80,7 +83,6 @@ public class Server {
             System.out.println(ConsoleColors.err("Error disposing"));
             System.out.println(e.toString());
         }
-
     }
 
     private class server_runner implements Runnable {
@@ -106,17 +108,17 @@ public class Server {
 
     private Runnable client_runner(Socket sock) {
         if (sock == null) {
-            return () -> {
-            };
+            return () -> {};
         }
         return () -> {
             try {
                 boolean connected;
                 String stream;
                 this.sockets.addClient(sock);
-                BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                BufferedReader in =
+                        new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-                //create client as object
+                // create client as object
                 ClientInstance client = new ClientInstance(sock.getInetAddress(), sock.getPort());
                 serverListener.clientConnected(client, out);
                 connected = sock.isConnected();
@@ -129,9 +131,9 @@ public class Server {
                         serverListener.receivedInput(client, stream);
 
                     } catch (IOException e) {
-                        //if client disconnected, remove it
+                        // if client disconnected, remove it
                         try {
-                            this.sockets.terminateClient(sock); //close and remove
+                            this.sockets.terminateClient(sock); // close and remove
                             serverListener.clientDisconnected(client);
                         } catch (Exception exception) {
                             exception.printStackTrace();

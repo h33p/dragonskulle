@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
 import java.io.PrintWriter;
@@ -10,7 +11,7 @@ public class ServerEars implements ServerListener {
     ServerEars() {
         System.out.println("Creating ServerListener");
         log = new ListenableQueue<>(new LinkedList<>());
-        log.registerListener((e)->System.out.println("[SE-LOG] "+ log.poll()));
+        log.registerListener((e) -> System.out.println("[SE-LOG] " + log.poll()));
         alive_timer = new Timer();
         alive_timer.schedule(new LogServerAlive(), 0, 15000);
     }
@@ -22,7 +23,7 @@ public class ServerEars implements ServerListener {
 
     @Override
     public void clientDisconnected(ClientInstance client) {
-       log.add("Client Disconnected");
+        log.add("Client Disconnected");
     }
 
     @Override
@@ -35,7 +36,6 @@ public class ServerEars implements ServerListener {
         log.add("Server Closed");
         this.alive_timer.cancel();
     }
-
 }
 
 class LogServerAlive extends TimerTask {
@@ -43,5 +43,3 @@ class LogServerAlive extends TimerTask {
         System.out.println("[SE~TT] Server Alive @ " + System.currentTimeMillis());
     }
 }
-
-

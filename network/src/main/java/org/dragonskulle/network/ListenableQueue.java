@@ -1,14 +1,17 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
 import java.util.*;
-//from https://stackoverflow.com/questions/56336731/on-add-element-in-queue-call-a-listener-to-notify-queue-element-is-variable
+
+// from
+// https://stackoverflow.com/questions/56336731/on-add-element-in-queue-call-a-listener-to-notify-queue-element-is-variable
 public class ListenableQueue<E> extends AbstractQueue<E> {
 
     interface Listener<E> {
         void onElementAdded(E element);
     }
 
-    private final Queue<E> delegate;  // backing queue
+    private final Queue<E> delegate; // backing queue
     private final List<Listener<E>> listeners = new ArrayList<>();
 
     public ListenableQueue(Queue<E> delegate) {
@@ -19,7 +22,6 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
         listeners.add(listener);
         return this;
     }
-
 
     @Override
     public boolean offer(E e) {
@@ -53,5 +55,4 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
     public Iterator<E> iterator() {
         return delegate.iterator();
     }
-
 }

@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
 import java.util.Scanner;
@@ -16,13 +17,12 @@ public class CreateClient {
         port = scanner.nextLine();
         System.out.println("Creating client");
         ClientListener clientEars = new ClientEars();
-        if(ip.equals(port)){
+        if (ip.equals(port)) {
             client = new Client("127.0.0.1", 7000, clientEars);
-        }else {
+        } else {
             client = new Client(ip, Integer.parseInt(port), clientEars);
         }
         System.out.println("Commands are (K)ill and (S)end");
-
 
         OUTER_LOOP:
         while (true) {
@@ -41,6 +41,4 @@ public class CreateClient {
             }
         }
     }
-
 }
-
