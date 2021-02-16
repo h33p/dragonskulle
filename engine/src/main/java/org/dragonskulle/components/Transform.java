@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
 import org.dragonskulle.core.Matrix4;

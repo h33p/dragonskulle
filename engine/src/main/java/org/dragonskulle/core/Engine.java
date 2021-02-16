@@ -32,9 +32,6 @@ public class Engine {
     private Scene mActiveScene = null;
     private Scene mNewScene = null;
 
-    // TODO: Maintain a cache of all active components with each interface type so that we don't
-    //       have to iterate through all game objects and components 5 times each frame
-
     private Engine() {}
 
     /**
@@ -79,6 +76,18 @@ public class Engine {
         double secondTimer = 0;
         double cumulativeTime = 0;
 
+
+        // TODO: Make objects only be destroyed after all updates
+        // TODO: Only initialize new components at the start of next frame
+        // TODO: Only update the component list at the start of a frame
+        //          -> Split into separate lists depending on interfaces?
+
+        // For only destroying at end of frame have a flag on objects called mDestroy
+        // If it's true at the end of the frame, call the destroy method
+
+        // Likewise have a boolean for awake and start
+        // if awake is false, call onAwake, if started is false and enabled is true, call onStart
+
         while (mIsRunning) {
 
             if (mNewScene != null) {
@@ -96,7 +105,6 @@ public class Engine {
             secondTimer += deltaTime;
 
             // TODO: Process inputs here before any updates are performed
-
 
             frameUpdate(deltaTime);
 

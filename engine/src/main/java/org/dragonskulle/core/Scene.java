@@ -86,6 +86,10 @@ public class Scene {
      * Iterates through all GameObjects in the scene and collects their components
      */
     public void updateComponentsList() {
+
+        // TODO: Add some check whether any components have been added/changed/removed so that
+        //       the list is only updated when necessary
+
         mComponents.clear();
 
         for (GameObject root : mGameObjects) {
@@ -95,6 +99,7 @@ public class Scene {
             for (GameObject child : root.getAllChildren()) {
 
                 mComponents.addAll(child.getComponents());
+
             }
         }
 
@@ -115,7 +120,7 @@ public class Scene {
     public String getName() { return mName; }
 
     /**
-     * Get a list of references to all components
+     * Get a list of all components
      *
      * @return mComponents
      */
@@ -128,7 +133,7 @@ public class Scene {
      */
     protected ArrayList<Component> getEnabledComponents() {
         return mComponents.stream()
-                .filter(Component::getEnabled)
+                .filter(Component::isEnabled)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 }

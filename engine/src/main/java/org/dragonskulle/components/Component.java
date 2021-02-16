@@ -20,7 +20,12 @@ public abstract class Component {
     private final Reference<Component> mReference = new Reference<>(this);
 
     private GameObject mGameObject;
+
+    private boolean mAwake = false;
     private boolean mEnabled;
+    private boolean mStarted = false;
+
+    // TODO: boolean for tracking destroy
 
     /**
      * Base implementation of destroy, cannot be overridden but calls the overridable method
@@ -50,10 +55,38 @@ public abstract class Component {
     public void setGameObject(GameObject object) { mGameObject = object; }
 
     /**
+     * Getter for mAwake
+     *
+     * @return mAwake
+     */
+    public boolean isAwake() { return mAwake; }
+
+    /**
+     * Setter for mAwake
+     *
+     * @param val New value of mAwake
+     */
+    public void setAwake(boolean val) { mAwake = val; }
+
+    /**
+     * Getter for mStarted
+     *
+     * @return mStarted
+     */
+    public boolean isStarted() { return mStarted; }
+
+    /**
+     * Setter for mStarted
+     *
+     * @param val New value of mStarted
+     */
+    public void setStarted(boolean val) { mStarted = val; }
+
+    /**
      * Getter for mEnabled
      * @return mEnabled
      */
-    public boolean getEnabled() { return mEnabled; }
+    public boolean isEnabled() { return mEnabled; }
 
     /**
      * Setter for mEnabled
