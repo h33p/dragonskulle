@@ -414,14 +414,16 @@ public class RenderedApp {
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(window, x, y);
             LOGGER.info(String.format("%d %d", x.get(0), y.get(0)));
-            while (x.get(0) == 0 || y.get(0) == 0) {
+            while (framebufferResized || x.get(0) == 0 || y.get(0) == 0) {
+                framebufferResized = false;
                 glfwGetFramebufferSize(window, x, y);
                 LOGGER.info(String.format("%d %d", x.get(0), y.get(0)));
-                // TODO: WHY???
                 glfwWaitEvents();
             }
         }
 
+        vkQueueWaitIdle(presentQueue);
+        vkQueueWaitIdle(graphicsQueue);
         vkDeviceWaitIdle(device);
 
         cleanupSwapchain();
@@ -443,6 +445,8 @@ public class RenderedApp {
     /// The main rendering
 
     private void drawFrame(MemoryStack stack, FrameContext ctx) {
+
+        if (framebufferResized) recreateSwapchain();
 
         vkWaitForFences(device, ctx.inFlightFence, true, UINT64_MAX);
 
@@ -503,11 +507,8 @@ public class RenderedApp {
 
         res = vkQueuePresentKHR(presentQueue, presentInfo);
 
-        if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || framebufferResized) {
-            LOGGER.info("RESIZE");
-            framebufferResized = false;
+        if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR) {
             recreateSwapchain();
-            return;
         } else if (res != VK_SUCCESS) {
             throw new RuntimeException(String.format("Failed to present image! Ret: %x", -res));
         }
