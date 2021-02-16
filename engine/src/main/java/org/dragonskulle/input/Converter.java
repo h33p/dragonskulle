@@ -25,11 +25,19 @@ class Converter {
 	
 	public Converter() {
 		// Currently hard-coded values:
-		buttonToAction.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.ACTION_1));
-		buttonToAction.put(GLFW.GLFW_KEY_W, getActionList(Action.UP));
-		buttonToAction.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.UP));
 		
-		buttonToAction.put(Scroll.UP, getActionList(Action.UP));
+		buttonToAction.put(Scroll.UP, getActionList(Action.SCROLL_UP, Action.ZOOM_IN));
+		buttonToAction.put(Scroll.DOWN, getActionList(Action.SCROLL_DOWN, Action.ZOOM_OUT));
+		
+		buttonToAction.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.SCROLL_UP));
+		buttonToAction.put(GLFW.GLFW_KEY_W, getActionList(Action.UP, Action.SCROLL_UP));
+		buttonToAction.put(GLFW.GLFW_KEY_DOWN, getActionList(Action.DOWN, Action.SCROLL_DOWN));
+		buttonToAction.put(GLFW.GLFW_KEY_S, getActionList(Action.DOWN, Action.SCROLL_DOWN));
+		
+		buttonToAction.put(GLFW.GLFW_KEY_LEFT, getActionList(Action.LEFT));
+		buttonToAction.put(GLFW.GLFW_KEY_A, getActionList(Action.LEFT));
+		buttonToAction.put(GLFW.GLFW_KEY_RIGHT, getActionList(Action.RIGHT));
+		buttonToAction.put(GLFW.GLFW_KEY_D, getActionList(Action.RIGHT));
 		
 		generateActionToButton();
 	}

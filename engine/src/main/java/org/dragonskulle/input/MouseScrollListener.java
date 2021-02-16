@@ -15,9 +15,11 @@ class MouseScrollListener {
 	
 	public static final Logger LOGGER = Logger.getLogger("MouseScrollListener");
 	
+	private Scroll scroll;
 	private Buttons buttons;
 	
-	public MouseScrollListener(long window, Buttons buttons) {
+	public MouseScrollListener(long window, Buttons buttons, Scroll scroll) {
+		this.scroll = scroll;
 		this.buttons = buttons;
 		
 		GLFW.glfwSetScrollCallback(window, create());
@@ -30,11 +32,13 @@ class MouseScrollListener {
 			public void invoke(long window, double xOffset, double yOffset) {
 				//LOGGER.info(String.format("xOffset: %f\nyOffset: %f", xOffset, yOffset));
 				
+				// Store the actual scroll value.
+				scroll.add(yOffset);
+				
+				// Treat the scrolling as a button press. 
 				if(yOffset > 0) {
-					// Scrolling up.
 					buttons.pressed(Scroll.UP);
-				} else { // if(yOffset < 0) 
-					// Scrolling down.
+				} else {
 					buttons.pressed(Scroll.DOWN);
 				}
 			}

@@ -26,6 +26,8 @@ public class Input {
 	private Actions actions = new Actions();
 	private Buttons buttons = new Buttons(converter, actions);
 	
+	private Scroll scroll = new Scroll();
+	
 	public Input(long window) {
 		LOGGER.log(Level.INFO, "Input constructor.");
 		
@@ -33,7 +35,7 @@ public class Input {
 
 		new KeyboardListener(window, buttons);
 		new MouseButtonListener(window, buttons);
-		new MouseScrollListener(window, buttons);
+		new MouseScrollListener(window, buttons, scroll);
 		
 		
 		GLFWCursorPosCallback mousePosition = new GLFWCursorPosCallback() {
@@ -44,8 +46,6 @@ public class Input {
 				//System.out.println(String.format("xpos: %f\nypos: %f", xpos, ypos));
 			}
 		};
-		
-		
 		
 		GLFW.glfwSetCursorPosCallback(window, mousePosition);
 		
@@ -60,7 +60,12 @@ public class Input {
 	}
 	
 	public void resetScroll() {
+		scroll.reset();
 		buttons.released(Scroll.UP);
 		buttons.released(Scroll.DOWN);
+	}
+	
+	public double getScroll() {
+		return scroll.getAmount();
 	}
 }
