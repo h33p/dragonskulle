@@ -1,13 +1,13 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.storage;
 
-import java.util.ArrayList;
+import org.dragonskulle.input.Action;
 
 /**
  * Stores GLFW keyboard keys (as {@link Integer}s) and whether they are activated.
  * 
  * @author Craig Wilbourne
  */
-class Buttons extends Activatable<Integer>{
+public class Buttons extends Activatable<Integer>{
 	
 	private Converter converter;
 	private Actions actions;
@@ -17,7 +17,10 @@ class Buttons extends Activatable<Integer>{
 		this.actions = actions;
 	}
 	
-	/** Called when a button has been pressed. */
+	/**
+	 * When a button has been pressed, it correctly activates any {@link Action}s.
+	 * @param button The button that has been pressed.
+	 */
 	public void pressed(Integer button) {
 		setActivated(button, true);
 		
@@ -26,7 +29,10 @@ class Buttons extends Activatable<Integer>{
 		}
 	}
 	
-	/** Called when a button has been released. */
+	/**
+	 * When a button has been released, it correctly deactivates any {@link Action}s.
+	 * @param button The button that has been released.
+	 */
 	public void released(Integer button) {
 		setActivated(button, false);
 		

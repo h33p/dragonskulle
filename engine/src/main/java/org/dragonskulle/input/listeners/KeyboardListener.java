@@ -1,7 +1,8 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.listeners;
 
 import java.util.logging.Logger;
 
+import org.dragonskulle.input.storage.Buttons;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
@@ -10,7 +11,7 @@ import org.lwjgl.glfw.GLFWKeyCallback;
  * 
  * @author Craig Wilbourne
  */
-class KeyboardListener {
+public class KeyboardListener {
 
 	public static final Logger LOGGER = Logger.getLogger("KeyboardListener");
 	

@@ -1,9 +1,10 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.storage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.dragonskulle.input.Action;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -11,7 +12,7 @@ import org.lwjgl.glfw.GLFW;
  * 
  * @author Craig Wilbourne
  */
-class Converter {
+public class Converter {
 	
 	/** Key: Button <br/>
 	 *  Value: {@link Action}s the Button activates.

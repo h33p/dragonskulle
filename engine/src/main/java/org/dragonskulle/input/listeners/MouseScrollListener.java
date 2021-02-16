@@ -1,9 +1,10 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.listeners;
 
 import java.util.logging.Logger;
 
+import org.dragonskulle.input.storage.Buttons;
+import org.dragonskulle.input.storage.Scroll;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
 /**
@@ -11,7 +12,7 @@ import org.lwjgl.glfw.GLFWScrollCallback;
  * 
  * @author Craig Wilbourne
  */
-class MouseScrollListener {
+public class MouseScrollListener {
 	
 	public static final Logger LOGGER = Logger.getLogger("MouseScrollListener");
 	

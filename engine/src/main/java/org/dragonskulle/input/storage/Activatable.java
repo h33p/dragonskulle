@@ -1,4 +1,4 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.storage;
 
 import java.util.HashMap;
 
@@ -7,7 +7,7 @@ import java.util.HashMap;
  * 
  * @author Craig Wilbourne
  *
- * @param <T> The data type of the elements that will be either {@code true} or {@code false}.
+ * @param <T> The data type of the stored elements.
  */
 abstract class Activatable<T> {
 
