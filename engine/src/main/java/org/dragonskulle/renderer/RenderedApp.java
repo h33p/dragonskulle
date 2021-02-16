@@ -1389,7 +1389,7 @@ public class RenderedApp {
         long[] ret = {0, 0};
         try (MemoryStack stack = stackPush()) {
             VkBufferCreateInfo createInfo = VkBufferCreateInfo.callocStack(stack);
-            createInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
+            createInfo.sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO);
             createInfo.size(size);
             createInfo.usage(usage);
             createInfo.sharingMode(VK_SHARING_MODE_EXCLUSIVE);

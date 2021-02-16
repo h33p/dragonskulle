@@ -16,23 +16,34 @@ public class ShaderBuf implements NativeResource {
     private long handle;
     @Getter private ByteBuffer buffer;
 
-    public static Resource<ShaderBuf> getResource(String name) {
+    public static Resource<ShaderBuf> getResource(String name, ShaderKind kind) {
+
+        String spirvName = String.format("shaderc/%s.%s.spv", name, kind.toString());
+
+        Resource<ShaderBuf> precompiledShader =
+                ResourceManager.getResource(
+                        ShaderBuf.class,
+                        (buffer) -> {
+                            ShaderBuf ret = new ShaderBuf();
+                            ret.buffer = MemoryUtil.memAlloc(buffer.length);
+                            ret.buffer.put(buffer);
+                            ret.buffer.rewind();
+                            return ret;
+                        },
+                        spirvName);
+
+        if (precompiledShader != null) return precompiledShader;
+
+        String glslName = String.format("shaders/%s.%s", name, kind.toString());
+
         return ResourceManager.getResource(
                 ShaderBuf.class,
-                (buffer) -> {
-                    ShaderBuf ret = new ShaderBuf();
-                    ret.buffer = MemoryUtil.memAlloc(buffer.length);
-                    ret.buffer.put(buffer);
-                    ret.buffer.rewind();
-                    return ret;
-                },
-                name);
+                (buffer) -> compileShader(glslName, new String(buffer), kind),
+                glslName);
     }
 
-    public static ShaderBuf compileShader(String name, ShaderKind shaderKind) {
+    public static ShaderBuf compileShader(String name, String data, ShaderKind shaderKind) {
         RenderedApp.LOGGER.info("Compiling " + name);
-
-        String data = ResourceManager.loadResource(String::new, name);
 
         if (data == null) {
             RenderedApp.LOGGER.warning("Failed to find resource named: " + name);

@@ -20,12 +20,7 @@ public class Shader implements NativeResource {
     public static Shader getShader(String name, ShaderKind kind, VkDevice device) {
         RenderedApp.LOGGER.fine("Get shader... " + name);
 
-        String spirvName = String.format("shaderc/%s.%s.spv", name, kind.toString());
-        String glslName = String.format("shaders/%s.%s", name, kind.toString());
-
-        try (Resource<ShaderBuf> res = ShaderBuf.getResource(spirvName)) {
-            ShaderBuf resource = res != null ? res.get() : ShaderBuf.compileShader(glslName, kind);
-
+        try (Resource<ShaderBuf> resource = ShaderBuf.getResource(name, kind)) {
             if (resource == null) return null;
 
             try (MemoryStack stack = stackPush()) {
@@ -34,7 +29,7 @@ public class Shader implements NativeResource {
 
                 VkShaderModuleCreateInfo createInfo = VkShaderModuleCreateInfo.callocStack(stack);
                 createInfo.sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO);
-                createInfo.pCode(resource.getBuffer());
+                createInfo.pCode(resource.get().getBuffer());
 
                 LongBuffer pShaderModule = stack.longs(0);
 
