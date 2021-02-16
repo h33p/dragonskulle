@@ -1,18 +1,15 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import org.dragonskulle.components.Component;
-
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import org.dragonskulle.components.Component;
 
 /**
  * Scene class
  *
  * @author Harry Stoltz
- *      <p>
- *          Represents a single scene in a game, storing a list of all GameObjects in that scene.
- *      </p>
+ *     <p>Represents a single scene in a game, storing a list of all GameObjects in that scene.
  */
 public class Scene {
     private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
@@ -82,9 +79,7 @@ public class Scene {
         return ret;
     }
 
-    /**
-     * Iterates through all GameObjects in the scene and collects their components
-     */
+    /** Iterates through all GameObjects in the scene and collects their components */
     public void updateComponentsList() {
 
         // TODO: Add some check whether any components have been added/changed/removed so that
@@ -99,10 +94,8 @@ public class Scene {
             for (GameObject child : root.getAllChildren()) {
 
                 mComponents.addAll(child.getComponents());
-
             }
         }
-
     }
 
     /**
@@ -110,21 +103,27 @@ public class Scene {
      *
      * @return mGameObjects
      */
-    public ArrayList<GameObject> getRootObjects() { return mGameObjects; }
+    public ArrayList<GameObject> getRootObjects() {
+        return mGameObjects;
+    }
 
     /**
      * Getter for mName
      *
      * @return mName
      */
-    public String getName() { return mName; }
+    public String getName() {
+        return mName;
+    }
 
     /**
      * Get a list of all components
      *
      * @return mComponents
      */
-    protected ArrayList<Component> getComponents() { return mComponents; }
+    protected ArrayList<Component> getComponents() {
+        return mComponents;
+    }
 
     /**
      * Get a list of all enabled components in the scene

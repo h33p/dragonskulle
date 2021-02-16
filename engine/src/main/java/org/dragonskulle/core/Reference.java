@@ -5,12 +5,10 @@ package org.dragonskulle.core;
  * Used for referencing GameObjects and Components
  *
  * @author Harry Stoltz
- *      <p>
- *          The purpose of using this class for referencing GameObjects and Components is so that
- *          when a GameObject or Component is destroyed, it can null its reference preventing any
- *          other Components maintaining a strong reference to the GameObject or Component and
- *          stopping it from being garbage collected
- *      </p>
+ *     <p>The purpose of using this class for referencing GameObjects and Components is so that when
+ *     a GameObject or Component is destroyed, it can null its reference preventing any other
+ *     Components maintaining a strong reference to the GameObject or Component and stopping it from
+ *     being garbage collected
  */
 public class Reference<T> {
 
@@ -21,23 +19,26 @@ public class Reference<T> {
 
     /**
      * Constructor for Reference
+     *
      * @param object Object to be referenced
      */
     public Reference(T object) {
         mObject = object;
     }
 
-    /**
-     * Clear the referenced object
-     */
-    public void clear() { mObject = null; }
+    /** Clear the referenced object */
+    public void clear() {
+        mObject = null;
+    }
 
     /**
      * Get the referenced object
+     *
      * @return mObject
      */
-    public T get() { return mObject; }
-
+    public T get() {
+        return mObject;
+    }
 
     /**
      * Override equals so that it compares the underlying object as opposed to the Reference itself
@@ -48,7 +49,7 @@ public class Reference<T> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Reference<?>) {
-            return mObject.equals(((Reference<?>)obj).mObject);
+            return mObject.equals(((Reference<?>) obj).mObject);
         } else {
             return false;
         }

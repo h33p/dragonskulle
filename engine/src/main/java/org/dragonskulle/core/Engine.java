@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -8,23 +10,18 @@ import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 /**
  * Engine core
  *
  * @author Harry Stoltz
- *      <p>
- *      The core of the engine, contains the main loop which executes all game logic. Gives
- *      all components access to engine components such as the AudioManager and InputManager.
- *      </p>
+ *     <p>The core of the engine, contains the main loop which executes all game logic. Gives all
+ *     components access to engine components such as the AudioManager and InputManager.
  */
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
     private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
-    private static final double UPDATE_TIME = 1 / (double)UPDATES_PER_SECOND;
+    private static final double UPDATE_TIME = 1 / (double) UPDATES_PER_SECOND;
 
     private boolean mIsRunning = false;
 
@@ -57,16 +54,12 @@ public class Engine {
         mNewScene = scene;
     }
 
-    /**
-     * Stops the engine when the current frame has finished
-     */
+    /** Stops the engine when the current frame has finished */
     public void stop() {
         mIsRunning = false;
     }
 
-    /**
-     * Main loop of the engine
-     */
+    /** Main loop of the engine */
     private void mainLoop() {
 
         double mPrevTime = Time.getTimeInSeconds();
@@ -75,7 +68,6 @@ public class Engine {
         int frames = 0;
         double secondTimer = 0;
         double cumulativeTime = 0;
-
 
         // TODO: Make objects only be destroyed after all updates
         // TODO: Only initialize new components at the start of next frame
@@ -145,20 +137,21 @@ public class Engine {
         // Iterate through them, calling onAwake on all that implement it
         for (Component component : components) {
             if (component instanceof IOnAwake) {
-                ((IOnAwake)component).onAwake();
+                ((IOnAwake) component).onAwake();
             }
         }
 
         // Then go through again, calling onStart on all the implement it
         for (Component component : components) {
             if (component instanceof IOnStart) {
-                ((IOnStart)component).onStart();
+                ((IOnStart) component).onStart();
             }
         }
     }
 
     /**
      * Do all frameUpdates on components that implement it
+     *
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(double deltaTime) {
@@ -166,26 +159,25 @@ public class Engine {
 
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
-                ((IFrameUpdate)component).frameUpdate(deltaTime);
+                ((IFrameUpdate) component).frameUpdate(deltaTime);
             }
         }
     }
 
-    /**
-     * Do all Fixed Updates on components that implement it
-     */
+    /** Do all Fixed Updates on components that implement it */
     private void fixedUpdate() {
         mActiveScene.updateComponentsList();
 
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFixedUpdate) {
-                ((IFixedUpdate)component).fixedUpdate(UPDATE_TIME);
+                ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
             }
         }
     }
 
     /**
      * Do all Late Frame Updates on components that implement it
+     *
      * @param deltaTime Time change since last frame
      */
     private void lateFrameUpdate(double deltaTime) {
@@ -193,15 +185,14 @@ public class Engine {
 
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof ILateFrameUpdate) {
-                ((ILateFrameUpdate)component).lateFrameUpdate(deltaTime);
+                ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
             }
         }
     }
 
     /**
-     * Finish the loading of a new scene.
-     * If the scene has never been active before, call the onAwake and onStart methods
-     * if they are implemented
+     * Finish the loading of a new scene. If the scene has never been active before, call the
+     * onAwake and onStart methods if they are implemented
      */
     private void switchToNewScene() {
         // Add the currently active scene to inactive scenes and remove the new scene from
@@ -223,9 +214,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Cleans up all resources used by the engine on shutdown
-     */
+    /** Cleans up all resources used by the engine on shutdown */
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
     }
@@ -235,7 +224,9 @@ public class Engine {
      *
      * @return mActiveScene
      */
-    public Scene getActiveScene() { return mActiveScene; }
+    public Scene getActiveScene() {
+        return mActiveScene;
+    }
 
     /**
      * Get the single instance of the engine

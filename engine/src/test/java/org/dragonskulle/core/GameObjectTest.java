@@ -1,25 +1,14 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IOnAwake;
-import org.junit.Test;
-import org.junit.Assert;
-
 import java.util.ArrayList;
+import org.dragonskulle.components.IOnAwake;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class GameObjectTest {
 
-    static class TestComponent extends Component implements IOnAwake {
-
-        @Override
-        public void onAwake() {
-            System.out.println("YeeHaw");
-        }
-    }
-
-    /**
-     * Test whether a child GameObject's parent always has the child
-     */
+    /** Test whether a child GameObject's parent always has the child */
     @Test
     public void parentContainsChild() {
         GameObject parent = new GameObject("parent");
@@ -46,7 +35,6 @@ public class GameObjectTest {
 
         child1.addChild(child2);
 
-
         boolean val = child2.getRoot().getAllChildren().contains(child2);
 
         Assert.assertTrue("Child's root did not contain the child in all children", val);
@@ -54,9 +42,7 @@ public class GameObjectTest {
         Assert.assertFalse(null instanceof IOnAwake);
     }
 
-    /**
-     * Test whether a game object is removed from its parent when it is destroyed
-     */
+    /** Test whether a game object is removed from its parent when it is destroyed */
     @Test
     public void destroyRemovesFromParent() {
         GameObject root = new GameObject("root");
@@ -73,9 +59,7 @@ public class GameObjectTest {
         Assert.assertEquals(message, 0, children.size());
     }
 
-    /**
-     * Test whether every non-root GameObject has a root
-     */
+    /** Test whether every non-root GameObject has a root */
     @Test
     public void nonRootObjectNeverHasNullRoot() {
         GameObject root = new GameObject("root");
@@ -89,32 +73,30 @@ public class GameObjectTest {
             root.addChild(child);
         }
 
-        for (GameObject child: root.getAllChildren()) {
+        for (GameObject child : root.getAllChildren()) {
             Assert.assertNotNull("Non-Root GameObject did not have a root", child.getRoot());
         }
     }
 
-    /**
-     * Test whether a GameObject always has a transform
-     */
+    /** Test whether a GameObject always has a transform */
     @Test
     public void transformNeverNull() {
 
         // Test both constructors for objects
         GameObject obj = new GameObject("obj");
 
-        Assert.assertNotNull("GameObject did not have a transform",  obj.getTransform());
+        Assert.assertNotNull("GameObject did not have a transform", obj.getTransform());
 
         obj = new GameObject("obj", true);
 
         Assert.assertNotNull("GameObject did not have a transform", obj.getTransform());
 
-
         // Then check whether using the copy constructor still has a transform
 
         GameObject objClone = new GameObject(obj);
 
-        Assert.assertNotNull("GameObject did not have a transform after cloning", obj.getTransform());
+        Assert.assertNotNull(
+                "GameObject did not have a transform after cloning", objClone.getTransform());
     }
 
     /*

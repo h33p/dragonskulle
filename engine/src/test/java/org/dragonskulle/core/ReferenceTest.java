@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
 import org.junit.Assert;
@@ -5,9 +6,7 @@ import org.junit.Test;
 
 public class ReferenceTest {
 
-    /**
-     * Test that two references to equal objects return true when using Reference.equals()
-     */
+    /** Test that two references to equal objects return true when using Reference.equals() */
     @Test
     public void referenceEqualsSameObject() {
         Object obj = new Object();
@@ -18,9 +17,7 @@ public class ReferenceTest {
         Assert.assertEquals("References to the same object were not equal", objRef1, objRef2);
     }
 
-    /**
-     * Test that two references to non-equal objects return false when using Reference.equals()
-     */
+    /** Test that two references to non-equal objects return false when using Reference.equals() */
     @Test
     public void referenceEqualsDifferentObject() {
         Object obj1 = new Object();

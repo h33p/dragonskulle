@@ -5,9 +5,7 @@ package org.dragonskulle.core;
  * Class used for getting system time
  *
  * @author Harry Stoltz
- *      <p>
- *          Simple class to get the current time in seconds
- *      </p>
+ *     <p>Simple class to get the current time in seconds
  */
 public class Time {
     private static final double MS_PER_S = 1000.0;
@@ -21,6 +19,6 @@ public class Time {
      * @return The current time in seconds
      */
     static double getTimeInSeconds() {
-        return (double)System.currentTimeMillis() / MS_PER_S;
+        return (double) System.currentTimeMillis() / MS_PER_S;
     }
 }

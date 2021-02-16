@@ -1,29 +1,25 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import org.dragonskulle.components.Component;
-import org.dragonskulle.components.Transform;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.Transform;
 
 /**
  * GameObject class
  *
  * @author Harry Stoltz
- *      <p>
- *          Each GameObject represents a single entity in the game, the object itself performs no
- *          actions but each component that is added to the GameObject will be able to interact with
- *          itself in the world and other GameObjects.
- *      </p>
+ *     <p>Each GameObject represents a single entity in the game, the object itself performs no
+ *     actions but each component that is added to the GameObject will be able to interact with
+ *     itself in the world and other GameObjects.
  */
 public class GameObject {
 
     private final Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
     private final ArrayList<GameObject> mChildren = new ArrayList<>();
-
 
     private GameObject mRoot;
     private GameObject mParent;
@@ -126,18 +122,19 @@ public class GameObject {
     }
 
     /**
-     *  Get all components of a given type T
+     * Get all components of a given type T
      *
      * @param type Class object of T
      * @param <T> Type of component to be returned
      * @return A new ArrayList containing all components of type T, or null if none were found
      */
     public <T extends Component> ArrayList<Reference<T>> getComponents(Class<T> type) {
-        ArrayList<Reference<T>> ret = mComponents.stream()
-                .filter(type::isInstance)
-                .map(type::cast)
-                .map(Reference::new)
-                .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Reference<T>> ret =
+                mComponents.stream()
+                        .filter(type::isInstance)
+                        .map(type::cast)
+                        .map(Reference::new)
+                        .collect(Collectors.toCollection(ArrayList::new));
 
         return ret.isEmpty() ? null : ret;
     }
@@ -166,17 +163,17 @@ public class GameObject {
      * @return A new list containing all components that implement the interface I, or null
      */
     public <I> ArrayList<Reference<Component>> getComponentsByIface(Class<I> iface) {
-        ArrayList<Reference<Component>> ret = mComponents.stream()
-                .filter(iface::isInstance)
-                .map(Reference::new)
-                .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Reference<Component>> ret =
+                mComponents.stream()
+                        .filter(iface::isInstance)
+                        .map(Reference::new)
+                        .collect(Collectors.toCollection(ArrayList::new));
 
         return ret.isEmpty() ? null : ret;
     }
 
     /**
-     * Recursively get all children of a game object
-     * List is ordered in breadth-first order
+     * Recursively get all children of a game object List is ordered in breadth-first order
      *
      * @return List containing all children, children's children etc..
      */
@@ -191,8 +188,7 @@ public class GameObject {
     }
 
     /**
-     * Add a component to the GameObject.
-     * If the component's GameObject is null, it is set to this
+     * Add a component to the GameObject. If the component's GameObject is null, it is set to this
      * If the component's GameObject is another GameObject, the component is removed from that
      * GameObject and is set to this.
      *
@@ -231,8 +227,8 @@ public class GameObject {
     }
 
     /**
-     * Add a list of children to the GameObject, setting the parent to this and the root to
-     * mRoot, or this if mRoot is null
+     * Add a list of children to the GameObject, setting the parent to this and the root to mRoot,
+     * or this if mRoot is null
      *
      * @param children List of GameObject to be added
      */
@@ -248,9 +244,8 @@ public class GameObject {
     }
 
     /**
-     * Remove component from the GameObject.
-     * If a component is removed, the scene's updated flag is set to true. Set's the component's
-     * GameObject to null
+     * Remove component from the GameObject. If a component is removed, the scene's updated flag is
+     * set to true. Set's the component's GameObject to null
      *
      * @param component Component to be removed
      */
@@ -272,7 +267,7 @@ public class GameObject {
     /**
      * Destroy the GameObject, destroying all children and components and then removing ourselves
      * from our parent
-      */
+     */
     public void destroy() {
 
         // Copy the list of children so that as they are destroyed and unlinked from the list
@@ -303,7 +298,9 @@ public class GameObject {
      *
      * @return mChildren
      */
-    protected ArrayList<GameObject> getChildren() { return mChildren; }
+    protected ArrayList<GameObject> getChildren() {
+        return mChildren;
+    }
 
     /**
      * Getter for mComponents, should only be used by the engine
@@ -319,41 +316,52 @@ public class GameObject {
      *
      * @return mActive
      */
-    public boolean getActive() { return mActive; }
+    public boolean getActive() {
+        return mActive;
+    }
 
     /**
      * Setter for mActive
      *
      * @param val New value for mActive
      */
-    public void setActive(boolean val) { mActive = val; }
-
+    public void setActive(boolean val) {
+        mActive = val;
+    }
 
     /**
      * Getter for mTransform
      *
      * @return mTransform
      */
-    public Transform getTransform() { return mTransform; }
+    public Transform getTransform() {
+        return mTransform;
+    }
 
     /**
      * Getter for mReference
      *
      * @return mReference
      */
-    public Reference<GameObject> getReference() { return mReference; }
+    public Reference<GameObject> getReference() {
+        return mReference;
+    }
 
     /**
      * Getter for mRoot, used for testing
      *
      * @return mRoot
      */
-    protected GameObject getRoot() { return mRoot; }
+    protected GameObject getRoot() {
+        return mRoot;
+    }
 
     /**
      * Getter for mParent, used for testing
      *
      * @return mParent
      */
-    protected GameObject getParent() { return mParent; }
+    protected GameObject getParent() {
+        return mParent;
+    }
 }
