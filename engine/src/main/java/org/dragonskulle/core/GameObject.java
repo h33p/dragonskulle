@@ -64,7 +64,10 @@ public class GameObject {
 
         for (GameObject root : activeScene.getRootObjects()) {
 
-            for (GameObject obj : root.getAllChildren()) {
+            ArrayList<GameObject> children = new ArrayList<>();
+            root.getAllChildren(children);
+
+            for (GameObject obj : children) {
 
                 if (obj.mName.equals(name)) {
                     return obj.getReference();
@@ -126,17 +129,14 @@ public class GameObject {
      *
      * @param type Class object of T
      * @param <T> Type of component to be returned
-     * @return A new ArrayList containing all components of type T, or null if none were found
+     * @param ret List that will store the components found
      */
-    public <T extends Component> ArrayList<Reference<T>> getComponents(Class<T> type) {
-        ArrayList<Reference<T>> ret =
-                mComponents.stream()
-                        .filter(type::isInstance)
-                        .map(type::cast)
-                        .map(Reference::new)
-                        .collect(Collectors.toCollection(ArrayList::new));
-
-        return ret.isEmpty() ? null : ret;
+    @SuppressWarnings("unchecked")
+    public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
+        mComponents.stream()
+                .filter(type::isInstance)
+                .map(component -> (Reference<T>) component.getReference())
+                .collect(Collectors.toCollection(() -> ret));
     }
 
     /**
@@ -146,11 +146,12 @@ public class GameObject {
      * @param <T> Type of component to be returned
      * @return The first component of type T found, or null if none were found
      */
+    @SuppressWarnings("unchecked")
     public <T extends Component> Reference<T> getComponent(Class<T> type) {
         return mComponents.stream()
                 .filter(type::isInstance)
                 .map(type::cast)
-                .map(Reference::new)
+                .map(component -> (Reference<T>) component.getReference())
                 .findFirst()
                 .orElse(null);
     }
@@ -160,31 +161,22 @@ public class GameObject {
      *
      * @param iface Class object of the interface I
      * @param <I> Interface to search by
-     * @return A new list containing all components that implement the interface I, or null
+     * @param ret List that will contain any components found
      */
-    public <I> ArrayList<Reference<Component>> getComponentsByIface(Class<I> iface) {
-        ArrayList<Reference<Component>> ret =
-                mComponents.stream()
-                        .filter(iface::isInstance)
-                        .map(Reference::new)
-                        .collect(Collectors.toCollection(ArrayList::new));
-
-        return ret.isEmpty() ? null : ret;
+    public <I> void getComponentsByIface(Class<I> iface, List<Reference<Component>> ret) {
+        mComponents.stream()
+                .filter(iface::isInstance)
+                .map(Component::getReference)
+                .collect(Collectors.toCollection(() -> ret));
     }
 
-    /**
-     * Recursively get all children of a game object List is ordered in breadth-first order
-     *
-     * @return List containing all children, children's children etc..
-     */
-    protected ArrayList<GameObject> getAllChildren() {
-        ArrayList<GameObject> ret = new ArrayList<>(mChildren);
+    /** Recursively get all children of a game object List is ordered in breadth-first order */
+    protected void getAllChildren(List<GameObject> ret) {
+        ret.addAll(mChildren);
 
         for (GameObject child : mChildren) {
-            ret.addAll(child.getAllChildren());
+            child.getAllChildren(ret);
         }
-
-        return ret;
     }
 
     /**

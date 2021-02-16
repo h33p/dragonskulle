@@ -106,4 +106,13 @@ public abstract class Component {
     public void setEnabled(boolean value) {
         mEnabled = value;
     }
+
+    /**
+     * Getter for mReference
+     *
+     * @return mReference
+     */
+    public Reference<Component> getReference() {
+        return mReference;
+    }
 }

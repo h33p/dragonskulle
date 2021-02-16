@@ -67,7 +67,10 @@ public class Scene {
                 }
             }
 
-            for (GameObject child : root.getAllChildren()) {
+            ArrayList<GameObject> children = new ArrayList<>();
+            root.getAllChildren(children);
+
+            for (GameObject child : children) {
 
                 for (Component component : child.getComponents()) {
                     if (!mComponents.contains(component)) {
@@ -91,7 +94,10 @@ public class Scene {
 
             mComponents.addAll(root.getComponents());
 
-            for (GameObject child : root.getAllChildren()) {
+            ArrayList<GameObject> children = new ArrayList<>();
+            root.getAllChildren(children);
+
+            for (GameObject child : children) {
 
                 mComponents.addAll(child.getComponents());
             }

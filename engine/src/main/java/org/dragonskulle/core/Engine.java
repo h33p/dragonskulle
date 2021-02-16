@@ -20,6 +20,7 @@ import org.dragonskulle.components.IOnStart;
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
+    // TODO: Choose a number of updates per second that we want to have
     private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
     private static final double UPDATE_TIME = 1 / (double) UPDATES_PER_SECOND;
 

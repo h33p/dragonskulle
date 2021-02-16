@@ -8,6 +8,8 @@ import org.junit.Test;
 
 public class GameObjectTest {
 
+    // TODO: rewrite these tests to test every constructor
+
     /** Test whether a child GameObject's parent always has the child */
     @Test
     public void parentContainsChild() {
@@ -18,7 +20,7 @@ public class GameObjectTest {
 
         boolean val = child.getParent().getChildren().contains(child);
 
-        Assert.assertTrue("Child GameObject's parent did not contain child\n", val);
+        Assert.assertTrue("Child GameObject's parent did not contain child", val);
     }
 
     /**
@@ -35,7 +37,11 @@ public class GameObjectTest {
 
         child1.addChild(child2);
 
-        boolean val = child2.getRoot().getAllChildren().contains(child2);
+        ArrayList<GameObject> children = new ArrayList<>();
+
+        child2.getRoot().getAllChildren(children);
+
+        boolean val = children.contains(child2);
 
         Assert.assertTrue("Child's root did not contain the child in all children", val);
 
@@ -73,7 +79,11 @@ public class GameObjectTest {
             root.addChild(child);
         }
 
-        for (GameObject child : root.getAllChildren()) {
+        ArrayList<GameObject> children = new ArrayList<>();
+
+        root.getAllChildren(children);
+
+        for (GameObject child : children) {
             Assert.assertNotNull("Non-Root GameObject did not have a root", child.getRoot());
         }
     }
