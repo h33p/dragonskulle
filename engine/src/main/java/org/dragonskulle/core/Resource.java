@@ -11,9 +11,11 @@ import org.lwjgl.system.NativeResource;
  *     additional resources from ResourceManager should be quick and not involve any additional
  *     reloading. Upon all {@code Resource<T>} references have been freed (manually or garbage
  *     collected), the underlying {@code ResourceInstance} gets unlinked from {@code
- *     ResourceManager}, and thus get the underlying resource freed as well.
+ *     ResourceManager}, and thus get the underlying resource freed as well (close/free is also
+ *     called, if the type implements {@link AutoCloseable} or {@link NativeResource}).
  *     <p>Note that GC is inconsistent and shouldn't be relied upon for lowest memory usage. Call
- *     {@code free} explicitly, if possible. Alternatively, use the {@code try} syntax:
+ *     {@code free} explicitly, if possible. Alternatively, use the {@code try-with-resources}
+ *     syntax:
  *     <pre>{@code
  * try(Resource<ShaderBuf> resource = ShaderBuf.getResource("shaderc/frag.spv")) {
  *     ...
