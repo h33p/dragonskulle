@@ -154,6 +154,7 @@ public class ResourceManager {
     private static <T> Resource<T> loadAndCacheResource(
             Class<T> type, IResourceLoader<T> loader, String name) {
         T ret = loadResource(loader, name);
+        if (ret == null) return null;
         CountedResource<T> inst = new CountedResource<T>(name, ret);
         loadedResources.put(name, inst);
         return inst.incRefCount(type);
