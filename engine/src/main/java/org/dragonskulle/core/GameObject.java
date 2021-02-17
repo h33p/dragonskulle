@@ -170,11 +170,17 @@ public class GameObject {
                 .collect(Collectors.toCollection(() -> ret));
     }
 
-    /** Recursively get all children of a game object List is ordered in breadth-first order */
+    /**
+     * Get every child with this GameObject acting as the root in a tree, adding to the list in a
+     * depth-first order.
+     *
+     * <p>Doesn't return a list of references as this method should only be used by the engine which
+     * is responsible for the destroying of objects and therefore won't keep any strong references
+     * to destroyed objects.
+     */
     protected void getAllChildren(List<GameObject> ret) {
-        ret.addAll(mChildren);
-
         for (GameObject child : mChildren) {
+            ret.add(child);
             child.getAllChildren(ret);
         }
     }
