@@ -4,16 +4,16 @@ package org.dragonskulle.network;
 import java.net.InetAddress;
 
 public class ClientInstance {
-    public final InetAddress ip;
-    public final int port;
+    public final InetAddress IP;
+    public final int PORT;
 
     public ClientInstance(InetAddress ip, int port) {
-        this.ip = ip;
-        this.port = port;
+        this.IP = ip;
+        this.PORT = port;
     }
 
     @Override
     public String toString() {
-        return ip.toString() + ":" + port;
+        return IP.toString() + ":" + PORT;
     }
 }

@@ -21,7 +21,7 @@ public class Client {
             socket = new Socket(ip, port);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            Thread clientThread = new Thread(this.client_runner());
+            Thread clientThread = new Thread(this.clientRunner());
             clientThread.setName("Client Connection");
             clientThread.setDaemon(true);
             clientThread.start();
@@ -64,7 +64,7 @@ public class Client {
         return open;
     }
 
-    private Runnable client_runner() {
+    private Runnable clientRunner() {
         return () -> {
             while (open) {
                 try {

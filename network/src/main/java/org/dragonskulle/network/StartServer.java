@@ -4,14 +4,14 @@ package org.dragonskulle.network;
 public class StartServer {
     static ServerListener serverListener;
     static Server server;
-    static final int port = 7000;
+    static final int PORT = 7000;
 
     StartServer() {}
 
     public static void main(String[] args) {
         attachShutDownHook();
         serverListener = new ServerEars();
-        server = new Server(port, serverListener);
+        server = new Server(PORT, serverListener);
     }
 
     public static void attachShutDownHook() {

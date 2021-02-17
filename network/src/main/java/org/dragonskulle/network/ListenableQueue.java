@@ -1,7 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.util.*;
+import java.util.AbstractQueue;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
 
 // from
 // https://stackoverflow.com/questions/56336731/on-add-element-in-queue-call-a-listener-to-notify-queue-element-is-variable

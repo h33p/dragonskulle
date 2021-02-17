@@ -14,11 +14,10 @@ import java.util.Scanner;
 
 public class Server {
     private int port;
-    private boolean open = true;
     private ServerListener serverListener;
     private final SocketStore sockets = new SocketStore();
     private Thread serverThread;
-    private server_runner serverRunner;
+    private ServerRunner serverRunner;
 
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
@@ -32,7 +31,7 @@ public class Server {
             } else {
                 this.port = port;
             }
-            serverRunner = new server_runner();
+            serverRunner = new ServerRunner();
             serverThread = new Thread(this.serverRunner);
             serverThread.setDaemon(true);
             serverThread.setName("Server");
@@ -70,7 +69,6 @@ public class Server {
     }
 
     public void dispose() {
-        open = false;
         try {
             this.serverRunner.cancel();
             this.serverThread.join();
@@ -85,17 +83,17 @@ public class Server {
         }
     }
 
-    private class server_runner implements Runnable {
+    private class ServerRunner implements Runnable {
         volatile boolean open = true;
 
         @Override
         public void run() {
             while (open && !Thread.currentThread().isInterrupted()) {
-                final Socket client_socket = sockets.acceptClient();
-                if (client_socket != null) {
-                    Thread clientThread = new Thread(client_runner(client_socket));
+                Socket clientSocket = sockets.acceptClient();
+                if (clientSocket != null) {
+                    Thread clientThread = new Thread(clientRunner(clientSocket));
                     clientThread.setDaemon(true);
-                    clientThread.setName("Client " + client_socket.getInetAddress().toString());
+                    clientThread.setName("Client " + clientSocket.getInetAddress().toString());
                     clientThread.start();
                 }
             }
@@ -106,7 +104,7 @@ public class Server {
         }
     }
 
-    private Runnable client_runner(Socket sock) {
+    private Runnable clientRunner(Socket sock) {
         if (sock == null) {
             return () -> {};
         }

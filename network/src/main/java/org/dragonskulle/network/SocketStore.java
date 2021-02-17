@@ -3,14 +3,18 @@ package org.dragonskulle.network;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class SocketStore {
     private ServerSocket server;
     private final ArrayList<Socket> store;
     PrintWriter printWriter;
-    static final int so_timeout = 3000;
+    static final int SO_TIMEOUT = 3000;
 
     public SocketStore() {
         this.store = new ArrayList<>();
@@ -34,11 +38,11 @@ public class SocketStore {
         }
     }
 
-    public void initServer(ServerSocket server_socket) {
+    public void initServer(ServerSocket serverSocket) {
         try {
-            this.server = server_socket;
-            this.server.setSoTimeout(so_timeout);
-            System.out.println("[SS] Server created @ " + server_socket.getLocalSocketAddress());
+            this.server = serverSocket;
+            this.server.setSoTimeout(SO_TIMEOUT);
+            System.out.println("[SS] Server created @ " + serverSocket.getLocalSocketAddress());
         } catch (SocketException e) {
             System.out.println("Failed to create server");
             e.printStackTrace();
@@ -61,14 +65,6 @@ public class SocketStore {
             this.server.close();
         } catch (Exception ignored) {
         }
-
-        //        for (Socket sock : this.store) {
-        //            try {
-        //                sock.close();
-        //            } catch (Exception exception) {
-        //                exception.printStackTrace();
-        //            }
-        //        }
 
         this.store.clear();
         this.server = null;
