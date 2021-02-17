@@ -53,13 +53,21 @@ public class RenderedApp {
     private long[] framebuffers;
 
     private long renderPass;
+    private long descriptorSetLayout;
     private long pipelineLayout;
     private long graphicsPipeline;
 
     private long commandPool;
     private VkCommandBuffer[] commandBuffers;
-    private long[] vertexBuffer;
-    private long[] indexBuffer;
+
+    private VulkanBuffer vertexBuffer;
+    private VulkanBuffer indexBuffer;
+
+    private VulkanBuffer[] uniformBuffers;
+    private UniformBufferObject[] uniformBufferObjects;
+
+    private long descriptorPool;
+    private long[] descriptorSets;
 
     private FrameContext[] frames;
     private long[] imagesInFlight;
@@ -84,7 +92,7 @@ public class RenderedApp {
 
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_MAILBOX_KHR);
 
-    private static float RADIUS = 0.5f;
+    private static float RADIUS = 1.5f;
 
     private Resource<ShaderBuf> vertShader;
     private Resource<ShaderBuf> fragShader;
@@ -105,6 +113,16 @@ public class RenderedApp {
     static {
         String line = System.getenv("DEBUG_RENDERER");
         DEBUG_MODE = line != null && line.equals("true");
+    }
+
+    private static class VulkanBuffer {
+        private long buffer;
+        private long memory;
+
+        private void destroyBuffer(VkDevice device) {
+            vkDestroyBuffer(device, buffer, null);
+            vkFreeMemory(device, memory, null);
+        }
     }
 
     private class FrameContext {
@@ -239,6 +257,24 @@ public class RenderedApp {
     }
 
     @Builder
+    private static class UniformBufferObject {
+        public static int SIZEOF = 4 * 4 * 4 * 3;
+        public static int OFFSETOF_MODEL = 0;
+        public static int OFFSETOF_VIEW = 4 * 4 * 4;
+        public static int OFFSETOF_PROJ = 4 * 4 * 4 * 2;
+
+        private Matrix4f model;
+        private Matrix4f view;
+        private Matrix4f proj;
+
+        public void copyTo(ByteBuffer buffer) {
+            model.get(OFFSETOF_MODEL, buffer);
+            view.get(OFFSETOF_VIEW, buffer);
+            proj.get(OFFSETOF_PROJ, buffer);
+        }
+    }
+
+    @Builder
     private static class Vertex {
         public static int SIZEOF = (2 + 3) * 4;
         public static int OFFSETOF_POS = 0;
@@ -343,8 +379,11 @@ public class RenderedApp {
         long startTime = System.currentTimeMillis();
         while (!glfwWindowShouldClose(window)) {
             try (MemoryStack stack = stackPush()) {
+                long timerTime = System.currentTimeMillis();
+                long elapsedMillis = timerTime - startTime;
+                float curtime = (float) elapsedMillis * 0.001f;
                 glfwPollEvents();
-                drawFrame(stack, frames[frameIndex]);
+                drawFrame(stack, frames[frameIndex], curtime);
             }
             frameIndex = (frameIndex + 1) % FRAMES_IN_FLIGHT;
 
@@ -377,10 +416,11 @@ public class RenderedApp {
             vkDestroyFence(device, frame.inFlightFence, null);
         }
         cleanupSwapchain();
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, null);
         fragShader.free();
         vertShader.free();
-        destroyBuffer(indexBuffer);
-        destroyBuffer(vertexBuffer);
+        indexBuffer.destroyBuffer(device);
+        vertexBuffer.destroyBuffer(device);
         vkDestroyCommandPool(device, commandPool, null);
         vkDestroyDevice(device, null);
         destroyDebugMessanger();
@@ -391,6 +431,14 @@ public class RenderedApp {
     }
 
     private void cleanupSwapchain() {
+
+        for (VulkanBuffer b : uniformBuffers) b.destroyBuffer(device);
+
+        uniformBuffers = null;
+        uniformBufferObjects = null;
+
+        vkDestroyDescriptorPool(device, descriptorPool, null);
+
         for (long framebuffer : framebuffers) {
             vkDestroyFramebuffer(device, framebuffer, null);
         }
@@ -403,6 +451,7 @@ public class RenderedApp {
         for (long imageView : swapchainImageViews) {
             vkDestroyImageView(device, imageView, null);
         }
+
         vkDestroySwapchainKHR(device, swapchain, null);
     }
 
@@ -437,12 +486,15 @@ public class RenderedApp {
         setupRenderPass();
         setupGraphicsPipeline();
         setupFramebuffers();
+        setupUniformBuffers();
+        setupDescriptorPool();
+        setupDescriptorSets();
         setupCommandBuffers();
     }
 
     /// The main rendering
 
-    private void drawFrame(MemoryStack stack, FrameContext ctx) {
+    private void drawFrame(MemoryStack stack, FrameContext ctx, float curtime) {
 
         if (framebufferResized) recreateSwapchain();
 
@@ -468,6 +520,8 @@ public class RenderedApp {
             vkWaitForFences(device, imagesInFlight[image], true, UINT64_MAX);
 
         imagesInFlight[image] = ctx.inFlightFence;
+
+        updateUniformBuffer(image, curtime);
 
         VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
         submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
@@ -516,6 +570,34 @@ public class RenderedApp {
         framebufferResized = true;
     }
 
+    private void updateUniformBuffer(int index, float curtime) {
+        if (uniformBufferObjects[index] == null) {
+            uniformBufferObjects[index] =
+                    new UniformBufferObject(new Matrix4f(), new Matrix4f(), new Matrix4f());
+            UniformBufferObject ubo = uniformBufferObjects[index];
+            ubo.view.lookAt(
+                    new Vector3f(2.0f, 2.0f, 2.0f),
+                    new Vector3f(0.0f, 0.0f, -0.05f),
+                    new Vector3f(0.0f, 0.0f, 1.0f));
+            ubo.proj.setPerspective(
+                    45.0f, (float) extent.width() / (float) extent.height(), 0.1f, 10.f, true);
+            ubo.proj.m11(-ubo.proj.m11());
+        }
+
+        UniformBufferObject ubo = uniformBufferObjects[index];
+        ubo.model.rotation(curtime * 1.5f, 0.0f, 0.0f, 1.0f);
+
+        VulkanBuffer buffer = uniformBuffers[index];
+
+        try (MemoryStack stack = stackPush()) {
+            PointerBuffer pData = stack.pointers(0);
+            vkMapMemory(device, buffer.memory, 0, UniformBufferObject.SIZEOF, 0, pData);
+            ByteBuffer byteBuffer = pData.getByteBuffer(UniformBufferObject.SIZEOF);
+            ubo.copyTo(byteBuffer);
+            vkUnmapMemory(device, buffer.memory);
+        }
+    }
+
     /// Setup code
 
     /** Creates a GLFW window */
@@ -550,8 +632,9 @@ public class RenderedApp {
         setupPhysicalDevice();
         setupLogicalDevice();
         setupCommandPool();
-        setupBuffers();
+        setupModelBuffers();
         setupShaders();
+        setupDescriptorSetLayout();
         createSwapchainObjects();
         setupSyncObjects();
     }
@@ -1103,6 +1186,37 @@ public class RenderedApp {
         }
     }
 
+    /// Descriptor set setup
+
+    private void setupDescriptorSetLayout() {
+        LOGGER.info("Setup descriptor set layout");
+
+        try (MemoryStack stack = stackPush()) {
+            VkDescriptorSetLayoutBinding.Buffer uboLayoutBinding =
+                    VkDescriptorSetLayoutBinding.callocStack(1, stack);
+            uboLayoutBinding.binding(0);
+            uboLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            uboLayoutBinding.descriptorCount(1);
+            uboLayoutBinding.stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo =
+                    VkDescriptorSetLayoutCreateInfo.callocStack(stack);
+            layoutInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO);
+            layoutInfo.pBindings(uboLayoutBinding);
+
+            LongBuffer pDescriptorSetLayout = stack.longs(0);
+
+            int res = vkCreateDescriptorSetLayout(device, layoutInfo, null, pDescriptorSetLayout);
+
+            if (res != VK_SUCCESS) {
+                throw new RuntimeException(
+                        String.format("Failed to create descriptor set layout! Res: %x", -res));
+            }
+
+            descriptorSetLayout = pDescriptorSetLayout.get(0);
+        }
+    }
+
     /// Graphics pipeline setup
 
     private void setupGraphicsPipeline() {
@@ -1177,7 +1291,7 @@ public class RenderedApp {
             rasterizer.polygonMode(VK_POLYGON_MODE_FILL);
             rasterizer.lineWidth(1.0f);
             rasterizer.cullMode(VK_CULL_MODE_BACK_BIT);
-            rasterizer.frontFace(VK_FRONT_FACE_CLOCKWISE);
+            rasterizer.frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE);
 
             // Used for shadowmaps, which we currently don't have...
             rasterizer.depthBiasEnable(false);
@@ -1211,6 +1325,8 @@ public class RenderedApp {
             VkPipelineLayoutCreateInfo pipelineLayoutInfo =
                     VkPipelineLayoutCreateInfo.callocStack(stack);
             pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
+            LongBuffer pDescriptorSetLayout = stack.longs(descriptorSetLayout);
+            pipelineLayoutInfo.pSetLayouts(pDescriptorSetLayout);
 
             LongBuffer pPipelineLayout = stack.longs(0);
 
@@ -1326,9 +1442,24 @@ public class RenderedApp {
 
     /// Create vertex and index buffers for rendering
 
-    private void setupBuffers() {
+    private void setupModelBuffers() {
         setupVertexBuffer();
         setupIndexBuffer();
+    }
+
+    private void setupUniformBuffers() {
+        long size = UniformBufferObject.SIZEOF;
+        uniformBuffers =
+                IntStream.range(0, framebuffers.length)
+                        .mapToObj(
+                                __ ->
+                                        createBuffer(
+                                                size,
+                                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                                                        | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+                        .toArray(VulkanBuffer[]::new);
+        uniformBufferObjects = new UniformBufferObject[uniformBuffers.length];
     }
 
     private void setupVertexBuffer() {
@@ -1338,7 +1469,7 @@ public class RenderedApp {
 
             long size = VERTICES.length * Vertex.SIZEOF;
 
-            long[] stagingBuffer =
+            VulkanBuffer stagingBuffer =
                     createBuffer(
                             size,
                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -1346,12 +1477,12 @@ public class RenderedApp {
                                     | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
             PointerBuffer pData = stack.pointers(0);
-            vkMapMemory(device, stagingBuffer[1], 0, size, 0, pData);
+            vkMapMemory(device, stagingBuffer.memory, 0, size, 0, pData);
             ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
             for (Vertex v : VERTICES) {
                 v.copyTo(byteBuffer);
             }
-            vkUnmapMemory(device, stagingBuffer[1]);
+            vkUnmapMemory(device, stagingBuffer.memory);
 
             vertexBuffer =
                     createBuffer(
@@ -1361,7 +1492,7 @@ public class RenderedApp {
 
             copyBuffer(stagingBuffer, vertexBuffer, size);
 
-            destroyBuffer(stagingBuffer);
+            stagingBuffer.destroyBuffer(device);
         }
     }
 
@@ -1372,7 +1503,7 @@ public class RenderedApp {
 
             long size = INDICES.length * 2;
 
-            long[] stagingBuffer =
+            VulkanBuffer stagingBuffer =
                     createBuffer(
                             size,
                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -1380,12 +1511,12 @@ public class RenderedApp {
                                     | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
             PointerBuffer pData = stack.pointers(0);
-            vkMapMemory(device, stagingBuffer[1], 0, size, 0, pData);
+            vkMapMemory(device, stagingBuffer.memory, 0, size, 0, pData);
             ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
             for (short i : INDICES) {
                 byteBuffer.putShort(i);
             }
-            vkUnmapMemory(device, stagingBuffer[1]);
+            vkUnmapMemory(device, stagingBuffer.memory);
 
             indexBuffer =
                     createBuffer(
@@ -1395,11 +1526,11 @@ public class RenderedApp {
 
             copyBuffer(stagingBuffer, indexBuffer, size);
 
-            destroyBuffer(stagingBuffer);
+            stagingBuffer.destroyBuffer(device);
         }
     }
 
-    private void copyBuffer(long[] from, long[] to, long size) {
+    private void copyBuffer(VulkanBuffer from, VulkanBuffer to, long size) {
         try (MemoryStack stack = stackPush()) {
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
             allocInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);
@@ -1422,7 +1553,7 @@ public class RenderedApp {
             copyRegion.srcOffset(0);
             copyRegion.dstOffset(0);
             copyRegion.size(size);
-            vkCmdCopyBuffer(commandBuffer, from[0], to[0], copyRegion);
+            vkCmdCopyBuffer(commandBuffer, from.buffer, to.buffer, copyRegion);
 
             vkEndCommandBuffer(commandBuffer);
 
@@ -1435,8 +1566,8 @@ public class RenderedApp {
         }
     }
 
-    private long[] createBuffer(long size, int usage, int properties) {
-        long[] ret = {0, 0};
+    private VulkanBuffer createBuffer(long size, int usage, int properties) {
+        VulkanBuffer ret = new VulkanBuffer();
         try (MemoryStack stack = stackPush()) {
             VkBufferCreateInfo createInfo = VkBufferCreateInfo.callocStack(stack);
             createInfo.sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO);
@@ -1452,10 +1583,10 @@ public class RenderedApp {
                 throw new RuntimeException(String.format("Failed to create buffer! Ret: %x", -res));
             }
 
-            ret[0] = pBuffer.get(0);
+            ret.buffer = pBuffer.get(0);
 
             VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetBufferMemoryRequirements(device, ret[0], memoryRequirements);
+            vkGetBufferMemoryRequirements(device, ret.buffer, memoryRequirements);
 
             VkMemoryAllocateInfo allocateInfo = VkMemoryAllocateInfo.callocStack(stack);
             allocateInfo.sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO);
@@ -1472,9 +1603,9 @@ public class RenderedApp {
                         String.format("Failed to allocate buffer memory! Ret: %x", -res));
             }
 
-            ret[1] = pBufferMemory.get(0);
+            ret.memory = pBufferMemory.get(0);
 
-            vkBindBufferMemory(device, ret[0], ret[1], 0);
+            res = vkBindBufferMemory(device, ret.buffer, ret.memory, 0);
         }
         return ret;
     }
@@ -1494,6 +1625,87 @@ public class RenderedApp {
             }
 
             throw new RuntimeException("Failed to find suitable memory type!");
+        }
+    }
+
+    /// Descriptor pool setup
+
+    private void setupDescriptorPool() {
+        LOGGER.info("Setup descriptor pool");
+
+        try (MemoryStack stack = stackPush()) {
+            VkDescriptorPoolSize.Buffer poolSize = VkDescriptorPoolSize.callocStack(1, stack);
+            poolSize.type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            poolSize.descriptorCount(uniformBuffers.length);
+
+            VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.callocStack(stack);
+            poolInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);
+            poolInfo.pPoolSizes(poolSize);
+            poolInfo.maxSets(uniformBuffers.length);
+
+            LongBuffer pDescriptorPool = stack.longs(0);
+
+            int res = vkCreateDescriptorPool(device, poolInfo, null, pDescriptorPool);
+
+            if (res != VK_SUCCESS) {
+                throw new RuntimeException(
+                        String.format("Failed to create descriptor pool! Res: %x", -res));
+            }
+
+            descriptorPool = pDescriptorPool.get(0);
+        }
+    }
+
+    /// Descriptor sets setup
+
+    private void setupDescriptorSets() {
+        LOGGER.info("Setup descriptor sets");
+
+        try (MemoryStack stack = stackPush()) {
+            LongBuffer setLayouts = stack.mallocLong(uniformBuffers.length);
+            IntStream.range(0, uniformBuffers.length)
+                    .mapToLong(__ -> descriptorSetLayout)
+                    .forEach(setLayouts::put);
+            setLayouts.rewind();
+
+            VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.callocStack(stack);
+            allocInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO);
+            allocInfo.descriptorPool(descriptorPool);
+            allocInfo.pSetLayouts(setLayouts);
+
+            LongBuffer pDescriptorSets = stack.mallocLong(uniformBuffers.length);
+
+            int res = vkAllocateDescriptorSets(device, allocInfo, pDescriptorSets);
+
+            if (res != VK_SUCCESS)
+                throw new RuntimeException(
+                        String.format("Failed to create descriptor sets! Res: %x", -res));
+
+            descriptorSets =
+                    IntStream.range(0, uniformBuffers.length)
+                            .mapToLong(pDescriptorSets::get)
+                            .toArray();
+
+            for (int i = 0; i < uniformBuffers.length; i++) {
+                VkDescriptorBufferInfo.Buffer bufferInfo =
+                        VkDescriptorBufferInfo.callocStack(1, stack);
+                bufferInfo.offset(0);
+                bufferInfo.range(UniformBufferObject.SIZEOF);
+
+                VkWriteDescriptorSet.Buffer descriptorWrite =
+                        VkWriteDescriptorSet.callocStack(1, stack);
+                descriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
+                descriptorWrite.dstBinding(0);
+                descriptorWrite.dstArrayElement(0);
+                descriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+                descriptorWrite.descriptorCount(1);
+                descriptorWrite.pBufferInfo(bufferInfo);
+
+                bufferInfo.buffer(uniformBuffers[i].buffer);
+                descriptorWrite.dstSet(descriptorSets[i]);
+
+                vkUpdateDescriptorSets(device, descriptorWrite, null);
+            }
         }
     }
 
@@ -1559,11 +1771,19 @@ public class RenderedApp {
 
                 vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-                LongBuffer vertexBuffers = stack.longs(vertexBuffer[0]);
+                LongBuffer vertexBuffers = stack.longs(vertexBuffer.buffer);
                 LongBuffer offsets = stack.longs(0);
                 vkCmdBindVertexBuffers(cb, 0, vertexBuffers, offsets);
-                vkCmdBindIndexBuffer(cb, indexBuffer[0], 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(cb, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
+                LongBuffer descriptorSet = stack.longs(descriptorSets[i]);
+                vkCmdBindDescriptorSets(
+                        cb,
+                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        pipelineLayout,
+                        0,
+                        descriptorSet,
+                        null);
                 vkCmdDrawIndexed(cb, INDICES.length, 1, 0, 0, 0);
 
                 vkCmdEndRenderPass(cb);
@@ -1636,10 +1856,5 @@ public class RenderedApp {
     private void destroyDebugMessanger() {
         if (debugMessenger == 0) return;
         vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, null);
-    }
-
-    private void destroyBuffer(long[] buf) {
-        vkFreeMemory(device, buf[1], null);
-        vkDestroyBuffer(device, buf[0], null);
     }
 }
