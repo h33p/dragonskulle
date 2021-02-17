@@ -25,6 +25,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
+import org.dragonskulle.core.Resource;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
@@ -83,6 +84,9 @@ public class RenderedApp {
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_MAILBOX_KHR);
 
     private static float RADIUS = 0.5f;
+
+    private Resource<ShaderBuf> vertShader;
+    private Resource<ShaderBuf> fragShader;
 
     private static Vertex[] VERTICES = {
         new Vertex(new Vector2f(-0.5f * RADIUS, 0.86603f * RADIUS), new Vector3f(0.0f, 0.0f, 1.0f)),
@@ -382,6 +386,8 @@ public class RenderedApp {
             vkDestroyFence(device, frame.inFlightFence, null);
         }
         cleanupSwapchain();
+        fragShader.free();
+        vertShader.free();
         destroyBuffer(vertexBuffer);
         vkDestroyCommandPool(device, commandPool, null);
         vkDestroyDevice(device, null);
@@ -553,6 +559,7 @@ public class RenderedApp {
         setupLogicalDevice();
         setupCommandPool();
         setupVertexBuffer();
+        setupShaders();
         createSwapchainObjects();
         setupSyncObjects();
     }
@@ -921,10 +928,21 @@ public class RenderedApp {
         }
     }
 
+    /// Shader setup
+
+    /** Compiles shaders and caches them */
+    private void setupShaders() {
+        vertShader = ShaderBuf.getResource("shader", ShaderKind.VERTEX_SHADER);
+        if (vertShader == null) throw new RuntimeException("Failed to load vertex shader!");
+
+        fragShader = ShaderBuf.getResource("shader", ShaderKind.FRAGMENT_SHADER);
+        if (fragShader == null) throw new RuntimeException("Failed to load fragment shader!");
+    }
+
     /// Swapchain setup
 
     /** Sets up the swapchain required for rendering */
-    void setupSwapchain() {
+    private void setupSwapchain() {
         LOGGER.info("Setup swapchain");
 
         try (MemoryStack stack = stackPush()) {
@@ -1098,11 +1116,11 @@ public class RenderedApp {
     private void setupGraphicsPipeline() {
         LOGGER.info("Setup graphics pipeline");
 
-        Shader vertShader = Shader.getShader("shader", ShaderKind.VERTEX_SHADER, device);
+        Shader vertShader = Shader.getShader(this.vertShader.get(), device);
 
         if (vertShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
 
-        Shader fragShader = Shader.getShader("shader", ShaderKind.FRAGMENT_SHADER, device);
+        Shader fragShader = Shader.getShader(this.fragShader.get(), device);
 
         if (fragShader == null) throw new RuntimeException("Failed to retrieve fragment shader!");
 
