@@ -59,6 +59,7 @@ public class RenderedApp {
     private long commandPool;
     private VkCommandBuffer[] commandBuffers;
     private long[] vertexBuffer;
+    private long[] indexBuffer;
 
     private FrameContext[] frames;
     private long[] imagesInFlight;
@@ -89,27 +90,17 @@ public class RenderedApp {
     private Resource<ShaderBuf> fragShader;
 
     private static Vertex[] VERTICES = {
-        new Vertex(new Vector2f(-0.5f * RADIUS, 0.86603f * RADIUS), new Vector3f(0.0f, 0.0f, 1.0f)),
-        new Vertex(new Vector2f(0.0f, 0.0f), new Vector3f(1.0f, 1.0f, 1.0f)),
-        new Vertex(new Vector2f(0.5f * RADIUS, 0.86603f * RADIUS), new Vector3f(0.0f, 1.0f, 0.0f)),
-        new Vertex(new Vector2f(0.5f * RADIUS, 0.86603f * RADIUS), new Vector3f(0.0f, 1.0f, 0.0f)),
-        new Vertex(new Vector2f(0.0f, 0.0f), new Vector3f(1.0f, 1.0f, 1.0f)),
-        new Vertex(new Vector2f(RADIUS, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f)),
-        new Vertex(new Vector2f(RADIUS, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f)),
-        new Vertex(new Vector2f(0.0f, 0.0f), new Vector3f(1.0f, 1.0f, 1.0f)),
-        new Vertex(new Vector2f(0.5f * RADIUS, -0.86603f * RADIUS), new Vector3f(0.0f, 1.0f, 0.0f)),
-        new Vertex(new Vector2f(0.5f * RADIUS, -0.86603f * RADIUS), new Vector3f(0.0f, 1.0f, 0.0f)),
-        new Vertex(new Vector2f(0.0f, 0.0f), new Vector3f(1.0f, 1.0f, 1.0f)),
-        new Vertex(
-                new Vector2f(-0.5f * RADIUS, -0.86603f * RADIUS), new Vector3f(0.0f, 0.0f, 1.0f)),
-        new Vertex(
-                new Vector2f(-0.5f * RADIUS, -0.86603f * RADIUS), new Vector3f(0.0f, 0.0f, 1.0f)),
-        new Vertex(new Vector2f(0.0f, 0.0f), new Vector3f(1.0f, 1.0f, 1.0f)),
-        new Vertex(new Vector2f(-RADIUS, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f)),
-        new Vertex(new Vector2f(-RADIUS, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f)),
         new Vertex(new Vector2f(0.0f, 0.0f), new Vector3f(1.0f, 1.0f, 1.0f)),
         new Vertex(new Vector2f(-0.5f * RADIUS, 0.86603f * RADIUS), new Vector3f(0.0f, 0.0f, 1.0f)),
+        new Vertex(new Vector2f(0.5f * RADIUS, 0.86603f * RADIUS), new Vector3f(0.0f, 1.0f, 0.0f)),
+        new Vertex(new Vector2f(RADIUS, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f)),
+        new Vertex(new Vector2f(0.5f * RADIUS, -0.86603f * RADIUS), new Vector3f(0.0f, 1.0f, 0.0f)),
+        new Vertex(
+                new Vector2f(-0.5f * RADIUS, -0.86603f * RADIUS), new Vector3f(0.0f, 0.0f, 1.0f)),
+        new Vertex(new Vector2f(-RADIUS, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f)),
     };
+
+    private static short[] INDICES = {1, 0, 2, 2, 0, 3, 3, 0, 4, 4, 0, 5, 5, 0, 6, 6, 0, 1};
 
     static {
         String line = System.getenv("DEBUG_RENDERER");
@@ -388,6 +379,7 @@ public class RenderedApp {
         cleanupSwapchain();
         fragShader.free();
         vertShader.free();
+        destroyBuffer(indexBuffer);
         destroyBuffer(vertexBuffer);
         vkDestroyCommandPool(device, commandPool, null);
         vkDestroyDevice(device, null);
@@ -558,7 +550,7 @@ public class RenderedApp {
         setupPhysicalDevice();
         setupLogicalDevice();
         setupCommandPool();
-        setupVertexBuffer();
+        setupBuffers();
         setupShaders();
         createSwapchainObjects();
         setupSyncObjects();
@@ -1332,7 +1324,12 @@ public class RenderedApp {
         }
     }
 
-    /// Create vertex buffer for rendering
+    /// Create vertex and index buffers for rendering
+
+    private void setupBuffers() {
+        setupVertexBuffer();
+        setupIndexBuffer();
+    }
 
     private void setupVertexBuffer() {
         LOGGER.info("Setup vertex buffer");
@@ -1363,6 +1360,40 @@ public class RenderedApp {
                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
             copyBuffer(stagingBuffer, vertexBuffer, size);
+
+            destroyBuffer(stagingBuffer);
+        }
+    }
+
+    private void setupIndexBuffer() {
+        LOGGER.info("Setup index buffer");
+
+        try (MemoryStack stack = stackPush()) {
+
+            long size = INDICES.length * 2;
+
+            long[] stagingBuffer =
+                    createBuffer(
+                            size,
+                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+            PointerBuffer pData = stack.pointers(0);
+            vkMapMemory(device, stagingBuffer[1], 0, size, 0, pData);
+            ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
+            for (short i : INDICES) {
+                byteBuffer.putShort(i);
+            }
+            vkUnmapMemory(device, stagingBuffer[1]);
+
+            indexBuffer =
+                    createBuffer(
+                            size,
+                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+            copyBuffer(stagingBuffer, indexBuffer, size);
 
             destroyBuffer(stagingBuffer);
         }
@@ -1531,8 +1562,9 @@ public class RenderedApp {
                 LongBuffer vertexBuffers = stack.longs(vertexBuffer[0]);
                 LongBuffer offsets = stack.longs(0);
                 vkCmdBindVertexBuffers(cb, 0, vertexBuffers, offsets);
+                vkCmdBindIndexBuffer(cb, indexBuffer[0], 0, VK_INDEX_TYPE_UINT16);
 
-                vkCmdDraw(cb, VERTICES.length, 1, 0, 0);
+                vkCmdDrawIndexed(cb, INDICES.length, 1, 0, 0, 0);
 
                 vkCmdEndRenderPass(cb);
 
