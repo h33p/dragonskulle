@@ -8,6 +8,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+/**
+ * This is the client usage, you will create an instance, by providing the correct server to connect
+ * to. ClientListener is the handler for commands that the client receives. {@link
+ * org.dragonskulle.network.ClientListener}
+ */
 public class Client {
     private Socket socket;
     private BufferedReader in;
@@ -42,9 +47,7 @@ public class Client {
         try {
             if (open) {
                 open = false;
-                socket.close();
-                in.close();
-                out.close();
+                closeAllConnections();
                 clientListener.disconnected();
             }
             socket = null;
@@ -64,58 +67,59 @@ public class Client {
         return open;
     }
 
+    /**
+     * This is the thread which is created once the connection is achieved. It is used to handle
+     * messages received from the server. It also handles the server disconnection.
+     *
+     * @return
+     */
     private Runnable clientRunner() {
         return () -> {
             while (open) {
                 try {
                     String s = in.readLine();
+                    // if s is null we need to terminate the connections as the server has died.
                     if (s == null) {
-                        System.out.println("Received Null from server, server has died");
-                        open = false;
+                        //                        System.out.println("Received Null from server,
+                        // server has died");
                         clientListener.disconnected();
-                        try {
-                            if (socket != null) socket.close();
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
-                        try {
-                            if (in != null) in.close();
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
-                        try {
-                            if (out != null) out.close();
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
+                        this.dispose();
                         break;
+                    } else { // if s is not null then we need to send this to the handler
+                        // (clientListener)
+                        clientListener.receivedInput(s);
                     }
-                    clientListener.receivedInput(s);
-                } catch (IOException exception) {
-                    open = false;
-                    clientListener.serverClosed();
-                    try {
-                        socket.close();
-                    } catch (Exception exception1) {
-                        exception.printStackTrace();
-                    }
-                    try {
-                        in.close();
-                    } catch (Exception exception1) {
-                        exception.printStackTrace();
-                    }
-                    try {
-                        out.close();
-                    } catch (Exception exception1) {
-                        exception.printStackTrace();
-                    }
+                } catch (IOException ignore) { // if fails to read from in stream
+                    clientListener.error("failed to read from input stream");
                     this.dispose();
-                    Thread.currentThread().interrupt();
                     break;
-                } catch (Exception exception) {
-                    exception.printStackTrace();
                 }
             }
         };
+    }
+
+    private void closeAllConnections() {
+        open = false;
+        try {
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        try {
+            if (in != null) {
+                in.close();
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        try {
+            if (out != null) {
+                out.close();
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
     }
 }

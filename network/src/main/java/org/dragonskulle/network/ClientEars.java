@@ -1,6 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+/**
+ * ClientEars is the client implementation of ClientListener, this is where custom executions can be
+ * defined for different commands received.
+ */
 public class ClientEars implements ClientListener {
     @Override
     public void unknownHost() {
@@ -30,5 +34,10 @@ public class ClientEars implements ClientListener {
     @Override
     public void connectedToServer() {
         System.out.println("[Client] Connected from server");
+    }
+
+    @Override
+    public void error(String s) {
+        System.out.println("[Client] ERROR: " + s);
     }
 }

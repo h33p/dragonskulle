@@ -10,6 +10,11 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+/**
+ * SocketStore is for storing all the information about connected clients. It stores all of the
+ * sockets and can close and broadcast to all clients. It should be used alongside Server, it is the
+ * backbone of the server functions.
+ */
 public class SocketStore {
     private ServerSocket server;
     private final ArrayList<Socket> store;

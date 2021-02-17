@@ -12,6 +12,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
+/**
+ * This is the main Server Class, it handles setup and stores all client connections. It can
+ * broadcast messages to every client and receive from individual clients.
+ */
 public class Server {
     private int port;
     private ServerListener serverListener;
@@ -83,6 +87,12 @@ public class Server {
         }
     }
 
+    /**
+     * ServerRunner is the thread which constantly checks for new client requests, if a client has
+     * requested a socket, it will provide it a thread to communicate on and accept the socket.
+     * SO_TIMEOUT is set so that sockets.acceptClient won't block the joining of the thread
+     * indefinitely.
+     */
     private class ServerRunner implements Runnable {
         volatile boolean open = true;
 
@@ -104,6 +114,14 @@ public class Server {
         }
     }
 
+    /**
+     * THe Client Runner is the thread given to each client to handle its own socket. Commands are
+     * read from the input stream. It will pass all commands to the correct handler function. {@link
+     * org.dragonskulle.network.ServerListener}
+     *
+     * @param sock
+     * @return
+     */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
             return () -> {};
@@ -121,23 +139,13 @@ public class Server {
                 serverListener.clientConnected(client, out);
                 connected = sock.isConnected();
                 while (connected) {
-                    try {
-                        stream = in.readLine();
-                        if (stream == null) {
-                            throw new IOException();
-                        }
-                        serverListener.receivedInput(client, stream);
-
-                    } catch (IOException e) {
-                        // if client disconnected, remove it
-                        try {
-                            this.sockets.terminateClient(sock); // close and remove
-                            serverListener.clientDisconnected(client);
-                        } catch (Exception exception) {
-                            exception.printStackTrace();
-                        }
+                    stream = in.readLine();
+                    if (stream == null) {
+                        this.sockets.terminateClient(sock); // close and remove
+                        serverListener.clientDisconnected(client);
                         connected = false;
                     }
+                    serverListener.receivedInput(client, stream);
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();

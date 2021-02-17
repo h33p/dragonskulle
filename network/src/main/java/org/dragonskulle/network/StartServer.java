@@ -17,13 +17,10 @@ public class StartServer {
     public static void attachShutDownHook() {
         Runtime.getRuntime()
                 .addShutdownHook(
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                System.out.println("Shutting down server");
-                                server.dispose();
-                            }
-                        });
+                        new Thread(() -> {
+                            System.out.println("Shutting down server");
+                            server.dispose();
+                        }));
 
         System.out.println("Shut Down Hook Attached.");
     }
