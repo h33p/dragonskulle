@@ -2,8 +2,6 @@ package org.dragonskulle.input.listeners;
 
 import java.util.logging.Logger;
 
-import org.dragonskulle.input.storage.Buttons;
-import org.dragonskulle.input.storage.Scroll;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWScrollCallback;
 

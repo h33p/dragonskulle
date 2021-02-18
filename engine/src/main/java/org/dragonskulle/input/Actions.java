@@ -1,6 +1,4 @@
-package org.dragonskulle.input.storage;
-
-import org.dragonskulle.input.Action;
+package org.dragonskulle.input;
 
 /**
  * Stores {@link Action}s and whether they are activated.

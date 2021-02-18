@@ -1,4 +1,4 @@
-package org.dragonskulle.input.storage;
+package org.dragonskulle.input;
 
 import java.util.HashMap;
 
@@ -9,7 +9,7 @@ import java.util.HashMap;
  *
  * @param <T> The data type of the stored elements.
  */
-abstract class Activatable<T> {
+public abstract class Activatable<T> {
 
 	/** Stores elements that are either {@code true} or {@code false}.*/
 	private final HashMap<T, Boolean> stored = new HashMap<T, Boolean>();
@@ -26,9 +26,9 @@ abstract class Activatable<T> {
 	/**
 	 * Query if an element is activated.
 	 * @param key The element.
-	 * @return If the element is activated, return {@code true}, otherwise {@code false}.
+	 * @return If the element is activated return {@code true}, otherwise {@code false}.
 	 */
-	public boolean isActivated(T key) {
+	boolean isActivated(T key) {
 		if(key == null || !stored.containsKey(key)) {
 			return false;
 		}

@@ -1,6 +1,5 @@
 package org.dragonskulle.input;
 
-import org.dragonskulle.input.storage.Actions;
 import org.joml.Vector2d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
