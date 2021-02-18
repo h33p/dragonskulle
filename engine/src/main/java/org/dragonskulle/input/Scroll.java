@@ -72,6 +72,15 @@ public class Scroll {
 	}
 	
 	/**
+	 * Get the scrolling amount since the last {@link Scroll#reset()}.
+	 * 
+	 * @return The amount of scrolling.
+	 */
+	public double getAmount() {
+		return mAmount;
+	}
+	
+	/**
 	 * Resets scrolling previously recorded, ready for new scrolling to be recorded. 
 	 * <p>
 	 * Needs to be called frequently so:
@@ -80,19 +89,10 @@ public class Scroll {
 	 * <li> Stopping scrolling is represented in {@link #mAmount} and {@link #mButtons}. </li>
 	 * </ul>
 	 */
-	public void reset() {
+	void reset() {
 		mAmount = 0;
 		mButtons.release(Scroll.UP);
 		mButtons.release(Scroll.DOWN);
-	}
-	
-	/**
-	 * Get the scrolling amount since the last {@link Scroll#reset()}.
-	 * 
-	 * @return The amount of scrolling.
-	 */
-	public double getAmount() {
-		return mAmount;
 	}
 	
 	/**

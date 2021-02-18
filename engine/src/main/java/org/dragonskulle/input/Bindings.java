@@ -16,53 +16,53 @@ public class Bindings {
 	/** Key: Button <br/>
 	 *  Value: {@link Action}s the Button activates.
 	 * */
-	private final HashMap<Integer, ArrayList<Action>> buttonToActions = new HashMap<Integer, ArrayList<Action>>();
+	private final HashMap<Integer, ArrayList<Action>> mButtonToActions = new HashMap<Integer, ArrayList<Action>>();
 	
 	/** Key: {@link Action} <br/>
 	 *  Value: Buttons that activate the Action.
 	 * */
-	private final HashMap<Action, ArrayList<Integer>> actionToButtons = new HashMap<Action, ArrayList<Integer>>();
+	private final HashMap<Action, ArrayList<Integer>> mActionToButtons = new HashMap<Action, ArrayList<Integer>>();
 	
 	public Bindings() {
 		// Currently hard-coded values:
 		
-		buttonToActions.put(Scroll.UP, getActionList(Action.SCROLL_UP, Action.ZOOM_IN));
-		buttonToActions.put(Scroll.DOWN, getActionList(Action.SCROLL_DOWN, Action.ZOOM_OUT));
+		mButtonToActions.put(Scroll.UP, getActionList(Action.SCROLL_UP, Action.ZOOM_IN));
+		mButtonToActions.put(Scroll.DOWN, getActionList(Action.SCROLL_DOWN, Action.ZOOM_OUT));
 		
-		buttonToActions.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.SCROLL_UP));
-		buttonToActions.put(GLFW.GLFW_KEY_W, getActionList(Action.UP, Action.SCROLL_UP));
-		buttonToActions.put(GLFW.GLFW_KEY_DOWN, getActionList(Action.DOWN, Action.SCROLL_DOWN));
-		buttonToActions.put(GLFW.GLFW_KEY_S, getActionList(Action.DOWN, Action.SCROLL_DOWN));
+		mButtonToActions.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.SCROLL_UP));
+		mButtonToActions.put(GLFW.GLFW_KEY_W, getActionList(Action.UP, Action.SCROLL_UP));
+		mButtonToActions.put(GLFW.GLFW_KEY_DOWN, getActionList(Action.DOWN, Action.SCROLL_DOWN));
+		mButtonToActions.put(GLFW.GLFW_KEY_S, getActionList(Action.DOWN, Action.SCROLL_DOWN));
 		
-		buttonToActions.put(GLFW.GLFW_KEY_LEFT, getActionList(Action.LEFT));
-		buttonToActions.put(GLFW.GLFW_KEY_A, getActionList(Action.LEFT));
-		buttonToActions.put(GLFW.GLFW_KEY_RIGHT, getActionList(Action.RIGHT));
-		buttonToActions.put(GLFW.GLFW_KEY_D, getActionList(Action.RIGHT));
+		mButtonToActions.put(GLFW.GLFW_KEY_LEFT, getActionList(Action.LEFT));
+		mButtonToActions.put(GLFW.GLFW_KEY_A, getActionList(Action.LEFT));
+		mButtonToActions.put(GLFW.GLFW_KEY_RIGHT, getActionList(Action.RIGHT));
+		mButtonToActions.put(GLFW.GLFW_KEY_D, getActionList(Action.RIGHT));
 		
-		buttonToActions.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.ACTION_1, Action.DRAG));
-		buttonToActions.put(GLFW.GLFW_MOUSE_BUTTON_RIGHT, getActionList(Action.ACTION_2));
-		buttonToActions.put(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, getActionList(Action.ACTION_3));
+		mButtonToActions.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.ACTION_1, Action.DRAG));
+		mButtonToActions.put(GLFW.GLFW_MOUSE_BUTTON_RIGHT, getActionList(Action.ACTION_2));
+		mButtonToActions.put(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, getActionList(Action.ACTION_3));
 		
 		generateActionToButton();
 		
-		System.out.println(buttonToActions);
-		System.out.println(actionToButtons);
+		System.out.println(mButtonToActions);
+		System.out.println(mActionToButtons);
 	}
 	
 	/**
 	 * Use {@link #buttonToAction} to generate the contents of {@link #actionToButton}.
 	 */
 	private void generateActionToButton() {
-		for (Entry<Integer, ArrayList<Action>> entry : buttonToActions.entrySet()) {
+		for (Entry<Integer, ArrayList<Action>> entry : mButtonToActions.entrySet()) {
 			for (Action action : entry.getValue()) {
 				ArrayList<Integer> buttonsList = new ArrayList<Integer>();
 				
 				buttonsList.add(entry.getKey());
-				if(actionToButtons.containsKey(action)) {
-					buttonsList.addAll(actionToButtons.get(action));
+				if(mActionToButtons.containsKey(action)) {
+					buttonsList.addAll(mActionToButtons.get(action));
 				}
 				
-				actionToButtons.put(action, buttonsList);
+				mActionToButtons.put(action, buttonsList);
 			}
 		}
 	}
@@ -80,24 +80,26 @@ public class Bindings {
 	
 	/**
 	 * @param button The button being targeted.
+	 * 
 	 * @return An {@code ArrayList} of {@link Action}s associated with the button, or an empty {@code ArrayList}.
 	 */
 	public ArrayList<Action> getActions(Integer button) {
-		if(!buttonToActions.containsKey(button)) {
+		if(!mButtonToActions.containsKey(button)) {
 			return new ArrayList<Action>();
 		}
-		return buttonToActions.get(button);
+		return mButtonToActions.get(button);
 	}
 	
 	/***
 	 * @param action The action being targeted.
+	 * 
 	 * @return An {@code ArrayList} of buttons associated with the {@link Action}, or an empty {@code ArrayList}.
 	 */
 	public ArrayList<Integer> getButtons(Action action) {
-		if(!actionToButtons.containsKey(action)) {
+		if(!mActionToButtons.containsKey(action)) {
 			return new ArrayList<Integer>();
 		}
-		return actionToButtons.get(action);
+		return mActionToButtons.get(action);
 	}
 	
 }

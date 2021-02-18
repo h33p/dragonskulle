@@ -9,8 +9,9 @@ import lombok.Getter;
  * <p>
  * Provides:
  * <ul>
- * <li>Access to whether {@link Action}s are active.</li>
- * <li>Access to the cursor.</li>
+ * <li> Access to whether {@link Action}s are active. </li>
+ * <li> Access to the cursor. </li>
+ * <li> Access to the raw scrolling value (via {@link #mScroll}). </li>
  * </ul>
  * 
  * @author Craig Wilboure
@@ -20,10 +21,10 @@ public class Input {
 	public static final Logger LOGGER = Logger.getLogger("input");		
 	
 	/** Stores the bindings between buttons and actions. */
-	private Bindings bindings;
+	private Bindings mBindings;
 	
 	/** Stores which actions are active. */
-	private Actions actions;
+	private Actions mActions;
 	
 	/** Allows button input to be detected. */
 	@Getter
@@ -38,16 +39,15 @@ public class Input {
 	private Scroll mScroll = new Scroll();
 	
 	
-	
 	public Input(long window) {
-		actions = new Actions();
-		bindings = new Bindings();
+		mActions = new Actions();
+		mBindings = new Bindings();
 		
 		mCursor = new Cursor();
-		mCursor.attachToWindow(window, actions);
+		mCursor.attachToWindow(window, mActions);
 		
 		mButtons = new Buttons();
-		mButtons.attachToWindow(window, actions, bindings);
+		mButtons.attachToWindow(window, mActions, mBindings);
 		
 		mScroll = new Scroll();
 		mScroll.attachToWindow(window, mButtons);
@@ -67,25 +67,15 @@ public class Input {
 	 * @return {@code true} if the action is activated, otherwise {@code false}.
 	 */
 	public boolean isActivated(Action action) {
-		return actions.isActivated(action);
+		return mActions.isActivated(action);
 	}
 	
 	/**
-	 * Resets the {@link #scroll} detection for the next input polling cycle.
-	 *
-	public void resetScroll() {
-		//scroll.reset();
-		//buttons.released(Scroll.UP);
-		//buttons.released(Scroll.DOWN);
+	 * Resets any recorded values ready for their new values.
+	 * <p>
+	 * Currently only used for {@link Scroll}.
+	 */
+	public void reset() {
+		mScroll.reset();
 	}
-	*/
-	
-	/*
-	 * 
-	 * @return The amount of scrolling done since {@link Scroll#reset} was called.
-	 *
-	public double getScroll() {
-		return scroll.getAmount();
-	}
-	*/
 }
