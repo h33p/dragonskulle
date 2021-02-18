@@ -9,8 +9,9 @@ import org.dragonskulle.input.listeners.MouseScrollListener;
 import org.dragonskulle.input.storage.Actions;
 import org.dragonskulle.input.storage.Buttons;
 import org.dragonskulle.input.storage.Converter;
-import org.dragonskulle.input.storage.Position;
+import org.dragonskulle.input.storage.MousePosition;
 import org.dragonskulle.input.storage.Scroll;
+import org.joml.Vector2d;
 
 /**
  * Manages all user input.
@@ -29,13 +30,13 @@ public class Input {
 	/** Store mouse scroll movement. */
 	private Scroll scroll = new Scroll();
 	/** Store mouse position. */
-	private Position position = new Position();
+	private MousePosition mousePosition = new MousePosition();
 	
 	public Input(long window) {
 		new KeyboardListener(window, buttons);
 		new MouseButtonListener(window, buttons);
 		new MouseScrollListener(window, buttons, scroll);
-		new MousePositionListener(window, position);
+		new MousePositionListener(window, mousePosition, actions);
 		
 		
 		/*
@@ -83,8 +84,24 @@ public class Input {
 		return scroll.getAmount();
 	}
 	
-	public Position getMousePosition() {
-		return position;
+	public Vector2d getMousePosition() {
+		return mousePosition.getPosition();
+	}
+	
+	public MousePosition getMouse() {
+		return mousePosition;
+	}
+	
+	public void mouseTEST() {
+		//LOGGER.info(String.format("%b", mousePosition.isDragInProgress()));
+		if(mousePosition.isDragInProgress()) {
+			double distance = mousePosition.getDragDistance();
+			double angle = mousePosition.getDragAngle();
+			LOGGER.info(String.format("Distance of drag: %f\nAt angle: %f", distance, angle));
+			
+			//double test = mousePosition.getPosition().distance(mousePosition.getDragStart());
+			//LOGGER.info(String.format("Value: %f", test));
+		}
 	}
 	
 }

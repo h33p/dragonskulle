@@ -40,6 +40,10 @@ public class Converter {
 		buttonToAction.put(GLFW.GLFW_KEY_RIGHT, getActionList(Action.RIGHT));
 		buttonToAction.put(GLFW.GLFW_KEY_D, getActionList(Action.RIGHT));
 		
+		buttonToAction.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.MOUSE_LEFT));
+		buttonToAction.put(GLFW.GLFW_MOUSE_BUTTON_RIGHT, getActionList(Action.MOUSE_RIGHT));
+		buttonToAction.put(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, getActionList(Action.MOUSE_MIDDLE));
+		
 		generateActionToButton();
 	}
 	
