@@ -9,3 +9,5 @@
 .classpath
 */.factorypath
 bin/
+*.wav
+
