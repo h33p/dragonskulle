@@ -4,7 +4,6 @@ import java.util.logging.Logger;
 
 import org.dragonskulle.input.listeners.KeyboardListener;
 import org.dragonskulle.input.listeners.MouseButtonListener;
-import org.dragonskulle.input.listeners.MousePositionListener;
 import org.dragonskulle.input.listeners.MouseScrollListener;
 import org.dragonskulle.input.storage.Actions;
 import org.dragonskulle.input.storage.Buttons;
@@ -12,6 +11,8 @@ import org.dragonskulle.input.storage.Converter;
 import org.dragonskulle.input.storage.MousePosition;
 import org.dragonskulle.input.storage.Scroll;
 import org.joml.Vector2d;
+
+import lombok.Getter;
 
 /**
  * Manages all user input.
@@ -30,27 +31,18 @@ public class Input {
 	/** Store mouse scroll movement. */
 	private Scroll scroll = new Scroll();
 	/** Store mouse position. */
-	private MousePosition mousePosition = new MousePosition();
+	//private MousePosition mousePosition = new MousePosition();
+	
+	@Getter
+	private Cursor cursor;
 	
 	public Input(long window) {
+		cursor = new Cursor();
+		cursor.attachToWindow(window, actions);
+		
 		new KeyboardListener(window, buttons);
 		new MouseButtonListener(window, buttons);
-		new MouseScrollListener(window, buttons, scroll);
-		new MousePositionListener(window, mousePosition, actions);
-		
-		
-		/*
-		GLFWCursorPosCallback mousePosition = new GLFWCursorPosCallback() {
-			
-			@Override
-			public void invoke(long window, double xpos, double ypos) {
-				//System.out.println("Mouse position.");
-				//System.out.println(String.format("xpos: %f\nypos: %f", xpos, ypos));
-			}
-		};
-		
-		GLFW.glfwSetCursorPosCallback(window, mousePosition);
-		*/
+		new MouseScrollListener(window, buttons, scroll);		
 		
 		// For infinite mouse movement.
 		// GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
@@ -82,26 +74,6 @@ public class Input {
 	 */
 	public double getScroll() {
 		return scroll.getAmount();
-	}
-	
-	public Vector2d getMousePosition() {
-		return mousePosition.getPosition();
-	}
-	
-	public MousePosition getMouse() {
-		return mousePosition;
-	}
-	
-	public void mouseTEST() {
-		//LOGGER.info(String.format("%b", mousePosition.isDragInProgress()));
-		if(mousePosition.isDragInProgress()) {
-			double distance = mousePosition.getDragDistance();
-			double angle = mousePosition.getDragAngle();
-			LOGGER.info(String.format("Distance of drag: %f\nAt angle: %f", distance, angle));
-			
-			//double test = mousePosition.getPosition().distance(mousePosition.getDragStart());
-			//LOGGER.info(String.format("Value: %f", test));
-		}
 	}
 	
 }
