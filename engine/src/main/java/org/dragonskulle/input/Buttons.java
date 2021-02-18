@@ -5,17 +5,21 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 /**
- * Stores GLFW keyboard keys (as {@link Integer}s) and whether they are activated.
+ * Once attached to a window, this allows for buttons to trigger actions, as defined by the mapping in {@link Bindings}.
  * 
  * @author Craig Wilbourne
  */
 public class Buttons extends Activatable<Integer>{
 
+	/** Allows {@link Action}s to be activated and deactivated. */
 	private Actions mActions;
+	/** Allows the mapping between buttons and actions to be accessed. */
 	private Bindings mBindings;
 	
+	/**
+	 * Listens for GLFW button inputs from the keyboard and reports when they are pressed or released.
+	 */
 	private class KeyboardListener extends GLFWKeyCallback {
-		
 		@Override
 		public void invoke(long window, int button, int scancode, int action, int mods) {
 			if(action == GLFW.GLFW_PRESS) {
@@ -23,12 +27,13 @@ public class Buttons extends Activatable<Integer>{
 			} else if(action == GLFW.GLFW_RELEASE) {
 				release(button);
 			}
-		}
-		
+		}		
 	}
 	
+	/**
+	 * Listens for GLFW button inputs from the mouse and reports when they are pressed or released.
+	 */
 	private class MouseListener extends GLFWMouseButtonCallback {
-
 		@Override
 		public void invoke(long window, int button, int action, int mods) {
 			if(action == GLFW.GLFW_PRESS) {
@@ -36,19 +41,34 @@ public class Buttons extends Activatable<Integer>{
 			} else if(action == GLFW.GLFW_RELEASE) {
 				release(button);
 			}
-		}
-		
+		}		
 	}
 	
-	
+	/**
+	 * Attach the buttons to a window.
+	 * <p>
+	 * Required to allow button input to be detected.
+	 * 
+	 * @param window The window to attach to.
+	 * @param actions The actions that will be activated.
+	 * @param bindings The button and action bindings.
+	 */
 	void attachToWindow(long window, Actions actions, Bindings bindings) {
 		mActions = actions;
 		mBindings = bindings;
 		
+		// Set the listeners.
 		GLFW.glfwSetKeyCallback(window, new KeyboardListener());
 		GLFW.glfwSetMouseButtonCallback(window, new MouseListener());
 	}
 
+	/**
+	 * Called when a GLFW button is being pressed.
+	 * <p>
+	 * Activate any {@link Action}s associated with that button, according to the mapping in {@link Bindings}.
+	 * 
+	 * @param button The button being pressed.
+	 */
 	private void press(int button) {
 		setActivated(button, true);
 		
@@ -57,6 +77,13 @@ public class Buttons extends Activatable<Integer>{
 		}
 	}
 	
+	/**
+	 * Called when a GLFW button is released.
+	 * <p>
+	 * If there are no other buttons, according to the mapping in {@link Bindings}, activating an {@link Action}, deactivate the action.
+	 * 
+	 * @param button The button being released.
+	 */
 	private void release(int button) {
 		setActivated(button, false);
 		
@@ -78,76 +105,5 @@ public class Buttons extends Activatable<Integer>{
 			}
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	//private Converter converter;
-	//private Actions actions;
-	
-	/*
-	public Buttons(Converter converter, Actions actions) {
-		this.converter = converter;
-		this.actions = actions;
-	}
-	*/
-	
-	/**
-	 * When a button has been pressed, it correctly activates any {@link Action}s.
-	 * @param button The button that has been pressed.
-	 */
-	/*
-	public void pressed(Integer button) {
-		setActivated(button, true);
-		
-		for (Action action : converter.getActions(button)) {
-			actions.setActivated(action, true);
-		}
-	}
-	*/
-	
-	/**
-	 * When a button has been released, it correctly deactivates any {@link Action}s.
-	 * @param button The button that has been released.
-	 */
-	/*
-	public void released(Integer button) {
-		setActivated(button, false);
-		
-		// Check each action the button triggers, deactivating each action if no other buttons are currently triggering it.
-		for (Action action : converter.getActions(button)) {			
-			Boolean deactivate = true;
-			
-			for(Integer otherButton : converter.getButtons(action)) {
-				// If another button that triggers the action is currently activated, do not set action to false.
-				if(isActivated(otherButton) == true) {
-					deactivate = false;
-					break;
-				}
-			}
-			
-			// If no other buttons are triggering the action, deactivate the action.
-			if(deactivate) {
-				actions.setActivated(action, false);
-			}
-		}
-	}
-	*/
 	
 }
