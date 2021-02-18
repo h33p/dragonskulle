@@ -26,8 +26,8 @@ public class Bindings {
 	public Bindings() {
 		// Currently hard-coded values:
 		
-		//buttonToAction.put(Scroll.UP, getActionList(Action.SCROLL_UP, Action.ZOOM_IN));
-		//buttonToAction.put(Scroll.DOWN, getActionList(Action.SCROLL_DOWN, Action.ZOOM_OUT));
+		buttonToActions.put(Scroll.UP, getActionList(Action.SCROLL_UP, Action.ZOOM_IN));
+		buttonToActions.put(Scroll.DOWN, getActionList(Action.SCROLL_DOWN, Action.ZOOM_OUT));
 		
 		buttonToActions.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.SCROLL_UP));
 		buttonToActions.put(GLFW.GLFW_KEY_W, getActionList(Action.UP, Action.SCROLL_UP));

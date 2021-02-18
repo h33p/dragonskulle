@@ -2,49 +2,56 @@ package org.dragonskulle.input;
 
 import java.util.logging.Logger;
 
-import org.dragonskulle.input.listeners.MouseScrollListener;
-import org.dragonskulle.input.storage.Scroll;
-
 import lombok.Getter;
 
 /**
- * Manages all user input.
+ * Manages all user input a window receives.
+ * <p>
+ * Provides:
+ * <ul>
+ * <li>Access to whether {@link Action}s are active.</li>
+ * <li>Access to the cursor.</li>
+ * </ul>
+ * 
  * @author Craig Wilboure
  */
 public class Input {
 	
 	public static final Logger LOGGER = Logger.getLogger("input");		
 	
-	
-	/** Store triggered actions. */
-	private Actions actions = new Actions();
-	/** Store triggered buttons. */
-	//private Buttons buttons = new Buttons(converter, actions);
-	/** Store mouse scroll movement. */
-	private Scroll scroll = new Scroll();
-	/** Store mouse position. */
-	//private MousePosition mousePosition = new MousePosition();
-	
-	@Getter
-	private Cursor cursor;
-	
-	@Getter
-	private Buttons buttons;
-	
 	/** Stores the bindings between buttons and actions. */
 	private Bindings bindings;
 	
+	/** Stores which actions are active. */
+	private Actions actions;
+	
+	/** Allows button input to be detected. */
+	@Getter
+	private Buttons mButtons;
+	
+	/** Allows cursor position to be detected. */
+	@Getter
+	private Cursor mCursor;
+	
+	/** Allows scrolling to be detected. */
+	@Getter
+	private Scroll mScroll = new Scroll();
+	
+	
+	
 	public Input(long window) {
+		actions = new Actions();
 		bindings = new Bindings();
 		
-		cursor = new Cursor();
-		cursor.attachToWindow(window, actions);
+		mCursor = new Cursor();
+		mCursor.attachToWindow(window, actions);
 		
-		buttons = new Buttons();
-		buttons.attachToWindow(window, actions, bindings);
+		mButtons = new Buttons();
+		mButtons.attachToWindow(window, actions, bindings);
 		
-		//new KeyboardListener(window, buttons);
-		//new MouseButtonListener(window, buttons);
+		mScroll = new Scroll();
+		mScroll.attachToWindow(window, mButtons);
+		
 		//new MouseScrollListener(window, buttons, scroll);		
 		
 		// For infinite mouse movement.
@@ -55,6 +62,7 @@ public class Input {
 	
 	/**
 	 * Query whether an {@link Action} is activated.
+	 * 
 	 * @param action The action to be tested.
 	 * @return {@code true} if the action is activated, otherwise {@code false}.
 	 */
@@ -64,19 +72,20 @@ public class Input {
 	
 	/**
 	 * Resets the {@link #scroll} detection for the next input polling cycle.
-	 */
+	 *
 	public void resetScroll() {
 		//scroll.reset();
 		//buttons.released(Scroll.UP);
 		//buttons.released(Scroll.DOWN);
 	}
+	*/
 	
-	/**
+	/*
 	 * 
 	 * @return The amount of scrolling done since {@link Scroll#reset} was called.
-	 */
+	 *
 	public double getScroll() {
 		return scroll.getAmount();
 	}
-	
+	*/
 }

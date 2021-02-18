@@ -69,7 +69,7 @@ public class Buttons extends Activatable<Integer>{
 	 * 
 	 * @param button The button being pressed.
 	 */
-	private void press(int button) {
+	void press(int button) {
 		setActivated(button, true);
 		
 		for (Action action : mBindings.getActions(button)) {
@@ -84,7 +84,7 @@ public class Buttons extends Activatable<Integer>{
 	 * 
 	 * @param button The button being released.
 	 */
-	private void release(int button) {
+	void release(int button) {
 		setActivated(button, false);
 		
 		// Check each action the button triggers, deactivating each action if no other buttons are currently triggering it.
