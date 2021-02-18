@@ -4,18 +4,17 @@ import java.util.logging.Logger;
 
 import org.dragonskulle.input.listeners.KeyboardListener;
 import org.dragonskulle.input.listeners.MouseButtonListener;
+import org.dragonskulle.input.listeners.MousePositionListener;
 import org.dragonskulle.input.listeners.MouseScrollListener;
 import org.dragonskulle.input.storage.Actions;
 import org.dragonskulle.input.storage.Buttons;
 import org.dragonskulle.input.storage.Converter;
+import org.dragonskulle.input.storage.Position;
 import org.dragonskulle.input.storage.Scroll;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
 
 /**
- * 
+ * Manages all user input.
  * @author Craig Wilboure
- *	Input handling.
  */
 public class Input {
 	
@@ -29,12 +28,17 @@ public class Input {
 	private Buttons buttons = new Buttons(converter, actions);
 	/** Store mouse scroll movement. */
 	private Scroll scroll = new Scroll();
+	/** Store mouse position. */
+	private Position position = new Position();
 	
 	public Input(long window) {
 		new KeyboardListener(window, buttons);
 		new MouseButtonListener(window, buttons);
 		new MouseScrollListener(window, buttons, scroll);
+		new MousePositionListener(window, position);
 		
+		
+		/*
 		GLFWCursorPosCallback mousePosition = new GLFWCursorPosCallback() {
 			
 			@Override
@@ -45,6 +49,7 @@ public class Input {
 		};
 		
 		GLFW.glfwSetCursorPosCallback(window, mousePosition);
+		*/
 		
 		// For infinite mouse movement.
 		// GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
@@ -77,4 +82,9 @@ public class Input {
 	public double getScroll() {
 		return scroll.getAmount();
 	}
+	
+	public Position getMousePosition() {
+		return position;
+	}
+	
 }
