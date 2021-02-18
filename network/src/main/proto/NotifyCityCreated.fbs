@@ -1,0 +1,19 @@
+// Generated from notifyCityCreated.proto
+
+namespace org.dragonskulle.network.proto;
+
+table AxialCoordinate {
+  rawQ:int;
+  rawR:int;
+  rawS:int;
+}
+
+table AxialPoint {
+  Value:AxialCoordinate (required);
+}
+
+table NotifyCityCreated {
+  cityId:int;
+  coord:AxialCoordinate;
+}
+

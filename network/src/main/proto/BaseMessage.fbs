@@ -1,0 +1,29 @@
+// Generated from BaseMessage.proto
+namespace org.dragonskulle.network.proto;
+
+union Any { CreateCityRequest, NotifyCityCreated}
+
+table BaseMessage {
+  code:int;
+  data:Any;
+}
+
+table CreateCityRequest {
+  owner:int;
+}
+
+table AxialCoordinate {
+  rawQ:int;
+  rawR:int;
+  rawS:int;
+}
+
+table AxialPoint {
+  Value:AxialCoordinate (required);
+}
+
+table NotifyCityCreated {
+  cityId:int;
+  coord:AxialCoordinate;
+}
+
