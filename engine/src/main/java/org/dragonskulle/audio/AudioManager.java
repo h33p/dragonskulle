@@ -11,10 +11,10 @@ public class AudioManager {
 	/**
 	 * Will play some audio
 	 * @param channel Whether to play as Background music or as a Sound Effect
-	 * @param numberId The audio number to play
+	 * @param fileName the name of the file which has the music.  Must be a .wav file
 	 * @param distance How far from the source the camera is.  Use null to ignore
 	 */
-	public void play(SoundType channel, int numberId, Integer distance)
+	public void play(SoundType channel, String fileName, Integer distance)
 	{
 		;
 	}
