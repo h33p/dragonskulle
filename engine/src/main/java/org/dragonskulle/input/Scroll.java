@@ -6,8 +6,8 @@ import org.lwjgl.glfw.GLFWScrollCallback;
 /**
  * Once attached to a window, this allows for scrolling to:
  * <ul>
- * <li> Trigger {@link Scroll#UP} button presses (which can be used to trigger {@link Action}s). </li>
- * <li> Trigger {@link Scroll#DOWN} button presses (which can be used to trigger {@link Action}s). </li>
+ * <li> Trigger the {@link Scroll#UP} button (which can be used to trigger {@link Action}s). </li>
+ * <li> Trigger the {@link Scroll#DOWN} button (which can be used to trigger {@link Action}s). </li>
  * <li> Be accessed as a raw value. </li>
  * </ul>
  * 

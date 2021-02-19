@@ -18,6 +18,7 @@ import lombok.Getter;
  */
 public class Input {
 	
+	/** Used to log messages. */
 	public static final Logger LOGGER = Logger.getLogger("input");		
 	
 	/** Stores the bindings between buttons and actions. */
@@ -51,8 +52,6 @@ public class Input {
 		
 		mScroll = new Scroll();
 		mScroll.attachToWindow(window, mButtons);
-		
-		//new MouseScrollListener(window, buttons, scroll);		
 		
 		// For infinite mouse movement.
 		// GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);

@@ -3,79 +3,55 @@ package org.dragonskulle.input;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Converts between which buttons and {@link Action}s.
+ * Stores the bindings between buttons and the {@link Action}s they trigger.
  * 
  * @author Craig Wilbourne
  */
 public class Bindings {
 	
+	/** Used to log messages. */
+	public static final Logger LOGGER = Logger.getLogger("bindings");
+	
+	/** Stores all potential bindings. */
+	private final ArrayList<Binding> mBindings = new ArrayList<Binding>();
+	
 	/** Key: Button <br/>
 	 *  Value: {@link Action}s the Button activates.
-	 * */
+	 */
 	private final HashMap<Integer, ArrayList<Action>> mButtonToActions = new HashMap<Integer, ArrayList<Action>>();
 	
 	/** Key: {@link Action} <br/>
 	 *  Value: Buttons that activate the Action.
-	 * */
+	 */
 	private final HashMap<Action, ArrayList<Integer>> mActionToButtons = new HashMap<Action, ArrayList<Integer>>();
 	
 	public Bindings() {
-		// Currently hard-coded values:
+		// Hard-coded button bindings:
+		add(GLFW.GLFW_KEY_UP, Action.UP, Action.SCROLL_UP);
+		add(GLFW.GLFW_KEY_W, Action.UP, Action.SCROLL_UP);
 		
-		mButtonToActions.put(Scroll.UP, getActionList(Action.SCROLL_UP, Action.ZOOM_IN));
-		mButtonToActions.put(Scroll.DOWN, getActionList(Action.SCROLL_DOWN, Action.ZOOM_OUT));
+		add(GLFW.GLFW_KEY_DOWN, Action.DOWN, Action.SCROLL_DOWN);
+		add(GLFW.GLFW_KEY_S, Action.DOWN, Action.SCROLL_DOWN);
 		
-		mButtonToActions.put(GLFW.GLFW_KEY_UP, getActionList(Action.UP, Action.SCROLL_UP));
-		mButtonToActions.put(GLFW.GLFW_KEY_W, getActionList(Action.UP, Action.SCROLL_UP));
-		mButtonToActions.put(GLFW.GLFW_KEY_DOWN, getActionList(Action.DOWN, Action.SCROLL_DOWN));
-		mButtonToActions.put(GLFW.GLFW_KEY_S, getActionList(Action.DOWN, Action.SCROLL_DOWN));
+		add(GLFW.GLFW_KEY_LEFT, Action.LEFT);
+		add(GLFW.GLFW_KEY_A, Action.LEFT);
 		
-		mButtonToActions.put(GLFW.GLFW_KEY_LEFT, getActionList(Action.LEFT));
-		mButtonToActions.put(GLFW.GLFW_KEY_A, getActionList(Action.LEFT));
-		mButtonToActions.put(GLFW.GLFW_KEY_RIGHT, getActionList(Action.RIGHT));
-		mButtonToActions.put(GLFW.GLFW_KEY_D, getActionList(Action.RIGHT));
+		add(GLFW.GLFW_KEY_RIGHT, Action.RIGHT);
+		add(GLFW.GLFW_KEY_D, Action.RIGHT);
 		
-		mButtonToActions.put(GLFW.GLFW_MOUSE_BUTTON_LEFT, getActionList(Action.ACTION_1, Action.DRAG));
-		mButtonToActions.put(GLFW.GLFW_MOUSE_BUTTON_RIGHT, getActionList(Action.ACTION_2));
-		mButtonToActions.put(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, getActionList(Action.ACTION_3));
+		add(GLFW.GLFW_MOUSE_BUTTON_LEFT, Action.ACTION_1, Action.DRAG);
+		add(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Action.ACTION_2);
+		add(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, Action.ACTION_3);
 		
-		generateActionToButton();
+		add(Scroll.UP, Action.SCROLL_UP, Action.ZOOM_IN);
+		add(Scroll.DOWN, Action.SCROLL_DOWN, Action.ZOOM_OUT);		
 		
-		System.out.println(mButtonToActions);
-		System.out.println(mActionToButtons);
-	}
-	
-	/**
-	 * Use {@link #buttonToAction} to generate the contents of {@link #actionToButton}.
-	 */
-	private void generateActionToButton() {
-		for (Entry<Integer, ArrayList<Action>> entry : mButtonToActions.entrySet()) {
-			for (Action action : entry.getValue()) {
-				ArrayList<Integer> buttonsList = new ArrayList<Integer>();
-				
-				buttonsList.add(entry.getKey());
-				if(mActionToButtons.containsKey(action)) {
-					buttonsList.addAll(mActionToButtons.get(action));
-				}
-				
-				mActionToButtons.put(action, buttonsList);
-			}
-		}
-	}
-	
-	// TODO: REMOVE
-	private ArrayList<Action> getActionList(Action... selectedActions){
-		ArrayList<Action> list = new ArrayList<Action>();
-		
-		for (Action action : selectedActions) {
-			list.add(action);
-		}
-		
-		return list;
+		rebind();
 	}
 	
 	/**
@@ -102,4 +78,69 @@ public class Bindings {
 		return mActionToButtons.get(action);
 	}
 	
+	/**
+	 * Add a binding to the list of {@link #mBindings}.
+	 * <p>
+	 * Will not take effect until {@link #rebind()} is called.
+	 * <p>
+	 * Bindings added later will overwrite old bindings.
+	 * 
+	 * @param button The button of the binding to be added.
+	 * @param actions The actions the button triggers, listed as additional arguments.
+	 */
+	private void add(int button, Action... actions) {
+		add(new Binding(button, actions));
+	}
+	
+	/**
+	 * Add a {@link Binding} to the list of {@link #mBindings}.
+	 * <p>
+	 * Will not take effect until {@link #rebind()} is called.
+	 * <p>
+	 * Bindings added later will overwrite old bindings.
+	 * 
+	 * @param binding The binding to be added.
+	 */
+	private void add(Binding binding) {
+		mBindings.add(binding);
+	}	
+	
+	/**
+	 * Add all of the bindings stored by {@link #mBindings}.
+	 * <p>
+	 * This temporarily resets {@link #mButtonToActions} and {@link #mActionToButtons}, and then repopulates them with the latest bindings.
+	 */
+	private void rebind() {
+		mButtonToActions.clear();
+		mActionToButtons.clear();
+		
+		for(Binding binding : mBindings) {
+			mButtonToActions.put(binding.getButton(), binding.getActions());
+		}
+		generateActionToButtons();
+		
+		LOGGER.info(String.format("Rebinded.\nButton to Actions: %s\nAction to Buttons: %s", mButtonToActions.toString(), mActionToButtons.toString()));
+	}
+	
+	/**
+	 * Use {@link #buttonToAction} to generate the contents of {@link #actionToButton}.
+	 */
+	private void generateActionToButtons() {
+		// Get each button and action combination in mButtonToActions.
+		for (Entry<Integer, ArrayList<Action>> entry : mButtonToActions.entrySet()) {
+			// For each action, store a list of the buttons that trigger it.
+			for (Action action : entry.getValue()) {
+				ArrayList<Integer> buttonsList = new ArrayList<Integer>(); // Store a list of buttons that trigger the action.
+				buttonsList.add(entry.getKey()); // Add the current button to the list.
+				
+				// If the action already has buttons assigned to it, add those buttons to the list.
+				if(mActionToButtons.containsKey(action)) {
+					buttonsList.addAll(mActionToButtons.get(action));
+				}
+				
+				// Store the results.
+				mActionToButtons.put(action, buttonsList);
+			}
+		}
+	}	
 }
