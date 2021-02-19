@@ -27,6 +27,7 @@ public class GameObject {
     private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
     private boolean mActive;
+    private boolean mDestroy = false;
 
     /**
      * Create a clone of a GameObject. The cloned GameObject's position is used
@@ -204,7 +205,7 @@ public class GameObject {
             component.setGameObject(this);
         }
 
-        // Add the component and set scene updated to true
+        // Add the component
         mComponents.add(component);
     }
 
@@ -263,20 +264,19 @@ public class GameObject {
     }
 
     /**
-     * Destroy the GameObject, destroying all children and components and then removing ourselves
-     * from our parent
+     * Handle the destruction of the object.
      */
-    public void destroy() {
-
+    private void engineDestroy() {
         // Copy the list of children so that as they are destroyed and unlinked from the list
         // the iteration occurs without error
         ArrayList<GameObject> children = new ArrayList<>(mChildren);
 
-        // First destroy the children and the components
+        // Destroy all children
         for (GameObject child : children) {
-            child.destroy();
+            child.engineDestroy();
         }
 
+        // Set the destroy flag on all components
         for (Component component : mComponents) {
             component.destroy();
         }
@@ -289,6 +289,14 @@ public class GameObject {
         // After we have finished destroying we need to clear our reference so nothing attempts to
         // access this
         mReference.clear();
+    }
+
+    /**
+     * Set the destroy flag to true. The object won't actually be destroyed until the end of the
+     * current render frame
+     */
+    public void destroy() {
+        mDestroy = true;
     }
 
     /**
@@ -314,7 +322,7 @@ public class GameObject {
      *
      * @return mActive
      */
-    public boolean getActive() {
+    public boolean isActive() {
         return mActive;
     }
 

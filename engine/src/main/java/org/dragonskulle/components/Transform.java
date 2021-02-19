@@ -20,4 +20,13 @@ public class Transform extends Component {
 
     /** */
     public Transform() {}
+
+    // TODO: Transform class
+
+    @Override
+    protected void onDestroy() {
+
+        // TODO: Destroy for transform
+
+    }
 }

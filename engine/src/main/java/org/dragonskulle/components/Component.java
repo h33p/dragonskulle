@@ -21,11 +21,21 @@ public abstract class Component {
     private boolean mAwake = false;
     private boolean mEnabled;
     private boolean mStarted = false;
+    private boolean mDestroy = false;
 
-    // TODO: boolean for tracking destroy
-
-    /** Base implementation of destroy, cannot be overridden but calls the overridable method */
+    /**
+     * Set the destroy flag to true. The component won't actually be destroyed until the end of the
+     * current render frame.
+     *
+     */
     public final void destroy() {
+        mDestroy = true;
+    }
+
+    /**
+     * Handle the actual destruction of a component. Only called by the engine
+     */
+    private void engineDestroy() {
         mGameObject = null;
         mReference.clear();
 
@@ -33,14 +43,14 @@ public abstract class Component {
     }
 
     /** User-defined destroy method, this is what needs to be overridden instead of destroy */
-    private void onDestroy() {}
+    protected abstract void onDestroy();
 
     /**
      * Getter for mGameObject
      *
      * @return mGameObject
      */
-    public GameObject getGameObject() {
+    public final GameObject getGameObject() {
         return mGameObject;
     }
 
@@ -49,7 +59,7 @@ public abstract class Component {
      *
      * @param object New value of mGameObject
      */
-    public void setGameObject(GameObject object) {
+    public final void setGameObject(GameObject object) {
         mGameObject = object;
     }
 
@@ -58,7 +68,7 @@ public abstract class Component {
      *
      * @return mAwake
      */
-    public boolean isAwake() {
+    public final boolean isAwake() {
         return mAwake;
     }
 
@@ -67,7 +77,7 @@ public abstract class Component {
      *
      * @param val New value of mAwake
      */
-    public void setAwake(boolean val) {
+    public final void setAwake(boolean val) {
         mAwake = val;
     }
 
@@ -76,7 +86,7 @@ public abstract class Component {
      *
      * @return mStarted
      */
-    public boolean isStarted() {
+    public final boolean isStarted() {
         return mStarted;
     }
 
@@ -85,7 +95,7 @@ public abstract class Component {
      *
      * @param val New value of mStarted
      */
-    public void setStarted(boolean val) {
+    public final void setStarted(boolean val) {
         mStarted = val;
     }
 
@@ -94,7 +104,7 @@ public abstract class Component {
      *
      * @return mEnabled
      */
-    public boolean isEnabled() {
+    public final boolean isEnabled() {
         return mEnabled;
     }
 
@@ -103,16 +113,23 @@ public abstract class Component {
      *
      * @param value New value of mEnabled
      */
-    public void setEnabled(boolean value) {
+    public final void setEnabled(boolean value) {
         mEnabled = value;
     }
+
+    /**
+     * Getter for mDestroy
+     *
+     * @return mDestroy
+     */
+    public final boolean isDestroyed() { return mDestroy; }
 
     /**
      * Getter for mReference
      *
      * @return mReference
      */
-    public Reference<Component> getReference() {
+    public final Reference<Component> getReference() {
         return mReference;
     }
 }

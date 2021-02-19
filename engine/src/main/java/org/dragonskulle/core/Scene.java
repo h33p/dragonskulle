@@ -18,7 +18,6 @@ public class Scene {
 
     private final String mName;
 
-    private boolean mSceneChanged;
 
     /**
      * Constructor for a Scene
@@ -49,44 +48,13 @@ public class Scene {
         }
     }
 
-    /**
-     * Get a list of all of the new components in the scene since the last frame
-     *
-     * @return A list containing all of the new components found
-     */
-    public ArrayList<Component> getNewComponents() {
-        ArrayList<Component> ret = new ArrayList<>();
-
-        // TODO: This is currently really inefficient so I'm sure there is a better way to do it
-
-        for (GameObject root : mGameObjects) {
-
-            for (Component component : root.getComponents()) {
-                if (!mComponents.contains(component)) {
-                    ret.add(component);
-                }
-            }
-
-            ArrayList<GameObject> children = new ArrayList<>();
-            root.getAllChildren(children);
-
-            for (GameObject child : children) {
-
-                for (Component component : child.getComponents()) {
-                    if (!mComponents.contains(component)) {
-                        ret.add(component);
-                    }
-                }
-            }
-        }
-        return ret;
-    }
-
     /** Iterates through all GameObjects in the scene and collects their components */
     public void updateComponentsList() {
 
         // TODO: Add some check whether any components have been added/changed/removed so that
         //       the list is only updated when necessary
+        //       This is only optional though as I can just reduce the number of times the list
+        //       is updated
 
         mComponents.clear();
 
@@ -139,6 +107,29 @@ public class Scene {
     protected ArrayList<Component> getEnabledComponents() {
         return mComponents.stream()
                 .filter(Component::isEnabled)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Get a list of all components that aren't awake yet
+     *
+     * @return A new ArrayList containing all of the non awake components
+     */
+    protected ArrayList<Component> getNotAwakeComponents() {
+        return mComponents.stream()
+                .filter(component -> !component.isAwake())
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Get a list of all components that are enabled but have not been started yet
+     *
+     * @return A new ArrayList containing all of the enabled but not started components
+     */
+    protected ArrayList<Component> getEnabledButNotStartedComponents() {
+        return mComponents.stream()
+                .filter(Component::isEnabled)
+                .filter(component -> !component.isStarted())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 }

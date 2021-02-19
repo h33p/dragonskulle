@@ -72,23 +72,8 @@ public class Engine {
 
         // TODO: Make objects only be destroyed after all updates
         // TODO: Only initialize new components at the start of next frame
-        // TODO: Only update the component list at the start of a frame
-        //          -> Split into separate lists depending on interfaces?
-
-        // For only destroying at end of frame have a flag on objects called mDestroy
-        // If it's true at the end of the frame, call the destroy method
-
-        // Likewise have a boolean for awake and start
-        // if awake is false, call onAwake, if started is false and enabled is true, call onStart
 
         while (mIsRunning) {
-
-            if (mNewScene != null) {
-                switchToNewScene();
-            }
-
-            onStartAndAwake(mActiveScene.getNewComponents());
-
             // Calculate time for last frame
             double mCurTime = Time.getTimeInSeconds();
             double deltaTime = mCurTime - mPrevTime;
@@ -96,6 +81,15 @@ public class Engine {
 
             cumulativeTime += deltaTime;
             secondTimer += deltaTime;
+            if (mNewScene != null) {
+                switchToNewScene();
+            }
+
+            mActiveScene.updateComponentsList();
+
+            wakeComponents();
+
+            startEnabledComponents();
 
             // TODO: Process inputs here before any updates are performed
 
@@ -110,9 +104,13 @@ public class Engine {
                 fixedUpdate();
             }
 
-            // TODO: Perform actual rendering after all updates
-
             lateFrameUpdate(deltaTime);
+
+            // TODO: Perform rendering here
+
+            // TODO: Destroy any objects here
+
+
 
             frames++;
             if (secondTimer > 1.0) {
@@ -129,24 +127,27 @@ public class Engine {
     }
 
     /**
-     * Call onStart and onAwake for all components that implement it
-     *
-     * @param components List of components to be checked
+     * Iterate through a list of components that aren't awake and wake them
      */
-    private void onStartAndAwake(ArrayList<Component> components) {
-
-        // Iterate through them, calling onAwake on all that implement it
-        for (Component component : components) {
+    private void wakeComponents() {
+        for (Component component : mActiveScene.getNotAwakeComponents()) {
             if (component instanceof IOnAwake) {
                 ((IOnAwake) component).onAwake();
-            }
-        }
 
-        // Then go through again, calling onStart on all the implement it
-        for (Component component : components) {
-            if (component instanceof IOnStart) {
-                ((IOnStart) component).onStart();
             }
+            component.setAwake(true);
+        }
+    }
+
+    /**
+     * Iterate through a list of components that are enabled but haven't been started and start them
+     */
+    private void startEnabledComponents() {
+        for (Component component : mActiveScene.getEnabledButNotStartedComponents()) {
+            if (component instanceof IOnStart) {
+                ((IOnStart)component).onStart();
+            }
+            component.setStarted(true);
         }
     }
 
@@ -156,8 +157,6 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(double deltaTime) {
-        mActiveScene.updateComponentsList();
-
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
@@ -167,8 +166,6 @@ public class Engine {
 
     /** Do all Fixed Updates on components that implement it */
     private void fixedUpdate() {
-        mActiveScene.updateComponentsList();
-
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFixedUpdate) {
                 ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
@@ -182,8 +179,6 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void lateFrameUpdate(double deltaTime) {
-        mActiveScene.updateComponentsList();
-
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof ILateFrameUpdate) {
                 ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
@@ -192,8 +187,7 @@ public class Engine {
     }
 
     /**
-     * Finish the loading of a new scene. If the scene has never been active before, call the
-     * onAwake and onStart methods if they are implemented
+     * Finish the loading of a new scene.
      */
     private void switchToNewScene() {
         // Add the currently active scene to inactive scenes and remove the new scene from
@@ -203,16 +197,6 @@ public class Engine {
 
         mActiveScene = mNewScene;
         mNewScene = null;
-
-        // Scene has never been active before
-        // Or do we still need to call awake and start even if it has been active before?
-        if (!sceneWasInactive) {
-
-            // Get the initial list of components in the scene
-            mActiveScene.updateComponentsList();
-
-            onStartAndAwake(mActiveScene.getComponents());
-        }
     }
 
     /** Cleans up all resources used by the engine on shutdown */
