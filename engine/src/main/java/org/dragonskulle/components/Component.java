@@ -4,6 +4,8 @@ package org.dragonskulle.components;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 
+import java.io.Serializable;
+
 /**
  * Abstract class for a Component
  *
@@ -12,7 +14,7 @@ import org.dragonskulle.core.Reference;
  *     componet interfaces. The destroy method should be overriden to handle the cleanup of any
  *     user-defined variables on a component
  */
-public abstract class Component {
+public abstract class Component implements Serializable {
 
     private final Reference<Component> mReference = new Reference<>(this);
 
@@ -33,9 +35,9 @@ public abstract class Component {
     }
 
     /**
-     * Handle the actual destruction of a component. Only called by the engine
+     * Handle the actual destruction of a component. Only called by the engine.
      */
-    private void engineDestroy() {
+    public final void engineDestroy() {
         mGameObject = null;
         mReference.clear();
 

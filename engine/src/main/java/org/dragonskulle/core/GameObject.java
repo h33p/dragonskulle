@@ -1,7 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dragonskulle.components.Component;
@@ -15,7 +24,7 @@ import org.dragonskulle.components.Transform;
  *     actions but each component that is added to the GameObject will be able to interact with
  *     itself in the world and other GameObjects.
  */
-public class GameObject {
+public class GameObject implements Serializable {
 
     private final Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
@@ -266,24 +275,17 @@ public class GameObject {
     /**
      * Handle the destruction of the object.
      */
-    private void engineDestroy() {
-        // Copy the list of children so that as they are destroyed and unlinked from the list
-        // the iteration occurs without error
-        ArrayList<GameObject> children = new ArrayList<>(mChildren);
-
+    protected void engineDestroy() {
         // Destroy all children
-        for (GameObject child : children) {
+        for (Iterator<GameObject> iterator = mChildren.iterator(); iterator.hasNext();) {
+            GameObject child = iterator.next();
+            iterator.remove();
             child.engineDestroy();
         }
 
         // Set the destroy flag on all components
         for (Component component : mComponents) {
-            component.destroy();
-        }
-
-        // Check that the parent isn't null before removing this
-        if (mParent != null) {
-            mParent.removeChild(this);
+            component.engineDestroy();
         }
 
         // After we have finished destroying we need to clear our reference so nothing attempts to
@@ -297,6 +299,32 @@ public class GameObject {
      */
     public void destroy() {
         mDestroy = true;
+    }
+
+    public GameObject createClone() {
+        byte[] objectData = null;
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+            oos.flush();
+            oos.close();
+            baos.close();
+            objectData = baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (objectData != null) {
+            try {
+                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
+                return (GameObject)new ObjectInputStream(bais).readObject();
+            } catch (ClassNotFoundException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     /**
@@ -352,6 +380,13 @@ public class GameObject {
     public Reference<GameObject> getReference() {
         return mReference;
     }
+
+    /**
+     * Getter for mDestroy
+     *
+     * @return mDestroy
+     */
+    public boolean isDestroyed() { return mDestroy; }
 
     /**
      * Getter for mRoot, used for testing

@@ -3,6 +3,8 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -110,8 +112,6 @@ public class Engine {
 
             // TODO: Destroy any objects here
 
-
-
             frames++;
             if (secondTimer > 1.0) {
                 // One second has elapsed so frames contains the FPS
@@ -169,6 +169,37 @@ public class Engine {
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFixedUpdate) {
                 ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
+            }
+        }
+    }
+
+    /** Destroy all GameObjects and Components that have the destroy flag set */
+    private void destroyObjectsAndComponents() {
+        for (Iterator<GameObject> iterator = mActiveScene.getRootObjects().iterator();
+                iterator.hasNext();) {
+
+            GameObject root = iterator.next();
+
+            // If the root is a destroyed object, destroy it and remove it from the scene
+            if (root.isDestroyed()) {
+                root.engineDestroy();
+                iterator.remove();
+            } else {
+
+                // Otherwise, iterate through the children and check if any need destroying
+
+                ArrayList<GameObject> objects = new ArrayList<>();
+
+                root.getAllChildren(objects);
+
+                // If the child is destroyed, destroy it and unlink from the parent
+                for (GameObject object : objects) {
+                    if (object.isDestroyed()) {
+                        object.getParent().removeChild(object);
+
+                        object.engineDestroy();
+                    }
+                }
             }
         }
     }

@@ -3,6 +3,8 @@ package org.dragonskulle.components;
 
 import org.dragonskulle.core.Matrix4;
 
+import java.io.Serializable;
+
 /**
  * Base Transform class
  *
@@ -12,7 +14,7 @@ import org.dragonskulle.core.Matrix4;
  *     positions the Transform must be cast to either HexTransform or 3DTransform to extract the
  *     information in the correct coordinate system
  */
-public class Transform extends Component {
+public class Transform extends Component implements Serializable {
 
     Matrix4 localMatrix;
 
