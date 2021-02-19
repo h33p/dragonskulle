@@ -13,14 +13,14 @@ import java.net.UnknownHostException;
  * to. ClientListener is the handler for commands that the client receives. {@link
  * org.dragonskulle.network.ClientListener}
  */
-public class Client {
+public class NetworkClient {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
     private ClientListener clientListener;
     private boolean open = true;
 
-    public Client(String ip, int port, ClientListener listener) {
+    public NetworkClient(String ip, int port, ClientListener listener) {
         clientListener = listener;
         try {
             socket = new Socket(ip, port);

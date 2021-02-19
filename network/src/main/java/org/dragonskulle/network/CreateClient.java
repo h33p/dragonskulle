@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class CreateClient {
     static String ip;
     static String port;
-    static Client client;
+    static NetworkClient client;
     static String command;
 
     public static void main(String[] args) {
@@ -19,9 +19,9 @@ public class CreateClient {
         System.out.println("Creating client");
         ClientListener clientEars = new ClientEars();
         if (ip.equals(port)) {
-            client = new Client("127.0.0.1", 7000, clientEars);
+            client = new NetworkClient("127.0.0.1", 7000, clientEars);
         } else {
-            client = new Client(ip, Integer.parseInt(port), clientEars);
+            client = new NetworkClient(ip, Integer.parseInt(port), clientEars);
         }
         System.out.println("Commands are (K)ill and (S)end");
 
