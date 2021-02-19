@@ -2,11 +2,16 @@
 package org.dragonskulle.audio;
 
 /**
- * Class which plays background music and sound effects
+ * Class which plays background music and sound effects.  WIll be singleton
  * @author Dragonskulle
  *
  */
 public class AudioManager {
+	
+	//TODO Make instance - Look at Engine
+	private AudioManager() {
+		;
+	}
 	
 	/**
 	 * Will play some audio
@@ -58,9 +63,14 @@ public class AudioManager {
 	/**
 	 * Destroys all Clips.   Must be called at end of program
 	 */
-	public void cleanup()
-	{
+	public void cleanup() {
 		;
 	}
+	
+	static AudioManager getInstance() {
+		return null;
+	}
+	
+	
 
 }
