@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -115,6 +116,21 @@ public class SocketStore {
             this.terminateClient(sock);
         } else {
             this.store.remove(sock);
+        }
+    }
+
+    public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
+        for (Socket sock : this.store) {
+            if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
+                System.out.println("Sending registered response to client");
+                try {
+                    DataOutputStream dOut = new DataOutputStream(sock.getOutputStream());
+                    dOut.write(response_bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
         }
     }
 }

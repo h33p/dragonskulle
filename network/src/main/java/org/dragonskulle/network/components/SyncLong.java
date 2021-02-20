@@ -6,6 +6,10 @@ public class SyncLong extends ISyncVar<Long> {
         super(data);
     }
 
+    public SyncLong(String id, Long data) {
+        super(id, data);
+    }
+
     public SyncLong() {
         super(null);
     }

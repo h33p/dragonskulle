@@ -8,6 +8,8 @@ public interface ClientListener {
 
     void receivedInput(String msg);
 
+    void receivedBytes(byte[] bytes);
+
     void serverClosed();
 
     void disconnected();

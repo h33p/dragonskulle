@@ -3,8 +3,6 @@ package org.dragonskulle.network.components;
 import org.dragonskulle.network.NetworkClient;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -21,7 +19,6 @@ public class NetworkObject {
     public void dispose(){
         this.owner.dispose();
     }
-    ArrayList<ISyncVar> synced = new ArrayList<>();
     /**
      * The UUID of the object.
      */
@@ -65,4 +62,6 @@ public class NetworkObject {
         this.owner.registerSyncVarsWithServer(payload); //send message to server
 //        this.synced.addAll(payload); //should add if server accepts sync here
     }
+
+
 }

@@ -8,6 +8,10 @@ table RegisterSyncVarsRequest {
   is_dormant: bool;
 }
 
+table RegisteredSyncVarsResponse {
+  registered: [ISyncVar];
+}
+
 table ISyncVar{
     sync_var: AnyISyncVar;
 }

@@ -5,6 +5,10 @@ public class SyncString extends ISyncVar<String>{
         super(data);
     }
 
+    public SyncString(String id,String data) {
+        super(id,data);
+    }
+
     public SyncString() {
         super(null);
     }

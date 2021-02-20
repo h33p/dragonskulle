@@ -1,14 +1,18 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.flatbuffers.FlatBufferBuilder;
-import org.dragonskulle.network.components.ISyncVar;
+import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
+import org.dragonskulle.network.flatbuffers.FlatBufferHelpers;
+import org.dragonskulle.network.proto.ISyncVar;
+import org.dragonskulle.network.proto.RegisteredSyncVarsResponse;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This is the client usage, you will create an instance, by providing the correct server to connect
@@ -21,6 +25,10 @@ public class NetworkClient {
     private BufferedReader in;
     private PrintWriter out;
     private DataOutputStream dOut;
+    private BufferedInputStream bIn;
+    private ArrayList<org.dragonskulle.network.components.ISyncVar> synced = new ArrayList<>();
+
+
     private ClientListener clientListener;
     private boolean open = true;
 
@@ -29,6 +37,7 @@ public class NetworkClient {
         try {
             socket = new Socket(ip, port);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            bIn = new BufferedInputStream(socket.getInputStream());
             out = new PrintWriter(socket.getOutputStream(), true);
             dOut = new DataOutputStream(socket.getOutputStream());
             Thread clientThread = new Thread(this.clientRunner());
@@ -67,12 +76,14 @@ public class NetworkClient {
     }
 
     public void send(String msg) {
-        if (open) out.println(msg);
+        this.sendBytes(msg.getBytes());
     }
 
     public void sendBytes(byte[] bytes) {
         if (open) {
             try {
+                System.out.println("sending bytes");
+                System.out.println(Arrays.toString(bytes));
                 dOut.write(bytes);
             } catch (IOException e) {
                 System.out.println("Failed to send bytes");
@@ -91,21 +102,26 @@ public class NetworkClient {
      * @return
      */
     private Runnable clientRunner() {
+
         return () -> {
+            byte[] bArray;
+            int hasBytes = 0;
+            byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; //max flatbuffer size
             while (open) {
                 try {
-                    String s = in.readLine();
-                    // if s is null we need to terminate the connections as the server has died.
-                    if (s == null) {
-                        //                        System.out.println("Received Null from server,
-                        // server has died");
-                        clientListener.disconnected();
-                        this.dispose();
-                        break;
-                    } else { // if s is not null then we need to send this to the handler
-                        // (clientListener)
-                        clientListener.receivedInput(s);
+                    bArray = new byte[MAX_TRANSMISSION_SIZE];
+                    hasBytes = bIn.read(bArray);
+
+                    if (hasBytes != 0) {
+                        if (Arrays.equals(bArray, terminateBytes)) {
+                            clientListener.disconnected();
+                            this.dispose();
+                            break;
+                        } else {
+                            parseBytes(bArray);
+                        }
                     }
+
                 } catch (IOException ignore) { // if fails to read from in stream
                     clientListener.error("failed to read from input stream");
                     this.dispose();
@@ -113,6 +129,48 @@ public class NetworkClient {
                 }
             }
         };
+    }
+
+    private void parseBytes(byte[] bytes) {
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(bytes);
+        clientListener.receivedBytes(bytes);
+
+//        decode bytes from flatbuffer serialisation
+//        currently only one type;
+        try {
+            ArrayList<org.dragonskulle.network.components.ISyncVar> registered = parseRegisterSyncVarsResponse(buf);
+            updateSyncedVariables(registered);
+        } catch (DecodingException e) {
+            System.out.println(e.getMessage());
+            System.out.println(new String(bytes, StandardCharsets.UTF_8));
+        }
+
+    }
+
+    private void updateSyncedVariables(ArrayList<org.dragonskulle.network.components.ISyncVar> registered) {
+        synced.addAll(registered);
+        System.out.println("Registered all accepted syncs locally and on server!");
+    }
+
+    private ArrayList<org.dragonskulle.network.components.ISyncVar> parseRegisterSyncVarsResponse(ByteBuffer buf) throws
+            DecodingException {
+        System.out.println("Attempting to parse response");
+        ArrayList<org.dragonskulle.network.components.ISyncVar> syncsToAdd = new ArrayList<>();
+        try {
+            RegisteredSyncVarsResponse registeredSyncVarsResponse = RegisteredSyncVarsResponse.getRootAsRegisteredSyncVarsResponse(buf);
+            System.out.println("Contains number of successfully sync vars: " + registeredSyncVarsResponse.registeredLength());
+            for (int i = 0; i < registeredSyncVarsResponse.registeredLength(); i++) {
+                org.dragonskulle.network.proto.ISyncVar requestedSyncVar = registeredSyncVarsResponse.registeredVector().get(i);
+                org.dragonskulle.network.components.ISyncVar sync = FlatBufferHelpers.flatb2ISyncVar(requestedSyncVar);
+                syncsToAdd.add(sync);
+            }
+
+            return syncsToAdd;
+
+        } catch (
+                Exception e) {
+            throw new DecodingException("Is not of RegisterSyncVarsRequest Type");
+        }
     }
 
     private void closeAllConnections() {
@@ -161,9 +219,7 @@ public class NetworkClient {
     public void registerSyncVarsWithServer(byte[] packet) {
         System.out.println("registering");
         System.out.println("Preparing packet to be sent");
-        this.send("syncvars start");
         this.sendBytes(packet);
-        this.send("syncvars end");
         System.out.println("Sent registration request, should validate response before adding to synced vars in network object");
     }
 }

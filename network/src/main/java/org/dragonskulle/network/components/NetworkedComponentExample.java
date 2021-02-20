@@ -27,6 +27,7 @@ public class NetworkedComponentExample extends INetworkable{
         NetworkedComponentExample component = new NetworkedComponentExample(networkObject);
         try {
             component.connectSyncVars();
+            new Scanner(System.in).nextLine();
             component.dispose();
         } catch (IllegalAccessException e) {
             e.printStackTrace();

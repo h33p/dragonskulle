@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import java.util.Arrays;
+
 /**
  * ClientEars is the client implementation of ClientListener, this is where custom executions can be
  * defined for different commands received.
@@ -19,6 +21,11 @@ public class ClientEars implements ClientListener {
     @Override
     public void receivedInput(String msg) {
         System.out.println("[Client] Received Input {" + msg + "}");
+    }
+
+    @Override
+    public void receivedBytes(byte[] bytes) {
+        System.out.println("[Client] Received Bytes :: "+ Arrays.toString(bytes));
     }
 
     @Override

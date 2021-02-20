@@ -6,6 +6,10 @@ public class SyncFloat extends ISyncVar<Float> {
         super(data);
     }
 
+    public SyncFloat(String id, Float data) {
+        super(id, data);
+    }
+
     public SyncFloat() {
         super(null);
     }
