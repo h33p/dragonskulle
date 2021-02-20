@@ -17,10 +17,20 @@ public class AudioManagerTest {
 		Assert.assertNotNull(audioManager);
 		
 	}
+	public void playTest() {
+		Assert.assertFalse(AudioManager.getInstance().play(SoundType.BACKGROUND, "doesntExist.wav", null));
+		Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "doesntExist.wav", null));
+		
+		Assert.assertFalse(AudioManager.getInstance().play(SoundType.BACKGROUND, "doesntExist.txt", null));
+		Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "doesntExist.txt", null));
+		
+		Assert.assertFalse(AudioManager.getInstance().play(SoundType.BACKGROUND, "pom.xml", null));
+		Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "pom.xml", null));
+	}
 	
 	@Test
 	public void muteBackgroundTest() {
-		AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav", null);
+		Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav", null));
 		
 		Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
 		
@@ -33,7 +43,7 @@ public class AudioManagerTest {
 	
 	@Test
 	public void muteSFXTest() {
-		AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav", null);
+		Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav", null));
 		
 		Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
 		
@@ -47,7 +57,7 @@ public class AudioManagerTest {
 	@Test
 	public void volumeBackgroundTest() {
 	
-		AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav", null);
+		Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav", null));
 		
 		Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 		
@@ -74,7 +84,7 @@ public class AudioManagerTest {
 	@Test
 	public void volumeSFXTest() {
 	
-		AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav", null);
+		Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav", null));
 		
 		Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
