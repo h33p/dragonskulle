@@ -1,10 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.flatbuffers.FlatBufferBuilder;
+import org.dragonskulle.network.components.ISyncVar;
+
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -14,9 +16,11 @@ import java.net.UnknownHostException;
  * org.dragonskulle.network.ClientListener}
  */
 public class NetworkClient {
+    private static final int MAX_TRANSMISSION_SIZE = 512;
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
+    private DataOutputStream dOut;
     private ClientListener clientListener;
     private boolean open = true;
 
@@ -26,6 +30,7 @@ public class NetworkClient {
             socket = new Socket(ip, port);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
+            dOut = new DataOutputStream(socket.getOutputStream());
             Thread clientThread = new Thread(this.clientRunner());
             clientThread.setName("Client Connection");
             clientThread.setDaemon(true);
@@ -46,6 +51,7 @@ public class NetworkClient {
     public void dispose() {
         try {
             if (open) {
+                this.sendBytes(new byte[MAX_TRANSMISSION_SIZE]);
                 open = false;
                 closeAllConnections();
                 clientListener.disconnected();
@@ -53,6 +59,7 @@ public class NetworkClient {
             socket = null;
             in = null;
             out = null;
+            dOut = null;
             clientListener = null;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -61,6 +68,16 @@ public class NetworkClient {
 
     public void send(String msg) {
         if (open) out.println(msg);
+    }
+
+    public void sendBytes(byte[] bytes) {
+        if (open) {
+            try {
+                dOut.write(bytes);
+            } catch (IOException e) {
+                System.out.println("Failed to send bytes");
+            }
+        }
     }
 
     public boolean isConnected() {
@@ -121,5 +138,32 @@ public class NetworkClient {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+        try {
+            if (dOut != null) {
+                dOut.close();
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    //    public void registerSyncVarWithServer(ISyncVar var, Boolean isDormant) {
+//
+//        String jsonStr = null;
+//        try {
+//            jsonStr = new ObjectMapper().writeValueAsString(msg);
+//            this.out.write(jsonStr);
+//            this.out.flush();
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//    }
+    public void registerSyncVarsWithServer(byte[] packet) {
+        System.out.println("registering");
+        System.out.println("Preparing packet to be sent");
+        this.send("syncvars start");
+        this.sendBytes(packet);
+        this.send("syncvars end");
+        System.out.println("Sent registration request, should validate response before adding to synced vars in network object");
     }
 }

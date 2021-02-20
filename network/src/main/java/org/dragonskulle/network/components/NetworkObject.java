@@ -2,19 +2,35 @@ package org.dragonskulle.network.components;
 
 import org.dragonskulle.network.NetworkClient;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * The NetworkObject deals with any networked variables. It can se
  */
 public class NetworkObject {
+
+    NetworkObject(NetworkClient client){
+        netID = UUID.randomUUID().toString();
+        isDormant = false;
+        owner = client;
+    }
+
+    public void dispose(){
+        this.owner.dispose();
+    }
+    ArrayList<ISyncVar> synced = new ArrayList<>();
     /**
      * The UUID of the object.
      */
-    int netID;
+    String netID;
 
     /**
      * The Client Connection to the server
      */
-    NetworkClient owner;
+    final NetworkClient owner;
 
     /**
      * if True, then the server will not accept commands from the object. It can still receive commands.
@@ -39,6 +55,14 @@ public class NetworkObject {
 //
 //    private void deserialize(reader)
 //
-    void registerSyncVar(ISyncVar syncVar){};
 
+//    void registerSyncVar(ISyncVar syncVar) {
+//        this.owner.registerSyncVarWithServer(syncVar, isDormant); //send message to server
+//        this.synced.add(syncVar); //should add if server accepts sync
+//    }
+
+    void registerSyncVars(byte[] payload) {
+        this.owner.registerSyncVarsWithServer(payload); //send message to server
+//        this.synced.addAll(payload); //should add if server accepts sync here
+    }
 }

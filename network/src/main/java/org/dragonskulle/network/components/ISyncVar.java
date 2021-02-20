@@ -1,6 +1,8 @@
 package org.dragonskulle.network.components;
 
 
+import com.google.flatbuffers.FlatBufferBuilder;
+
 import java.util.UUID;
 
 public class ISyncVar<T> {
@@ -18,5 +20,8 @@ public class ISyncVar<T> {
     }
 
     T data;
-    final static String id = UUID.randomUUID().toString();
+
+    byte[] serialize() {
+        return null;
+    }
 }

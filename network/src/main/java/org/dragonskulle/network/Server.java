@@ -3,13 +3,11 @@ package org.dragonskulle.network;
 // based on
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -124,28 +122,39 @@ public class Server {
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {};
+            return () -> {
+            };
         }
         return () -> {
             try {
                 boolean connected;
                 String stream;
+                int hasBytes = 0;
+                final int MAX_TRANSMISSION_SIZE = 512;
+                byte[] bArray; //max flatbuffer size
+                byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; //max flatbuffer size
                 this.sockets.addClient(sock);
                 BufferedReader in =
                         new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                BufferedInputStream bIn = new BufferedInputStream(sock.getInputStream());
                 PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
                 // create client as object
                 ClientInstance client = new ClientInstance(sock.getInetAddress(), sock.getPort());
                 serverListener.clientConnected(client, out);
                 connected = sock.isConnected();
                 while (connected) {
-                    stream = in.readLine();
-                    if (stream == null) {
-                        this.sockets.terminateClient(sock); // close and remove
-                        serverListener.clientDisconnected(client);
-                        connected = false;
+                    bArray = new byte[MAX_TRANSMISSION_SIZE];
+                    hasBytes = bIn.read(bArray);
+
+                    if (hasBytes != 0) {
+                        if(Arrays.equals(bArray, terminateBytes)){
+                            this.sockets.terminateClient(sock); // close and remove
+                            serverListener.clientDisconnected(client);
+                            connected = false;
+                        }else {
+                            serverListener.receivedBytes(client, bArray);
+                        }
                     }
-                    serverListener.receivedInput(client, stream);
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();

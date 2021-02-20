@@ -11,4 +11,6 @@ public interface ServerListener {
     void receivedInput(ClientInstance client, String msg);
 
     void serverClosed();
+
+    void receivedBytes(ClientInstance client, byte[] bytes);
 }
