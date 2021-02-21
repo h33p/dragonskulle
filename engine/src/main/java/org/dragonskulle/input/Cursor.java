@@ -49,7 +49,7 @@ public class Cursor {
 	 * @param x
 	 * @param y
 	 */
-	private void setPosition(double x, double y) {
+	void setPosition(double x, double y) {
 		mPosition.set(x, y);
 	}
 	
@@ -76,14 +76,14 @@ public class Cursor {
 	/**
 	 * Start a new drag.
 	 */
-	private void startDrag() {
+	void startDrag() {
 		mDragStart = new Vector2d(mPosition);
 	}
 	
 	/**
 	 * End a drag in progress.
 	 */
-	private void endDrag() {
+	void endDrag() {
 		mDragStart = null;
 	}
 	
@@ -118,7 +118,7 @@ public class Cursor {
 	}
 	
 	/**
-	 * Get the distance between where this cursor started dragging and its current position.
+	 * Get the direct distance between where this cursor started dragging and its current position.
 	 * 
 	 * @return A {@code double} representing the distance from the starting point of the user's drag, or {@code 0} if no dragging is taking place.
 	 */

@@ -100,7 +100,7 @@ public class Scroll {
 	 * 
 	 * @param value The value to add.
 	 */
-	private void add(double value) {
+	void add(double value) {
 		mAmount += value;
 	}
 	

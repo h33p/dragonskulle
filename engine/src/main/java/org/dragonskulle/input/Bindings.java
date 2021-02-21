@@ -32,6 +32,7 @@ public class Bindings {
 	
 	public Bindings() {
 		// Hard-coded button bindings:
+		
 		add(GLFW.GLFW_KEY_UP, Action.UP, Action.SCROLL_UP);
 		add(GLFW.GLFW_KEY_W, Action.UP, Action.SCROLL_UP);
 		
