@@ -17,32 +17,5 @@ public class MapTest {
             System.out.println();
         }
 
-
-//        // Creates Map
-//        HexagonMap map = new HexagonMap();
-//        HexagonTile tile;
-//        // Creates and adds tiles to map
-//        try {
-//            map.addTile(0, 0, 0);
-//            map.addTile(100, -100, 0);
-//            try {
-//                map.addTile(100, -100, 0); // should throw error as already defined
-//            } catch (Exception e) {
-//                System.out.println("Failed to create tile as already exists");
-//            }
-//            tile = map.getTile(0, 0, 0);
-//            System.out.println("tile: " + tile.toString());
-//            System.out.println("cartesian: " + tile.getCartesian());
-//
-//            tile = map.getTile(100, -100, 0);
-//            System.out.println("tile: " + tile.toString());
-//            System.out.println("cartesian: " + tile.getCartesian());
-//
-//            tile = map.getTile(100, -66, 0); // tile doesnt exist
-//            System.out.println("tile: " + tile.toString());
-//            System.out.println("cartesian: " + tile.getCartesian());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 }
