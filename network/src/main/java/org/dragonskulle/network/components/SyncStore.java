@@ -15,6 +15,21 @@ public class SyncStore {
         this.syncVarArrayList.add(syncVar);
         return true;
     }
+
+    public boolean updateVar(ISyncVar var) {
+        for (int i = 0; i < this.syncVarArrayList.size(); i++) {
+            AccommodatingSyncVar accommodated = this.syncVarArrayList.get(i);
+            if (accommodated.var.equals(var)) {
+                AccommodatingSyncVar newAccomodate = accommodated.updateSyncVar(var);
+                if (newAccomodate != null) {
+                    this.syncVarArrayList.set(i, newAccomodate);
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
 }
 
 
@@ -27,12 +42,12 @@ class AccommodatingSyncVar {
         this.var = var;
     }
 
-    public boolean updateSyncVar(ISyncVar update) {
+    public AccommodatingSyncVar updateSyncVar(ISyncVar update) {
         try {
             this.var = update;
+            return this;
         } catch (Exception e) {
-            return false;
+            return null;
         }
-        return true;
     }
 }

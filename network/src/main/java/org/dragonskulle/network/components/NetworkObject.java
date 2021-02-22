@@ -2,7 +2,6 @@ package org.dragonskulle.network.components;
 
 import org.dragonskulle.network.NetworkClient;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -60,8 +59,14 @@ public class NetworkObject {
 
     void registerSyncVars(byte[] payload) {
         this.owner.registerSyncVarsWithServer(payload); //send message to server
-//        this.synced.addAll(payload); //should add if server accepts sync here
     }
 
 
+    public <T> void notifySyncedOfUpdate(ISyncVar<T> newValue) {
+        this.owner.notifySyncedOfUpdate(netID, isDormant, newValue);
+    }
+
+    public Object getSynced(String id) {
+        return this.owner.getSynced(id);
+    }
 }

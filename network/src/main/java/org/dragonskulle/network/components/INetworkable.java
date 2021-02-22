@@ -20,6 +20,10 @@ public class INetworkable {
         System.out.println("netObj is assigned");
     }
 
+//    void onUpdateSyncVar(ISyncVar sync){
+//        //TODO send update request to server
+//    }
+
     void dispose() {
         this.netObj.dispose();
     }
@@ -30,7 +34,6 @@ public class INetworkable {
         int i = 0;
         System.out.println("No. Fields: " + fields.size());
         FlatBufferBuilder builder = new FlatBufferBuilder(512);
-        int built_offset;
 
 
         for (Field f : fields) {
@@ -48,11 +51,13 @@ public class INetworkable {
         RegisterSyncVarsRequest.addSyncVars(builder, sync_vars_vector_offset);
         RegisterSyncVarsRequest.addIsDormant(builder, this.netObj.isDormant);
         int request_offset = RegisterSyncVarsRequest.endRegisterSyncVarsRequest(builder);
-        builder.finish(request_offset);
-        byte[] sync_vars_buf = builder.sizedByteArray();
-        System.out.println("syncvars added to payload");
-        System.out.println("FlatBuffer :: " + Arrays.toString(sync_vars_buf));
-        netObj.registerSyncVars(sync_vars_buf);
+
+        int message_offset = Message.createMessage(builder, VariableMessage.RegisterSyncVarsRequest, request_offset);
+        builder.finish(message_offset);
+//        System.out.println("syncvars added to payload");
+
+        byte[] buf = builder.sizedByteArray();
+        netObj.registerSyncVars(buf);
     }
 }
 

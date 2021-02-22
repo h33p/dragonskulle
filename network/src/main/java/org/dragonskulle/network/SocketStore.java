@@ -26,22 +26,23 @@ public class SocketStore {
         this.store = new ArrayList<>();
     }
 
-    public void broadcast(String msg) {
+    public void broadcast(byte[] buf) {
+        System.out.println("Broadcasting bytes");
+        DataOutputStream dOut;
         for (Socket connection : store) {
             try {
                 if (connection.isClosed()) {
                     System.out.println("Client socket output has closed");
                 }
-                printWriter =
-                        new PrintWriter(
-                                connection.getOutputStream(),
-                                true); // must be better way to do this
-                printWriter.println(msg);
+                System.out.println("--broadcasting to client " + connection.toString());
+                dOut = new DataOutputStream(connection.getOutputStream());
+                dOut.write(buf);
             } catch (IOException e) {
                 System.out.println("Error in broadcasting");
                 System.out.println(e.toString());
             }
         }
+
     }
 
     public void initServer(ServerSocket serverSocket) {
@@ -122,7 +123,7 @@ public class SocketStore {
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
         for (Socket sock : this.store) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
-                System.out.println("Sending registered response to client");
+                System.out.println("Sending bytes to client");
                 try {
                     DataOutputStream dOut = new DataOutputStream(sock.getOutputStream());
                     dOut.write(response_bytes);

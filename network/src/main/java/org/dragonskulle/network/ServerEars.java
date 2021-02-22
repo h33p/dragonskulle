@@ -1,19 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-
-import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-import org.dragonskulle.network.proto.AnyISyncVar;
-import org.dragonskulle.network.proto.ISyncBool;
-import org.dragonskulle.network.proto.ISyncVar;
-import org.dragonskulle.network.proto.RegisterSyncVarsRequest;
-import org.dragonskulle.network.proto.ISyncInt;
-import org.dragonskulle.network.proto.ISyncString;
-import org.dragonskulle.network.proto.ISyncLong;
-import org.dragonskulle.network.proto.ISyncFloat;
-
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Timer;
