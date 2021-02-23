@@ -137,11 +137,6 @@ public class RenderedApp {
             instance = new VkInstance(instancePtr.get(0), createInfo);
         }
     }
-
-    /** A test function that creates the Input handler. */
-    private void createInput() {
-    	Input input = new Input(getWindow());
-    }
     
     private void mainLoop() {
         LOGGER.info("Enter main loop");
