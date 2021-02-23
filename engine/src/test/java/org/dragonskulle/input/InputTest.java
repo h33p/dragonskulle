@@ -34,14 +34,14 @@ public class InputTest {
 	
 	private static final int TEST_KEY = -12345;
 	
-	private long window;
-	private Input input;
+	private long mWindow;
+	private Input mInput;
 	
 	/** Before every test, create a window and attach Input to it. */
 	@Before
     public void createWindowInput() {
     	initWindow(100, 100, "TestWindow");
-    	input = new Input(window);
+    	mInput = new Input(mWindow);
     }
     
 	/** After every test, destroy the window. */
@@ -52,19 +52,19 @@ public class InputTest {
     
     @Test
     public void buttonsNotNull() {    	
-    	Buttons buttons = input.getMButtons();
+    	Buttons buttons = mInput.getMButtons();
     	assertNotNull(buttons);
     }
     
     @Test
     public void cursorNotNull() {    	
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     }
     
     @Test
     public void scrollNotNull() {    	
-    	Scroll scroll = input.getMScroll();
+    	Scroll scroll = mInput.getMScroll();
     	assertNotNull(scroll);
     }
     
@@ -75,7 +75,7 @@ public class InputTest {
     public void buttonShouldStoreActivation() {    	
     	boolean activated;
     	
-    	Buttons buttons = input.getMButtons();
+    	Buttons buttons = mInput.getMButtons();
     	assertNotNull(buttons);
     	
     	buttons.setActivated(TEST_KEY, true);
@@ -109,15 +109,15 @@ public class InputTest {
     	String actionName = action.toString();
     	
     	// Run the test:
-    	Buttons buttons = input.getMButtons();
+    	Buttons buttons = mInput.getMButtons();
     	assertNotNull(buttons);
     	
     	buttons.press(button);
-    	activated = input.isActivated(action);
+    	activated = mInput.isActivated(action);
     	assertTrue(String.format("%s should be activated (true) as %s has been pressed.", actionName, buttonName), activated);
     	
     	buttons.release(button);
-    	activated = input.isActivated(action);
+    	activated = mInput.isActivated(action);
     	assertFalse(String.format("%s should be deactivated (false) as %s has been released.", actionName, buttonName), activated);
     }
     
@@ -146,23 +146,23 @@ public class InputTest {
     	String actionName = action.toString();
     	
     	// Run the test:
-    	Buttons buttons = input.getMButtons();
+    	Buttons buttons = mInput.getMButtons();
     	assertNotNull(buttons);
     	
     	buttons.press(button1);
-    	activated = input.isActivated(action);
+    	activated = mInput.isActivated(action);
     	assertTrue(String.format("%s should be activated (true) as %s has been pressed.", actionName, button1Name), activated);
     	
     	buttons.press(button2);
-    	activated = input.isActivated(action);
+    	activated = mInput.isActivated(action);
     	assertTrue(String.format("%s should be activated (true) as %s and %s has been pressed.", actionName, button1Name, button2Name), activated);
     	
     	buttons.release(button1);
-    	activated = input.isActivated(action);
+    	activated = mInput.isActivated(action);
     	assertTrue(String.format("%s should be activated (true) as %s is still being pressed.", actionName, button1Name), activated);    	
     	
     	buttons.release(button2);
-    	activated = input.isActivated(action);
+    	activated = mInput.isActivated(action);
     	assertFalse(String.format("%s should be deactivated (false) as %s and %s have been released.", actionName, button1Name, button2Name), activated);
     }
     
@@ -171,7 +171,7 @@ public class InputTest {
      */
     @Test
     public void scrollShouldStoreAmount() {
-    	Scroll scroll = input.getMScroll();
+    	Scroll scroll = mInput.getMScroll();
     	assertNotNull(scroll);
     	
     	assertEquals("Scroll amount incorrect. ", scroll.getAmount(), 0, 0);
@@ -191,10 +191,10 @@ public class InputTest {
     	// For logic:
     	boolean activated;
     	
-    	Buttons buttons = input.getMButtons();
+    	Buttons buttons = mInput.getMButtons();
     	assertNotNull(buttons);
     	
-    	Scroll scroll = input.getMScroll();
+    	Scroll scroll = mInput.getMScroll();
     	assertNotNull(scroll);
     	
     	// Simulate scrolling having been occurred.
@@ -220,7 +220,7 @@ public class InputTest {
      */
     @Test
     public void cursorPositionShouldBeStored() {
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     	
     	cursor.setPosition(123d, 456d);
@@ -234,7 +234,7 @@ public class InputTest {
      */
     @Test
     public void noDragShouldCauseNullOrZero() {
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     	
     	assertNull("No drag has begun, so DragStart should be null.", cursor.getDragStart());
@@ -248,7 +248,7 @@ public class InputTest {
      */
     @Test
     public void cursorDragStartPosition() {
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     	
     	// Set the cursor's position.
@@ -273,7 +273,7 @@ public class InputTest {
      */
     @Test
     public void cursorDistanceCorrect() {
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     	
     	Vector2d desiredStart = new Vector2d(123d, 456d);
@@ -300,7 +300,7 @@ public class InputTest {
      */
     @Test
     public void cursorAngleCorrect() {
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     	
     	Vector2d desiredStart = new Vector2d(123d, 456d);
@@ -326,7 +326,7 @@ public class InputTest {
      */
     @Test
     public void cursorDetectInDrag() {
-    	Cursor cursor = input.getMCursor();
+    	Cursor cursor = mInput.getMCursor();
     	assertNotNull(cursor);
     	
     	assertFalse("Cursor is in drag, but it should not be.", cursor.inDrag());
@@ -355,9 +355,9 @@ public class InputTest {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        window = glfwCreateWindow(width, height, appName, NULL, NULL);
+        mWindow = glfwCreateWindow(width, height, appName, NULL, NULL);
 
-        if (window == NULL) {
+        if (mWindow == NULL) {
             throw new RuntimeException("Cannot create window for TestInput");
         }
     }
@@ -367,7 +367,7 @@ public class InputTest {
      */
     private void cleanup() {
         LOGGER.info("Destroying test GLFW window.");
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(mWindow);
         glfwTerminate();
     }
     
