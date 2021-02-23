@@ -3,11 +3,11 @@ package org.dragonskulle.audio;
 
 /**
  * This enum is used to specify which channel to use
- * @author Dragonskulle
- * <p> Use this as {@code SoundType.choice} </p>
  *
+ * @author Dragonskulle
+ *     <p>Use this as {@code SoundType.choice}
  */
 public enum SoundType {
-	BACKGROUND,
-	SFX
+    BACKGROUND,
+    SFX
 }
