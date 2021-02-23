@@ -23,7 +23,7 @@ public class Engine {
 
     // TODO: Choose a number of updates per second that we want to have
     private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
-    private static final double UPDATE_TIME = 1 / (double) UPDATES_PER_SECOND;
+    private static final float UPDATE_TIME = 1 / (float) UPDATES_PER_SECOND;
 
     private boolean mIsRunning = false;
 
@@ -64,17 +64,17 @@ public class Engine {
     /** Main loop of the engine */
     private void mainLoop() {
 
-        double mPrevTime = Time.getTimeInSeconds();
+        float mPrevTime = Time.getTimeInSeconds();
 
         // Basic frame counter
         int frames = 0;
-        double secondTimer = 0;
-        double cumulativeTime = 0;
+        float secondTimer = 0;
+        float cumulativeTime = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            double mCurTime = Time.getTimeInSeconds();
-            double deltaTime = mCurTime - mPrevTime;
+            float mCurTime = Time.getTimeInSeconds();
+            float deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
             cumulativeTime += deltaTime;
@@ -149,7 +149,7 @@ public class Engine {
      *
      * @param deltaTime Time change since last frame
      */
-    private void frameUpdate(double deltaTime) {
+    private void frameUpdate(float deltaTime) {
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
@@ -162,6 +162,19 @@ public class Engine {
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFixedUpdate) {
                 ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
+            }
+        }
+    }
+
+    /**
+     * Do all Late Frame Updates on components that implement it
+     *
+     * @param deltaTime Time change since last frame
+     */
+    private void lateFrameUpdate(float deltaTime) {
+        for (Component component : mActiveScene.getEnabledComponents()) {
+            if (component instanceof ILateFrameUpdate) {
+                ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
             }
         }
     }
@@ -199,19 +212,6 @@ public class Engine {
         }
     }
 
-    /**
-     * Do all Late Frame Updates on components that implement it
-     *
-     * @param deltaTime Time change since last frame
-     */
-    private void lateFrameUpdate(double deltaTime) {
-        for (Component component : mActiveScene.getEnabledComponents()) {
-            if (component instanceof ILateFrameUpdate) {
-                ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
-            }
-        }
-    }
-
     /** Finish the loading of a new scene. */
     private void switchToNewScene() {
         // Add the currently active scene to inactive scenes and remove the new scene from
@@ -242,7 +242,7 @@ public class Engine {
      *
      * @return The Engine instance
      */
-    static Engine getInstance() {
+    public static Engine getInstance() {
         return ENGINE_INSTANCE;
     }
 }

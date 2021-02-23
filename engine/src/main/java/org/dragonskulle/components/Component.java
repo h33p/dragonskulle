@@ -17,10 +17,10 @@ public abstract class Component implements Serializable {
 
     private final Reference<Component> mReference = new Reference<>(this);
 
-    private GameObject mGameObject;
+    protected GameObject mGameObject;
 
     private boolean mAwake = false;
-    private boolean mEnabled;
+    private boolean mEnabled = true;
     private boolean mStarted = false;
     private boolean mDestroy = false;
 
@@ -34,10 +34,11 @@ public abstract class Component implements Serializable {
 
     /** Handle the actual destruction of a component. Only called by the engine. */
     public final void engineDestroy() {
+        onDestroy();
+
+        mGameObject.removeComponent(this);
         mGameObject = null;
         mReference.clear();
-
-        onDestroy();
     }
 
     /** User-defined destroy method, this is what needs to be overridden instead of destroy */

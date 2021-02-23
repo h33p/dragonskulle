@@ -8,17 +8,14 @@ package org.dragonskulle.core;
  *     <p>Simple class to get the current time in seconds
  */
 public class Time {
-    private static final double MS_PER_S = 1000.0;
-
-    // This can either be done using nanoTime -> Seconds or as it currently is, not sure which is
-    // better
+    private static final float NS_PER_S = 1000000000.f;
 
     /**
      * Get the current system time in seconds
      *
      * @return The current time in seconds
      */
-    static double getTimeInSeconds() {
-        return (double) System.currentTimeMillis() / MS_PER_S;
+    public static float getTimeInSeconds() {
+        return ((float)System.nanoTime()) / NS_PER_S;
     }
 }

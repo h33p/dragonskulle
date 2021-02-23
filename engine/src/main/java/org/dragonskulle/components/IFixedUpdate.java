@@ -16,5 +16,5 @@ public interface IFixedUpdate {
      *
      * @param deltaTime Approximate time between calls to fixedUpdate
      */
-    void fixedUpdate(double deltaTime);
+    void fixedUpdate(float deltaTime);
 }
