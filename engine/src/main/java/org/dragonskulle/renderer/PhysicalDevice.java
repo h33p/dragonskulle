@@ -6,7 +6,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 
-import com.codepoetics.protonpack.StreamUtils;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -83,20 +82,20 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
 
             IntBuffer presentSupport = stack.ints(0);
 
-            StreamUtils.zipWithIndex(buf.stream().map(VkQueueFamilyProperties::queueFlags))
-                    .takeWhile(__ -> !indices.isComplete())
-                    .forEach(
-                            i -> {
-                                if ((i.getValue() & VK_QUEUE_GRAPHICS_BIT) != 0)
-                                    indices.graphicsFamily = Integer.valueOf((int) i.getIndex());
+            int capacity = buf.capacity();
 
-                                vkGetPhysicalDeviceSurfaceSupportKHR(
-                                        device, (int) i.getIndex(), surface, presentSupport);
+            for (int i = 0; i < capacity && !indices.isComplete(); i++) {
+                int queueFlags = buf.get(i).queueFlags();
 
-                                if (presentSupport.get(0) == VK_TRUE) {
-                                    indices.presentFamily = (int) i.getIndex();
-                                }
-                            });
+                if ((queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+                    indices.graphicsFamily = Integer.valueOf(i);
+
+                vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, presentSupport);
+
+                if (presentSupport.get(0) == VK_TRUE) {
+                    indices.presentFamily = i;
+                }
+            }
 
             this.indices = indices;
             this.swapchainSupport = new SwapchainSupportDetails(device, surface);
