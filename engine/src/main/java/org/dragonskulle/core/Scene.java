@@ -18,7 +18,6 @@ public class Scene {
 
     private final String mName;
 
-
     /**
      * Constructor for a Scene
      *
@@ -50,12 +49,6 @@ public class Scene {
 
     /** Iterates through all GameObjects in the scene and collects their components */
     public void updateComponentsList() {
-
-        // TODO: Add some check whether any components have been added/changed/removed so that
-        //       the list is only updated when necessary
-        //       This is only optional though as I can just reduce the number of times the list
-        //       is updated
-
         mComponents.clear();
 
         for (GameObject root : mGameObjects) {
@@ -130,6 +123,17 @@ public class Scene {
         return mComponents.stream()
                 .filter(Component::isEnabled)
                 .filter(component -> !component.isStarted())
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Get a list of all components that are to be destroyed at the end of the current frame
+     *
+     * @return A new ArrayList containing all components with the destroy flag set
+     */
+    protected ArrayList<Component> getDestroyedComponents() {
+        return mComponents.stream()
+                .filter(Component::isDestroyed)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 }

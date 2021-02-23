@@ -1,10 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
+import java.io.Serializable;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-
-import java.io.Serializable;
 
 /**
  * Abstract class for a Component
@@ -28,15 +27,12 @@ public abstract class Component implements Serializable {
     /**
      * Set the destroy flag to true. The component won't actually be destroyed until the end of the
      * current render frame.
-     *
      */
     public final void destroy() {
         mDestroy = true;
     }
 
-    /**
-     * Handle the actual destruction of a component. Only called by the engine.
-     */
+    /** Handle the actual destruction of a component. Only called by the engine. */
     public final void engineDestroy() {
         mGameObject = null;
         mReference.clear();
@@ -124,7 +120,9 @@ public abstract class Component implements Serializable {
      *
      * @return mDestroy
      */
-    public final boolean isDestroyed() { return mDestroy; }
+    public final boolean isDestroyed() {
+        return mDestroy;
+    }
 
     /**
      * Getter for mReference

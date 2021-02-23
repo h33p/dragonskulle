@@ -4,7 +4,6 @@ package org.dragonskulle.core;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -72,9 +71,6 @@ public class Engine {
         double secondTimer = 0;
         double cumulativeTime = 0;
 
-        // TODO: Make objects only be destroyed after all updates
-        // TODO: Only initialize new components at the start of next frame
-
         while (mIsRunning) {
             // Calculate time for last frame
             double mCurTime = Time.getTimeInSeconds();
@@ -110,7 +106,7 @@ public class Engine {
 
             // TODO: Perform rendering here
 
-            // TODO: Destroy any objects here
+            destroyObjectsAndComponents();
 
             frames++;
             if (secondTimer > 1.0) {
@@ -126,14 +122,11 @@ public class Engine {
         cleanup();
     }
 
-    /**
-     * Iterate through a list of components that aren't awake and wake them
-     */
+    /** Iterate through a list of components that aren't awake and wake them */
     private void wakeComponents() {
         for (Component component : mActiveScene.getNotAwakeComponents()) {
             if (component instanceof IOnAwake) {
                 ((IOnAwake) component).onAwake();
-
             }
             component.setAwake(true);
         }
@@ -145,7 +138,7 @@ public class Engine {
     private void startEnabledComponents() {
         for (Component component : mActiveScene.getEnabledButNotStartedComponents()) {
             if (component instanceof IOnStart) {
-                ((IOnStart)component).onStart();
+                ((IOnStart) component).onStart();
             }
             component.setStarted(true);
         }
@@ -176,7 +169,7 @@ public class Engine {
     /** Destroy all GameObjects and Components that have the destroy flag set */
     private void destroyObjectsAndComponents() {
         for (Iterator<GameObject> iterator = mActiveScene.getRootObjects().iterator();
-                iterator.hasNext();) {
+                iterator.hasNext(); ) {
 
             GameObject root = iterator.next();
 
@@ -192,15 +185,17 @@ public class Engine {
 
                 root.getAllChildren(objects);
 
-                // If the child is destroyed, destroy it and unlink from the parent
+                // If the child is destroyed, destroy it
                 for (GameObject object : objects) {
                     if (object.isDestroyed()) {
-                        object.getParent().removeChild(object);
-
                         object.engineDestroy();
                     }
                 }
             }
+        }
+
+        for (Component component : mActiveScene.getDestroyedComponents()) {
+            component.engineDestroy();
         }
     }
 
@@ -217,14 +212,12 @@ public class Engine {
         }
     }
 
-    /**
-     * Finish the loading of a new scene.
-     */
+    /** Finish the loading of a new scene. */
     private void switchToNewScene() {
         // Add the currently active scene to inactive scenes and remove the new scene from
         // the set if it exists
         mInactiveScenes.add(mActiveScene);
-        boolean sceneWasInactive = mInactiveScenes.remove(mNewScene);
+        mInactiveScenes.remove(mNewScene);
 
         mActiveScene = mNewScene;
         mNewScene = null;

@@ -4,13 +4,10 @@ package org.dragonskulle.core;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dragonskulle.components.Component;
@@ -45,7 +42,7 @@ public class GameObject implements Serializable {
      * @return The new instance of the GameObject
      */
     public static GameObject instantiate(GameObject object) {
-        return new GameObject(object);
+        return object.createClone();
     }
 
     /**
@@ -56,7 +53,7 @@ public class GameObject implements Serializable {
      * @return The new instance of the GameObject
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
-        GameObject instance = new GameObject(object);
+        GameObject instance = object.createClone();
         instance.mTransform = transform;
         return instance;
     }
@@ -112,26 +109,6 @@ public class GameObject implements Serializable {
         mParent = null;
         mName = name;
         mActive = active;
-    }
-
-    /**
-     * Copy constructor for GameObject
-     *
-     * @param object The GameObject to copy
-     */
-    public GameObject(GameObject object) {
-
-        // TODO: Rewrite this so that all children and components are new objects just with the same
-        //       values etc
-
-        mRoot = object.mRoot;
-        mParent = object.mParent;
-        mName = object.mName;
-        mActive = object.mActive;
-        mTransform = object.mTransform;
-
-        mComponents.addAll(object.mComponents);
-        mChildren.addAll(object.mChildren);
     }
 
     /**
@@ -272,14 +249,13 @@ public class GameObject implements Serializable {
         mChildren.remove(child);
     }
 
-    /**
-     * Handle the destruction of the object.
-     */
+    /** Handle the destruction of the object. */
     protected void engineDestroy() {
+
+        ArrayList<GameObject> children = new ArrayList<>(mChildren);
+
         // Destroy all children
-        for (Iterator<GameObject> iterator = mChildren.iterator(); iterator.hasNext();) {
-            GameObject child = iterator.next();
-            iterator.remove();
+        for (GameObject child : children) {
             child.engineDestroy();
         }
 
@@ -291,6 +267,12 @@ public class GameObject implements Serializable {
         // After we have finished destroying we need to clear our reference so nothing attempts to
         // access this
         mReference.clear();
+
+        // Then remove this GameObject from the parent and remove the link to the parent
+        if (mParent != null) {
+            mParent.removeChild(this);
+            mParent = null;
+        }
     }
 
     /**
@@ -301,6 +283,11 @@ public class GameObject implements Serializable {
         mDestroy = true;
     }
 
+    /**
+     * Create a deep copy of the GameObject
+     *
+     * @return New GameObject with identical values as this
+     */
     public GameObject createClone() {
         byte[] objectData = null;
 
@@ -319,7 +306,7 @@ public class GameObject implements Serializable {
         if (objectData != null) {
             try {
                 ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
-                return (GameObject)new ObjectInputStream(bais).readObject();
+                return (GameObject) new ObjectInputStream(bais).readObject();
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
             }
@@ -386,7 +373,9 @@ public class GameObject implements Serializable {
      *
      * @return mDestroy
      */
-    public boolean isDestroyed() { return mDestroy; }
+    public boolean isDestroyed() {
+        return mDestroy;
+    }
 
     /**
      * Getter for mRoot, used for testing

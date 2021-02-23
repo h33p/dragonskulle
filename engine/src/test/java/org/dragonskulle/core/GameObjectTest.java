@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class GameObjectTest {
 
-    // TODO: rewrite these tests to test every constructor
+    // TODO: rewrite tests
 
     /** Test whether a child GameObject's parent always has the child */
     @Test
@@ -54,13 +54,17 @@ public class GameObjectTest {
         GameObject root = new GameObject("root");
         GameObject child = new GameObject("child");
 
+        for (int i = 0; i < 5; i++) {
+            child.addChild(child.createClone());
+        }
+
         root.addChild(child);
 
-        child.destroy();
+        child.engineDestroy();
 
         // This should return an empty list since root only had one child
-        ArrayList<GameObject> children = root.getChildren();
-
+        ArrayList<GameObject> children = new ArrayList<>();
+        root.getAllChildren(children);
         String message = "Child wasn't removed from the parent when it was destroyed";
         Assert.assertEquals(message, 0, children.size());
     }
@@ -103,7 +107,7 @@ public class GameObjectTest {
 
         // Then check whether using the copy constructor still has a transform
 
-        GameObject objClone = new GameObject(obj);
+        GameObject objClone = obj.createClone();
 
         Assert.assertNotNull(
                 "GameObject did not have a transform after cloning", objClone.getTransform());
