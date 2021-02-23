@@ -19,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.Getter;
 
-import org.dragonskulle.input.Input;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -69,8 +68,6 @@ public class RenderedApp {
         if (DEBUG_MODE) {
             setupDebugLogging();
         }
-        
-        createInput();
         
         mainLoop();
         cleanup();
