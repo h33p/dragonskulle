@@ -24,8 +24,19 @@ public class Cursor {
     private Vector2d mPosition = new Vector2d(0, 0);
     /** The starting position of a drag, or {@code null} if no drag is taking place. */
     private Vector2d mDragStart;
+    /** Allows {@link Action}s to be activated and deactivated. */
+	private Actions mActions;
 
-    /**
+	/**
+	 * Create a new cursor manager.
+	 * 
+	 * @param actions The actions to be triggered.
+	 */
+    public Cursor(Actions actions) {
+    	mActions = actions;
+	}
+
+	/**
      * Attach this cursor to a window.
      *
      * <p>Required to allow this cursor to access to this window.
@@ -33,14 +44,14 @@ public class Cursor {
      * @param window The window to attach to.
      * @param actions The user's {@link Actions}.
      */
-    void attachToWindow(long window, Actions actions) {
+    void attachToWindow(long window) {
         // Listen for cursor position events.
         GLFWCursorPosCallback listener =
                 new GLFWCursorPosCallback() {
                     @Override
                     public void invoke(long window, double x, double y) {
                         setPosition(x, y);
-                        detectDrag(actions);
+                        detectDrag(mActions);
                     }
                 };
 

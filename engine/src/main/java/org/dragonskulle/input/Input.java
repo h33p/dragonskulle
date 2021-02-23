@@ -35,21 +35,28 @@ public class Input {
     @Getter private Cursor mCursor;
 
     /** Allows scrolling to be detected. */
-    @Getter private Scroll mScroll = new Scroll();
+    @Getter private Scroll mScroll;
 
-    public Input(long window) {
+    /**
+     * Create a new input manager.
+     * 
+     * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
+     */
+    public Input(Long window) {
         mActions = new Actions();
         mBindings = new Bindings();
 
-        mCursor = new Cursor();
-        mCursor.attachToWindow(window, mActions);
+        mCursor = new Cursor(mActions);
+        mButtons = new Buttons(mActions, mBindings);
+        mScroll = new Scroll(mButtons);        
 
-        mButtons = new Buttons();
-        mButtons.attachToWindow(window, mActions, mBindings);
-
-        mScroll = new Scroll();
-        mScroll.attachToWindow(window, mButtons);
-
+        // If a window is provided, attach the event listeners.
+        if(window != null) {
+        	mCursor.attachToWindow(window);
+        	mButtons.attachToWindow(window);
+        	mScroll.attachToWindow(window);
+        }
+        
         // For infinite mouse movement.
         // GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         // For hiding the cursor.

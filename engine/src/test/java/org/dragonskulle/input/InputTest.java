@@ -6,20 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.lwjgl.glfw.GLFW.GLFW_CLIENT_API;
-import static org.lwjgl.glfw.GLFW.GLFW_NO_API;
-import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
-import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
-import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
-import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
-import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.glfw.GLFW.glfwTerminate;
-import static org.lwjgl.glfw.GLFW.glfwWindowHint;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.util.logging.Logger;
 import org.joml.Vector2d;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.lwjgl.glfw.GLFW;
@@ -33,22 +22,20 @@ public class InputTest {
 
     public static final Logger LOGGER = Logger.getLogger("InputTest");
 
+    /**
+     * An example key code used for tesing key presses.
+     */
     private static final int TEST_KEY = -12345;
 
-    private long mWindow;
+    /**
+     * The input being tested. Will be reset before every test.
+     */
     private Input mInput;
 
     /** Before every test, create a window and attach Input to it. */
     @Before
     public void createWindowInput() {
-        initWindow(100, 100, "TestWindow");
-        mInput = new Input(mWindow);
-    }
-
-    /** After every test, destroy the window. */
-    @After
-    public void destroyWindow() {
-        cleanup();
+        mInput = new Input(null);
     }
 
     @Test
@@ -380,34 +367,4 @@ public class InputTest {
         assertFalse("Cursor is in drag, but it should not be.", cursor.inDrag());
     }
 
-    /**
-     * Create a GLFW window.
-     *
-     * @param width The width.
-     * @param height The height.
-     * @param appName The title of the window.
-     */
-    private void initWindow(int width, int height, String appName) {
-        LOGGER.info("Initialising test GLFW window.");
-
-        if (!glfwInit()) {
-            throw new RuntimeException("Cannot initialize GLFW for InputTest");
-        }
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        mWindow = glfwCreateWindow(width, height, appName, NULL, NULL);
-
-        if (mWindow == NULL) {
-            throw new RuntimeException("Cannot create window for TestInput");
-        }
-    }
-
-    /** Stop GLFW. */
-    private void cleanup() {
-        LOGGER.info("Destroying test GLFW window.");
-        glfwDestroyWindow(mWindow);
-        glfwTerminate();
-    }
 }

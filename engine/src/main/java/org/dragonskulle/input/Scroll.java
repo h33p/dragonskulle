@@ -68,6 +68,15 @@ public class Scroll {
     }
 
     /**
+     * Create a new scroll manager.
+     * 
+     * @param buttons The buttons.
+     */
+    public Scroll(Buttons buttons) {
+    	mButtons = buttons;
+	}
+
+	/**
      * Attach the scrolling detection to the window.
      *
      * <p>Required to allow scrolling to be detected both as a direct value and via {@link Actions}.
@@ -75,9 +84,7 @@ public class Scroll {
      * @param window The window to attach to.
      * @param buttons The buttons that will be pressed and released.
      */
-    void attachToWindow(long window, Buttons buttons) {
-        mButtons = buttons;
-
+    void attachToWindow(long window) {
         // Set the listener.
         GLFW.glfwSetScrollCallback(window, new ScrollListener());
     }
