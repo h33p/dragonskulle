@@ -22,7 +22,14 @@ public class RenderedApp {
 
     /// Main functions
 
-    /** Entrypoint of the app instance */
+    /**
+     * Entrypoint of the app instance
+     *
+     * @param width initial window width
+     * @param height initial window height
+     * @param appName name of the app
+     * @throws Exception if initialization fails
+     */
     public void run(int width, int height, String appName) throws Exception {
         DEBUG.set(DEBUG_MODE);
         initWindow(width, height, appName);

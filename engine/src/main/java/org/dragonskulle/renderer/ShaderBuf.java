@@ -24,7 +24,13 @@ public class ShaderBuf implements NativeResource {
     @Getter
     private ByteBuffer mBuffer;
 
-    /** Load a shader resource */
+    /**
+     * Load a shader resource
+     *
+     * @param name name of the shader
+     * @param kind kind of the shader (vertex, fragment, geometry)
+     * @return shader resource if loaded, null otherwise
+     */
     public static Resource<ShaderBuf> getResource(String name, ShaderKind kind) {
         String spirvName = String.format("shaderc/%s.%s.spv", name, kind.toString());
 
@@ -50,7 +56,14 @@ public class ShaderBuf implements NativeResource {
                 glslName);
     }
 
-    /** Compile a shader directly */
+    /**
+     * Compile a shader directly
+     *
+     * @param name name of the shader
+     * @param data shader bytecode
+     * @param shaderKind shader kind (vertex, fragment, geometry)
+     * @return compiled shader, null if there was an error
+     */
     public static ShaderBuf compileShader(String name, String data, ShaderKind shaderKind) {
         RenderedApp.LOGGER.info("Compiling " + name);
 

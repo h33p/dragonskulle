@@ -42,7 +42,7 @@ import org.lwjgl.vulkan.*;
  * @author Aurimas Blažulionis
  *     <p>This renderer allows to draw {@code Renderable} objects on screen. Application needs to
  *     call {@code onResized} when its window gets resized.
- *     <p>This renderer was originally based on<a hfref="https://vulkan-tutorial.com/">Vulkan
+ *     <p>This renderer was originally based on<a href="https://vulkan-tutorial.com/">Vulkan
  *     Tutorial</a>, and was later rewritten with a much more manageable design.
  */
 public class Renderer implements NativeResource {
