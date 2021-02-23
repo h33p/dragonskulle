@@ -16,9 +16,9 @@ import javax.sound.sampled.Mixer;
 public class DataLinePool {
 	
 	
-	private ClipClass[] sounds;
+	private ClipClass[] mSounds;
 	private final int NUMBER_OF_CLIPS = 1;
-	private int masterVol;
+	private int mMasterVol;
 	
 	public final static Logger LOGGER = Logger.getLogger("DataLine");
 	
@@ -30,7 +30,7 @@ public class DataLinePool {
 	public DataLinePool(Mixer mixer, SoundType soundType) {
 		
 	
-		sounds = new ClipClass[NUMBER_OF_CLIPS];
+		mSounds = new ClipClass[NUMBER_OF_CLIPS];
 		
 		// Creates the clips
 		for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
@@ -54,8 +54,8 @@ public class DataLinePool {
 				}
 			}
 			
-			sounds[i] = clip;
-			masterVol = 50;
+			mSounds[i] = clip;
+			mMasterVol = 50;
 					
 		}
 	}
@@ -71,9 +71,9 @@ public class DataLinePool {
 			return null;
 		}
 		
-		ClipClass toUse = sounds[0];
+		ClipClass toUse = mSounds[0];
 		toUse.play(input);
-		sounds[0] = toUse;
+		mSounds[0] = toUse;
 		return toUse;  //MAYBE USE REFERENCE
 	}
 	
@@ -85,11 +85,11 @@ public class DataLinePool {
 		
 		// Set all the Clips with new mute value
 		for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
-			ClipClass toUse = sounds[i];
+			ClipClass toUse = mSounds[i];
 			if (toUse != null) {
 				toUse.setMute(setMute);
 			}
-			sounds[i] = toUse;
+			mSounds[i] = toUse;
 		}
 	}
 	
@@ -107,16 +107,16 @@ public class DataLinePool {
 		}
 		// Will update all clips with the new value
 		for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
-			ClipClass toUse = sounds[i];
+			ClipClass toUse = mSounds[i];
 			
 			if (toUse != null) {
 				
 				toUse.setVolume(setVol);
 			}
 			
-			sounds[i] = toUse;
+			mSounds[i] = toUse;
 		}
-		masterVol = setVol;
+		mMasterVol = setVol;
 	}
 	
 	/**
@@ -127,13 +127,13 @@ public class DataLinePool {
 		
 		int index = 0;
 		// Find one Clip which is not null
-		while (sounds[index] == null && index < NUMBER_OF_CLIPS) {
+		while (mSounds[index] == null && index < NUMBER_OF_CLIPS) {
 			index ++;
 		}
 		if (index == NUMBER_OF_CLIPS) {
 			return false;
 		}
-		return sounds[index].getMute();
+		return mSounds[index].getMute();
 	}
 	
 	/**
@@ -141,7 +141,7 @@ public class DataLinePool {
 	 * @return volume value
 	 */
 	public int getVolume() {
-		return masterVol;
+		return mMasterVol;
 	}
 	
 	/**
@@ -149,6 +149,6 @@ public class DataLinePool {
 	 * @return An {@code array} of {@code ClipClass} 
 	 */
 	public ClipClass[] cleanup(){
-		return sounds;
+		return mSounds;
 	}
 }

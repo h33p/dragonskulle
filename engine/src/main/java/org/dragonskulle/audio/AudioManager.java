@@ -19,35 +19,35 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class AudioManager {
 	
 	private static final AudioManager AUDIO_MANAGER_INSTANCE = new AudioManager(); 
-	private Mixer mixer;
-	private DataLinePool[] sounds;
+	private Mixer mMixer;
+	private DataLinePool[] mSounds;
 	
 	public static final Logger LOGGER = Logger.getLogger("audiomanager");
 	
 	/**
-	 * This constructor creates the AudioManager.  If the mixer is not created it is set to null.
+	 * This constructor creates the AudioManager.  If the Mixer is not created it is set to null.
 	 */
 	private AudioManager() {
 		
 		//Creates the mixer
 		try {
-			mixer = AudioSystem.getMixer(null);
+			mMixer = AudioSystem.getMixer(null);
 			
 			//Creates the different lines
-			DataLinePool background = new DataLinePool(mixer, SoundType.BACKGROUND);
-			DataLinePool sfx = new DataLinePool(mixer, SoundType.SFX);
+			DataLinePool background = new DataLinePool(mMixer, SoundType.BACKGROUND);
+			DataLinePool sfx = new DataLinePool(mMixer, SoundType.SFX);
 			
-			sounds = new DataLinePool[2];
-			sounds[0] = background;
-			sounds[1] = sfx;
+			mSounds = new DataLinePool[2];
+			mSounds[0] = background;
+			mSounds[1] = sfx;
 		}
 		catch (SecurityException e) {
-			mixer = null;
+			mMixer = null;
 			LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
 			
 		}
 		catch (IllegalArgumentException e) {
-			mixer = null;
+			mMixer = null;
 			LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
 		}
 		
@@ -67,11 +67,11 @@ public class AudioManager {
 			
 			// Plays the file on the right channel
 			if (channel == SoundType.BACKGROUND) {
-				sounds[0].openStream(audio);
+				mSounds[0].openStream(audio);
 				return true;
 			}
 			else {
-				sounds[1].openStream(audio);
+				mSounds[1].openStream(audio);
 				return true;
 			}
 		} catch (UnsupportedAudioFileException e) {
@@ -93,10 +93,10 @@ public class AudioManager {
 		
 		// Sets the mute value
 		if (channel == SoundType.BACKGROUND) {
-			sounds[0].setMute(muteValue);
+			mSounds[0].setMute(muteValue);
 		}
 		else {
-			sounds[1].setMute(muteValue);
+			mSounds[1].setMute(muteValue);
 		}
 	}
 	
@@ -110,13 +110,13 @@ public class AudioManager {
 		// Gets the mute value
 		if (channel == SoundType.BACKGROUND) {
 			
-			if (sounds[0] != null) {
-				return sounds[0].getMute();
+			if (mSounds[0] != null) {
+				return mSounds[0].getMute();
 			}
 		}
 		else {
-			if (sounds[1] != null) {
-				return sounds[1].getMute();
+			if (mSounds[1] != null) {
+				return mSounds[1].getMute();
 			}
 			
 			
@@ -141,10 +141,10 @@ public class AudioManager {
 		
 		// Changes the volume
 		if (channel == SoundType.BACKGROUND) {
-			sounds[0].setVolume(setVol);
+			mSounds[0].setVolume(setVol);
 		}
 		else {
-			sounds[1].setVolume(setVol);
+			mSounds[1].setVolume(setVol);
 		}
 	}
 	
@@ -157,13 +157,13 @@ public class AudioManager {
 		
 		
 		if (channel == SoundType.BACKGROUND) {
-			if (sounds[0] != null) {
-				return sounds[0].getVolume();
+			if (mSounds[0] != null) {
+				return mSounds[0].getVolume();
 			}
 		}
 		else {
-			if (sounds[1] != null) {
-				return sounds[1].getVolume();
+			if (mSounds[1] != null) {
+				return mSounds[1].getVolume();
 			}
 		}
 		
@@ -171,12 +171,12 @@ public class AudioManager {
 	}
 	
 	/**
-	 * This closes the mixer and must be called at the end of a program.
+	 * This closes the Mixer and must be called at the end of a program.
 	 */
 	public void cleanup() {
 		
-		if (mixer != null) {
-			mixer.close();
+		if (mMixer != null) {
+			mMixer.close();
 		}
 		
 	}

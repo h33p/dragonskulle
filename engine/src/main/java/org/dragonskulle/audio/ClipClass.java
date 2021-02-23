@@ -9,7 +9,6 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
@@ -23,11 +22,11 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  */
 public class ClipClass {
 	
-	private Clip clip;
-	private BooleanControl mute;
-	private FloatControl volume;
-	private int currentVol;
-	private boolean looping;
+	private Clip mClip;
+	private BooleanControl mMute;
+	private FloatControl mVolume;
+	private int mCurrentVol;
+	private boolean mLooping;
 	
 	public static final Logger LOGGER = Logger.getLogger("audio");
 	
@@ -42,12 +41,12 @@ public class ClipClass {
 		
 		// Gets the line
 		DataLine.Info dataLine = new DataLine.Info(Clip.class, null);
-		clip = (Clip) mixer.getLine(dataLine);
+		mClip = (Clip) mixer.getLine(dataLine);
 		
 		// Tries to open the audio stream
 		try {
 			AudioInputStream startingStream = AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
-			clip.open(startingStream);
+			mClip.open(startingStream);
 			
 		} catch (UnsupportedAudioFileException e) {
 			LOGGER.log(Level.WARNING, "Unable to open Silent.wav.  Please tell someone sooner rather than later");
@@ -56,31 +55,31 @@ public class ClipClass {
 		} 
 		
 		
-		// Gets mute and volume control and sets them
-		mute = (BooleanControl) clip.getControl(BooleanControl.Type.MUTE);
-		mute.setValue(false);
+		// Gets mute and mVolume control and sets them
+		mMute = (BooleanControl) mClip.getControl(BooleanControl.Type.MUTE);
+		mMute.setValue(false);
 		
-		volume = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+		mVolume = (FloatControl) mClip.getControl(FloatControl.Type.MASTER_GAIN);
 		
-		currentVol = 0;
+		mCurrentVol = 0;
 		
-		setVolume(50);  /* The default volume */
+		setVolume(50);  /* The default mVolume */
 		
 		// Loops the clip if needs to 
 		if (loopContinuously) {
-			clip.loop(Clip.LOOP_CONTINUOUSLY);
+			mClip.loop(Clip.LOOP_CONTINUOUSLY);
 		}
 		
-		looping = loopContinuously;
+		mLooping = loopContinuously;
 			
 	}
 	
 	/**
 	 * Setter of the mute value
-	 * @param muteValue Whether to mute or not
+	 * @param mMuteValue Whether to mute or not
 	 */
-	public void setMute(boolean muteValue) {
-		mute.setValue(muteValue);
+	public void setMute(boolean mMuteValue) {
+		mMute.setValue(mMuteValue);
 	}
 	
 	/**
@@ -88,12 +87,12 @@ public class ClipClass {
 	 * @return the current mute value
 	 */
 	public boolean getMute() {
-		return mute.getValue();
+		return mMute.getValue();
 	}
 	
 	/**
-	 * Set the volume value on the clip
-	 * @param newVolume the new volume to use
+	 * Set the Volume value on the mClip
+	 * @param newVolume the new Volume to use
 	 */
 	public void setVolume(int newVolume) {
 		
@@ -106,58 +105,56 @@ public class ClipClass {
 		}
 		
 		
-		currentVol = newVolume;
+		mCurrentVol = newVolume;
 		
-		// Gets the range of volume possible for this clip
-		float amountOfVolForClip = Math.abs(volume.getMaximum()) + Math.abs(volume.getMinimum());
+		// Gets the range of mVolume possible for this Clip
+		float amountOfVolForClip = Math.abs(mVolume.getMaximum()) + Math.abs(mVolume.getMinimum());
 		
-		// Sets the new volume 
-		float newVol = (((float) newVolume / 100) * amountOfVolForClip) + volume.getMinimum();
+		// Sets the new Volume 
+		float newVol = (((float) newVolume / 100) * amountOfVolForClip) + mVolume.getMinimum();
 		
-		// Set this volume
-		volume.setValue(newVol);
+		// Set this Volume
+		mVolume.setValue(newVol);
 	}
 	
 	/**
-	 * Gets the current volume
-	 * @return the current volume
+	 * Gets the current Volume
+	 * @return the current Volume
 	 */
 	public int getVolume() {
-		return currentVol;
+		return mCurrentVol;
 	}
 	
 	/**
-	 * Whether the clip is looping
+	 * Whether the Clip is Looping
 	 * @return
 	 */
 	public boolean getLooping() {
-		return looping;
+		return mLooping;
 	}
 	
 	/**
 	 * Plays the audio
 	 * @param audio the audio stream to play
-	 * @return The clip just used
+	 * @return The Clip just used
 	 */
 	public Clip play(AudioInputStream audio) {
 		
-		clip.close();
+		mClip.close();
 		try {
-			clip.open(audio);
+			mClip.open(audio);
 		} catch (LineUnavailableException e) {
 			LOGGER.log(Level.WARNING, "The line is unavailable");
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, "This file does not exist");
 		}
-		clip.setMicrosecondPosition(0);
-		clip.start();
+		mClip.setMicrosecondPosition(0);
+		mClip.start();
 		
-		if (clip.isActive() && looping) {
-			clip.loop(Clip.LOOP_CONTINUOUSLY);
+		if (mClip.isActive() && mLooping) {
+			mClip.loop(Clip.LOOP_CONTINUOUSLY);
 		}
 		
-		return clip;		
+		return mClip;		
 	}
-	
-
 }
