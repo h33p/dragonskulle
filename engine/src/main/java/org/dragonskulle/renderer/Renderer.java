@@ -1365,14 +1365,13 @@ public class Renderer implements NativeResource {
                             i -> {
                                 FrameContext ctx = new FrameContext();
 
-                                LongBuffer pSync = stack.longs(0, 0, 0);
+                                LongBuffer pSem1 = stack.longs(0);
+                                LongBuffer pSem2 = stack.longs(0);
+                                LongBuffer pFence = stack.longs(0);
 
-                                int res1 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSync);
-                                int res2 =
-                                        vkCreateSemaphore(
-                                                mDevice, semaphoreInfo, null, pSync.position(1));
-                                int res3 =
-                                        vkCreateFence(mDevice, fenceInfo, null, pSync.position(2));
+                                int res1 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSem1);
+                                int res2 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSem2);
+                                int res3 = vkCreateFence(mDevice, fenceInfo, null, pFence);
 
                                 if (res1 != VK_SUCCESS
                                         || res2 != VK_SUCCESS
@@ -1383,11 +1382,9 @@ public class Renderer implements NativeResource {
                                                     -res1, -res2, -res2));
                                 }
 
-                                pSync.rewind();
-
-                                ctx.imageAvailableSemaphore = pSync.get(0);
-                                ctx.renderFinishedSemaphore = pSync.get(1);
-                                ctx.inFlightFence = pSync.get(2);
+                                ctx.imageAvailableSemaphore = pSem1.get(0);
+                                ctx.renderFinishedSemaphore = pSem2.get(0);
+                                ctx.inFlightFence = pFence.get(0);
 
                                 frames[i] = ctx;
                             });
