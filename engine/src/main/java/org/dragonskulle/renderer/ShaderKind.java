@@ -4,16 +4,19 @@ package org.dragonskulle.renderer;
 import static org.lwjgl.util.shaderc.Shaderc.*;
 
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 public enum ShaderKind {
     VERTEX_SHADER(shaderc_glsl_vertex_shader),
     GEOMETRY_SHADER(shaderc_glsl_geometry_shader),
     FRAGMENT_SHADER(shaderc_glsl_fragment_shader);
 
-    @Getter private final int kind;
+    @Accessors(prefix = "m")
+    @Getter
+    private final int mKind;
 
     ShaderKind(int kind) {
-        this.kind = kind;
+        this.mKind = kind;
     }
 
     @Override

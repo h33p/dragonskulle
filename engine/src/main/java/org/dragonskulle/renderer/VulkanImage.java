@@ -130,6 +130,11 @@ class VulkanImage implements NativeResource {
             this.memory = pBufferMemory.get(0);
 
             res = vkBindImageMemory(mDevice, this.image, this.memory, 0);
+
+            if (res != VK_SUCCESS) {
+                throw new RuntimeException(
+                        String.format("Failed to bind image memory! Ret: %x", -res));
+            }
         }
     }
 

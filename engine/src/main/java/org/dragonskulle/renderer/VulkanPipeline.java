@@ -65,8 +65,8 @@ class VulkanPipeline {
             VkPipelineVertexInputStateCreateInfo vertexInputInfo =
                     VkPipelineVertexInputStateCreateInfo.callocStack(stack);
             vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
-            vertexInputInfo.pVertexBindingDescriptions(Vertice.getBindingDescription(stack));
-            vertexInputInfo.pVertexAttributeDescriptions(Vertice.getAttributeDescriptions(stack));
+            vertexInputInfo.pVertexBindingDescriptions(Vertex.getBindingDescription(stack));
+            vertexInputInfo.pVertexAttributeDescriptions(Vertex.getAttributeDescriptions(stack));
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly =
                     VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);

@@ -10,12 +10,12 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 /**
- * Describes a single vertice
+ * Describes a single vertex
  *
  * @author Aurimas Blažulionis
  */
 @Builder
-public class Vertice {
+public class Vertex {
     public static int SIZEOF = (2 + 3 + 2) * 4;
     public static int OFFSETOF_POS = 0;
     public static int OFFSETOF_COL = 2 * 4;

@@ -9,6 +9,8 @@ import static org.lwjgl.vulkan.VK10.*;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.stream.IntStream;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -18,14 +20,16 @@ import org.lwjgl.vulkan.*;
  *
  * @author Aurimas Blažulionis
  */
+@Accessors(prefix = "m")
+@Getter
 class PhysicalDevice implements Comparable<PhysicalDevice> {
-    VkPhysicalDevice device;
-    SwapchainSupportDetails swapchainSupport;
-    FeatureSupportDetails featureSupport;
-    String deviceName;
+    private VkPhysicalDevice mDevice;
+    private SwapchainSupportDetails mSwapchainSupport;
+    private FeatureSupportDetails mFeatureSupport;
+    private String mDeviceName;
 
-    int score;
-    QueueFamilyIndices indices;
+    private int mScore;
+    private QueueFamilyIndices mIndices;
 
     /** Describes indices used for various device queues */
     static class QueueFamilyIndices {
@@ -53,7 +57,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
 
     /** Gathers information about physical device and stores it on `PhysicalDevice` */
     private PhysicalDevice(VkPhysicalDevice device, long surface) {
-        this.device = device;
+        this.mDevice = device;
 
         try (MemoryStack stack = stackPush()) {
             VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.callocStack(stack);
@@ -62,19 +66,20 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             vkGetPhysicalDeviceProperties(device, properties);
             vkGetPhysicalDeviceFeatures(device, features);
 
-            this.deviceName = properties.deviceNameString();
+            this.mDeviceName = properties.deviceNameString();
 
-            this.featureSupport = new FeatureSupportDetails();
-            this.featureSupport.anisotropyEnable = features.samplerAnisotropy();
-            this.featureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
+            this.mFeatureSupport = new FeatureSupportDetails();
+            this.mFeatureSupport.anisotropyEnable = features.samplerAnisotropy();
+            this.mFeatureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
 
-            this.score = 0;
+            this.mScore = 0;
 
             // Prioritize dedicated graphics cards
-            if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) this.score += 5000;
+            if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                this.mScore += 5000;
 
             // Check maximum texture sizes, prioritize largest
-            this.score += properties.limits().maxImageDimension2D();
+            this.mScore += properties.limits().maxImageDimension2D();
 
             QueueFamilyIndices indices = new QueueFamilyIndices();
 
@@ -87,8 +92,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             for (int i = 0; i < capacity && !indices.isComplete(); i++) {
                 int queueFlags = buf.get(i).queueFlags();
 
-                if ((queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
-                    indices.graphicsFamily = Integer.valueOf(i);
+                if ((queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) indices.graphicsFamily = i;
 
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, presentSupport);
 
@@ -97,19 +101,19 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 }
             }
 
-            this.indices = indices;
-            this.swapchainSupport = new SwapchainSupportDetails(device, surface);
+            this.mIndices = indices;
+            this.mSwapchainSupport = new SwapchainSupportDetails(device, surface);
         }
     }
 
     @Override
     public int compareTo(PhysicalDevice other) {
-        return score == other.score ? 0 : score < other.score ? 1 : -1;
+        return Integer.compare(other.mScore, mScore);
     }
 
     /** Update swapchain support details */
     public void onRecreateSwapchain(long surface) {
-        swapchainSupport = new SwapchainSupportDetails(device, surface);
+        mSwapchainSupport = new SwapchainSupportDetails(mDevice, surface);
     }
 
     /** Find a suitable memory type for the GPU */
@@ -117,7 +121,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         try (MemoryStack stack = stackPush()) {
             VkPhysicalDeviceMemoryProperties memProperties =
                     VkPhysicalDeviceMemoryProperties.callocStack(stack);
-            vkGetPhysicalDeviceMemoryProperties(device, memProperties);
+            vkGetPhysicalDeviceMemoryProperties(mDevice, memProperties);
 
             for (int i = 0; i < memProperties.memoryTypeCount(); i++) {
                 if ((filterBits & (1 << i)) != 0
@@ -140,7 +144,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         else if (targetDevice == null) return devices[0];
 
         for (PhysicalDevice d : devices) {
-            if (d.deviceName.contains(targetDevice)) {
+            if (d.mDeviceName.contains(targetDevice)) {
                 return d;
             }
         }
@@ -169,23 +173,23 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
 
     private VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
         IntBuffer propertyCount = stack.ints(0);
-        vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, null);
+        vkEnumerateDeviceExtensionProperties(mDevice, (String) null, propertyCount, null);
         VkExtensionProperties.Buffer properties =
                 VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
-        vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, properties);
+        vkEnumerateDeviceExtensionProperties(mDevice, (String) null, propertyCount, properties);
         return properties;
     }
 
     /** check whether the device in question is suitable for us */
     private static boolean isPhysicalDeviceSuitable(PhysicalDevice device, Set<String> extensions) {
         try (MemoryStack stack = stackPush()) {
-            return device.indices.isComplete()
-                    && device.featureSupport.isSuitable()
+            return device.mIndices.isComplete()
+                    && device.mFeatureSupport.isSuitable()
                     && device.getDeviceExtensionProperties(stack).stream()
                             .map(VkExtensionProperties::extensionNameString)
                             .collect(toSet())
                             .containsAll(extensions)
-                    && device.swapchainSupport.isAdequate();
+                    && device.mSwapchainSupport.isAdequate();
         }
     }
 

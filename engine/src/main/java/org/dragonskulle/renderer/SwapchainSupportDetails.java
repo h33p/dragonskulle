@@ -43,7 +43,7 @@ class SwapchainSupportDetails {
     }
 
     public boolean isAdequate() {
-        return formats != null && formats != null;
+        return formats != null && presentModes != null;
     }
 
     /** Choose a compatible surface format, prioritizing SRGB */

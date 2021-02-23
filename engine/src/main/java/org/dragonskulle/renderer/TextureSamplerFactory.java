@@ -24,8 +24,8 @@ class TextureSamplerFactory implements NativeResource {
 
     public TextureSamplerFactory(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
-        mAnisotropyEnable = physicalDevice.featureSupport.anisotropyEnable;
-        mMaxAnisotropy = physicalDevice.featureSupport.maxAnisotropy;
+        mAnisotropyEnable = physicalDevice.getFeatureSupport().anisotropyEnable;
+        mMaxAnisotropy = physicalDevice.getFeatureSupport().maxAnisotropy;
         mSamplers = new HashMap<>();
     }
 

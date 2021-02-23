@@ -281,32 +281,32 @@ public class Renderer implements NativeResource {
         public VulkanBuffer vertexBuffer;
         public VulkanBuffer indexBuffer;
 
-        private static Vertice[] VERTICES = {
-            new Vertice(
+        private static Vertex[] VERTICES = {
+            new Vertex(
                     new Vector2f(0.0f, 0.0f),
                     new Vector3f(1.0f, 1.0f, 1.0f),
                     new Vector2f(0.0f, 0.0f)),
-            new Vertice(
+            new Vertex(
                     new Vector2f(-0.5f, 0.86603f),
                     new Vector3f(0.0f, 0.0f, 1.0f),
                     new Vector2f(-0.5f, 0.86603f)),
-            new Vertice(
+            new Vertex(
                     new Vector2f(0.5f, 0.86603f),
                     new Vector3f(0.0f, 1.0f, 0.0f),
                     new Vector2f(0.5f, 0.86603f)),
-            new Vertice(
+            new Vertex(
                     new Vector2f(1.0f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f),
                     new Vector2f(1.0f, 0.0f)),
-            new Vertice(
+            new Vertex(
                     new Vector2f(0.5f, -0.86603f),
                     new Vector3f(0.0f, 1.0f, 0.0f),
                     new Vector2f(0.5f, -0.86603f)),
-            new Vertice(
+            new Vertex(
                     new Vector2f(-0.5f, -0.86603f),
                     new Vector3f(0.0f, 0.0f, 1.0f),
                     new Vector2f(-0.5f, -0.86603f)),
-            new Vertice(
+            new Vertex(
                     new Vector2f(-1.0f, 0.0f),
                     new Vector3f(0.0f, 0.0f, 1.0f),
                     new Vector2f(-1.0f, 0.0f)),
@@ -552,8 +552,8 @@ public class Renderer implements NativeResource {
      * called multiple times in situations like window resizes.
      */
     private void createSwapchainObjects() {
-        mSurfaceFormat = mPhysicalDevice.swapchainSupport.chooseSurfaceFormat();
-        mExtent = mPhysicalDevice.swapchainSupport.chooseExtent(mWindow);
+        mSurfaceFormat = mPhysicalDevice.getSwapchainSupport().chooseSurfaceFormat();
+        mExtent = mPhysicalDevice.getSwapchainSupport().chooseExtent(mWindow);
         mSwapchain = createSwapchain();
         mRenderPass = createRenderPass();
         int imageCount = getImageCount();
@@ -772,7 +772,7 @@ public class Renderer implements NativeResource {
         if (physicalDevice == null) {
             throw new RuntimeException("Failed to find compatible GPU!");
         }
-        LOGGER.info(String.format("Picked GPU: %s", physicalDevice.deviceName));
+        LOGGER.info(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
         return physicalDevice;
     }
 
@@ -785,7 +785,7 @@ public class Renderer implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             FloatBuffer queuePriority = stack.floats(1.0f);
 
-            int[] families = mPhysicalDevice.indices.uniqueFamilies();
+            int[] families = mPhysicalDevice.getIndices().uniqueFamilies();
 
             VkDeviceQueueCreateInfo.Buffer queueCreateInfo =
                     VkDeviceQueueCreateInfo.callocStack(families.length, stack);
@@ -801,7 +801,7 @@ public class Renderer implements NativeResource {
                             });
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
-            deviceFeatures.samplerAnisotropy(mPhysicalDevice.featureSupport.anisotropyEnable);
+            deviceFeatures.samplerAnisotropy(mPhysicalDevice.getFeatureSupport().anisotropyEnable);
 
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
             createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);
@@ -815,14 +815,14 @@ public class Renderer implements NativeResource {
 
             PointerBuffer pDevice = stack.callocPointer(1);
 
-            int result = vkCreateDevice(mPhysicalDevice.device, createInfo, null, pDevice);
+            int result = vkCreateDevice(mPhysicalDevice.getDevice(), createInfo, null, pDevice);
 
             if (result != VK_SUCCESS) {
                 throw new RuntimeException(
                         String.format("Failed to create VK logical device! Err: %x", -result));
             }
 
-            VkDevice device = new VkDevice(pDevice.get(0), mPhysicalDevice.device, createInfo);
+            VkDevice device = new VkDevice(pDevice.get(0), mPhysicalDevice.getDevice(), createInfo);
 
             return device;
         }
@@ -838,7 +838,7 @@ public class Renderer implements NativeResource {
     private VkQueue createGraphicsQueue() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pQueue = stack.callocPointer(1);
-            vkGetDeviceQueue(mDevice, mPhysicalDevice.indices.graphicsFamily, 0, pQueue);
+            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().graphicsFamily, 0, pQueue);
             return new VkQueue(pQueue.get(0), mDevice);
         }
     }
@@ -851,7 +851,7 @@ public class Renderer implements NativeResource {
     private VkQueue createPresentQueue() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pQueue = stack.callocPointer(1);
-            vkGetDeviceQueue(mDevice, mPhysicalDevice.indices.presentFamily, 0, pQueue);
+            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().presentFamily, 0, pQueue);
             return new VkQueue(pQueue.get(0), mDevice);
         }
     }
@@ -869,7 +869,7 @@ public class Renderer implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
             poolInfo.sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO);
-            poolInfo.queueFamilyIndex(mPhysicalDevice.indices.graphicsFamily);
+            poolInfo.queueFamilyIndex(mPhysicalDevice.getIndices().graphicsFamily);
 
             LongBuffer pCommandPool = stack.longs(0);
 
@@ -937,8 +937,8 @@ public class Renderer implements NativeResource {
         LOGGER.info("Setup swapchain");
 
         try (MemoryStack stack = stackPush()) {
-            int presentMode = mPhysicalDevice.swapchainSupport.choosePresentMode();
-            int imageCount = mPhysicalDevice.swapchainSupport.chooseImageCount();
+            int presentMode = mPhysicalDevice.getSwapchainSupport().choosePresentMode();
+            int imageCount = mPhysicalDevice.getSwapchainSupport().chooseImageCount();
 
             VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
             createInfo.sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR);
@@ -957,8 +957,8 @@ public class Renderer implements NativeResource {
             if (mGraphicsQueue.address() != mPresentQueue.address()) {
                 IntBuffer indices =
                         stack.ints(
-                                mPhysicalDevice.indices.graphicsFamily,
-                                mPhysicalDevice.indices.presentFamily);
+                                mPhysicalDevice.getIndices().graphicsFamily,
+                                mPhysicalDevice.getIndices().presentFamily);
                 createInfo.imageSharingMode(VK_SHARING_MODE_CONCURRENT);
                 createInfo.pQueueFamilyIndices(indices);
             } else {
@@ -966,7 +966,7 @@ public class Renderer implements NativeResource {
             }
 
             createInfo.preTransform(
-                    mPhysicalDevice.swapchainSupport.capabilities.currentTransform());
+                    mPhysicalDevice.getSwapchainSupport().capabilities.currentTransform());
             createInfo.compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
             createInfo.presentMode(presentMode);
 
@@ -1208,45 +1208,44 @@ public class Renderer implements NativeResource {
      *
      * <p>As the name implies, this buffer holds vertices
      */
-    private VulkanBuffer createVertexBuffer(Vertice[] vertices) {
+    private VulkanBuffer createVertexBuffer(Vertex[] vertices) {
         LOGGER.info("Create vertex buffer");
 
         try (MemoryStack stack = stackPush()) {
 
-            long size = vertices.length * Vertice.SIZEOF;
+            long size = vertices.length * Vertex.SIZEOF;
 
-            VulkanBuffer stagingBuffer =
+            try (VulkanBuffer stagingBuffer =
                     new VulkanBuffer(
                             mDevice,
                             mPhysicalDevice,
                             size,
                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
 
-            PointerBuffer pData = stack.pointers(0);
-            vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
-            ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
-            for (Vertice v : vertices) {
-                v.copyTo(byteBuffer);
+                PointerBuffer pData = stack.pointers(0);
+                vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
+                ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
+                for (Vertex v : vertices) {
+                    v.copyTo(byteBuffer);
+                }
+                vkUnmapMemory(mDevice, stagingBuffer.memory);
+
+                VulkanBuffer vertexBuffer =
+                        new VulkanBuffer(
+                                mDevice,
+                                mPhysicalDevice,
+                                size,
+                                VK_BUFFER_USAGE_TRANSFER_DST_BIT
+                                        | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+                VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer();
+                stagingBuffer.copyTo(commandBuffer, vertexBuffer, size);
+                endSingleUseCommandBuffer(commandBuffer);
+                return vertexBuffer;
             }
-            vkUnmapMemory(mDevice, stagingBuffer.memory);
-
-            VulkanBuffer vertexBuffer =
-                    new VulkanBuffer(
-                            mDevice,
-                            mPhysicalDevice,
-                            size,
-                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-            VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer();
-            stagingBuffer.copyTo(commandBuffer, vertexBuffer, size);
-            endSingleUseCommandBuffer(commandBuffer);
-
-            stagingBuffer.free();
-
-            return vertexBuffer;
         }
     }
 
@@ -1262,38 +1261,37 @@ public class Renderer implements NativeResource {
 
             long size = indices.length * 2;
 
-            VulkanBuffer stagingBuffer =
+            try (VulkanBuffer stagingBuffer =
                     new VulkanBuffer(
                             mDevice,
                             mPhysicalDevice,
                             size,
                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
 
-            PointerBuffer pData = stack.pointers(0);
-            vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
-            ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
-            for (short i : indices) {
-                byteBuffer.putShort(i);
+                PointerBuffer pData = stack.pointers(0);
+                vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
+                ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
+                for (short i : indices) {
+                    byteBuffer.putShort(i);
+                }
+                vkUnmapMemory(mDevice, stagingBuffer.memory);
+
+                VulkanBuffer indexBuffer =
+                        new VulkanBuffer(
+                                mDevice,
+                                mPhysicalDevice,
+                                size,
+                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+                VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer();
+                stagingBuffer.copyTo(commandBuffer, indexBuffer, size);
+                endSingleUseCommandBuffer(commandBuffer);
+
+                return indexBuffer;
             }
-            vkUnmapMemory(mDevice, stagingBuffer.memory);
-
-            VulkanBuffer indexBuffer =
-                    new VulkanBuffer(
-                            mDevice,
-                            mPhysicalDevice,
-                            size,
-                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-            VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer();
-            stagingBuffer.copyTo(commandBuffer, indexBuffer, size);
-            endSingleUseCommandBuffer(commandBuffer);
-
-            stagingBuffer.free();
-
-            return indexBuffer;
         }
     }
 
@@ -1342,8 +1340,6 @@ public class Renderer implements NativeResource {
             vkFreeCommandBuffers(mDevice, mCommandPool, pCommandBuffer);
         }
     }
-
-    /// Create a graphics pipeline
 
     /// Frame Context setup
 

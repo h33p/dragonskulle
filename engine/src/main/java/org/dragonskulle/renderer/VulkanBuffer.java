@@ -61,6 +61,11 @@ class VulkanBuffer implements NativeResource {
             this.memory = pBufferMemory.get(0);
 
             res = vkBindBufferMemory(mDevice, this.buffer, this.memory, 0);
+
+            if (res != VK_SUCCESS) {
+                throw new RuntimeException(
+                        String.format("Failed to bind buffer memory! Ret: %x", -res));
+            }
         }
     }
 
