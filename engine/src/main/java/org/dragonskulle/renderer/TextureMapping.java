@@ -5,23 +5,28 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import lombok.Getter;
 
+/**
+ * Describe the way texture is mapped on surfaces
+ *
+ * @author Aurimas Blažulionis
+ */
 public class TextureMapping {
 
     public TextureFiltering filtering;
 
-    public TextureWrapping wrap_u;
-    public TextureWrapping wrap_v;
-    public TextureWrapping wrap_w;
+    public TextureWrapping wrapU;
+    public TextureWrapping wrapV;
+    public TextureWrapping wrapW;
 
     public TextureMapping(
             TextureFiltering filtering,
-            TextureWrapping wrap_u,
-            TextureWrapping wrap_v,
-            TextureWrapping wrap_w) {
+            TextureWrapping wrapU,
+            TextureWrapping wrapV,
+            TextureWrapping wrapW) {
         this.filtering = filtering;
-        this.wrap_u = wrap_u;
-        this.wrap_v = wrap_v;
-        this.wrap_w = wrap_w;
+        this.wrapU = wrapU;
+        this.wrapV = wrapV;
+        this.wrapW = wrapW;
     }
 
     public TextureMapping(TextureFiltering filtering, TextureWrapping wrap) {
@@ -54,6 +59,6 @@ public class TextureMapping {
 
     @Override
     public int hashCode() {
-        return filtering.value + wrap_u.value * 10 + wrap_v.value * 100 + wrap_w.value * 1000;
+        return filtering.value + wrapU.value * 10 + wrapV.value * 100 + wrapW.value * 1000;
     }
 }

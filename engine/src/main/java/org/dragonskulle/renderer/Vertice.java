@@ -9,8 +9,13 @@ import org.joml.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+/**
+ * Describes a single vertice
+ *
+ * @author Aurimas Blažulionis
+ */
 @Builder
-public class Vertex {
+public class Vertice {
     public static int SIZEOF = (2 + 3 + 2) * 4;
     public static int OFFSETOF_POS = 0;
     public static int OFFSETOF_COL = 2 * 4;
@@ -20,6 +25,7 @@ public class Vertex {
     private Vector3fc color;
     private Vector2fc uv;
 
+    /** Copy the vertice to a byte buffer */
     public void copyTo(ByteBuffer buffer) {
         buffer.putFloat(pos.x());
         buffer.putFloat(pos.y());
@@ -32,7 +38,8 @@ public class Vertex {
         buffer.putFloat(uv.y());
     }
 
-    public static VkVertexInputBindingDescription.Buffer getBindingDescription(MemoryStack stack) {
+    /** Get vulkan binding descriptor for the vertice */
+    static VkVertexInputBindingDescription.Buffer getBindingDescription(MemoryStack stack) {
         VkVertexInputBindingDescription.Buffer bindingDescription =
                 VkVertexInputBindingDescription.callocStack(1, stack);
         bindingDescription.binding(0);
@@ -41,8 +48,8 @@ public class Vertex {
         return bindingDescription;
     }
 
-    public static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(
-            MemoryStack stack) {
+    /** Get memory attribute descriptions for the vertice */
+    static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(MemoryStack stack) {
         VkVertexInputAttributeDescription.Buffer attributeDescriptions =
                 VkVertexInputAttributeDescription.callocStack(3, stack);
         VkVertexInputAttributeDescription posDescription = attributeDescriptions.get(0);

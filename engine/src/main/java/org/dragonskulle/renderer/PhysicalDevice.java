@@ -14,6 +14,11 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+/**
+ * Describes a physical vulkan device, and the features it supports
+ *
+ * @author Aurimas Blažulionis
+ */
 class PhysicalDevice implements Comparable<PhysicalDevice> {
     VkPhysicalDevice device;
     SwapchainSupportDetails swapchainSupport;
@@ -23,8 +28,79 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     int score;
     QueueFamilyIndices indices;
 
-    PhysicalDevice(VkPhysicalDevice d) {
-        device = d;
+    /** Describes indices used for various device queues */
+    static class QueueFamilyIndices {
+        Integer graphicsFamily;
+        Integer presentFamily;
+
+        boolean isComplete() {
+            return graphicsFamily != null && presentFamily != null;
+        }
+
+        int[] uniqueFamilies() {
+            return IntStream.of(graphicsFamily, presentFamily).distinct().toArray();
+        }
+    }
+
+    /** Describes physical graphics feature support */
+    static class FeatureSupportDetails {
+        boolean anisotropyEnable;
+        float maxAnisotropy;
+
+        public boolean isSuitable() {
+            return true;
+        }
+    }
+
+    /** Gathers information about physical device and stores it on `PhysicalDevice` */
+    private PhysicalDevice(VkPhysicalDevice device, long surface) {
+        this.device = device;
+
+        try (MemoryStack stack = stackPush()) {
+            VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.callocStack(stack);
+            VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.callocStack(stack);
+
+            vkGetPhysicalDeviceProperties(device, properties);
+            vkGetPhysicalDeviceFeatures(device, features);
+
+            this.deviceName = properties.deviceNameString();
+
+            this.featureSupport = new FeatureSupportDetails();
+            this.featureSupport.anisotropyEnable = features.samplerAnisotropy();
+            this.featureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
+
+            this.score = 0;
+
+            // Prioritize dedicated graphics cards
+            if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) this.score += 5000;
+
+            // Check maximum texture sizes, prioritize largest
+            this.score += properties.limits().maxImageDimension2D();
+
+            QueueFamilyIndices indices = new QueueFamilyIndices();
+
+            VkQueueFamilyProperties.Buffer buf = getQueueFamilyProperties(device);
+
+            IntBuffer presentSupport = stack.ints(0);
+
+            StreamUtils.zipWithIndex(buf.stream().map(VkQueueFamilyProperties::queueFlags))
+                    .takeWhile(__ -> !indices.isComplete())
+                    .forEach(
+                            i -> {
+                                if ((i.getValue() & VK_QUEUE_GRAPHICS_BIT) != 0)
+                                    indices.graphicsFamily = Integer.valueOf((int) i.getIndex());
+
+                                vkGetPhysicalDeviceSurfaceSupportKHR(
+                                        device, (int) i.getIndex(), surface, presentSupport);
+
+                                if (presentSupport.get(0) == VK_TRUE) {
+                                    indices.presentFamily = (int) i.getIndex();
+                                }
+                            });
+
+            this.indices = indices;
+            this.swapchainSupport = new SwapchainSupportDetails(device, surface);
+        }
     }
 
     @Override
@@ -32,17 +108,28 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return score == other.score ? 0 : score < other.score ? 1 : -1;
     }
 
-    public VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
-        IntBuffer propertyCount = stack.ints(0);
-        vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, null);
-        VkExtensionProperties.Buffer properties =
-                VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
-        vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, properties);
-        return properties;
-    }
-
+    /** Update swapchain support details */
     public void onRecreateSwapchain(long surface) {
         swapchainSupport = new SwapchainSupportDetails(device, surface);
+    }
+
+    /** Find a suitable memory type for the GPU */
+    public int findMemoryType(int filterBits, int properties) {
+        try (MemoryStack stack = stackPush()) {
+            VkPhysicalDeviceMemoryProperties memProperties =
+                    VkPhysicalDeviceMemoryProperties.callocStack(stack);
+            vkGetPhysicalDeviceMemoryProperties(device, memProperties);
+
+            for (int i = 0; i < memProperties.memoryTypeCount(); i++) {
+                if ((filterBits & (1 << i)) != 0
+                        && (memProperties.memoryTypes(i).propertyFlags() & properties)
+                                == properties) {
+                    return i;
+                }
+            }
+
+            throw new RuntimeException("Failed to find suitable memory type!");
+        }
     }
 
     /** Picks a physical device with required features */
@@ -74,11 +161,20 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             return IntStream.range(0, devices.capacity())
                     .mapToObj(devices::get)
                     .map(d -> new VkPhysicalDevice(d, instance))
-                    .map(d -> collectPhysicalDeviceInfo(d, surface))
+                    .map(d -> new PhysicalDevice(d, surface))
                     .filter(d -> isPhysicalDeviceSuitable(d, extensions))
                     .sorted()
                     .toArray(PhysicalDevice[]::new);
         }
+    }
+
+    private VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
+        IntBuffer propertyCount = stack.ints(0);
+        vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, null);
+        VkExtensionProperties.Buffer properties =
+                VkExtensionProperties.mallocStack(propertyCount.get(0), stack);
+        vkEnumerateDeviceExtensionProperties(device, (String) null, propertyCount, properties);
+        return properties;
     }
 
     /** check whether the device in question is suitable for us */
@@ -92,60 +188,6 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                             .containsAll(extensions)
                     && device.swapchainSupport.isAdequate();
         }
-    }
-
-    /** Gathers information about physical device and stores it on `PhysicalDevice` */
-    private static PhysicalDevice collectPhysicalDeviceInfo(VkPhysicalDevice device, long surface) {
-        PhysicalDevice physdev = new PhysicalDevice(device);
-
-        try (MemoryStack stack = stackPush()) {
-            VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.callocStack(stack);
-            VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.callocStack(stack);
-
-            vkGetPhysicalDeviceProperties(device, properties);
-            vkGetPhysicalDeviceFeatures(device, features);
-
-            physdev.deviceName = properties.deviceNameString();
-
-            physdev.featureSupport = new FeatureSupportDetails();
-            physdev.featureSupport.anisotropyEnable = features.samplerAnisotropy();
-            physdev.featureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
-
-            physdev.score = 0;
-
-            // Prioritize dedicated graphics cards
-            if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-                physdev.score += 5000;
-
-            // Check maximum texture sizes, prioritize largest
-            physdev.score += properties.limits().maxImageDimension2D();
-
-            QueueFamilyIndices indices = new QueueFamilyIndices();
-
-            VkQueueFamilyProperties.Buffer buf = getQueueFamilyProperties(device);
-
-            IntBuffer presentSupport = stack.ints(0);
-
-            StreamUtils.zipWithIndex(buf.stream().map(VkQueueFamilyProperties::queueFlags))
-                    .takeWhile(__ -> !indices.isComplete())
-                    .forEach(
-                            i -> {
-                                if ((i.getValue() & VK_QUEUE_GRAPHICS_BIT) != 0)
-                                    indices.graphicsFamily = Integer.valueOf((int) i.getIndex());
-
-                                vkGetPhysicalDeviceSurfaceSupportKHR(
-                                        device, (int) i.getIndex(), surface, presentSupport);
-
-                                if (presentSupport.get(0) == VK_TRUE) {
-                                    indices.presentFamily = (int) i.getIndex();
-                                }
-                            });
-
-            physdev.indices = indices;
-            physdev.swapchainSupport = new SwapchainSupportDetails(device, surface);
-        }
-
-        return physdev;
     }
 
     /** Utility for retrieving VkQueueFamilyProperties list */

@@ -2,25 +2,33 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.util.shaderc.Shaderc.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
+/**
+ * Allows to load shaders for GPU
+ *
+ * @author Aurimas Blažulionis
+ *     <p>TODO: Turn this into a factory?
+ */
 public class Shader implements NativeResource {
+    private VkDevice mDevice;
 
-    private VkDevice device;
-    @Getter private long module;
+    @Accessors(prefix = "m")
+    @Getter
+    private long mModule;
 
     public static Shader getShader(ShaderBuf shader, VkDevice device) {
         try (MemoryStack stack = stackPush()) {
             Shader ret = new Shader();
-            ret.device = device;
+            ret.mDevice = device;
 
             VkShaderModuleCreateInfo createInfo = VkShaderModuleCreateInfo.callocStack(stack);
             createInfo.sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO);
@@ -29,7 +37,7 @@ public class Shader implements NativeResource {
             LongBuffer pShaderModule = stack.longs(0);
 
             if (vkCreateShaderModule(device, createInfo, null, pShaderModule) == VK_SUCCESS) {
-                ret.module = pShaderModule.get(0);
+                ret.mModule = pShaderModule.get(0);
                 return ret;
             } else {
                 return null;
@@ -47,6 +55,6 @@ public class Shader implements NativeResource {
 
     @Override
     public final void free() {
-        vkDestroyShaderModule(device, module, null);
+        vkDestroyShaderModule(mDevice, mModule, null);
     }
 }

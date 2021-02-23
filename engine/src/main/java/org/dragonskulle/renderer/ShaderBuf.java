@@ -6,18 +6,26 @@ import static org.lwjgl.util.shaderc.Shaderc.*;
 
 import java.nio.ByteBuffer;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.NativeResource;
 
+/**
+ * Describes a raw SPIR-V shader buffer
+ *
+ * @author Aurimas Blažulionis
+ */
 public class ShaderBuf implements NativeResource {
+    private long mHandle;
 
-    private long handle;
-    @Getter private ByteBuffer buffer;
+    @Accessors(prefix = "m")
+    @Getter
+    private ByteBuffer mBuffer;
 
+    /** Load a shader resource */
     public static Resource<ShaderBuf> getResource(String name, ShaderKind kind) {
-
         String spirvName = String.format("shaderc/%s.%s.spv", name, kind.toString());
 
         Resource<ShaderBuf> precompiledShader =
@@ -25,9 +33,9 @@ public class ShaderBuf implements NativeResource {
                         ShaderBuf.class,
                         (buffer) -> {
                             ShaderBuf ret = new ShaderBuf();
-                            ret.buffer = MemoryUtil.memAlloc(buffer.length);
-                            ret.buffer.put(buffer);
-                            ret.buffer.rewind();
+                            ret.mBuffer = MemoryUtil.memAlloc(buffer.length);
+                            ret.mBuffer.put(buffer);
+                            ret.mBuffer.rewind();
                             return ret;
                         },
                         spirvName);
@@ -42,6 +50,7 @@ public class ShaderBuf implements NativeResource {
                 glslName);
     }
 
+    /** Compile a shader directly */
     public static ShaderBuf compileShader(String name, String data, ShaderKind shaderKind) {
         RenderedApp.LOGGER.info("Compiling " + name);
 
@@ -72,17 +81,18 @@ public class ShaderBuf implements NativeResource {
         shaderc_compiler_release(compiler);
 
         ShaderBuf ret = new ShaderBuf();
-        ret.handle = result;
-        ret.buffer = shaderc_result_get_bytes(result);
+        ret.mHandle = result;
+        ret.mBuffer = shaderc_result_get_bytes(result);
 
         return ret;
     }
 
     @Override
     public final void free() {
-        if (handle != NULL) {
-            shaderc_result_release(handle);
-            handle = NULL;
+        if (mHandle != NULL) {
+            shaderc_result_release(mHandle);
+            mHandle = NULL;
         }
+        mBuffer = null;
     }
 }

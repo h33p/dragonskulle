@@ -8,29 +8,27 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.util.logging.Logger;
-import lombok.Getter;
 import org.lwjgl.system.MemoryStack;
 
 public class RenderedApp {
-
-    @Getter private long window;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
 
-    private Renderer renderer;
-    private boolean framebufferResized = false;
+    private long mWindow;
+    private Renderer mRenderer;
+    private boolean mFramebufferResized = false;
 
     /// Main functions
 
     /** Entrypoint of the app instance */
-    public void run(int width, int height, String appName) {
+    public void run(int width, int height, String appName) throws Exception {
         DEBUG.set(DEBUG_MODE);
         initWindow(width, height, appName);
-        renderer = new Renderer(appName, window);
+        mRenderer = new Renderer(appName, mWindow);
         mainLoop();
-        renderer.free();
+        mRenderer.free();
     }
 
     /** Creates a GLFW window */
@@ -44,17 +42,17 @@ public class RenderedApp {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        window = glfwCreateWindow(width, height, appName, NULL, NULL);
+        mWindow = glfwCreateWindow(width, height, appName, NULL, NULL);
 
-        if (window == NULL) {
+        if (mWindow == NULL) {
             throw new RuntimeException("Cannot create window");
         }
 
-        glfwSetFramebufferSizeCallback(window, this::onFramebufferResize);
+        glfwSetFramebufferSizeCallback(mWindow, this::onFramebufferResize);
     }
 
     private void onFramebufferResize(long window, int width, int height) {
-        framebufferResized = true;
+        mFramebufferResized = true;
     }
 
     private void mainLoop() {
@@ -64,19 +62,19 @@ public class RenderedApp {
         int startSecondFrame = 0;
         double lastElapsed = (double) System.currentTimeMillis() * 0.001;
         long startTime = System.currentTimeMillis();
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(mWindow)) {
             try (MemoryStack stack = stackPush()) {
                 long timerTime = System.currentTimeMillis();
                 long elapsedMillis = timerTime - startTime;
                 float curtime = (float) elapsedMillis * 0.001f;
                 glfwPollEvents();
 
-                if (framebufferResized) {
-                    framebufferResized = false;
-                    renderer.onResize();
+                if (mFramebufferResized) {
+                    mFramebufferResized = false;
+                    mRenderer.onResize();
                 }
 
-                renderer.render(null, null, curtime);
+                mRenderer.render(null, null, curtime);
             }
 
             // Debug FPS counter

@@ -5,6 +5,11 @@ import java.nio.ByteBuffer;
 import lombok.Builder;
 import org.joml.*;
 
+/**
+ * Properties vertex shaders receive
+ *
+ * @author Aurimas Blažulionis
+ */
 @Builder
 class UniformBufferObject {
     public static int SIZEOF = 4 * 4 * 4 * 3;

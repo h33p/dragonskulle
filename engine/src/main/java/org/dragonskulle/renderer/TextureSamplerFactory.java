@@ -7,35 +7,45 @@ import static org.lwjgl.vulkan.VK10.*;
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 import org.lwjgl.vulkan.VkDevice;
 
-class TextureSamplerFactory {
-
-    VkDevice device;
-    float maxAnisotropy;
-    boolean anisotropyEnable;
-    HashMap<TextureMapping, Long> samplers;
+/**
+ * Create and manage texture samplers for a device
+ *
+ * @author Aurimas Blažulionis
+ */
+class TextureSamplerFactory implements NativeResource {
+    private VkDevice mDevice;
+    private float mMaxAnisotropy;
+    private boolean mAnisotropyEnable;
+    private HashMap<TextureMapping, Long> mSamplers;
 
     public TextureSamplerFactory(VkDevice device, PhysicalDevice physicalDevice) {
-        this.device = device;
-        anisotropyEnable = physicalDevice.featureSupport.anisotropyEnable;
-        maxAnisotropy = physicalDevice.featureSupport.maxAnisotropy;
-        samplers = new HashMap<>();
+        mDevice = device;
+        mAnisotropyEnable = physicalDevice.featureSupport.anisotropyEnable;
+        mMaxAnisotropy = physicalDevice.featureSupport.maxAnisotropy;
+        mSamplers = new HashMap<>();
     }
 
+    /**
+     * Get a sampler with specified texture mapping
+     *
+     * @param mapping texture mapping properties to get the sampler for
+     */
     public long getSampler(TextureMapping mapping) {
-
-        Long sampler = samplers.get(mapping);
+        Long sampler = mSamplers.get(mapping);
         if (sampler == null) {
-            sampler = createSampler(mapping, anisotropyEnable);
-            samplers.put(mapping, sampler);
+            sampler = createSampler(mapping, mAnisotropyEnable);
+            mSamplers.put(mapping, sampler);
         }
         return sampler;
     }
 
+    @Override
     public void free() {
-        samplers.values().stream().forEach(d -> vkDestroySampler(device, d, null));
+        mSamplers.values().stream().forEach(d -> vkDestroySampler(mDevice, d, null));
     }
 
     private long createSampler(TextureMapping mapping, boolean anisotropyEnable) {
@@ -44,11 +54,11 @@ class TextureSamplerFactory {
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
             samplerInfo.magFilter(mapping.filtering.getValue());
             samplerInfo.minFilter(mapping.filtering.getValue());
-            samplerInfo.addressModeU(mapping.wrap_u.getValue());
-            samplerInfo.addressModeV(mapping.wrap_v.getValue());
-            samplerInfo.addressModeW(mapping.wrap_w.getValue());
+            samplerInfo.addressModeU(mapping.wrapU.getValue());
+            samplerInfo.addressModeV(mapping.wrapV.getValue());
+            samplerInfo.addressModeW(mapping.wrapW.getValue());
             samplerInfo.anisotropyEnable(anisotropyEnable);
-            samplerInfo.maxAnisotropy(maxAnisotropy);
+            samplerInfo.maxAnisotropy(mMaxAnisotropy);
             samplerInfo.borderColor(VK_BORDER_COLOR_INT_TRANSPARENT_BLACK);
             samplerInfo.unnormalizedCoordinates(false);
             samplerInfo.compareEnable(false);
@@ -60,7 +70,7 @@ class TextureSamplerFactory {
 
             LongBuffer pSampler = stack.longs(0);
 
-            int res = vkCreateSampler(device, samplerInfo, null, pSampler);
+            int res = vkCreateSampler(mDevice, samplerInfo, null, pSampler);
 
             if (res != VK_SUCCESS) {
                 throw new RuntimeException(String.format("Failed to setup sampler! Ret: %x", -res));
