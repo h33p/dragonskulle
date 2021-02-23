@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.Getter;
-
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -68,7 +67,7 @@ public class RenderedApp {
         if (DEBUG_MODE) {
             setupDebugLogging();
         }
-        
+
         mainLoop();
         cleanup();
     }
@@ -134,7 +133,7 @@ public class RenderedApp {
             instance = new VkInstance(instancePtr.get(0), createInfo);
         }
     }
-    
+
     private void mainLoop() {
         LOGGER.info("Enter main loop");
         while (!glfwWindowShouldClose(window)) {
