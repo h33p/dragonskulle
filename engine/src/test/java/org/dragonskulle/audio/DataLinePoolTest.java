@@ -5,7 +5,10 @@ import java.io.IOException;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -78,14 +81,18 @@ public class DataLinePoolTest {
 	}
 	
 	@Test
-	public void volumeTest() throws UnsupportedAudioFileException, IOException {
+	public void volumeTest() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 		
 		//Not complete as no way for machine to check whether sound really has changed
 		Mixer mixer = AudioSystem.getMixer(null);
 		
+		System.out.println("Output");
+		
 		DataLinePool dataLine = new DataLinePool(mixer, SoundType.SFX);
 		
 		Assert.assertNotNull(dataLine);
+		
+		
 		
 		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); ;  
 		
@@ -93,6 +100,10 @@ public class DataLinePoolTest {
 		
 		
 		Assert.assertEquals(50, dataLine.getVolume());
+		
+		Assert.assertNotNull(dataLine);
+		
+		System.out.println(dataLine.getVolume());
 		
 		dataLine.setVolume(60);
 		
@@ -136,8 +147,8 @@ public class DataLinePoolTest {
 		
 		ClipClass[] clips = dataLine.cleanup();
 		
-		Assert.assertSame(clip, clips[0]);
-		Assert.assertSame(clip2, clips[1]);
+		Assert.assertSame(clip2, clips[0]);
+		
 		
 		
 	}

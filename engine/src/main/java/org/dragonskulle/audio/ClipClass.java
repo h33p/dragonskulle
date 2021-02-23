@@ -1,14 +1,20 @@
 package org.dragonskulle.audio;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * This will hold all the information needed for Clips
@@ -23,11 +29,32 @@ public class ClipClass {
 	private int currentVol;
 	private boolean looping;
 	
+	public static final Logger LOGGER = Logger.getLogger("audio");
+	
 	
 	public ClipClass(Mixer mixer, boolean loopContinuously) throws LineUnavailableException {
 		
 		DataLine.Info dataLine = new DataLine.Info(Clip.class, null);
 		clip = (Clip) mixer.getLine(dataLine);
+		System.out.println("Making");
+		try {
+			AudioInputStream startingStream = AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
+			clip.open(startingStream);
+			
+		} catch (UnsupportedAudioFileException e) {
+			// TODO Log error (And Cry)  It shouldn't get here cos silent.wav WILL EXIST
+			System.out.println("ERROR");
+		} catch (IOException e) {
+			// TODO Log Error (And Cry)  It shouldn't get here cos silent.wav WILL EXIST
+			System.out.println("ERROR1");
+		} 
+		
+		Control[] controls = clip.getControls();
+        
+        for (Control y : controls) {
+        	//System.out.println(y.toString());
+        	LOGGER.log(Level.INFO, y.toString());
+        }
 		
 		mute = (BooleanControl) clip.getControl(BooleanControl.Type.MUTE);
 		mute.setValue(false);
@@ -44,7 +71,7 @@ public class ClipClass {
 		
 		looping = loopContinuously;
 		
-		clip.open();
+		
 	}
 	
 	public void setMute(boolean muteValue) {
@@ -64,11 +91,15 @@ public class ClipClass {
 			newVolume = 100;
 		}
 		
+		//System.out.println("We got here");
+		
 		currentVol = newVolume;
 		
 		float amountOfVolForClip = Math.abs(volume.getMaximum()) + Math.abs(volume.getMinimum());
 		
 		float newVol = (((float) newVolume / 100) * amountOfVolForClip) + volume.getMinimum();
+		
+	
 		
 		volume.setValue(newVol);
 	}
