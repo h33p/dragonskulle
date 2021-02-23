@@ -10,7 +10,7 @@ import java.util.UUID;
 public class NetworkObject {
 
     NetworkObject(NetworkClient client){
-        netID = UUID.randomUUID().toString();
+        objectID = UUID.randomUUID().toString();
         isDormant = false;
         owner = client;
     }
@@ -21,7 +21,7 @@ public class NetworkObject {
     /**
      * The UUID of the object.
      */
-    String netID;
+    String objectID;
 
     /**
      * The Client Connection to the server
@@ -41,32 +41,4 @@ public class NetworkObject {
 
     }
 
-//TODO unsure of usage
-//    private void serialize(targetClient, writer){
-//
-//    }
-//
-//    private serializeObject(NetworkMessage obj){
-//    }
-//
-//    private void deserialize(reader)
-//
-
-//    void registerSyncVar(ISyncVar syncVar) {
-//        this.owner.registerSyncVarWithServer(syncVar, isDormant); //send message to server
-//        this.synced.add(syncVar); //should add if server accepts sync
-//    }
-
-    void registerSyncVars(byte[] payload) {
-        this.owner.registerSyncVarsWithServer(payload); //send message to server
-    }
-
-
-    public <T> void notifySyncedOfUpdate(ISyncVar<T> newValue) {
-        this.owner.notifySyncedOfUpdate(netID, isDormant, newValue);
-    }
-
-    public Object getSynced(String id) {
-        return this.owner.getSynced(id);
-    }
 }

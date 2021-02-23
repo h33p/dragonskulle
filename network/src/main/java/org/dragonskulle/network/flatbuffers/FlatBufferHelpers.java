@@ -1,11 +1,10 @@
 package org.dragonskulle.network.flatbuffers;
 
 import com.google.flatbuffers.FlatBufferBuilder;
-import org.dragonskulle.network.components.*;
-import org.dragonskulle.network.components.ISyncVar;
+import org.dragonskulle.network.components.sync.ISyncVar;
+import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncString;
 import org.dragonskulle.network.proto.*;
-
-import java.util.Arrays;
 
 public class FlatBufferHelpers {
     public static int ISyncVar2flatb(FlatBufferBuilder builder, ISyncVar sv) { //deal with abstract sync

@@ -1,1 +1,2 @@
-/target/
+*.bin
+src/main/proto

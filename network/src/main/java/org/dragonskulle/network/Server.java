@@ -3,21 +3,13 @@ package org.dragonskulle.network;
 // based on
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
-import com.google.flatbuffers.FlatBufferBuilder;
-import com.google.flatbuffers.Table;
-import com.sun.javafx.collections.ImmutableObservableList;
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-import org.dragonskulle.network.components.*;
-import org.dragonskulle.network.components.ISyncVar;
-import org.dragonskulle.network.flatbuffers.FlatBufferHelpers;
-import org.dragonskulle.network.proto.*;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -31,7 +23,6 @@ public class Server {
     private final SocketStore sockets = new SocketStore();
     private Thread serverThread;
     private ServerRunner serverRunner;
-    private static final SyncStore syncedVars = new SyncStore();
 
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
@@ -80,11 +71,6 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-    private static boolean addSyncVar(ClientInstance client, ISyncVar toSync) {
-        return syncedVars.addSyncVar(client, toSync);
     }
 
     public void dispose() {
@@ -186,7 +172,7 @@ public class Server {
 //        decode bytes from flatbuffer serialisation
 //        currently only one type;
         try {
-            parseFlatBufferBytes(client, bytes);
+            unpackBytes(client, bytes);
         } catch (DecodingException e) {
             System.out.println(e.getMessage());
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
@@ -194,153 +180,13 @@ public class Server {
 
     }
 
-    private void parseFlatBufferBytes(ClientInstance client, byte[] bytes) throws DecodingException {
-        System.out.println("flatbuffer parsing");
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(bytes);
-        Message message = org.dragonskulle.network.proto.Message.getRootAsMessage(buf);
-        byte contentType = message.contentsType();
-        if (contentType == VariableMessage.RegisterSyncVarsRequest) {
-            //change parse to giving the object not bytes
-            System.out.println("request is of type RegisterSyncVarsRequest");
-            ArrayList<org.dragonskulle.network.proto.ISyncVar> registered = parseRegisterSyncVarsRequest((RegisterSyncVarsRequest) message.contents(new RegisterSyncVarsRequest()));
-            addAllSyncVar(client, registered);
-            notifyClientOfRegisteredSyncVars(client, registered);
-        } else if (contentType == VariableMessage.UpdateSyncVarsRequest) {
-            System.out.println("request is of type UpdateSyncVarsRequest");
-            UpdateSyncVarsRequest updateRequest = (UpdateSyncVarsRequest) message.contents(new UpdateSyncVarsRequest());
-            assert updateRequest != null;
-            parseUpdateSyncVarsRequest(updateRequest);
-        } else {
+    private void unpackBytes(ClientInstance client, byte[] bytes) throws DecodingException {
+        System.out.println("bytes parsing");
+        try {
+            NetworkMessage.parse(bytes);
+        } catch (Exception e) {
             throw new DecodingException("Message is not of valid type");
         }
-    }
-
-    private void addAllSyncVar(ClientInstance client, ArrayList<org.dragonskulle.network.proto.ISyncVar> registered) {
-        for (org.dragonskulle.network.proto.ISyncVar iSyncVar : registered) {
-            addSyncVar(client, FlatBufferHelpers.flatb2ISyncVar(iSyncVar));
-        }
-    }
-
-
-//    private void addRegisteredSyncVarsToServer(ArrayList<org.dragonskulle.network.proto.ISyncVar> registered) {
-//        for (org.dragonskulle.network.proto.ISyncVar iSyncVar : registered) {
-//            this.synced.add(FlatBufferHelpers.flatb2ISyncVar(iSyncVar));
-//        }
-//    }
-
-    private void parseUpdateSyncVarsRequest(UpdateSyncVarsRequest contents) {
-        //TODO add if dormant to request and check here
-        System.out.println("parsing update sync vars request");
-        System.out.println("netId of update is : " + contents.netId());
-        ISyncVar var = FlatBufferHelpers.flatb2ISyncVar(contents.syncVar());
-        assert var != null;
-        System.out.println("type of var update request is : " + var.getClass());
-        System.out.println("new value of var update request is : " + var.looselyGet());
-        System.out.println("id of var update request is : " + var.getId());
-        grantSyncVarsRequest(var);
-    }
-
-    private void grantSyncVarsRequest(ISyncVar var) {
-        if (syncedVars.updateVar(var)) {
-            notifyClientsOfUpdatedVar(var);
-        }
-    }
-
-    private void notifyClientsOfUpdatedVar(ISyncVar var) {
-        FlatBufferBuilder builder = new FlatBufferBuilder();
-        int syncVarOffset = FlatBufferHelpers.ISyncVar2flatb(builder, var);
-        int response = UpdateSyncVarsResponse.createUpdateSyncVarsResponse(builder, syncVarOffset);
-        int message = Message.createMessage(builder, VariableMessage.UpdateSyncVarsResponse, response);
-        builder.finish(message);
-        byte[] updateMessageBytes = builder.sizedByteArray();
-        this.sockets.broadcast(updateMessageBytes);
-        System.out.println("notified clients of sync var updation");
-
-    }
-
-
-    private void notifyClientOfRegisteredSyncVars(ClientInstance client, ArrayList<org.dragonskulle.network.proto.ISyncVar> registered) {
-        FlatBufferBuilder builder = new FlatBufferBuilder();
-        int[] registeredVectorOffsets = new int[registered.size()];
-        int j = 0;
-        for (int i = 0; i < registered.size(); i++) {
-            ISyncVar var = FlatBufferHelpers.flatb2ISyncVar(registered.get(i));
-            if (var != null) {
-                int offset = FlatBufferHelpers.ISyncVar2flatb(builder, var);
-                registeredVectorOffsets[j++] = offset;
-            }
-        }
-
-        int vectorOffset = RegisteredSyncVarsResponse.createRegisteredVector(builder, registeredVectorOffsets);
-        int response = RegisteredSyncVarsResponse.createRegisteredSyncVarsResponse(builder, vectorOffset);
-        int message = Message.createMessage(builder, VariableMessage.RegisteredSyncVarsResponse, response);
-        builder.finish(message);
-        byte[] response_bytes = builder.sizedByteArray();
-        this.sockets.sendBytesToClient(client, response_bytes);
-        System.out.println("notified client of sync var registration");
-    }
-
-
-    private ArrayList<org.dragonskulle.network.proto.ISyncVar> parseRegisterSyncVarsRequest(RegisterSyncVarsRequest registerSyncVarsRequest) throws
-            DecodingException {
-        System.out.println("Attempting to parse request");
-        boolean didRegisterSync = false;
-        ArrayList<org.dragonskulle.network.proto.ISyncVar> registeredSyncVars = new ArrayList<>();
-        try {
-            System.out.println("is netObj dormant? " + registerSyncVarsRequest.isDormant());
-            if (!registerSyncVarsRequest.isDormant()) {
-                System.out.println("networkObject Id: " + registerSyncVarsRequest.netId());
-                System.out.println("Contains number of sync vars: " + registerSyncVarsRequest.syncVarsLength());
-                for (int i = 0; i < registerSyncVarsRequest.syncVarsLength(); i++) {
-                    org.dragonskulle.network.proto.ISyncVar requestedSyncVar = registerSyncVarsRequest.syncVarsVector().get(i);
-                    didRegisterSync = registerAnySyncVar(requestedSyncVar);
-                    if (didRegisterSync) {
-                        registeredSyncVars.add(requestedSyncVar);
-                    }
-                }
-            }
-            return registeredSyncVars;
-        } catch (Exception e) {
-            throw new DecodingException("Is not of RegisterSyncVarsRequest Type");
-        }
-    }
-
-    private boolean registerAnySyncVar(org.dragonskulle.network.proto.ISyncVar requestedSyncVar) {
-        if (requestedSyncVar.syncVarType() == AnyISyncVar.ISyncBool) {
-            System.out.println("Requesting Sync of SyncBool");
-            ISyncBool syncVar = (ISyncBool) requestedSyncVar.syncVar(new ISyncBool());
-            assert syncVar != null;
-            System.out.println("id: " + syncVar.id());
-            System.out.println("data: " + syncVar.data());
-        } else if (requestedSyncVar.syncVarType() == AnyISyncVar.ISyncFloat) {
-            System.out.println("Requesting Sync of SyncFloat");
-            ISyncFloat syncVar = (ISyncFloat) requestedSyncVar.syncVar(new ISyncFloat());
-            assert syncVar != null;
-            System.out.println("id: " + syncVar.id());
-            System.out.println("data: " + syncVar.data());
-        } else if (requestedSyncVar.syncVarType() == AnyISyncVar.ISyncLong) {
-            System.out.println("Requesting Sync of SyncLong");
-            ISyncLong syncVar = (ISyncLong) requestedSyncVar.syncVar(new ISyncLong());
-            assert syncVar != null;
-            System.out.println("id: " + syncVar.id());
-            System.out.println("data: " + syncVar.data());
-        } else if (requestedSyncVar.syncVarType() == AnyISyncVar.ISyncString) {
-            System.out.println("Requesting Sync of SyncString");
-            ISyncString syncVar = (ISyncString) requestedSyncVar.syncVar(new ISyncString());
-            assert syncVar != null;
-            System.out.println("id: " + syncVar.id());
-            System.out.println("data: " + syncVar.data());
-        } else if (requestedSyncVar.syncVarType() == AnyISyncVar.ISyncInt) {
-            System.out.println("Requesting Sync of SyncInt");
-            ISyncInt syncVar = (ISyncInt) requestedSyncVar.syncVar(new ISyncInt());
-            assert syncVar != null;
-            System.out.println("id: " + syncVar.id());
-            System.out.println("data: " + syncVar.data());
-        } else {
-            System.out.println("Sync var is not valid");
-            return false;
-        }
-        return true;
     }
 }
 

@@ -3,7 +3,7 @@ package org.dragonskulle.network;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-import org.dragonskulle.network.components.ISyncVar;
+import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.network.flatbuffers.FlatBufferHelpers;
 import org.dragonskulle.network.proto.*;
 
@@ -26,7 +26,7 @@ public class NetworkClient {
     private PrintWriter out;
     private DataOutputStream dOut;
     private BufferedInputStream bIn;
-    private ArrayList<org.dragonskulle.network.components.ISyncVar> synced = new ArrayList<>();
+    private ArrayList<ISyncVar> synced = new ArrayList<>();
 
 
     private ClientListener clientListener;
@@ -135,7 +135,7 @@ public class NetworkClient {
         clientListener.receivedBytes(bytes);
 
         try {
-            parseFlatBufferBytes(bytes);
+            unpackBytes(bytes);
 
         } catch (DecodingException e) {
             System.out.println(e.getMessage());
@@ -144,84 +144,15 @@ public class NetworkClient {
 
     }
 
-    private void parseFlatBufferBytes(byte[] bytes) throws DecodingException {
-        System.out.println("flatbuffer parsing");
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(bytes);
-        Message message = org.dragonskulle.network.proto.Message.getRootAsMessage(buf);
-        byte contentType = message.contentsType();
-        if (contentType == VariableMessage.RegisteredSyncVarsResponse) {
-            System.out.println("request is of type RegisterSyncVarsResponse");
-            RegisteredSyncVarsResponse registeredResponse = (RegisteredSyncVarsResponse) message.contents(new RegisteredSyncVarsResponse());
-            assert registeredResponse != null;
-            ArrayList<org.dragonskulle.network.components.ISyncVar> registered = parseRegisterSyncVarsResponse(registeredResponse);
-            updateRegisteredSyncedVariables(registered);
-        } else if (contentType == VariableMessage.UpdateSyncVarsResponse) {
-            System.out.println("request is of type UpdateSyncVarsResponse");
-            UpdateSyncVarsResponse updateResponse = (UpdateSyncVarsResponse) message.contents(new UpdateSyncVarsResponse());
-            assert updateResponse != null;
-            parseUpdateSyncVarsResponse(updateResponse);
-        } else {
+    private void unpackBytes(byte[] bytes) throws DecodingException {
+        System.out.println("bytes unpacking");
+        try {
+            NetworkMessage.parse(bytes);
+        } catch (Exception e) {
             throw new DecodingException("Message is not of valid type");
         }
     }
 
-    private void parseUpdateSyncVarsResponse(UpdateSyncVarsResponse updateResponse) {
-        System.out.println("received request to update local copy of a variable");
-        assert updateResponse != null;
-        ISyncVar newSyncValue = FlatBufferHelpers.flatb2ISyncVar(updateResponse.syncVar());
-        ISyncVar var;
-        for (int i = 0; i < this.synced.size(); i++) {
-            var = this.synced.get(i);
-            if (var.equals(newSyncValue)) {
-                newSyncValue.attachParent(var.getParent());
-                this.synced.set(i, newSyncValue);
-                System.out.println("performed update request");
-            }
-        }
-    }
-
-
-    private void updateRegisteredSyncedVariables(ArrayList<org.dragonskulle.network.components.ISyncVar> registered) {
-        for (ISyncVar sync : registered) {
-            sync.attachUpdateListener(this::requestServerUpdateSyncVar);
-            synced.add(sync); //do we need to do this or can we just store ids?
-        }
-        System.out.println("Registered all accepted syncs locally and on server!");
-    }
-
-    public void requestServerUpdateSyncVar(String netId, ISyncVar newValue) {
-        System.out.println("updater function for sync var, should request from server");
-        //TODO need to consider if dormant server side.
-        FlatBufferBuilder builder = new FlatBufferBuilder();
-        int netIdOffset = builder.createString(netId);
-        int syncVarOffset = FlatBufferHelpers.ISyncVar2flatb(builder, newValue);
-        int requestOffset = UpdateSyncVarsRequest.createUpdateSyncVarsRequest(builder, netIdOffset, syncVarOffset);
-
-        int messageOffset = Message.createMessage(builder, VariableMessage.UpdateSyncVarsRequest, requestOffset);
-        builder.finish(messageOffset);
-        System.out.println("requesting update to server of altered syncvar");
-        this.sendBytes(builder.sizedByteArray());
-    }
-
-    private ArrayList<org.dragonskulle.network.components.ISyncVar> parseRegisterSyncVarsResponse(RegisteredSyncVarsResponse contents) throws
-            DecodingException {
-        System.out.println("Attempting to parse response");
-        ArrayList<org.dragonskulle.network.components.ISyncVar> syncsToAdd = new ArrayList<>();
-        try {
-            System.out.println("Contains number of successfully sync vars: " + contents.registeredLength());
-            for (int i = 0; i < contents.registeredLength(); i++) {
-                org.dragonskulle.network.proto.ISyncVar requestedSyncVar = contents.registeredVector().get(i);
-                org.dragonskulle.network.components.ISyncVar sync = FlatBufferHelpers.flatb2ISyncVar(requestedSyncVar);
-                syncsToAdd.add(sync);
-            }
-
-            return syncsToAdd;
-
-        } catch (
-                Exception e) {
-            throw new DecodingException("Is not of RegisterSyncVarsRequest Type");
-        }
-    }
 
     private void closeAllConnections() {
         open = false;
@@ -253,35 +184,5 @@ public class NetworkClient {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-    }
-
-
-    public void registerSyncVarsWithServer(byte[] packet) {
-        System.out.println("registering");
-        System.out.println("Preparing packet to be sent");
-        this.sendBytes(packet);
-        System.out.println("Sent registration request, should validate response before adding to synced vars in network object");
-    }
-
-    public void notifySyncedOfUpdate(String netId, boolean isNetObjectDormant, ISyncVar newData) {
-        System.out.println("notifySyncedOfUpdate");
-        System.out.println("looking for :: " + newData.getId());
-        for (ISyncVar iSyncVar : this.synced) {
-            System.out.println("cmp->" + iSyncVar.getId());
-            if (iSyncVar.equals(newData)) {
-                System.out.println("found synced in networkclient list");
-                iSyncVar.runUpdateCallback(netId, newData);
-                break;
-            }
-        }
-    }
-
-    public Object getSynced(String id) {
-        for (ISyncVar iSyncVar : this.synced) {
-            if(iSyncVar.getId().equals(id)){
-                return iSyncVar.looselyGet();
-            }
-        }
-        return null;
     }
 }
