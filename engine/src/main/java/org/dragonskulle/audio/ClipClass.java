@@ -17,8 +17,8 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
- * This will hold all the information needed for Clips
- * @author low101043
+ * This will hold all the information needed for each Clip
+ * @author Dragonskulle
  *
  */
 public class ClipClass {
@@ -32,6 +32,12 @@ public class ClipClass {
 	public static final Logger LOGGER = Logger.getLogger("audio");
 	
 	
+	/**
+	 * The Constructor which creates the class
+	 * @param mixer The mixer to be plug the clip into
+	 * @param loopContinuously whether the clip needs to loop continuously
+	 * @throws LineUnavailableException If the clip cannot be added
+	 */
 	public ClipClass(Mixer mixer, boolean loopContinuously) throws LineUnavailableException {
 		
 		DataLine.Info dataLine = new DataLine.Info(Clip.class, null);
@@ -63,7 +69,7 @@ public class ClipClass {
 		
 		currentVol = 0;
 		
-		setVolume(50);
+		setVolume(50);  /* The default volume */
 		
 		if (loopContinuously) {
 			clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -74,14 +80,26 @@ public class ClipClass {
 		
 	}
 	
+	/**
+	 * Setter of the mute value
+	 * @param muteValue Whether to mute or not
+	 */
 	public void setMute(boolean muteValue) {
 		mute.setValue(muteValue);
 	}
 	
+	/**
+	 * Getter of mute value
+	 * @return the current mute value
+	 */
 	public boolean getMute() {
 		return mute.getValue();
 	}
 	
+	/**
+	 * Set the volume value on the clip
+	 * @param newVolume the new volume to use
+	 */
 	public void setVolume(int newVolume) {
 		
 		if (newVolume < 0) {
@@ -104,14 +122,27 @@ public class ClipClass {
 		volume.setValue(newVol);
 	}
 	
+	/**
+	 * Gets the current volume
+	 * @return the current volume
+	 */
 	public int getVolume() {
 		return currentVol;
 	}
 	
+	/**
+	 * Whether the clip is looping
+	 * @return
+	 */
 	public boolean getLooping() {
 		return looping;
 	}
 	
+	/**
+	 * Plays the audio
+	 * @param audio the audio stream to play
+	 * @return The clip just used
+	 */
 	public Clip play(AudioInputStream audio) {
 		clip.close();
 		try {
@@ -128,9 +159,7 @@ public class ClipClass {
 			clip.loop(Clip.LOOP_CONTINUOUSLY);
 		}
 		
-		return clip;
-		
-		
+		return clip;		
 	}
 	
 

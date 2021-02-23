@@ -2,8 +2,9 @@
 package org.dragonskulle.audio;
 
 /**
- * Used to say which audio to use
+ * This enum is used to specify which channel to use
  * @author Dragonskulle
+ * <p> Use this as {@code SoundType.choice} </p>
  *
  */
 public enum SoundType {

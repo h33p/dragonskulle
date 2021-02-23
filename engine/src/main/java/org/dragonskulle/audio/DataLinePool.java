@@ -2,13 +2,11 @@
 package org.dragonskulle.audio;
 
 import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
 /**
- * Class which stores the different clips to play audio
+ * This is a class which stores all the different lines used in the mixer
  * @author Dragonskulle
  *
  */
@@ -59,7 +57,7 @@ public class DataLinePool {
 	/**
 	 * Play a sound effect
 	 * @param input The stream to be played
-	 * @return the {@code Clip} which has been played on
+	 * @return the {@code ClipClass} which has been played on
 	 */
 	public ClipClass openStream(AudioInputStream input) {
 		
@@ -112,7 +110,7 @@ public class DataLinePool {
 	}
 	
 	/**
-	 * Getter
+	 * Getter for the mute value
 	 * @return mute value
 	 */
 	public boolean getMute() {
@@ -127,7 +125,7 @@ public class DataLinePool {
 	}
 	
 	/**
-	 * Getter
+	 * Getter for the volume value
 	 * @return volume value
 	 */
 	public int getVolume() {
@@ -136,7 +134,7 @@ public class DataLinePool {
 	
 	/**
 	 * Will return an array of clips which have been used so they can removed
-	 * @return An {@code array} of {@code Clips} 
+	 * @return An {@code array} of {@code ClipClass} 
 	 */
 	public ClipClass[] cleanup(){
 		return sounds;

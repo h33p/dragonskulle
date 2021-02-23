@@ -11,23 +11,34 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
- * Class which plays background music and sound effects.  WIll be singleton
+ * This is a class which allows the game to play audio and to control the volume of the audio
  * @author Dragonskulle
- *
+ * <p> This is a singleton class so to use this use it as {@code AudioManager.getInstance().method()}
  */
 public class AudioManager {
 	
-	private static final AudioManager AUDIO_MANAGER_INSTANCE = new AudioManager();
+	private static final AudioManager AUDIO_MANAGER_INSTANCE = new AudioManager(); 
 	private Mixer mixer;
 	private DataLinePool[] sounds;
 	
 	public static final Logger LOGGER = Logger.getLogger("audiomanager");
 	
-	
+	/**
+	 * This constructor creates the AudioManager.  If the mixer is not created it is set to null.
+	 */
 	private AudioManager() {
 		
+		//Creates the mixer
 		try {
 			mixer = AudioSystem.getMixer(null);
+			
+			//Creates the different lines
+			DataLinePool background = new DataLinePool(mixer, SoundType.BACKGROUND);
+			DataLinePool sfx = new DataLinePool(mixer, SoundType.SFX);
+			
+			sounds = new DataLinePool[2];
+			sounds[0] = background;
+			sounds[1] = sfx;
 		}
 		catch (SecurityException e) {
 			mixer = null;
@@ -39,23 +50,15 @@ public class AudioManager {
 			//TODO Log error
 		}
 		
-		DataLinePool background = new DataLinePool(mixer, SoundType.BACKGROUND);
-		DataLinePool sfx = new DataLinePool(mixer, SoundType.SFX);
-		
-		sounds = new DataLinePool[2];
-		sounds[0] = background;
-		sounds[1] = sfx;
-		
 	}
 	
 	/**
-	 * Will play some audio
+	 * This will play audio from the file.  If this file does not exist then it will not be played
 	 * @param channel Whether to play as Background music or as a Sound Effect
 	 * @param fileName the name of the file which has the music.  Must be a .wav file
-	 * @param distance How far from the source the camera is.  Use null to ignore
 	 * @return whether the music has been successful to play
 	 */
-	public boolean play(SoundType channel, String fileName, Integer distance) { // TODO return false to denote a failure to play and true to denote a play
+	public boolean play(SoundType channel, String fileName) { // TODO return false to denote a failure to play and true to denote a play
 	
 		try {
 			AudioInputStream audio = AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile());
@@ -82,6 +85,7 @@ public class AudioManager {
 	 * @param muteValue whether to mute the channel or not
 	 */
 	public void setMute(SoundType channel, boolean muteValue) {
+		
 		if (channel == SoundType.BACKGROUND) {
 			sounds[0].setMute(muteValue);
 		}
@@ -142,13 +146,20 @@ public class AudioManager {
 	}
 	
 	/**
-	 * Destroys all Clips.   Must be called at end of program
+	 * This closes the mixer and must be called at the end of a program.
 	 */
 	public void cleanup() {
-		mixer.close();
+		if (mixer != null) {
+			mixer.close();
+		}
+		
 	}
 	
-	static AudioManager getInstance() {
+	/**
+	 * This forces the class to be a singleton
+	 * @return The instance of the AudioManager
+	 */
+	public static AudioManager getInstance() {
 		return AUDIO_MANAGER_INSTANCE;
 	}
 	
