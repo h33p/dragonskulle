@@ -13,8 +13,10 @@ public class AudioManagerTest {
 	
 	@Test
 	public void createTest() {
+		
 		AudioManager audioManager = AudioManager.getInstance();
 		Assert.assertNotNull(audioManager);
+		
 		
 	}
 	public void playTest() {
@@ -88,22 +90,22 @@ public class AudioManagerTest {
 		
 		Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
-		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 30);
+		AudioManager.getInstance().setVolume(SoundType.SFX, 30);
 		Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
-		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 0);
+		AudioManager.getInstance().setVolume(SoundType.SFX, 0);
 		Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
-		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 87);
+		AudioManager.getInstance().setVolume(SoundType.SFX, 87);
 		Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+		AudioManager.getInstance().setVolume(SoundType.SFX, 100);
 		Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
-		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, -1);
+		AudioManager.getInstance().setVolume(SoundType.SFX, -1);
 		Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
-		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+		AudioManager.getInstance().setVolume(SoundType.SFX, 100);
 		Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
 		
 	}

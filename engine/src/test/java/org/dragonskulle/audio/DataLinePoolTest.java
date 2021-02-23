@@ -40,7 +40,7 @@ public class DataLinePoolTest {
 		
 		Assert.assertNotNull(dataLine);
 		
-		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); ;  
+		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); 
 		
 		ClipClass clip = dataLine.openStream(audio);
 		
