@@ -40,28 +40,23 @@ public class ClipClass {
 	 */
 	public ClipClass(Mixer mixer, boolean loopContinuously) throws LineUnavailableException {
 		
+		// Gets the line
 		DataLine.Info dataLine = new DataLine.Info(Clip.class, null);
 		clip = (Clip) mixer.getLine(dataLine);
-		System.out.println("Making");
+		
+		// Tries to open the audio stream
 		try {
 			AudioInputStream startingStream = AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
 			clip.open(startingStream);
 			
 		} catch (UnsupportedAudioFileException e) {
-			// TODO Log error (And Cry)  It shouldn't get here cos silent.wav WILL EXIST
-			System.out.println("ERROR");
+			LOGGER.log(Level.WARNING, "Unable to open Silent.wav.  Please tell someone sooner rather than later");
 		} catch (IOException e) {
-			// TODO Log Error (And Cry)  It shouldn't get here cos silent.wav WILL EXIST
-			System.out.println("ERROR1");
+			LOGGER.log(Level.WARNING, "Unable to open Silent.wav.  Please tell someone sooner rather than later");
 		} 
 		
-		Control[] controls = clip.getControls();
-        
-        for (Control y : controls) {
-        	//System.out.println(y.toString());
-        	LOGGER.log(Level.INFO, y.toString());
-        }
 		
+		// Gets mute and volume control and sets them
 		mute = (BooleanControl) clip.getControl(BooleanControl.Type.MUTE);
 		mute.setValue(false);
 		
@@ -71,13 +66,13 @@ public class ClipClass {
 		
 		setVolume(50);  /* The default volume */
 		
+		// Loops the clip if needs to 
 		if (loopContinuously) {
 			clip.loop(Clip.LOOP_CONTINUOUSLY);
 		}
 		
 		looping = loopContinuously;
-		
-		
+			
 	}
 	
 	/**
@@ -102,6 +97,7 @@ public class ClipClass {
 	 */
 	public void setVolume(int newVolume) {
 		
+		// Sets the value between 0 and 100
 		if (newVolume < 0) {
 			newVolume = 0;
 		}
@@ -109,16 +105,16 @@ public class ClipClass {
 			newVolume = 100;
 		}
 		
-		//System.out.println("We got here");
 		
 		currentVol = newVolume;
 		
+		// Gets the range of volume possible for this clip
 		float amountOfVolForClip = Math.abs(volume.getMaximum()) + Math.abs(volume.getMinimum());
 		
+		// Sets the new volume 
 		float newVol = (((float) newVolume / 100) * amountOfVolForClip) + volume.getMinimum();
 		
-	
-		
+		// Set this volume
 		volume.setValue(newVol);
 	}
 	
@@ -144,13 +140,14 @@ public class ClipClass {
 	 * @return The clip just used
 	 */
 	public Clip play(AudioInputStream audio) {
+		
 		clip.close();
 		try {
 			clip.open(audio);
 		} catch (LineUnavailableException e) {
-			//TODO Log
+			LOGGER.log(Level.WARNING, "The line is unavailable");
 		} catch (IOException e) {
-			//TODO Log
+			LOGGER.log(Level.WARNING, "This file does not exist");
 		}
 		clip.setMicrosecondPosition(0);
 		clip.start();

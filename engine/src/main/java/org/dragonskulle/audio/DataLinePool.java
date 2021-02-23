@@ -1,6 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
@@ -17,14 +20,19 @@ public class DataLinePool {
 	private final int NUMBER_OF_CLIPS = 1;
 	private int masterVol;
 	
+	public final static Logger LOGGER = Logger.getLogger("DataLine");
+	
 	
 	/**
 	 * The only Constructor to be allowed to use
 	 * @param mixer The mixer to plug the clips into
 	 */
 	public DataLinePool(Mixer mixer, SoundType soundType) {
+		
+	
 		sounds = new ClipClass[NUMBER_OF_CLIPS];
 		
+		// Creates the clips
 		for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
 			ClipClass clip;
 			
@@ -33,8 +41,7 @@ public class DataLinePool {
 					clip = new ClipClass(mixer, false);
 				} catch (LineUnavailableException e) {
 					clip = null;
-					//System.out.println("Error");
-					//TODO Log
+					LOGGER.log(Level.WARNING, "Clip is unabale to be made thus will not be able to play audio on this clip");
 				}
 			}
 			else {
@@ -43,8 +50,7 @@ public class DataLinePool {
 					
 				} catch (LineUnavailableException e) {
 					clip = null;
-					//System.out.println("Error");
-					//TODO log
+					LOGGER.log(Level.WARNING, "Clip is unabale to be made thus will not be able to play audio on this clip");
 				}
 			}
 			
@@ -64,10 +70,11 @@ public class DataLinePool {
 		if (input == null) {
 			return null;
 		}
+		
 		ClipClass toUse = sounds[0];
 		toUse.play(input);
 		sounds[0] = toUse;
-		return toUse;  //MAYBE USE REFERENCE'
+		return toUse;  //MAYBE USE REFERENCE
 	}
 	
 	/**
@@ -75,6 +82,8 @@ public class DataLinePool {
 	 * @param setMute the {@code boolean} value to set mute
 	 */
 	public void setMute(boolean setMute) {
+		
+		// Set all the Clips with new mute value
 		for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
 			ClipClass toUse = sounds[i];
 			if (toUse != null) {
@@ -96,14 +105,15 @@ public class DataLinePool {
 		else if (setVol < 0) {
 			setVol = 0;
 		}
+		// Will update all clips with the new value
 		for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
 			ClipClass toUse = sounds[i];
 			
 			if (toUse != null) {
-				System.out.println("Error here");
+				
 				toUse.setVolume(setVol);
 			}
-			System.out.println("Error here Done");
+			
 			sounds[i] = toUse;
 		}
 		masterVol = setVol;
@@ -114,7 +124,9 @@ public class DataLinePool {
 	 * @return mute value
 	 */
 	public boolean getMute() {
+		
 		int index = 0;
+		// Find one Clip which is not null
 		while (sounds[index] == null && index < NUMBER_OF_CLIPS) {
 			index ++;
 		}

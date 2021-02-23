@@ -3,6 +3,7 @@ package org.dragonskulle.audio;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sound.sampled.AudioInputStream;
@@ -42,12 +43,12 @@ public class AudioManager {
 		}
 		catch (SecurityException e) {
 			mixer = null;
-			//TODO Log error
+			LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
 			
 		}
 		catch (IllegalArgumentException e) {
 			mixer = null;
-			//TODO Log error
+			LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
 		}
 		
 	}
@@ -58,10 +59,13 @@ public class AudioManager {
 	 * @param fileName the name of the file which has the music.  Must be a .wav file
 	 * @return whether the music has been successful to play
 	 */
-	public boolean play(SoundType channel, String fileName) { // TODO return false to denote a failure to play and true to denote a play
+	public boolean play(SoundType channel, String fileName) { 
 	
 		try {
-			AudioInputStream audio = AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile());
+			//Creates the audio file
+			AudioInputStream audio = AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile()); 
+			
+			// Plays the file on the right channel
 			if (channel == SoundType.BACKGROUND) {
 				sounds[0].openStream(audio);
 				return true;
@@ -71,11 +75,12 @@ public class AudioManager {
 				return true;
 			}
 		} catch (UnsupportedAudioFileException e) {
+			LOGGER.log(Level.WARNING, "This is unable to be played becuase it used an unsupported Audio file");
 			return false;
-			//TODO Log error
+			
 		} catch (IOException e) {
+			LOGGER.log(Level.WARNING, "This is unable to be played becuase there is an IO exception.  Make sure the file is in the right directory");
 			return false;
-			//TODO Log error
 		}
 	}
 	
@@ -86,6 +91,7 @@ public class AudioManager {
 	 */
 	public void setMute(SoundType channel, boolean muteValue) {
 		
+		// Sets the mute value
 		if (channel == SoundType.BACKGROUND) {
 			sounds[0].setMute(muteValue);
 		}
@@ -101,12 +107,21 @@ public class AudioManager {
 	 */
 	public boolean getMute(SoundType channel) {
 		
+		// Gets the mute value
 		if (channel == SoundType.BACKGROUND) {
-			return sounds[0].getMute();
+			
+			if (sounds[0] != null) {
+				return sounds[0].getMute();
+			}
 		}
 		else {
-			return sounds[1].getMute();
+			if (sounds[1] != null) {
+				return sounds[1].getMute();
+			}
+			
+			
 		}
+		return false;  //TODO any better way?
 	}
 	
 	/**  
@@ -115,6 +130,8 @@ public class AudioManager {
 	 * @param setVol the volume to change to
 	 */
 	public void setVolume(SoundType channel, int setVol) {
+		
+		//Checks the volume is a correct value
 		if (setVol > 100) {
 			setVol = 100;
 		}
@@ -122,6 +139,7 @@ public class AudioManager {
 			setVol = 0;
 		}
 		
+		// Changes the volume
 		if (channel == SoundType.BACKGROUND) {
 			sounds[0].setVolume(setVol);
 		}
@@ -133,22 +151,30 @@ public class AudioManager {
 	/**
 	 * Get the current volume of selected channel
 	 * @param channel The channel to select
-	 * @return The current volume
+	 * @return The current volume - Returns -1 if failure on that channel
 	 */
 	public int getVolume(SoundType channel) {
 		
+		
 		if (channel == SoundType.BACKGROUND) {
-			return sounds[0].getVolume();
+			if (sounds[0] != null) {
+				return sounds[0].getVolume();
+			}
 		}
 		else {
-			return sounds[1].getVolume();
+			if (sounds[1] != null) {
+				return sounds[1].getVolume();
+			}
 		}
+		
+		return -1;
 	}
 	
 	/**
 	 * This closes the mixer and must be called at the end of a program.
 	 */
 	public void cleanup() {
+		
 		if (mixer != null) {
 			mixer.close();
 		}
