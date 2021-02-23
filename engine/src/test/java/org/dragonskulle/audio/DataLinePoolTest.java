@@ -21,7 +21,7 @@ public class DataLinePoolTest {
 		//Checks whether a DataLinePool object can be created
 		Mixer mixer = AudioSystem.getMixer(null);
 		
-		DataLinePool dataLine = new DataLinePool(mixer);
+		DataLinePool dataLine = new DataLinePool(mixer, SoundType.BACKGROUND);
 		
 		Assert.assertNotNull(dataLine);
 				
@@ -33,13 +33,13 @@ public class DataLinePoolTest {
 		
 		Mixer mixer = AudioSystem.getMixer(null);
 		
-		DataLinePool dataLine = new DataLinePool(mixer);
+		DataLinePool dataLine = new DataLinePool(mixer, SoundType.BACKGROUND);
 		
 		Assert.assertNotNull(dataLine);
 		
 		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); ;  
 		
-		Clip clip = dataLine.openStream(audio);
+		ClipClass clip = dataLine.openStream(audio);
 		
 		Assert.assertNotNull(clip);
 		
@@ -55,13 +55,13 @@ public class DataLinePoolTest {
 		
 		Mixer mixer = AudioSystem.getMixer(null);
 		
-		DataLinePool dataLine = new DataLinePool(mixer);
+		DataLinePool dataLine = new DataLinePool(mixer, SoundType.BACKGROUND);
 		
 		Assert.assertNotNull(dataLine);
 		
 		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); ;  
 		
-		Clip clip = dataLine.openStream(audio);
+		ClipClass clip = dataLine.openStream(audio);
 		
 		Assert.assertFalse(dataLine.getMute());  // checks when created it is started as mute
 		
@@ -83,13 +83,13 @@ public class DataLinePoolTest {
 		//Not complete as no way for machine to check whether sound really has changed
 		Mixer mixer = AudioSystem.getMixer(null);
 		
-		DataLinePool dataLine = new DataLinePool(mixer);
+		DataLinePool dataLine = new DataLinePool(mixer, SoundType.SFX);
 		
 		Assert.assertNotNull(dataLine);
 		
 		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); ;  
 		
-		Clip clip = dataLine.openStream(audio);
+		ClipClass clip = dataLine.openStream(audio);
 		
 		
 		Assert.assertEquals(50, dataLine.getVolume());
@@ -122,19 +122,19 @@ public class DataLinePoolTest {
 		
 		Mixer mixer = AudioSystem.getMixer(null);
 		
-		DataLinePool dataLine = new DataLinePool(mixer);
+		DataLinePool dataLine = new DataLinePool(mixer, SoundType.SFX);
 		
 		Assert.assertNotNull(dataLine);
 		
 		AudioInputStream audio = AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile()); ;  
 		
-		Clip clip = dataLine.openStream(audio);
+		ClipClass clip = dataLine.openStream(audio);
 		
 		AudioInputStream audio2 = AudioSystem.getAudioInputStream(new File("thunderclap.wav").getAbsoluteFile()); ;  
 		
-		Clip clip2 = dataLine.openStream(audio2);
+		ClipClass clip2 = dataLine.openStream(audio2);
 		
-		Clip[] clips = dataLine.cleanup();
+		ClipClass[] clips = dataLine.cleanup();
 		
 		Assert.assertSame(clip, clips[0]);
 		Assert.assertSame(clip2, clips[1]);
