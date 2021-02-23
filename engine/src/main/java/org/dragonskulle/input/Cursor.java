@@ -25,18 +25,18 @@ public class Cursor {
     /** The starting position of a drag, or {@code null} if no drag is taking place. */
     private Vector2d mDragStart;
     /** Allows {@link Action}s to be activated and deactivated. */
-	private Actions mActions;
+    private Actions mActions;
 
-	/**
-	 * Create a new cursor manager.
-	 * 
-	 * @param actions The actions to be triggered.
-	 */
+    /**
+     * Create a new cursor manager.
+     *
+     * @param actions The actions to be triggered.
+     */
     public Cursor(Actions actions) {
-    	mActions = actions;
-	}
+        mActions = actions;
+    }
 
-	/**
+    /**
      * Attach this cursor to a window.
      *
      * <p>Required to allow this cursor to access to this window.

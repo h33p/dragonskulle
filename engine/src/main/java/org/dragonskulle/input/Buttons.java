@@ -49,16 +49,16 @@ public class Buttons extends Activatable<Integer> {
 
     /**
      * Create a new buttons manager.
-     * 
+     *
      * @param actions The actions to be triggered.
      * @param bindings The bindings of actions to buttons.
      */
     public Buttons(Actions actions, Bindings bindings) {
-    	mActions = actions;
+        mActions = actions;
         mBindings = bindings;
-	}
+    }
 
-	/**
+    /**
      * Attach the buttons to a window.
      *
      * <p>Required to allow button input to be detected.

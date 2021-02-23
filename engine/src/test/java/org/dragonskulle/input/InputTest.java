@@ -22,14 +22,10 @@ public class InputTest {
 
     public static final Logger LOGGER = Logger.getLogger("InputTest");
 
-    /**
-     * An example key code used for tesing key presses.
-     */
+    /** An example key code used for tesing key presses. */
     private static final int TEST_KEY = -12345;
 
-    /**
-     * The input being tested. Will be reset before every test.
-     */
+    /** The input being tested. Will be reset before every test. */
     private Input mInput;
 
     /** Before every test, create a window and attach Input to it. */
@@ -366,5 +362,4 @@ public class InputTest {
         cursor.endDrag();
         assertFalse("Cursor is in drag, but it should not be.", cursor.inDrag());
     }
-
 }

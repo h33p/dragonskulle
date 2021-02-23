@@ -69,14 +69,14 @@ public class Scroll {
 
     /**
      * Create a new scroll manager.
-     * 
+     *
      * @param buttons The buttons.
      */
     public Scroll(Buttons buttons) {
-    	mButtons = buttons;
-	}
+        mButtons = buttons;
+    }
 
-	/**
+    /**
      * Attach the scrolling detection to the window.
      *
      * <p>Required to allow scrolling to be detected both as a direct value and via {@link Actions}.

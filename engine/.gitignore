@@ -2,3 +2,4 @@ target/*
 .classpath
 *.swp
 src/main/resources/shaderc/
+/target/
