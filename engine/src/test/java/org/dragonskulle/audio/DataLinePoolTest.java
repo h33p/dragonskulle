@@ -86,8 +86,6 @@ public class DataLinePoolTest {
 		//Not complete as no way for machine to check whether sound really has changed
 		Mixer mixer = AudioSystem.getMixer(null);
 		
-		System.out.println("Output");
-		
 		DataLinePool dataLine = new DataLinePool(mixer, SoundType.SFX);
 		
 		Assert.assertNotNull(dataLine);
@@ -102,8 +100,6 @@ public class DataLinePoolTest {
 		Assert.assertEquals(50, dataLine.getVolume());
 		
 		Assert.assertNotNull(dataLine);
-		
-		System.out.println(dataLine.getVolume());
 		
 		dataLine.setVolume(60);
 		
