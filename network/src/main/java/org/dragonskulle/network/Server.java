@@ -41,6 +41,7 @@ public class Server {
             serverThread.setDaemon(true);
             serverThread.setName("Server");
             System.out.println("[S] Starting server");
+            System.out.println("[S] TODO Setup Game");
             serverThread.start();
 
             String command;
@@ -110,6 +111,7 @@ public class Server {
             }
         }
 
+
         public void cancel() {
             this.open = false;
         }
@@ -130,6 +132,7 @@ public class Server {
         }
         return () -> {
             try {
+                //should spawn map and capitol here instead
                 boolean connected;
                 String stream;
                 int hasBytes = 0;
@@ -145,6 +148,14 @@ public class Server {
                 ClientInstance client = new ClientInstance(sock.getInetAddress(), sock.getPort());
                 serverListener.clientConnected(client, out);
                 connected = sock.isConnected();
+
+                if (connected) {
+                    //spawn map on client
+                    spawnMap(client);
+                    //TODO create client capitol
+                    //spawn capitol
+                    spawnCapitol();
+                }
                 while (connected) {
                     bArray = new byte[MAX_TRANSMISSION_SIZE];
                     hasBytes = bIn.read(bArray);
@@ -155,7 +166,7 @@ public class Server {
                             serverListener.clientDisconnected(client);
                             connected = false;
                         } else {
-                            parseBytes(client, bArray);
+                            processBytes(client, bArray);
                         }
                     }
                 }
@@ -166,13 +177,26 @@ public class Server {
     }
 
 
-    private void parseBytes(ClientInstance client, byte[] bytes) {
+    private void spawnMap(ClientInstance clientInstance) {
+        System.out.println("spawning map on client");
+        byte[] spawnMapMessage = NetworkMessage.build((byte) 20, "MAP".getBytes());
+        sockets.sendBytesToClient(clientInstance, spawnMapMessage);
+    }
+
+    private void spawnCapitol() {
+        //This isn't being send to the client. Or maybe handles incorectly
+        System.out.println("spawning capitol on all clients");
+        byte[] spawnMapCapitol = NetworkMessage.build((byte) 21, "CAPITOL".getBytes());
+        sockets.broadcast(spawnMapCapitol);
+    }
+
+    private void processBytes(ClientInstance client, byte[] bytes) {
 
         serverListener.receivedBytes(client, bytes);
 //        decode bytes from flatbuffer serialisation
 //        currently only one type;
         try {
-            unpackBytes(client, bytes);
+            parseBytes(client, bytes);
         } catch (DecodingException e) {
             System.out.println(e.getMessage());
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
@@ -180,13 +204,20 @@ public class Server {
 
     }
 
-    private void unpackBytes(ClientInstance client, byte[] bytes) throws DecodingException {
+    private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
         System.out.println("bytes parsing");
         try {
-            NetworkMessage.parse(bytes);
+            NetworkMessage.parse(bytes, (parsedBytes) -> this.sockets.sendBytesToClient(client, parsedBytes));
         } catch (Exception e) {
+            System.out.println("Error in parseBytes");
+            e.printStackTrace();
             throw new DecodingException("Message is not of valid type");
         }
     }
+
+    public interface SendBytesToClientCurry {
+        void send(byte[] bytes);
+    }
+
 }
 

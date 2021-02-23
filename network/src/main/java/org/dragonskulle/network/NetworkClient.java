@@ -1,11 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import com.google.flatbuffers.FlatBufferBuilder;
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import org.dragonskulle.network.components.sync.ISyncVar;
-import org.dragonskulle.network.flatbuffers.FlatBufferHelpers;
-import org.dragonskulle.network.proto.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -83,7 +80,6 @@ public class NetworkClient {
         if (open) {
             try {
                 System.out.println("sending bytes");
-                System.out.println(Arrays.toString(bytes));
                 dOut.write(bytes);
             } catch (IOException e) {
                 System.out.println("Failed to send bytes");
@@ -118,7 +114,7 @@ public class NetworkClient {
                             this.dispose();
                             break;
                         } else {
-                            parseBytes(bArray);
+                            processBytes(bArray);
                         }
                     }
 
@@ -131,12 +127,11 @@ public class NetworkClient {
         };
     }
 
-    private void parseBytes(byte[] bytes) {
+    private void processBytes(byte[] bytes) {
         clientListener.receivedBytes(bytes);
 
         try {
-            unpackBytes(bytes);
-
+            parseBytes(bytes);
         } catch (DecodingException e) {
             System.out.println(e.getMessage());
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
@@ -144,7 +139,7 @@ public class NetworkClient {
 
     }
 
-    private void unpackBytes(byte[] bytes) throws DecodingException {
+    private void parseBytes(byte[] bytes) throws DecodingException {
         System.out.println("bytes unpacking");
         try {
             NetworkMessage.parse(bytes);

@@ -37,6 +37,8 @@ public class SocketStore {
                 System.out.println("--broadcasting to client " + connection.toString());
                 dOut = new DataOutputStream(connection.getOutputStream());
                 dOut.write(buf);
+                System.out.println("--broadcast success");
+
             } catch (IOException e) {
                 System.out.println("Error in broadcasting");
                 System.out.println(e.toString());

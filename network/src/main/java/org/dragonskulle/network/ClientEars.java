@@ -25,7 +25,7 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void receivedBytes(byte[] bytes) {
-        System.out.println("[Client] Received Bytes :: "+ Arrays.toString(bytes));
+        System.out.println("[Client] Received Bytes");
     }
 
     @Override
