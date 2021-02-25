@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the main Server Class, it handles setup and stores all client connections. It can
@@ -23,6 +24,7 @@ public class Server {
     private final SocketStore sockets = new SocketStore();
     private Thread serverThread;
     private ServerRunner serverRunner;
+    private ServerGameInstance game;
 
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
@@ -89,6 +91,10 @@ public class Server {
         }
     }
 
+    public void createGame() {
+        this.game = new ServerGameInstance();
+    }
+
     /**
      * ServerRunner is the thread which constantly checks for new client requests, if a client has
      * requested a socket, it will provide it a thread to communicate on and accept the socket.
@@ -152,7 +158,6 @@ public class Server {
                 if (connected) {
                     //spawn map on client
                     spawnMap(client);
-                    //TODO create client capitol
                     //spawn capitol
                     spawnCapitol();
                 }

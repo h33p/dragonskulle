@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -25,7 +26,7 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void receivedBytes(byte[] bytes) {
-        System.out.println("[Client] Received Bytes");
+        System.out.println("[Client] Received Bytes " + new String(bytes, StandardCharsets.UTF_8));
     }
 
     @Override

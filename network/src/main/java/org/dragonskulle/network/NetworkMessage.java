@@ -3,6 +3,7 @@ package org.dragonskulle.network;
 import java.util.*;
 
 public class NetworkMessage {
+    private static final int MAX_TRANSMISSION_SIZE = 512;
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
     private static final byte[] END_SIGNATURE = {58, 58, 69, 58, 58};
 
@@ -89,7 +90,8 @@ public class NetworkMessage {
     }
 
     public static byte[] build(byte messageType, byte[] payload) {
-        ArrayList<Byte> message = new ArrayList<>();//[MAX_MESSAGE_SIZE];
+        assert payload.length <= MAX_TRANSMISSION_SIZE - 15;
+        ArrayList<Byte> message = new ArrayList<>(MAX_TRANSMISSION_SIZE);//[MAX_MESSAGE_SIZE];
 
         //START SIGNATURE
         for (byte b : START_SIGNATURE) {
@@ -120,7 +122,7 @@ public class NetworkMessage {
 
     private static byte[] toByteArray(List<Byte> in) {
         final int n = in.size();
-        byte ret[] = new byte[n];
+        byte ret[] = new byte[MAX_TRANSMISSION_SIZE];
         for (int i = 0; i < n; i++) {
             ret[i] = in.get(i);
         }
