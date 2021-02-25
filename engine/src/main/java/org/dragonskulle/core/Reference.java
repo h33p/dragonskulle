@@ -42,6 +42,8 @@ public class Reference<T> implements Serializable {
         return mObject;
     }
 
+    public boolean isValid() { return mObject != null; }
+
     /**
      * Override equals so that it compares the underlying object as opposed to the Reference itself
      *

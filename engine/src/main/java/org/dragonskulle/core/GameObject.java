@@ -42,6 +42,8 @@ public class GameObject implements Serializable {
      * @return The new instance of the GameObject
      */
     public static GameObject instantiate(GameObject object) {
+        GameObject instance = object.createClone();
+        instance.mTransform.setGameObject(instance);
         return object.createClone();
     }
 
@@ -54,6 +56,7 @@ public class GameObject implements Serializable {
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
+        transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
     }
@@ -96,6 +99,7 @@ public class GameObject implements Serializable {
         mParent = null;
         mName = name;
         mActive = true;
+        mTransform.setGameObject(this);
     }
 
     /**
@@ -109,6 +113,7 @@ public class GameObject implements Serializable {
         mParent = null;
         mName = name;
         mActive = active;
+        mTransform.setGameObject(this);
     }
 
     /**
@@ -155,6 +160,20 @@ public class GameObject implements Serializable {
                 .filter(iface::isInstance)
                 .map(Component::getReference)
                 .collect(Collectors.toCollection(() -> ret));
+    }
+
+    /**
+     * Get a list of all components of a specific type in all children of this GameObject
+     *
+     * @param type Class object of type T
+     * @param ret List object to store the references to components found
+     * @param <T> Type of component to search for
+     */
+    public <T extends Component> void getComponentsInChildren(Class<T> type, List<Reference<T>> ret) {
+        for (GameObject child : mChildren) {
+            child.getComponents(type, ret);
+            child.getComponentsInChildren(type, ret);
+        }
     }
 
     /**
@@ -359,6 +378,10 @@ public class GameObject implements Serializable {
         return mTransform;
     }
 
+    public Transform getParentTransform() {
+        return mParent.mTransform;
+    }
+
     /**
      * Getter for mReference
      *
@@ -375,6 +398,15 @@ public class GameObject implements Serializable {
      */
     public boolean isDestroyed() {
         return mDestroy;
+    }
+
+    /**
+     * Check whether a GameObject is a root object
+     *
+     * @return true if it's a root, false otherwise
+     */
+    public boolean isRootObject() {
+        return mParent == null;
     }
 
     /**
