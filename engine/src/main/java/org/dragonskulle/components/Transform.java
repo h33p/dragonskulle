@@ -3,7 +3,6 @@ package org.dragonskulle.components;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-
 import org.dragonskulle.core.Reference;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
@@ -92,9 +91,8 @@ public class Transform extends Component implements Serializable {
      * @param z Rotation in Z-axis in degrees
      */
     public void rotateDeg(float x, float y, float z) {
-        mLocalMatrix.rotateXYZ((float)Math.toRadians(x),
-                (float)Math.toRadians(y),
-                (float)Math.toRadians(z));
+        mLocalMatrix.rotateXYZ(
+                (float) Math.toRadians(x), (float) Math.toRadians(y), (float) Math.toRadians(z));
         setUpdateFlag();
     }
 
@@ -152,9 +150,7 @@ public class Transform extends Component implements Serializable {
         setUpdateFlag();
     }
 
-    /**
-     * Set mShouldUpdate to true in all children transforms
-     */
+    /** Set mShouldUpdate to true in all children transforms */
     private void setUpdateFlag() {
         mShouldUpdate = true;
         ArrayList<Reference<Transform>> childTransforms = new ArrayList<>();
@@ -166,7 +162,6 @@ public class Transform extends Component implements Serializable {
                 t.setUpdateFlag();
             }
         }
-
     }
 
     /**
@@ -185,7 +180,9 @@ public class Transform extends Component implements Serializable {
      *
      * @param dest Matrix to store a copy of the local matrix
      */
-    public void getLocalMatrix(Matrix4f dest) { dest.set(mLocalMatrix); }
+    public void getLocalMatrix(Matrix4f dest) {
+        dest.set(mLocalMatrix);
+    }
 
     /**
      * Get the normalised rotation of the transform
@@ -374,6 +371,5 @@ public class Transform extends Component implements Serializable {
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 }

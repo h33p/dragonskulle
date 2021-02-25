@@ -169,7 +169,8 @@ public class GameObject implements Serializable {
      * @param ret List object to store the references to components found
      * @param <T> Type of component to search for
      */
-    public <T extends Component> void getComponentsInChildren(Class<T> type, List<Reference<T>> ret) {
+    public <T extends Component> void getComponentsInChildren(
+            Class<T> type, List<Reference<T>> ret) {
         for (GameObject child : mChildren) {
             child.getComponents(type, ret);
             child.getComponentsInChildren(type, ret);
