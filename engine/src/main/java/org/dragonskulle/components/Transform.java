@@ -16,7 +16,7 @@ import org.joml.Vector4f;
  *
  * @author Harry Stoltz
  *     <p>All GameObjects will have a Transform object which stores the position, rotation and scale
- *     of the object (As forward, right, up and position in a 4x4 Matrix). The Transform can be used
+ *     of the object (As right, up, forward and position in a 4x4 Matrix). The Transform can be used
  *     to get 3D position, scale and rotation. Or can be cast to HexTransform to get the position,
  *     scale and rotation in Hex coordinates.
  */
@@ -24,15 +24,12 @@ public class Transform extends Component implements Serializable {
 
     private final Matrix4f mLocalMatrix;
     private Matrix4f mWorldMatrix;
-
-    private boolean shouldUpdate = true;
-
-    // TODO: Create new methods that take a Vector, Quaternion or matrix as an argument to store
-    //      results in. Would save on allocations
+    private boolean mShouldUpdate = true;
 
     /** Default constructor. mLocalMatrix is just the identity matrix */
     public Transform() {
         mLocalMatrix = new Matrix4f().identity();
+        mWorldMatrix = new Matrix4f().identity();
     }
 
     /**
@@ -42,6 +39,7 @@ public class Transform extends Component implements Serializable {
      */
     public Transform(Vector3f position) {
         mLocalMatrix = new Matrix4f().identity().translate(position);
+        mWorldMatrix = new Matrix4f().identity();
     }
 
     /**
@@ -51,17 +49,17 @@ public class Transform extends Component implements Serializable {
      */
     public Transform(Matrix4f matrix) {
         mLocalMatrix = new Matrix4f(matrix);
-        setUpdateFlagInChildren();
+        mWorldMatrix = new Matrix4f().identity();
     }
 
     /**
-     * Set the transform position
+     * Set the position of the object relative to the parent
      *
-     * @param position New position for the transform
+     * @param position Vector3f containing the desired position
      */
     public void setPosition(Vector3f position) {
         mLocalMatrix.setColumn(3, new Vector4f(position, 1.f));
-        setUpdateFlagInChildren();
+        setUpdateFlag();
     }
 
     /**
@@ -69,12 +67,36 @@ public class Transform extends Component implements Serializable {
      *
      * @param eulerAngles Vector containing euler angles to rotate object with
      */
-    public void rotate(Vector3f eulerAngles) {
+    public void rotateRad(Vector3f eulerAngles) {
         mLocalMatrix.rotateXYZ(eulerAngles);
-        setUpdateFlagInChildren();
+        setUpdateFlag();
     }
 
-    // TODO: Rotate with quaternion
+    /**
+     * Rotate the object with euler angles
+     *
+     * @param x Rotation in X-axis in radians
+     * @param y Rotation in Y-axis in radians
+     * @param z Rotation in Z-axis in radians
+     */
+    public void rotateRad(float x, float y, float z) {
+        mLocalMatrix.rotateXYZ(x, y, z);
+        setUpdateFlag();
+    }
+
+    /**
+     * Rotate the object with euler angles
+     *
+     * @param x Rotation in X-axis in degrees
+     * @param y Rotation in Y-axis in degrees
+     * @param z Rotation in Z-axis in degrees
+     */
+    public void rotateDeg(float x, float y, float z) {
+        mLocalMatrix.rotateXYZ((float)Math.toRadians(x),
+                (float)Math.toRadians(y),
+                (float)Math.toRadians(z));
+        setUpdateFlag();
+    }
 
     /**
      * Rotate the object with a quaternion
@@ -83,7 +105,7 @@ public class Transform extends Component implements Serializable {
      */
     public void rotate(Quaternionf quaternion) {
         mLocalMatrix.rotate(quaternion);
-        setUpdateFlagInChildren();
+        setUpdateFlag();
     }
 
     /**
@@ -93,30 +115,55 @@ public class Transform extends Component implements Serializable {
      */
     public void translate(Vector3f translation) {
         mLocalMatrix.translate(translation);
-        setUpdateFlagInChildren();
+        setUpdateFlag();
+    }
+
+    /**
+     * Translate the object
+     *
+     * @param x Translation in X-axis
+     * @param y Translation in Y-axis
+     * @param z Translation in Z-axis
+     */
+    public void translate(float x, float y, float z) {
+        mLocalMatrix.translate(x, y, z);
+        setUpdateFlag();
     }
 
     /**
      * Scale the object
      *
-     * @param scale Vector containing XYZ scale
+     * @param scale Vector to scale object with
      */
     public void scale(Vector3f scale) {
         mLocalMatrix.scale(scale);
-        setUpdateFlagInChildren();
+        setUpdateFlag();
+    }
+
+    /**
+     * Scale the object
+     *
+     * @param x Scale in the X-axis
+     * @param y Scale in the Y-axis
+     * @param z Scale in the Z-axis
+     */
+    public void scale(float x, float y, float z) {
+        mLocalMatrix.scale(x, y, z);
+        setUpdateFlag();
     }
 
     /**
      * Set mShouldUpdate to true in all children transforms
      */
-    private void setUpdateFlagInChildren() {
+    private void setUpdateFlag() {
+        mShouldUpdate = true;
         ArrayList<Reference<Transform>> childTransforms = new ArrayList<>();
         mGameObject.getComponentsInChildren(Transform.class, childTransforms);
         for (Reference<Transform> transformReference : childTransforms) {
             if (transformReference.isValid()) {
                 Transform t = transformReference.get();
-                t.shouldUpdate = true;
-                t.setUpdateFlagInChildren();
+                t.mShouldUpdate = true;
+                t.setUpdateFlag();
             }
         }
 
@@ -138,8 +185,7 @@ public class Transform extends Component implements Serializable {
      *
      * @param dest Matrix to store a copy of the local matrix
      */
-    public void getLocalMatrix(Matrix4f dest) { dest.set(mLocalMatrix);}
-
+    public void getLocalMatrix(Matrix4f dest) { dest.set(mLocalMatrix); }
 
     /**
      * Get the normalised rotation of the transform
@@ -195,7 +241,7 @@ public class Transform extends Component implements Serializable {
     /**
      * Get the position of the transform relative to the parent transform
      *
-     * @param dest
+     * @param dest Vector3f to store the position
      */
     public void getLocalPosition(Vector3f dest) {
         mLocalMatrix.getColumn(3, dest);
@@ -213,36 +259,12 @@ public class Transform extends Component implements Serializable {
     }
 
     /**
-     * Get the local forward vector
+     * Get the scale of the transform
      *
-     * @return New Vector3f containing the forward vector
+     * @param dest Vector3f to store the scale
      */
-    public Vector3f getLocalForward() {
-        Vector3f forward = new Vector3f();
-        mLocalMatrix.getColumn(0, forward);
-        return forward;
-    }
-
-    /**
-     * Get the local right vector
-     *
-     * @return New Vector3f containing the right vector
-     */
-    public Vector3f getLocalRight() {
-        Vector3f right = new Vector3f();
-        mLocalMatrix.getColumn(1, right);
-        return right;
-    }
-
-    /**
-     * Get the local up vector
-     *
-     * @return New Vector3f containing the up vector
-     */
-    public Vector3f getLocalUp() {
-        Vector3f up = new Vector3f();
-        mLocalMatrix.getColumn(2, up);
-        return up;
+    public void getLocalScale(Vector3f dest) {
+        mLocalMatrix.getScale(dest);
     }
 
     /**
@@ -253,12 +275,19 @@ public class Transform extends Component implements Serializable {
      * @return mWorldMatrix
      */
     public Matrix4f getWorldMatrix() {
-        if (shouldUpdate) {
-            shouldUpdate = false;
+        if (mShouldUpdate) {
+            mShouldUpdate = false;
             if (mGameObject.isRootObject()) {
                 mWorldMatrix = mLocalMatrix;
             } else {
-                mWorldMatrix = mGameObject.getParentTransform().getWorldMatrix().mul(mLocalMatrix);
+                // Store our local matrix in mWorldMatrix
+                mWorldMatrix.set(mLocalMatrix);
+
+                // Then multiply by parent's world matrix
+                // Which gives us the matrix multiplication mLocalMatrix * mWorldMatrix
+                // so when doing mWorldMatrix * (vector) it does the parent transform
+                // before the local
+                mWorldMatrix.mul(mGameObject.getParentTransform().getWorldMatrix());
             }
         }
         return mWorldMatrix;
@@ -267,7 +296,7 @@ public class Transform extends Component implements Serializable {
     /**
      * Get the rotation of the transform in the world as a Quaternion
      *
-     * @return New Quaternionf containing the rotation of the transform
+     * @return Quaternionf containing the rotation of the transform
      */
     public Quaternionf getRotation() {
         Quaternionf rotation = new Quaternionf();
@@ -276,9 +305,18 @@ public class Transform extends Component implements Serializable {
     }
 
     /**
+     * Get the rotation of the transform in the world as a Quaternion
+     *
+     * @param dest Quaternionf to store the rotation of the transform
+     */
+    public void getRotation(Quaternionf dest) {
+        getWorldMatrix().getNormalizedRotation(dest);
+    }
+
+    /**
      * Get the rotation of the transform in the world as axis angles
      *
-     * @return New AxisAngle4f containing the r
+     * @return AxisAngle4f containing the rotation of the transform
      */
     public AxisAngle4f getRotationAngles() {
         AxisAngle4f rotation = new AxisAngle4f();
@@ -286,22 +324,56 @@ public class Transform extends Component implements Serializable {
         return rotation;
     }
 
+    /**
+     * Get the rotation of the transform in the world as axis angles
+     *
+     * @param dest AxisAnglef to store the rotation of the transform
+     */
+    public void getRotationAngles(AxisAngle4f dest) {
+        getWorldMatrix().getRotation(dest);
+    }
+
+    /**
+     * Get the position of the transform in the world
+     *
+     * @return Vector3f containing the world position
+     */
     public Vector3f getPosition() {
         Vector3f position = new Vector3f();
         getWorldMatrix().getColumn(3, position);
         return position;
     }
 
+    /**
+     * Get the position of the transform in the world
+     *
+     * @param dest Vector3f to store the position
+     */
+    public void getPosition(Vector3f dest) {
+        getWorldMatrix().getColumn(3, dest);
+    }
+
+    /**
+     * Get the scale of the transform in the world
+     *
+     * @return Vector3f containing the scale of the transform
+     */
     public Vector3f getScale() {
         Vector3f scale = new Vector3f();
         getWorldMatrix().getScale(scale);
         return scale;
     }
 
+    /**
+     * Get the scale of the transform in the world
+     *
+     * @param dest Vector3f to store the scale
+     */
+    public void getScale(Vector3f dest) {
+        getWorldMatrix().getScale(dest);
+    }
+
     @Override
     protected void onDestroy() {
-
-        // TODO: Destroy for transform
-
     }
 }
