@@ -115,13 +115,11 @@ public class AudioManager {
         // Gets the mute value
         if (mMixer != null && channel == SoundType.BACKGROUND) {
 
-            if (mSounds[0] != null) {
-                return mSounds[0].getMute();
-            }
+            return mSounds[0].getMute();
+            
         } else if (mMixer != null && channel == SoundType.SFX) {
-            if (mSounds[1] != null) {
-                return mSounds[1].getMute();
-            }
+            return mSounds[1].getMute();
+            
         }
         return false; // TODO any better way?
     }
@@ -151,13 +149,11 @@ public class AudioManager {
     public int getVolume(SoundType channel) {
 
         if (mMixer != null && channel == SoundType.BACKGROUND) {
-            if (mSounds[0] != null) {
-                return mSounds[0].getVolume();
-            }
+            return mSounds[0].getVolume();
+            
         } else if (mMixer != null && channel == SoundType.SFX) {
-            if (mSounds[1] != null) {
-                return mSounds[1].getVolume();
-            }
+            return mSounds[1].getVolume();
+            
         }
 
         return -1;
