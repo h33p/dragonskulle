@@ -11,12 +11,18 @@ public class AudioManagerTest {
     // TO EVER USE AUDIOMANAGER DO
     /* AudioManager.getInstance().method()*/
 
+	/**
+	 * Checks the AudioManager has been created
+	 */
     @Test
     public void createTest() {
 
         Assert.assertNotNull(AudioManager.getInstance());
     }
 
+    /**
+     * Checks that audio can be played and that they only play music which exists
+     */
     @Test
     public void playTest() {
 
@@ -32,6 +38,9 @@ public class AudioManagerTest {
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "pom.xml"));
     }
 
+    /**
+     * Checks whether background audio can be muted and unmuted
+     */
     @Test
     public void muteBackgroundTest() {
         assumeTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
@@ -47,6 +56,9 @@ public class AudioManagerTest {
         Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
     }
 
+    /**
+     * Checks whether sfx audio can be muted and unmuted
+     */
     @Test
     public void muteSFXTest() {
 
@@ -63,6 +75,9 @@ public class AudioManagerTest {
         Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
     }
 
+    /**
+     * Checks that background audio can be changed
+     */
     @Test
     public void volumeBackgroundTest() {
 
@@ -91,6 +106,9 @@ public class AudioManagerTest {
         Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
     }
 
+    /**
+     * Checks that sfx volume can be changed
+     */
     @Test
     public void volumeSFXTest() {
 

@@ -13,6 +13,9 @@ import org.junit.Test;
 
 public class DataLinePoolTest {
 
+	/**
+	 * This will test whether a Data Line can be created
+	 */
     @Test
     public void createDataLineTest() {
 
@@ -27,6 +30,11 @@ public class DataLinePoolTest {
         }
     }
 
+    /**
+     * This will test that a data line can play music normally.
+     * @throws UnsupportedAudioFileException If given a wrong file format
+     * @throws IOException If file does not exist
+     */
     @Test
     public void openStreamTest() throws UnsupportedAudioFileException, IOException {
         // Not fully complete because no way for machine to check whether sound actually on
@@ -52,6 +60,11 @@ public class DataLinePoolTest {
         }
     }
 
+    /**
+     * This will check whether the mute will work and give back the expected values
+     * @throws UnsupportedAudioFileException If given a wrong file format
+     * @throws IOException If file does not exist
+     */
     @Test
     public void muteTest() throws UnsupportedAudioFileException, IOException {
         // Not complete as no way for machine to check whether sound really muted
@@ -84,6 +97,12 @@ public class DataLinePoolTest {
         }
     }
 
+    /**
+     * This will test that the volume can be changed by the program for each line
+     * @throws UnsupportedAudioFileException If given a wrong file format
+     * @throws IOException If file does not exist
+     * @throws LineUnavailableException This is when a clip cannot be used
+     */
     @Test
     public void volumeTest()
             throws UnsupportedAudioFileException, IOException, LineUnavailableException {
@@ -129,6 +148,11 @@ public class DataLinePoolTest {
         }
     }
 
+    /**
+     * Checks that the Clips are returned so they can be destroyed at the end
+     * @throws UnsupportedAudioFileException If given a wrong file format
+     * @throws IOException If file does not exist
+     */
     @Test
     public void cleanupTest() throws UnsupportedAudioFileException, IOException {
 
