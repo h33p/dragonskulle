@@ -35,6 +35,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.codepoetics</groupId>
+			<artifactId>protonpack</artifactId>
+			<version>1.16</version>
+		</dependency>
+		<dependency>
 			<groupId>org.lwjgl</groupId>
 			<artifactId>lwjgl</artifactId>
 		</dependency>
