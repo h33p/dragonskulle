@@ -16,7 +16,10 @@ public class AudioManagerTest {
         Assert.assertNotNull(audioManager);
     }
 
+    @Test
     public void playTest() {
+    	
+    	//System.out.pr
         Assert.assertFalse(
                 AudioManager.getInstance().play(SoundType.BACKGROUND, "doesntExist.wav"));
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "doesntExist.wav"));
@@ -27,6 +30,7 @@ public class AudioManagerTest {
 
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.BACKGROUND, "pom.xml"));
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "pom.xml"));
+        System.out.println("Done these tests");
     }
 
     @Test
@@ -44,6 +48,7 @@ public class AudioManagerTest {
 
     @Test
     public void muteSFXTest() {
+    	System.out.println("Hello");
         Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
         Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
