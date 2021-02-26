@@ -7,6 +7,9 @@ import org.junit.Test;
 
 /** Unit tests for Resource Manager. */
 public class ResourceManagerTest {
+
+    private static boolean throwOnLoad = false;
+
     /** First class for simple text resource loading */
     private static class TestBytes {
         private byte[] buf;
@@ -14,6 +17,7 @@ public class ResourceManagerTest {
         private static final IResourceLoader<TestBytes> LOADER = TestBytes::new;
 
         private TestBytes(byte[] buf) {
+            if (throwOnLoad) throw new RuntimeException("Was asked to throw!");
             this.buf = buf;
         }
 
@@ -36,6 +40,7 @@ public class ResourceManagerTest {
         private boolean wasClosed = false;
 
         private TestLines(byte[] buf) {
+            if (throwOnLoad) throw new RuntimeException("Was asked to throw!");
             lines = (new String(buf)).split("\\r?\\n");
         }
 
@@ -212,6 +217,24 @@ public class ResourceManagerTest {
                 assertSame(res.get(), res2.get());
                 assertEquals(cached.buf.length, res.get().buf.length);
             }
+        }
+    }
+
+    /**
+     * Test whether we can load a resource after it initially fails to load
+     *
+     * <p>This will check whether we can load a resource when it fails to load, or whether the
+     * resource manager gets stuck in a bugged state.
+     */
+    @Test
+    public void reloadAfterFail() {
+        throwOnLoad = true;
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNull(res);
+        }
+        throwOnLoad = false;
+        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
+            assertNotNull(res);
         }
     }
 

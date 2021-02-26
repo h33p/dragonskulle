@@ -8,9 +8,8 @@ public class App extends RenderedApp {
     private static final int HEIGHT = 900;
 
     /** Entrypoint of the program. Creates and runs one app instance */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         App app = new App();
         app.run(WIDTH, HEIGHT, "Germany");
-        System.out.println(((RenderedApp) app).getWindow());
     }
 }
