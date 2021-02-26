@@ -43,18 +43,18 @@ public class AudioClip {
         DataLine.Info dataLine = new DataLine.Info(Clip.class, null);
         mClip = (Clip) mixer.getLine(dataLine);
 
-        // Tries to open the audio stream.  Should not really get to the catch statements as Silent.wav should be somewhere.
+        // Tries to open the audio stream.  Should not really get to the catch statements as
+        // Silent.wav should be somewhere.
         try {
             AudioInputStream startingStream =
                     AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
             mClip.open(startingStream);
 
-        } catch (UnsupportedAudioFileException | IOException  e) { 
+        } catch (UnsupportedAudioFileException | IOException e) {
             LOGGER.log(
                     Level.WARNING,
                     "Unable to open Silent.wav.  Please tell someone sooner rather than later");
-      
-
+        }
         // Gets mute and mVolume control and sets them
         mMute = (BooleanControl) mClip.getControl(BooleanControl.Type.MUTE);
         mMute.setValue(false);

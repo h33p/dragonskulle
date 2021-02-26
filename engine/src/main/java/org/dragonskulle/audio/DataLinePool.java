@@ -85,7 +85,7 @@ public class DataLinePool {
      */
     public void setMute(boolean setMute) {
 
-    	mMasterMute = setMute;
+        mMasterMute = setMute;
         // Set all the Clips with new mute value
         for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
             AudioClip toUse = mSounds[i];
