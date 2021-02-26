@@ -7,7 +7,7 @@ import org.dragonskulle.components.Component;
  * An engine component which allows you to play audio.
  *
  * @author Dragonskulle
- *     <p>Both filename and the SoundType channel are public fields which can be accessed
+ *     <p>Both filename and the SoundType channel are public fields which can be accessed </p>
  */
 public class AudioSource extends Component {
 
