@@ -1,10 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -59,5 +56,13 @@ public class SyncVar<T extends Serializable> implements Serializable {
         oos.writeObject(this);
         oos.flush();
         return bos.toByteArray();
+    }
+
+    public static SyncVar deserialize(byte[] buff) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
+        ObjectInput in = new ObjectInputStream(bis);
+        SyncVar out = (SyncVar) in.readObject();
+        in.close();
+        return out;
     }
 }

@@ -12,9 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
-import org.dragonskulle.components.Component;
-import org.dragonskulle.network.components.Capitol;
-import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.NetworkObject;
 
 /**
  * This is the main Server Class, it handles setup and stores all client connections. It can
@@ -27,7 +25,7 @@ public class Server {
     private Thread serverThread;
     private ServerRunner serverRunner;
     private ServerGameInstance game;
-    private final ArrayList<Component> components = new ArrayList<>();
+    private final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
 
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
@@ -161,10 +159,14 @@ public class Server {
                 connected = sock.isConnected();
 
                 if (connected) {
-                    // spawn map on client
-                    spawnMap(client);
-                    // spawn capitol
-                    spawnCapitol();
+                    NetworkObject networkObject =
+                            new NetworkObject(
+                                    client,
+                                    this.sockets::broadcast,
+                                    this.sockets::sendBytesToClient);
+                    networkObject.spawnMap(this.game.cloneMap());
+                    networkObject.spawnCapitol();
+                    this.networkObjects.add(networkObject);
                 }
                 while (connected) {
                     bArray = NetworkMessage.readMessageFromStream(bIn);
@@ -182,42 +184,6 @@ public class Server {
                 exception.printStackTrace();
             }
         };
-    }
-
-    private void spawnMap(ClientInstance clientInstance) {
-        System.out.println("spawning map on client");
-<<<<<<< HEAD
-        byte[] spawnMapMessage = NetworkMessage.build((byte) 20, "MAP".getBytes());
-        sockets.sendBytesToClient(clientInstance, spawnMapMessage);
-=======
-        try {
-            byte[] mapBytes = this.game.cloneMap();
-            System.out.println("Map bytes :: " + mapBytes.length + "bytes");
-            byte[] spawnMapMessage = NetworkMessage.build((byte) 20, mapBytes);
-            sockets.sendBytesToClient(clientInstance, spawnMapMessage);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
->>>>>>> 4328d84... creating map on server creation and then sending bytes to connecting clients. Need to alter send recieve bytes protocl because messages are large and can get chopped in half
-    }
-
-    private void spawnCapitol() {
-        spawnComponent(new Capitol(), (byte) 21);
-    }
-
-    // use this method to spawn components on clients
-    private void spawnComponent(NetworkableComponent component, byte messageCode) {
-        System.out.println("spawning component on all clients");
-        this.components.add(component);
-        byte[] spawnComponentBytes;
-        try {
-            byte[] capitolBytes = component.serialize();
-            System.out.println("component bytes : " + capitolBytes.length);
-            spawnComponentBytes = NetworkMessage.build(messageCode, capitolBytes);
-            sockets.broadcast(spawnComponentBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void processBytes(ClientInstance client, byte[] bytes) {

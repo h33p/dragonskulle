@@ -6,8 +6,10 @@ import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
 
+/** The Network communications test class. */
 public class NetworkCommunicationsTest {
 
+    /** Instantiates a new Network communications test. */
     NetworkCommunicationsTest() {
         System.out.println("A server should be setup before running. Continue?");
         new Scanner(System.in).nextLine();
@@ -16,6 +18,11 @@ public class NetworkCommunicationsTest {
         //        NetworkObject networkObject = new NetworkObject(networkClient);
     }
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         NetworkCommunicationsTest runner = new NetworkCommunicationsTest();
         new Scanner(System.in).nextLine();

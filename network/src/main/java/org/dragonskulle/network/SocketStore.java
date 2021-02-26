@@ -3,7 +3,6 @@ package org.dragonskulle.network;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 public class SocketStore {
     private ServerSocket server;
     private final ArrayList<Socket> store;
-    PrintWriter printWriter;
     static final int SO_TIMEOUT = 3000;
 
     public SocketStore() {

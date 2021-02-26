@@ -3,6 +3,7 @@ package org.dragonskulle.network;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import sun.misc.IOUtils;
 
@@ -23,6 +24,7 @@ public class NetworkMessage {
     // payloadSize (4 bytes)
     // payload (n bytes)
     // ::E:: (5 bytes)
+
     public static void parse(byte[] buff) {
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
@@ -112,11 +114,6 @@ public class NetworkMessage {
             message.add(b);
         }
 
-        // NULL PADDING BYTES
-        for (int j = 0; j < (MAX_TRANSMISSION_SIZE - 15 - payload.length); j++) {
-            message.add((byte) 0);
-        }
-
         message.addAll(
                 new ArrayList<>(
                         MAX_TRANSMISSION_SIZE
@@ -200,8 +197,43 @@ public class NetworkMessage {
     }
 
     public static byte[] readMessageFromStream(BufferedInputStream bIn) throws IOException {
+        byte[] byteHeader = IOUtils.readExactlyNBytes(bIn, 10);
+        boolean validStart = verifyMessageStart(byteHeader);
         byte[] bArray;
-        bArray = IOUtils.readFully(bIn, MAX_TRANSMISSION_SIZE, true);
-        return bArray;
+        int toRead = 0;
+        if (validStart) {
+            toRead = getPayloadSize(byteHeader) + 5; // read to end of payload and trailer
+        }
+        bArray = IOUtils.readExactlyNBytes(bIn, toRead);
+
+        return concatenate(byteHeader, bArray);
+    }
+
+    private static <T> T concatenate(T a, T b) {
+        if (!a.getClass().isArray() || !b.getClass().isArray()) {
+            throw new IllegalArgumentException();
+        }
+
+        Class<?> resCompType;
+        Class<?> aCompType = a.getClass().getComponentType();
+        Class<?> bCompType = b.getClass().getComponentType();
+
+        if (aCompType.isAssignableFrom(bCompType)) {
+            resCompType = aCompType;
+        } else if (bCompType.isAssignableFrom(aCompType)) {
+            resCompType = bCompType;
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        int aLen = Array.getLength(a);
+        int bLen = Array.getLength(b);
+
+        @SuppressWarnings("unchecked")
+        T result = (T) Array.newInstance(resCompType, aLen + bLen);
+        System.arraycopy(a, 0, result, 0, aLen);
+        System.arraycopy(b, 0, result, aLen, bLen);
+
+        return result;
     }
 }

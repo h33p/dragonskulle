@@ -4,7 +4,6 @@ package org.dragonskulle.network;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
 import org.dragonskulle.game.map.HexMap;
 import org.dragonskulle.game.map.HexagonTile;
 
@@ -16,7 +15,6 @@ public class ServerGameInstance {
 
     ServerGameInstance() {
         this.map = new HexMap(9).createHexMap();
-        System.out.println("Map is: " + Arrays.deepToString(map));
     }
 
     public byte[] cloneMap() throws IOException {
@@ -29,10 +27,7 @@ public class ServerGameInstance {
     }
 
     public boolean isSetup() {
-        if (this.map != null) {
-            return true;
-        }
-        return false;
+        return this.map != null;
     }
 >>>>>>> 4328d84... creating map on server creation and then sending bytes to connecting clients. Need to alter send recieve bytes protocl because messages are large and can get chopped in half
 }
