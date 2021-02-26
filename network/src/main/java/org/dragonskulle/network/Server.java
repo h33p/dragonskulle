@@ -108,8 +108,8 @@ public class Server {
 
         @Override
         public void run() {
-            while (open  && !Thread.currentThread().isInterrupted()) {
-                if(game.isSetup()) {
+            while (open && !Thread.currentThread().isInterrupted()) {
+                if (game.isSetup()) {
                     Socket clientSocket = sockets.acceptClient();
                     if (clientSocket != null) {
                         Thread clientThread = new Thread(clientRunner(clientSocket));
@@ -166,10 +166,8 @@ public class Server {
                     spawnCapitol();
                 }
                 while (connected) {
-                    bArray = new byte[MAX_TRANSMISSION_SIZE];
-                    hasBytes = bIn.read(bArray);
-
-                    if (hasBytes != 0) {
+                    bArray = NetworkMessage.readMessageFromStream(bIn);
+                    if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
                             this.sockets.terminateClient(sock); // close and remove
                             serverListener.clientDisconnected(client);

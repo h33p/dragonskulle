@@ -105,10 +105,8 @@ public class NetworkClient {
             byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; //max flatbuffer size
             while (open) {
                 try {
-                    bArray = new byte[MAX_TRANSMISSION_SIZE];
-                    hasBytes = bIn.read(bArray);
-
-                    if (hasBytes != 0) {
+                    bArray = NetworkMessage.readMessageFromStream(bIn);
+                    if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
                             clientListener.disconnected();
                             this.dispose();

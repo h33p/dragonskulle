@@ -1,5 +1,9 @@
 package org.dragonskulle.network;
 
+import sun.misc.IOUtils;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.util.*;
 
 public class NetworkMessage {
@@ -112,6 +116,12 @@ public class NetworkMessage {
             message.add(b);
         }
 
+        //NULL PADDING BYTES
+        for (int j = 0; j < (MAX_TRANSMISSION_SIZE - 15 - payload.length); j++) {
+            message.add((byte) 0);
+        }
+
+        message.addAll(new ArrayList<>(MAX_TRANSMISSION_SIZE - 15 - payload.length)); //adding null bytes to fill message size
         //END SIGNATURE
         for (byte b : END_SIGNATURE) {
             message.add(b);
@@ -122,10 +132,11 @@ public class NetworkMessage {
 
     private static byte[] toByteArray(List<Byte> in) {
         final int n = in.size();
-        byte ret[] = new byte[MAX_TRANSMISSION_SIZE];
+        byte ret[] = new byte[n];
         for (int i = 0; i < n; i++) {
             ret[i] = in.get(i);
         }
+        System.out.println("bytes built are length :: " + n);
         return ret;
     }
 
@@ -185,5 +196,11 @@ public class NetworkMessage {
                 System.out.println("unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
+    }
+
+    public static byte[] readMessageFromStream(BufferedInputStream bIn) throws IOException {
+        byte[] bArray = new byte[MAX_TRANSMISSION_SIZE];
+        bArray = IOUtils.readFully(bIn, MAX_TRANSMISSION_SIZE, true);
+        return bArray;
     }
 }
