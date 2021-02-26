@@ -12,3 +12,4 @@ bin/
 *.wav
 javadocs/
 target/*
+*.wav
