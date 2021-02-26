@@ -3,6 +3,8 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -218,6 +220,8 @@ public class Engine {
     /** Cleans up all resources used by the engine on shutdown */
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
+    	
+    	AudioManager.getInstance().cleanup();
     }
 
     /**
