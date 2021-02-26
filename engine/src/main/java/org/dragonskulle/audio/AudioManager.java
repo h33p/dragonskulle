@@ -64,12 +64,15 @@ public class AudioManager {
                     AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile());
 
             // Plays the file on the right channel
-            if (channel == SoundType.BACKGROUND) {
+            if (mMixer != null && channel == SoundType.BACKGROUND) {
                 mSounds[0].openStream(audio);
                 return true;
-            } else {
+            } else if (mMixer != null && channel == SoundType.SFX) {
                 mSounds[1].openStream(audio);
                 return true;
+            } else {
+                LOGGER.log(Level.WARNING, "Mixer does not exist");
+                return false;
             }
         } catch (UnsupportedAudioFileException e) {
             LOGGER.log(
@@ -94,10 +97,12 @@ public class AudioManager {
     public void setMute(SoundType channel, boolean muteValue) {
 
         // Sets the mute value
-        if (channel == SoundType.BACKGROUND) {
+        if (channel == SoundType.BACKGROUND && mMixer != null) {
             mSounds[0].setMute(muteValue);
-        } else {
+        } else if (mMixer != null && channel == SoundType.SFX) {
             mSounds[1].setMute(muteValue);
+        } else {
+            LOGGER.log(Level.WARNING, "Error as no mixer");
         }
     }
 
@@ -110,12 +115,12 @@ public class AudioManager {
     public boolean getMute(SoundType channel) {
 
         // Gets the mute value
-        if (channel == SoundType.BACKGROUND) {
+        if (mMixer != null && channel == SoundType.BACKGROUND) {
 
             if (mSounds[0] != null) {
                 return mSounds[0].getMute();
             }
-        } else {
+        } else if (mMixer != null && channel == SoundType.SFX) {
             if (mSounds[1] != null) {
                 return mSounds[1].getMute();
             }
@@ -139,9 +144,9 @@ public class AudioManager {
         }
 
         // Changes the volume
-        if (channel == SoundType.BACKGROUND) {
+        if (mMixer != null && channel == SoundType.BACKGROUND) {
             mSounds[0].setVolume(setVol);
-        } else {
+        } else if (mMixer != null && channel == SoundType.SFX) {
             mSounds[1].setVolume(setVol);
         }
     }
@@ -154,11 +159,11 @@ public class AudioManager {
      */
     public int getVolume(SoundType channel) {
 
-        if (channel == SoundType.BACKGROUND) {
+        if (mMixer != null && channel == SoundType.BACKGROUND) {
             if (mSounds[0] != null) {
                 return mSounds[0].getVolume();
             }
-        } else {
+        } else if (mMixer != null && channel == SoundType.SFX) {
             if (mSounds[1] != null) {
                 return mSounds[1].getVolume();
             }
