@@ -18,6 +18,7 @@ import org.joml.Vector4f;
  *     scale and rotation in Hex coordinates.
  */
 public class Transform extends Component {
+    private static final float DEG_TO_RAD = (float)Math.PI / 180.f ;
 
     private final Matrix4f mLocalMatrix;
     private Matrix4f mWorldMatrix;
@@ -89,8 +90,7 @@ public class Transform extends Component {
      * @param z Rotation in Z-axis in degrees
      */
     public void rotateDeg(float x, float y, float z) {
-        mLocalMatrix.rotateXYZ(
-                (float) Math.toRadians(x), (float) Math.toRadians(y), (float) Math.toRadians(z));
+        mLocalMatrix.rotateXYZ(DEG_TO_RAD * x, DEG_TO_RAD * y, DEG_TO_RAD * z);
         setUpdateFlag();
     }
 

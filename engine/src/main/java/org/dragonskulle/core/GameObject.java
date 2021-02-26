@@ -340,7 +340,7 @@ public class GameObject implements Serializable {
      * @return mChildren
      */
     public ArrayList<GameObject> getChildren() {
-        return mChildren;
+        return new ArrayList<>(mChildren);
     }
 
     /**
