@@ -18,7 +18,7 @@ import org.joml.Vector4f;
  *     scale and rotation in Hex coordinates.
  */
 public class Transform extends Component {
-    private static final float DEG_TO_RAD = (float)Math.PI / 180.f ;
+    private static final float DEG_TO_RAD = (float) Math.PI / 180.f;
 
     private final Matrix4f mLocalMatrix;
     private Matrix4f mWorldMatrix;

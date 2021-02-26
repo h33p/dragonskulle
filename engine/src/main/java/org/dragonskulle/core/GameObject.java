@@ -33,7 +33,6 @@ public class GameObject implements Serializable {
     private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
     private boolean mActive;
-    private boolean mDestroy = false;
 
     /**
      * Create a clone of a GameObject. The cloned GameObject's position is used
@@ -271,21 +270,24 @@ public class GameObject implements Serializable {
 
     /** Handle the destruction of the object. */
     protected void engineDestroy() {
-
+        // Create a copy of the list of children this object has
         ArrayList<GameObject> children = new ArrayList<>(mChildren);
 
-        // Destroy all children
+        // Iterate through the children and destroy all of them
         for (GameObject child : children) {
             child.engineDestroy();
         }
 
-        // Set the destroy flag on all components
-        for (Component component : mComponents) {
-            component.engineDestroy();
-        }
+        // Add all components to the set of destroyed components.
+        // We do this instead of destroying them here to prevent double-destroys
+        Engine.getInstance().mDestroyedComponents.addAll(mComponents);
+
+        // Destroy the transform of this GameObject
+        mTransform.destroy();
+        mTransform = null;
 
         // After we have finished destroying we need to clear our reference so nothing attempts to
-        // access this
+        // access this after being destroyed
         mReference.clear();
 
         // Then remove this GameObject from the parent and remove the link to the parent
@@ -293,14 +295,14 @@ public class GameObject implements Serializable {
             mParent.removeChild(this);
             mParent = null;
         }
+        mRoot = null;
     }
 
     /**
-     * Set the destroy flag to true. The object won't actually be destroyed until the end of the
-     * current render frame
+     * Add the GameObject to the list of objects that need to be destroyed in the Engine instance
      */
     public void destroy() {
-        mDestroy = true;
+        Engine.getInstance().mDestroyedObjects.add(this);
     }
 
     /**
@@ -395,15 +397,6 @@ public class GameObject implements Serializable {
      */
     public Reference<GameObject> getReference() {
         return mReference;
-    }
-
-    /**
-     * Getter for mDestroy
-     *
-     * @return mDestroy
-     */
-    public boolean isDestroyed() {
-        return mDestroy;
     }
 
     /**

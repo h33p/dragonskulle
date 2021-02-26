@@ -125,15 +125,4 @@ public class Scene {
                 .filter(component -> !component.isStarted())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
-
-    /**
-     * Get a list of all components that are to be destroyed at the end of the current frame
-     *
-     * @return A new ArrayList containing all components with the destroy flag set
-     */
-    protected ArrayList<Component> getDestroyedComponents() {
-        return mComponents.stream()
-                .filter(Component::isDestroyed)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
 }

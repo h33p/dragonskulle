@@ -2,6 +2,7 @@
 package org.dragonskulle.components;
 
 import java.io.Serializable;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 
@@ -22,14 +23,13 @@ public abstract class Component implements Serializable {
     private boolean mAwake = false;
     private boolean mEnabled = true;
     private boolean mStarted = false;
-    private boolean mDestroy = false;
 
     /**
      * Set the destroy flag to true. The component won't actually be destroyed until the end of the
      * current render frame.
      */
     public final void destroy() {
-        mDestroy = true;
+        Engine.getInstance().addDestroyedComponent(this);
     }
 
     /** Handle the actual destruction of a component. Only called by the engine. */
@@ -114,15 +114,6 @@ public abstract class Component implements Serializable {
      */
     public final void setEnabled(boolean value) {
         mEnabled = value;
-    }
-
-    /**
-     * Getter for mDestroy
-     *
-     * @return mDestroy
-     */
-    public final boolean isDestroyed() {
-        return mDestroy;
     }
 
     /**

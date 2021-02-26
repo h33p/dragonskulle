@@ -1,9 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -26,6 +24,9 @@ public class Engine {
     private static final float UPDATE_TIME = 1 / (float) UPDATES_PER_SECOND;
 
     private boolean mIsRunning = false;
+
+    protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
+    protected final HashSet<Component> mDestroyedComponents = new HashSet<>();
 
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
     private Scene mActiveScene = null;
@@ -179,37 +180,19 @@ public class Engine {
         }
     }
 
-    /** Destroy all GameObjects and Components that have the destroy flag set */
+    /** Destroy all GameObjects and Components that need to be destroyed */
     private void destroyObjectsAndComponents() {
-        for (Iterator<GameObject> iterator = mActiveScene.getRootObjects().iterator();
-                iterator.hasNext(); ) {
-
-            GameObject root = iterator.next();
-
-            // If the root is a destroyed object, destroy it and remove it from the scene
-            if (root.isDestroyed()) {
-                root.engineDestroy();
-                iterator.remove();
-            } else {
-
-                // Otherwise, iterate through the children and check if any need destroying
-
-                ArrayList<GameObject> objects = new ArrayList<>();
-
-                root.getAllChildren(objects);
-
-                // If the child is destroyed, destroy it
-                for (GameObject object : objects) {
-                    if (object.isDestroyed()) {
-                        object.engineDestroy();
-                    }
-                }
-            }
+        // Destroy all game objects that need to be destroyed
+        for (GameObject object : mDestroyedObjects) {
+            object.engineDestroy();
         }
+        mDestroyedObjects.clear();
 
-        for (Component component : mActiveScene.getDestroyedComponents()) {
+        // Destroy all components that need to be destroyed
+        for (Component component : mDestroyedComponents) {
             component.engineDestroy();
         }
+        mDestroyedComponents.clear();
     }
 
     /** Finish the loading of a new scene. */
@@ -227,6 +210,13 @@ public class Engine {
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
     }
+
+    /**
+     * Add a component to the set of all components to be destroyed
+     *
+     * @param component Component to be destroyed at the end of the current frame
+     */
+    public void addDestroyedComponent(Component component) {}
 
     /**
      * Getter for mActiveScene
