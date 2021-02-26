@@ -15,7 +15,6 @@ import java.util.Map;
 /** The hexagon map object*/
 public class HexMap extends Component {
 
-
     public final int size;
 
     /**
