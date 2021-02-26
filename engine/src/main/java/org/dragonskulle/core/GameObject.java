@@ -335,11 +335,11 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mChildren, should only be used by the engine
+     * Getter for mChildren
      *
      * @return mChildren
      */
-    protected ArrayList<GameObject> getChildren() {
+    public ArrayList<GameObject> getChildren() {
         return mChildren;
     }
 
@@ -379,8 +379,13 @@ public class GameObject implements Serializable {
         return mTransform;
     }
 
+    /**
+     * Get the transform from the parent of this GameObject
+     *
+     * @return Parent Transform, or null if this is a root GameObject
+     */
     public Transform getParentTransform() {
-        return mParent.mTransform;
+        return mParent != null ? mParent.mTransform : null;
     }
 
     /**

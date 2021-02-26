@@ -1,9 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.GameObject;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -19,7 +17,7 @@ import org.joml.Vector4f;
  *     to get 3D position, scale and rotation. Or can be cast to HexTransform to get the position,
  *     scale and rotation in Hex coordinates.
  */
-public class Transform extends Component implements Serializable {
+public class Transform extends Component {
 
     private final Matrix4f mLocalMatrix;
     private Matrix4f mWorldMatrix;
@@ -152,15 +150,12 @@ public class Transform extends Component implements Serializable {
 
     /** Set mShouldUpdate to true in all children transforms */
     private void setUpdateFlag() {
+        if (mShouldUpdate) {
+            return;
+        }
         mShouldUpdate = true;
-        ArrayList<Reference<Transform>> childTransforms = new ArrayList<>();
-        mGameObject.getComponentsInChildren(Transform.class, childTransforms);
-        for (Reference<Transform> transformReference : childTransforms) {
-            if (transformReference.isValid()) {
-                Transform t = transformReference.get();
-                t.mShouldUpdate = true;
-                t.setUpdateFlag();
-            }
+        for (GameObject obj : mGameObject.getChildren()) {
+            obj.getTransform().setUpdateFlag();
         }
     }
 
@@ -281,9 +276,10 @@ public class Transform extends Component implements Serializable {
                 mWorldMatrix.set(mLocalMatrix);
 
                 // Then multiply by parent's world matrix
-                // Which gives us the matrix multiplication mLocalMatrix * mWorldMatrix
-                // so when doing mWorldMatrix * (vector) it does the parent transform
-                // before the local
+                // Which gives us the matrix multiplication mLocalMatrix * parentWorldMatrix
+                // so when doing mWorldMatrix * (vector)
+                // It is the same as doing mLocalMatrix * parentWorldMatrix * (vector)
+                // so that any parent transformations are done prior to the local transformation
                 mWorldMatrix.mul(mGameObject.getParentTransform().getWorldMatrix());
             }
         }
