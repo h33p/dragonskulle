@@ -12,14 +12,15 @@ public class AudioManagerTest {
     @Test
     public void createTest() {
 
-        AudioManager audioManager = AudioManager.getInstance();
-        Assert.assertNotNull(audioManager);
+        //AudioManager audioManager = AudioManager.getInstance();
+        Assert.assertNotNull(AudioManager.getInstance());
+        System.out.println("Test 1");
     }
 
     @Test
     public void playTest() {
     	
-    	//System.out.pr
+    	
         Assert.assertFalse(
                 AudioManager.getInstance().play(SoundType.BACKGROUND, "doesntExist.wav"));
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "doesntExist.wav"));
@@ -30,7 +31,8 @@ public class AudioManagerTest {
 
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.BACKGROUND, "pom.xml"));
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "pom.xml"));
-        System.out.println("Done these tests");
+        
+        System.out.println("Test 2");
     }
 
     @Test
@@ -44,11 +46,14 @@ public class AudioManagerTest {
 
         AudioManager.getInstance().setMute(SoundType.BACKGROUND, false);
         Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
+        
+        System.out.println("Test 3");
     }
 
     @Test
     public void muteSFXTest() {
-    	System.out.println("Hello");
+    	//System.out.println("Hello");
+    	Assert.assertNotNull(AudioManager.getInstance());
         Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
         Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
@@ -58,6 +63,8 @@ public class AudioManagerTest {
 
         AudioManager.getInstance().setMute(SoundType.SFX, false);
         Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
+        
+        System.out.println("Test 4");
     }
 
     @Test
@@ -84,6 +91,8 @@ public class AudioManagerTest {
 
         AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
         Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        
+        System.out.println("Test 5");
     }
 
     @Test
@@ -110,5 +119,7 @@ public class AudioManagerTest {
 
         AudioManager.getInstance().setVolume(SoundType.SFX, 100);
         Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
+        
+        System.out.println("Test 6");
     }
 }
