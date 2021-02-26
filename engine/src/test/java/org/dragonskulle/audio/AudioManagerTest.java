@@ -36,16 +36,15 @@ public class AudioManagerTest {
     public void muteBackgroundTest() {
         assumeTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
-            Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
+        Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
-            Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
+        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setMute(SoundType.BACKGROUND, true);
-            Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
+        AudioManager.getInstance().setMute(SoundType.BACKGROUND, true);
+        Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setMute(SoundType.BACKGROUND, false);
-            Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
-        
+        AudioManager.getInstance().setMute(SoundType.BACKGROUND, false);
+        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
     }
 
     @Test
@@ -53,16 +52,15 @@ public class AudioManagerTest {
 
         Assert.assertNotNull(AudioManager.getInstance());
         assumeTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav") == true);
-            Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
+        Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
-            Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
+        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
 
-            AudioManager.getInstance().setMute(SoundType.SFX, true);
-            Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.SFX));
+        AudioManager.getInstance().setMute(SoundType.SFX, true);
+        Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.SFX));
 
-            AudioManager.getInstance().setMute(SoundType.SFX, false);
-            Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
-      
+        AudioManager.getInstance().setMute(SoundType.SFX, false);
+        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
     }
 
     @Test
@@ -70,28 +68,27 @@ public class AudioManagerTest {
 
         assumeTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
-            Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
+        Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
-            Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 30);
-            Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 30);
+        Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 0);
-            Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 0);
+        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 87);
-            Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 87);
+        Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
-            Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, -1);
-            Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, -1);
+        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
-            Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
-       
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
     }
 
     @Test
@@ -99,27 +96,26 @@ public class AudioManagerTest {
 
         assumeTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
-            Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
+        Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
-            Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.SFX));
+        Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-            AudioManager.getInstance().setVolume(SoundType.SFX, 30);
-            Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.SFX));
+        AudioManager.getInstance().setVolume(SoundType.SFX, 30);
+        Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-            AudioManager.getInstance().setVolume(SoundType.SFX, 0);
-            Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
+        AudioManager.getInstance().setVolume(SoundType.SFX, 0);
+        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-            AudioManager.getInstance().setVolume(SoundType.SFX, 87);
-            Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.SFX));
+        AudioManager.getInstance().setVolume(SoundType.SFX, 87);
+        Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-            AudioManager.getInstance().setVolume(SoundType.SFX, 100);
-            Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
+        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
+        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-            AudioManager.getInstance().setVolume(SoundType.SFX, -1);
-            Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
+        AudioManager.getInstance().setVolume(SoundType.SFX, -1);
+        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-            AudioManager.getInstance().setVolume(SoundType.SFX, 100);
-            Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
-        
+        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
+        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
     }
 }
