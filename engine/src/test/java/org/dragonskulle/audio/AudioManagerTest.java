@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -106,10 +105,5 @@ public class AudioManagerTest {
 
         AudioManager.getInstance().setVolume(SoundType.SFX, 100);
         Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
-    }
-
-    @After
-    public void cleanUp() {
-        AudioManager.getInstance().cleanup();
     }
 }
