@@ -44,13 +44,15 @@ public class AudioManager {
             mSounds[1] = sfx;
         } catch (SecurityException e) {
             mMixer = null;
-            mSounds = new DataLinePool[2];
-            System.out.println("We have made stuff");
-            LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
+            mSounds = null;
+            //System.out.println("We have made stuff");
+            //LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
 
         } catch (IllegalArgumentException e) {
             mMixer = null;
-            LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
+            mSounds = null;
+            //System.out.println("Mixer set to null");
+          //  LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
         }
     }
 
