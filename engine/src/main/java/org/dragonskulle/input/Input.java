@@ -3,6 +3,7 @@ package org.dragonskulle.input;
 
 import java.util.logging.Logger;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * Manages all user input a window receives.
@@ -17,6 +18,7 @@ import lombok.Getter;
  *
  * @author Craig Wilboure
  */
+@Accessors(prefix = "m")
 public class Input {
 
     /** Used to log messages. */
