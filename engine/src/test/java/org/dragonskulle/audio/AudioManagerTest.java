@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
+import static org.junit.Assume.assumeTrue;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +34,7 @@ public class AudioManagerTest {
 
     @Test
     public void muteBackgroundTest() {
-        if (AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav")) {
+        assumeTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
             Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
@@ -43,16 +45,14 @@ public class AudioManagerTest {
 
             AudioManager.getInstance().setMute(SoundType.BACKGROUND, false);
             Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
-        } else {
-            // Most like cos Mixer does not exist
-        }
+        
     }
 
     @Test
     public void muteSFXTest() {
 
         Assert.assertNotNull(AudioManager.getInstance());
-        if (AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav") == true) {
+        assumeTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav") == true);
             Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
             Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
@@ -62,16 +62,13 @@ public class AudioManagerTest {
 
             AudioManager.getInstance().setMute(SoundType.SFX, false);
             Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
-        } else {
-            // High Chance its cos a mixer does not exist.  To test this: ?? (Ask)
-
-        }
+      
     }
 
     @Test
     public void volumeBackgroundTest() {
 
-        if (AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav")) {
+        assumeTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
             Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
 
@@ -94,15 +91,13 @@ public class AudioManagerTest {
 
             AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
             Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
-        } else {
-            // Most likely cos Mixer does not exist
-        }
+       
     }
 
     @Test
     public void volumeSFXTest() {
 
-        if (AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav")) {
+        assumeTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
             Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
@@ -125,8 +120,6 @@ public class AudioManagerTest {
 
             AudioManager.getInstance().setVolume(SoundType.SFX, 100);
             Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
-        } else {
-            // Most likely cos Mixer does not exist
-        }
+        
     }
 }
