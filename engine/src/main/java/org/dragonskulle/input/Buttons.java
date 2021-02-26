@@ -99,25 +99,28 @@ public class Buttons extends Activatable<Integer> {
      */
     void release(int button) {
         setActivated(button, false);
-
-        // Check each action the button triggers, deactivating each action if no other buttons are
-        // currently triggering it.
+        
+        // Check each action the button triggers, deactivating the action if no other buttons are currently triggering it.
         for (Action action : mBindings.getActions(button)) {
-            Boolean deactivate = true;
-
-            for (Integer otherButton : mBindings.getButtons(action)) {
-                // If another button that triggers the action is currently activated, do not set
-                // action to false.
-                if (isActivated(otherButton) == true) {
-                    deactivate = false;
-                    break;
-                }
-            }
-
-            // If no other buttons are triggering the action, deactivate the action.
-            if (deactivate) {
-                mActions.setActivated(action, false);
+            attemptDeactivate(action);
+        }
+        
+    }
+    
+    /**
+     * If all buttons for an action have been released, deactivate the action.
+     * 
+     * @param action The action to be deactivated, if possible.
+     */
+    private void attemptDeactivate(Action action) {
+        for (Integer button : mBindings.getButtons(action)) {
+            if (isActivated(button) == true) {
+                // A button is still triggering the action- so do not deactivate the action.
+            	return;
             }
         }
+        
+        // All buttons that trigger the action have been released- so deactivate the action.
+        mActions.setActivated(action, false);
     }
 }
