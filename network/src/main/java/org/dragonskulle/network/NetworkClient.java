@@ -2,7 +2,7 @@
 package org.dragonskulle.network;
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-import org.dragonskulle.network.components.sync.ISyncVar;
+import org.dragonskulle.network.components.sync.SyncVar;
 
 import java.io.*;
 import java.net.Socket;
@@ -23,7 +23,7 @@ public class NetworkClient {
     private PrintWriter out;
     private DataOutputStream dOut;
     private BufferedInputStream bIn;
-    private ArrayList<ISyncVar> synced = new ArrayList<>();
+    private ArrayList<SyncVar> synced = new ArrayList<>();
 
 
     private ClientListener clientListener;

@@ -130,7 +130,7 @@ public class NetworkMessage {
         return toByteArray(message);
     }
 
-    private static byte[] toByteArray(List<Byte> in) {
+    public static byte[] toByteArray(List<Byte> in) {
         final int n = in.size();
         byte ret[] = new byte[n];
         for (int i = 0; i < n; i++) {
@@ -199,7 +199,7 @@ public class NetworkMessage {
     }
 
     public static byte[] readMessageFromStream(BufferedInputStream bIn) throws IOException {
-        byte[] bArray = new byte[MAX_TRANSMISSION_SIZE];
+        byte[] bArray;
         bArray = IOUtils.readFully(bIn, MAX_TRANSMISSION_SIZE, true);
         return bArray;
     }

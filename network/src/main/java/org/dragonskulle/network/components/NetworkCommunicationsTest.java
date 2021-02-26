@@ -14,7 +14,7 @@ public class NetworkCommunicationsTest {
         new Scanner(System.in).nextLine();
         ClientListener clientListener = new ClientEars();
         NetworkClient networkClient = new NetworkClient("127.0.0.1", 7000, clientListener);
-        NetworkObject networkObject = new NetworkObject(networkClient);
+//        NetworkObject networkObject = new NetworkObject(networkClient);
     }
 
     public static void main(String[] args) {

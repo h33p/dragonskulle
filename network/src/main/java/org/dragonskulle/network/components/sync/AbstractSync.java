@@ -1,7 +1,9 @@
 package org.dragonskulle.network.components.sync;
 
 
-abstract class AbstractSync<T> extends ISyncVar<T> {
+import java.io.Serializable;
+
+abstract class AbstractSync<T extends Serializable> extends SyncVar<T> {
 
     public AbstractSync(String id, T data) {
         super(id, data);

@@ -4,12 +4,17 @@ package org.dragonskulle.network;
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.network.components.Capitol;
+import org.dragonskulle.network.components.NetworkableComponent;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +30,7 @@ public class Server {
     private Thread serverThread;
     private ServerRunner serverRunner;
     private ServerGameInstance game;
+    private final ArrayList<Component> components = new ArrayList<>();
 
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
@@ -202,10 +208,22 @@ public class Server {
     }
 
     private void spawnCapitol() {
-        //This isn't being send to the client. Or maybe handles incorectly
-        System.out.println("spawning capitol on all clients");
-        byte[] spawnMapCapitol = NetworkMessage.build((byte) 21, "CAPITOL".getBytes());
-        sockets.broadcast(spawnMapCapitol);
+        spawnComponent(new Capitol(),(byte) 21);
+    }
+
+    //use this method to spawn components on clients
+    private void spawnComponent(NetworkableComponent component, byte messageCode){
+        System.out.println("spawning component on all clients");
+        this.components.add(component);
+        byte[] spawnComponentBytes;
+        try {
+            byte[] capitolBytes = component.serialize();
+            System.out.println("component bytes : "+ capitolBytes.length);
+            spawnComponentBytes = NetworkMessage.build(messageCode, capitolBytes);
+            sockets.broadcast(spawnComponentBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void processBytes(ClientInstance client, byte[] bytes) {
