@@ -9,7 +9,7 @@
 .classpath
 */.factorypath
 bin/
-*.wav
 javadocs/
 target/*
-*.wav
+waves.wav
+thunderclap.wav

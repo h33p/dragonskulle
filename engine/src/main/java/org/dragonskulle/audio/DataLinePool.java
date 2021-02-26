@@ -14,9 +14,10 @@ import javax.sound.sampled.Mixer;
  */
 public class DataLinePool {
 
-    private ClipClass[] mSounds;
+    private AudioClip[] mSounds;
     private final int NUMBER_OF_CLIPS = 1;
     private int mMasterVol;
+    private boolean mMasterMute;
 
     public static final Logger LOGGER = Logger.getLogger("DataLine");
 
@@ -27,15 +28,15 @@ public class DataLinePool {
      */
     public DataLinePool(Mixer mixer, SoundType soundType) {
 
-        mSounds = new ClipClass[NUMBER_OF_CLIPS];
+        mSounds = new AudioClip[NUMBER_OF_CLIPS];
 
         // Creates the clips
         for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
-            ClipClass clip;
+            AudioClip clip;
 
             if (soundType == SoundType.SFX) {
                 try {
-                    clip = new ClipClass(mixer, false);
+                    clip = new AudioClip(mixer, false);
                 } catch (LineUnavailableException e) {
                     clip = null;
                     LOGGER.log(
@@ -44,7 +45,7 @@ public class DataLinePool {
                 }
             } else {
                 try {
-                    clip = new ClipClass(mixer, true);
+                    clip = new AudioClip(mixer, true);
 
                 } catch (LineUnavailableException e) {
                     clip = null;
@@ -65,13 +66,13 @@ public class DataLinePool {
      * @param input The stream to be played
      * @return the {@code ClipClass} which has been played on
      */
-    public ClipClass openStream(AudioInputStream input) {
+    public AudioClip openStream(AudioInputStream input) {
 
         if (input == null) {
             return null;
         }
 
-        ClipClass toUse = mSounds[0];
+        AudioClip toUse = mSounds[0];
         toUse.play(input);
         mSounds[0] = toUse;
         return toUse; // MAYBE USE REFERENCE
@@ -84,11 +85,12 @@ public class DataLinePool {
      */
     public void setMute(boolean setMute) {
 
+    	mMasterMute = setMute;
         // Set all the Clips with new mute value
         for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
-            ClipClass toUse = mSounds[i];
+            AudioClip toUse = mSounds[i];
             if (toUse != null) {
-                toUse.setMute(setMute);
+                toUse.setMute(mMasterMute);
             }
             mSounds[i] = toUse;
         }
@@ -108,7 +110,7 @@ public class DataLinePool {
         }
         // Will update all clips with the new value
         for (int i = 0; i < NUMBER_OF_CLIPS; i++) {
-            ClipClass toUse = mSounds[i];
+            AudioClip toUse = mSounds[i];
 
             if (toUse != null) {
 
@@ -127,15 +129,7 @@ public class DataLinePool {
      */
     public boolean getMute() {
 
-        int index = 0;
-        // Find one Clip which is not null
-        while (mSounds[index] == null && index < NUMBER_OF_CLIPS) {
-            index++;
-        }
-        if (index == NUMBER_OF_CLIPS) {
-            return false;
-        }
-        return mSounds[index].getMute();
+        return mMasterMute;
     }
 
     /**
@@ -152,7 +146,7 @@ public class DataLinePool {
      *
      * @return An {@code array} of {@code ClipClass}
      */
-    public ClipClass[] cleanup() {
+    public AudioClip[] cleanup() {
         return mSounds;
     }
 }

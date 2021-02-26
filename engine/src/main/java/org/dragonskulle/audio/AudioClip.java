@@ -20,7 +20,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *
  * @author Dragonskulle
  */
-public class ClipClass {
+public class AudioClip {
 
     private Clip mClip;
     private BooleanControl mMute;
@@ -37,27 +37,23 @@ public class ClipClass {
      * @param loopContinuously whether the clip needs to loop continuously
      * @throws LineUnavailableException If the clip cannot be added
      */
-    public ClipClass(Mixer mixer, boolean loopContinuously) throws LineUnavailableException {
+    public AudioClip(Mixer mixer, boolean loopContinuously) throws LineUnavailableException {
 
         // Gets the line
         DataLine.Info dataLine = new DataLine.Info(Clip.class, null);
         mClip = (Clip) mixer.getLine(dataLine);
 
-        // Tries to open the audio stream
+        // Tries to open the audio stream.  Should not really get to the catch statements as Silent.wav should be somewhere.
         try {
             AudioInputStream startingStream =
                     AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
             mClip.open(startingStream);
 
-        } catch (UnsupportedAudioFileException e) {
+        } catch (UnsupportedAudioFileException | IOException  e) { 
             LOGGER.log(
                     Level.WARNING,
                     "Unable to open Silent.wav.  Please tell someone sooner rather than later");
-        } catch (IOException e) {
-            LOGGER.log(
-                    Level.WARNING,
-                    "Unable to open Silent.wav.  Please tell someone sooner rather than later");
-        }
+      
 
         // Gets mute and mVolume control and sets them
         mMute = (BooleanControl) mClip.getControl(BooleanControl.Type.MUTE);

@@ -39,11 +39,7 @@ public class AudioManager {
             mSounds = new DataLinePool[2];
             mSounds[0] = background;
             mSounds[1] = sfx;
-        } catch (SecurityException e) {
-            mMixer = null;
-            mSounds = null;
-
-        } catch (IllegalArgumentException e) {
+        } catch (SecurityException | IllegalArgumentException e) {
             mMixer = null;
             mSounds = null;
         }
@@ -137,13 +133,6 @@ public class AudioManager {
      * @param setVol the volume to change to
      */
     public void setVolume(SoundType channel, int setVol) {
-
-        // Checks the volume is a correct value
-        if (setVol > 100) {
-            setVol = 100;
-        } else if (setVol < 0) {
-            setVol = 0;
-        }
 
         // Changes the volume
         if (mMixer != null && channel == SoundType.BACKGROUND) {

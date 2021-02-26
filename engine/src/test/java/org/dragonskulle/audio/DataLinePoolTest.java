@@ -41,7 +41,7 @@ public class DataLinePoolTest {
             AudioInputStream audio =
                     AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
 
-            ClipClass clip = dataLine.openStream(audio);
+            AudioClip clip = dataLine.openStream(audio);
 
             Assert.assertNotNull(clip);
 
@@ -67,7 +67,7 @@ public class DataLinePoolTest {
                     AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
             ;
 
-            ClipClass clip = dataLine.openStream(audio);
+            AudioClip clip = dataLine.openStream(audio);
 
             Assert.assertFalse(dataLine.getMute()); // checks when created it is started as mute
 
@@ -100,7 +100,7 @@ public class DataLinePoolTest {
                     AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
             ;
 
-            ClipClass clip = dataLine.openStream(audio);
+            AudioClip clip = dataLine.openStream(audio);
 
             Assert.assertEquals(50, dataLine.getVolume());
 
@@ -143,15 +143,15 @@ public class DataLinePoolTest {
                     AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
             ;
 
-            ClipClass clip = dataLine.openStream(audio);
+            AudioClip clip = dataLine.openStream(audio);
 
             AudioInputStream audio2 =
                     AudioSystem.getAudioInputStream(new File("thunderclap.wav").getAbsoluteFile());
             ;
 
-            ClipClass clip2 = dataLine.openStream(audio2);
+            AudioClip clip2 = dataLine.openStream(audio2);
 
-            ClipClass[] clips = dataLine.cleanup();
+            AudioClip[] clips = dataLine.cleanup();
 
             Assert.assertSame(clip2, clips[0]);
         } catch (IllegalArgumentException e) {;
