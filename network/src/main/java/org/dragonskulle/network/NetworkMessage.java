@@ -1,10 +1,10 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
-
-import sun.misc.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.*;
+import sun.misc.IOUtils;
 
 public class NetworkMessage {
     private static final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
@@ -17,18 +17,18 @@ public class NetworkMessage {
     20 : spawn map
     21 : spawn capitol
     * */
-    //schema
-    //::S:: (5bytes)
-    //messageType (1Byte)
-    //payloadSize (4 bytes)
-    //payload (n bytes)
-    //::E:: (5 bytes)
+    // schema
+    // ::S:: (5bytes)
+    // messageType (1Byte)
+    // payloadSize (4 bytes)
+    // payload (n bytes)
+    // ::E:: (5 bytes)
     public static void parse(byte[] buff) {
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;
         if (validStart) {
-//            System.out.println("Valid Message Start\n");
+            //            System.out.println("Valid Message Start\n");
             byte messageType = getMessageType(buff);
             i += 1;
             int payloadSize = getPayloadSize(buff);
@@ -50,7 +50,6 @@ public class NetworkMessage {
         }
     }
 
-
     private static boolean verifyMessageEnd(int offset, byte[] bytes) {
         try {
             byte[] consumedSignature = Arrays.copyOfRange(bytes, offset, offset + 5);
@@ -58,7 +57,6 @@ public class NetworkMessage {
         } catch (NullPointerException e) {
             return false;
         }
-
     }
 
     private static boolean verifyMessageStart(byte[] bytes) {
@@ -71,22 +69,20 @@ public class NetworkMessage {
     }
 
     public static int convertByteArrayToInt(byte[] bytes) {
-        return ((bytes[0] & 0xFF) << 24) |
-                ((bytes[1] & 0xFF) << 16) |
-                ((bytes[2] & 0xFF) << 8) |
-                ((bytes[3] & 0xFF) << 0);
+        return ((bytes[0] & 0xFF) << 24)
+                | ((bytes[1] & 0xFF) << 16)
+                | ((bytes[2] & 0xFF) << 8)
+                | ((bytes[3] & 0xFF) << 0);
     }
 
     public static byte[] convertIntToByteArray(int value) {
-        return new byte[]{
-                (byte) (value >> 24),
-                (byte) (value >> 16),
-                (byte) (value >> 8),
-                (byte) value};
+        return new byte[] {
+            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
+        };
     }
 
     private static int getPayloadSize(byte[] bytes) {
-        return convertByteArrayToInt(Arrays.copyOfRange(bytes, 6, 11)); //inclusive, exclusive
+        return convertByteArrayToInt(Arrays.copyOfRange(bytes, 6, 11)); // inclusive, exclusive
     }
 
     private static byte getMessageType(byte[] bytes) {
@@ -95,34 +91,38 @@ public class NetworkMessage {
 
     public static byte[] build(byte messageType, byte[] payload) {
         assert payload.length <= MAX_TRANSMISSION_SIZE - 15;
-        ArrayList<Byte> message = new ArrayList<>(MAX_TRANSMISSION_SIZE);//[MAX_MESSAGE_SIZE];
+        ArrayList<Byte> message = new ArrayList<>(MAX_TRANSMISSION_SIZE); // [MAX_MESSAGE_SIZE];
 
-        //START SIGNATURE
+        // START SIGNATURE
         for (byte b : START_SIGNATURE) {
             message.add(b);
         }
 
-        //MESSAGE TYPE
+        // MESSAGE TYPE
         message.add(messageType);
 
-        //PAYLOAD SIZE
+        // PAYLOAD SIZE
         byte[] pLength = convertIntToByteArray(payload.length);
         for (byte b : pLength) {
             message.add(b);
         }
 
-        //PAYLOAD
+        // PAYLOAD
         for (byte b : payload) {
             message.add(b);
         }
 
-        //NULL PADDING BYTES
+        // NULL PADDING BYTES
         for (int j = 0; j < (MAX_TRANSMISSION_SIZE - 15 - payload.length); j++) {
             message.add((byte) 0);
         }
 
-        message.addAll(new ArrayList<>(MAX_TRANSMISSION_SIZE - 15 - payload.length)); //adding null bytes to fill message size
-        //END SIGNATURE
+        message.addAll(
+                new ArrayList<>(
+                        MAX_TRANSMISSION_SIZE
+                                - 15
+                                - payload.length)); // adding null bytes to fill message size
+        // END SIGNATURE
         for (byte b : END_SIGNATURE) {
             message.add(b);
         }
@@ -145,7 +145,7 @@ public class NetworkMessage {
         boolean validStart = verifyMessageStart(buff);
         i += 5;
         if (validStart) {
-//            System.out.println("Valid Message Start\n");
+            //            System.out.println("Valid Message Start\n");
             byte messageType = getMessageType(buff);
             i += 1;
             int payloadSize = getPayloadSize(buff);
@@ -167,7 +167,8 @@ public class NetworkMessage {
         }
     }
 
-    private static void executeServer(byte messageType, byte[] payload, Server.SendBytesToClientCurry sendBytesToClient) {
+    private static void executeServer(
+            byte messageType, byte[] payload, Server.SendBytesToClientCurry sendBytesToClient) {
         byte[] message;
         switch (messageType) {
             case (byte) 22:
@@ -180,7 +181,6 @@ public class NetworkMessage {
                 message = build((byte) 20, "TOSPAWN".getBytes());
                 sendBytesToClient.send(message);
                 break;
-
         }
     }
 
@@ -193,7 +193,8 @@ public class NetworkMessage {
                 System.out.println("Should spawn capitol");
                 break;
             default:
-                System.out.println("unsure of what to do with message as unknown type byte " + messageType);
+                System.out.println(
+                        "unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
     }

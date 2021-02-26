@@ -6,7 +6,6 @@ public class StartServer {
     static Server server;
     static final int PORT = 7000;
 
-
     public static void main(String[] args) {
         attachShutDownHook();
         serverListener = new ServerEars();

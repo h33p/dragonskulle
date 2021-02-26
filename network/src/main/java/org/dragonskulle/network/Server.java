@@ -4,11 +4,6 @@ package org.dragonskulle.network;
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-import org.dragonskulle.components.Component;
-import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.network.components.Capitol;
-import org.dragonskulle.network.components.NetworkableComponent;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -17,7 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.network.components.Capitol;
+import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * This is the main Server Class, it handles setup and stores all client connections. It can
@@ -127,7 +124,6 @@ public class Server {
             }
         }
 
-
         public void cancel() {
             this.open = false;
         }
@@ -143,18 +139,17 @@ public class Server {
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {
-            };
+            return () -> {};
         }
         return () -> {
             try {
-                //should spawn map and capitol here instead
+                // should spawn map and capitol here instead
                 boolean connected;
                 String stream;
                 int hasBytes = 0;
                 final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
-                byte[] bArray; //max flatbuffer size
-                byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; //max flatbuffer size
+                byte[] bArray; // max flatbuffer size
+                byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
                 this.sockets.addClient(sock);
                 BufferedReader in =
                         new BufferedReader(new InputStreamReader(sock.getInputStream()));
@@ -166,9 +161,9 @@ public class Server {
                 connected = sock.isConnected();
 
                 if (connected) {
-                    //spawn map on client
+                    // spawn map on client
                     spawnMap(client);
-                    //spawn capitol
+                    // spawn capitol
                     spawnCapitol();
                 }
                 while (connected) {
@@ -189,7 +184,6 @@ public class Server {
         };
     }
 
-
     private void spawnMap(ClientInstance clientInstance) {
         System.out.println("spawning map on client");
 <<<<<<< HEAD
@@ -208,17 +202,17 @@ public class Server {
     }
 
     private void spawnCapitol() {
-        spawnComponent(new Capitol(),(byte) 21);
+        spawnComponent(new Capitol(), (byte) 21);
     }
 
-    //use this method to spawn components on clients
-    private void spawnComponent(NetworkableComponent component, byte messageCode){
+    // use this method to spawn components on clients
+    private void spawnComponent(NetworkableComponent component, byte messageCode) {
         System.out.println("spawning component on all clients");
         this.components.add(component);
         byte[] spawnComponentBytes;
         try {
             byte[] capitolBytes = component.serialize();
-            System.out.println("component bytes : "+ capitolBytes.length);
+            System.out.println("component bytes : " + capitolBytes.length);
             spawnComponentBytes = NetworkMessage.build(messageCode, capitolBytes);
             sockets.broadcast(spawnComponentBytes);
         } catch (IOException e) {
@@ -229,21 +223,21 @@ public class Server {
     private void processBytes(ClientInstance client, byte[] bytes) {
 
         serverListener.receivedBytes(client, bytes);
-//        decode bytes from flatbuffer serialisation
-//        currently only one type;
+        //        decode bytes from flatbuffer serialisation
+        //        currently only one type;
         try {
             parseBytes(client, bytes);
         } catch (DecodingException e) {
             System.out.println(e.getMessage());
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
         }
-
     }
 
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
         System.out.println("bytes parsing");
         try {
-            NetworkMessage.parse(bytes, (parsedBytes) -> this.sockets.sendBytesToClient(client, parsedBytes));
+            NetworkMessage.parse(
+                    bytes, (parsedBytes) -> this.sockets.sendBytesToClient(client, parsedBytes));
         } catch (Exception e) {
             System.out.println("Error in parseBytes");
             e.printStackTrace();
@@ -254,6 +248,4 @@ public class Server {
     public interface SendBytesToClientCurry {
         void send(byte[] bytes);
     }
-
 }
-

@@ -1,12 +1,11 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.flatbuffers;
 
 import com.google.flatbuffers.FlatBufferBuilder;
-import org.dragonskulle.network.proto.*;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import org.dragonskulle.network.proto.*;
 
 public class FlatBuffersWriteTest {
     public static void main(String[] args) {
@@ -40,9 +39,5 @@ public class FlatBuffersWriteTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 }
-
-

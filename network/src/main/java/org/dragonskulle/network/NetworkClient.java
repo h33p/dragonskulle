@@ -2,14 +2,13 @@
 package org.dragonskulle.network;
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-import org.dragonskulle.network.components.sync.SyncVar;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.dragonskulle.network.components.sync.SyncVar;
 
 /**
  * This is the client usage, you will create an instance, by providing the correct server to connect
@@ -24,7 +23,6 @@ public class NetworkClient {
     private DataOutputStream dOut;
     private BufferedInputStream bIn;
     private ArrayList<SyncVar> synced = new ArrayList<>();
-
 
     private ClientListener clientListener;
     private boolean open = true;
@@ -102,7 +100,7 @@ public class NetworkClient {
         return () -> {
             byte[] bArray;
             int hasBytes = 0;
-            byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; //max flatbuffer size
+            byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
             while (open) {
                 try {
                     bArray = NetworkMessage.readMessageFromStream(bIn);
@@ -134,7 +132,6 @@ public class NetworkClient {
             System.out.println(e.getMessage());
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
         }
-
     }
 
     private void parseBytes(byte[] bytes) throws DecodingException {
@@ -146,7 +143,6 @@ public class NetworkClient {
             throw new DecodingException("Message is not of valid type");
         }
     }
-
 
     private void closeAllConnections() {
         open = false;

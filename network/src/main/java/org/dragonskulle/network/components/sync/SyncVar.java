@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
 import java.io.ByteArrayOutputStream;
@@ -31,7 +32,6 @@ public class SyncVar<T extends Serializable> implements Serializable {
         return Objects.hash(getId());
     }
 
-
     public SyncVar(String id, T data) {
         this.data = data;
         this.id = id;
@@ -43,10 +43,10 @@ public class SyncVar<T extends Serializable> implements Serializable {
     }
 
     void set(T data) {
-//        if (onUpdate != null) {
+        //        if (onUpdate != null) {
         System.out.println("Setting var :: " + getId());
         this.data = data;
-//        }
+        //        }
     }
 
     T get() {

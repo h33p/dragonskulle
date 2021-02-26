@@ -44,7 +44,6 @@ public class SocketStore {
                 System.out.println(e.toString());
             }
         }
-
     }
 
     public void initServer(ServerSocket serverSocket) {

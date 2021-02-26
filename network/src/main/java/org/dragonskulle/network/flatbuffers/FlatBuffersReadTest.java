@@ -1,9 +1,9 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.flatbuffers;
 
+import java.io.*;
 import org.dragonskulle.network.proto.BaseMessage;
 import org.dragonskulle.network.proto.CreateCityRequest;
-
-import java.io.*;
 
 public class FlatBuffersReadTest {
     public static void main(String[] args) {
@@ -19,9 +19,10 @@ public class FlatBuffersReadTest {
 
             BaseMessage message = BaseMessage.getRootAsBaseMessage(wrappedBuf);
             System.out.println("Message code: " + message.code());
-            if(message.code() == 1){
-                //switch depending on code
-                CreateCityRequest request = (CreateCityRequest)message.data(new CreateCityRequest());
+            if (message.code() == 1) {
+                // switch depending on code
+                CreateCityRequest request =
+                        (CreateCityRequest) message.data(new CreateCityRequest());
                 assert request != null;
                 System.out.println("Read request to build city from " + request.owner());
             }

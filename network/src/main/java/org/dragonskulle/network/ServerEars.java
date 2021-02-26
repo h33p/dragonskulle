@@ -7,9 +7,7 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * This is the handler for the server, it will handle most events (TODO create other events)
- */
+/** This is the handler for the server, it will handle most events (TODO create other events) */
 public class ServerEars implements ServerListener {
     ListenableQueue<String> log;
     Timer aliveTimer;

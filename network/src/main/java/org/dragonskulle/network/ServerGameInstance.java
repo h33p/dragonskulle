@@ -1,4 +1,12 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Arrays;
+import org.dragonskulle.game.map.HexMap;
+import org.dragonskulle.game.map.HexagonTile;
 
 public class ServerGameInstance {
 <<<<<<< HEAD
@@ -12,7 +20,7 @@ public class ServerGameInstance {
     }
 
     public byte[] cloneMap() throws IOException {
-        //TODO be replaced with HexMap.serialize();
+        // TODO be replaced with HexMap.serialize();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
         oos.writeObject(map);
@@ -21,7 +29,7 @@ public class ServerGameInstance {
     }
 
     public boolean isSetup() {
-        if(this.map!=null){
+        if (this.map != null) {
             return true;
         }
         return false;

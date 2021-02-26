@@ -2,7 +2,6 @@
 package org.dragonskulle.network;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * ClientEars is the client implementation of ClientListener, this is where custom executions can be
