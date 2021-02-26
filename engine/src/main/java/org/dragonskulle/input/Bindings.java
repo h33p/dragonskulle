@@ -15,7 +15,7 @@ import org.lwjgl.glfw.GLFW;
 public class Bindings {
 
     /** Used to log messages. */
-    public static final Logger LOGGER = Logger.getLogger("bindings");
+    private static final Logger LOGGER = Logger.getLogger("bindings");
 
     /** Stores all potential bindings. */
     private final ArrayList<Binding> mBindings = new ArrayList<Binding>();

@@ -122,9 +122,6 @@ public class Cursor {
      * @return The start position of the cursor, or {@code null} if no dragging is taking place.
      */
     public Vector2d getDragStart() {
-        if (!inDrag()) {
-            return null;
-        }
         return mDragStart;
     }
 

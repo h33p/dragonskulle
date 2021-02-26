@@ -31,7 +31,7 @@ public abstract class Activatable<T> {
      * @return If the element is activated return {@code true}, otherwise {@code false}.
      */
     boolean isActivated(T key) {
-        if (key == null || !mStored.containsKey(key)) {
+        if (key == null) {
             return false;
         }
         Boolean value = mStored.get(key);

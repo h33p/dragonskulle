@@ -22,7 +22,7 @@ import lombok.experimental.Accessors;
 public class Input {
 
     /** Used to log messages. */
-    public static final Logger LOGGER = Logger.getLogger("input");
+    private static final Logger LOGGER = Logger.getLogger("input");
 
     /** Stores the bindings between buttons and actions. */
     private Bindings mBindings;
@@ -57,6 +57,8 @@ public class Input {
             mCursor.attachToWindow(window);
             mButtons.attachToWindow(window);
             mScroll.attachToWindow(window);
+        } else {
+        	LOGGER.warning("Input is not attatched to a window.");
         }
 
         // For infinite mouse movement.

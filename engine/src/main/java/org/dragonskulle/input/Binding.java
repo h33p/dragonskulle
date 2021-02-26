@@ -26,7 +26,7 @@ class Binding {
      * @param actions The actions the button triggers, provided as an {@code ArrayList}.
      */
     public Binding(int button, ArrayList<Action> actions) {
-        setButton(button);
+        this(button);
         addActions(actions);
     }
 
