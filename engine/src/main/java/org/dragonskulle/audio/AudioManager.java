@@ -46,7 +46,6 @@ public class AudioManager {
         } catch (IllegalArgumentException e) {
             mMixer = null;
             mSounds = null;
-            
         }
     }
 
