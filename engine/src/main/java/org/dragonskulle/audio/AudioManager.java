@@ -3,7 +3,6 @@ package org.dragonskulle.audio;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
@@ -28,8 +27,6 @@ public class AudioManager {
 
     /** This constructor creates the AudioManager. If the Mixer is not created it is set to null. */
     private AudioManager() {
-    	
-    	System.out.println("Making");
 
         // Creates the mixer
         try {
@@ -45,14 +42,11 @@ public class AudioManager {
         } catch (SecurityException e) {
             mMixer = null;
             mSounds = null;
-            //System.out.println("We have made stuff");
-            //LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
 
         } catch (IllegalArgumentException e) {
             mMixer = null;
             mSounds = null;
-            //System.out.println("Mixer set to null");
-          //  LOGGER.log(Level.WARNING, "Unable to create a Mixer for the Game");
+            
         }
     }
 
@@ -65,9 +59,8 @@ public class AudioManager {
      */
     public boolean play(SoundType channel, String fileName) {
 
-    	System.out.println("Aaaaaa");
         try {
-        	
+
             // Creates the audio file
             AudioInputStream audio =
                     AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile());
@@ -106,10 +99,10 @@ public class AudioManager {
     public void setMute(SoundType channel, boolean muteValue) {
 
         // Sets the mute value
-    	
-        if ( !Objects.isNull(mMixer) && channel == SoundType.BACKGROUND) {
+
+        if (mMixer != null && channel == SoundType.BACKGROUND) {
             mSounds[0].setMute(muteValue);
-        } else if (!Objects.isNull(mMixer)  && channel == SoundType.SFX) {
+        } else if (mMixer != null && channel == SoundType.SFX) {
             mSounds[1].setMute(muteValue);
         } else {
             LOGGER.log(Level.WARNING, "Error as no mixer");
@@ -196,7 +189,6 @@ public class AudioManager {
      * @return The instance of the AudioManager
      */
     public static AudioManager getInstance() {
-    	System.out.println("Returning instance");
         return AUDIO_MANAGER_INSTANCE;
     }
 }

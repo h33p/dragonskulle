@@ -12,9 +12,7 @@ public class AudioManagerTest {
     @Test
     public void createTest() {
 
-        //AudioManager audioManager = AudioManager.getInstance();
         Assert.assertNotNull(AudioManager.getInstance());
-        System.out.println("Test 1");
     }
 
     @Test
@@ -32,94 +30,112 @@ public class AudioManagerTest {
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.BACKGROUND, "pom.xml"));
         Assert.assertFalse(AudioManager.getInstance().play(SoundType.SFX, "pom.xml"));
         
-        System.out.println("Test 2");
     }
 
     @Test
     public void muteBackgroundTest() {
-        Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
+    	if (AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav")) {
+    		
+    		Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
+    		
+    		Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
 
-        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setMute(SoundType.BACKGROUND, true);
+    		Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
 
-        AudioManager.getInstance().setMute(SoundType.BACKGROUND, true);
-        Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setMute(SoundType.BACKGROUND, false);
+    		Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
+    	}
+    	else {
+    		//Most like cos Mixer does not exist
+    	}
 
-        AudioManager.getInstance().setMute(SoundType.BACKGROUND, false);
-        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.BACKGROUND));
-        
-        System.out.println("Test 3");
     }
 
     @Test
     public void muteSFXTest() {
-    	//System.out.println("Hello");
+    	
     	Assert.assertNotNull(AudioManager.getInstance());
-        Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
+    	if (AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav") == true) {
+    		Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
 
-        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
+    		Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
 
-        AudioManager.getInstance().setMute(SoundType.SFX, true);
-        Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.SFX));
+    		AudioManager.getInstance().setMute(SoundType.SFX, true);
+    		Assert.assertTrue(AudioManager.getInstance().getMute(SoundType.SFX));
 
-        AudioManager.getInstance().setMute(SoundType.SFX, false);
-        Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
-        
-        System.out.println("Test 4");
+    		AudioManager.getInstance().setMute(SoundType.SFX, false);
+    		Assert.assertFalse(AudioManager.getInstance().getMute(SoundType.SFX));
+    	}
+    	else {
+    		//High Chance its cos a mixer does not exist.  To test this: ?? (Ask)
+    		
+    	}
     }
 
     @Test
     public void volumeBackgroundTest() {
+    	
+    	if (AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav")) {
 
-        Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
+    		Assert.assertTrue(AudioManager.getInstance().play(SoundType.BACKGROUND, "waves.wav"));
+    		
+    		Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-        Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 30);
+    		Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 30);
-        Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 0);
+    		Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 0);
-        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 87);
+    		Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 87);
-        Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+    		Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
-        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, -1);
+    		Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
 
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, -1);
-        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
-
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
-        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    		AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+    		Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.BACKGROUND));
+    	}
+    	else {
+    		//Most likely cos Mixer does not exist
+    	}
         
-        System.out.println("Test 5");
     }
 
     @Test
     public void volumeSFXTest() {
+    	
+    	if (AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav")) {
 
-        Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
+    		Assert.assertTrue(AudioManager.getInstance().play(SoundType.SFX, "thunderclap.wav"));
+    		
+    		Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-        Assert.assertEquals(50, AudioManager.getInstance().getVolume(SoundType.SFX));
+    		AudioManager.getInstance().setVolume(SoundType.SFX, 30);
+    		Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-        AudioManager.getInstance().setVolume(SoundType.SFX, 30);
-        Assert.assertEquals(30, AudioManager.getInstance().getVolume(SoundType.SFX));
+    		AudioManager.getInstance().setVolume(SoundType.SFX, 0);
+    		Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-        AudioManager.getInstance().setVolume(SoundType.SFX, 0);
-        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
+    		AudioManager.getInstance().setVolume(SoundType.SFX, 87);
+    		Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-        AudioManager.getInstance().setVolume(SoundType.SFX, 87);
-        Assert.assertEquals(87, AudioManager.getInstance().getVolume(SoundType.SFX));
+    		AudioManager.getInstance().setVolume(SoundType.SFX, 100);
+    		Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
-        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
+    		AudioManager.getInstance().setVolume(SoundType.SFX, -1);
+    		Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
 
-        AudioManager.getInstance().setVolume(SoundType.SFX, -1);
-        Assert.assertEquals(0, AudioManager.getInstance().getVolume(SoundType.SFX));
-
-        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
-        Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
-        
-        System.out.println("Test 6");
+    		AudioManager.getInstance().setVolume(SoundType.SFX, 100);
+    		Assert.assertEquals(100, AudioManager.getInstance().getVolume(SoundType.SFX));
+    	}
+    	else {
+    		//Most likely cos Mixer does not exist
+    	}
+       
     }
 }
