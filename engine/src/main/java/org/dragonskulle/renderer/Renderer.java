@@ -102,7 +102,7 @@ public class Renderer implements NativeResource {
         public long inFlightFence;
         public long framebuffer;
         // TODO: Remove this
-        public UniformBufferObject ubo;
+        public UniformBufferObject[] ubo;
 
         private long mImageView;
         private VkDevice mDevice;
@@ -125,20 +125,13 @@ public class Renderer implements NativeResource {
 
             this.mDevice = renderer.mDevice;
 
-            ubo = new UniformBufferObject(new Matrix4f(), new Matrix4f(), new Matrix4f());
-            ubo.view.lookAt(
-                    new Vector3f(2.0f, 2.0f, 2.0f),
-                    new Vector3f(0.0f, 0.0f, -0.05f),
-                    new Vector3f(0.0f, 0.0f, 1.0f));
-            ubo.proj.setPerspective(
-                    45.0f,
-                    (float) renderer.mExtent.width() / (float) renderer.mExtent.height(),
-                    0.1f,
-                    10.f,
-                    true);
-            ubo.proj.m11(-ubo.proj.m11());
+            ubo = new UniformBufferObject[2];
 
-            long size = UniformBufferObject.SIZEOF;
+            for (int i = 0; i < 2; i++) {
+                ubo[i] = new UniformBufferObject(new Matrix4f());
+            }
+
+            long size = UniformBufferObject.SIZEOF * ubo.length;
             mBuffer =
                     new VulkanBuffer(
                             renderer.mDevice,
@@ -176,7 +169,7 @@ public class Renderer implements NativeResource {
                 VkDescriptorBufferInfo.Buffer bufferInfo =
                         VkDescriptorBufferInfo.callocStack(1, stack);
                 bufferInfo.offset(0);
-                bufferInfo.range(UniformBufferObject.SIZEOF);
+                bufferInfo.range(UniformBufferObject.SIZEOF * 2);
                 bufferInfo.buffer(mBuffer.buffer);
 
                 VkDescriptorImageInfo.Buffer imageInfo =
@@ -245,14 +238,28 @@ public class Renderer implements NativeResource {
          * <p>This method will make the object have rotation
          */
         private void updateUniformBuffer(Renderer renderer, float curtime) {
-            ubo.model.rotation(curtime * 1.5f, 0.0f, 0.0f, 1.0f);
-
+            renderer.recordCommandBuffer(this, renderer.mObjectState);
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pData = stack.pointers(0);
                 vkMapMemory(
-                        renderer.mDevice, mBuffer.memory, 0, UniformBufferObject.SIZEOF, 0, pData);
-                ByteBuffer byteBuffer = pData.getByteBuffer(UniformBufferObject.SIZEOF);
-                ubo.copyTo(byteBuffer);
+                        renderer.mDevice,
+                        mBuffer.memory,
+                        0,
+                        UniformBufferObject.SIZEOF * ubo.length,
+                        0,
+                        pData);
+
+                ByteBuffer byteBuffer =
+                        pData.getByteBuffer(UniformBufferObject.SIZEOF * ubo.length);
+
+                for (int i = 0; i < ubo.length; i++) {
+                    UniformBufferObject ubo = this.ubo[i];
+
+                    ubo.model.rotation(curtime * 1.5f * (float) (i * 2 - 1), 0.0f, 0.0f, 1.0f);
+                    ubo.model.setTranslation(
+                            0.f, 0.f, (float) i * (float) java.lang.Math.sin(curtime));
+                    ubo.copyTo(byteBuffer, UniformBufferObject.SIZEOF * i);
+                }
                 vkUnmapMemory(renderer.mDevice, mBuffer.memory);
             }
         }
@@ -280,34 +287,35 @@ public class Renderer implements NativeResource {
         public VulkanPipeline graphics;
         public VulkanBuffer vertexBuffer;
         public VulkanBuffer indexBuffer;
+        public VertexConstants vertexConstants;
 
         private static Vertex[] VERTICES = {
             new Vertex(
-                    new Vector2f(0.0f, 0.0f),
+                    new Vector3f(0.0f, 0.0f, 0.0f),
                     new Vector3f(1.0f, 1.0f, 1.0f),
                     new Vector2f(0.0f, 0.0f)),
             new Vertex(
-                    new Vector2f(-0.5f, 0.86603f),
+                    new Vector3f(-0.5f, 0.86603f, 0.0f),
                     new Vector3f(0.0f, 0.0f, 1.0f),
                     new Vector2f(-0.5f, 0.86603f)),
             new Vertex(
-                    new Vector2f(0.5f, 0.86603f),
+                    new Vector3f(0.5f, 0.86603f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f),
                     new Vector2f(0.5f, 0.86603f)),
             new Vertex(
-                    new Vector2f(1.0f, 0.0f),
+                    new Vector3f(1.0f, 0.0f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f),
                     new Vector2f(1.0f, 0.0f)),
             new Vertex(
-                    new Vector2f(0.5f, -0.86603f),
+                    new Vector3f(0.5f, -0.86603f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f),
                     new Vector2f(0.5f, -0.86603f)),
             new Vertex(
-                    new Vector2f(-0.5f, -0.86603f),
+                    new Vector3f(-0.5f, -0.86603f, 0.0f),
                     new Vector3f(0.0f, 0.0f, 1.0f),
                     new Vector2f(-0.5f, -0.86603f)),
             new Vertex(
-                    new Vector2f(-1.0f, 0.0f),
+                    new Vector3f(-1.0f, 0.0f, 0.0f),
                     new Vector3f(0.0f, 0.0f, 1.0f),
                     new Vector2f(-1.0f, 0.0f)),
         };
@@ -335,6 +343,20 @@ public class Renderer implements NativeResource {
 
             vertexBuffer = renderer.createVertexBuffer(VERTICES);
             indexBuffer = renderer.createIndexBuffer(INDICES);
+
+            vertexConstants = new VertexConstants(new Matrix4f(), new Matrix4f());
+
+            vertexConstants.view.lookAt(
+                    new Vector3f(2.0f, 2.0f, 2.0f),
+                    new Vector3f(0.0f, 0.0f, -0.05f),
+                    new Vector3f(0.0f, 0.0f, 1.0f));
+            vertexConstants.proj.setPerspective(
+                    45.0f,
+                    (float) renderer.mExtent.width() / (float) renderer.mExtent.height(),
+                    0.1f,
+                    10.f,
+                    true);
+            vertexConstants.proj.m11(-vertexConstants.proj.m11());
         }
 
         /** Free resources of the object state */
@@ -562,7 +584,6 @@ public class Renderer implements NativeResource {
         mObjectState = new TmpObjectState(this);
         for (ImageContext img : mImageContexts) {
             img.updateDescriptorSet(this);
-            recordCommandBuffer(img, mObjectState);
         }
     }
 
@@ -870,6 +891,7 @@ public class Renderer implements NativeResource {
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
             poolInfo.sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO);
             poolInfo.queueFamilyIndex(mPhysicalDevice.getIndices().graphicsFamily);
+            poolInfo.flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
             LongBuffer pCommandPool = stack.longs(0);
 
@@ -1437,7 +1459,16 @@ public class Renderer implements NativeResource {
                     descriptorSet,
                     null);
 
-            vkCmdDrawIndexed(ctx.commandBuffer, TmpObjectState.INDICES.length, 1, 0, 0, 0);
+            ByteBuffer pConstants = stack.calloc(VertexConstants.SIZEOF);
+            state.vertexConstants.copyTo(pConstants);
+
+            vkCmdPushConstants(
+                    ctx.commandBuffer,
+                    state.graphics.layout,
+                    VK_SHADER_STAGE_VERTEX_BIT,
+                    0,
+                    pConstants);
+            vkCmdDrawIndexed(ctx.commandBuffer, TmpObjectState.INDICES.length, 2, 0, 0, 0);
 
             vkCmdEndRenderPass(ctx.commandBuffer);
 

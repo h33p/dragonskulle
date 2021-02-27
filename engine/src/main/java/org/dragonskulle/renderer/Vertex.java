@@ -16,12 +16,12 @@ import org.lwjgl.vulkan.*;
  */
 @Builder
 public class Vertex {
-    public static int SIZEOF = (2 + 3 + 2) * 4;
+    public static int SIZEOF = (3 + 3 + 2) * 4;
     public static int OFFSETOF_POS = 0;
-    public static int OFFSETOF_COL = 2 * 4;
+    public static int OFFSETOF_COL = 3 * 4;
     public static int OFFSETOF_UV = OFFSETOF_COL + 3 * 4;
 
-    private Vector2fc pos;
+    private Vector3fc pos;
     private Vector3fc color;
     private Vector2fc uv;
 
@@ -29,6 +29,7 @@ public class Vertex {
     public void copyTo(ByteBuffer buffer) {
         buffer.putFloat(pos.x());
         buffer.putFloat(pos.y());
+        buffer.putFloat(pos.z());
 
         buffer.putFloat(color.x());
         buffer.putFloat(color.y());
@@ -55,7 +56,7 @@ public class Vertex {
         VkVertexInputAttributeDescription posDescription = attributeDescriptions.get(0);
         posDescription.binding(0);
         posDescription.location(0);
-        posDescription.format(VK_FORMAT_R32G32_SFLOAT);
+        posDescription.format(VK_FORMAT_R32G32B32_SFLOAT);
         posDescription.offset(OFFSETOF_POS);
 
         VkVertexInputAttributeDescription colDescription = attributeDescriptions.get(1);

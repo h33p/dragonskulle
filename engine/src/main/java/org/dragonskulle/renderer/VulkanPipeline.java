@@ -133,11 +133,19 @@ class VulkanPipeline {
 
             // TODO: Dynamic states
 
+            // TODO: configure this through material
+            VkPushConstantRange.Buffer pushConstantRange =
+                    VkPushConstantRange.callocStack(1, stack);
+            pushConstantRange.offset(0);
+            pushConstantRange.size(VertexConstants.SIZEOF);
+            pushConstantRange.stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
+
             VkPipelineLayoutCreateInfo pipelineLayoutInfo =
                     VkPipelineLayoutCreateInfo.callocStack(stack);
             pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
             LongBuffer pDescriptorSetLayout = stack.longs(descriptorSetLayout);
             pipelineLayoutInfo.pSetLayouts(pDescriptorSetLayout);
+            pipelineLayoutInfo.pPushConstantRanges(pushConstantRange);
 
             LongBuffer pPipelineLayout = stack.longs(0);
 

@@ -12,18 +12,16 @@ import org.joml.*;
  */
 @Builder
 class UniformBufferObject {
-    public static int SIZEOF = 4 * 4 * 4 * 3;
+    public static int SIZEOF = 4 * 4 * 4;
     public static int OFFSETOF_MODEL = 0;
-    public static int OFFSETOF_VIEW = 4 * 4 * 4;
-    public static int OFFSETOF_PROJ = 4 * 4 * 4 * 2;
 
     public Matrix4f model;
-    public Matrix4f view;
-    public Matrix4f proj;
+
+    public void copyTo(ByteBuffer buffer, int offset) {
+        model.get(OFFSETOF_MODEL + offset, buffer);
+    }
 
     public void copyTo(ByteBuffer buffer) {
-        model.get(OFFSETOF_MODEL, buffer);
-        view.get(OFFSETOF_VIEW, buffer);
-        proj.get(OFFSETOF_PROJ, buffer);
+        copyTo(buffer, 0);
     }
 }
