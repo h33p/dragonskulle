@@ -4,14 +4,16 @@ package org.dragonskulle.network;
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
+import java.util.function.Consumer;
+
+import org.dragonskulle.network.components.Capitol;
 import org.dragonskulle.network.components.NetworkObject;
 
 /**
@@ -137,7 +139,8 @@ public class Server {
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {};
+            return () -> {
+            };
         }
         return () -> {
             try {
@@ -167,6 +170,36 @@ public class Server {
                     networkObject.spawnMap(this.game.cloneMap());
                     networkObject.spawnCapitol();
                     this.networkObjects.add(networkObject);
+
+//                    capitol.setBooleanSyncMe(true);
+
+                    //Simulation of calling fixed update;
+                    Timer timer = new Timer();
+                    int begin = 0;
+                    int timeInterval = 1000;
+                    FixedUpdateSimulation fixedUpdate = this::fixedBroadcastUpdate;
+                    timer.schedule(new TimerTask() {
+                        int counter = 0;
+
+                        @Override
+                        public void run() {
+                            fixedUpdate.call();
+                            counter++;
+                            if (counter >= 20) {
+                                timer.cancel();
+                            }
+                        }
+                    }, begin, timeInterval);
+
+                    Server self = this;
+                    //set bool of capitol at some point in the future
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            ((Capitol) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
+                        }
+                    }, 3000);
+
                 }
                 while (connected) {
                     bArray = NetworkMessage.readMessageFromStream(bIn);
@@ -213,5 +246,16 @@ public class Server {
 
     public interface SendBytesToClientCurry {
         void send(byte[] bytes);
+    }
+
+    private interface FixedUpdateSimulation {
+        void call();
+    }
+
+    public void fixedBroadcastUpdate() {
+        System.out.println("fixed broadcast update");
+        for (NetworkObject networkObject : this.networkObjects) {
+            networkObject.broadcastUpdate();
+        }
     }
 }

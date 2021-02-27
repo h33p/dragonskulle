@@ -9,6 +9,8 @@ public class SyncVar<T extends Serializable> implements Serializable {
 
     T data;
     final String id;
+    private transient boolean hasListener = false;
+    private transient ISyncVarUpdateHandler onUpdate;
 
     public String getId() {
         return id;
@@ -39,14 +41,17 @@ public class SyncVar<T extends Serializable> implements Serializable {
         this.data = data;
     }
 
-    void set(T data) {
-        //        if (onUpdate != null) {
+    public void set(T data) {
         System.out.println("Setting var :: " + getId());
+        if(hasListener){
+            if(data!=this.data){
+                this.onUpdate.call(); //onUpdate callback is to set the mask bit on modification to the field
+            }
+        }
         this.data = data;
-        //        }
     }
 
-    T get() {
+    public T get() {
         return data;
     }
 
@@ -64,5 +69,14 @@ public class SyncVar<T extends Serializable> implements Serializable {
         SyncVar out = (SyncVar) in.readObject();
         in.close();
         return out;
+    }
+
+    public interface ISyncVarUpdateHandler{
+        void call();
+    }
+
+    public void registerListener(ISyncVarUpdateHandler handleFieldChange) {
+        this.hasListener = true;
+        this.onUpdate = handleFieldChange;
     }
 }

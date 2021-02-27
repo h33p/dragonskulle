@@ -6,11 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;
 import sun.misc.IOUtils;
@@ -29,10 +27,9 @@ public class Networkable {
     public Networkable() {
         //        this.client = object;
         System.out.println("client is assigned");
-        this.connectSyncVars();
     }
 
-    void connectSyncVars() {
+    public void connectSyncVars() {
         fields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> SyncVar.class.isAssignableFrom(field.getType()))
@@ -46,10 +43,12 @@ public class Networkable {
                 SyncVar sv =
                         (SyncVar) f.get(this); // retrieves syncvar from child and adds it to the
                 // connection array
-                System.out.println("adding " + f.getName());
+                int finalI = i;
+                sv.registerListener(() -> this.handleFieldChange(finalI));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
+            i++;
         }
         System.out.println("Need to actually link up");
     }
@@ -73,7 +72,6 @@ public class Networkable {
         for (int i = 0; i < Objects.requireNonNull(masks).size(); i++) {
             boolean didUpdate = masks.get(i);
             if (didUpdate) {
-                assert contents != null;
                 updateFromMaskOffset(i, contents.get(i));
             }
         }
@@ -96,6 +94,7 @@ public class Networkable {
                     for (byte b : FIELD_SEPERATOR) {
                         contents.add(b);
                     }
+                    this.fieldsMask[i] = false; //reset flag
                 } catch (IllegalAccessException | IOException e) {
                     e.printStackTrace();
                 }
@@ -159,18 +158,31 @@ public class Networkable {
 
     private int getFieldLengthFromBytes(byte[] buff) {
         assert (buff != null);
-        return (int) buff[0];
+        return buff[0];
     }
 
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
-        // TODO
-    }
-    // Syncvars stuff
-    private void attachFieldListeners() {
-        // TODO
+        try {
+            this.fields.get(offset).set(this, newValue);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void handleFieldChange() {
-        // TODO
+    private void handleFieldChange(int maskId) {
+        this.fieldsMask[maskId] = true;
+        System.out.println("set mask " + maskId);
+    }
+
+    public boolean hasBeenModified() {
+        boolean hasTrueInMask = false;
+        for (boolean b : fieldsMask) {
+            if (b) {
+                hasTrueInMask = true;
+                break;
+            }
+        }
+        System.out.println("has networkable instance been modified? :: " + hasTrueInMask);
+        return hasTrueInMask;
     }
 }

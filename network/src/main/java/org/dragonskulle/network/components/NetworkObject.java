@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
+
 import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
 
-/** The NetworkObject deals with any networked variables. */
+/**
+ * The NetworkObject deals with any networked variables.
+ */
 public class NetworkObject {
     public NetworkObject(
             ClientInstance client,
@@ -21,20 +24,36 @@ public class NetworkObject {
         sendBytesToClientCallback = clientCallback;
     }
 
-    /** A callback to broadcast a message to all clients */
+    /**
+     * Possible a temporary function to edit a network object without a reference.
+     */
+
+    public Networkable get(int i) {
+        return this.children.get(i);
+    }
+
+    /**
+     * A callback to broadcast a message to all clients
+     */
     public interface ServerBroadcastCallback {
         void call(byte[] bytes);
     }
 
-    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
+    /**
+     * A callback to broadcast a message to a SINGLE clients,this client is the owner
+     */
     public interface SendBytesToClientCallback {
         void call(ClientInstance client, byte[] bytes);
     }
 
-    /** Stores the broadcast callback */
+    /**
+     * Stores the broadcast callback
+     */
     private final ServerBroadcastCallback serverBroadcastCallback;
 
-    /** Stores the single sender callback */
+    /**
+     * Stores the single sender callback
+     */
     private final SendBytesToClientCallback sendBytesToClientCallback;
 
     /**
@@ -58,7 +77,7 @@ public class NetworkObject {
     /**
      * Spawns a component and notifies all clients using callback.
      *
-     * @param component The component to be spawned, must extend Networkable
+     * @param component   The component to be spawned, must extend Networkable
      * @param messageCode The message code of the spawn.
      */
     private void spawnComponent(Networkable component, byte messageCode) {
@@ -75,10 +94,15 @@ public class NetworkObject {
         }
     }
 
-    /** Spawns a capitol using the @link{spawnComponent} method */
+    /**
+     * Spawns a capitol using the @link{spawnComponent} method
+     */
     public void spawnCapitol() {
-        spawnComponent(new Capitol(), (byte) 21);
+        Capitol capitol = new Capitol();
+        capitol.connectSyncVars();
+        spawnComponent(capitol, (byte) 21);
     }
+
 
     /**
      * Sends the map to the client, this is called on connect
@@ -92,12 +116,18 @@ public class NetworkObject {
         sendBytesToClientCallback.call(owner, spawnMapMessage);
     }
 
-    /** Children of the object will be networkable and updated on clients */
+    /**
+     * Children of the object will be networkable and updated on clients
+     */
     private final ArrayList<Networkable> children = new ArrayList<>();
-    /** The UUID of the object. */
+    /**
+     * The UUID of the object.
+     */
     String networkObjectId;
 
-    /** The Client Connection to the server */
+    /**
+     * The Client Connection to the server
+     */
     final ClientInstance owner;
 
     /**
@@ -105,4 +135,20 @@ public class NetworkObject {
      * commands.
      */
     boolean isDormant;
+
+    /**
+     * Broadcasts updates all of the modified children
+     */
+    public void broadcastUpdate() {
+        for (Networkable child : this.children) {
+            if (child.hasBeenModified()) {
+                try {
+                    System.out.println("child has been modified in a networkobject");
+                    serverBroadcastCallback.call(NetworkMessage.build((byte) 10, child.serialize()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

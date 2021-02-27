@@ -169,7 +169,6 @@ public class NetworkMessage {
         byte[] message;
         switch (messageType) {
             case (byte) 22:
-                System.out.println("Should implement spawn and create building n");
                 message = build((byte) 20, "TOSPAWN".getBytes());
                 sendBytesToClient.send(message);
                 break;
@@ -183,6 +182,9 @@ public class NetworkMessage {
 
     private static void executeClient(byte messageType, byte[] payload) {
         switch (messageType) {
+            case (byte) 10:
+                System.out.println("Should update requested object");
+                break;
             case (byte) 20:
                 System.out.println("Should spawn map");
                 break;

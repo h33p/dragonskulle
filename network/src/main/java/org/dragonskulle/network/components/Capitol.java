@@ -8,5 +8,10 @@ public class Capitol extends Networkable {
 
     public Capitol() {
         super();
+        System.out.println("--starting to change syncvar values--");
+    }
+
+    public void setBooleanSyncMe(boolean val) {
+        this.syncMe.set(val);
     }
 }
