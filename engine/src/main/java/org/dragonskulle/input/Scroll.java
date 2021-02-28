@@ -72,7 +72,7 @@ public class Scroll {
      *
      * @param buttons The buttons.
      */
-    public Scroll(Buttons buttons) {
+    Scroll(Buttons buttons) {
         mButtons = buttons;
     }
 

@@ -1,20 +1,34 @@
 package org.dragonskulle.input;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
- * Extended to create an easy way to access custom actions.
+ * Used to access all actions.
+ * Extended to add actions (that can be triggered by button input).
  * <p>
- * Also contains any {@link Action}s that must always be present (as they are required by internal logic). 
+ * By default, it contains the following static values:
+ * <li> {@link #DRAG} - An action that is triggered when the cursor is dragged.
+ * <li> {@link #sCursor} - Stores everything related to the cursor.
+ * <li> {@link #sScroll} - Stores everything related to mouse scrolling.
+ * 
+ * <p>
+ * Example of how to add a new action once extended: <br>
+ * <code> public final static Action <b>NEW_ACTION</b> = new Action("<b>NEW_ACTION_NAME</b>"); </code> 
  * 
  * @author Craig Wilbourne
  */
+@Accessors(prefix = "s")
 public abstract class Actions {
 	//DRAG must always be present, regardless of any other custom actions implemented.
 	public final static Action DRAG = new Action("DRAG");
 	
-	/** Stores everything to do with mouse wheel scrolling. */
-	public static Scroll scroll;
 	/** Stores everything to do with cursor position and dragging. */
-	public static Cursor cursor;
+	@Getter
+	private static Cursor sCursor;
+	/** Stores everything to do with mouse wheel scrolling. */
+	@Getter
+	private static Scroll sScroll;
 	
 	/**
 	 * Refresh select values back to their defaults, ready for their new values. 
@@ -22,8 +36,26 @@ public abstract class Actions {
      * Currently only used for resetting {@link #scroll}.
 	 */
 	public static void refresh() {
-		if(scroll != null) {
-			scroll.reset();
+		if(sScroll != null) {
+			sScroll.reset();
 		}
+	}
+	
+	/**
+	 * Set the cursor.
+	 * 
+	 * @param cursor The cursor.
+	 */
+	static void setCursor(Cursor cursor) {
+		sCursor = cursor;
+	}
+	
+	/**
+	 * Set the scroll.
+	 * 
+	 * @param scroll The scroll.
+	 */
+	static void setScroll(Scroll scroll) {
+		sScroll = scroll;
 	}
 }

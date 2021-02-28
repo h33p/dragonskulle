@@ -35,34 +35,6 @@ abstract public class Bindings {
     }
 
     /**
-     * Get the actions triggered by a specific button.
-     * 
-     * @param button The button being targeted.
-     * @return An {@code ArrayList} of {@link Action}s associated with the button, or an empty
-     *     {@code ArrayList}.
-     */
-    public ArrayList<Action> getActions(Integer button) {
-        if (!mButtonToActions.containsKey(button)) {
-            return new ArrayList<Action>();
-        }
-        return mButtonToActions.get(button);
-    }
-
-    /**
-     * Get the buttons that trigger a specific action.
-     *
-     * @param action The action being targeted.
-     * @return An {@code ArrayList} of buttons associated with the {@link Action}, or an empty
-     *     {@code ArrayList}.
-     */
-    public ArrayList<Integer> getButtons(Action action) {
-        if (!mActionToButtons.containsKey(action)) {
-            return new ArrayList<Integer>();
-        }
-        return mActionToButtons.get(action);
-    }
-
-    /**
 	 * Add a new binding by specifying the button and the actions it triggers.
 	 * 
 	 * @param button The button code.
@@ -77,9 +49,37 @@ abstract public class Bindings {
      *
      * @param binding The binding to be added.
      */
-    private void add(Binding binding) {
+    void add(Binding binding) {
         mBindings.add(binding);
-    }    
+    }  
+    
+    /**
+     * Get the actions triggered by a specific button.
+     * 
+     * @param button The button being targeted.
+     * @return An {@code ArrayList} of {@link Action}s associated with the button, or an empty
+     *     {@code ArrayList}.
+     */
+    ArrayList<Action> getActions(Integer button) {
+        if (!mButtonToActions.containsKey(button)) {
+            return new ArrayList<Action>();
+        }
+        return mButtonToActions.get(button);
+    }
+
+    /**
+     * Get the buttons that trigger a specific action.
+     *
+     * @param action The action being targeted.
+     * @return An {@code ArrayList} of buttons associated with the {@link Action}, or an empty
+     *     {@code ArrayList}.
+     */
+    ArrayList<Integer> getButtons(Action action) {
+        if (!mActionToButtons.containsKey(action)) {
+            return new ArrayList<Integer>();
+        }
+        return mActionToButtons.get(action);
+    }  
 
     /**
      * Allows all of the bindings in {@link #mBindings} to become usable.
