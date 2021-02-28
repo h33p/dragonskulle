@@ -9,12 +9,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Logger;
 
-import org.dragonskulle.input.custom.MyActions;
-import org.dragonskulle.input.custom.MyBindings;
+import org.dragonskulle.input.test_bindings.TestActions;
+import org.dragonskulle.input.test_bindings.TestBindings;
 import org.joml.Vector2d;
 import org.junit.Before;
 import org.junit.Test;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Unit test for {@link Input}.
@@ -25,8 +24,9 @@ public class InputTest {
 
     public static final Logger LOGGER = Logger.getLogger("InputTest");
 
-    /** An example key code used for testing key presses. */
-    private static final int TEST_KEY = -12345;
+    /** An arbitrary key codes used for testing key presses. */
+    public static final int TEST_KEY_1 = -12345;
+    public static final int TEST_KEY_2 = -12300;
 
     /** The input being tested. Will be reset before every test. */
     private Input mInput;
@@ -34,7 +34,7 @@ public class InputTest {
     /** Before every test, create a window and attach Input to it. */
     @Before
     public void createWindowInput() {
-        mInput = new Input(null, new MyBindings());
+        mInput = new Input(null, new TestBindings());
     }
 
     @Test
@@ -42,7 +42,7 @@ public class InputTest {
         StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
     }
-
+    
     @Test
     public void cursorNotNull() {
         Cursor cursor = mInput.getCursor();
@@ -63,13 +63,13 @@ public class InputTest {
         StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
-        buttons.setActivated(TEST_KEY, true);
-        activated = buttons.isActivated(TEST_KEY);
-        assertTrue("Button TEST_KEY should be activated (true).", activated);
+        buttons.setActivated(TEST_KEY_1, true);
+        activated = buttons.isActivated(TEST_KEY_1);
+        assertTrue("Button TEST_KEY_1 should be activated (true).", activated);
 
-        buttons.setActivated(TEST_KEY, false);
-        activated = buttons.isActivated(TEST_KEY);
-        assertFalse("Button TEST_KEY should be deactivated (false).", activated);
+        buttons.setActivated(TEST_KEY_1, false);
+        activated = buttons.isActivated(TEST_KEY_1);
+        assertFalse("Button TEST_KEY_1 should be deactivated (false).", activated);
     }
 
     /**
@@ -84,8 +84,8 @@ public class InputTest {
     @Test
     public void buttonShouldActivateAction() {
         // Parameters:
-        int button = GLFW.GLFW_KEY_UP;
-        Action action = MyActions.UP;
+        int button = TEST_KEY_1;
+        Action action = TestActions.TEST_ACTION;
 
         // For logic:
         boolean activated;
@@ -128,9 +128,9 @@ public class InputTest {
     @Test
     public void multipleButtonsShouldActivateAction() {
         // Parameters:
-        int button1 = GLFW.GLFW_KEY_UP;
-        int button2 = GLFW.GLFW_KEY_W;
-        Action action = MyActions.UP;
+        int button1 = TEST_KEY_1;
+        int button2 = TEST_KEY_2;
+        Action action = TestActions.TEST_ACTION;
 
         // For logic:
         boolean activated;
@@ -177,6 +177,28 @@ public class InputTest {
                 activated);
     }
 
+    /**
+     * Ensure that actions that do not have any triggers remain deactivated.
+     */
+    @Test
+    public void actionWithoutTrigger() {
+    	// Parameters:
+        Action action = TestActions.UNLINKED_ACTION;
+
+        // For logic:
+        boolean activated;
+
+        // For error messages:
+        String actionName = action.toString();
+
+        activated = mInput.isActivated(action);
+        assertFalse(
+                String.format(
+                        "%s should be deactivated (false) as nothing can activate it.",
+                        actionName),
+                activated);
+    }
+    
     /** Ensure {@link Scroll} is storing the amount scrolled (since last {@link Scroll#reset()}). */
     @Test
     public void scrollShouldStoreAmount() {
@@ -204,7 +226,7 @@ public class InputTest {
         Scroll scroll = mInput.getScroll();
         assertNotNull(scroll);
 
-        // Simulate scrolling having been occurred.
+        // Manually simulate scrolling.
         buttons.press(Scroll.UP);
         buttons.press(Scroll.DOWN);
         scroll.add(-100d);
