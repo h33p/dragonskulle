@@ -30,14 +30,11 @@ public class InputTest {
     public static final int TEST_KEY_1 = -12345;
     public static final int TEST_KEY_2 = -12300;
 
-    /** The input being tested. Will be reset before every test. */
-    private Input mInput;
-
     /** Before every test, create a window and attach Input to it. */
     @Before
     public void createWindowInput() {
     	TestBindings bindings = new TestBindings();
-    	mInput = new Input(null, bindings);
+    	Input.initialise(null, bindings);
         
     	// Testing: Editing bindings after Input is created.
     	bindings.add(GLFW.GLFW_KEY_P, MyActions.BONUS);
@@ -47,7 +44,7 @@ public class InputTest {
 
     @Test
     public void buttonsNotNull() {
-        Buttons buttons = mInput.getButtons();
+        Buttons buttons = Input.getButtons();
         assertNotNull(buttons);
     }
     
@@ -68,7 +65,7 @@ public class InputTest {
     public void buttonShouldStoreActivation() {
         boolean activated;
 
-        Buttons buttons = mInput.getButtons();
+        Buttons buttons = Input.getButtons();
         assertNotNull(buttons);
 
         buttons.setPressed(TEST_KEY_1, true);
@@ -103,7 +100,7 @@ public class InputTest {
         String actionName = action.toString();
 
         // Run the test:
-        Buttons buttons = mInput.getButtons();
+        Buttons buttons = Input.getButtons();
         assertNotNull(buttons);
 
         buttons.press(button);
@@ -149,7 +146,7 @@ public class InputTest {
         String actionName = action.toString();
 
         // Run the test:
-        Buttons buttons = mInput.getButtons();
+        Buttons buttons = Input.getButtons();
         assertNotNull(buttons);
 
         buttons.press(button1);
@@ -228,7 +225,7 @@ public class InputTest {
         // For logic:
         boolean activated;
 
-        Buttons buttons = mInput.getButtons();
+        Buttons buttons = Input.getButtons();
         assertNotNull(buttons);
 
         Scroll scroll = Actions.scroll;

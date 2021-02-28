@@ -18,28 +18,31 @@ public class Input {
     private static final Logger LOGGER = Logger.getLogger("input");
 
     /** Allows button presses to trigger actions. */
+    private static Buttons mButtons;
+    
+    /** Allows bindings between buttons and actions. */
     @Getter
-    private Buttons mButtons;
+    private static Bindings mBindings;
     
     /**
-     * Create a new input manager. If a window is present, user input from that window is monitored and this is reflected in the relevant {@link Actions}.
-     * <p>
-     * Automatically submits any bindings ({@link Bindings#submit()}).
-     *
-     * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
-     * @param bindings A {@link BindingsTemplate} object that contains all the relevant button to action bindings.
+     * 
+     * 
+     * @param window The window Input should listen to, or {@code null} if no window is to be connected.
+     * @param bindings The button bindings that map buttons to events.
      */
-    public Input(Long window, Bindings bindings) {
-    	// Generate all the bindings from the bindingsTemplate.
-    	//Bindings bindings = new Bindings(bindingsTemplate);
-
+    public static void initialise(Long window, Bindings bindings) {
+    	// Store the bindings.
+    	mBindings = bindings;
+    	// Submit the current bindings.
     	bindings.submit();
-        
-        mButtons = new Buttons(bindings);
-        
+    	
+    	// Detect buttons based on the bindings.
+    	mButtons = new Buttons(bindings);
+        // Detect cursor location.
         Actions.cursor = new Cursor();
+        // Detect scrolling, triggering the buttons Scroll.UP and Scroll.DOWN.
         Actions.scroll = new Scroll(mButtons);
-
+    	
         // If a window is provided, attach the event listeners.
         if (window != null) {
         	mButtons.attachToWindow(window);
@@ -48,10 +51,14 @@ public class Input {
         } else {
         	LOGGER.warning("Input is not attatched to a window.");
         }
-
-        // For infinite mouse movement.
-        // GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-        // For hiding the cursor.
-        // GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    }
+    
+    /**
+     * Get {@link #mButtons}, which stores which buttons are pressed and triggers their actions.
+     * 
+     * @return The buttons manager.
+     */
+    static Buttons getButtons() {
+    	return mButtons;
     }
 }
