@@ -31,9 +31,9 @@ public class Input {
      * Create a new input manager.
      *
      * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
-     * @param bindings A {@link CustomBindings} object that contains all the relevant button to action bindings.
+     * @param bindings A {@link BindingsTemplate} object that contains all the relevant button to action bindings.
      */
-    public Input(Long window, CustomBindings bindingsTemplate) {
+    public Input(Long window, BindingsTemplate bindingsTemplate) {
     	Bindings bindings = new Bindings(bindingsTemplate);
 
         

@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
-public class CustomBindings {
+abstract public class BindingsTemplate {
 
 	@Getter
 	private final ArrayList<Binding> mBindings = new ArrayList<Binding>();

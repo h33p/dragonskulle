@@ -4,7 +4,7 @@ package org.dragonskulle.input;
 /**
  * An action that stores whether it is activated or not.
  * <p>
- * An action is triggered by buttons, as defined in {@link CustomBindings}. 
+ * An action is triggered by buttons, as defined in {@link BindingsTemplate}. 
  *
  * @author Craig Wilbourne
  */

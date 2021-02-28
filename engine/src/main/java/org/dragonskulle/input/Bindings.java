@@ -33,7 +33,7 @@ class Bindings {
     private final HashMap<Action, ArrayList<Integer>> mActionToButtons =
             new HashMap<Action, ArrayList<Integer>>();
     
-    public Bindings(CustomBindings bindings) {
+    public Bindings(BindingsTemplate bindings) {
     	// Store each custom binding.
     	for (Binding binding : bindings.getBindings()) {
 			add(binding);

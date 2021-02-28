@@ -1,9 +1,9 @@
 package org.dragonskulle.input.test_bindings;
 
-import org.dragonskulle.input.CustomBindings;
+import org.dragonskulle.input.BindingsTemplate;
 import org.dragonskulle.input.InputTest;
 
-public class TestBindings extends CustomBindings {
+public class TestBindings extends BindingsTemplate {
 
 	public TestBindings() {
 		add(InputTest.TEST_KEY_1, TestActions.TEST_ACTION);
