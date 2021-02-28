@@ -31,7 +31,7 @@ public class InputTest {
     /** Before every test, create a window and attach Input to it. */
     @Before
     public void createWindowInput() {
-        mInput = new Input(null);
+        mInput = new Input(null, new MyBindings());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class InputTest {
     public void buttonShouldActivateAction() {
         // Parameters:
         int button = GLFW.GLFW_KEY_UP;
-        Action action = ExtendedActions.UP;
+        Action action = MyActions.UP;
 
         // For logic:
         boolean activated;
@@ -127,7 +127,7 @@ public class InputTest {
         // Parameters:
         int button1 = GLFW.GLFW_KEY_UP;
         int button2 = GLFW.GLFW_KEY_W;
-        Action action = ExtendedActions.UP;
+        Action action = MyActions.UP;
 
         // For logic:
         boolean activated;

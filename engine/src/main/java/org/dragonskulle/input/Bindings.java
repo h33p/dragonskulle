@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Stores the bindings between buttons and the {@link Action}s they trigger.
@@ -34,12 +33,9 @@ public class Bindings {
     private final HashMap<Action, ArrayList<Integer>> mActionToButtons =
             new HashMap<Action, ArrayList<Integer>>();
 
-    public Bindings(MyBindings bind) {
-        // Hard-coded button bindings:
-
-    	LOGGER.info(bind.toString());
-    	
-    	for (Binding binding : bind.getBindings()) {
+    public Bindings(CustomBindings bindings) {
+    	// Store each custom binding.
+    	for (Binding binding : bindings.getBindings()) {
 			add(binding);
 		}
 
@@ -70,20 +66,6 @@ public class Bindings {
             return new ArrayList<Integer>();
         }
         return mActionToButtons.get(action);
-    }
-
-    /**
-     * Add a binding to the list of {@link #mBindings}.
-     *
-     * <p>Will not take effect until {@link #rebind()} is called.
-     *
-     * <p>Bindings added later will overwrite old bindings.
-     *
-     * @param button The button of the binding to be added.
-     * @param actions The actions the button triggers, listed as additional arguments.
-     */
-    private void add(int button, Action... actions) {
-        add(new Binding(button, actions));
     }
 
     /**

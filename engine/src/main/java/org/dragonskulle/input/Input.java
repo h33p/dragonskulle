@@ -3,8 +3,6 @@ package org.dragonskulle.input;
 
 import java.util.logging.Logger;
 
-import org.lwjgl.glfw.GLFW;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -46,33 +44,11 @@ public class Input {
      * Create a new input manager.
      *
      * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
+     * @param bindings A {@link CustomBindings} object that contains all the relevant button to action bindings.
      */
-    public Input(Long window) {
-        MyBindings testBindings = new MyBindings();
-        testBindings.add(GLFW.GLFW_KEY_E, ExtendedActions.DRAG);
-        testBindings.add(GLFW.GLFW_KEY_Q, ExtendedActions.BONUS);
-        
-        testBindings.add(GLFW.GLFW_KEY_UP, ExtendedActions.UP, ExtendedActions.SCROLL_UP);
-        testBindings.add(GLFW.GLFW_KEY_W, ExtendedActions.UP, ExtendedActions.SCROLL_UP);
-
-        testBindings.add(GLFW.GLFW_KEY_DOWN, ExtendedActions.DOWN, ExtendedActions.SCROLL_DOWN);
-        testBindings.add(GLFW.GLFW_KEY_S, ExtendedActions.DOWN, ExtendedActions.SCROLL_DOWN);
-
-        testBindings.add(GLFW.GLFW_KEY_LEFT, ExtendedActions.LEFT);
-        testBindings.add(GLFW.GLFW_KEY_A, ExtendedActions.LEFT);
-
-        testBindings.add(GLFW.GLFW_KEY_RIGHT, ExtendedActions.RIGHT);
-        testBindings.add(GLFW.GLFW_KEY_D, ExtendedActions.RIGHT);
-
-        testBindings.add(GLFW.GLFW_MOUSE_BUTTON_LEFT, ExtendedActions.ACTION_1, ExtendedActions.DRAG);
-        testBindings.add(GLFW.GLFW_MOUSE_BUTTON_RIGHT, ExtendedActions.ACTION_2);
-        testBindings.add(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, ExtendedActions.ACTION_3);
-
-        testBindings.add(Scroll.UP, ExtendedActions.SCROLL_UP, ExtendedActions.ZOOM_IN);
-        testBindings.add(Scroll.DOWN, ExtendedActions.SCROLL_DOWN, ExtendedActions.ZOOM_OUT);
-    	
+    public Input(Long window, CustomBindings bindings) {    	
     	mActions = new StoredActions();
-        mBindings = new Bindings(testBindings);
+        mBindings = new Bindings(bindings);
 
         mCursor = new Cursor(mActions);
         mButtons = new StoredButtons(mActions, mBindings);

@@ -1,6 +1,6 @@
 package org.dragonskulle.input;
 
-public class ExtendedActions extends Actions {
+public class MyActions extends Actions {
 	public final static Action UP = new Action("UP");
 	public final static Action DOWN = new Action("DOWN");
 	public final static Action LEFT = new Action("LEFT");
