@@ -39,19 +39,19 @@ public class InputTest {
 
     @Test
     public void buttonsNotNull() {
-        StoredButtons buttons = mInput.getButtons();
+        Buttons buttons = mInput.getButtons();
         assertNotNull(buttons);
     }
     
     @Test
     public void cursorNotNull() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
     }
 
     @Test
     public void scrollNotNull() {
-        Scroll scroll = mInput.getScroll();
+        Scroll scroll = Actions.scroll;
         assertNotNull(scroll);
     }
 
@@ -60,7 +60,7 @@ public class InputTest {
     public void buttonShouldStoreActivation() {
         boolean activated;
 
-        StoredButtons buttons = mInput.getButtons();
+        Buttons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         buttons.setActivated(TEST_KEY_1, true);
@@ -95,7 +95,7 @@ public class InputTest {
         String actionName = action.toString();
 
         // Run the test:
-        StoredButtons buttons = mInput.getButtons();
+        Buttons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         buttons.press(button);
@@ -141,7 +141,7 @@ public class InputTest {
         String actionName = action.toString();
 
         // Run the test:
-        StoredButtons buttons = mInput.getButtons();
+        Buttons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         buttons.press(button1);
@@ -202,7 +202,7 @@ public class InputTest {
     /** Ensure {@link Scroll} is storing the amount scrolled (since last {@link Scroll#reset()}). */
     @Test
     public void scrollShouldStoreAmount() {
-        Scroll scroll = mInput.getScroll();
+    	Scroll scroll = TestActions.scroll;
         assertNotNull(scroll);
 
         assertEquals("Scroll amount incorrect. ", scroll.getAmount(), 0, 0);
@@ -220,10 +220,10 @@ public class InputTest {
         // For logic:
         boolean activated;
 
-        StoredButtons buttons = mInput.getButtons();
+        Buttons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
-        Scroll scroll = mInput.getScroll();
+        Scroll scroll = Actions.scroll;
         assertNotNull(scroll);
 
         // Manually simulate scrolling.
@@ -250,7 +250,7 @@ public class InputTest {
     /** Ensure the cursor position is correctly stored. */
     @Test
     public void cursorPositionShouldBeStored() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
 
         cursor.setPosition(123d, 456d);
@@ -268,7 +268,7 @@ public class InputTest {
      */
     @Test
     public void noDragShouldCauseNullOrZero() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
 
         assertNull("No drag has begun, so DragStart should be null.", cursor.getDragStart());
@@ -285,7 +285,7 @@ public class InputTest {
     /** Ensure that dragging correctly stores the start position. */
     @Test
     public void cursorDragStartPosition() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
 
         // Set the cursor's position.
@@ -312,7 +312,7 @@ public class InputTest {
     /** Ensure the distance calculated between the drag start and current position is correct. */
     @Test
     public void cursorDistanceCorrect() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
 
         Vector2d desiredStart = new Vector2d(123d, 456d);
@@ -344,7 +344,7 @@ public class InputTest {
     /** Ensure the angle calculated between the drag start and current position is correct. */
     @Test
     public void cursorAngleCorrect() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
 
         Vector2d desiredStart = new Vector2d(123d, 456d);
@@ -376,7 +376,7 @@ public class InputTest {
     /** Ensure the cursor can detect when it is being dragged. */
     @Test
     public void cursorDetectInDrag() {
-        Cursor cursor = mInput.getCursor();
+        Cursor cursor = Actions.cursor;
         assertNotNull(cursor);
 
         assertFalse("Cursor is in drag, but it should not be.", cursor.inDrag());

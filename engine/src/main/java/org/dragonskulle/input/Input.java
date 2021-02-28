@@ -3,8 +3,6 @@ package org.dragonskulle.input;
 
 import java.util.logging.Logger;
 
-import org.dragonskulle.input.custom.MyActions;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -26,17 +24,8 @@ public class Input {
     /** Used to log messages. */
     private static final Logger LOGGER = Logger.getLogger("input");
 
-    /** Stores the bindings between buttons and actions. */
-    private Bindings mBindings;
-
     /** Allows button input to be detected. */
-    @Getter private StoredButtons mButtons;
-
-    /** Allows cursor position to be detected. */
-    @Getter private Cursor mCursor;
-
-    /** Allows scrolling to be detected. */
-    @Getter private Scroll mScroll;
+    @Getter private Buttons mButtons;
 
     /**
      * Create a new input manager.
@@ -44,18 +33,21 @@ public class Input {
      * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
      * @param bindings A {@link CustomBindings} object that contains all the relevant button to action bindings.
      */
-    public Input(Long window, CustomBindings bindings) {
-        mBindings = new Bindings(bindings);
+    public Input(Long window, CustomBindings bindingsTemplate) {
+    	Bindings bindings = new Bindings(bindingsTemplate);
 
-        mCursor = new Cursor();
-        mButtons = new StoredButtons(mBindings);
-        mScroll = new Scroll(mButtons);
+        
+        
+        mButtons = new Buttons(bindings);
+        
+        Actions.cursor = new Cursor();
+        Actions.scroll = new Scroll(mButtons);
 
         // If a window is provided, attach the event listeners.
         if (window != null) {
-            mCursor.attachToWindow(window);
+        	Actions.cursor.attachToWindow(window);
             mButtons.attachToWindow(window);
-            mScroll.attachToWindow(window);
+            Actions.scroll.attachToWindow(window);
         } else {
         	LOGGER.warning("Input is not attatched to a window.");
         }
@@ -64,14 +56,5 @@ public class Input {
         // GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         // For hiding the cursor.
         // GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    }
-
-    /**
-     * Resets any recorded values ready for their new values.
-     *
-     * <p>Currently only used for {@link Scroll}.
-     */
-    public void reset() {
-        mScroll.reset();
     }
 }

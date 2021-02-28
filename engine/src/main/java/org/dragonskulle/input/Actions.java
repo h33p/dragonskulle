@@ -11,11 +11,19 @@ public abstract class Actions {
 	//DRAG must always be present, regardless of any other custom actions implemented.
 	public final static Action DRAG = new Action("DRAG");
 	
-	public final static ActionValue<Double> MY_TEST = new ActionValue<Double>("DRAG", 0d);
+	/** Stores everything to do with mouse wheel scrolling. */
+	public static Scroll scroll;
+	/** Stores everything to do with cursor position and dragging. */
+	public static Cursor cursor;
 	
 	/**
-     * The amount of scrolling done since the last call to {@link Scroll#reset()}.
-     * Depending on direction scrolled, this value is negative or positive.
-     */
-	public final static ActionValue<Double> VALUE_SCROLL = new ActionValue<Double>("VALUE_SCROLL", 0d);
+	 * Refresh select values back to their defaults, ready for their new values. 
+     * <p>
+     * Currently only used for resetting {@link #scroll}.
+	 */
+	public static void refresh() {
+		if(scroll != null) {
+			scroll.reset();
+		}
+	}
 }
