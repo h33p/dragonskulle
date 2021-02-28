@@ -71,12 +71,12 @@ public class InputTest {
         Buttons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
-        buttons.setActivated(TEST_KEY_1, true);
-        activated = buttons.isActivated(TEST_KEY_1);
+        buttons.setPressed(TEST_KEY_1, true);
+        activated = buttons.isPressed(TEST_KEY_1);
         assertTrue("Button TEST_KEY_1 should be activated (true).", activated);
 
-        buttons.setActivated(TEST_KEY_1, false);
-        activated = buttons.isActivated(TEST_KEY_1);
+        buttons.setPressed(TEST_KEY_1, false);
+        activated = buttons.isPressed(TEST_KEY_1);
         assertFalse("Button TEST_KEY_1 should be deactivated (false).", activated);
     }
 
@@ -243,11 +243,11 @@ public class InputTest {
         scroll.reset();
 
         // Ensure all the button presses and the scroll amount has been reset.
-        activated = buttons.isActivated(Scroll.UP);
+        activated = buttons.isPressed(Scroll.UP);
         assertFalse(
                 "Scroll.UP should be deactivated (false) as scrolling has been reset.", activated);
 
-        activated = buttons.isActivated(Scroll.DOWN);
+        activated = buttons.isPressed(Scroll.DOWN);
         assertFalse(
                 "Scroll.DOWN should be deactivated (false) as scrolling has been reset.",
                 activated);
