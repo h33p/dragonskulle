@@ -9,11 +9,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Logger;
 
+import org.dragonskulle.input.custom.MyActions;
 import org.dragonskulle.input.test_bindings.TestActions;
 import org.dragonskulle.input.test_bindings.TestBindings;
 import org.joml.Vector2d;
 import org.junit.Before;
 import org.junit.Test;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * Unit test for {@link Input}.
@@ -34,7 +36,13 @@ public class InputTest {
     /** Before every test, create a window and attach Input to it. */
     @Before
     public void createWindowInput() {
-        mInput = new Input(null, new TestBindings());
+    	TestBindings bindings = new TestBindings();
+    	mInput = new Input(null, bindings);
+        
+    	// Testing: Editing bindings after Input is created.
+    	bindings.add(GLFW.GLFW_KEY_P, MyActions.BONUS);
+    	bindings.submit();
+        
     }
 
     @Test

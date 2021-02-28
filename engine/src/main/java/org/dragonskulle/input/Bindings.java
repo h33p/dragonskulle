@@ -7,42 +7,36 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 /**
- * Stores the bindings between buttons and the {@link Action}s they trigger.
+ * Stores {@link Binding}s between buttons and actions.
  *
  * @author Craig Wilbourne
  */
-class Bindings {
+abstract public class Bindings {
 
     /** Used to log messages. */
     private static final Logger LOGGER = Logger.getLogger("bindings");
 
-    /** Stores all potential bindings. */
+    /** Stores all bindings. */
     private final ArrayList<Binding> mBindings = new ArrayList<Binding>();
     
-    /**
-     * Key: Button <br>
-     * Value: {@link Action}s the Button activates.
-     */
-    private final HashMap<Integer, ArrayList<Action>> mButtonToActions =
-            new HashMap<Integer, ArrayList<Action>>();
+    /** A map between a button and the actions it triggers. */
+    private final HashMap<Integer, ArrayList<Action>> mButtonToActions = new HashMap<Integer, ArrayList<Action>>();
 
-    /**
-     * Key: {@link Action} <br>
-     * Value: Buttons that activate the Action.
-     */
-    private final HashMap<Action, ArrayList<Integer>> mActionToButtons =
-            new HashMap<Action, ArrayList<Integer>>();
+    /** A map between an action and the buttons that trigger it. */
+    private final HashMap<Action, ArrayList<Integer>> mActionToButtons = new HashMap<Action, ArrayList<Integer>>();
     
-    public Bindings(BindingsTemplate bindings) {
-    	// Store each custom binding.
-    	for (Binding binding : bindings.getBindings()) {
-			add(binding);
-		}
-
-        rebind();
+    /**
+     * Submit the current bindings for use.
+     * <p>
+     * If any bindings are edited, submit needs to be called again before these changes are reflected. 
+     */
+    public void submit() {
+    	rebind();
     }
 
     /**
+     * Get the actions triggered by a specific button.
+     * 
      * @param button The button being targeted.
      * @return An {@code ArrayList} of {@link Action}s associated with the button, or an empty
      *     {@code ArrayList}.
@@ -55,7 +49,7 @@ class Bindings {
     }
 
     /**
-     * *
+     * Get the buttons that trigger a specific action.
      *
      * @param action The action being targeted.
      * @return An {@code ArrayList} of buttons associated with the {@link Action}, or an empty
@@ -69,20 +63,26 @@ class Bindings {
     }
 
     /**
+	 * Add a new binding by specifying the button and the actions it triggers.
+	 * 
+	 * @param button The button code.
+	 * @param actions The actions that are triggered by the button.
+	 */
+	public void add(int button, Action... actions) {
+        add(new Binding(button, actions));
+    }
+    
+    /**
      * Add a {@link Binding} to the list of {@link #mBindings}.
-     *
-     * <p>Will not take effect until {@link #rebind()} is called.
-     *
-     * <p>Bindings added later will overwrite old bindings.
      *
      * @param binding The binding to be added.
      */
     private void add(Binding binding) {
         mBindings.add(binding);
-    }
+    }    
 
     /**
-     * Add all of the bindings stored by {@link #mBindings}.
+     * Allows all of the bindings in {@link #mBindings} to become usable.
      *
      * <p>This temporarily resets {@link #mButtonToActions} and {@link #mActionToButtons}, and then
      * repopulates them with the latest bindings.
@@ -98,7 +98,7 @@ class Bindings {
 
         LOGGER.info(
                 String.format(
-                        "Rebinded.\nButton to Actions: %s\nAction to Buttons: %s",
+                        "Rebinded:\n\tButton to Actions: %s\n\tAction to Buttons: %s",
                         mButtonToActions.toString(), mActionToButtons.toString()));
     }
 

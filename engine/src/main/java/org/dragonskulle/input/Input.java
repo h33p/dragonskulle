@@ -7,14 +7,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * Manages all user input a window receives.
- *
- * <p>Provides:
- *
- * <ul>
- *   <li>Access to the cursor.
- *   <li>Access to the raw scrolling value (via {@link #mScroll}).
- * </ul>
+ * Listens to all user input for a window, and reflects it in the relevant {@link Actions}.
  *
  * @author Craig Wilboure
  */
@@ -24,19 +17,23 @@ public class Input {
     /** Used to log messages. */
     private static final Logger LOGGER = Logger.getLogger("input");
 
-    /** Allows button input to be detected. */
-    @Getter private Buttons mButtons;
-
+    /** Allows button presses to trigger actions. */
+    @Getter
+    private Buttons mButtons;
+    
     /**
-     * Create a new input manager.
+     * Create a new input manager. If a window is present, user input from that window is monitored and this is reflected in the relevant {@link Actions}.
+     * <p>
+     * Automatically submits any bindings ({@link Bindings#submit()}).
      *
      * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
      * @param bindings A {@link BindingsTemplate} object that contains all the relevant button to action bindings.
      */
-    public Input(Long window, BindingsTemplate bindingsTemplate) {
-    	Bindings bindings = new Bindings(bindingsTemplate);
+    public Input(Long window, Bindings bindings) {
+    	// Generate all the bindings from the bindingsTemplate.
+    	//Bindings bindings = new Bindings(bindingsTemplate);
 
-        
+    	bindings.submit();
         
         mButtons = new Buttons(bindings);
         
@@ -45,8 +42,8 @@ public class Input {
 
         // If a window is provided, attach the event listeners.
         if (window != null) {
+        	mButtons.attachToWindow(window);
         	Actions.cursor.attachToWindow(window);
-            mButtons.attachToWindow(window);
             Actions.scroll.attachToWindow(window);
         } else {
         	LOGGER.warning("Input is not attatched to a window.");

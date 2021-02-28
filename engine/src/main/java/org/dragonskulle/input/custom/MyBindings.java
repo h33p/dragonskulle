@@ -1,10 +1,10 @@
 package org.dragonskulle.input.custom;
 
-import org.dragonskulle.input.BindingsTemplate;
+import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Scroll;
 import org.lwjgl.glfw.GLFW;
 
-public class MyBindings extends BindingsTemplate {
+public class MyBindings extends Bindings {
 
 	public MyBindings() {
 		add(GLFW.GLFW_KEY_Q, MyActions.BONUS);
@@ -27,6 +27,8 @@ public class MyBindings extends BindingsTemplate {
 
         add(Scroll.UP, MyActions.MENU_UP, MyActions.ZOOM_IN);
         add(Scroll.DOWN, MyActions.MENU_DOWN, MyActions.ZOOM_OUT);
+        
+        submit();
 	}
 	
 }
