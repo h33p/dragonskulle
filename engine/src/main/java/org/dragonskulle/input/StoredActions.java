@@ -6,4 +6,4 @@ package org.dragonskulle.input;
  *
  * @author Craig Wilbourne
  */
-public class StoredActions extends Activatable<Action> {}
+class StoredActions extends Activatable<Action> {}

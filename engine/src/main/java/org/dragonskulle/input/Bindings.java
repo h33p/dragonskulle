@@ -11,7 +11,7 @@ import java.util.logging.Logger;
  *
  * @author Craig Wilbourne
  */
-public class Bindings {
+class Bindings {
 
     /** Used to log messages. */
     private static final Logger LOGGER = Logger.getLogger("bindings");

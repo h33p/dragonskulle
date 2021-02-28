@@ -18,7 +18,7 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
  *
  * @author Craig Wilbourne
  */
-public class Cursor {
+class Cursor {
 
     /** This cursor's current position. */
     private Vector2d mPosition = new Vector2d(0, 0);

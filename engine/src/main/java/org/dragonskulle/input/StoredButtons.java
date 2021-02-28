@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
  *
  * @author Craig Wilbourne
  */
-public class StoredButtons extends Activatable<Integer> {
+class StoredButtons extends Activatable<Integer> {
 
     /** Allows {@link Action}s to be activated and deactivated. */
     private StoredActions mActions;

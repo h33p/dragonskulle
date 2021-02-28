@@ -7,7 +7,7 @@ package org.dragonskulle.input;
  * 
  * @author Craig Wilbourne
  */
-public class Actions {
+public abstract class Actions {
 	//DRAG must always be present, regardless of any other custom actions implemented.
 	public final static Action DRAG = new Action("DRAG");
 }

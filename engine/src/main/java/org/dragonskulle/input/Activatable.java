@@ -9,7 +9,7 @@ import java.util.HashMap;
  * @author Craig Wilbourne
  * @param <T> The data type of the stored elements.
  */
-public abstract class Activatable<T> {
+abstract class Activatable<T> {
 
     /** Stores elements that are either {@code true} or {@code false}. */
     private final HashMap<T, Boolean> mStored = new HashMap<T, Boolean>();

@@ -2,7 +2,9 @@
 package org.dragonskulle.input;
 
 /**
- * A possible action that could be activated.
+ * An action.
+ * <p>
+ * Using {@link CustomBindings}, this action can be triggered by any number of button presses. 
  *
  * @author Craig Wilbourne
  */

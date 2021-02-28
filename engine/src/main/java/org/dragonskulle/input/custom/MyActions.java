@@ -10,8 +10,8 @@ public class MyActions extends Actions {
 	public final static Action RIGHT = new Action("RIGHT");
 	public final static Action ZOOM_IN = new Action("ZOOM_IN");
 	public final static Action ZOOM_OUT = new Action("ZOOM_OUT");
-	public final static Action SCROLL_UP = new Action("SCROLL_UP");
-	public final static Action SCROLL_DOWN = new Action("SCROLL_DOWN");
+	public final static Action MENU_UP = new Action("MENU_UP");
+	public final static Action MENU_DOWN = new Action("MENU_DOWN");
 	
 	public final static Action ACTION_1 = new Action("ACTION_1");
 	public final static Action ACTION_2 = new Action("ACTION_2");
