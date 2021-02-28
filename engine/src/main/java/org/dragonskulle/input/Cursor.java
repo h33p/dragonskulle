@@ -77,7 +77,7 @@ public class Cursor {
      * @param actions The user's {@link StoredActions}.
      */
     private void detectDrag(StoredActions actions) {
-        if (actions.isActivated(MyActions.DRAG)) {
+        if (actions.isActivated(Actions.DRAG)) {
             if (inDrag() == false) {
                 startDrag();
             }

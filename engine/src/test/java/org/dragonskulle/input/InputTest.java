@@ -82,7 +82,7 @@ public class InputTest {
     public void buttonShouldActivateAction() {
         // Parameters:
         int button = GLFW.GLFW_KEY_UP;
-        Action action = MyActions.UP;
+        Action action = ExtendedActions.UP;
 
         // For logic:
         boolean activated;
@@ -127,7 +127,7 @@ public class InputTest {
         // Parameters:
         int button1 = GLFW.GLFW_KEY_UP;
         int button2 = GLFW.GLFW_KEY_W;
-        Action action = MyActions.UP;
+        Action action = ExtendedActions.UP;
 
         // For logic:
         boolean activated;
