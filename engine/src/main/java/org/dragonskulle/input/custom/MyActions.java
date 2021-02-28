@@ -1,4 +1,7 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.custom;
+
+import org.dragonskulle.input.Action;
+import org.dragonskulle.input.Actions;
 
 public class MyActions extends Actions {
 	public final static Action UP = new Action("UP");

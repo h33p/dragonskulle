@@ -3,6 +3,11 @@ package org.dragonskulle.input;
 
 import java.util.ArrayList;
 
+/**
+ * Stores a binding between a button and any number of actions.
+ * 
+ * @author Craig Wilbourne
+ */
 class Binding {
 
     /** The button code. */

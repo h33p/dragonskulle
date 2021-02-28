@@ -1,5 +1,7 @@
-package org.dragonskulle.input;
+package org.dragonskulle.input.custom;
 
+import org.dragonskulle.input.CustomBindings;
+import org.dragonskulle.input.Scroll;
 import org.lwjgl.glfw.GLFW;
 
 public class MyBindings extends CustomBindings {

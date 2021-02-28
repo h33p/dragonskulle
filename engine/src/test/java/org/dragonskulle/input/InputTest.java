@@ -8,6 +8,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Logger;
+
+import org.dragonskulle.input.custom.MyActions;
+import org.dragonskulle.input.custom.MyBindings;
 import org.joml.Vector2d;
 import org.junit.Before;
 import org.junit.Test;
