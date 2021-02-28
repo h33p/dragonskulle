@@ -28,10 +28,10 @@ public class Input {
     private Bindings mBindings;
 
     /** Stores which actions are active. */
-    private Actions mActions;
+    private StoredActions mActions;
 
     /** Allows button input to be detected. */
-    @Getter private Buttons mButtons;
+    @Getter private StoredButtons mButtons;
 
     /** Allows cursor position to be detected. */
     @Getter private Cursor mCursor;
@@ -45,11 +45,11 @@ public class Input {
      * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
      */
     public Input(Long window) {
-        mActions = new Actions();
+        mActions = new StoredActions();
         mBindings = new Bindings();
 
         mCursor = new Cursor(mActions);
-        mButtons = new Buttons(mActions, mBindings);
+        mButtons = new StoredButtons(mActions, mBindings);
         mScroll = new Scroll(mButtons);
 
         // If a window is provided, attach the event listeners.

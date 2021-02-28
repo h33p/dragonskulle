@@ -36,7 +36,7 @@ public class InputTest {
 
     @Test
     public void buttonsNotNull() {
-        Buttons buttons = mInput.getButtons();
+        StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
     }
 
@@ -57,7 +57,7 @@ public class InputTest {
     public void buttonShouldStoreActivation() {
         boolean activated;
 
-        Buttons buttons = mInput.getButtons();
+        StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         buttons.setActivated(TEST_KEY, true);
@@ -82,7 +82,7 @@ public class InputTest {
     public void buttonShouldActivateAction() {
         // Parameters:
         int button = GLFW.GLFW_KEY_UP;
-        Action action = Action.UP;
+        Action action = MyActions.UP;
 
         // For logic:
         boolean activated;
@@ -92,7 +92,7 @@ public class InputTest {
         String actionName = action.toString();
 
         // Run the test:
-        Buttons buttons = mInput.getButtons();
+        StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         buttons.press(button);
@@ -127,7 +127,7 @@ public class InputTest {
         // Parameters:
         int button1 = GLFW.GLFW_KEY_UP;
         int button2 = GLFW.GLFW_KEY_W;
-        Action action = Action.UP;
+        Action action = MyActions.UP;
 
         // For logic:
         boolean activated;
@@ -138,7 +138,7 @@ public class InputTest {
         String actionName = action.toString();
 
         // Run the test:
-        Buttons buttons = mInput.getButtons();
+        StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         buttons.press(button1);
@@ -195,7 +195,7 @@ public class InputTest {
         // For logic:
         boolean activated;
 
-        Buttons buttons = mInput.getButtons();
+        StoredButtons buttons = mInput.getButtons();
         assertNotNull(buttons);
 
         Scroll scroll = mInput.getScroll();

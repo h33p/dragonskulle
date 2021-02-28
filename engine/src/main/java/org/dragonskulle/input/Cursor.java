@@ -25,14 +25,14 @@ public class Cursor {
     /** The starting position of a drag, or {@code null} if no drag is taking place. */
     private Vector2d mDragStart;
     /** Allows {@link Action}s to be activated and deactivated. */
-    private Actions mActions;
+    private StoredActions mActions;
 
     /**
      * Create a new cursor manager.
      *
      * @param actions The actions to be triggered.
      */
-    public Cursor(Actions actions) {
+    public Cursor(StoredActions actions) {
         mActions = actions;
     }
 
@@ -42,7 +42,7 @@ public class Cursor {
      * <p>Required to allow this cursor to access to this window.
      *
      * @param window The window to attach to.
-     * @param actions The user's {@link Actions}.
+     * @param actions The user's {@link StoredActions}.
      */
     void attachToWindow(long window) {
         // Listen for cursor position events.
@@ -74,10 +74,10 @@ public class Cursor {
      * <p>Starts a new drag if {@link Action#DRAG} is active. Ends a drag in progress if {@link
      * Action#DRAG} is not active.
      *
-     * @param actions The user's {@link Actions}.
+     * @param actions The user's {@link StoredActions}.
      */
-    private void detectDrag(Actions actions) {
-        if (actions.isActivated(Action.DRAG)) {
+    private void detectDrag(StoredActions actions) {
+        if (actions.isActivated(MyActions.DRAG)) {
             if (inDrag() == false) {
                 startDrag();
             }

@@ -6,8 +6,27 @@ package org.dragonskulle.input;
  *
  * @author Craig Wilbourne
  */
-public enum Action {
-    UP,
+public class Action {
+
+	private String mName;
+	
+	public Action() {}
+	
+	public Action(String name) {
+		this();
+		this.mName = name;
+	}
+	
+	@Override
+	public String toString() {
+		if(mName == null) {
+			return String.format("Action{name:---}", mName);
+		}
+		return String.format("Action{name:%s}", mName);
+	}
+	
+    /*
+	UP,
     DOWN,
     LEFT,
     RIGHT,
@@ -19,4 +38,5 @@ public enum Action {
     ACTION_1,
     ACTION_2,
     ACTION_3
+    */
 }

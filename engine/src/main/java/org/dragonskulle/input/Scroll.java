@@ -44,7 +44,7 @@ public class Scroll {
     private double mAmount = 0;
 
     /** Allows buttons to be pressed and released. */
-    private Buttons mButtons;
+    private StoredButtons mButtons;
 
     /**
      * Listens for GLFW scrolling changes and stores these changes as well as simulating button
@@ -72,14 +72,14 @@ public class Scroll {
      *
      * @param buttons The buttons.
      */
-    public Scroll(Buttons buttons) {
+    public Scroll(StoredButtons buttons) {
         mButtons = buttons;
     }
 
     /**
      * Attach the scrolling detection to the window.
      *
-     * <p>Required to allow scrolling to be detected both as a direct value and via {@link Actions}.
+     * <p>Required to allow scrolling to be detected both as a direct value and via {@link StoredActions}.
      *
      * @param window The window to attach to.
      * @param buttons The buttons that will be pressed and released.

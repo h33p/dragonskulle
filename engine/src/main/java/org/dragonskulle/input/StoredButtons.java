@@ -11,10 +11,10 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
  *
  * @author Craig Wilbourne
  */
-public class Buttons extends Activatable<Integer> {
+public class StoredButtons extends Activatable<Integer> {
 
     /** Allows {@link Action}s to be activated and deactivated. */
-    private Actions mActions;
+    private StoredActions mActions;
     /** Allows the mapping between buttons and actions to be accessed. */
     private Bindings mBindings;
 
@@ -53,7 +53,7 @@ public class Buttons extends Activatable<Integer> {
      * @param actions The actions to be triggered.
      * @param bindings The bindings of actions to buttons.
      */
-    public Buttons(Actions actions, Bindings bindings) {
+    public StoredButtons(StoredActions actions, Bindings bindings) {
         mActions = actions;
         mBindings = bindings;
     }

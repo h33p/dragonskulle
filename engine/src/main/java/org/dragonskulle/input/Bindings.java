@@ -37,24 +37,24 @@ public class Bindings {
     public Bindings() {
         // Hard-coded button bindings:
 
-        add(GLFW.GLFW_KEY_UP, Action.UP, Action.SCROLL_UP);
-        add(GLFW.GLFW_KEY_W, Action.UP, Action.SCROLL_UP);
+        add(GLFW.GLFW_KEY_UP, MyActions.UP, MyActions.SCROLL_UP);
+        add(GLFW.GLFW_KEY_W, MyActions.UP, MyActions.SCROLL_UP);
 
-        add(GLFW.GLFW_KEY_DOWN, Action.DOWN, Action.SCROLL_DOWN);
-        add(GLFW.GLFW_KEY_S, Action.DOWN, Action.SCROLL_DOWN);
+        add(GLFW.GLFW_KEY_DOWN, MyActions.DOWN, MyActions.SCROLL_DOWN);
+        add(GLFW.GLFW_KEY_S, MyActions.DOWN, MyActions.SCROLL_DOWN);
 
-        add(GLFW.GLFW_KEY_LEFT, Action.LEFT);
-        add(GLFW.GLFW_KEY_A, Action.LEFT);
+        add(GLFW.GLFW_KEY_LEFT, MyActions.LEFT);
+        add(GLFW.GLFW_KEY_A, MyActions.LEFT);
 
-        add(GLFW.GLFW_KEY_RIGHT, Action.RIGHT);
-        add(GLFW.GLFW_KEY_D, Action.RIGHT);
+        add(GLFW.GLFW_KEY_RIGHT, MyActions.RIGHT);
+        add(GLFW.GLFW_KEY_D, MyActions.RIGHT);
 
-        add(GLFW.GLFW_MOUSE_BUTTON_LEFT, Action.ACTION_1, Action.DRAG);
-        add(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Action.ACTION_2);
-        add(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, Action.ACTION_3);
+        add(GLFW.GLFW_MOUSE_BUTTON_LEFT, MyActions.ACTION_1, MyActions.DRAG);
+        add(GLFW.GLFW_MOUSE_BUTTON_RIGHT, MyActions.ACTION_2);
+        add(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, MyActions.ACTION_3);
 
-        add(Scroll.UP, Action.SCROLL_UP, Action.ZOOM_IN);
-        add(Scroll.DOWN, Action.SCROLL_DOWN, Action.ZOOM_OUT);
+        add(Scroll.UP, MyActions.SCROLL_UP, MyActions.ZOOM_IN);
+        add(Scroll.DOWN, MyActions.SCROLL_DOWN, MyActions.ZOOM_OUT);
 
         rebind();
     }
