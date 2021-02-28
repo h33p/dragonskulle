@@ -3,6 +3,8 @@ package org.dragonskulle.input;
 
 import java.util.logging.Logger;
 
+import org.dragonskulle.input.custom.MyActions;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -28,9 +30,6 @@ public class Input {
     /** Stores the bindings between buttons and actions. */
     private Bindings mBindings;
 
-    /** Stores which actions are active. */
-    private StoredActions mActions;
-
     /** Allows button input to be detected. */
     @Getter private StoredButtons mButtons;
 
@@ -46,12 +45,11 @@ public class Input {
      * @param window A {@link Long} GLFW window id, or {@code null} if there is no window.
      * @param bindings A {@link CustomBindings} object that contains all the relevant button to action bindings.
      */
-    public Input(Long window, CustomBindings bindings) {    	
-    	mActions = new StoredActions();
+    public Input(Long window, CustomBindings bindings) {
         mBindings = new Bindings(bindings);
 
-        mCursor = new Cursor(mActions);
-        mButtons = new StoredButtons(mActions, mBindings);
+        mCursor = new Cursor();
+        mButtons = new StoredButtons(mBindings);
         mScroll = new Scroll(mButtons);
 
         // If a window is provided, attach the event listeners.
@@ -76,7 +74,9 @@ public class Input {
      * @return {@code true} if the action is activated, otherwise {@code false}.
      */
     public boolean isActivated(Action action) {
-        return mActions.isActivated(action);
+    	
+    	return action.isActivated();
+    	//return mActions.isActivated(action);
     }
 
     /**

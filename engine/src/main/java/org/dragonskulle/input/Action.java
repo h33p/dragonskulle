@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import lombok.Getter;
+
 /**
  * An action.
  * <p>
@@ -14,6 +16,8 @@ public class Action {
 	 * A name used for display purposes only.
 	 */
 	private String mName;
+	
+	private Boolean mActivated = false;
 	
 	/**
 	 * Create a new (unnamed) action.
@@ -37,5 +41,13 @@ public class Action {
 			return String.format("Action{name:---}", mName);
 		}
 		return String.format("Action{name:%s}", mName);
+	}
+
+	public boolean isActivated() {
+		return mActivated;
+	}
+
+	public void setActivated(boolean activated) {
+		mActivated = activated;
 	}
 }

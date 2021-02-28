@@ -82,7 +82,6 @@ public class Scroll {
      * <p>Required to allow scrolling to be detected both as a direct value and via {@link StoredActions}.
      *
      * @param window The window to attach to.
-     * @param buttons The buttons that will be pressed and released.
      */
     void attachToWindow(long window) {
         // Set the listener.

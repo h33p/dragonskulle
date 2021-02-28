@@ -18,7 +18,7 @@ class Bindings {
 
     /** Stores all potential bindings. */
     private final ArrayList<Binding> mBindings = new ArrayList<Binding>();
-
+    
     /**
      * Key: Button <br>
      * Value: {@link Action}s the Button activates.
@@ -32,7 +32,7 @@ class Bindings {
      */
     private final HashMap<Action, ArrayList<Integer>> mActionToButtons =
             new HashMap<Action, ArrayList<Integer>>();
-
+    
     public Bindings(CustomBindings bindings) {
     	// Store each custom binding.
     	for (Binding binding : bindings.getBindings()) {

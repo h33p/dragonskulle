@@ -13,8 +13,6 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
  */
 class StoredButtons extends Activatable<Integer> {
 
-    /** Allows {@link Action}s to be activated and deactivated. */
-    private StoredActions mActions;
     /** Allows the mapping between buttons and actions to be accessed. */
     private Bindings mBindings;
 
@@ -50,11 +48,9 @@ class StoredButtons extends Activatable<Integer> {
     /**
      * Create a new buttons manager.
      *
-     * @param actions The actions to be triggered.
      * @param bindings The bindings of actions to buttons.
      */
-    public StoredButtons(StoredActions actions, Bindings bindings) {
-        mActions = actions;
+    public StoredButtons(Bindings bindings) {
         mBindings = bindings;
     }
 
@@ -64,8 +60,6 @@ class StoredButtons extends Activatable<Integer> {
      * <p>Required to allow button input to be detected.
      *
      * @param window The window to attach to.
-     * @param actions The actions that will be activated.
-     * @param bindings The button and action bindings.
      */
     void attachToWindow(long window) {
         // Set the listeners.
@@ -85,7 +79,7 @@ class StoredButtons extends Activatable<Integer> {
         setActivated(button, true);
 
         for (Action action : mBindings.getActions(button)) {
-            mActions.setActivated(action, true);
+        	action.setActivated(true);
         }
     }
 
@@ -121,6 +115,6 @@ class StoredButtons extends Activatable<Integer> {
         }
         
         // All buttons that trigger the action have been released- so deactivate the action.
-        mActions.setActivated(action, false);
+        action.setActivated(false);
     }
 }

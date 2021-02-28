@@ -24,17 +24,11 @@ class Cursor {
     private Vector2d mPosition = new Vector2d(0, 0);
     /** The starting position of a drag, or {@code null} if no drag is taking place. */
     private Vector2d mDragStart;
-    /** Allows {@link Action}s to be activated and deactivated. */
-    private StoredActions mActions;
 
     /**
      * Create a new cursor manager.
-     *
-     * @param actions The actions to be triggered.
      */
-    public Cursor(StoredActions actions) {
-        mActions = actions;
-    }
+    public Cursor() {}
 
     /**
      * Attach this cursor to a window.
@@ -42,7 +36,6 @@ class Cursor {
      * <p>Required to allow this cursor to access to this window.
      *
      * @param window The window to attach to.
-     * @param actions The user's {@link StoredActions}.
      */
     void attachToWindow(long window) {
         // Listen for cursor position events.
@@ -51,7 +44,7 @@ class Cursor {
                     @Override
                     public void invoke(long window, double x, double y) {
                         setPosition(x, y);
-                        detectDrag(mActions);
+                        detectDrag();
                     }
                 };
 
@@ -73,11 +66,9 @@ class Cursor {
      *
      * <p>Starts a new drag if {@link Action#DRAG} is active. Ends a drag in progress if {@link
      * Action#DRAG} is not active.
-     *
-     * @param actions The user's {@link StoredActions}.
      */
-    private void detectDrag(StoredActions actions) {
-        if (actions.isActivated(Actions.DRAG)) {
+    private void detectDrag() {
+        if (Actions.DRAG.isActivated()) {
             if (inDrag() == false) {
                 startDrag();
             }
