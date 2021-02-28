@@ -99,7 +99,7 @@ public class InputTest {
         assertNotNull(buttons);
 
         buttons.press(button);
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertTrue(
                 String.format(
                         "%s should be activated (true) as %s has been pressed.",
@@ -107,7 +107,7 @@ public class InputTest {
                 activated);
 
         buttons.release(button);
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertFalse(
                 String.format(
                         "%s should be deactivated (false) as %s has been released.",
@@ -145,7 +145,7 @@ public class InputTest {
         assertNotNull(buttons);
 
         buttons.press(button1);
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertTrue(
                 String.format(
                         "%s should be activated (true) as %s has been pressed.",
@@ -153,7 +153,7 @@ public class InputTest {
                 activated);
 
         buttons.press(button2);
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertTrue(
                 String.format(
                         "%s should be activated (true) as %s and %s has been pressed.",
@@ -161,7 +161,7 @@ public class InputTest {
                 activated);
 
         buttons.release(button1);
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertTrue(
                 String.format(
                         "%s should be activated (true) as %s is still being pressed.",
@@ -169,7 +169,7 @@ public class InputTest {
                 activated);
 
         buttons.release(button2);
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertFalse(
                 String.format(
                         "%s should be deactivated (false) as %s and %s have been released.",
@@ -191,7 +191,7 @@ public class InputTest {
         // For error messages:
         String actionName = action.toString();
 
-        activated = mInput.isActivated(action);
+        activated = action.isActivated();
         assertFalse(
                 String.format(
                         "%s should be deactivated (false) as nothing can activate it.",

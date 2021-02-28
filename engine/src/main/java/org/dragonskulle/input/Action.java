@@ -1,22 +1,19 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
-import lombok.Getter;
-
 /**
- * An action.
+ * An action that stores whether it is activated or not.
  * <p>
- * Using {@link CustomBindings}, this action can be triggered by any number of button presses. 
+ * An action is triggered by buttons, as defined in {@link CustomBindings}. 
  *
  * @author Craig Wilbourne
  */
 public class Action {
 
-	/**
-	 * A name used for display purposes only.
-	 */
+	/** A name used for display purposes only. */
 	private String mName;
 	
+	/**	Whether the action is currently activated. */
 	private Boolean mActivated = false;
 	
 	/**
@@ -34,6 +31,24 @@ public class Action {
 		this.mName = name;
 	}
 	
+	/**
+	 * Get if the action is currently activated.
+	 * 
+	 * @return Whether the action is currently activated.
+	 */
+	public boolean isActivated() {
+		return mActivated;
+	}
+
+	/**
+	 * Set the action to either activated ({@code true}) or not activated ({@code false}).
+	 * 
+	 * @param activated Whether the action should be activated.
+	 */
+	void setActivated(boolean activated) {
+		mActivated = activated;
+	}
+	
 	@Override
 	public String toString() {
 		if(mName == null) {
@@ -41,13 +56,5 @@ public class Action {
 			return String.format("Action{name:---}", mName);
 		}
 		return String.format("Action{name:%s}", mName);
-	}
-
-	public boolean isActivated() {
-		return mActivated;
-	}
-
-	public void setActivated(boolean activated) {
-		mActivated = activated;
 	}
 }

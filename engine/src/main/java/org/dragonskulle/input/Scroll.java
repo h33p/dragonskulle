@@ -37,12 +37,6 @@ public class Scroll {
      */
     public static final Integer DOWN = -776;
 
-    /**
-     * The amount of scrolling done since the last call to {@link #reset()}. Depending on direction
-     * scrolled, this value is negative or positive.
-     */
-    private double mAmount = 0;
-
     /** Allows buttons to be pressed and released. */
     private StoredButtons mButtons;
 
@@ -94,7 +88,7 @@ public class Scroll {
      * @return The amount of scrolling.
      */
     public double getAmount() {
-        return mAmount;
+        return Actions.VALUE_SCROLL.getValue();
     }
 
     /**
@@ -103,12 +97,12 @@ public class Scroll {
      * <p>Needs to be called frequently so:
      *
      * <ul>
-     *   <li>Changes in scrolling direction are represented in {@link #mAmount}.
+     *   <li>Changes in scrolling direction are represented in {@link Actions#VALUE_SCROLL}.
      *   <li>Stopping scrolling is represented in {@link #mAmount} and {@link #mButtons}.
      * </ul>
      */
     void reset() {
-        mAmount = 0;
+    	Actions.VALUE_SCROLL.setValue(0d);
         mButtons.release(Scroll.UP);
         mButtons.release(Scroll.DOWN);
     }
@@ -119,6 +113,6 @@ public class Scroll {
      * @param value The value to add.
      */
     void add(double value) {
-        mAmount += value;
+        Actions.VALUE_SCROLL.setValue(Actions.VALUE_SCROLL.getValue() + value);
     }
 }

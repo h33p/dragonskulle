@@ -14,7 +14,6 @@ import lombok.experimental.Accessors;
  * <p>Provides:
  *
  * <ul>
- *   <li>Access to whether {@link Action}s are active.
  *   <li>Access to the cursor.
  *   <li>Access to the raw scrolling value (via {@link #mScroll}).
  * </ul>
@@ -65,18 +64,6 @@ public class Input {
         // GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         // For hiding the cursor.
         // GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    }
-
-    /**
-     * Query whether an {@link Action} is activated.
-     *
-     * @param action The action to be tested.
-     * @return {@code true} if the action is activated, otherwise {@code false}.
-     */
-    public boolean isActivated(Action action) {
-    	
-    	return action.isActivated();
-    	//return mActions.isActivated(action);
     }
 
     /**
