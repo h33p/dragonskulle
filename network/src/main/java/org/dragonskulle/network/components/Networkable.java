@@ -22,6 +22,13 @@ public abstract class Networkable<T> {
 
     private List<Field> fields;
 
+    public void initFields() {
+        fields =
+                Arrays.stream(this.getClass().getDeclaredFields())
+                        .filter(field -> SyncVar.class.isAssignableFrom(field.getType()))
+                        .collect(Collectors.toList());
+    }
+
     public void connectSyncVars() {
         fields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -206,7 +213,9 @@ public abstract class Networkable<T> {
 
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
         try {
-            System.out.println("[updateFromMaskOffset] getting");
+            System.out.println("[updateFromMaskOffset] getting " + offset);
+            System.out.println("[updateFromMaskOffset] fields " + this.fields);
+
             Field E = this.fields.get(offset);
             System.out.println("[updateFromMaskOffset] setting");
             E.set(this, newValue);

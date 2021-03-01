@@ -17,6 +17,7 @@ public class Capitol extends Networkable {
     public Capitol from(byte[] bytes) throws DecodingException {
         try {
             Capitol capitol = new Capitol();
+            capitol.initFields();
             capitol.updateFromBytes(bytes);
             return capitol;
         } catch (IOException e) {

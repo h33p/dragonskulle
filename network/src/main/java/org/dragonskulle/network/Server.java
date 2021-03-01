@@ -186,8 +186,7 @@ public class Server {
                     networkObject.spawnMap(this.game.cloneMap());
                     networkObject.spawnCapitol();
                     this.networkObjects.add(networkObject);
-                    //edit capitol
-//                    this.networkObjects.get(this.networkObjects.indexOf(capitol)).setBooleanSyncMe(true);
+
 
                     //Simulation of calling fixed update;
                     Timer timer = new Timer();
@@ -207,14 +206,15 @@ public class Server {
                         }
                     }, begin, timeInterval);
 
-//                    Server self = this;
-                    //set bool of capitol at some point in the future
-//                    timer.schedule(new TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            ((Capitol) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
-//                        }
-//                    }, 3000);
+                    Server self = this;
+//                    set bool of capitol at some point in the future
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+//                            ((Capitol) (this.networkObjects.get(this.networkObjects.indexOf(networkObject)).get(0))).setBooleanSyncMe(true);
+                            ((Capitol) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
+                        }
+                    }, 3000);
 
                 }
                 while (connected) {

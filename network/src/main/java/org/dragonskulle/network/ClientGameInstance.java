@@ -9,7 +9,14 @@ import java.util.ArrayList;
 
 public class ClientGameInstance {
     private HexagonTile[][] map;
+
     private final ArrayList<Networkable> networkedComponents = new ArrayList<>();
+
+
+    public ArrayList<Networkable> getNetworkedComponents() {
+        return networkedComponents;
+    }
+
 
     public void spawnCapitol(Capitol capitol) {
         this.networkedComponents.add(capitol);

@@ -103,7 +103,8 @@ public class NetworkClient {
         return map;
     }
 
-    private static void updateNetworkable(byte[] payload) {
+    private void updateNetworkable(byte[] payload) {
+        //TODO implement
         System.out.println("should implemenet updating networkable");
         System.out.println(new String(payload, Charset.defaultCharset()));
     }
