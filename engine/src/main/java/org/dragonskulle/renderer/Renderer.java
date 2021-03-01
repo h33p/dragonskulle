@@ -74,6 +74,9 @@ public class Renderer implements NativeResource {
     private ImageContext[] mImageContexts;
     private FrameContext[] mFrameContexts;
 
+    private VulkanImage mDepthImage;
+    private long mDepthImageView;
+
     private int mFrameCounter = 0;
 
     private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
@@ -101,9 +104,11 @@ public class Renderer implements NativeResource {
         public VkCommandBuffer commandBuffer;
         public long inFlightFence;
         public long framebuffer;
+
         // TODO: Remove this
         public UniformBufferObject[] ubo;
 
+        private VulkanImage mImage;
         private long mImageView;
         private VkDevice mDevice;
 
@@ -117,10 +122,10 @@ public class Renderer implements NativeResource {
 
         /** Create a image context */
         private ImageContext(
-                Renderer renderer, long image, long descriptorSet, long commandBuffer) {
+                Renderer renderer, VulkanImage image, long descriptorSet, long commandBuffer) {
             this.descriptorSet = descriptorSet;
             this.commandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
-            this.mImageView = renderer.createImageView(image);
+            this.mImageView = image.createImageView();
             this.framebuffer = createFramebuffer(renderer);
 
             this.mDevice = renderer.mDevice;
@@ -154,8 +159,7 @@ public class Renderer implements NativeResource {
                 renderer.endSingleUseCommandBuffer(tmpCommandBuffer);
                 mTextureImage.freeStagingBuffer();
             }
-            mTextureImageView =
-                    renderer.createImageView(mTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB);
+            mTextureImageView = mTextureImage.createImageView();
         }
 
         /**
@@ -214,7 +218,7 @@ public class Renderer implements NativeResource {
                 createInfo.height(renderer.mExtent.height());
                 createInfo.layers(1);
 
-                LongBuffer attachment = stack.longs(mImageView);
+                LongBuffer attachment = stack.longs(mImageView, renderer.mDepthImageView);
                 LongBuffer framebuffer = stack.longs(0);
 
                 createInfo.pAttachments(attachment);
@@ -255,7 +259,11 @@ public class Renderer implements NativeResource {
                 for (int i = 0; i < ubo.length; i++) {
                     UniformBufferObject ubo = this.ubo[i];
 
-                    ubo.model.rotation(curtime * 1.5f * (float) (i * 2 - 1), 0.0f, 0.0f, 1.0f);
+                    ubo.model.rotation(
+                            curtime * 1.5f * (float) (i * 2 - 1),
+                            0.0f,
+                            0.1f * (float) (i * 2 - 1),
+                            1.0f);
                     ubo.model.setTranslation(
                             0.f, 0.f, (float) i * (float) java.lang.Math.sin(curtime));
                     ubo.copyTo(byteBuffer, UniformBufferObject.SIZEOF * i);
@@ -562,6 +570,13 @@ public class Renderer implements NativeResource {
 
         vkDestroyDescriptorPool(mDevice, mDescriptorPool, null);
         vkDestroyRenderPass(mDevice, mRenderPass, null);
+
+        vkDestroyImageView(mDevice, mDepthImageView, null);
+        mDepthImageView = 0;
+
+        mDepthImage.free();
+        mDepthImage = null;
+
         vkDestroySwapchainKHR(mDevice, mSwapchain, null);
     }
 
@@ -578,6 +593,8 @@ public class Renderer implements NativeResource {
         mExtent = mPhysicalDevice.getSwapchainSupport().chooseExtent(mWindow);
         mSwapchain = createSwapchain();
         mRenderPass = createRenderPass();
+        mDepthImage = createDepthImage();
+        mDepthImageView = mDepthImage.createImageView();
         int imageCount = getImageCount();
         mDescriptorPool = createDescriptorPool(imageCount);
         mImageContexts = createImageContexts(imageCount);
@@ -1020,7 +1037,7 @@ public class Renderer implements NativeResource {
     /** Create a context for each swapchain image */
     private ImageContext[] createImageContexts(int imageCount) {
         try (MemoryStack stack = stackPush()) {
-            // Allocate swapchain images
+            // Get swapchain images
             LongBuffer pSwapchainImages = stack.mallocLong(imageCount);
 
             IntBuffer pImageCount = stack.ints(imageCount);
@@ -1070,7 +1087,10 @@ public class Renderer implements NativeResource {
                             i ->
                                     new ImageContext(
                                             this,
-                                            pSwapchainImages.get(i),
+                                            new VulkanImage(
+                                                    mDevice,
+                                                    mSurfaceFormat.format(),
+                                                    pSwapchainImages.get(i)),
                                             pDescriptorSets.get(i),
                                             buffers.get(i)))
                     .toArray(ImageContext[]::new);
@@ -1112,51 +1132,6 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /// Image view setup
-
-    /** Creates a image view for an image */
-    private long createImageView(long image) {
-        return createImageView(image, mSurfaceFormat.format());
-    }
-
-    /**
-     * Creates a image view for an image
-     *
-     * <p>Image views are needed to render to/read from.
-     */
-    private long createImageView(long image, int format) {
-        try (MemoryStack stack = stackPush()) {
-            VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.callocStack(stack);
-            createInfo.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
-            createInfo.viewType(VK_IMAGE_VIEW_TYPE_2D);
-            createInfo.format(format);
-
-            createInfo.components().r(VK_COMPONENT_SWIZZLE_IDENTITY);
-            createInfo.components().g(VK_COMPONENT_SWIZZLE_IDENTITY);
-            createInfo.components().b(VK_COMPONENT_SWIZZLE_IDENTITY);
-            createInfo.components().a(VK_COMPONENT_SWIZZLE_IDENTITY);
-
-            createInfo.subresourceRange().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
-            createInfo.subresourceRange().baseMipLevel(0);
-            createInfo.subresourceRange().levelCount(1);
-            createInfo.subresourceRange().baseArrayLayer(0);
-            createInfo.subresourceRange().layerCount(1);
-
-            createInfo.image(image);
-
-            LongBuffer imageView = stack.longs(0);
-
-            int result = vkCreateImageView(mDevice, createInfo, null, imageView);
-            if (result != VK_SUCCESS) {
-                throw new RuntimeException(
-                        String.format(
-                                "Failed to create image view for %x! Error: %x", image, -result));
-            }
-
-            return imageView.get(0);
-        }
-    }
-
     /// Render pass setup
 
     /**
@@ -1170,8 +1145,9 @@ public class Renderer implements NativeResource {
         LOGGER.info("Create render pass");
 
         try (MemoryStack stack = stackPush()) {
-            VkAttachmentDescription.Buffer colorAttachment =
-                    VkAttachmentDescription.callocStack(1, stack);
+            VkAttachmentDescription.Buffer attachments =
+                    VkAttachmentDescription.callocStack(2, stack);
+            VkAttachmentDescription colorAttachment = attachments.get(0);
             colorAttachment.format(mSurfaceFormat.format());
             colorAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
             colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
@@ -1189,24 +1165,45 @@ public class Renderer implements NativeResource {
             colorAttachmentRef.attachment(0);
             colorAttachmentRef.layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+            VkAttachmentDescription depthAttachment = attachments.get(1);
+            depthAttachment.format(mPhysicalDevice.findDepthFormat());
+            depthAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
+            depthAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
+            depthAttachment.storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
+            depthAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+            depthAttachment.stencilLoadOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
+            depthAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
+            depthAttachment.finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+            VkAttachmentReference depthAttachmentRef = VkAttachmentReference.callocStack(stack);
+            depthAttachmentRef.attachment(1);
+            depthAttachmentRef.layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
             VkSubpassDescription.Buffer subpass = VkSubpassDescription.callocStack(1, stack);
             subpass.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS);
             subpass.colorAttachmentCount(1);
             subpass.pColorAttachments(colorAttachmentRef);
+            subpass.pDepthStencilAttachment(depthAttachmentRef);
 
             VkRenderPassCreateInfo renderPassInfo = VkRenderPassCreateInfo.callocStack(stack);
             renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
-            renderPassInfo.pAttachments(colorAttachment);
+            renderPassInfo.pAttachments(attachments);
             renderPassInfo.pSubpasses(subpass);
 
             // Make render passes wait for COLOR_ATTACHMENT_OUTPUT stage
             VkSubpassDependency.Buffer dependency = VkSubpassDependency.callocStack(1, stack);
             dependency.srcSubpass(VK_SUBPASS_EXTERNAL);
             dependency.dstSubpass(0);
-            dependency.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+            dependency.srcStageMask(
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                            | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
             dependency.srcAccessMask(0);
-            dependency.dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            dependency.dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+            dependency.dstStageMask(
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                            | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
+            dependency.dstAccessMask(
+                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                            | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
 
             renderPassInfo.pDependencies(dependency);
 
@@ -1221,6 +1218,21 @@ public class Renderer implements NativeResource {
 
             return pRenderPass.get(0);
         }
+    }
+
+    /// Depth texture setup
+
+    private VulkanImage createDepthImage() {
+        VkCommandBuffer tmpCommandBuffer = beginSingleUseCommandBuffer();
+        VulkanImage depthImage =
+                VulkanImage.createDepthImage(
+                        tmpCommandBuffer,
+                        mDevice,
+                        mPhysicalDevice,
+                        mExtent.width(),
+                        mExtent.height());
+        endSingleUseCommandBuffer(tmpCommandBuffer);
+        return depthImage;
     }
 
     /// Vertex and index buffers
@@ -1425,7 +1437,12 @@ public class Renderer implements NativeResource {
             renderPassInfo.renderArea().offset().clear();
             renderPassInfo.renderArea().extent(mExtent);
 
-            VkClearValue.Buffer clearColor = VkClearValue.callocStack(1, stack);
+            VkClearValue.Buffer clearColor = VkClearValue.callocStack(2, stack);
+
+            VkClearDepthStencilValue depthValue = clearColor.get(1).depthStencil();
+            depthValue.depth(1.0f);
+            depthValue.stencil(0);
+
             renderPassInfo.pClearValues(clearColor);
 
             int res = vkBeginCommandBuffer(ctx.commandBuffer, beginInfo);

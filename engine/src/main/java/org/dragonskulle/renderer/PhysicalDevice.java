@@ -31,6 +31,10 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     private int mScore;
     private QueueFamilyIndices mIndices;
 
+    private static int[] DEPTH_FORMATS = {
+        VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT
+    };
+
     /** Describes indices used for various device queues */
     static class QueueFamilyIndices {
         Integer graphicsFamily;
@@ -109,6 +113,28 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     @Override
     public int compareTo(PhysicalDevice other) {
         return Integer.compare(other.mScore, mScore);
+    }
+
+    public int findDepthFormat() {
+        return findSupportedFormat(
+                DEPTH_FORMATS,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    }
+
+    private int findSupportedFormat(int[] candidates, int tiling, int features) {
+        try (MemoryStack stack = stackPush()) {
+            VkFormatProperties props = VkFormatProperties.callocStack(stack);
+            for (int format : candidates) {
+                vkGetPhysicalDeviceFormatProperties(mDevice, format, props);
+                if (tiling == VK_IMAGE_TILING_LINEAR
+                        && (props.linearTilingFeatures() & features) == features) return format;
+                else if (tiling == VK_IMAGE_TILING_OPTIMAL
+                        && (props.optimalTilingFeatures() & features) == features) return format;
+            }
+
+            throw new RuntimeException("Failed to find supported format!");
+        }
     }
 
     /** Update swapchain support details */

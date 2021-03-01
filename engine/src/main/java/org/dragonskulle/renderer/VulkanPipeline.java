@@ -114,7 +114,14 @@ class VulkanPipeline {
             multisampling.sampleShadingEnable(false);
             multisampling.rasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
 
-            // TODO: Depth blend with VkPipelineDepthStencilStateCreateInfo
+            VkPipelineDepthStencilStateCreateInfo depthStencil =
+                    VkPipelineDepthStencilStateCreateInfo.callocStack(stack);
+            depthStencil.sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO);
+            depthStencil.depthTestEnable(true);
+            depthStencil.depthWriteEnable(true);
+            depthStencil.depthCompareOp(VK_COMPARE_OP_LESS);
+            depthStencil.depthBoundsTestEnable(false);
+            depthStencil.stencilTestEnable(false);
 
             VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment =
                     VkPipelineColorBlendAttachmentState.callocStack(1, stack);
@@ -170,6 +177,7 @@ class VulkanPipeline {
             pipelineInfo.pViewportState(viewportState);
             pipelineInfo.pRasterizationState(rasterizer);
             pipelineInfo.pMultisampleState(multisampling);
+            pipelineInfo.pDepthStencilState(depthStencil);
             pipelineInfo.pColorBlendState(colorBlending);
 
             pipelineInfo.layout(layout);
