@@ -16,11 +16,15 @@ public class AudioSource extends Component {
 
     /** Constructor */
     public AudioSource() {
-        ;
     }
 
     /** Plays the audio on the current specified channel from the current specified filename */
     public void play() {
         AudioManager.getInstance().play(channel, filename);
+    }
+
+    @Override
+    protected void onDestroy() {
+        // TODO: Implement onDestroy for AudioSource
     }
 }
