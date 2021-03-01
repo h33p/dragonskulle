@@ -5,6 +5,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
+
 import sun.misc.IOUtils;
 
 public class NetworkMessage {
@@ -25,7 +26,7 @@ public class NetworkMessage {
     // payload (n bytes)
     // ::E:: (5 bytes)
 
-    public static void parse(byte[] buff) {
+    public static void parse(byte[] buff, NetworkClient client) {
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;
@@ -35,16 +36,16 @@ public class NetworkMessage {
             i += 1;
             int payloadSize = getPayloadSize(buff);
             i += 4;
-            byte[] payload = getPayload(buff, messageType, payloadSize);
+            byte[] payload = getPayload(buff, messageType, i, payloadSize);
             i += payloadSize;
             boolean consumedMessage = verifyMessageEnd(i, buff);
             if (consumedMessage) {
-                if (messageType == (byte) 0) {
+                if (messageType == (byte) 0) { //debug type
                     System.out.println("\nValid Message");
                     System.out.println("Type : " + messageType);
                     System.out.println("Payload : " + Arrays.toString(payload));
                 } else {
-                    executeClient(messageType, payload);
+                    client.executeBytes(messageType, payload);
                 }
             }
         } else {
@@ -66,8 +67,8 @@ public class NetworkMessage {
         return (Arrays.equals(START_SIGNATURE, consumedSignature));
     }
 
-    private static byte[] getPayload(byte[] bytes, byte messageType, int payloadSize) {
-        return Arrays.copyOfRange(bytes, 12, 12 + payloadSize);
+    private static byte[] getPayload(byte[] bytes, byte messageType, int offset, int payloadSize) {
+        return Arrays.copyOfRange(bytes, offset, offset + payloadSize);
     }
 
     public static int convertByteArrayToInt(byte[] bytes) {
@@ -78,8 +79,8 @@ public class NetworkMessage {
     }
 
     public static byte[] convertIntToByteArray(int value) {
-        return new byte[] {
-            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
+        return new byte[]{
+                (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
         };
     }
 
@@ -147,7 +148,7 @@ public class NetworkMessage {
             i += 1;
             int payloadSize = getPayloadSize(buff);
             i += 4;
-            byte[] payload = getPayload(buff, messageType, payloadSize);
+            byte[] payload = getPayload(buff, messageType, i, payloadSize);
             i += payloadSize;
             boolean consumedMessage = verifyMessageEnd(i, buff);
             if (consumedMessage) {
@@ -156,45 +157,11 @@ public class NetworkMessage {
                     System.out.println("Type : " + messageType);
                     System.out.println("Payload : " + Arrays.toString(payload));
                 } else {
-                    executeServer(messageType, payload, sendBytesToClient);
+                    Server.executeBytes(messageType, payload, sendBytesToClient);
                 }
             }
         } else {
             System.out.println("invalid message start");
-        }
-    }
-
-    private static void executeServer(
-            byte messageType, byte[] payload, Server.SendBytesToClientCurry sendBytesToClient) {
-        byte[] message;
-        switch (messageType) {
-            case (byte) 22:
-                message = build((byte) 20, "TOSPAWN".getBytes());
-                sendBytesToClient.send(message);
-                break;
-            default:
-                System.out.println("Should implement spawn and create building ____");
-                message = build((byte) 20, "TOSPAWN".getBytes());
-                sendBytesToClient.send(message);
-                break;
-        }
-    }
-
-    private static void executeClient(byte messageType, byte[] payload) {
-        switch (messageType) {
-            case (byte) 10:
-                System.out.println("Should update requested object");
-                break;
-            case (byte) 20:
-                System.out.println("Should spawn map");
-                break;
-            case (byte) 21:
-                System.out.println("Should spawn capitol");
-                break;
-            default:
-                System.out.println(
-                        "unsure of what to do with message as unknown type byte " + messageType);
-                break;
         }
     }
 

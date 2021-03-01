@@ -2,6 +2,7 @@
 package org.dragonskulle.network;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * ClientEars is the client implementation of ClientListener, this is where custom executions can be
@@ -25,7 +26,10 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void receivedBytes(byte[] bytes) {
-        System.out.println("[Client] Received Bytes " + new String(bytes, StandardCharsets.UTF_8));
+        if (bytes.length > 15) {
+            System.out.print("[Client] Received Bytes :: " + Arrays.toString(Arrays.copyOfRange(bytes, 0, 15)));
+            System.out.println(" \t...\t   " + Arrays.toString(Arrays.copyOfRange(bytes, bytes.length - 15, bytes.length)));
+        }
     }
 
     @Override

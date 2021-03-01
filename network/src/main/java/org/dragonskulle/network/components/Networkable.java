@@ -2,18 +2,17 @@
 package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;
 import sun.misc.IOUtils;
 
-public class Networkable {
+public abstract class Networkable<T> {
 
     private static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
     /**
@@ -22,12 +21,6 @@ public class Networkable {
     private boolean[] fieldsMask;
 
     private List<Field> fields;
-
-    //    final NetworkClient client;
-    public Networkable() {
-        //        this.client = object;
-        System.out.println("client is assigned");
-    }
 
     public void connectSyncVars() {
         fields =
@@ -53,24 +46,62 @@ public class Networkable {
         System.out.println("Need to actually link up");
     }
 
-    public byte[] serialize() throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos;
-        oos = new ObjectOutputStream(bos);
-        byte[] buff = constructBufferWithMask();
-        oos.write(buff);
-        oos.flush();
-        System.out.println("serialized component " + bos.size());
-        return bos.toByteArray();
+    public byte[] serialize() {
+        return constructBufferWithMask();
     }
 
-    public void updateFromBytes(byte[] buff) throws IOException {
-        int maskLength = getFieldLengthFromBytes(buff);
-        ArrayList<Boolean> masks = getMaskFromBytes(buff, maskLength);
-        ArrayList<SyncVar> contents = getContentsFromBytes(buff, 1 + maskLength, masks);
+    public byte[] serializeFully() {
+        int maskLength = this.fields.size(); // 1byte
+        ArrayList<Byte> mask = new ArrayList<>();
+        for (int i = 0; i < maskLength; i++) {
+            mask.add((byte) 1);
+        }
+        ArrayList<Byte> contents = new ArrayList<>();
+        //need to add in an id before
+        for (int i = 0; i < this.fields.size(); i++) {
+            Field f = this.fields.get(i);
+            try {
+                byte[] syncVarBytes = ((SyncVar) f.get(this)).serialize();
+                for (byte b : syncVarBytes) {
+                    contents.add(b);
+                }
+                if (i < this.fields.size() - 1) { //removes trailing seperator
+                    for (byte b : FIELD_SEPERATOR) {
+                        contents.add(b);
+                    }
+                }
+                this.fieldsMask[i] = false; //reset flag
+            } catch (IllegalAccessException | IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        ArrayList<Byte> payload = new ArrayList<>();
+        payload.add((byte) maskLength);
+        System.out.println("Serialize Fully MASKLENGTH :: " + maskLength);
+        payload.addAll(mask);
+        System.out.println("Serialize Fully MASK :: " + mask);
+        payload.addAll(contents);
+        return NetworkMessage.toByteArray(payload);
+    }
+
+    public abstract T from(byte[] bytes) throws DecodingException;
+
+
+    public void updateFromBytes(byte[] payload) throws IOException {
+        System.out.println("Creating Networkable from bytes");
+        System.out.println("Bytes to update from :: " + Arrays.toString(payload));
+        int maskLength = getFieldLengthFromBytes(payload);
+        System.out.println("field length :: " + maskLength);
+        ArrayList<Boolean> masks = getMaskFromBytes(payload, maskLength);
+        System.out.println("Masks :: " + masks);
+        ArrayList<SyncVar> contents = getContentsFromBytes(payload, 1 + maskLength);
+        System.out.println("SyncVars :: " + contents);
         System.out.println("deserialized component");
-        for (int i = 0; i < Objects.requireNonNull(masks).size(); i++) {
+        for (int i = 0; i < maskLength; i++) {
             boolean didUpdate = masks.get(i);
+            System.out.println("Getting syncvar " + i);
+            System.out.println("did update? " + didUpdate);
             if (didUpdate) {
                 updateFromMaskOffset(i, contents.get(i));
             }
@@ -81,6 +112,7 @@ public class Networkable {
         int maskLength = this.fields.size(); // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ArrayList<Byte> contents = new ArrayList<>();
+        //need to add in an id before
         for (int i = 0; i < this.fields.size(); i++) {
             boolean didVarChange = this.fieldsMask[i];
             Field f = this.fields.get(i);
@@ -91,8 +123,10 @@ public class Networkable {
                     for (byte b : syncVarBytes) {
                         contents.add(b);
                     }
-                    for (byte b : FIELD_SEPERATOR) {
-                        contents.add(b);
+                    if (i < this.fields.size() - 1) {
+                        for (byte b : FIELD_SEPERATOR) {
+                            contents.add(b);
+                        }
                     }
                     this.fieldsMask[i] = false; //reset flag
                 } catch (IllegalAccessException | IOException e) {
@@ -110,9 +144,7 @@ public class Networkable {
     }
 
     private ArrayList<SyncVar> getContentsFromBytes(
-            byte[] buff, int offset, ArrayList<Boolean> masks) throws IOException {
-        // TODO
-        // ignore n offset bytes, then read until SEPERATOR then deserialize syncvar;
+            byte[] buff, int offset) throws IOException {
         ArrayList<SyncVar> out = new ArrayList<>();
         ArrayList<Byte> syncVarBytes;
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
@@ -121,7 +153,7 @@ public class Networkable {
             syncVarBytes = new ArrayList<>();
             while (bis.available() > 0) {
                 bis.mark(FIELD_SEPERATOR.length);
-                byte[] nextFiveBytes = IOUtils.readExactlyNBytes(bis, FIELD_SEPERATOR.length);
+                byte[] nextFiveBytes = IOUtils.readNBytes(bis, FIELD_SEPERATOR.length);
                 bis.reset();
                 if (Arrays.equals(nextFiveBytes, FIELD_SEPERATOR)) {
                     // seek field bytes
@@ -129,6 +161,7 @@ public class Networkable {
                     // end of sync var;
                     // try to deserialize.
                     try {
+                        System.out.println("trying to deserialise to syncvar :: " + syncVarBytes);
                         out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
@@ -139,7 +172,16 @@ public class Networkable {
                     }
                 }
             }
+            if (!syncVarBytes.isEmpty()) {
+                try {
+                    System.out.println("trying to deserialise to syncvar :: " + syncVarBytes);
+                    out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
         return out;
     }
 
@@ -147,9 +189,10 @@ public class Networkable {
         ArrayList<Boolean> out = new ArrayList<>();
         byte[] maskBytes = Arrays.copyOfRange(buff, 1, 1 + maskLength);
         for (byte maskByte : maskBytes) {
-            if ((int) maskByte == 1) {
+            if (maskByte == (byte) 1) {
                 out.add(true);
             } else {
+                System.out.println("Decrypting bool byte :: " + maskByte);
                 out.add(false);
             }
         }
@@ -163,7 +206,11 @@ public class Networkable {
 
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
         try {
-            this.fields.get(offset).set(this, newValue);
+            System.out.println("[updateFromMaskOffset] getting");
+            Field E = this.fields.get(offset);
+            System.out.println("[updateFromMaskOffset] setting");
+            E.set(this, newValue);
+            System.out.println("[updateFromMaskOffset] done");
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -171,7 +218,6 @@ public class Networkable {
 
     private void handleFieldChange(int maskId) {
         this.fieldsMask[maskId] = true;
-        System.out.println("set mask " + maskId);
     }
 
     public boolean hasBeenModified() {
@@ -182,7 +228,6 @@ public class Networkable {
                 break;
             }
         }
-        System.out.println("has networkable instance been modified? :: " + hasTrueInMask);
         return hasTrueInMask;
     }
 }

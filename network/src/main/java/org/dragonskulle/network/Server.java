@@ -81,6 +81,22 @@ public class Server {
         }
     }
 
+    static void executeBytes(
+            byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
+        byte[] message;
+        switch (messageType) {
+            case (byte) 22:
+                message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
+                sendBytesToClient.send(message);
+                break;
+            default:
+                System.out.println("Should implement spawn and create building ____");
+                message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
+                sendBytesToClient.send(message);
+                break;
+        }
+    }
+
     public void dispose() {
         try {
             this.serverRunner.cancel();
@@ -170,8 +186,8 @@ public class Server {
                     networkObject.spawnMap(this.game.cloneMap());
                     networkObject.spawnCapitol();
                     this.networkObjects.add(networkObject);
-
-//                    capitol.setBooleanSyncMe(true);
+                    //edit capitol
+//                    this.networkObjects.get(this.networkObjects.indexOf(capitol)).setBooleanSyncMe(true);
 
                     //Simulation of calling fixed update;
                     Timer timer = new Timer();
@@ -191,14 +207,14 @@ public class Server {
                         }
                     }, begin, timeInterval);
 
-                    Server self = this;
+//                    Server self = this;
                     //set bool of capitol at some point in the future
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            ((Capitol) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
-                        }
-                    }, 3000);
+//                    timer.schedule(new TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            ((Capitol) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
+//                        }
+//                    }, 3000);
 
                 }
                 while (connected) {

@@ -2,9 +2,7 @@
 package org.dragonskulle.network.components;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 
 import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
@@ -17,19 +15,34 @@ public class NetworkObject {
             ClientInstance client,
             ServerBroadcastCallback broadcastCallback,
             SendBytesToClientCallback clientCallback) {
-        networkObjectId = UUID.randomUUID().toString();
-        isDormant = false;
         owner = client;
         serverBroadcastCallback = broadcastCallback;
         sendBytesToClientCallback = clientCallback;
     }
 
     /**
-     * Possible a temporary function to edit a network object without a reference.
+     * Possibly a temporary function to edit a network object without a reference.
      */
 
     public Networkable get(int i) {
         return this.children.get(i);
+    }
+
+    public Networkable get(Networkable n) {
+        return this.children.get(this.children.indexOf(n));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NetworkObject that = (NetworkObject) o;
+        return Objects.equals(networkObjectId, that.networkObjectId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(networkObjectId);
     }
 
     /**
@@ -83,15 +96,12 @@ public class NetworkObject {
     private void spawnComponent(Networkable component, byte messageCode) {
         System.out.println("spawning component on all clients");
         byte[] spawnComponentBytes;
-        try {
-            byte[] componentBytes = component.serialize();
-            System.out.println("component bytes : " + componentBytes.length);
-            spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
-            serverBroadcastCallback.call(spawnComponentBytes);
-            addChild(component);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        byte[] componentBytes = component.serializeFully();
+        System.out.println("component bytes to spawn :: " + Arrays.toString(componentBytes));
+        System.out.println("component bytes : " + componentBytes.length);
+        spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
+        serverBroadcastCallback.call(spawnComponentBytes);
+        addChild(component);
     }
 
     /**
@@ -120,10 +130,11 @@ public class NetworkObject {
      * Children of the object will be networkable and updated on clients
      */
     private final ArrayList<Networkable> children = new ArrayList<>();
+
     /**
      * The UUID of the object.
      */
-    String networkObjectId;
+    public String networkObjectId = UUID.randomUUID().toString();
 
     /**
      * The Client Connection to the server
@@ -134,7 +145,7 @@ public class NetworkObject {
      * if True, then the server will not accept commands from the object. It can still receive
      * commands.
      */
-    boolean isDormant;
+    boolean isDormant = false;
 
     /**
      * Broadcasts updates all of the modified children
@@ -142,12 +153,8 @@ public class NetworkObject {
     public void broadcastUpdate() {
         for (Networkable child : this.children) {
             if (child.hasBeenModified()) {
-                try {
-                    System.out.println("child has been modified in a networkobject");
-                    serverBroadcastCallback.call(NetworkMessage.build((byte) 10, child.serialize()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                System.out.println("child has been modified in a networkobject");
+                serverBroadcastCallback.call(NetworkMessage.build((byte) 10, child.serialize()));
             }
         }
     }

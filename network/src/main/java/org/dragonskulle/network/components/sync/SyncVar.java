@@ -32,8 +32,8 @@ public class SyncVar<T extends Serializable> implements Serializable {
     }
 
     public SyncVar(String id, T data) {
-        this.data = data;
         this.id = id;
+        this.data = data;
     }
 
     public SyncVar(T data) {
