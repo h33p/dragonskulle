@@ -25,9 +25,7 @@ class Cursor {
     /** The starting position of a drag, or {@code null} if no drag is taking place. */
     private Vector2d mDragStart;
 
-    /**
-     * Create a new cursor manager.
-     */
+    /** Create a new cursor manager. */
     public Cursor() {}
 
     /**

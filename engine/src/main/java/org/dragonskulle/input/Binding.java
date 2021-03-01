@@ -5,18 +5,18 @@ import java.util.ArrayList;
 
 /**
  * Stores a binding between a button and any number of actions.
- * 
+ *
  * @author Craig Wilbourne
  */
 class Binding {
 
     /** The button code. */
     private int mButton;
-    /** The actions the button activates. */
+    /** The actions the button triggers. */
     private ArrayList<Action> mActions = new ArrayList<Action>();
 
     /**
-     * Create a binding for a button that trigger no actions.
+     * Create a binding for a button that triggers no actions.
      *
      * @param button The button.
      */

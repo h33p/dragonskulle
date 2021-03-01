@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-
 import lombok.extern.java.Log;
 
 /**
@@ -16,34 +15,42 @@ import lombok.extern.java.Log;
 @Log
 public class Bindings {
 
-    /** Stores all bindings. */
+    /**
+     * Stores all bindings.
+     *
+     * <p>{@link Bindings#submit()} needs to be called for these bindings to be reflected in the
+     * input detection.
+     */
     private final ArrayList<Binding> mBindings = new ArrayList<Binding>();
-    
+
     /** A map between a button and the actions it triggers. */
-    private final HashMap<Integer, ArrayList<Action>> mButtonToActions = new HashMap<Integer, ArrayList<Action>>();
+    private final HashMap<Integer, ArrayList<Action>> mButtonToActions =
+            new HashMap<Integer, ArrayList<Action>>();
 
     /** A map between an action and the buttons that trigger it. */
-    private final HashMap<Action, ArrayList<Integer>> mActionToButtons = new HashMap<Action, ArrayList<Integer>>();
-    
+    private final HashMap<Action, ArrayList<Integer>> mActionToButtons =
+            new HashMap<Action, ArrayList<Integer>>();
+
     /**
      * Submit the current bindings for use.
-     * <p>
-     * If any bindings are edited, submit needs to be called again before these changes are reflected. 
+     *
+     * <p>If any bindings are edited, submit needs to be called again before these changes are
+     * reflected.
      */
     public void submit() {
-    	rebind();
+        rebind();
     }
 
     /**
-	 * Add a new binding by specifying the button and the actions it triggers.
-	 * 
-	 * @param button The button code.
-	 * @param actions The actions that are triggered by the button.
-	 */
-	public void add(int button, Action... actions) {
+     * Add a new binding by specifying the button and the actions it triggers.
+     *
+     * @param button The button code.
+     * @param actions The actions that are triggered by the button.
+     */
+    public void add(int button, Action... actions) {
         add(new Binding(button, actions));
     }
-    
+
     /**
      * Add a {@link Binding} to the list of {@link #mBindings}.
      *
@@ -51,26 +58,26 @@ public class Bindings {
      */
     void add(Binding binding) {
         mBindings.add(binding);
-    }  
-    
+    }
+
     /**
      * Remove all stored bindings for a specific button.
-     * 
-     * @param buttonT The button.
+     *
+     * @param button The button.
      */
     public void remove(int button) {
-    	Iterator<Binding> iterator = mBindings.iterator();
-    	while(iterator.hasNext()) {
-    		Binding binding = iterator.next();
-    		if(binding.getButton() == button) {
-    			iterator.remove();
-    		}
-    	}
+        Iterator<Binding> iterator = mBindings.iterator();
+        while (iterator.hasNext()) {
+            Binding binding = iterator.next();
+            if (binding.getButton() == button) {
+                iterator.remove();
+            }
+        }
     }
-    
+
     /**
      * Get the actions triggered by a specific button.
-     * 
+     *
      * @param button The button being targeted.
      * @return An {@code ArrayList} of {@link Action}s associated with the button, or an empty
      *     {@code ArrayList}.
@@ -94,7 +101,7 @@ public class Bindings {
             return new ArrayList<Integer>();
         }
         return mActionToButtons.get(action);
-    }  
+    }
 
     /**
      * Allows all of the bindings in {@link #mBindings} to become usable.

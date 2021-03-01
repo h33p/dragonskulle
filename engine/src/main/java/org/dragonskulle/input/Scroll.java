@@ -79,7 +79,8 @@ public class Scroll {
     /**
      * Attach the scrolling detection to the window.
      *
-     * <p>Required to allow scrolling to be detected both as a direct value and via {@link StoredActions}.
+     * <p>Required to allow scrolling to be detected both as a direct value and via {@link
+     * StoredActions}.
      *
      * @param window The window to attach to.
      */

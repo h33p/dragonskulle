@@ -2,7 +2,6 @@
 package org.dragonskulle.input;
 
 import java.util.HashMap;
-
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -17,7 +16,7 @@ class Buttons {
 
     /** Allows the mapping between buttons and actions to be accessed. */
     private Bindings mBindings;
-    
+
     /** Store which buttons are pressed. */
     private final HashMap<Integer, Boolean> buttons = new HashMap<Integer, Boolean>();
 
@@ -84,7 +83,7 @@ class Buttons {
         setPressed(button, true);
 
         for (Action action : mBindings.getActions(button)) {
-        	action.setActivated(true);
+            action.setActivated(true);
         }
     }
 
@@ -97,54 +96,53 @@ class Buttons {
      * @param button The button being released.
      */
     void release(int button) {
-    	setPressed(button, false);
-        
-        // Check each action the button triggers, deactivating the action if no other buttons are currently triggering it.
+        setPressed(button, false);
+
+        // Check each action the button triggers, deactivating the action if no other buttons are
+        // currently triggering it.
         for (Action action : mBindings.getActions(button)) {
             attemptDeactivate(action);
         }
-        
     }
-    
+
     /**
      * If all buttons for an action have been released, deactivate the action.
-     * 
+     *
      * @param action The action to be deactivated, if possible.
      */
     private void attemptDeactivate(Action action) {
         for (Integer button : mBindings.getButtons(action)) {
             if (isPressed(button) == true) {
                 // A button is still triggering the action- so do not deactivate the action.
-            	return;
+                return;
             }
         }
-        
+
         // All buttons that trigger the action have been released- so deactivate the action.
         action.setActivated(false);
     }
-    
+
     /**
      * Record whether a specific button is being pressed or not.
-     * 
-     * @param button The button. 
+     *
+     * @param button The button.
      * @param pressed Whether the button is being pressed.
      */
-    void setPressed(int button, boolean pressed){
-    	buttons.put(button, pressed);
+    void setPressed(int button, boolean pressed) {
+        buttons.put(button, pressed);
     }
-    
+
     /**
      * Whether a specified button is currently being pressed.
-     * 
+     *
      * @param button The button.
      * @return Whether the button is currently being pressed.
      */
     boolean isPressed(int button) {
         Boolean value = buttons.get(button);
-        if(value == null) {
-        	return false;
+        if (value == null) {
+            return false;
         }
-    	return value.booleanValue();
+        return value.booleanValue();
     }
-    
 }
