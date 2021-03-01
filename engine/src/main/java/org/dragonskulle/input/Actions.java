@@ -9,13 +9,15 @@ import lombok.experimental.Accessors;
  * triggered by button input- as defined in {@link Bindings}).
  *
  * <p>By default, it contains the following static values:
+ *
  * <ul>
- * <li>{@link #DRAG} - An action that is triggered when the cursor is dragged.
- * <li>{@link #sCursor} - Stores everything related to the cursor.
- * <li>{@link #sScroll} - Stores everything related to mouse scrolling.
+ *   <li>{@link #DRAG} - An action that is triggered when the cursor is dragged.
+ *   <li>{@link #sCursor} - Stores everything related to the cursor.
+ *   <li>{@link #sScroll} - Stores everything related to mouse scrolling.
  * </ul>
- *     <p>Example of how to add a new action once extended: <br>
- *     <code> public final static Action <b>NEW_ACTION</b> = new Action("<b>NEW_ACTION_NAME</b>");
+ *
+ * <p>Example of how to add a new action once extended: <br>
+ * <code> public final static Action <b>NEW_ACTION</b> = new Action("<b>NEW_ACTION_NAME</b>");
  *     </code>
  *
  * @author Craig Wilbourne
