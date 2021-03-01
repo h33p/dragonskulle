@@ -23,7 +23,7 @@ public class Input {
 
     /**
      * Starts the detection of buttons, the cursor and the mouse scroll wheel for a specified
-     * window. <b> Automatically submits the current bindings for use.
+     * window. <b> Automatically submits the current bindings for use. </b>
      *
      * @param window The window Input should listen to, or {@code null} if no GLFW window is to be
      *     connected.
