@@ -11,9 +11,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Consumer;
 
-import org.dragonskulle.network.components.Capitol;
+import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 
 /**
@@ -184,7 +183,7 @@ public class Server {
                                     this.sockets::broadcast,
                                     this.sockets::sendBytesToClient);
                     networkObject.spawnMap(this.game.cloneMap());
-                    networkObject.spawnCapitol();
+                    networkObject.spawnCapital();
                     this.networkObjects.add(networkObject);
 
 
@@ -212,9 +211,18 @@ public class Server {
                         @Override
                         public void run() {
 //                            ((Capitol) (this.networkObjects.get(this.networkObjects.indexOf(networkObject)).get(0))).setBooleanSyncMe(true);
-                            ((Capitol) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
+                            ((Capital) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
                         }
                     }, 3000);
+
+//                    //set string of capitol at some point in the future
+//                    timer.schedule(new TimerTask() {
+//                        @Override
+//                        public void run() {
+////                            ((Capitol) (this.networkObjects.get(this.networkObjects.indexOf(networkObject)).get(0))).setBooleanSyncMe(true);
+//                            ((Capital) self.networkObjects.get(0).get(1)).setStringSyncMeAlso("goodbye world");
+//                        }
+//                    }, 5000);
 
                 }
                 while (connected) {

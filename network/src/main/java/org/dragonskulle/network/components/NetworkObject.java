@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.IOException;
 import java.util.*;
 
 import org.dragonskulle.network.ClientInstance;
@@ -105,12 +104,12 @@ public class NetworkObject {
     }
 
     /**
-     * Spawns a capitol using the @link{spawnComponent} method
+     * Spawns a capital using the @link{spawnComponent} method
      */
-    public void spawnCapitol() {
-        Capitol capitol = new Capitol();
-        capitol.connectSyncVars();
-        spawnComponent(capitol, (byte) 21);
+    public void spawnCapital() {
+        Capital capital = new Capital();
+        capital.connectSyncVars();
+        spawnComponent(capital, (byte) 21);
     }
 
 

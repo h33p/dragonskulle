@@ -26,6 +26,7 @@ public class NetworkCommunicationsTest {
     public static void main(String[] args) {
         NetworkCommunicationsTest runner = new NetworkCommunicationsTest();
         new Scanner(System.in).nextLine();
+
         // on connect to server, the server will send us the map, it will also send us a spawn
         // request for our captiol. our capitol will extends INetworkable
         // capitol component will have

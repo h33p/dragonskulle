@@ -11,7 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.network.components.Capitol;
+import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.Networkable;
 
 /**
  * This is the client usage, you will create an instance, by providing the correct server to connect
@@ -60,8 +61,14 @@ public class NetworkClient {
     public void executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
             case (byte) 10:
-                System.out.println("Should update requested object");
+                System.out.println("Should update requested component");
+                System.out.println("DEBUG component");
+                System.out.println("Current component is");
+                String networkableId = Networkable.getIdFromBytes(payload);
+                this.game.printNetworkable(networkableId);
                 updateNetworkable(payload);
+                System.out.println("Component after update");
+                this.game.printNetworkable(networkableId);
                 break;
             case (byte) 20:
                 try {
@@ -75,11 +82,11 @@ public class NetworkClient {
                 break;
             case (byte) 21:
                 try {
-                    System.out.println("Trying to spawn capitol");
-                    Capitol capitol = deserializeCapitol(payload);
-                    System.out.println("deserialized capitol bytes, now spawning locally");
-                    this.game.spawnCapitol(capitol);
-                    System.out.println("Spawned capitol");
+                    System.out.println("Trying to spawn capital");
+                    Capital capital = deserializeCapitol(payload);
+                    System.out.println("deserialized capital bytes, now spawning locally");
+                    this.game.spawnCapital(capital);
+                    System.out.println("Spawned capital");
                 } catch (DecodingException e) {
                     e.printStackTrace();
                 }
@@ -91,9 +98,8 @@ public class NetworkClient {
         }
     }
 
-    private Capitol deserializeCapitol(byte[] payload) throws DecodingException {
-        Capitol capitol = new Capitol().from(payload);
-        return capitol;
+    private Capital deserializeCapitol(byte[] payload) throws DecodingException {
+        return Networkable.from(Capital.class, payload);
     }
 
     private HexagonTile[][] deserializeMap(byte[] payload) throws IOException, ClassNotFoundException {
@@ -104,9 +110,9 @@ public class NetworkClient {
     }
 
     private void updateNetworkable(byte[] payload) {
-        //TODO implement
-        System.out.println("should implemenet updating networkable");
-        System.out.println(new String(payload, Charset.defaultCharset()));
+        System.out.println("Starting to update networkable");
+        this.game.updateNetworkable(payload);
+        System.out.println("updated networkable");
     }
 
     public void dispose() {
@@ -181,7 +187,6 @@ public class NetworkClient {
 
     private void processBytes(byte[] bytes) {
         clientListener.receivedBytes(bytes);
-
         try {
             parseBytes(bytes);
         } catch (DecodingException e) {

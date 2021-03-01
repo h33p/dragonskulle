@@ -134,7 +134,6 @@ public class NetworkMessage {
         for (int i = 0; i < n; i++) {
             ret[i] = in.get(i);
         }
-        System.out.println("bytes built are length :: " + n);
         return ret;
     }
 
