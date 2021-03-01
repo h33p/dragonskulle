@@ -49,10 +49,9 @@ public class Action {
 
     @Override
     public String toString() {
-        if (mName == null) {
-            // If no name is available, display the action name as blank.
-            return String.format("Action{name:---}", mName);
-        }
-        return String.format("Action{name:%s}", mName);
+        // If no name is available, display the action name as blank.
+        String name = mName != null ? mName : "---";
+
+        return String.format("Action{name:%s, activated:%b}", name, mActivated);
     }
 }

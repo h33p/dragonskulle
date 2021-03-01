@@ -7,9 +7,7 @@ import org.dragonskulle.input.InputTest;
 public class TestBindings extends Bindings {
 
     public TestBindings() {
-        add(InputTest.TEST_KEY_1, TestActions.TEST_ACTION);
-        add(InputTest.TEST_KEY_2, TestActions.TEST_ACTION);
-
-        submit();
+    	addBinding(InputTest.TEST_KEY_1, TestActions.TEST_ACTION);
+    	addBinding(InputTest.TEST_KEY_2, TestActions.TEST_ACTION);
     }
 }

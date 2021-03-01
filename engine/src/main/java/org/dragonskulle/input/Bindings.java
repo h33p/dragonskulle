@@ -47,8 +47,8 @@ public class Bindings {
      * @param button The button code.
      * @param actions The actions that are triggered by the button.
      */
-    public void add(int button, Action... actions) {
-        add(new Binding(button, actions));
+    public void addBinding(int button, Action... actions) {
+    	addBinding(new Binding(button, actions));
     }
 
     /**
@@ -56,7 +56,7 @@ public class Bindings {
      *
      * @param binding The binding to be added.
      */
-    void add(Binding binding) {
+    void addBinding(Binding binding) {
         mBindings.add(binding);
     }
 

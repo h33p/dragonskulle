@@ -210,7 +210,7 @@ public class InputTest {
         buttons.release(button);
 
         // Bind the action to the button.
-        bindings.add(button, action);
+        bindings.addBinding(button, action);
         bindings.submit();
 
         // Press the button again.
