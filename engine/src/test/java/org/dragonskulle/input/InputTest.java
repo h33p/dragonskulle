@@ -7,15 +7,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Logger;
-
-import org.dragonskulle.input.custom.MyActions;
 import org.dragonskulle.input.test_bindings.TestActions;
 import org.dragonskulle.input.test_bindings.TestBindings;
 import org.joml.Vector2d;
 import org.junit.Before;
 import org.junit.Test;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Unit test for {@link Input}.
@@ -24,24 +20,22 @@ import org.lwjgl.glfw.GLFW;
  */
 public class InputTest {
 
-    public static final Logger LOGGER = Logger.getLogger("InputTest");
-
     /** An arbitrary key codes used for testing key presses. */
     public static final int TEST_KEY_1 = -12345;
     public static final int TEST_KEY_2 = -12300;
 
-    /** Before every test, create a window and attach Input to it. */
+    /** Before every test, reinitialise the Input. */
     @Before
     public void createWindowInput() {
-    	TestBindings bindings = new TestBindings();
-    	Input.initialise(null, bindings);
-        
-    	// Testing: Editing bindings after Input is created.
-    	bindings.add(GLFW.GLFW_KEY_P, MyActions.BONUS);
-    	bindings.submit();
-        
+    	Input.initialise(null, new TestBindings());        
     }
-
+    
+    @Test
+    public void bindingsNotNull() {
+        Bindings bindings = Input.getBindings();
+        assertNotNull(bindings);
+    }
+    
     @Test
     public void buttonsNotNull() {
         Buttons buttons = Input.getButtons();
@@ -50,19 +44,19 @@ public class InputTest {
     
     @Test
     public void cursorNotNull() {
-        Cursor cursor = Actions.getCursor();
+        Cursor cursor = TestActions.getCursor();
         assertNotNull(cursor);
     }
 
     @Test
     public void scrollNotNull() {
-        Scroll scroll = Actions.getScroll();
+        Scroll scroll = TestActions.getScroll();
         assertNotNull(scroll);
     }
 
-    /** Ensure button activations and deactivations can be triggered and stored. */
+    /** Ensure button presses can be triggered and stored. */
     @Test
-    public void buttonShouldStoreActivation() {
+    public void buttonShouldStorePress() {
         boolean activated;
 
         Buttons buttons = Input.getButtons();
@@ -77,15 +71,7 @@ public class InputTest {
         assertFalse("Button TEST_KEY_1 should be deactivated (false).", activated);
     }
 
-    /**
-     * Ensure that pressing a button activates and deactivates an action.
-     *
-     * <p>As action bindings are currently hard-coded:
-     *
-     * <ul>
-     *   <li>GLFW_KEY_UP triggers {@link Action#UP}
-     * </ul>
-     */
+    /** Ensure that pressing a button activates and deactivates an action. */
     @Test
     public void buttonShouldActivateAction() {
         // Parameters:
@@ -120,16 +106,7 @@ public class InputTest {
                 activated);
     }
 
-    /**
-     * Ensure that pressing a multiple buttons activates and deactivates an action.
-     *
-     * <p>As action bindings are currently hard-coded:
-     *
-     * <ul>
-     *   <li>GLFW_KEY_UP triggers {@link Action#UP}
-     *   <li>GLFW_KEY_W triggers {@link Action#UP}
-     * </ul>
-     */
+    /** Ensure that pressing a multiple buttons activates and deactivates an action. */
     @Test
     public void multipleButtonsShouldActivateAction() {
         // Parameters:
@@ -182,9 +159,7 @@ public class InputTest {
                 activated);
     }
 
-    /**
-     * Ensure that actions that do not have any triggers remain deactivated.
-     */
+    /** Ensure that actions that do not have any triggers remain deactivated. */
     @Test
     public void actionWithoutTrigger() {
     	// Parameters:
@@ -202,6 +177,66 @@ public class InputTest {
                         "%s should be deactivated (false) as nothing can activate it.",
                         actionName),
                 activated);
+    }
+    
+    /** Ensure the bindings can be modified. */
+    @Test
+    public void modifyBindings() {
+    	// Parameters:
+        int button = TEST_KEY_1;
+        Action action = TestActions.TEST_ACTION_2;
+
+        // For logic:
+        boolean activated;
+
+        // For error messages:
+        String buttonName = String.format("[Button Code: %d]", button);
+        String actionName = action.toString();
+
+        // Run the test:
+        Buttons buttons = Input.getButtons();
+        assertNotNull(buttons);
+        Bindings bindings = Input.getBindings();
+        assertNotNull(bindings);
+        
+        // Press the button, but this should not activate the action.
+        buttons.press(button);
+        activated = action.isActivated();
+        assertFalse(
+                String.format(
+                        "%s should be deactivated (false) as %s is not currently binded to the action.",
+                        actionName, buttonName),
+                activated);
+        buttons.release(button);
+        
+        // Bind the action to the button.
+        bindings.add(button, action);
+        bindings.submit();
+        
+        // Press the button again.
+        buttons.press(button);
+        activated = action.isActivated();
+        assertTrue(
+                String.format(
+                        "%s should be activated (true) as %s is now binded to the action.",
+                        actionName, buttonName),
+                activated);
+        buttons.release(button);
+        
+        // Unbind the button.
+        bindings.remove(button);
+        bindings.submit();
+        
+        // Press the button, but this should not activate the action.
+        buttons.press(button);
+        activated = action.isActivated();
+        assertFalse(
+                String.format(
+                        "%s should be deactivated (false) as %s should have been unbinded for all actions.",
+                        actionName, buttonName),
+                activated);
+        buttons.release(button);
+        
     }
     
     /** Ensure {@link Scroll} is storing the amount scrolled (since last {@link Scroll#reset()}). */
@@ -267,10 +302,7 @@ public class InputTest {
                 desired);
     }
 
-    /**
-     * Ensure that when no dragging is taking place, the drag start location is null and the angle
-     * and distance is 0.
-     */
+    /** Ensure that when no dragging is taking place, the drag start location is null and the angle and distance is 0. */
     @Test
     public void noDragShouldCauseNullOrZero() {
         Cursor cursor = Actions.getCursor();
@@ -278,13 +310,9 @@ public class InputTest {
 
         assertNull("No drag has begun, so DragStart should be null.", cursor.getDragStart());
 
-        assertEquals(
-                "No drag has begun, so the drag distance should be 0.",
-                cursor.getDragDistance(),
-                0,
-                0);
-        assertEquals(
-                "No drag has begun, so the drag angle should be 0.", cursor.getDragAngle(), 0, 0);
+        assertEquals("No drag has begun, so the drag distance should be 0.", cursor.getDragDistance(), 0, 0);
+        
+        assertEquals("No drag has begun, so the drag angle should be 0.", cursor.getDragAngle(), 0, 0);
     }
 
     /** Ensure that dragging correctly stores the start position. */

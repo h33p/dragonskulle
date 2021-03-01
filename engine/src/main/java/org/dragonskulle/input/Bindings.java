@@ -3,6 +3,7 @@ package org.dragonskulle.input;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
  *
  * @author Craig Wilbourne
  */
-abstract public class Bindings {
+public class Bindings {
 
     /** Used to log messages. */
     private static final Logger LOGGER = Logger.getLogger("bindings");
@@ -52,6 +53,21 @@ abstract public class Bindings {
     void add(Binding binding) {
         mBindings.add(binding);
     }  
+    
+    /**
+     * Remove all stored bindings for a specific button.
+     * 
+     * @param buttonT The button.
+     */
+    public void remove(int button) {
+    	Iterator<Binding> iterator = mBindings.iterator();
+    	while(iterator.hasNext()) {
+    		Binding binding = iterator.next();
+    		if(binding.getButton() == button) {
+    			iterator.remove();
+    		}
+    	}
+    }
     
     /**
      * Get the actions triggered by a specific button.
