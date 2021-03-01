@@ -23,7 +23,7 @@ public class Input {
 
     /**
      * Starts the detection of buttons, the cursor and the mouse scroll wheel for a specified
-     * window. <b> Automatically submits the current bindings for use. </b>
+     * window.
      *
      * @param window The window Input should listen to, or {@code null} if no GLFW window is to be
      *     connected.
@@ -37,8 +37,6 @@ public class Input {
         }
         // Store the bindings.
         sBindings = bindings;
-        // Submit the current bindings.
-        bindings.submit();
 
         // Detect buttons based on the bindings.
         sButtons = new Buttons(bindings);

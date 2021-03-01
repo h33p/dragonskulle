@@ -211,7 +211,6 @@ public class InputTest {
 
         // Bind the action to the button.
         bindings.addBinding(button, action);
-        bindings.submit();
 
         // Press the button again.
         buttons.press(button);
@@ -224,8 +223,7 @@ public class InputTest {
         buttons.release(button);
 
         // Unbind the button.
-        bindings.remove(button);
-        bindings.submit();
+        bindings.removeBinding(button);
 
         // Press the button, but this should not activate the action.
         buttons.press(button);

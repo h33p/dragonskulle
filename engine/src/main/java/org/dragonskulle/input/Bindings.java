@@ -3,76 +3,81 @@ package org.dragonskulle.input;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import lombok.extern.java.Log;
 
 /**
  * Stores {@link Binding}s between buttons and actions.
  *
  * @author Craig Wilbourne
  */
-@Log
 public class Bindings {
 
-    /**
-     * Stores all bindings.
-     *
-     * <p>{@link Bindings#submit()} needs to be called for these bindings to be reflected in the
-     * input detection.
-     */
-    private final ArrayList<Binding> mBindings = new ArrayList<Binding>();
-
-    /** A map between a button and the actions it triggers. */
-    private final HashMap<Integer, ArrayList<Action>> mButtonToActions =
-            new HashMap<Integer, ArrayList<Action>>();
+    /** A map between a button and its binding. */
+    private final HashMap<Integer, Binding> mButtonToBinding = new HashMap<Integer, Binding>();
 
     /** A map between an action and the buttons that trigger it. */
     private final HashMap<Action, ArrayList<Integer>> mActionToButtons =
             new HashMap<Action, ArrayList<Integer>>();
 
     /**
-     * Submit the current bindings for use.
-     *
-     * <p>If any bindings are edited, submit needs to be called again before these changes are
-     * reflected.
-     */
-    public void submit() {
-        rebind();
-    }
-
-    /**
-     * Add a new binding by specifying the button and the actions it triggers.
+     * Add a new binding by specifying the button and the actions it triggers. If a {@link Binding}
+     * already exists for the button, add to the pre-existing binding.
      *
      * @param button The button code.
      * @param actions The actions that are triggered by the button.
      */
     public void addBinding(int button, Action... actions) {
-    	addBinding(new Binding(button, actions));
+        Binding binding = mButtonToBinding.get(button);
+        // If a binding already exists, simply add to it.
+        if (binding != null) {
+            binding.addActions(actions);
+            return;
+        }
+
+        // Add a new binding for the button.
+        Binding newBinding = new Binding(button, actions);
+        mButtonToBinding.put(button, newBinding);
+
+        // Populate mActionToButtons.
+        for (Action action : newBinding.getActions()) {
+            // Get the buttons that trigger the action.
+            ArrayList<Integer> buttons = mActionToButtons.get(action);
+            if (buttons == null) {
+                // No buttons for this action have been stored yet- so create a new entry.
+                ArrayList<Integer> newButtons = new ArrayList<Integer>();
+                newButtons.add(button);
+                mActionToButtons.put(action, newButtons);
+                continue;
+            }
+            // Add the button.
+            buttons.add(button);
+        }
     }
 
     /**
-     * Add a {@link Binding} to the list of {@link #mBindings}.
-     *
-     * @param binding The binding to be added.
-     */
-    void addBinding(Binding binding) {
-        mBindings.add(binding);
-    }
-
-    /**
-     * Remove all stored bindings for a specific button.
+     * Remove the stored binding for a specific button.
      *
      * @param button The button.
      */
-    public void remove(int button) {
-        Iterator<Binding> iterator = mBindings.iterator();
-        while (iterator.hasNext()) {
-            Binding binding = iterator.next();
-            if (binding.getButton() == button) {
-                iterator.remove();
+    public void removeBinding(int button) {
+        Binding binding = mButtonToBinding.get(button);
+        if (binding == null) {
+            return;
+        }
+
+        // Remove references to the button in mActionToButtons.
+        for (Action action : binding.getActions()) {
+            ArrayList<Integer> buttons = mActionToButtons.get(action);
+            if (buttons != null) {
+                buttons.remove(Integer.valueOf(button));
+                // If there are no buttons related to an action, remove the action.
+                if (buttons.size() == 0) {
+                    mActionToButtons.remove(action);
+                }
             }
         }
+
+        // Remove the binding.
+        mButtonToBinding.remove(button);
     }
 
     /**
@@ -83,10 +88,11 @@ public class Bindings {
      *     {@code ArrayList}.
      */
     ArrayList<Action> getActions(Integer button) {
-        if (!mButtonToActions.containsKey(button)) {
+        Binding binding = mButtonToBinding.get(button);
+        if (binding == null) {
             return new ArrayList<Action>();
         }
-        return mButtonToActions.get(button);
+        return binding.getActions();
     }
 
     /**
@@ -97,52 +103,10 @@ public class Bindings {
      *     {@code ArrayList}.
      */
     ArrayList<Integer> getButtons(Action action) {
-        if (!mActionToButtons.containsKey(action)) {
+        ArrayList<Integer> buttons = mActionToButtons.get(action);
+        if (buttons == null) {
             return new ArrayList<Integer>();
         }
-        return mActionToButtons.get(action);
-    }
-
-    /**
-     * Allows all of the bindings in {@link #mBindings} to become usable.
-     *
-     * <p>This temporarily resets {@link #mButtonToActions} and {@link #mActionToButtons}, and then
-     * repopulates them with the latest bindings.
-     */
-    private void rebind() {
-        mButtonToActions.clear();
-        mActionToButtons.clear();
-
-        for (Binding binding : mBindings) {
-            mButtonToActions.put(binding.getButton(), binding.getActions());
-        }
-        generateActionToButtons();
-
-        log.info(
-                String.format(
-                        "Rebinded:\n\tButton to Actions: %s\n\tAction to Buttons: %s",
-                        mButtonToActions.toString(), mActionToButtons.toString()));
-    }
-
-    /** Use {@link #buttonToAction} to generate the contents of {@link #actionToButton}. */
-    private void generateActionToButtons() {
-        // Get each button and action combination in mButtonToActions.
-        for (Entry<Integer, ArrayList<Action>> entry : mButtonToActions.entrySet()) {
-            // For each action, store a list of the buttons that trigger it.
-            for (Action action : entry.getValue()) {
-                ArrayList<Integer> buttonsList =
-                        new ArrayList<
-                                Integer>(); // Store a list of buttons that trigger the action.
-                buttonsList.add(entry.getKey()); // Add the current button to the list.
-
-                // If the action already has buttons assigned to it, add those buttons to the list.
-                if (mActionToButtons.containsKey(action)) {
-                    buttonsList.addAll(mActionToButtons.get(action));
-                }
-
-                // Store the results.
-                mActionToButtons.put(action, buttonsList);
-            }
-        }
+        return buttons;
     }
 }

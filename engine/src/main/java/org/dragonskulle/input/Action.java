@@ -52,6 +52,6 @@ public class Action {
         // If no name is available, display the action name as blank.
         String name = mName != null ? mName : "---";
 
-        return String.format("Action{name:%s, activated:%b}", name, mActivated);
+        return String.format("Action{name:%s}", name);
     }
 }
