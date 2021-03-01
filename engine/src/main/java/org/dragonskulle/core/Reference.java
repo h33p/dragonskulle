@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import java.io.Serializable;
+
 /**
  * Used for referencing GameObjects and Components
  *
@@ -10,7 +12,7 @@ package org.dragonskulle.core;
  *     Components maintaining a strong reference to the GameObject or Component and stopping it from
  *     being garbage collected
  */
-public class Reference<T> {
+public class Reference<T> implements Serializable {
 
     private T mObject;
 
@@ -38,6 +40,10 @@ public class Reference<T> {
      */
     public T get() {
         return mObject;
+    }
+
+    public boolean isValid() {
+        return mObject != null;
     }
 
     /**

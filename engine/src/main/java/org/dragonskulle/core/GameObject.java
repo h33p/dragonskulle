@@ -1,6 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,7 +21,7 @@ import org.dragonskulle.components.Transform;
  *     actions but each component that is added to the GameObject will be able to interact with
  *     itself in the world and other GameObjects.
  */
-public class GameObject {
+public class GameObject implements Serializable {
 
     private final Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
@@ -35,7 +41,9 @@ public class GameObject {
      * @return The new instance of the GameObject
      */
     public static GameObject instantiate(GameObject object) {
-        return new GameObject(object);
+        GameObject instance = object.createClone();
+        instance.mTransform.setGameObject(instance);
+        return object.createClone();
     }
 
     /**
@@ -46,7 +54,8 @@ public class GameObject {
      * @return The new instance of the GameObject
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
-        GameObject instance = new GameObject(object);
+        GameObject instance = object.createClone();
+        transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
     }
@@ -89,6 +98,7 @@ public class GameObject {
         mParent = null;
         mName = name;
         mActive = true;
+        mTransform.setGameObject(this);
     }
 
     /**
@@ -102,26 +112,7 @@ public class GameObject {
         mParent = null;
         mName = name;
         mActive = active;
-    }
-
-    /**
-     * Copy constructor for GameObject
-     *
-     * @param object The GameObject to copy
-     */
-    public GameObject(GameObject object) {
-
-        // TODO: Rewrite this so that all children and components are new objects just with the same
-        //       values etc
-
-        mRoot = object.mRoot;
-        mParent = object.mParent;
-        mName = object.mName;
-        mActive = object.mActive;
-        mTransform = object.mTransform;
-
-        mComponents.addAll(object.mComponents);
-        mChildren.addAll(object.mChildren);
+        mTransform.setGameObject(this);
     }
 
     /**
@@ -171,6 +162,21 @@ public class GameObject {
     }
 
     /**
+     * Get a list of all components of a specific type in all children of this GameObject
+     *
+     * @param type Class object of type T
+     * @param ret List object to store the references to components found
+     * @param <T> Type of component to search for
+     */
+    public <T extends Component> void getComponentsInChildren(
+            Class<T> type, List<Reference<T>> ret) {
+        for (GameObject child : mChildren) {
+            child.getComponents(type, ret);
+            child.getComponentsInChildren(type, ret);
+        }
+    }
+
+    /**
      * Get every child with this GameObject acting as the root in a tree, adding to the list in a
      * depth-first order.
      *
@@ -204,7 +210,7 @@ public class GameObject {
             component.setGameObject(this);
         }
 
-        // Add the component and set scene updated to true
+        // Add the component
         mComponents.add(component);
     }
 
@@ -262,42 +268,81 @@ public class GameObject {
         mChildren.remove(child);
     }
 
-    /**
-     * Destroy the GameObject, destroying all children and components and then removing ourselves
-     * from our parent
-     */
-    public void destroy() {
-
-        // Copy the list of children so that as they are destroyed and unlinked from the list
-        // the iteration occurs without error
+    /** Handle the destruction of the object. */
+    protected void engineDestroy() {
+        // Create a copy of the list of children this object has
         ArrayList<GameObject> children = new ArrayList<>(mChildren);
 
-        // First destroy the children and the components
+        // Iterate through the children and destroy all of them
         for (GameObject child : children) {
-            child.destroy();
+            child.engineDestroy();
         }
 
-        for (Component component : mComponents) {
-            component.destroy();
-        }
+        // Add all components to the set of destroyed components.
+        // We do this instead of destroying them here to prevent double-destroys
+        Engine.getInstance().mDestroyedComponents.addAll(mComponents);
 
-        // Check that the parent isn't null before removing this
-        if (mParent != null) {
-            mParent.removeChild(this);
-        }
+        // Destroy the transform of this GameObject
+        mTransform.destroy();
+        mTransform = null;
 
         // After we have finished destroying we need to clear our reference so nothing attempts to
-        // access this
+        // access this after being destroyed
         mReference.clear();
+
+        // Then remove this GameObject from the parent and remove the link to the parent
+        if (mParent != null) {
+            mParent.removeChild(this);
+            mParent = null;
+        }
+        mRoot = null;
     }
 
     /**
-     * Getter for mChildren, should only be used by the engine
+     * Add the GameObject to the list of objects that need to be destroyed in the Engine instance
+     */
+    public void destroy() {
+        Engine.getInstance().mDestroyedObjects.add(this);
+    }
+
+    /**
+     * Create a deep copy of the GameObject
+     *
+     * @return New GameObject with identical values as this
+     */
+    public GameObject createClone() {
+        byte[] objectData = null;
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+            oos.flush();
+            oos.close();
+            baos.close();
+            objectData = baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (objectData != null) {
+            try {
+                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
+                return (GameObject) new ObjectInputStream(bais).readObject();
+            } catch (ClassNotFoundException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Getter for mChildren
      *
      * @return mChildren
      */
-    protected ArrayList<GameObject> getChildren() {
-        return mChildren;
+    public ArrayList<GameObject> getChildren() {
+        return new ArrayList<>(mChildren);
     }
 
     /**
@@ -314,7 +359,7 @@ public class GameObject {
      *
      * @return mActive
      */
-    public boolean getActive() {
+    public boolean isActive() {
         return mActive;
     }
 
@@ -337,12 +382,30 @@ public class GameObject {
     }
 
     /**
+     * Get the transform from the parent of this GameObject
+     *
+     * @return Parent Transform, or null if this is a root GameObject
+     */
+    public Transform getParentTransform() {
+        return mParent != null ? mParent.mTransform : null;
+    }
+
+    /**
      * Getter for mReference
      *
      * @return mReference
      */
     public Reference<GameObject> getReference() {
         return mReference;
+    }
+
+    /**
+     * Check whether a GameObject is a root object
+     *
+     * @return true if it's a root, false otherwise
+     */
+    public boolean isRootObject() {
+        return mParent == null;
     }
 
     /**

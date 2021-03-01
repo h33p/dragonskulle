@@ -15,5 +15,5 @@ public interface ILateFrameUpdate {
      *
      * @param deltaTime Approximate time since last call to lateFrameUpdate
      */
-    void lateFrameUpdate(double deltaTime);
+    void lateFrameUpdate(float deltaTime);
 }

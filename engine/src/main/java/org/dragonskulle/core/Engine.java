@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
@@ -23,9 +22,12 @@ public class Engine {
 
     // TODO: Choose a number of updates per second that we want to have
     private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
-    private static final double UPDATE_TIME = 1 / (double) UPDATES_PER_SECOND;
+    private static final float UPDATE_TIME = 1 / (float) UPDATES_PER_SECOND;
 
     private boolean mIsRunning = false;
+
+    protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
+    protected final HashSet<Component> mDestroyedComponents = new HashSet<>();
 
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
     private Scene mActiveScene = null;
@@ -64,39 +66,30 @@ public class Engine {
     /** Main loop of the engine */
     private void mainLoop() {
 
-        double mPrevTime = Time.getTimeInSeconds();
+        float mPrevTime = Time.getTimeInSeconds();
 
         // Basic frame counter
         int frames = 0;
-        double secondTimer = 0;
-        double cumulativeTime = 0;
-
-        // TODO: Make objects only be destroyed after all updates
-        // TODO: Only initialize new components at the start of next frame
-        // TODO: Only update the component list at the start of a frame
-        //          -> Split into separate lists depending on interfaces?
-
-        // For only destroying at end of frame have a flag on objects called mDestroy
-        // If it's true at the end of the frame, call the destroy method
-
-        // Likewise have a boolean for awake and start
-        // if awake is false, call onAwake, if started is false and enabled is true, call onStart
+        float secondTimer = 0;
+        float cumulativeTime = 0;
 
         while (mIsRunning) {
-
-            if (mNewScene != null) {
-                switchToNewScene();
-            }
-
-            onStartAndAwake(mActiveScene.getNewComponents());
-
             // Calculate time for last frame
-            double mCurTime = Time.getTimeInSeconds();
-            double deltaTime = mCurTime - mPrevTime;
+            float mCurTime = Time.getTimeInSeconds();
+            float deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
             cumulativeTime += deltaTime;
             secondTimer += deltaTime;
+            if (mNewScene != null) {
+                switchToNewScene();
+            }
+
+            mActiveScene.updateComponentsList();
+
+            wakeComponents();
+
+            startEnabledComponents();
 
             // TODO: Process inputs here before any updates are performed
 
@@ -111,9 +104,11 @@ public class Engine {
                 fixedUpdate();
             }
 
-            // TODO: Perform actual rendering after all updates
-
             lateFrameUpdate(deltaTime);
+
+            // TODO: Perform rendering here
+
+            destroyObjectsAndComponents();
 
             frames++;
             if (secondTimer > 1.0) {
@@ -129,25 +124,25 @@ public class Engine {
         cleanup();
     }
 
-    /**
-     * Call onStart and onAwake for all components that implement it
-     *
-     * @param components List of components to be checked
-     */
-    private void onStartAndAwake(ArrayList<Component> components) {
-
-        // Iterate through them, calling onAwake on all that implement it
-        for (Component component : components) {
+    /** Iterate through a list of components that aren't awake and wake them */
+    private void wakeComponents() {
+        for (Component component : mActiveScene.getNotAwakeComponents()) {
             if (component instanceof IOnAwake) {
                 ((IOnAwake) component).onAwake();
             }
+            component.setAwake(true);
         }
+    }
 
-        // Then go through again, calling onStart on all the implement it
-        for (Component component : components) {
+    /**
+     * Iterate through a list of components that are enabled but haven't been started and start them
+     */
+    private void startEnabledComponents() {
+        for (Component component : mActiveScene.getEnabledButNotStartedComponents()) {
             if (component instanceof IOnStart) {
                 ((IOnStart) component).onStart();
             }
+            component.setStarted(true);
         }
     }
 
@@ -156,9 +151,7 @@ public class Engine {
      *
      * @param deltaTime Time change since last frame
      */
-    private void frameUpdate(double deltaTime) {
-        mActiveScene.updateComponentsList();
-
+    private void frameUpdate(float deltaTime) {
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
@@ -168,8 +161,6 @@ public class Engine {
 
     /** Do all Fixed Updates on components that implement it */
     private void fixedUpdate() {
-        mActiveScene.updateComponentsList();
-
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof IFixedUpdate) {
                 ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
@@ -182,9 +173,7 @@ public class Engine {
      *
      * @param deltaTime Time change since last frame
      */
-    private void lateFrameUpdate(double deltaTime) {
-        mActiveScene.updateComponentsList();
-
+    private void lateFrameUpdate(float deltaTime) {
         for (Component component : mActiveScene.getEnabledComponents()) {
             if (component instanceof ILateFrameUpdate) {
                 ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
@@ -192,28 +181,30 @@ public class Engine {
         }
     }
 
-    /**
-     * Finish the loading of a new scene. If the scene has never been active before, call the
-     * onAwake and onStart methods if they are implemented
-     */
+    /** Destroy all GameObjects and Components that need to be destroyed */
+    private void destroyObjectsAndComponents() {
+        // Destroy all game objects that need to be destroyed
+        for (GameObject object : mDestroyedObjects) {
+            object.engineDestroy();
+        }
+        mDestroyedObjects.clear();
+
+        // Destroy all components that need to be destroyed
+        for (Component component : mDestroyedComponents) {
+            component.engineDestroy();
+        }
+        mDestroyedComponents.clear();
+    }
+
+    /** Finish the loading of a new scene. */
     private void switchToNewScene() {
         // Add the currently active scene to inactive scenes and remove the new scene from
         // the set if it exists
         mInactiveScenes.add(mActiveScene);
-        boolean sceneWasInactive = mInactiveScenes.remove(mNewScene);
+        mInactiveScenes.remove(mNewScene);
 
         mActiveScene = mNewScene;
         mNewScene = null;
-
-        // Scene has never been active before
-        // Or do we still need to call awake and start even if it has been active before?
-        if (!sceneWasInactive) {
-
-            // Get the initial list of components in the scene
-            mActiveScene.updateComponentsList();
-
-            onStartAndAwake(mActiveScene.getComponents());
-        }
     }
 
     /** Cleans up all resources used by the engine on shutdown */
@@ -222,6 +213,13 @@ public class Engine {
 
         AudioManager.getInstance().cleanup();
     }
+
+    /**
+     * Add a component to the set of all components to be destroyed
+     *
+     * @param component Component to be destroyed at the end of the current frame
+     */
+    public void addDestroyedComponent(Component component) {}
 
     /**
      * Getter for mActiveScene
@@ -237,7 +235,7 @@ public class Engine {
      *
      * @return The Engine instance
      */
-    static Engine getInstance() {
+    public static Engine getInstance() {
         return ENGINE_INSTANCE;
     }
 }
