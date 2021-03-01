@@ -18,6 +18,7 @@ class Buttons {
     /** Allows the mapping between buttons and actions to be accessed. */
     private Bindings mBindings;
     
+    /** Store which buttons are pressed. */
     private final HashMap<Integer, Boolean> buttons = new HashMap<Integer, Boolean>();
 
     /**
@@ -91,7 +92,7 @@ class Buttons {
      * Called when a GLFW button is released.
      *
      * <p>If there are no other buttons, according to the mapping in {@link Bindings}, activating an
-     * {@link Action}, deactivate the action.
+     * {@link Action}: deactivate the action.
      *
      * @param button The button being released.
      */

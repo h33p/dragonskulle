@@ -1,10 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
-import java.util.logging.Logger;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * Once initialised for a specific window, input will listen to all user input and reflect this in the relevant {@link Actions}.
@@ -12,10 +11,8 @@ import lombok.experimental.Accessors;
  * @author Craig Wilboure
  */
 @Accessors(prefix = "s")
+@Log
 public class Input {
-
-    /** Used to log messages. */
-    private static final Logger LOGGER = Logger.getLogger("input");
 
     /** Allows button presses to trigger actions. */
     private static Buttons sButtons;
@@ -51,7 +48,7 @@ public class Input {
         	Actions.getCursor().attachToWindow(window);
             Actions.getScroll().attachToWindow(window);
         } else {
-        	LOGGER.warning("Input is not attatched to a window.");
+        	log.warning("Input is not attatched to a window.");
         }
     }
     

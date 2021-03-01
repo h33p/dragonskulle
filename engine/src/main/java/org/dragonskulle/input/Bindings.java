@@ -5,17 +5,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
+
+import lombok.extern.java.Log;
 
 /**
  * Stores {@link Binding}s between buttons and actions.
  *
  * @author Craig Wilbourne
  */
+@Log
 public class Bindings {
-
-    /** Used to log messages. */
-    private static final Logger LOGGER = Logger.getLogger("bindings");
 
     /** Stores all bindings. */
     private final ArrayList<Binding> mBindings = new ArrayList<Binding>();
@@ -112,7 +111,7 @@ public class Bindings {
         }
         generateActionToButtons();
 
-        LOGGER.info(
+        log.info(
                 String.format(
                         "Rebinded:\n\tButton to Actions: %s\n\tAction to Buttons: %s",
                         mButtonToActions.toString(), mActionToButtons.toString()));
