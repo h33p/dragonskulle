@@ -5,11 +5,36 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
+
 import sun.misc.IOUtils;
 
+/**
+ * The Network message structure which is sent.
+ * It will follow the format below.
+ * 0 : Print Contents [DEBUG]
+ * 20-50 : spawn
+ * 20 : spawn map
+ * 21 : spawn capitol
+ * <p>
+ * // schema
+ * // ::S:: (5bytes)
+ * // messageType (1Byte)
+ * // payloadSize (4 bytes)
+ * // payload (n bytes)
+ * // ::E:: (5 bytes)
+ */
 public class NetworkMessage {
+    /**
+     * The constant MAX_TRANSMISSION_SIZE.
+     */
     private static final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
+    /**
+     * The constant START_SIGNATURE.
+     */
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
+    /**
+     * The constant END_SIGNATURE.
+     */
     private static final byte[] END_SIGNATURE = {58, 58, 69, 58, 58};
 
     /*payload byte codes
@@ -25,6 +50,12 @@ public class NetworkMessage {
     // payload (n bytes)
     // ::E:: (5 bytes)
 
+    /**
+     * Parse bytes.
+     *
+     * @param buff   the buff
+     * @param client the client
+     */
     public static void parse(byte[] buff, NetworkClient client) {
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
@@ -52,6 +83,13 @@ public class NetworkMessage {
         }
     }
 
+    /**
+     * Verify the message ends correctly.
+     *
+     * @param offset the offset of the original message to the end trailer
+     * @param bytes  the bytes
+     * @return the boolean
+     */
     private static boolean verifyMessageEnd(int offset, byte[] bytes) {
         try {
             byte[] consumedSignature = Arrays.copyOfRange(bytes, offset, offset + 5);
@@ -61,16 +99,37 @@ public class NetworkMessage {
         }
     }
 
+    /**
+     * Verify message starts correctly.
+     *
+     * @param bytes the bytes
+     * @return the boolean
+     */
     private static boolean verifyMessageStart(byte[] bytes) {
         byte[] consumedSignature = Arrays.copyOfRange(bytes, 0, 5);
         return (Arrays.equals(START_SIGNATURE, consumedSignature));
     }
 
+    /**
+     * Get payload from the whole message.
+     *
+     * @param bytes       the bytes
+     * @param messageType the message type
+     * @param offset      the offset of the original message to the payload
+     * @param payloadSize the payload size
+     * @return the byte [ ]
+     */
     private static byte[] getPayload(byte[] bytes, byte messageType, int offset, int payloadSize) {
         byte[] payload = Arrays.copyOfRange(bytes, offset, offset + payloadSize);
         return payload;
     }
 
+    /**
+     * Convert byte array to int int.
+     *
+     * @param bytes the bytes
+     * @return the int
+     */
     public static int convertByteArrayToInt(byte[] bytes) {
         return ((bytes[0] & 0xFF) << 24)
                 | ((bytes[1] & 0xFF) << 16)
@@ -78,20 +137,45 @@ public class NetworkMessage {
                 | ((bytes[3] & 0xFF) << 0);
     }
 
+    /**
+     * Convert int to byte array byte [ ].
+     *
+     * @param value the value
+     * @return the byte [ ]
+     */
     public static byte[] convertIntToByteArray(int value) {
-        return new byte[] {
-            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
+        return new byte[]{
+                (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
         };
     }
 
+    /**
+     * Gets payload size.
+     *
+     * @param bytes the bytes
+     * @return the payload size
+     */
     private static int getPayloadSize(byte[] bytes) {
         return convertByteArrayToInt(Arrays.copyOfRange(bytes, 6, 11)); // inclusive, exclusive
     }
 
+    /**
+     * Gets message type as defined in then schema.
+     *
+     * @param bytes the bytes
+     * @return the message type
+     */
     private static byte getMessageType(byte[] bytes) {
         return bytes[5];
     }
 
+    /**
+     * Builds a message to be transmitted over the socket connection.
+     *
+     * @param messageType the message type
+     * @param payload     the payload
+     * @return the bytes to be sent
+     */
     public static byte[] build(byte messageType, byte[] payload) {
         assert payload.length <= MAX_TRANSMISSION_SIZE - 15;
         ArrayList<Byte> message = new ArrayList<>(MAX_TRANSMISSION_SIZE); // [MAX_MESSAGE_SIZE];
@@ -128,6 +212,12 @@ public class NetworkMessage {
         return toByteArray(message);
     }
 
+    /**
+     * Converts an ArrayList<Byte></Byte> to a byte array.
+     *
+     * @param in the in
+     * @return the byte [ ]
+     */
     public static byte[] toByteArray(List<Byte> in) {
         final int n = in.size();
         byte ret[] = new byte[n];
@@ -137,6 +227,13 @@ public class NetworkMessage {
         return ret;
     }
 
+    /**
+     * Parses a network message from bytes and executes the correct functions.
+     * This is for server use.
+     *
+     * @param buff              the buff
+     * @param sendBytesToClient the send bytes to client
+     */
     public static void parse(byte[] buff, Server.SendBytesToClientCurry sendBytesToClient) {
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
@@ -164,6 +261,13 @@ public class NetworkMessage {
         }
     }
 
+    /**
+     * Read message from the input byte stream.
+     *
+     * @param bIn the b in
+     * @return the byte [ ]
+     * @throws IOException the io exception
+     */
     public static byte[] readMessageFromStream(BufferedInputStream bIn) throws IOException {
         byte[] byteHeader = IOUtils.readExactlyNBytes(bIn, 10);
         boolean validStart = verifyMessageStart(byteHeader);
@@ -177,6 +281,14 @@ public class NetworkMessage {
         return concatenate(byteHeader, bArray);
     }
 
+    /**
+     * Concatenates two arrays.
+     *
+     * @param <T> the type parameter
+     * @param a   the a
+     * @param b   the b
+     * @return the t
+     */
     private static <T> T concatenate(T a, T b) {
         if (!a.getClass().isArray() || !b.getClass().isArray()) {
             throw new IllegalArgumentException();

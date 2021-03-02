@@ -3,13 +3,32 @@ package org.dragonskulle.network;
 
 import java.util.Scanner;
 
-/** This is for testing, it creates a CLI client instance and can connect to the server */
+/**
+ * This is for testing, it creates a CLI client instance and can connect to the server
+ */
 public class CreateClient {
+    /**
+     * The Ip.
+     */
     static String ip;
+    /**
+     * The Port.
+     */
     static String port;
+    /**
+     * The Client.
+     */
     static NetworkClient client;
+    /**
+     * The Command.
+     */
     static String command;
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter IP: ");

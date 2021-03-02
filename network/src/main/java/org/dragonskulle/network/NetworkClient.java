@@ -14,20 +14,54 @@ import org.dragonskulle.network.components.Networkable;
 /**
  * This is the client usage, you will create an instance, by providing the correct server to connect
  * to. ClientListener is the handler for commands that the client receives. {@link
- * org.dragonskulle.network.ClientListener}
+ * org.dragonskulle.network.ClientListener}*
  */
 public class NetworkClient {
+    /**
+     * The constant MAX_TRANSMISSION_SIZE.
+     */
     private static final int MAX_TRANSMISSION_SIZE = 512;
+    /**
+     * The Socket connection to the server.
+     */
     private Socket socket;
+    /**
+     * The Input stream. Possibly depreciated in favour of byte streams.
+     */
     private BufferedReader in;
+    /**
+     * The Output stream. Possibly depreciated in favour of byte streams.
+     */
     private PrintWriter out;
+    /**
+     * The byte output stream.
+     */
     private DataOutputStream dOut;
+    /**
+     * The byte input stream.
+     */
     private BufferedInputStream bIn;
+    /**
+     * The Game Instance.
+     */
     private ClientGameInstance game;
 
+    /**
+     * The Client listener to notify of important events.
+     */
     private ClientListener clientListener;
+    /**
+     * True if the socket is open.
+     */
     private boolean open = true;
 
+    /**
+     * Instantiates a new Network client.
+     *
+     * @param ip       the ip
+     * @param port     the port
+     * @param listener the listener
+     */
     public NetworkClient(String ip, int port, ClientListener listener) {
         clientListener = listener;
         try {
@@ -54,11 +88,16 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Execute bytes after parsing. This will be different usage depending on server or client.
+     *
+     * @param messageType the message type
+     * @param payload     the payload
+     */
     public void executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
             case (byte) 10:
                 System.out.println("Should update requested component");
-                System.out.println("DEBUG component");
                 System.out.println("Current component is");
                 String networkableId = Networkable.getIdFromBytes(payload);
                 this.game.printNetworkable(networkableId);
@@ -94,10 +133,25 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Deserialize the capital bytes.
+     *
+     * @param payload the payload
+     * @return the capital
+     * @throws DecodingException Thrown if any errors occur in deserialization.
+     */
     private Capital deserializeCapitol(byte[] payload) throws DecodingException {
         return Networkable.from(Capital.class, payload);
     }
 
+    /**
+     * Deserialize map hexagon tile [ ] [ ].
+     *
+     * @param payload the payload
+     * @return the hexagon tile [ ] [ ]
+     * @throws IOException            Thrown if any errors occur in deserialization.
+     * @throws ClassNotFoundException Thrown if any errors occur in deserialization.
+     */
     private HexagonTile[][] deserializeMap(byte[] payload)
             throws IOException, ClassNotFoundException {
         ByteArrayInputStream bis = new ByteArrayInputStream(payload);
@@ -106,12 +160,20 @@ public class NetworkClient {
         return map;
     }
 
+    /**
+     * Update networkable from bytes, this is authored by the server.
+     *
+     * @param payload the payload
+     */
     private void updateNetworkable(byte[] payload) {
         System.out.println("Starting to update networkable");
         this.game.updateNetworkable(payload);
         System.out.println("updated networkable");
     }
 
+    /**
+     * Dispose.
+     */
     public void dispose() {
         try {
             if (open) {
@@ -130,10 +192,20 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Send a string message to the server.
+     *
+     * @param msg the msg
+     */
     public void send(String msg) {
         this.sendBytes(msg.getBytes());
     }
 
+    /**
+     * Send bytes to the server.
+     *
+     * @param bytes the bytes
+     */
     public void sendBytes(byte[] bytes) {
         if (open) {
             try {
@@ -145,6 +217,11 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Is connected boolean.
+     *
+     * @return the boolean
+     */
     public boolean isConnected() {
         return open;
     }
@@ -182,6 +259,11 @@ public class NetworkClient {
         };
     }
 
+    /**
+     * Process bytes.
+     *
+     * @param bytes the bytes
+     */
     private void processBytes(byte[] bytes) {
         clientListener.receivedBytes(bytes);
         try {
@@ -192,6 +274,12 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Parse bytes.
+     *
+     * @param bytes the bytes
+     * @throws DecodingException the decoding exception
+     */
     private void parseBytes(byte[] bytes) throws DecodingException {
         System.out.println("bytes unpacking");
         try {
@@ -201,6 +289,9 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Close all connections.
+     */
     private void closeAllConnections() {
         open = false;
 

@@ -105,7 +105,7 @@ public class Server {
                 this.serverListener = null;
             }
         } catch (InterruptedException e) {
-            System.out.println(ConsoleColors.err("Error disposing"));
+            System.out.println("Error disposing");
             System.out.println(e.toString());
         }
     }
