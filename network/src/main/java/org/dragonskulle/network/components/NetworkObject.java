@@ -2,13 +2,10 @@
 package org.dragonskulle.network.components;
 
 import java.util.*;
-
 import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
 
-/**
- * The NetworkObject deals with any networked variables.
- */
+/** The NetworkObject deals with any networked variables. */
 public class NetworkObject {
     public NetworkObject(
             ClientInstance client,
@@ -19,10 +16,7 @@ public class NetworkObject {
         sendBytesToClientCallback = clientCallback;
     }
 
-    /**
-     * Possibly a temporary function to edit a network object without a reference.
-     */
-
+    /** Possibly a temporary function to edit a network object without a reference. */
     public Networkable get(int i) {
         return this.children.get(i);
     }
@@ -44,28 +38,27 @@ public class NetworkObject {
         return Objects.hash(networkObjectId);
     }
 
-    /**
-     * A callback to broadcast a message to all clients
-     */
+    public Networkable get(String id) {
+        return this.children.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElse(null); // will return null if not found
+    }
+
+    /** A callback to broadcast a message to all clients */
     public interface ServerBroadcastCallback {
         void call(byte[] bytes);
     }
 
-    /**
-     * A callback to broadcast a message to a SINGLE clients,this client is the owner
-     */
+    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
     public interface SendBytesToClientCallback {
         void call(ClientInstance client, byte[] bytes);
     }
 
-    /**
-     * Stores the broadcast callback
-     */
+    /** Stores the broadcast callback */
     private final ServerBroadcastCallback serverBroadcastCallback;
 
-    /**
-     * Stores the single sender callback
-     */
+    /** Stores the single sender callback */
     private final SendBytesToClientCallback sendBytesToClientCallback;
 
     /**
@@ -89,29 +82,33 @@ public class NetworkObject {
     /**
      * Spawns a component and notifies all clients using callback.
      *
-     * @param component   The component to be spawned, must extend Networkable
+     * @param component The component to be spawned, must extend Networkable
      * @param messageCode The message code of the spawn.
+     * @return The ID of the spawned component
      */
-    private void spawnComponent(Networkable component, byte messageCode) {
+    private String spawnComponent(Networkable component, byte messageCode) {
         System.out.println("spawning component on all clients");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
-        System.out.println("component bytes to spawn :: " + Arrays.toString(componentBytes));
-        System.out.println("component bytes : " + componentBytes.length);
+        //        System.out.println("component bytes to spawn :: " +
+        // Arrays.toString(componentBytes));
+        //        System.out.println("component bytes : " + componentBytes.length);
         spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
         serverBroadcastCallback.call(spawnComponentBytes);
         addChild(component);
+        return component.getId();
     }
 
     /**
      * Spawns a capital using the @link{spawnComponent} method
+     *
+     * @return The id of the spawned component
      */
-    public void spawnCapital() {
+    public String spawnCapital() {
         Capital capital = new Capital();
         capital.connectSyncVars();
-        spawnComponent(capital, (byte) 21);
+        return spawnComponent(capital, (byte) 21);
     }
-
 
     /**
      * Sends the map to the client, this is called on connect
@@ -125,19 +122,13 @@ public class NetworkObject {
         sendBytesToClientCallback.call(owner, spawnMapMessage);
     }
 
-    /**
-     * Children of the object will be networkable and updated on clients
-     */
+    /** Children of the object will be networkable and updated on clients */
     private final ArrayList<Networkable> children = new ArrayList<>();
 
-    /**
-     * The UUID of the object.
-     */
+    /** The UUID of the object. */
     public String networkObjectId = UUID.randomUUID().toString();
 
-    /**
-     * The Client Connection to the server
-     */
+    /** The Client Connection to the server */
     final ClientInstance owner;
 
     /**
@@ -146,9 +137,7 @@ public class NetworkObject {
      */
     boolean isDormant = false;
 
-    /**
-     * Broadcasts updates all of the modified children
-     */
+    /** Broadcasts updates all of the modified children */
     public void broadcastUpdate() {
         for (Networkable child : this.children) {
             if (child.hasBeenModified()) {

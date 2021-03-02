@@ -44,7 +44,9 @@ public class SyncVar<T extends Serializable> implements Serializable {
     public void set(T data) {
         if (hasListener) {
             if (data != this.data) {
-                this.onUpdate.call(); //onUpdate callback is to set the mask bit on modification to the field
+                this.onUpdate
+                        .call(); // onUpdate callback is to set the mask bit on modification to the
+                // field
             }
         }
         this.data = data;
@@ -72,10 +74,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
 
     @Override
     public String toString() {
-        return "SyncVar{" +
-                "data=" + data +
-                ", id='" + id + '\'' +
-                '}';
+        return "SyncVar{" + "data=" + data + ", id='" + id + '\'' + '}';
     }
 
     public interface ISyncVarUpdateHandler {

@@ -17,7 +17,6 @@ public class ServerGameInstance {
         this.map = new HexMap(9).createHexMap();
     }
 
-
     public byte[] cloneMap() throws IOException {
         // TODO be replaced with HexMap.serialize();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

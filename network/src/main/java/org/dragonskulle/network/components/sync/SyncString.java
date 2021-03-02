@@ -9,5 +9,4 @@ public class SyncString extends AbstractSync<String> {
     public SyncString(String data) {
         super(data);
     }
-
 };

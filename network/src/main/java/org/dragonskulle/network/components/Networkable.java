@@ -1,15 +1,14 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
+import com.sun.istack.internal.NotNull;
+import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.sun.istack.internal.NotNull;
-import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;
 import sun.misc.IOUtils;
@@ -67,7 +66,7 @@ public abstract class Networkable<T> {
         int maskLength = this.fields.size(); // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ArrayList<Byte> contents = new ArrayList<>();
-        //need to add in an id before
+        // need to add in an id before
         for (int i = 0; i < this.fields.size(); i++) {
             boolean didVarChange = this.fieldsMask[i];
             Field f = this.fields.get(i);
@@ -83,7 +82,7 @@ public abstract class Networkable<T> {
                             contents.add(b);
                         }
                     }
-                    this.fieldsMask[i] = false; //reset flag
+                    this.fieldsMask[i] = false; // reset flag
                 } catch (IllegalAccessException | IOException e) {
                     e.printStackTrace();
                 }
@@ -101,7 +100,7 @@ public abstract class Networkable<T> {
 
     @NotNull
     private ArrayList<Byte> getIdBytes() {
-        ArrayList<Byte> networkId = new ArrayList<Byte>(); //36 bytes
+        ArrayList<Byte> networkId = new ArrayList<Byte>(); // 36 bytes
         for (Byte aByte : this.getId().getBytes()) {
             networkId.add(aByte);
         }
@@ -123,16 +122,15 @@ public abstract class Networkable<T> {
                 for (byte b : syncVarBytes) {
                     contents.add(b);
                 }
-                if (i < this.fields.size() - 1) { //removes trailing seperator
+                if (i < this.fields.size() - 1) { // removes trailing seperator
                     for (byte b : FIELD_SEPERATOR) {
                         contents.add(b);
                     }
                 }
-                this.fieldsMask[i] = false; //reset flag
+                this.fieldsMask[i] = false; // reset flag
             } catch (IllegalAccessException | IOException e) {
                 e.printStackTrace();
             }
-
         }
         ArrayList<Byte> payload = new ArrayList<>();
         payload.addAll(networkId);
@@ -142,7 +140,8 @@ public abstract class Networkable<T> {
         return NetworkMessage.toByteArray(payload);
     }
 
-    public static <T extends Networkable> T from(Class<T> target, byte[] bytes) throws DecodingException {
+    public static <T extends Networkable> T from(Class<T> target, byte[] bytes)
+            throws DecodingException {
         try {
             T t = target.newInstance();
             t.initFields();
@@ -157,9 +156,11 @@ public abstract class Networkable<T> {
     public void updateFromBytes(byte[] payload) throws IOException {
         String id = getIdFromBytes(payload);
         this.setId(id);
-        int maskLength = getFieldLengthFromBytes(payload, 36); //offset of 36 to ignore netid
-        ArrayList<Boolean> masks = getMaskFromBytes(payload, maskLength, 36); //offset of 36 to ignore netid
-        ArrayList<SyncVar> contents = getContentsFromBytes(payload, 1 + maskLength + 36); //offset of 36 to ignore netid
+        int maskLength = getFieldLengthFromBytes(payload, 36); // offset of 36 to ignore netid
+        ArrayList<Boolean> masks =
+                getMaskFromBytes(payload, maskLength, 36); // offset of 36 to ignore netid
+        ArrayList<SyncVar> contents =
+                getContentsFromBytes(payload, 1 + maskLength + 36); // offset of 36 to ignore netid
         for (int i = 0; i < maskLength; i++) {
             boolean didUpdate = masks.get(i);
             if (didUpdate) {
@@ -172,8 +173,8 @@ public abstract class Networkable<T> {
         return new String(Arrays.copyOf(payload, 36), Charset.defaultCharset());
     }
 
-    private static ArrayList<SyncVar> getContentsFromBytes(
-            byte[] buff, int offset) throws IOException {
+    private static ArrayList<SyncVar> getContentsFromBytes(byte[] buff, int offset)
+            throws IOException {
         ArrayList<SyncVar> out = new ArrayList<>();
         ArrayList<Byte> syncVarBytes;
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
@@ -191,6 +192,7 @@ public abstract class Networkable<T> {
                     // try to deserialize.
                     try {
                         out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
+                        syncVarBytes.clear(); // clears current sync bytes that have been read
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -232,13 +234,16 @@ public abstract class Networkable<T> {
 
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
         try {
-//            System.out.println("[updateFromMaskOffset] getting " + offset);
-//            System.out.println("[updateFromMaskOffset] fields " + this.fields);
+            //            System.out.println("[updateFromMaskOffset] getting " + offset);
+            //            System.out.println("[updateFromMaskOffset] fields " +
+            // this.fields.get(offset));
             Field E = this.fields.get(offset);
-//            System.out.println("[updateFromMaskOffset] setting");
+            //            System.out.println("[updateFromMaskOffset] setting field from " +
+            // newValue.getClass());
             E.set(this, newValue);
-//            System.out.println("[updateFromMaskOffset] done");
-        } catch (IllegalAccessException e) {
+            //            System.out.println("[updateFromMaskOffset] done");
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            System.out.println("error setting field in instance");
             e.printStackTrace();
         }
     }
@@ -270,10 +275,14 @@ public abstract class Networkable<T> {
         }
         fieldsString.append("\n}");
 
-        return "Networkable{" +
-                "id='" + id + '\'' +
-                ", fieldsMask=" + Arrays.toString(fieldsMask) +
-                ", fields=" + fieldsString +
-                '}';
+        return "Networkable{"
+                + "id='"
+                + id
+                + '\''
+                + ", fieldsMask="
+                + Arrays.toString(fieldsMask)
+                + ", fields="
+                + fieldsString
+                + '}';
     }
 }

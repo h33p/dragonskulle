@@ -9,5 +9,4 @@ public class SyncBool extends AbstractSync<Boolean> {
     public SyncBool(Boolean data) {
         super(data);
     }
-
 };

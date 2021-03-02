@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -27,8 +26,13 @@ public class ClientEars implements ClientListener {
     @Override
     public void receivedBytes(byte[] bytes) {
         if (bytes.length > 15) {
-            System.out.print("[Client] Received Bytes :: " + Arrays.toString(Arrays.copyOfRange(bytes, 0, 15)));
-            System.out.println(" \t...\t   " + Arrays.toString(Arrays.copyOfRange(bytes, bytes.length - 15, bytes.length)));
+            System.out.print(
+                    "[Client] Received Bytes :: "
+                            + Arrays.toString(Arrays.copyOfRange(bytes, 0, 15)));
+            System.out.println(
+                    " \t...\t   "
+                            + Arrays.toString(
+                                    Arrays.copyOfRange(bytes, bytes.length - 15, bytes.length)));
         }
     }
 

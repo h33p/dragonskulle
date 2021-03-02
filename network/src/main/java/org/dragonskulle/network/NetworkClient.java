@@ -2,14 +2,11 @@
 package org.dragonskulle.network;
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.Networkable;
@@ -27,7 +24,6 @@ public class NetworkClient {
     private DataOutputStream dOut;
     private BufferedInputStream bIn;
     private ClientGameInstance game;
-
 
     private ClientListener clientListener;
     private boolean open = true;
@@ -102,7 +98,8 @@ public class NetworkClient {
         return Networkable.from(Capital.class, payload);
     }
 
-    private HexagonTile[][] deserializeMap(byte[] payload) throws IOException, ClassNotFoundException {
+    private HexagonTile[][] deserializeMap(byte[] payload)
+            throws IOException, ClassNotFoundException {
         ByteArrayInputStream bis = new ByteArrayInputStream(payload);
         ObjectInput in = new ObjectInputStream(bis);
         HexagonTile[][] map = (HexagonTile[][]) in.readObject();

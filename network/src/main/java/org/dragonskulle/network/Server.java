@@ -4,16 +4,15 @@ package org.dragonskulle.network;
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.Networkable;
 
 /**
  * This is the main Server Class, it handles setup and stores all client connections. It can
@@ -154,8 +153,7 @@ public class Server {
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {
-            };
+            return () -> {};
         }
         return () -> {
             try {
@@ -183,47 +181,58 @@ public class Server {
                                     this.sockets::broadcast,
                                     this.sockets::sendBytesToClient);
                     networkObject.spawnMap(this.game.cloneMap());
-                    networkObject.spawnCapital();
+                    String capitalId = networkObject.spawnCapital();
                     this.networkObjects.add(networkObject);
 
-
-                    //Simulation of calling fixed update;
+                    // Simulation of calling fixed update;
                     Timer timer = new Timer();
                     int begin = 0;
                     int timeInterval = 1000;
                     FixedUpdateSimulation fixedUpdate = this::fixedBroadcastUpdate;
-                    timer.schedule(new TimerTask() {
-                        int counter = 0;
+                    timer.schedule(
+                            new TimerTask() {
+                                int counter = 0;
 
-                        @Override
-                        public void run() {
-                            fixedUpdate.call();
-                            counter++;
-                            if (counter >= 20) {
-                                timer.cancel();
-                            }
-                        }
-                    }, begin, timeInterval);
+                                @Override
+                                public void run() {
+                                    fixedUpdate.call();
+                                    counter++;
+                                    if (counter >= 20) {
+                                        timer.cancel();
+                                    }
+                                }
+                            },
+                            begin,
+                            timeInterval);
 
                     Server self = this;
-//                    set bool of capitol at some point in the future
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-//                            ((Capitol) (this.networkObjects.get(this.networkObjects.indexOf(networkObject)).get(0))).setBooleanSyncMe(true);
-                            ((Capital) self.networkObjects.get(0).get(0)).setBooleanSyncMe(true);
-                        }
-                    }, 3000);
+                    //                    set bool of capitol at some point in the future
+                    timer.schedule(
+                            new TimerTask() {
+                                @Override
+                                public void run() {
+                                    Capital networkCapital =
+                                            (Capital) getNetworkableChild(networkObject, capitalId);
+                                    if (networkCapital != null) {
+                                        networkCapital.setBooleanSyncMe(true);
+                                    }
+                                }
+                            },
+                            3000);
 
-//                    //set string of capitol at some point in the future
-//                    timer.schedule(new TimerTask() {
-//                        @Override
-//                        public void run() {
-////                            ((Capitol) (this.networkObjects.get(this.networkObjects.indexOf(networkObject)).get(0))).setBooleanSyncMe(true);
-//                            ((Capital) self.networkObjects.get(0).get(1)).setStringSyncMeAlso("goodbye world");
-//                        }
-//                    }, 5000);
-
+                    // set string of capitol at some point in the future
+                    timer.schedule(
+                            new TimerTask() {
+                                @Override
+                                public void run() {
+                                    Capital networkCapital =
+                                            (Capital) getNetworkableChild(networkObject, capitalId);
+                                    if (networkCapital != null) {
+                                        networkCapital.setStringSyncMeAlso("goodbye world");
+                                    }
+                                }
+                            },
+                            3000);
                 }
                 while (connected) {
                     bArray = NetworkMessage.readMessageFromStream(bIn);
@@ -243,11 +252,16 @@ public class Server {
         };
     }
 
+    private Networkable getNetworkableChild(NetworkObject networkObject, String id) {
+        final NetworkObject serverNetworkObject =
+                this.networkObjects.get(this.networkObjects.indexOf(networkObject));
+        Networkable child = serverNetworkObject.get(id);
+        return child;
+    }
+
     private void processBytes(ClientInstance client, byte[] bytes) {
 
         serverListener.receivedBytes(client, bytes);
-        //        decode bytes from flatbuffer serialisation
-        //        currently only one type;
         try {
             parseBytes(client, bytes);
         } catch (DecodingException e) {

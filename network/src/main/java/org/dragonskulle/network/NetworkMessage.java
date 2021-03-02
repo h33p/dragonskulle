@@ -5,7 +5,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-
 import sun.misc.IOUtils;
 
 public class NetworkMessage {
@@ -40,7 +39,7 @@ public class NetworkMessage {
             i += payloadSize;
             boolean consumedMessage = verifyMessageEnd(i, buff);
             if (consumedMessage) {
-                if (messageType == (byte) 0) { //debug type
+                if (messageType == (byte) 0) { // debug type
                     System.out.println("\nValid Message");
                     System.out.println("Type : " + messageType);
                     System.out.println("Payload : " + Arrays.toString(payload));
@@ -68,7 +67,8 @@ public class NetworkMessage {
     }
 
     private static byte[] getPayload(byte[] bytes, byte messageType, int offset, int payloadSize) {
-        return Arrays.copyOfRange(bytes, offset, offset + payloadSize);
+        byte[] payload = Arrays.copyOfRange(bytes, offset, offset + payloadSize);
+        return payload;
     }
 
     public static int convertByteArrayToInt(byte[] bytes) {
@@ -79,8 +79,8 @@ public class NetworkMessage {
     }
 
     public static byte[] convertIntToByteArray(int value) {
-        return new byte[]{
-                (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
+        return new byte[] {
+            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
         };
     }
 
