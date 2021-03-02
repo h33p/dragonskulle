@@ -13,11 +13,9 @@ import java.util.Map;
  */
 
 /** The hexagon map object*/
-public class HexMap extends Component {
+public class HexMap  {
 
     public final int size;
-    private HexMap grid;
-    private HexagonTile[][] map = grid.createHexMap();
 
     /**
      * @param size - the size of the map
