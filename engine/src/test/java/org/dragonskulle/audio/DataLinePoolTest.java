@@ -31,9 +31,6 @@ public class DataLinePoolTest {
 
     /**
      * This will test that a data line can play music normally.
-     *
-     * @throws UnsupportedAudioFileException If given a wrong file format
-     * @throws IOException If file does not exist
      */
     @Test
     public void openStreamTest() {
@@ -67,9 +64,6 @@ public class DataLinePoolTest {
 
     /**
      * This will check whether the mute will work and give back the expected values
-     *
-     * @throws UnsupportedAudioFileException If given a wrong file format
-     * @throws IOException If file does not exist
      */
     @Test
     public void muteTest() {
@@ -108,9 +102,6 @@ public class DataLinePoolTest {
 
     /**
      * This will test that the volume can be changed by the program for each line
-     *
-     * @throws UnsupportedAudioFileException If given a wrong file format
-     * @throws IOException If file does not exist
      * @throws LineUnavailableException This is when a clip cannot be used
      */
     @Test
@@ -164,9 +155,6 @@ public class DataLinePoolTest {
 
     /**
      * Checks that the Clips are returned so they can be destroyed at the end
-     *
-     * @throws UnsupportedAudioFileException If given a wrong file format
-     * @throws IOException If file does not exist
      */
     @Test
     public void cleanupTest() {
