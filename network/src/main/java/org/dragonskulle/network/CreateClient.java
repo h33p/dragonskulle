@@ -3,25 +3,15 @@ package org.dragonskulle.network;
 
 import java.util.Scanner;
 
-/**
- * This is for testing, it creates a CLI client instance and can connect to the server
- */
+/** This is for testing, it creates a CLI client instance and can connect to the server */
 public class CreateClient {
-    /**
-     * The Ip.
-     */
+    /** The Ip. */
     static String ip;
-    /**
-     * The Port.
-     */
+    /** The Port. */
     static String port;
-    /**
-     * The Client.
-     */
+    /** The Client. */
     static NetworkClient client;
-    /**
-     * The Command.
-     */
+    /** The Command. */
     static String command;
 
     /**

@@ -16,22 +16,14 @@ import java.util.ArrayList;
  * backbone of the server functions.
  */
 public class SocketStore {
-    /**
-     * The Server.
-     */
+    /** The Server. */
     private ServerSocket server;
-    /**
-     * The Store for all the sockets.
-     */
+    /** The Store for all the sockets. */
     private final ArrayList<Socket> store;
-    /**
-     * The timeout for accepting a client.
-     */
+    /** The timeout for accepting a client. */
     static final int SO_TIMEOUT = 3000;
 
-    /**
-     * Instantiates a new Socket store.
-     */
+    /** Instantiates a new Socket store. */
     public SocketStore() {
         this.store = new ArrayList<>();
     }
@@ -98,9 +90,7 @@ public class SocketStore {
         return this.server.getLocalPort();
     }
 
-    /**
-     * Closes the server.
-     */
+    /** Closes the server. */
     public void close() {
         try {
             this.server.close();
@@ -183,7 +173,7 @@ public class SocketStore {
     /**
      * Send bytes to client.
      *
-     * @param client         the client
+     * @param client the client
      * @param response_bytes the response bytes
      */
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {

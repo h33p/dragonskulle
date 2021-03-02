@@ -7,22 +7,14 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * This is the handler for the server, it will handle events
- */
+/** This is the handler for the server, it will handle events */
 public class ServerEars implements ServerListener {
-    /**
-     * The Log of messages to be displayed.
-     */
+    /** The Log of messages to be displayed. */
     ListenableQueue<String> log;
-    /**
-     * The Alive ping timer.
-     */
+    /** The Alive ping timer. */
     Timer aliveTimer;
 
-    /**
-     * Instantiates a new Server listener.
-     */
+    /** Instantiates a new Server listener. */
     ServerEars() {
         System.out.println("Creating ServerListener");
         log = new ListenableQueue<>(new LinkedList<>());
@@ -60,9 +52,7 @@ public class ServerEars implements ServerListener {
     }
 }
 
-/**
- * The type Log server alive.
- */
+/** The type Log server alive. */
 class LogServerAlive extends TimerTask {
     public void run() {
         System.out.println("[SE~TT] Server Alive @ " + System.currentTimeMillis());

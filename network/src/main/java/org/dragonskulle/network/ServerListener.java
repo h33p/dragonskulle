@@ -3,15 +3,13 @@ package org.dragonskulle.network;
 
 import java.io.PrintWriter;
 
-/**
- * The interface Server listener.
- */
+/** The interface Server listener. */
 public interface ServerListener {
     /**
      * Client connected event.
      *
      * @param client the client
-     * @param out    the out
+     * @param out the out
      */
     void clientConnected(ClientInstance client, PrintWriter out);
 
@@ -26,20 +24,18 @@ public interface ServerListener {
      * Received input event.
      *
      * @param client the client
-     * @param msg    the msg
+     * @param msg the msg
      */
     void receivedInput(ClientInstance client, String msg);
 
-    /**
-     * Server closed event.
-     */
+    /** Server closed event. */
     void serverClosed();
 
     /**
      * Received bytes event.
      *
      * @param client the client
-     * @param bytes  the bytes
+     * @param bytes the bytes
      */
     void receivedBytes(ClientInstance client, byte[] bytes);
 }

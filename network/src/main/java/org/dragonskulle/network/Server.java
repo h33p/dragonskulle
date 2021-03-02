@@ -4,56 +4,43 @@ package org.dragonskulle.network;
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.network.components.Networkable;
+import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * This is the main Server Class, it handles setup and stores all client connections. It can
  * broadcast messages to every client and receive from individual clients.
  */
 public class Server {
-    /**
-     * The Port.
-     */
+    /** The Port. */
     private int port;
-    /**
-     * The Server listener.
-     */
+    /** The Server listener. */
     private ServerListener serverListener;
-    /**
-     * The socket connections to all clients.
-     */
+    /** The socket connections to all clients. */
     private final SocketStore sockets = new SocketStore();
-    /**
-     * The Server thread.
-     */
+    /** The Server thread. */
     private Thread serverThread;
-    /**
-     * The Server runner.
-     */
+    /** The Server runner. */
     private ServerRunner serverRunner;
-    /**
-     * The game instance for the server.
-     */
+    /** The game instance for the server. */
     private ServerGameInstance game;
     /**
-     * The Network objects - this can be moved to game instance but no point until game has been merged in.
+     * The Network objects - this can be moved to game instance but no point until game has been
+     * merged in.
      */
     private final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
 
     /**
      * Instantiates a new Server.
      *
-     * @param port     the port
+     * @param port the port
      * @param listener the listener
      */
     public Server(int port, ServerListener listener) {
@@ -110,9 +97,10 @@ public class Server {
     /**
      * Execute bytes on the server.
      *
-     * @param messageType       the message type
-     * @param payload           the payload
-     * @param sendBytesToClient the socket of the requesting client, to be called if a communication directly to the client is needed
+     * @param messageType the message type
+     * @param payload the payload
+     * @param sendBytesToClient the socket of the requesting client, to be called if a communication
+     *     directly to the client is needed
      */
     static void executeBytes(
             byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
@@ -130,9 +118,7 @@ public class Server {
         }
     }
 
-    /**
-     * Dispose.
-     */
+    /** Dispose. */
     public void dispose() {
         try {
             this.serverRunner.cancel();
@@ -148,9 +134,7 @@ public class Server {
         }
     }
 
-    /**
-     * Create game.
-     */
+    /** Create game. */
     public void createGame() {
         this.game = new ServerGameInstance();
     }
@@ -162,9 +146,7 @@ public class Server {
      * indefinitely.
      */
     private class ServerRunner implements Runnable {
-        /**
-         * The Open.
-         */
+        /** The Open. */
         volatile boolean open = true;
 
         @Override
@@ -182,9 +164,7 @@ public class Server {
             }
         }
 
-        /**
-         * Cancel.
-         */
+        /** Cancel. */
         public void cancel() {
             this.open = false;
         }
@@ -193,15 +173,14 @@ public class Server {
     /**
      * THe Client Runner is the thread given to each client to handle its own socket. Commands are
      * read from the input stream. It will pass all commands to the correct handler function. {@link
-     * org.dragonskulle.network.ServerListener}*
+     * org.dragonskulle.network.ServerListener}**
      *
      * @param sock the sock
-     * @return runnable
+     * @return runnable runnable
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {
-            };
+            return () -> {};
         }
         return () -> {
             try {
@@ -304,13 +283,13 @@ public class Server {
      * Gets networkable child.
      *
      * @param networkObject the network object
-     * @param id            the id
+     * @param id the id
      * @return the networkable child
      */
-    private Networkable getNetworkableChild(NetworkObject networkObject, String id) {
+    private NetworkableComponent getNetworkableChild(NetworkObject networkObject, String id) {
         final NetworkObject serverNetworkObject =
                 this.networkObjects.get(this.networkObjects.indexOf(networkObject));
-        Networkable child = serverNetworkObject.get(id);
+        NetworkableComponent child = serverNetworkObject.get(id);
         return child;
     }
 
@@ -318,7 +297,7 @@ public class Server {
      * Process bytes.
      *
      * @param client the client
-     * @param bytes  the bytes
+     * @param bytes the bytes
      */
     private void processBytes(ClientInstance client, byte[] bytes) {
 
@@ -335,7 +314,7 @@ public class Server {
      * Parse bytes.
      *
      * @param client the client
-     * @param bytes  the bytes
+     * @param bytes the bytes
      * @throws DecodingException Thrown if there was any issue with the bytes
      */
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
@@ -350,9 +329,7 @@ public class Server {
         }
     }
 
-    /**
-     * The interface Send bytes to client curry.
-     */
+    /** The interface Send bytes to client curry. */
     public interface SendBytesToClientCurry {
         /**
          * Send.
@@ -362,19 +339,13 @@ public class Server {
         void send(byte[] bytes);
     }
 
-    /**
-     * The interface Fixed update simulation.
-     */
+    /** The interface Fixed update simulation. */
     private interface FixedUpdateSimulation {
-        /**
-         * Call.
-         */
+        /** Call. */
         void call();
     }
 
-    /**
-     * Fixed broadcast update.
-     */
+    /** Fixed broadcast update. */
     public void fixedBroadcastUpdate() {
         System.out.println("fixed broadcast update");
         for (NetworkObject networkObject : this.networkObjects) {

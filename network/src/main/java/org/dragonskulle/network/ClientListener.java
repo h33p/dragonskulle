@@ -2,17 +2,14 @@
 package org.dragonskulle.network;
 
 /**
- * This interface is to handle client commands, this can be extended to run command when a message is received. Important events are logged here
+ * This interface is to handle client commands, this can be extended to run command when a message
+ * is received. Important events are logged here
  */
 public interface ClientListener {
-    /**
-     * Unknown host.
-     */
+    /** Unknown host. */
     void unknownHost();
 
-    /**
-     * Could not connect.
-     */
+    /** Could not connect. */
     void couldNotConnect();
 
     /**
@@ -29,19 +26,13 @@ public interface ClientListener {
      */
     void receivedBytes(byte[] bytes);
 
-    /**
-     * Server closed.
-     */
+    /** Server closed. */
     void serverClosed();
 
-    /**
-     * Disconnected.
-     */
+    /** Disconnected. */
     void disconnected();
 
-    /**
-     * Connected to server.
-     */
+    /** Connected to server. */
     void connectedToServer();
 
     /**

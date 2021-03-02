@@ -12,21 +12,13 @@ import java.util.UUID;
  */
 public class SyncVar<T extends Serializable> implements Serializable {
 
-    /**
-     * The Data.
-     */
+    /** The Data. */
     T data;
-    /**
-     * The Id.
-     */
+    /** The Id. */
     final String id;
-    /**
-     * The Has listener.
-     */
+    /** The Has listener. */
     private transient boolean hasListener = false;
-    /**
-     * The On update.
-     */
+    /** The On update. */
     private transient ISyncVarUpdateHandler onUpdate;
 
     /**
@@ -56,7 +48,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
     /**
      * Instantiates a new Sync var.
      *
-     * @param id   the id
+     * @param id the id
      * @param data the data
      */
     public SyncVar(String id, T data) {
@@ -118,7 +110,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
      *
      * @param buff the buff
      * @return the sync var
-     * @throws IOException            the io exception
+     * @throws IOException the io exception
      * @throws ClassNotFoundException the class not found exception
      */
     public static SyncVar deserialize(byte[] buff) throws IOException, ClassNotFoundException {
@@ -134,13 +126,9 @@ public class SyncVar<T extends Serializable> implements Serializable {
         return "SyncVar{" + "data=" + data + ", id='" + id + '\'' + '}';
     }
 
-    /**
-     * The interface Sync var update handler.
-     */
+    /** The interface Sync var update handler. */
     public interface ISyncVarUpdateHandler {
-        /**
-         * Call.
-         */
+        /** Call. */
         void call();
     }
 

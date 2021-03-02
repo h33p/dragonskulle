@@ -3,23 +3,17 @@ package org.dragonskulle.network;
 
 import java.net.InetAddress;
 
-/**
- * The type Client instance.
- */
+/** The type Client instance. */
 public class ClientInstance {
-    /**
-     * The Ip.
-     */
+    /** The Ip. */
     public final InetAddress IP;
-    /**
-     * The Port.
-     */
+    /** The Port. */
     public final int PORT;
 
     /**
      * Instantiates a new Client instance.
      *
-     * @param ip   the ip
+     * @param ip the ip
      * @param port the port
      */
     public ClientInstance(InetAddress ip, int port) {

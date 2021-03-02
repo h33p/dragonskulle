@@ -6,28 +6,25 @@ import java.util.ArrayList;
 import java.util.Objects;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.Capital;
-import org.dragonskulle.network.components.Networkable;
+import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
- * The type Client game instance, used to store all game data. This will be replaced by the game engines data.
+ * The type Client game instance, used to store all game data. This will be replaced by the game
+ * engines data.
  */
 public class ClientGameInstance {
-    /**
-     * The Map.
-     */
+    /** The Map. */
     private HexagonTile[][] map;
 
-    /**
-     * The Networked components.
-     */
-    private final ArrayList<Networkable> networkedComponents = new ArrayList<>();
+    /** The Networked components. */
+    private final ArrayList<NetworkableComponent> networkedComponents = new ArrayList<>();
 
     /**
      * Gets networked components.
      *
      * @return the networked components
      */
-    public ArrayList<Networkable> getNetworkedComponents() {
+    public ArrayList<NetworkableComponent> getNetworkedComponents() {
         return networkedComponents;
     }
 
@@ -65,12 +62,12 @@ public class ClientGameInstance {
      */
     public void updateNetworkable(byte[] payload) {
         // 36 bytes will be allocated for the id
-        String idToUpdate = Networkable.getIdFromBytes(payload);
-        Networkable networkableToUpdate = getNetworkable(idToUpdate);
-        if (networkableToUpdate != null) {
+        String idToUpdate = NetworkableComponent.getIdFromBytes(payload);
+        NetworkableComponent networkableComponentToUpdate = getNetworkable(idToUpdate);
+        if (networkableComponentToUpdate != null) {
             System.out.println("found networkable, should update");
             try {
-                networkableToUpdate.updateFromBytes(payload);
+                networkableComponentToUpdate.updateFromBytes(payload);
                 //                System.out.println("if i got here i actually updated the correct
                 // game component");
             } catch (IOException e) {
@@ -79,15 +76,14 @@ public class ClientGameInstance {
         }
     }
 
-
     /**
      * Gets networkable by the id of the component.
      *
      * @param id the id
      * @return the networkable
      */
-    private Networkable getNetworkable(String id) {
-        for (Networkable networkedComponent : this.networkedComponents) {
+    private NetworkableComponent getNetworkable(String id) {
+        for (NetworkableComponent networkedComponent : this.networkedComponents) {
             if (networkedComponent.getId().equals(id)) {
                 return networkedComponent;
             }

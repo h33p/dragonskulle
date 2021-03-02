@@ -9,6 +9,8 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.dragonskulle.components.Component;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;
 import sun.misc.IOUtils;
@@ -18,7 +20,7 @@ import sun.misc.IOUtils;
  *
  * @param <T> the type parameter
  */
-public abstract class Networkable<T> {
+public abstract class NetworkableComponent<T> extends Component {
 
     /**
      * Gets id.
@@ -38,14 +40,10 @@ public abstract class Networkable<T> {
         this.id = id;
     }
 
-    /**
-     * The Id.
-     */
+    /** The Id. */
     private String id = UUID.randomUUID().toString();
 
-    /**
-     * The constant FIELD_SEPERATOR. This is between all fields in the serialization.
-     */
+    /** The constant FIELD_SEPERATOR. This is between all fields in the serialization. */
     private static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
 
     /**
@@ -53,14 +51,10 @@ public abstract class Networkable<T> {
      */
     private boolean[] fieldsMask;
 
-    /**
-     * The Fields.
-     */
+    /** The Fields. */
     private List<Field> fields;
 
-    /**
-     * Init fields.
-     */
+    /** Init fields. */
     public void initFields() {
         fields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -68,9 +62,7 @@ public abstract class Networkable<T> {
                         .collect(Collectors.toList());
     }
 
-    /**
-     * Connect sync vars.
-     */
+    /** Connect sync vars. */
     public void connectSyncVars() {
         fields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -189,13 +181,13 @@ public abstract class Networkable<T> {
     /**
      * Creates a networkable from the bytes.
      *
-     * @param <T>    the type parameter
+     * @param <T> the type parameter
      * @param target the target
-     * @param bytes  the bytes
+     * @param bytes the bytes
      * @return the component
      * @throws DecodingException thrown if error in decoding
      */
-    public static <T extends Networkable> T from(Class<T> target, byte[] bytes)
+    public static <T extends NetworkableComponent> T from(Class<T> target, byte[] bytes)
             throws DecodingException {
         try {
             T t = target.newInstance();
@@ -243,7 +235,7 @@ public abstract class Networkable<T> {
     /**
      * Gets contents from bytes.
      *
-     * @param buff   the buff
+     * @param buff the buff
      * @param offset the offset
      * @return the contents from bytes
      * @throws IOException the io exception
@@ -292,9 +284,9 @@ public abstract class Networkable<T> {
     /**
      * Gets mask from bytes.
      *
-     * @param buff       the buff
+     * @param buff the buff
      * @param maskLength the mask length
-     * @param offset     the offset
+     * @param offset the offset
      * @return the mask from bytes
      */
     private static ArrayList<Boolean> getMaskFromBytes(byte[] buff, int maskLength, int offset) {
@@ -313,7 +305,7 @@ public abstract class Networkable<T> {
     /**
      * Gets field length from bytes.
      *
-     * @param buff   the buff
+     * @param buff the buff
      * @param offset the offset
      * @return the field length from bytes
      */
@@ -325,7 +317,7 @@ public abstract class Networkable<T> {
     /**
      * Updates one field from mask offset.
      *
-     * @param offset   the offset
+     * @param offset the offset
      * @param newValue the new value
      */
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
@@ -381,7 +373,7 @@ public abstract class Networkable<T> {
         }
         fieldsString.append("\n}");
 
-        return "Networkable{"
+        return "NetworkableComponent{"
                 + "id='"
                 + id
                 + '\''
