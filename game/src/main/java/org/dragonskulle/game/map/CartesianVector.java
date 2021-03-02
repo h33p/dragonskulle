@@ -1,12 +1,13 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
-
-
-import java.util.Arrays;
 
 import static java.lang.Math.*;
 
+import java.util.Arrays;
+
 public class CartesianVector {
-    private static final Matrix_2D rotationMatrix = new Matrix_2D(sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0);
+    private static final Matrix_2D rotationMatrix =
+            new Matrix_2D(sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0);
 
     public CartesianVector(double x, double y) {
         this.x = x;
@@ -19,7 +20,9 @@ public class CartesianVector {
     public AxialCoordinates toAxial() {
         double q = rotationMatrix.a * this.x + rotationMatrix.b * this.y;
         double r = rotationMatrix.c * this.x + rotationMatrix.d * this.y;
-        return axialRound(q, r, -q - r); //will be fractional so need to convert from fractional to nearest int
+        return axialRound(
+                q, r,
+                -q - r); // will be fractional so need to convert from fractional to nearest int
     }
 
     AxialCoordinates axialRound(double q_frac, double r_frac, double s_frac) {
@@ -40,7 +43,7 @@ public class CartesianVector {
     }
 
     @Override
-    public String toString(){
-        return Arrays.toString(new double[]{this.x, this.y});
+    public String toString() {
+        return Arrays.toString(new double[] {this.x, this.y});
     }
 }

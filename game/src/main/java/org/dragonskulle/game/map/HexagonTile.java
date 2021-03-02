@@ -13,6 +13,7 @@ public class HexagonTile {
 
     /**
      * This is the axial storage system for each tile
+     *
      * @param q
      * @param r
      * @param s
@@ -30,8 +31,7 @@ public class HexagonTile {
     public final int r;
     public final int s;
 
-    /**These arithmetic operations on two vectors for moving from one hex to another */
-
+    /** These arithmetic operations on two vectors for moving from one hex to another */
     public HexagonTile add(HexagonTile b) {
         return new HexagonTile(q + b.q, r + b.r, s + b.s);
     }
@@ -55,9 +55,10 @@ public class HexagonTile {
         return new HexagonTile(-r, -s, -q);
     }
 
-    /** Moving one space in hex coordinates involves changing one of the three coordinates by +1 and changing another by -1 (the sum must remain 0)
-     * This results in 6 possible changes, 6 different permutations
-     * Offsets for each direction by adding offset tile
+    /**
+     * Moving one space in hex coordinates involves changing one of the three coordinates by +1 and
+     * changing another by -1 (the sum must remain 0) This results in 6 possible changes, 6
+     * different permutations Offsets for each direction by adding offset tile
      */
     public static ArrayList<HexagonTile> directions =
             new ArrayList<HexagonTile>() {
@@ -71,9 +72,9 @@ public class HexagonTile {
                 }
             };
 
-
     /**
      * Getter for a particular direction
+     *
      * @param direction - an int to retrieve the direction
      * @return a particular direction from the ArrayList of directions
      */
@@ -83,16 +84,18 @@ public class HexagonTile {
 
     /**
      * Getter for particular neighbour
+     *
      * @param direction - the direction is one of the directions from the ArrayList of directions
-     * @return neighbouring HexTile by adding a HexTile and the direction that is passes as the parameter
+     * @return neighbouring HexTile by adding a HexTile and the direction that is passes as the
+     *     parameter
      */
     public HexagonTile neighbor(int direction) {
         return add(HexagonTile.direction(direction));
     }
 
     /**
-     * This moves to a diagonal space in the hex coordinates by changing one of the 3 coordinates by +-2 and the other two by
-     * Diagonal neighbours by adding offsets
+     * This moves to a diagonal space in the hex coordinates by changing one of the 3 coordinates by
+     * +-2 and the other two by Diagonal neighbours by adding offsets
      */
     public static ArrayList<HexagonTile> diagonals =
             new ArrayList<HexagonTile>() {
@@ -107,7 +110,8 @@ public class HexagonTile {
             };
 
     /**
-     *  Getter for particular diagonal neighbour
+     * Getter for particular diagonal neighbour
+     *
      * @param direction - an int parameter that get one of the diagonal neighbours
      * @return a neighbouring HexTile by adding a HexTile and a diagonal direction
      */
