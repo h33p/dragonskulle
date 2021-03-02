@@ -24,6 +24,10 @@ public class ShaderBuf implements NativeResource {
     @Getter
     private ByteBuffer mBuffer;
 
+    @Accessors(prefix = "m")
+    @Getter
+    private ByteBuffer mInstancedBuffer;
+
     /**
      * Load a shader resource
      *

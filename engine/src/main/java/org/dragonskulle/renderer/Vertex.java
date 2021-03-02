@@ -18,7 +18,7 @@ import org.joml.*;
 public class Vertex {
     public static int SIZEOF = (3 + 3 + 2) * 4;
     public static int OFFSETOF_POS = 0;
-    public static int OFFSETOF_COL = 3 * 4;
+    public static int OFFSETOF_COL = OFFSETOF_POS + 3 * 4;
     public static int OFFSETOF_UV = OFFSETOF_COL + 3 * 4;
 
     public static final BindingDescription BINDING_DESCRIPTION =
@@ -35,16 +35,13 @@ public class Vertex {
     private Vector2fc uv;
 
     /** Copy the vertice to a byte buffer */
+    public void copyTo(int offset, ByteBuffer buffer) {
+        pos.get(offset + OFFSETOF_POS, buffer);
+        color.get(offset + OFFSETOF_COL, buffer);
+        uv.get(offset + OFFSETOF_UV, buffer);
+    }
+
     public void copyTo(ByteBuffer buffer) {
-        buffer.putFloat(pos.x());
-        buffer.putFloat(pos.y());
-        buffer.putFloat(pos.z());
-
-        buffer.putFloat(color.x());
-        buffer.putFloat(color.y());
-        buffer.putFloat(color.z());
-
-        buffer.putFloat(uv.x());
-        buffer.putFloat(uv.y());
+        copyTo(buffer.position(), buffer);
     }
 }

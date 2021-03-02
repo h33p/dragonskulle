@@ -9,8 +9,6 @@ import java.util.stream.IntStream;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
-import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
@@ -25,28 +23,18 @@ import org.lwjgl.vulkan.*;
 @Accessors(prefix = "m")
 class VulkanDescriptorPool implements NativeResource {
 
-    public static int IMAGE_COUNT = 1;
-
     @Builder
     private static class DescriptorBinding {
         public int bindingID;
         public int size;
     }
 
-    // TODO: Adjust these
-    public static TextureMapping[] IMAGE_SAMPLERS = {
-        new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT),
-        new TextureMapping(TextureFiltering.NEAREST, TextureWrapping.REPEAT),
-        new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.CLAMP),
-        new TextureMapping(TextureFiltering.NEAREST, TextureWrapping.CLAMP),
-    };
-
     private VkDevice mDevice;
     private long mPool;
     @Getter private long mSetLayout;
     @Getter private long[] mDescriptorSets;
 
-    private boolean mHasFragmentTextures;
+    private int mNumFragmentTextures;
 
     private VulkanBuffer mVertexUniformBuffers;
     private DescriptorBinding mVertexUniformBindingDescription;
@@ -89,24 +77,26 @@ class VulkanDescriptorPool implements NativeResource {
         }
     }
 
-    public void updateDescriptorSets(TextureSamplerFactory samplerFactory, long[] imageViews) {
-        for (int i = 0; i < mDescriptorSets.length; i++)
-            updateDescriptorSet(i, samplerFactory, imageViews);
-    }
-
     /**
      * Update descriptor sets
      *
      * <p>This method will simply update the attached descriptor set to have correct layout for
      * textures and uniform buffer.
      */
-    public void updateDescriptorSet(
-            int index, TextureSamplerFactory samplerFactory, long[] imageViews) {
+    public void updateDescriptorSets(VulkanSampledTexture[] textures) {
+        for (int i = 0; i < mDescriptorSets.length; i++) updateDescriptorSet(i, textures);
+    }
+
+    public void updateDescriptorSet(int index, VulkanSampledTexture[] textures) {
         try (MemoryStack stack = stackPush()) {
+
+            if (mNumFragmentTextures > 0
+                    && (textures == null || textures.length != mNumFragmentTextures))
+                throw new RuntimeException("Invalid texture argument passed!");
 
             long descriptorSet = mDescriptorSets[index];
 
-            int bindingCount = mHasFragmentTextures ? 2 : 0;
+            int bindingCount = mNumFragmentTextures;
 
             boolean hasFragmentUniform = mFragmentUniformBuffers != null;
             bindingCount += hasFragmentUniform ? 1 : 0;
@@ -117,44 +107,22 @@ class VulkanDescriptorPool implements NativeResource {
             VkWriteDescriptorSet.Buffer descriptorWrites =
                     VkWriteDescriptorSet.callocStack(bindingCount, stack);
 
-            if (mHasFragmentTextures) {
-                VkDescriptorImageInfo.Buffer imageInfos =
-                        VkDescriptorImageInfo.callocStack(IMAGE_COUNT, stack);
+            for (int i = mNumFragmentTextures - 1; i >= 0; i--) {
+                VkDescriptorImageInfo.Buffer imageInfo =
+                        VkDescriptorImageInfo.callocStack(1, stack);
 
-                for (int i = 0; i < IMAGE_COUNT && i < imageViews.length; i++) {
-                    VkDescriptorImageInfo imageInfo = imageInfos.get(i);
-                    imageInfo.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                    imageInfo.imageView(imageViews[i]);
-                    imageInfo.sampler(0);
-                }
+                imageInfo.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                imageInfo.imageView(textures[i].getImageView());
+                imageInfo.sampler(textures[i].getSampler());
 
                 VkWriteDescriptorSet imageDescriptorWrite = descriptorWrites.get(--bindingCount);
                 imageDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
                 imageDescriptorWrite.dstBinding(bindingCount);
                 imageDescriptorWrite.dstArrayElement(0);
-                imageDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
-                imageDescriptorWrite.descriptorCount(IMAGE_COUNT);
-                imageDescriptorWrite.pImageInfo(imageInfos);
+                imageDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                imageDescriptorWrite.descriptorCount(1);
+                imageDescriptorWrite.pImageInfo(imageInfo);
                 imageDescriptorWrite.dstSet(descriptorSet);
-
-                VkDescriptorImageInfo.Buffer samplerInfos =
-                        VkDescriptorImageInfo.callocStack(IMAGE_SAMPLERS.length, stack);
-
-                for (int i = 0; i < IMAGE_SAMPLERS.length; i++) {
-                    VkDescriptorImageInfo samplerInfo = samplerInfos.get(i);
-                    samplerInfo.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                    samplerInfo.imageView(0);
-                    samplerInfo.sampler(samplerFactory.getSampler(IMAGE_SAMPLERS[i]));
-                }
-
-                VkWriteDescriptorSet samplerDescriptorWrite = descriptorWrites.get(--bindingCount);
-                samplerDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-                samplerDescriptorWrite.dstBinding(bindingCount);
-                samplerDescriptorWrite.dstArrayElement(0);
-                samplerDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_SAMPLER);
-                samplerDescriptorWrite.descriptorCount(IMAGE_SAMPLERS.length);
-                samplerDescriptorWrite.pImageInfo(samplerInfos);
-                samplerDescriptorWrite.dstSet(descriptorSet);
             }
 
             if (hasFragmentUniform) {
@@ -200,9 +168,9 @@ class VulkanDescriptorPool implements NativeResource {
 
         try (MemoryStack stack = stackPush()) {
 
-            boolean hasFragmentTextures = material.hasFragmentTextures();
+            int numFragmentTextures = material.numFragmentTextures();
 
-            int layoutCount = hasFragmentTextures ? 2 : 0;
+            int layoutCount = numFragmentTextures;
 
             boolean hasFragmentUniform = material.fragmentUniformDataSize() > 0;
             layoutCount += hasFragmentUniform ? 1 : 0;
@@ -213,12 +181,9 @@ class VulkanDescriptorPool implements NativeResource {
             VkDescriptorPoolSize.Buffer poolSizes =
                     VkDescriptorPoolSize.callocStack(layoutCount, stack);
 
-            if (hasFragmentTextures) {
-                poolSizes.get(--layoutCount).type(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
-                poolSizes.get(layoutCount).descriptorCount(descriptorCount * IMAGE_COUNT);
-
-                poolSizes.get(--layoutCount).type(VK_DESCRIPTOR_TYPE_SAMPLER);
-                poolSizes.get(layoutCount).descriptorCount(descriptorCount * IMAGE_SAMPLERS.length);
+            for (int i = 0; i < numFragmentTextures; i++) {
+                poolSizes.get(--layoutCount).type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                poolSizes.get(layoutCount).descriptorCount(descriptorCount);
             }
 
             if (hasFragmentUniform) {
@@ -265,9 +230,9 @@ class VulkanDescriptorPool implements NativeResource {
 
         try (MemoryStack stack = stackPush()) {
 
-            mHasFragmentTextures = material.hasFragmentTextures();
+            mNumFragmentTextures = material.numFragmentTextures();
 
-            int bindingCount = mHasFragmentTextures ? 2 : 0;
+            int bindingCount = mNumFragmentTextures;
 
             int fragmentUniformDataSize = material.fragmentUniformDataSize();
             boolean hasFragmentUniform = fragmentUniformDataSize > 0;
@@ -281,20 +246,14 @@ class VulkanDescriptorPool implements NativeResource {
                     VkDescriptorSetLayoutBinding.callocStack(bindingCount, stack);
 
             // The layout here is reversed, the last pool size is at offset 0
-            if (mHasFragmentTextures) {
+
+            for (int i = 0; i < mNumFragmentTextures; i++) {
                 VkDescriptorSetLayoutBinding imageLayoutBinding =
                         layoutBindings.get(--bindingCount);
                 imageLayoutBinding.binding(bindingCount);
-                imageLayoutBinding.descriptorCount(IMAGE_COUNT);
-                imageLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+                imageLayoutBinding.descriptorCount(1);
+                imageLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 imageLayoutBinding.stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT);
-
-                VkDescriptorSetLayoutBinding samplerLayoutBinding =
-                        layoutBindings.get(--bindingCount);
-                samplerLayoutBinding.binding(bindingCount);
-                samplerLayoutBinding.descriptorCount(IMAGE_SAMPLERS.length);
-                samplerLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_SAMPLER);
-                samplerLayoutBinding.stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT);
             }
 
             if (hasFragmentUniform) {

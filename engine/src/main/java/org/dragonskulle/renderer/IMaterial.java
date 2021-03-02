@@ -53,6 +53,5 @@ public interface IMaterial {
     // TODO: Potentially pass texture IDs?
     public void writeFragmentUniformData(int offset, ByteBuffer buffer);
 
-    // public Texture[] getFragmentTextures();
-    public boolean hasFragmentTextures();
+    public int numFragmentTextures();
 }

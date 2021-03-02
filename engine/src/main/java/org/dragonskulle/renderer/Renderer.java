@@ -184,15 +184,15 @@ public class Renderer implements NativeResource {
                 for (int i = 0; i < ubo.length; i++) {
                     UniformBufferObject ubo = this.ubo[i];
 
-                    ubo.model.identity();
+                    float rotFactor = curtime * (float) (i * 2 - 1);
 
-                    ubo.model.rotation(
-                            curtime * 1.5f * (float) (i * 2 - 1),
-                            0.0f,
-                            0.1f * (float) (i * 2 - 1),
-                            1.0f);
+                    ubo.model.rotationXYZ(
+                            rotFactor * 0.9f * 0,
+                            (float) java.lang.Math.sin(rotFactor) * 0.1f * (float) (i * 2 - 1),
+                            rotFactor);
+
                     ubo.model.setTranslation(
-                            0.f, 0.f, (float) i * (float) java.lang.Math.sin(curtime));
+                            0.f, 0.f, (float) i * (float) java.lang.Math.sin(curtime * 0.05f));
                     ubo.copyTo(byteBuffer, UniformBufferObject.SIZEOF * i);
                 }
                 vkUnmapMemory(renderer.mDevice, instanceBuffer.memory);
@@ -218,46 +218,17 @@ public class Renderer implements NativeResource {
         public IMaterial material;
         public VulkanDescriptorPool descriptorPool;
         public VulkanPipeline graphics;
-        public VulkanBuffer vertexBuffer;
-        public VulkanBuffer indexBuffer;
+        public VulkanMeshBuffer meshBuffer;
         public VertexConstants vertexConstants;
 
         private VkDevice mDevice;
         private VulkanImage mTextureImage;
-        private long[] mTextureImageViews;
+        private VulkanSampledTexture[] mSampledTextures;
 
-        private static Vertex[] VERTICES = {
-            new Vertex(
-                    new Vector3f(0.0f, 0.0f, 0.0f),
-                    new Vector3f(1.0f, 1.0f, 1.0f),
-                    new Vector2f(0.0f, 0.0f)),
-            new Vertex(
-                    new Vector3f(-0.5f, 0.86603f, 0.0f),
-                    new Vector3f(0.0f, 0.0f, 1.0f),
-                    new Vector2f(-0.5f, 0.86603f)),
-            new Vertex(
-                    new Vector3f(0.5f, 0.86603f, 0.0f),
-                    new Vector3f(0.0f, 1.0f, 0.0f),
-                    new Vector2f(0.5f, 0.86603f)),
-            new Vertex(
-                    new Vector3f(1.0f, 0.0f, 0.0f),
-                    new Vector3f(0.0f, 1.0f, 0.0f),
-                    new Vector2f(1.0f, 0.0f)),
-            new Vertex(
-                    new Vector3f(0.5f, -0.86603f, 0.0f),
-                    new Vector3f(0.0f, 1.0f, 0.0f),
-                    new Vector2f(0.5f, -0.86603f)),
-            new Vertex(
-                    new Vector3f(-0.5f, -0.86603f, 0.0f),
-                    new Vector3f(0.0f, 0.0f, 1.0f),
-                    new Vector2f(-0.5f, -0.86603f)),
-            new Vertex(
-                    new Vector3f(-1.0f, 0.0f, 0.0f),
-                    new Vector3f(0.0f, 0.0f, 1.0f),
-                    new Vector2f(-1.0f, 0.0f)),
-        };
-
-        private static short[] INDICES = {1, 0, 2, 2, 0, 3, 3, 0, 4, 4, 0, 5, 5, 0, 6, 6, 0, 1};
+        private static final TextureMapping MAPPING =
+                new TextureMapping(
+                        TextureMapping.TextureFiltering.LINEAR,
+                        TextureMapping.TextureWrapping.REPEAT);
 
         /** Create a object state */
         private TmpObjectState(Renderer renderer, int imageCount) {
@@ -277,8 +248,11 @@ public class Renderer implements NativeResource {
                 renderer.endSingleUseCommandBuffer(tmpCommandBuffer);
                 mTextureImage.freeStagingBuffer();
             }
-            mTextureImageViews = new long[1];
-            mTextureImageViews[0] = mTextureImage.createImageView();
+            mSampledTextures = new VulkanSampledTexture[1];
+            mSampledTextures[0] =
+                    new VulkanSampledTexture(
+                            mTextureImage.createImageView(),
+                            renderer.mSamplerFactory.getSampler(MAPPING));
 
             descriptorPool =
                     new VulkanDescriptorPool(
@@ -292,8 +266,9 @@ public class Renderer implements NativeResource {
                             descriptorPool.getSetLayout(),
                             renderer.mRenderPass);
 
-            vertexBuffer = renderer.createVertexBuffer(VERTICES);
-            indexBuffer = renderer.createIndexBuffer(INDICES);
+            meshBuffer = new VulkanMeshBuffer(mDevice, renderer.mPhysicalDevice);
+            meshBuffer.addMesh(Mesh.HEXAGON);
+            meshBuffer.commitChanges(renderer.mGraphicsQueue, renderer.mCommandPool);
 
             vertexConstants = new VertexConstants(new Matrix4f(), new Matrix4f());
 
@@ -304,23 +279,22 @@ public class Renderer implements NativeResource {
             vertexConstants.proj.setPerspective(
                     45.0f,
                     (float) renderer.mExtent.width() / (float) renderer.mExtent.height(),
-                    0.1f,
-                    10.f,
+                    0.01f,
+                    100.f,
                     true);
             vertexConstants.proj.m11(-vertexConstants.proj.m11());
 
-            descriptorPool.updateDescriptorSets(renderer.mSamplerFactory, mTextureImageViews);
+            descriptorPool.updateDescriptorSets(mSampledTextures);
         }
 
         /** Free resources of the object state */
         private void free() {
-            for (long imageView : mTextureImageViews)
-                if (imageView != 0) vkDestroyImageView(mDevice, imageView, null);
+            for (VulkanSampledTexture tex : mSampledTextures)
+                vkDestroyImageView(mDevice, tex.getImageView(), null);
             descriptorPool.free();
             mTextureImage.free();
             graphics.free();
-            vertexBuffer.free();
-            indexBuffer.free();
+            meshBuffer.free();
         }
     }
 
@@ -1081,98 +1055,6 @@ public class Renderer implements NativeResource {
     /// Vertex and index buffers
 
     /**
-     * Create a vertex buffer
-     *
-     * <p>As the name implies, this buffer holds vertices
-     */
-    private VulkanBuffer createVertexBuffer(Vertex[] vertices) {
-        LOGGER.info("Create vertex buffer");
-
-        try (MemoryStack stack = stackPush()) {
-
-            long size = vertices.length * Vertex.SIZEOF;
-
-            try (VulkanBuffer stagingBuffer =
-                    new VulkanBuffer(
-                            mDevice,
-                            mPhysicalDevice,
-                            size,
-                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
-
-                PointerBuffer pData = stack.pointers(0);
-                vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
-                ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
-                for (Vertex v : vertices) {
-                    v.copyTo(byteBuffer);
-                }
-                vkUnmapMemory(mDevice, stagingBuffer.memory);
-
-                VulkanBuffer vertexBuffer =
-                        new VulkanBuffer(
-                                mDevice,
-                                mPhysicalDevice,
-                                size,
-                                VK_BUFFER_USAGE_TRANSFER_DST_BIT
-                                        | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-                VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer();
-                stagingBuffer.copyTo(commandBuffer, vertexBuffer, size);
-                endSingleUseCommandBuffer(commandBuffer);
-                return vertexBuffer;
-            }
-        }
-    }
-
-    /**
-     * Create index buffer
-     *
-     * <p>This buffer holds indices of the vertices to render in multiples of 3.
-     */
-    private VulkanBuffer createIndexBuffer(short[] indices) {
-        LOGGER.info("Setup index buffer");
-
-        try (MemoryStack stack = stackPush()) {
-
-            long size = indices.length * 2;
-
-            try (VulkanBuffer stagingBuffer =
-                    new VulkanBuffer(
-                            mDevice,
-                            mPhysicalDevice,
-                            size,
-                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
-
-                PointerBuffer pData = stack.pointers(0);
-                vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
-                ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
-                for (short i : indices) {
-                    byteBuffer.putShort(i);
-                }
-                vkUnmapMemory(mDevice, stagingBuffer.memory);
-
-                VulkanBuffer indexBuffer =
-                        new VulkanBuffer(
-                                mDevice,
-                                mPhysicalDevice,
-                                size,
-                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-                VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer();
-                stagingBuffer.copyTo(commandBuffer, indexBuffer, size);
-                endSingleUseCommandBuffer(commandBuffer);
-
-                return indexBuffer;
-            }
-        }
-    }
-
-    /**
      * Create a instance buffer
      *
      * <p>As the name implies, this buffer holds base per-instance data
@@ -1196,22 +1078,22 @@ public class Renderer implements NativeResource {
      *
      * <p>This command buffer can be flushed with {@code endSingleUseCommandBuffer}
      */
-    private VkCommandBuffer beginSingleUseCommandBuffer() {
+    public static VkCommandBuffer beginSingleUseCommandBuffer(VkDevice device, long commandPool) {
         try (MemoryStack stack = stackPush()) {
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
             allocInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);
             allocInfo.level(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-            allocInfo.commandPool(mCommandPool);
+            allocInfo.commandPool(commandPool);
             allocInfo.commandBufferCount(1);
 
             PointerBuffer pCommandBuffer = stack.mallocPointer(1);
-            vkAllocateCommandBuffers(mDevice, allocInfo, pCommandBuffer);
+            vkAllocateCommandBuffers(device, allocInfo, pCommandBuffer);
 
             VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack);
             beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
             beginInfo.flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-            VkCommandBuffer commandBuffer = new VkCommandBuffer(pCommandBuffer.get(0), mDevice);
+            VkCommandBuffer commandBuffer = new VkCommandBuffer(pCommandBuffer.get(0), device);
 
             vkBeginCommandBuffer(commandBuffer, beginInfo);
 
@@ -1219,8 +1101,16 @@ public class Renderer implements NativeResource {
         }
     }
 
+    private VkCommandBuffer beginSingleUseCommandBuffer() {
+        return beginSingleUseCommandBuffer(mDevice, mCommandPool);
+    }
+
     /** Ends and frees the single use command buffer */
-    private void endSingleUseCommandBuffer(VkCommandBuffer commandBuffer) {
+    public static void endSingleUseCommandBuffer(
+            VkCommandBuffer commandBuffer,
+            VkDevice device,
+            VkQueue graphicsQueue,
+            long commandPool) {
         try (MemoryStack stack = stackPush()) {
             vkEndCommandBuffer(commandBuffer);
 
@@ -1230,11 +1120,15 @@ public class Renderer implements NativeResource {
             submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
             submitInfo.pCommandBuffers(pCommandBuffer);
 
-            vkQueueSubmit(mGraphicsQueue, submitInfo, NULL);
-            vkQueueWaitIdle(mGraphicsQueue);
+            vkQueueSubmit(graphicsQueue, submitInfo, NULL);
+            vkQueueWaitIdle(graphicsQueue);
 
-            vkFreeCommandBuffers(mDevice, mCommandPool, pCommandBuffer);
+            vkFreeCommandBuffers(device, commandPool, pCommandBuffer);
         }
+    }
+
+    private void endSingleUseCommandBuffer(VkCommandBuffer commandBuffer) {
+        endSingleUseCommandBuffer(commandBuffer, mDevice, mGraphicsQueue, mCommandPool);
     }
 
     /// Frame Context setup
@@ -1326,12 +1220,18 @@ public class Renderer implements NativeResource {
             vkCmdBindPipeline(
                     ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, state.graphics.pipeline);
 
+            VulkanMeshBuffer.MeshDescriptor meshDescriptor =
+                    state.meshBuffer.getMeshDescriptor(Mesh.HEXAGON);
+
             LongBuffer vertexBuffers =
-                    stack.longs(state.vertexBuffer.buffer, ctx.instanceBuffer.buffer);
-            LongBuffer offsets = stack.longs(0, 0);
+                    stack.longs(state.meshBuffer.getVertexBuffer(), ctx.instanceBuffer.buffer);
+            LongBuffer offsets = stack.longs(meshDescriptor.getVertexOffset(), 0);
             vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(
-                    ctx.commandBuffer, state.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+                    ctx.commandBuffer,
+                    state.meshBuffer.getIndexBuffer(),
+                    meshDescriptor.getIndexOffset(),
+                    VK_INDEX_TYPE_UINT32);
 
             LongBuffer descriptorSet =
                     stack.longs(state.descriptorPool.getDescriptorSets()[ctx.descriptorSetIndex]);
@@ -1353,7 +1253,7 @@ public class Renderer implements NativeResource {
                     0,
                     pConstants);
             vkCmdDrawIndexed(
-                    ctx.commandBuffer, TmpObjectState.INDICES.length, INSTANCE_COUNT, 0, 0, 0);
+                    ctx.commandBuffer, meshDescriptor.getIndexCount(), INSTANCE_COUNT, 0, 0, 0);
 
             vkCmdEndRenderPass(ctx.commandBuffer);
 

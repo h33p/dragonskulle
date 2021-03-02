@@ -70,7 +70,7 @@ public class UnlitMaterial implements IMaterial {
 
     public void writeFragmentUniformData(int offset, ByteBuffer buffer) {}
 
-    public boolean hasFragmentTextures() {
-        return true;
+    public int numFragmentTextures() {
+        return 1;
     }
 }
