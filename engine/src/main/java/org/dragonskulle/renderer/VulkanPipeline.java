@@ -6,11 +6,14 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import java.util.logging.Logger;
+import lombok.Builder;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 /**
  * Class abstracting a vulkan pipeline
+ *
+ * <p>Normally, one pipeline is created per material, but there could be multiple passes.
  *
  * @author Aurimas Blažulionis
  */
@@ -18,55 +21,168 @@ class VulkanPipeline {
     public long pipeline;
     public long layout;
 
+    // private IMaterial mMaterial;
     private VkDevice mDevice;
+    private long mDescriptorSetLayout;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
+    @Builder
+    public static class BindingDescription {
+        public int bindingID;
+        public int size;
+        public int inputRate;
+    }
+
+    @Builder
+    public static class AttributeDescription {
+        public int bindingID;
+        public int location;
+        public int format;
+        public int offset;
+    }
+
+    /** Get vulkan binding descriptors for the vertex shader */
+    private static VkVertexInputBindingDescription.Buffer getBindingDescriptions(
+            MemoryStack stack, BindingDescription instanceBindingDescription) {
+
+        BindingDescription[] justRaw = {
+            Vertex.BINDING_DESCRIPTION, UniformBufferObject.BINDING_DESCRIPTION
+        };
+        BindingDescription[] withShader = {
+            Vertex.BINDING_DESCRIPTION,
+            UniformBufferObject.BINDING_DESCRIPTION,
+            instanceBindingDescription
+        };
+
+        BindingDescription[] bindingDescriptions =
+                instanceBindingDescription == null ? justRaw : withShader;
+
+        VkVertexInputBindingDescription.Buffer bindingDescriptionsOut =
+                VkVertexInputBindingDescription.callocStack(bindingDescriptions.length, stack);
+        for (int i = 0; i < bindingDescriptions.length; i++) {
+            BindingDescription descIn = bindingDescriptions[i];
+            VkVertexInputBindingDescription descOut = bindingDescriptionsOut.get(i);
+            descOut.binding(descIn.bindingID);
+            descOut.stride(descIn.size);
+            descOut.inputRate(descIn.inputRate);
+        }
+        return bindingDescriptionsOut;
+    }
+
+    /** Get memory attribute descriptions for the vertex shader */
+    private static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(
+            MemoryStack stack, AttributeDescription... attributeDescriptions) {
+
+        if (attributeDescriptions == null) {
+            return getAttributeDescriptions(stack);
+        }
+
+        VkVertexInputAttributeDescription.Buffer attributeDescriptionsOut =
+                VkVertexInputAttributeDescription.callocStack(
+                        Vertex.ATTRIBUTE_DESCRIPTIONS.length
+                                + UniformBufferObject.ATTRIBUTE_DESCRIPTIONS.length
+                                + attributeDescriptions.length,
+                        stack);
+
+        int cnt = 0;
+
+        AttributeDescription[][] descs = {
+            Vertex.ATTRIBUTE_DESCRIPTIONS,
+            UniformBufferObject.ATTRIBUTE_DESCRIPTIONS,
+            attributeDescriptions
+        };
+
+        for (AttributeDescription[] descArray : descs) {
+            for (AttributeDescription descIn : descArray) {
+                VkVertexInputAttributeDescription descOut = attributeDescriptionsOut.get(cnt++);
+                descOut.binding(descIn.bindingID);
+                descOut.location(descIn.location);
+                descOut.format(descIn.format);
+                descOut.offset(descIn.offset);
+            }
+        }
+
+        return attributeDescriptionsOut;
+    }
+
     public VulkanPipeline(
-            ShaderBuf vertShaderBuf,
-            ShaderBuf fragShaderBuf,
+            IMaterial material,
             VkDevice device,
             VkExtent2D extent,
             long descriptorSetLayout,
             long renderPass) {
         LOGGER.info("Setup pipeline");
 
+        // mMaterial = material;
         mDevice = device;
 
-        Shader vertShader = Shader.getShader(vertShaderBuf, mDevice);
+        // This here will be used for stack allocation and keeping track of shader indices
+        int shaderStageCount = 0;
 
-        if (vertShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
+        Shader vertShader = null;
+        ShaderBuf vertShaderBuf = material.getVertexShader();
 
-        Shader fragShader = Shader.getShader(fragShaderBuf, mDevice);
+        if (vertShaderBuf != null) {
+            vertShader = Shader.getShader(vertShaderBuf, mDevice);
 
-        if (fragShader == null) throw new RuntimeException("Failed to retrieve fragment shader!");
+            if (vertShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
+            shaderStageCount++;
+        }
+
+        Shader fragShader = null;
+        ShaderBuf fragShaderBuf = material.getFragmentShader();
+
+        if (fragShaderBuf != null) {
+            fragShader = Shader.getShader(fragShaderBuf, mDevice);
+
+            if (fragShader == null)
+                throw new RuntimeException("Failed to retrieve fragment shader!");
+            shaderStageCount++;
+        }
 
         try (MemoryStack stack = stackPush()) {
+
+            VkGraphicsPipelineCreateInfo.Buffer pipelineInfo =
+                    VkGraphicsPipelineCreateInfo.callocStack(1, stack);
+            pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
+
             // Programmable pipelines
 
             VkPipelineShaderStageCreateInfo.Buffer shaderStages =
-                    VkPipelineShaderStageCreateInfo.callocStack(2, stack);
+                    VkPipelineShaderStageCreateInfo.callocStack(shaderStageCount, stack);
 
-            VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
-            vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
-            vertShaderStageInfo.stage(VK_SHADER_STAGE_VERTEX_BIT);
-            vertShaderStageInfo.module(vertShader.getModule());
-            vertShaderStageInfo.pName(stack.UTF8("main"));
-            // We will need pSpecializationInfo here to configure constants
+            // TODO: Use SpecializationEntry[] for pSpecializationInfo to configure constants
+            if (vertShader != null) {
+                VkPipelineShaderStageCreateInfo vertShaderStageInfo =
+                        shaderStages.get(--shaderStageCount);
+                vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
+                vertShaderStageInfo.stage(VK_SHADER_STAGE_VERTEX_BIT);
+                vertShaderStageInfo.module(vertShader.getModule());
+                vertShaderStageInfo.pName(stack.UTF8("main"));
 
-            VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(1);
-            fragShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
-            fragShaderStageInfo.stage(VK_SHADER_STAGE_FRAGMENT_BIT);
-            fragShaderStageInfo.module(fragShader.getModule());
-            fragShaderStageInfo.pName(stack.UTF8("main"));
+                // Configure vertex pipeline
+                VkPipelineVertexInputStateCreateInfo vertexInputInfo =
+                        VkPipelineVertexInputStateCreateInfo.callocStack(stack);
+                vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
+                vertexInputInfo.pVertexBindingDescriptions(
+                        getBindingDescriptions(stack, material.vertexInstanceBindingDescription()));
+                vertexInputInfo.pVertexAttributeDescriptions(
+                        getAttributeDescriptions(stack, material.vertexAttributeDescriptions()));
+
+                pipelineInfo.pVertexInputState(vertexInputInfo);
+            }
+
+            if (fragShader != null) {
+                VkPipelineShaderStageCreateInfo fragShaderStageInfo =
+                        shaderStages.get(--shaderStageCount);
+                fragShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
+                fragShaderStageInfo.stage(VK_SHADER_STAGE_FRAGMENT_BIT);
+                fragShaderStageInfo.module(fragShader.getModule());
+                fragShaderStageInfo.pName(stack.UTF8("main"));
+            }
 
             // Fixed function pipelines
-
-            VkPipelineVertexInputStateCreateInfo vertexInputInfo =
-                    VkPipelineVertexInputStateCreateInfo.callocStack(stack);
-            vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
-            vertexInputInfo.pVertexBindingDescriptions(Vertex.getBindingDescription(stack));
-            vertexInputInfo.pVertexAttributeDescriptions(Vertex.getAttributeDescriptions(stack));
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly =
                     VkPipelineInputAssemblyStateCreateInfo.callocStack(stack);
@@ -107,7 +223,7 @@ class VulkanPipeline {
             // Used for shadowmaps, which we currently don't have...
             rasterizer.depthBiasEnable(false);
 
-            // TODO: Enable MSAA once we check for features etc...
+            // TODO: Enable MSAA optionally/on feature check
             VkPipelineMultisampleStateCreateInfo multisampling =
                     VkPipelineMultisampleStateCreateInfo.callocStack(stack);
             multisampling.sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
@@ -140,19 +256,32 @@ class VulkanPipeline {
 
             // TODO: Dynamic states
 
-            // TODO: configure this through material
-            VkPushConstantRange.Buffer pushConstantRange =
-                    VkPushConstantRange.callocStack(1, stack);
-            pushConstantRange.offset(0);
-            pushConstantRange.size(VertexConstants.SIZEOF);
-            pushConstantRange.stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
+            int fragmentConstantSize = material.fragmentPushConstantSize();
+
+            int constantRanges = 1 + fragmentConstantSize > 0 ? 1 : 0;
+
+            VkPushConstantRange.Buffer pushConstantRanges =
+                    VkPushConstantRange.callocStack(constantRanges, stack);
+
+            if (fragmentConstantSize > 0) {
+                VkPushConstantRange fragmentConstantRange =
+                        pushConstantRanges.get(--constantRanges);
+                fragmentConstantRange.offset(0);
+                fragmentConstantRange.size(fragmentConstantSize);
+                fragmentConstantRange.stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT);
+            }
+
+            VkPushConstantRange vertexConstantRange = pushConstantRanges.get(--constantRanges);
+            vertexConstantRange.offset(0);
+            vertexConstantRange.size(VertexConstants.SIZEOF);
+            vertexConstantRange.stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
 
             VkPipelineLayoutCreateInfo pipelineLayoutInfo =
                     VkPipelineLayoutCreateInfo.callocStack(stack);
             pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
             LongBuffer pDescriptorSetLayout = stack.longs(descriptorSetLayout);
             pipelineLayoutInfo.pSetLayouts(pDescriptorSetLayout);
-            pipelineLayoutInfo.pPushConstantRanges(pushConstantRange);
+            pipelineLayoutInfo.pPushConstantRanges(pushConstantRanges);
 
             LongBuffer pPipelineLayout = stack.longs(0);
 
@@ -167,12 +296,7 @@ class VulkanPipeline {
 
             // Actual pipeline!
 
-            VkGraphicsPipelineCreateInfo.Buffer pipelineInfo =
-                    VkGraphicsPipelineCreateInfo.callocStack(1, stack);
-            pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
             pipelineInfo.pStages(shaderStages);
-
-            pipelineInfo.pVertexInputState(vertexInputInfo);
             pipelineInfo.pInputAssemblyState(inputAssembly);
             pipelineInfo.pViewportState(viewportState);
             pipelineInfo.pRasterizationState(rasterizer);
@@ -209,5 +333,6 @@ class VulkanPipeline {
     public void free() {
         vkDestroyPipeline(mDevice, pipeline, null);
         vkDestroyPipelineLayout(mDevice, layout, null);
+        vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, null);
     }
 }

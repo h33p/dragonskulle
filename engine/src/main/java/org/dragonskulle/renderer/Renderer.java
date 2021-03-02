@@ -27,8 +27,6 @@ import java.util.stream.Stream;
 import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Renderable;
 import org.dragonskulle.core.Resource;
-import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
-import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.joml.*;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -60,7 +58,6 @@ public class Renderer implements NativeResource {
     private VkQueue mPresentQueue;
 
     private long mCommandPool;
-    private long mDescriptorSetLayout;
 
     private TextureSamplerFactory mSamplerFactory;
     private TmpObjectState mObjectState;
@@ -68,7 +65,6 @@ public class Renderer implements NativeResource {
     private VkSurfaceFormatKHR mSurfaceFormat;
     private VkExtent2D mExtent;
     private long mSwapchain;
-    private long mDescriptorPool;
     private long mRenderPass;
 
     private ImageContext[] mImageContexts;
@@ -88,6 +84,8 @@ public class Renderer implements NativeResource {
     public static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
     private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
+    private static final int INSTANCE_COUNT = envInt("NUM_HEXES", 2);
+
     private static final long UINT64_MAX = -1L;
     private static final int FRAMES_IN_FLIGHT = 4;
 
@@ -100,110 +98,37 @@ public class Renderer implements NativeResource {
 
     /** All state for a single frame */
     private static class ImageContext {
-        public long descriptorSet;
+        public int descriptorSetIndex;
         public VkCommandBuffer commandBuffer;
         public long inFlightFence;
         public long framebuffer;
 
         // TODO: Remove this
         public UniformBufferObject[] ubo;
+        public VulkanBuffer instanceBuffer;
 
-        private VulkanImage mImage;
+        // private VulkanImage mImage;
         private long mImageView;
         private VkDevice mDevice;
 
-        // TODO: Remove this
-        private VulkanBuffer mBuffer;
-        private VulkanImage mTextureImage;
-        private long mTextureImageView;
-
-        private static final TextureMapping MAPPING =
-                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT);
+        // private static final TextureMapping MAPPING =
+        //        new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT);
 
         /** Create a image context */
         private ImageContext(
-                Renderer renderer, VulkanImage image, long descriptorSet, long commandBuffer) {
-            this.descriptorSet = descriptorSet;
+                Renderer renderer, VulkanImage image, int descriptorSetIndex, long commandBuffer) {
+            this.descriptorSetIndex = descriptorSetIndex;
             this.commandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
             this.mImageView = image.createImageView();
             this.framebuffer = createFramebuffer(renderer);
 
             this.mDevice = renderer.mDevice;
 
-            ubo = new UniformBufferObject[2];
+            ubo = new UniformBufferObject[INSTANCE_COUNT];
+            instanceBuffer = renderer.createInstanceBuffer(INSTANCE_COUNT);
 
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < INSTANCE_COUNT; i++) {
                 ubo[i] = new UniformBufferObject(new Matrix4f());
-            }
-
-            long size = UniformBufferObject.SIZEOF * ubo.length;
-            mBuffer =
-                    new VulkanBuffer(
-                            renderer.mDevice,
-                            renderer.mPhysicalDevice,
-                            size,
-                            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                    | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-            try (Resource<Texture> resource = Texture.getResource("test_cc0_texture.jpg")) {
-                if (resource == null) throw new RuntimeException("Failed to load texture!");
-                Texture texture = resource.get();
-                VkCommandBuffer tmpCommandBuffer = renderer.beginSingleUseCommandBuffer();
-                mTextureImage =
-                        new VulkanImage(
-                                texture,
-                                tmpCommandBuffer,
-                                renderer.mDevice,
-                                renderer.mPhysicalDevice);
-                renderer.endSingleUseCommandBuffer(tmpCommandBuffer);
-                mTextureImage.freeStagingBuffer();
-            }
-            mTextureImageView = mTextureImage.createImageView();
-        }
-
-        /**
-         * Update descriptor sets
-         *
-         * <p>This method will simply update the attached descriptor set to have correct layout for
-         * textures and uniform buffer.
-         */
-        private void updateDescriptorSet(Renderer renderer) {
-            try (MemoryStack stack = stackPush()) {
-                VkDescriptorBufferInfo.Buffer bufferInfo =
-                        VkDescriptorBufferInfo.callocStack(1, stack);
-                bufferInfo.offset(0);
-                bufferInfo.range(UniformBufferObject.SIZEOF * 2);
-                bufferInfo.buffer(mBuffer.buffer);
-
-                VkDescriptorImageInfo.Buffer imageInfo =
-                        VkDescriptorImageInfo.callocStack(1, stack);
-                imageInfo.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                imageInfo.imageView(mTextureImageView);
-                imageInfo.sampler(renderer.mSamplerFactory.getSampler(MAPPING));
-
-                VkWriteDescriptorSet.Buffer descriptorWrites =
-                        VkWriteDescriptorSet.callocStack(2, stack);
-
-                VkWriteDescriptorSet uboDescriptorWrite = descriptorWrites.get(0);
-                uboDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-                uboDescriptorWrite.dstBinding(0);
-                uboDescriptorWrite.dstArrayElement(0);
-                uboDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-                uboDescriptorWrite.descriptorCount(1);
-                uboDescriptorWrite.pBufferInfo(bufferInfo);
-                uboDescriptorWrite.dstSet(descriptorSet);
-
-                VkWriteDescriptorSet samplerDescriptorWrite = descriptorWrites.get(1);
-                samplerDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-                samplerDescriptorWrite.dstBinding(1);
-                samplerDescriptorWrite.dstArrayElement(0);
-                samplerDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-                samplerDescriptorWrite.descriptorCount(1);
-                samplerDescriptorWrite.pImageInfo(imageInfo);
-                samplerDescriptorWrite.dstSet(descriptorSet);
-
-                vkUpdateDescriptorSets(renderer.mDevice, descriptorWrites, null);
             }
         }
 
@@ -241,13 +166,13 @@ public class Renderer implements NativeResource {
          *
          * <p>This method will make the object have rotation
          */
-        private void updateUniformBuffer(Renderer renderer, float curtime) {
+        private void updateInstanceBuffer(Renderer renderer, float curtime) {
             renderer.recordCommandBuffer(this, renderer.mObjectState);
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pData = stack.pointers(0);
                 vkMapMemory(
                         renderer.mDevice,
-                        mBuffer.memory,
+                        instanceBuffer.memory,
                         0,
                         UniformBufferObject.SIZEOF * ubo.length,
                         0,
@@ -259,6 +184,8 @@ public class Renderer implements NativeResource {
                 for (int i = 0; i < ubo.length; i++) {
                     UniformBufferObject ubo = this.ubo[i];
 
+                    ubo.model.identity();
+
                     ubo.model.rotation(
                             curtime * 1.5f * (float) (i * 2 - 1),
                             0.0f,
@@ -268,18 +195,14 @@ public class Renderer implements NativeResource {
                             0.f, 0.f, (float) i * (float) java.lang.Math.sin(curtime));
                     ubo.copyTo(byteBuffer, UniformBufferObject.SIZEOF * i);
                 }
-                vkUnmapMemory(renderer.mDevice, mBuffer.memory);
+                vkUnmapMemory(renderer.mDevice, instanceBuffer.memory);
             }
         }
 
         private void free() {
+            instanceBuffer.free();
             vkDestroyFramebuffer(mDevice, framebuffer, null);
             vkDestroyImageView(mDevice, mImageView, null);
-
-            vkDestroyImageView(mDevice, mTextureImageView, null);
-            mTextureImage.free();
-
-            mBuffer.free();
         }
     }
 
@@ -292,10 +215,16 @@ public class Renderer implements NativeResource {
      * <p>TODO: Remove this
      */
     private static class TmpObjectState {
+        public IMaterial material;
+        public VulkanDescriptorPool descriptorPool;
         public VulkanPipeline graphics;
         public VulkanBuffer vertexBuffer;
         public VulkanBuffer indexBuffer;
         public VertexConstants vertexConstants;
+
+        private VkDevice mDevice;
+        private VulkanImage mTextureImage;
+        private long[] mTextureImageViews;
 
         private static Vertex[] VERTICES = {
             new Vertex(
@@ -331,22 +260,36 @@ public class Renderer implements NativeResource {
         private static short[] INDICES = {1, 0, 2, 2, 0, 3, 3, 0, 4, 4, 0, 5, 5, 0, 6, 6, 0, 1};
 
         /** Create a object state */
-        private TmpObjectState(Renderer renderer) {
-            Resource<ShaderBuf> vertShader =
-                    ShaderBuf.getResource("shader", ShaderKind.VERTEX_SHADER);
-            if (vertShader == null) throw new RuntimeException("Failed to load vertex shader!");
+        private TmpObjectState(Renderer renderer, int imageCount) {
+            mDevice = renderer.mDevice;
+            material = new UnlitMaterial();
 
-            Resource<ShaderBuf> fragShader =
-                    ShaderBuf.getResource("shader", ShaderKind.FRAGMENT_SHADER);
-            if (fragShader == null) throw new RuntimeException("Failed to load fragment shader!");
+            try (Resource<Texture> resource = Texture.getResource("test_cc0_texture.jpg")) {
+                if (resource == null) throw new RuntimeException("Failed to load texture!");
+                Texture texture = resource.get();
+                VkCommandBuffer tmpCommandBuffer = renderer.beginSingleUseCommandBuffer();
+                mTextureImage =
+                        new VulkanImage(
+                                texture,
+                                tmpCommandBuffer,
+                                renderer.mDevice,
+                                renderer.mPhysicalDevice);
+                renderer.endSingleUseCommandBuffer(tmpCommandBuffer);
+                mTextureImage.freeStagingBuffer();
+            }
+            mTextureImageViews = new long[1];
+            mTextureImageViews[0] = mTextureImage.createImageView();
+
+            descriptorPool =
+                    new VulkanDescriptorPool(
+                            renderer.mDevice, renderer.mPhysicalDevice, material, imageCount);
 
             graphics =
                     new VulkanPipeline(
-                            vertShader.get(),
-                            fragShader.get(),
+                            material,
                             renderer.mDevice,
                             renderer.mExtent,
-                            renderer.mDescriptorSetLayout,
+                            descriptorPool.getSetLayout(),
                             renderer.mRenderPass);
 
             vertexBuffer = renderer.createVertexBuffer(VERTICES);
@@ -365,10 +308,16 @@ public class Renderer implements NativeResource {
                     10.f,
                     true);
             vertexConstants.proj.m11(-vertexConstants.proj.m11());
+
+            descriptorPool.updateDescriptorSets(renderer.mSamplerFactory, mTextureImageViews);
         }
 
         /** Free resources of the object state */
         private void free() {
+            for (long imageView : mTextureImageViews)
+                if (imageView != 0) vkDestroyImageView(mDevice, imageView, null);
+            descriptorPool.free();
+            mTextureImage.free();
             graphics.free();
             vertexBuffer.free();
             indexBuffer.free();
@@ -394,7 +343,6 @@ public class Renderer implements NativeResource {
         mGraphicsQueue = createGraphicsQueue();
         mPresentQueue = createPresentQueue();
         mCommandPool = createCommandPool();
-        mDescriptorSetLayout = createDescriptorSetLayout();
         mSamplerFactory = new TextureSamplerFactory(mDevice, mPhysicalDevice);
         createSwapchainObjects();
         mFrameContexts = createFrameContexts(FRAMES_IN_FLIGHT);
@@ -442,7 +390,7 @@ public class Renderer implements NativeResource {
 
             image.inFlightFence = ctx.inFlightFence;
 
-            image.updateUniformBuffer(this, curtime);
+            image.updateInstanceBuffer(this, curtime);
 
             VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
             submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
@@ -512,7 +460,6 @@ public class Renderer implements NativeResource {
             vkDestroyFence(mDevice, frame.inFlightFence, null);
         }
         cleanupSwapchain();
-        vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, null);
         mSamplerFactory.free();
         vkDestroyCommandPool(mDevice, mCommandPool, null);
         vkDestroyDevice(mDevice, null);
@@ -568,7 +515,6 @@ public class Renderer implements NativeResource {
 
         mImageContexts = null;
 
-        vkDestroyDescriptorPool(mDevice, mDescriptorPool, null);
         vkDestroyRenderPass(mDevice, mRenderPass, null);
 
         vkDestroyImageView(mDevice, mDepthImageView, null);
@@ -596,12 +542,10 @@ public class Renderer implements NativeResource {
         mDepthImage = createDepthImage();
         mDepthImageView = mDepthImage.createImageView();
         int imageCount = getImageCount();
-        mDescriptorPool = createDescriptorPool(imageCount);
         mImageContexts = createImageContexts(imageCount);
-        mObjectState = new TmpObjectState(this);
-        for (ImageContext img : mImageContexts) {
-            img.updateDescriptorSet(this);
-        }
+        mObjectState = new TmpObjectState(this, imageCount);
+
+        for (ImageContext image : mImageContexts) image.updateInstanceBuffer(this, 0.f);
     }
 
     /// Instance setup
@@ -923,52 +867,6 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /// Descriptor set setup
-
-    /**
-     * Create a descriptor set layout
-     *
-     * <p>This layout is used in creating descriptor sets. It describes the properties shaders have
-     * in different stages.
-     *
-     * <p>TODO: probably move to material system
-     */
-    private long createDescriptorSetLayout() {
-        LOGGER.info("Create descriptor set layout");
-
-        try (MemoryStack stack = stackPush()) {
-            VkDescriptorSetLayoutBinding.Buffer layoutBindings =
-                    VkDescriptorSetLayoutBinding.callocStack(2, stack);
-            VkDescriptorSetLayoutBinding uboLayoutBinding = layoutBindings.get(0);
-            uboLayoutBinding.binding(0);
-            uboLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            uboLayoutBinding.descriptorCount(1);
-            uboLayoutBinding.stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
-
-            VkDescriptorSetLayoutBinding samplerLayoutBinding = layoutBindings.get(1);
-            samplerLayoutBinding.binding(1);
-            samplerLayoutBinding.descriptorCount(1);
-            samplerLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            samplerLayoutBinding.stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT);
-
-            VkDescriptorSetLayoutCreateInfo layoutInfo =
-                    VkDescriptorSetLayoutCreateInfo.callocStack(stack);
-            layoutInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO);
-            layoutInfo.pBindings(layoutBindings);
-
-            LongBuffer pDescriptorSetLayout = stack.longs(0);
-
-            int res = vkCreateDescriptorSetLayout(mDevice, layoutInfo, null, pDescriptorSetLayout);
-
-            if (res != VK_SUCCESS) {
-                throw new RuntimeException(
-                        String.format("Failed to create descriptor set layout! Res: %x", -res));
-            }
-
-            return pDescriptorSetLayout.get(0);
-        }
-    }
-
     /// Swapchain setup
 
     /** Sets up the swapchain required for rendering */
@@ -1044,26 +942,6 @@ public class Renderer implements NativeResource {
 
             vkGetSwapchainImagesKHR(mDevice, mSwapchain, pImageCount, pSwapchainImages);
 
-            // Allocate descriptor sets
-            LongBuffer setLayouts = stack.mallocLong(imageCount);
-            IntStream.range(0, imageCount)
-                    .mapToLong(__ -> mDescriptorSetLayout)
-                    .forEach(setLayouts::put);
-            setLayouts.rewind();
-
-            VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.callocStack(stack);
-            allocInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO);
-            allocInfo.descriptorPool(mDescriptorPool);
-            allocInfo.pSetLayouts(setLayouts);
-
-            LongBuffer pDescriptorSets = stack.mallocLong(imageCount);
-
-            int res = vkAllocateDescriptorSets(mDevice, allocInfo, pDescriptorSets);
-
-            if (res != VK_SUCCESS)
-                throw new RuntimeException(
-                        String.format("Failed to create descriptor sets! Res: %x", -res));
-
             // Allocate command buffers
 
             VkCommandBufferAllocateInfo cmdAllocInfo =
@@ -1091,44 +969,9 @@ public class Renderer implements NativeResource {
                                                     mDevice,
                                                     mSurfaceFormat.format(),
                                                     pSwapchainImages.get(i)),
-                                            pDescriptorSets.get(i),
+                                            i,
                                             buffers.get(i)))
                     .toArray(ImageContext[]::new);
-        }
-    }
-
-    /// Descriptor pool setup
-
-    /**
-     * Create a descriptor pool
-     *
-     * <p>This pool is used for creating descriptor sets.
-     */
-    private long createDescriptorPool(int imageCount) {
-        LOGGER.info("Setup descriptor pool");
-
-        try (MemoryStack stack = stackPush()) {
-            VkDescriptorPoolSize.Buffer poolSizes = VkDescriptorPoolSize.callocStack(2, stack);
-            poolSizes.get(0).type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            poolSizes.get(0).descriptorCount(imageCount);
-            poolSizes.get(1).type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            poolSizes.get(1).descriptorCount(imageCount);
-
-            VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.callocStack(stack);
-            poolInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);
-            poolInfo.pPoolSizes(poolSizes);
-            poolInfo.maxSets(imageCount);
-
-            LongBuffer pDescriptorPool = stack.longs(0);
-
-            int res = vkCreateDescriptorPool(mDevice, poolInfo, null, pDescriptorPool);
-
-            if (res != VK_SUCCESS) {
-                throw new RuntimeException(
-                        String.format("Failed to create descriptor pool! Res: %x", -res));
-            }
-
-            return pDescriptorPool.get(0);
         }
     }
 
@@ -1330,6 +1173,25 @@ public class Renderer implements NativeResource {
     }
 
     /**
+     * Create a instance buffer
+     *
+     * <p>As the name implies, this buffer holds base per-instance data
+     */
+    private VulkanBuffer createInstanceBuffer(int instanceCount) {
+        LOGGER.info("Create instance buffer");
+
+        try (MemoryStack stack = stackPush()) {
+            return new VulkanBuffer(
+                    mDevice,
+                    mPhysicalDevice,
+                    UniformBufferObject.SIZEOF * instanceCount,
+                    // VK_BUFFER_USAGE_TRANSFER_DST_BIVK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |T
+                    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        }
+    }
+
+    /**
      * Create a single use command buffer.
      *
      * <p>This command buffer can be flushed with {@code endSingleUseCommandBuffer}
@@ -1455,19 +1317,24 @@ public class Renderer implements NativeResource {
 
             renderPassInfo.framebuffer(ctx.framebuffer);
 
+            // state.descriptorPool.updateDescriptorSet(ctx.descriptorSetIndex, mSamplerFactory,
+            // state.mTextureImageViews);
+
             // This is the beginning :)
             vkCmdBeginRenderPass(ctx.commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             vkCmdBindPipeline(
                     ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, state.graphics.pipeline);
 
-            LongBuffer vertexBuffers = stack.longs(state.vertexBuffer.buffer);
-            LongBuffer offsets = stack.longs(0);
+            LongBuffer vertexBuffers =
+                    stack.longs(state.vertexBuffer.buffer, ctx.instanceBuffer.buffer);
+            LongBuffer offsets = stack.longs(0, 0);
             vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(
                     ctx.commandBuffer, state.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
-            LongBuffer descriptorSet = stack.longs(ctx.descriptorSet);
+            LongBuffer descriptorSet =
+                    stack.longs(state.descriptorPool.getDescriptorSets()[ctx.descriptorSetIndex]);
             vkCmdBindDescriptorSets(
                     ctx.commandBuffer,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1485,7 +1352,8 @@ public class Renderer implements NativeResource {
                     VK_SHADER_STAGE_VERTEX_BIT,
                     0,
                     pConstants);
-            vkCmdDrawIndexed(ctx.commandBuffer, TmpObjectState.INDICES.length, 2, 0, 0, 0);
+            vkCmdDrawIndexed(
+                    ctx.commandBuffer, TmpObjectState.INDICES.length, INSTANCE_COUNT, 0, 0, 0);
 
             vkCmdEndRenderPass(ctx.commandBuffer);
 
