@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
+import static org.junit.Assume.assumeNoException;
+
 import java.io.File;
 import java.io.IOException;
 import javax.sound.sampled.AudioInputStream;
@@ -25,13 +27,11 @@ public class DataLinePoolTest {
 
             Assert.assertNotNull(dataLine);
         } catch (IllegalArgumentException e) {
-        	assumeNoException(e);
+            assumeNoException(e);
         }
     }
 
-    /**
-     * This will test that a data line can play music normally.
-     */
+    /** This will test that a data line can play music normally. */
     @Test
     public void openStreamTest() {
         // Not fully complete because no way for machine to check whether sound actually on
@@ -54,17 +54,15 @@ public class DataLinePoolTest {
 
                 Assert.assertNull(clip);
             } catch (UnsupportedAudioFileException | IOException e) {
-            	assumeNoException(e);
+                assumeNoException(e);
             }
 
         } catch (IllegalArgumentException e) {
-        	assumeNoException(e);
+            assumeNoException(e);
         }
     }
 
-    /**
-     * This will check whether the mute will work and give back the expected values
-     */
+    /** This will check whether the mute will work and give back the expected values */
     @Test
     public void muteTest() {
         // Not complete as no way for machine to check whether sound really muted
@@ -93,15 +91,16 @@ public class DataLinePoolTest {
                 dataLine.setMute(false);
                 Assert.assertFalse(dataLine.getMute());
             } catch (UnsupportedAudioFileException | IOException e) {
-            	assumeNoException(e);
+                assumeNoException(e);
             }
         } catch (IllegalArgumentException e) {
-        	assumeNoException(e);
+            assumeNoException(e);
         }
     }
 
     /**
      * This will test that the volume can be changed by the program for each line
+     *
      * @throws LineUnavailableException This is when a clip cannot be used
      */
     @Test
@@ -146,16 +145,14 @@ public class DataLinePoolTest {
                 dataLine.setVolume(106);
                 Assert.assertEquals(100, dataLine.getVolume());
             } catch (UnsupportedAudioFileException | IOException e) {
-            	assumeNoException(e);
+                assumeNoException(e);
             }
         } catch (IllegalArgumentException e) {
-        	assumeNoException(e);
+            assumeNoException(e);
         }
     }
 
-    /**
-     * Checks that the Clips are returned so they can be destroyed at the end
-     */
+    /** Checks that the Clips are returned so they can be destroyed at the end */
     @Test
     public void cleanupTest() {
 
@@ -185,10 +182,10 @@ public class DataLinePoolTest {
 
                 Assert.assertSame(clip2, clips[0]);
             } catch (UnsupportedAudioFileException | IOException e) {
-            	assumeNoException(e);
+                assumeNoException(e);
             }
         } catch (IllegalArgumentException e) {
-        	assumeNoException(e);
+            assumeNoException(e);
         }
     }
 }
