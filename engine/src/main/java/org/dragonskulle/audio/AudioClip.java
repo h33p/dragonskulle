@@ -129,7 +129,7 @@ public class AudioClip {
     /**
      * Whether the Clip is Looping
      *
-     * @return
+     * @return a boolean stating whether this is looping
      */
     public boolean getLooping() {
         return mLooping;
