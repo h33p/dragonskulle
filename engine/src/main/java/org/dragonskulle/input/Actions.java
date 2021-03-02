@@ -24,11 +24,12 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "s")
 public abstract class Actions {
-	/**
-	 * When actiavted, TRIGGER_DRAG will cause {@link #sCursor} to start detecting cursor movement as a drag.
-	 * <p>
-	 * TRIGGER_DRAG must always be present, regardless of any other custom actions implemented.
-	 */
+    /**
+     * When actiavted, TRIGGER_DRAG will cause {@link #sCursor} to start detecting cursor movement
+     * as a drag.
+     *
+     * <p>TRIGGER_DRAG must always be present, regardless of any other custom actions implemented.
+     */
     public static final Action TRIGGER_DRAG = new Action("DRAG");
 
     /** Stores everything to do with cursor position and dragging. */

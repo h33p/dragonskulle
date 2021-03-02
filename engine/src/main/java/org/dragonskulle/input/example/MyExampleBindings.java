@@ -22,7 +22,10 @@ public class MyExampleBindings extends Bindings {
         addBinding(GLFW.GLFW_KEY_RIGHT, MyExampleActions.RIGHT);
         addBinding(GLFW.GLFW_KEY_D, MyExampleActions.RIGHT);
 
-        addBinding(GLFW.GLFW_MOUSE_BUTTON_LEFT, MyExampleActions.ACTION_1, MyExampleActions.TRIGGER_DRAG);
+        addBinding(
+                GLFW.GLFW_MOUSE_BUTTON_LEFT,
+                MyExampleActions.ACTION_1,
+                MyExampleActions.TRIGGER_DRAG);
         addBinding(GLFW.GLFW_MOUSE_BUTTON_RIGHT, MyExampleActions.ACTION_2);
         addBinding(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, MyExampleActions.ACTION_3);
 
