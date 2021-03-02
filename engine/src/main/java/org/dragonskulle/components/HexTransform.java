@@ -82,9 +82,13 @@ public class HexTransform {
      * Set the position of the transform to the provided hex coordinates. The cartesian position
      * will be the centre point of the hex
      *
-     * @param axialCoords Coordinates of the position in axial coordinate system
+     * @param axial Coordinates of the position in axial coordinate system
      */
-    public void setPosition(Vector3f axialCoords) {}
+    public void setPosition(Vector3f axial) {
+        // Convert the axial coordinates to cartesian and then set the transform position
+        axialToCartesian(axial);
+        mTransform.setPosition(axial);
+    }
 
     /**
      * Get the position of a hex in axial coordinates. The z component of the vector is always 0
@@ -96,7 +100,7 @@ public class HexTransform {
         Vector3f pos = new Vector3f();
         mTransform.getPosition(pos);
 
-        axialToCartesian(pos);
+        cartesianToAxial(pos);
 
         return roundAxial(pos);
     }
