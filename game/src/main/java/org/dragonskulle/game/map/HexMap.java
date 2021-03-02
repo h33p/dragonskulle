@@ -1,7 +1,7 @@
 package org.dragonskulle.game.map;
 
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IRenderUpdate;
+import org.dragonskulle.components.IFrameUpdate;
 
 import java.util.Arrays;
 import java.util.HashMap;
