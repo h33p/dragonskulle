@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
  * <p>By default, it contains the following static values:
  *
  * <ul>
- *   <li>{@link #DRAG} - An action that is triggered when the cursor is dragged.
+ *   <li>{@link #TRIGGER_DRAG} - An action that is triggered when the cursor is dragged.
  *   <li>{@link #sCursor} - Stores everything related to the cursor.
  *   <li>{@link #sScroll} - Stores everything related to mouse scrolling.
  * </ul>
@@ -24,8 +24,12 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "s")
 public abstract class Actions {
-    // DRAG must always be present, regardless of any other custom actions implemented.
-    public static final Action DRAG = new Action("DRAG");
+	/**
+	 * When actiavted, TRIGGER_DRAG will cause {@link #sCursor} to start detecting cursor movement as a drag.
+	 * <p>
+	 * TRIGGER_DRAG must always be present, regardless of any other custom actions implemented.
+	 */
+    public static final Action TRIGGER_DRAG = new Action("DRAG");
 
     /** Stores everything to do with cursor position and dragging. */
     @Getter private static Cursor sCursor;

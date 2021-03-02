@@ -66,7 +66,7 @@ class Cursor {
      * Action#DRAG} is not active.
      */
     private void detectDrag() {
-        if (Actions.DRAG.isActivated()) {
+        if (Actions.TRIGGER_DRAG.isActivated()) {
             if (inDrag() == false) {
                 startDrag();
             }
