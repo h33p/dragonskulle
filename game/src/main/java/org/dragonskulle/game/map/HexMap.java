@@ -16,12 +16,15 @@ import java.util.Map;
 public class HexMap extends Component {
 
     public final int size;
+    private HexMap grid;
+    private HexagonTile[][] map = grid.createHexMap();
 
     /**
      * @param size - the size of the map
      */
     public HexMap(int size) {
         this.size = size;
+
         if (size < 0 ) {
            throw new IllegalArgumentException("The size must greater than 0");
         }
