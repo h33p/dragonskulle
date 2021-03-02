@@ -2,11 +2,14 @@
 package org.dragonskulle.network;
 
 import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
+
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -17,31 +20,49 @@ import org.dragonskulle.network.components.NetworkableComponent;
  * org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
-    /** The constant MAX_TRANSMISSION_SIZE. */
+    /**
+     * The constant MAX_TRANSMISSION_SIZE.
+     */
     private static final int MAX_TRANSMISSION_SIZE = 512;
-    /** The Socket connection to the server. */
+    /**
+     * The Socket connection to the server.
+     */
     private Socket socket;
-    /** The Input stream. Possibly depreciated in favour of byte streams. */
+    /**
+     * The Input stream. Possibly depreciated in favour of byte streams.
+     */
     private BufferedReader in;
-    /** The Output stream. Possibly depreciated in favour of byte streams. */
+    /**
+     * The Output stream. Possibly depreciated in favour of byte streams.
+     */
     private PrintWriter out;
-    /** The byte output stream. */
+    /**
+     * The byte output stream.
+     */
     private DataOutputStream dOut;
-    /** The byte input stream. */
+    /**
+     * The byte input stream.
+     */
     private BufferedInputStream bIn;
-    /** The Game Instance. */
+    /**
+     * The Game Instance.
+     */
     private ClientGameInstance game;
 
-    /** The Client listener to notify of important events. */
+    /**
+     * The Client listener to notify of important events.
+     */
     private ClientListener clientListener;
-    /** True if the socket is open. */
+    /**
+     * True if the socket is open.
+     */
     private boolean open = true;
 
     /**
      * Instantiates a new Network client.
      *
-     * @param ip the ip
-     * @param port the port
+     * @param ip       the ip
+     * @param port     the port
      * @param listener the listener
      */
     public NetworkClient(String ip, int port, ClientListener listener) {
@@ -74,7 +95,7 @@ public class NetworkClient {
      * Execute bytes after parsing. This will be different usage depending on server or client.
      *
      * @param messageType the message type
-     * @param payload the payload
+     * @param payload     the payload
      */
     public void executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
@@ -131,7 +152,7 @@ public class NetworkClient {
      *
      * @param payload the payload
      * @return the hexagon tile [ ] [ ]
-     * @throws IOException Thrown if any errors occur in deserialization.
+     * @throws IOException            Thrown if any errors occur in deserialization.
      * @throws ClassNotFoundException Thrown if any errors occur in deserialization.
      */
     private HexagonTile[][] deserializeMap(byte[] payload)
@@ -153,7 +174,9 @@ public class NetworkClient {
         System.out.println("updated networkable");
     }
 
-    /** Dispose. */
+    /**
+     * Dispose.
+     */
     public void dispose() {
         try {
             if (open) {
@@ -269,7 +292,9 @@ public class NetworkClient {
         }
     }
 
-    /** Close all connections. */
+    /**
+     * Close all connections.
+     */
     private void closeAllConnections() {
         open = false;
 
@@ -301,5 +326,17 @@ public class NetworkClient {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+
+    public boolean hasMap() {
+        return this.game.hasSpawnedMap();
+    }
+
+    public Boolean hasCapital() {
+        return this.game.hasSpawnedCapital();
+    }
+
+    public String getCapitalId() {
+        return this.game.getNetworkedComponents().stream().filter(e -> e.getClass().isAssignableFrom(Capital.class)).findFirst().orElseGet(null).getId();
     }
 }

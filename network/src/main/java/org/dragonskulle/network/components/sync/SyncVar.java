@@ -11,7 +11,6 @@ import java.util.UUID;
  * @param <T> the type parameter
  */
 public class SyncVar<T extends Serializable> implements Serializable {
-
     /** The Data. */
     T data;
     /** The Id. */

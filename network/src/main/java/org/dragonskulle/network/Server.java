@@ -35,7 +35,7 @@ public class Server {
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
-    private final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
+    public final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
 
     /**
      * Instantiates a new Server.
@@ -64,30 +64,30 @@ public class Server {
             System.out.println("[S] Starting server");
             serverThread.start();
 
-            String command;
-            Scanner scanner = new Scanner(System.in);
-            String[] input;
-            OUTER_LOOP:
-            while (true) {
-                System.out.println("Enter Command: (B)roadcast -s {message} | (K)ill");
-                command = scanner.nextLine();
-                input = command.split(" -s ");
-                switch (input[0].toUpperCase()) {
-                    case ("B"):
-                        try {
-                            System.out.println("Broadcasting {" + input[1] + "}");
-                            this.sockets.broadcast(input[1].getBytes());
-                        } catch (IndexOutOfBoundsException e) {
-                            System.out.println("Please provide -s tag");
-                        }
-                        break;
-                    case ("K"):
-                        System.out.println("Killing Server");
-                        this.dispose();
-                        break OUTER_LOOP;
-                    default:
-                }
-            }
+//            String command;
+//            Scanner scanner = new Scanner(System.in);
+//            String[] input;
+//            OUTER_LOOP:
+//            while (true) {
+//                System.out.println("Enter Command: (B)roadcast -s {message} | (K)ill");
+//                command = scanner.nextLine();
+//                input = command.split(" -s ");
+//                switch (input[0].toUpperCase()) {
+//                    case ("B"):
+//                        try {
+//                            System.out.println("Broadcasting {" + input[1] + "}");
+//                            this.sockets.broadcast(input[1].getBytes());
+//                        } catch (IndexOutOfBoundsException e) {
+//                            System.out.println("Please provide -s tag");
+//                        }
+//                        break;
+//                    case ("K"):
+//                        System.out.println("Killing Server");
+//                        this.dispose();
+//                        break OUTER_LOOP;
+//                    default:
+//                }
+//            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -255,7 +255,7 @@ public class Server {
                                     Capital networkCapital =
                                             (Capital) getNetworkableChild(networkObject, capitalId);
                                     if (networkCapital != null) {
-                                        networkCapital.setStringSyncMeAlso("goodbye world");
+                                        networkCapital.setStringSyncMeAlso("Goodbye World");
                                     }
                                 }
                             },
