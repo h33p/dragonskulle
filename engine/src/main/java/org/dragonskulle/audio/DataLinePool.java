@@ -25,6 +25,7 @@ public class DataLinePool {
      * The only Constructor to be allowed to use
      *
      * @param mixer The mixer to plug the clips into
+     * @param soundType A {@code SoundType} which states what channel this data line will be
      */
     public DataLinePool(Mixer mixer, SoundType soundType) {
 
