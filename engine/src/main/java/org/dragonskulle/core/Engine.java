@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
@@ -29,19 +30,18 @@ public class Engine {
     protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
     protected final HashSet<Component> mDestroyedComponents = new HashSet<>();
 
+    private final HashSet<Scene> mScenesToEnable = new HashSet<>();
+    private final HashSet<Scene> mScenesToDisable = new HashSet<>();
+    private Scene mNewPresentationScene = null;
+
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
-    private Scene mActiveScene = null;
-    private Scene mNewScene = null;
+    private final HashSet<Scene> mActiveScenes = new HashSet<>();
+    private Scene mPresentationScene = null;
 
     private Engine() {}
 
-    /**
-     * Loads a new scene and start the engine
-     *
-     * @param scene Initial scene for the engine to run
-     */
-    public void start(Scene scene) {
-        loadScene(scene);
+    /** Start the engine */
+    public void start() {
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
@@ -50,12 +50,59 @@ public class Engine {
     }
 
     /**
-     * Loads a new scene that will be run from the next frame onwards
+     * Loads a new scene that will be run from the next frame onwards.
      *
      * @param scene Scene to be loaded
      */
     public void loadScene(Scene scene) {
-        mNewScene = scene;
+        mScenesToEnable.add(scene);
+    }
+
+    /**
+     * Load a new scene that will NOT be run until it is manually started.
+     *
+     * @param scene Scene to be loaded
+     */
+    public void loadInactiveScene(Scene scene) {
+        mScenesToDisable.add(scene);
+    }
+
+    /**
+     * Set a scene as the presentation scene, which is the only scene rendered to the end user.
+     *
+     * @param scene Scene to be rendered to the user
+     */
+    public void setPresentationScene(Scene scene) {
+        mScenesToEnable.add(scene);
+        mNewPresentationScene = scene;
+    }
+
+    /**
+     * Enable all scenes with a matching name. Scenes aren't enabled until the start of the next
+     * frame
+     *
+     * @param name Name of the scene to enable.
+     */
+    public void enableScene(String name) {
+        for (Scene s : mInactiveScenes) {
+            if (s.getName().equals(name)) {
+                mScenesToEnable.add(s);
+            }
+        }
+    }
+
+    /**
+     * Disable all scenes with a matching name. Scenes aren't disable until the start of the next
+     * frame
+     *
+     * @param name Name of the scene to disable.
+     */
+    public void disableScene(String name) {
+        for (Scene s : mActiveScenes) {
+            if (s.getName().equals(name)) {
+                mScenesToDisable.add(s);
+            }
+        }
     }
 
     /** Stops the engine when the current frame has finished */
@@ -81,18 +128,22 @@ public class Engine {
 
             cumulativeTime += deltaTime;
             secondTimer += deltaTime;
-            if (mNewScene != null) {
-                switchToNewScene();
-            }
 
-            mActiveScene.updateComponentsList();
+            // Switch any scenes
+            switchScenes();
 
+            // Update all component lists in scenes
+            updateScenesComponentsList();
+
+            // Wake up all components that aren't awake
             wakeComponents();
 
+            // Start all enabled components
             startEnabledComponents();
 
             // TODO: Process inputs here before any updates are performed
 
+            // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
 
             // Perform all updates that we can fit in the time since last frame
@@ -104,10 +155,12 @@ public class Engine {
                 fixedUpdate();
             }
 
+            // Call LateFrameUpdate on the presentation scene
             lateFrameUpdate(deltaTime);
 
             // TODO: Perform rendering here
 
+            // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
 
             frames++;
@@ -126,11 +179,13 @@ public class Engine {
 
     /** Iterate through a list of components that aren't awake and wake them */
     private void wakeComponents() {
-        for (Component component : mActiveScene.getNotAwakeComponents()) {
-            if (component instanceof IOnAwake) {
-                ((IOnAwake) component).onAwake();
+        for (Scene s : mActiveScenes) {
+            for (Component component : s.getNotAwakeComponents()) {
+                if (component instanceof IOnAwake) {
+                    ((IOnAwake) component).onAwake();
+                }
+                component.setAwake(true);
             }
-            component.setAwake(true);
         }
     }
 
@@ -138,21 +193,24 @@ public class Engine {
      * Iterate through a list of components that are enabled but haven't been started and start them
      */
     private void startEnabledComponents() {
-        for (Component component : mActiveScene.getEnabledButNotStartedComponents()) {
-            if (component instanceof IOnStart) {
-                ((IOnStart) component).onStart();
+        for (Scene s : mActiveScenes) {
+            for (Component component : s.getEnabledButNotStartedComponents()) {
+                if (component instanceof IOnStart) {
+                    ((IOnStart) component).onStart();
+                }
+                component.setStarted(true);
             }
-            component.setStarted(true);
         }
     }
 
     /**
-     * Do all frameUpdates on components that implement it
+     * Do all frameUpdates on components that implement it. Only components in the presentation
+     * scene have frame update called
      *
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(float deltaTime) {
-        for (Component component : mActiveScene.getEnabledComponents()) {
+        for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
             }
@@ -161,9 +219,11 @@ public class Engine {
 
     /** Do all Fixed Updates on components that implement it */
     private void fixedUpdate() {
-        for (Component component : mActiveScene.getEnabledComponents()) {
-            if (component instanceof IFixedUpdate) {
-                ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
+        for (Scene s : mActiveScenes) {
+            for (Component component : s.getEnabledComponents()) {
+                if (component instanceof IFixedUpdate) {
+                    ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
+                }
             }
         }
     }
@@ -174,7 +234,7 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void lateFrameUpdate(float deltaTime) {
-        for (Component component : mActiveScene.getEnabledComponents()) {
+        for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof ILateFrameUpdate) {
                 ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
             }
@@ -196,15 +256,39 @@ public class Engine {
         mDestroyedComponents.clear();
     }
 
-    /** Finish the loading of a new scene. */
-    private void switchToNewScene() {
-        // Add the currently active scene to inactive scenes and remove the new scene from
-        // the set if it exists
-        mInactiveScenes.add(mActiveScene);
-        mInactiveScenes.remove(mNewScene);
+    /**
+     * Switch all scenes. Disabling any scenes that need to be disabled, enabling all those that
+     * should be enabled and switching the presentation scene if necessary.
+     */
+    private void switchScenes() {
+        // Load the new presentation scene
+        if (mNewPresentationScene != null) {
+            if (mPresentationScene != null) {
+                mInactiveScenes.add(mPresentationScene);
+                mActiveScenes.remove(mPresentationScene);
+            }
+            mActiveScenes.add(mNewPresentationScene);
+            mPresentationScene = mNewPresentationScene;
+            mNewPresentationScene = null;
+        }
 
-        mActiveScene = mNewScene;
-        mNewScene = null;
+        // Disable any scenes we need to
+        for (Scene s : mScenesToDisable) {
+            mActiveScenes.remove(s);
+            mInactiveScenes.add(s);
+        }
+
+        for (Scene s : mScenesToEnable) {
+            mInactiveScenes.remove(s);
+            mActiveScenes.add(s);
+        }
+    }
+
+    /** Update the component lists in every active scene */
+    private void updateScenesComponentsList() {
+        for (Scene s : mActiveScenes) {
+            s.updateComponentsList();
+        }
     }
 
     /** Cleans up all resources used by the engine on shutdown */
@@ -226,8 +310,8 @@ public class Engine {
      *
      * @return mActiveScene
      */
-    public Scene getActiveScene() {
-        return mActiveScene;
+    public ArrayList<Scene> getActiveScenes() {
+        return new ArrayList<Scene>(mActiveScenes);
     }
 
     /**

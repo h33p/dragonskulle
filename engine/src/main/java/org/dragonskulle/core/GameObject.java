@@ -70,20 +70,23 @@ public class GameObject implements Serializable {
      * @return A reference to the first GameObject found, or null if nothing is found
      */
     public static Reference<GameObject> FindObjectByName(String name) {
-        Scene activeScene = Engine.getInstance().getActiveScene();
+        List<Scene> activeScenes = Engine.getInstance().getActiveScenes();
 
-        for (GameObject root : activeScene.getRootObjects()) {
+        for (Scene s : activeScenes) {
+            for (GameObject root : s.getRootObjects()) {
 
-            ArrayList<GameObject> children = new ArrayList<>();
-            root.getAllChildren(children);
+                ArrayList<GameObject> children = new ArrayList<>();
+                root.getAllChildren(children);
 
-            for (GameObject obj : children) {
+                for (GameObject obj : children) {
 
-                if (obj.mName.equals(name)) {
-                    return obj.getReference();
+                    if (obj.mName.equals(name)) {
+                        return obj.getReference();
+                    }
                 }
             }
         }
+
         return null;
     }
 
