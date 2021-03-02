@@ -14,8 +14,7 @@ import org.joml.Vector4f;
  * @author Harry Stoltz
  *     <p>All GameObjects will have a Transform object which stores the position, rotation and scale
  *     of the object (As right, up, forward and position in a 4x4 Matrix). The Transform can be used
- *     to get 3D position, scale and rotation. Or can be cast to HexTransform to get the position,
- *     scale and rotation in Hex coordinates.
+ *     to get 3D position, scale and rotation.
  */
 public class Transform extends Component {
     private static final float DEG_TO_RAD = (float) Math.PI / 180.f;

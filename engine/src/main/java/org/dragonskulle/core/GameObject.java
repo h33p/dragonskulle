@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.HexTransform;
 import org.dragonskulle.components.Transform;
 
 /**
@@ -375,10 +376,19 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform
      *
-     * @return mTransform
+     * @return mTransform as a base Transform
      */
     public Transform getTransform() {
         return mTransform;
+    }
+
+    /**
+     * Getter for mTransform
+     *
+     * @return mTransform as a HexTransform
+     */
+    public HexTransform getHexTransform() {
+        return new HexTransform(mTransform);
     }
 
     /**
