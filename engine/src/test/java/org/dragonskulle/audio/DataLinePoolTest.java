@@ -35,7 +35,7 @@ public class DataLinePoolTest {
      * @throws IOException If file does not exist
      */
     @Test
-    public void openStreamTest()  {
+    public void openStreamTest() {
         // Not fully complete because no way for machine to check whether sound actually on
 
         try {
@@ -46,21 +46,18 @@ public class DataLinePoolTest {
             Assert.assertNotNull(dataLine);
 
             try {
-            	AudioInputStream audio =
-            			AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
-            	AudioClip clip = dataLine.openStream(audio);
+                AudioInputStream audio =
+                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
+                AudioClip clip = dataLine.openStream(audio);
 
-            	Assert.assertNotNull(clip);
+                Assert.assertNotNull(clip);
 
-            	clip = dataLine.openStream(null);
+                clip = dataLine.openStream(null);
 
-            	Assert.assertNull(clip);
-            }
-            catch (UnsupportedAudioFileException | IOException e) {
-            	;
+                Assert.assertNull(clip);
+            } catch (UnsupportedAudioFileException | IOException e) {;
             }
 
-            
         } catch (IllegalArgumentException e) {;
         }
     }
@@ -82,27 +79,24 @@ public class DataLinePoolTest {
 
             Assert.assertNotNull(dataLine);
             try {
-            	AudioInputStream audio =
-            			AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
-            
+                AudioInputStream audio =
+                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
 
-            	AudioClip clip = dataLine.openStream(audio);
+                AudioClip clip = dataLine.openStream(audio);
 
-            	Assert.assertFalse(dataLine.getMute()); // checks when created it is started as mute
-            	
-            	dataLine.setMute(true);
+                Assert.assertFalse(dataLine.getMute()); // checks when created it is started as mute
 
-            	Assert.assertTrue(dataLine.getMute()); // checks it can change value
+                dataLine.setMute(true);
 
-            	dataLine.setMute(true);
-            	Assert.assertTrue(dataLine.getMute());
+                Assert.assertTrue(dataLine.getMute()); // checks it can change value
 
-            	dataLine.setMute(false);
-            	Assert.assertFalse(dataLine.getMute());
+                dataLine.setMute(true);
+                Assert.assertTrue(dataLine.getMute());
+
+                dataLine.setMute(false);
+                Assert.assertFalse(dataLine.getMute());
+            } catch (UnsupportedAudioFileException | IOException e) {;
             }
-            	catch (UnsupportedAudioFileException | IOException e) {
-                 	;
-                 }
         } catch (IllegalArgumentException e) {;
         }
     }
@@ -115,8 +109,7 @@ public class DataLinePoolTest {
      * @throws LineUnavailableException This is when a clip cannot be used
      */
     @Test
-    public void volumeTest()
-            throws LineUnavailableException {
+    public void volumeTest() throws LineUnavailableException {
 
         // Not complete as no way for machine to check whether sound really has changed
         try { // Using try catch as if the system does not have any sound these tests won't work.
@@ -125,41 +118,38 @@ public class DataLinePoolTest {
             DataLinePool dataLine = new DataLinePool(mixer, SoundType.SFX);
 
             Assert.assertNotNull(dataLine);
-            
+
             try {
 
-            AudioInputStream audio =
-                    AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
-            
+                AudioInputStream audio =
+                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
 
-            AudioClip clip = dataLine.openStream(audio);
+                AudioClip clip = dataLine.openStream(audio);
 
-            Assert.assertEquals(50, dataLine.getVolume());
+                Assert.assertEquals(50, dataLine.getVolume());
 
-            Assert.assertNotNull(dataLine);
+                Assert.assertNotNull(dataLine);
 
-            dataLine.setVolume(60);
+                dataLine.setVolume(60);
 
-            Assert.assertEquals(60, dataLine.getVolume());
+                Assert.assertEquals(60, dataLine.getVolume());
 
-            dataLine.setVolume(100);
+                dataLine.setVolume(100);
 
-            Assert.assertEquals(100, dataLine.getVolume());
+                Assert.assertEquals(100, dataLine.getVolume());
 
-            dataLine.setVolume(0);
-            Assert.assertEquals(0, dataLine.getVolume());
+                dataLine.setVolume(0);
+                Assert.assertEquals(0, dataLine.getVolume());
 
-            dataLine.setVolume(48);
-            Assert.assertEquals(48, dataLine.getVolume());
+                dataLine.setVolume(48);
+                Assert.assertEquals(48, dataLine.getVolume());
 
-            dataLine.setVolume(-14);
-            Assert.assertEquals(0, dataLine.getVolume());
+                dataLine.setVolume(-14);
+                Assert.assertEquals(0, dataLine.getVolume());
 
-            dataLine.setVolume(106);
-            Assert.assertEquals(100, dataLine.getVolume());
-            }
-            catch (UnsupportedAudioFileException | IOException e) {
-            	;
+                dataLine.setVolume(106);
+                Assert.assertEquals(100, dataLine.getVolume());
+            } catch (UnsupportedAudioFileException | IOException e) {;
             }
         } catch (IllegalArgumentException e) {;
         }
@@ -180,27 +170,26 @@ public class DataLinePoolTest {
             DataLinePool dataLine = new DataLinePool(mixer, SoundType.SFX);
 
             Assert.assertNotNull(dataLine);
-            
+
             try {
 
-            AudioInputStream audio =
-                    AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
-            ;
+                AudioInputStream audio =
+                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
+                ;
 
-            AudioClip clip = dataLine.openStream(audio);
+                AudioClip clip = dataLine.openStream(audio);
 
-            AudioInputStream audio2 =
-                    AudioSystem.getAudioInputStream(new File("thunderclap.wav").getAbsoluteFile());
-            ;
+                AudioInputStream audio2 =
+                        AudioSystem.getAudioInputStream(
+                                new File("thunderclap.wav").getAbsoluteFile());
+                ;
 
-            AudioClip clip2 = dataLine.openStream(audio2);
+                AudioClip clip2 = dataLine.openStream(audio2);
 
-            AudioClip[] clips = dataLine.cleanup();
+                AudioClip[] clips = dataLine.cleanup();
 
-            Assert.assertSame(clip2, clips[0]);
-            }
-            catch (UnsupportedAudioFileException | IOException e) {
-            	;
+                Assert.assertSame(clip2, clips[0]);
+            } catch (UnsupportedAudioFileException | IOException e) {;
             }
         } catch (IllegalArgumentException e) {;
         }
