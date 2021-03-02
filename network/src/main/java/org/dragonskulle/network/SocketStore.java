@@ -16,14 +16,31 @@ import java.util.ArrayList;
  * backbone of the server functions.
  */
 public class SocketStore {
+    /**
+     * The Server.
+     */
     private ServerSocket server;
+    /**
+     * The Store for all the sockets.
+     */
     private final ArrayList<Socket> store;
+    /**
+     * The timeout for accepting a client.
+     */
     static final int SO_TIMEOUT = 3000;
 
+    /**
+     * Instantiates a new Socket store.
+     */
     public SocketStore() {
         this.store = new ArrayList<>();
     }
 
+    /**
+     * Broadcast to all sockets.
+     *
+     * @param buf the buf to be broadcasted
+     */
     public void broadcast(byte[] buf) {
         System.out.println("Broadcasting bytes");
         DataOutputStream dOut;
@@ -44,6 +61,11 @@ public class SocketStore {
         }
     }
 
+    /**
+     * Init server.
+     *
+     * @param serverSocket the server socket
+     */
     public void initServer(ServerSocket serverSocket) {
         try {
             this.server = serverSocket;
@@ -55,6 +77,11 @@ public class SocketStore {
         }
     }
 
+    /**
+     * Add client to the store.
+     *
+     * @param sock the sock
+     */
     public void addClient(Socket sock) {
         // TODO add check for invalid socket
         System.out.println("Adding client");
@@ -62,10 +89,18 @@ public class SocketStore {
         this.store.add(sock);
     }
 
+    /**
+     * Gets server port.
+     *
+     * @return the server port
+     */
     public int getServerPort() {
         return this.server.getLocalPort();
     }
 
+    /**
+     * Closes the server.
+     */
     public void close() {
         try {
             this.server.close();
@@ -76,6 +111,11 @@ public class SocketStore {
         this.server = null;
     }
 
+    /**
+     * Shutdown socket.
+     *
+     * @param socket the socket
+     */
     private void shutdownSocket(Socket socket) {
         try {
             socket.shutdownOutput();
@@ -85,6 +125,11 @@ public class SocketStore {
         }
     }
 
+    /**
+     * Gets server ip.
+     *
+     * @return the server ip
+     */
     public String getServerIp() {
         try {
             this.server.getInetAddress();
@@ -95,6 +140,11 @@ public class SocketStore {
         return null;
     }
 
+    /**
+     * Accept client socket.
+     *
+     * @return the socket
+     */
     public Socket acceptClient() {
         try {
             return this.server.accept();
@@ -103,6 +153,12 @@ public class SocketStore {
         return null;
     }
 
+    /**
+     * Terminate client boolean.
+     *
+     * @param sock the sock
+     * @return the boolean
+     */
     public boolean terminateClient(Socket sock) {
         // if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
@@ -110,6 +166,11 @@ public class SocketStore {
         return true;
     }
 
+    /**
+     * Remove client.
+     *
+     * @param sock the sock
+     */
     public void removeClient(Socket sock) {
         // only remove client from store as socket has closed
         if (!sock.isClosed()) {
@@ -119,6 +180,12 @@ public class SocketStore {
         }
     }
 
+    /**
+     * Send bytes to client.
+     *
+     * @param client         the client
+     * @param response_bytes the response bytes
+     */
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
         for (Socket sock : this.store) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {

@@ -1,8 +1,0 @@
-// Generated from createCityRequest.proto
-
-namespace org.dragonskulle.network.proto;
-
-table CreateCityRequest {
-  owner:int;
-}
-

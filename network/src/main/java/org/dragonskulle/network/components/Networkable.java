@@ -13,26 +13,54 @@ import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;
 import sun.misc.IOUtils;
 
+/**
+ * Any component that extends this, its syncvars will be updated with the server.
+ *
+ * @param <T> the type parameter
+ */
 public abstract class Networkable<T> {
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * The Id.
+     */
     private String id = UUID.randomUUID().toString();
 
+    /**
+     * The constant FIELD_SEPERATOR. This is between all fields in the serialization.
+     */
     private static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
+
     /**
      * Connects all sync vars in the Object to the network Object. This allows them to be updated.
      */
     private boolean[] fieldsMask;
 
+    /**
+     * The Fields.
+     */
     private List<Field> fields;
 
+    /**
+     * Init fields.
+     */
     public void initFields() {
         fields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -40,6 +68,9 @@ public abstract class Networkable<T> {
                         .collect(Collectors.toList());
     }
 
+    /**
+     * Connect sync vars.
+     */
     public void connectSyncVars() {
         fields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -61,6 +92,11 @@ public abstract class Networkable<T> {
         }
     }
 
+    /**
+     * Serialize component.
+     *
+     * @return the bytes of the component
+     */
     public byte[] serialize() {
         ArrayList<Byte> networkId = getIdBytes();
         int maskLength = this.fields.size(); // 1byte
@@ -98,6 +134,11 @@ public abstract class Networkable<T> {
         return NetworkMessage.toByteArray(payload);
     }
 
+    /**
+     * Gets the bytes of the id.
+     *
+     * @return the bytes
+     */
     @NotNull
     private ArrayList<Byte> getIdBytes() {
         ArrayList<Byte> networkId = new ArrayList<Byte>(); // 36 bytes
@@ -107,6 +148,11 @@ public abstract class Networkable<T> {
         return networkId;
     }
 
+    /**
+     * Serialize fully byte, is this ran on spawn when the whole component needs creating.
+     *
+     * @return the bytes
+     */
     public byte[] serializeFully() {
         ArrayList<Byte> networkId = getIdBytes();
         int maskLength = this.fields.size(); // 1byte
@@ -140,6 +186,15 @@ public abstract class Networkable<T> {
         return NetworkMessage.toByteArray(payload);
     }
 
+    /**
+     * Creates a networkable from the bytes.
+     *
+     * @param <T>    the type parameter
+     * @param target the target
+     * @param bytes  the bytes
+     * @return the component
+     * @throws DecodingException thrown if error in decoding
+     */
     public static <T extends Networkable> T from(Class<T> target, byte[] bytes)
             throws DecodingException {
         try {
@@ -153,6 +208,12 @@ public abstract class Networkable<T> {
         }
     }
 
+    /**
+     * Update fields from bytes.
+     *
+     * @param payload the payload
+     * @throws IOException the io exception
+     */
     public void updateFromBytes(byte[] payload) throws IOException {
         String id = getIdFromBytes(payload);
         this.setId(id);
@@ -169,10 +230,24 @@ public abstract class Networkable<T> {
         }
     }
 
+    /**
+     * Gets id from bytes.
+     *
+     * @param payload the payload
+     * @return the id from bytes
+     */
     public static String getIdFromBytes(byte[] payload) {
         return new String(Arrays.copyOf(payload, 36), Charset.defaultCharset());
     }
 
+    /**
+     * Gets contents from bytes.
+     *
+     * @param buff   the buff
+     * @param offset the offset
+     * @return the contents from bytes
+     * @throws IOException the io exception
+     */
     private static ArrayList<SyncVar> getContentsFromBytes(byte[] buff, int offset)
             throws IOException {
         ArrayList<SyncVar> out = new ArrayList<>();
@@ -214,6 +289,14 @@ public abstract class Networkable<T> {
         return out;
     }
 
+    /**
+     * Gets mask from bytes.
+     *
+     * @param buff       the buff
+     * @param maskLength the mask length
+     * @param offset     the offset
+     * @return the mask from bytes
+     */
     private static ArrayList<Boolean> getMaskFromBytes(byte[] buff, int maskLength, int offset) {
         ArrayList<Boolean> out = new ArrayList<>();
         byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
@@ -227,11 +310,24 @@ public abstract class Networkable<T> {
         return out;
     }
 
+    /**
+     * Gets field length from bytes.
+     *
+     * @param buff   the buff
+     * @param offset the offset
+     * @return the field length from bytes
+     */
     private static int getFieldLengthFromBytes(byte[] buff, int offset) {
         assert (buff != null);
         return buff[offset];
     }
 
+    /**
+     * Updates one field from mask offset.
+     *
+     * @param offset   the offset
+     * @param newValue the new value
+     */
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
         try {
             //            System.out.println("[updateFromMaskOffset] getting " + offset);
@@ -248,10 +344,20 @@ public abstract class Networkable<T> {
         }
     }
 
+    /**
+     * Handle field change, sets mask to true when field has been edited.
+     *
+     * @param maskId the mask id
+     */
     private void handleFieldChange(int maskId) {
         this.fieldsMask[maskId] = true;
     }
 
+    /**
+     * Has been field been modified?.
+     *
+     * @return the boolean
+     */
     public boolean hasBeenModified() {
         boolean hasTrueInMask = false;
         for (boolean b : fieldsMask) {
