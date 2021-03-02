@@ -4,13 +4,13 @@ import java.lang.System.*;
 
 public class MapTest {
     public static void main(String[] args) {
-        HexagonTile tile = new HexagonTile(1,-1,0);
+        //HexagonTile tile = new HexagonTile(1,-1,0);
 
-        HexMap grid = new HexMap(9);
+        HexMap grid = new HexMap(5);
         HexagonTile[][] map = grid.createHexMap();
 
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
                 String str =  map[i][j] == null ? "null " :map[i][j].toString();
                 System.out.print(str);
             }

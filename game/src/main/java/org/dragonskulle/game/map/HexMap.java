@@ -13,7 +13,7 @@ import java.util.Map;
  */
 
 /** The hexagon map object*/
-public class HexMap  {
+public class HexMap extends Component  {
 
     public final int size;
 
@@ -46,6 +46,10 @@ public class HexMap  {
         put(23,13);
         put(25,15);
         put(27,17);
+        put(29,19);
+        put(31,21);
+        put(32,23);
+        put(33,25);
     }};
 
     /** Hex(q,r) is stored as array[r][q] */
@@ -101,5 +105,7 @@ public class HexMap  {
 
         return map;
     }
-
+    @Override
+    public void onDestroy() {
+    }
 }
