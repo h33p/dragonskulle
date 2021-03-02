@@ -24,7 +24,8 @@ public class DataLinePoolTest {
             DataLinePool dataLine = new DataLinePool(mixer, SoundType.BACKGROUND);
 
             Assert.assertNotNull(dataLine);
-        } catch (IllegalArgumentException e) {;
+        } catch (IllegalArgumentException e) {
+        	assumeNoException(e);
         }
     }
 
@@ -55,10 +56,12 @@ public class DataLinePoolTest {
                 clip = dataLine.openStream(null);
 
                 Assert.assertNull(clip);
-            } catch (UnsupportedAudioFileException | IOException e) {;
+            } catch (UnsupportedAudioFileException | IOException e) {
+            	assumeNoException(e);
             }
 
-        } catch (IllegalArgumentException e) {;
+        } catch (IllegalArgumentException e) {
+        	assumeNoException(e);
         }
     }
 
@@ -95,9 +98,11 @@ public class DataLinePoolTest {
 
                 dataLine.setMute(false);
                 Assert.assertFalse(dataLine.getMute());
-            } catch (UnsupportedAudioFileException | IOException e) {;
+            } catch (UnsupportedAudioFileException | IOException e) {
+            	assumeNoException(e);
             }
-        } catch (IllegalArgumentException e) {;
+        } catch (IllegalArgumentException e) {
+        	assumeNoException(e);
         }
     }
 
@@ -149,9 +154,11 @@ public class DataLinePoolTest {
 
                 dataLine.setVolume(106);
                 Assert.assertEquals(100, dataLine.getVolume());
-            } catch (UnsupportedAudioFileException | IOException e) {;
+            } catch (UnsupportedAudioFileException | IOException e) {
+            	assumeNoException(e);
             }
-        } catch (IllegalArgumentException e) {;
+        } catch (IllegalArgumentException e) {
+        	assumeNoException(e);
         }
     }
 
@@ -162,7 +169,7 @@ public class DataLinePoolTest {
      * @throws IOException If file does not exist
      */
     @Test
-    public void cleanupTest() throws UnsupportedAudioFileException, IOException {
+    public void cleanupTest() {
 
         try {
             Mixer mixer = AudioSystem.getMixer(null);
@@ -189,9 +196,11 @@ public class DataLinePoolTest {
                 AudioClip[] clips = dataLine.cleanup();
 
                 Assert.assertSame(clip2, clips[0]);
-            } catch (UnsupportedAudioFileException | IOException e) {;
+            } catch (UnsupportedAudioFileException | IOException e) {
+            	assumeNoException(e);
             }
-        } catch (IllegalArgumentException e) {;
+        } catch (IllegalArgumentException e) {
+        	assumeNoException(e);
         }
     }
 }
