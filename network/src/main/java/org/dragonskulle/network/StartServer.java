@@ -3,8 +3,6 @@ package org.dragonskulle.network;
 
 /** @author Oscar L How to start the server Start server. */
 public class StartServer {
-    /** The Server listener. */
-    static ServerListener serverListener;
     /** The Server. */
     public static Server server;
     /** The Port. */
@@ -12,7 +10,8 @@ public class StartServer {
 
     StartServer() {
         attachShutDownHook();
-        serverListener = new ServerEars();
+        /** The Server listener. */
+        ServerListener serverListener = new ServerEars();
         server = new Server(PORT, serverListener);
     }
 

@@ -11,13 +11,13 @@ import java.util.UUID;
  */
 public class SyncVar<T extends Serializable> implements Serializable {
     /** The Data. */
-    T data;
+    private T mData;
     /** The Id. */
-    final String id;
+    private final String mId;
     /** The Has listener. */
-    private transient boolean hasListener = false;
+    private transient boolean mHasListener = false;
     /** The On update. */
-    private transient ISyncVarUpdateHandler onUpdate;
+    private transient ISyncVarUpdateHandler mOnUpdate;
 
     /**
      * Gets id.
@@ -25,7 +25,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @return the id
      */
     public String getId() {
-        return id;
+        return mId;
     }
 
     @Override
@@ -50,8 +50,8 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @param data the data
      */
     public SyncVar(String id, T data) {
-        this.id = id;
-        this.data = data;
+        this.mId = id;
+        this.mData = data;
     }
 
     /**
@@ -60,8 +60,8 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @param data the data
      */
     public SyncVar(T data) {
-        this.id = UUID.randomUUID().toString();
-        this.data = data;
+        this.mId = UUID.randomUUID().toString();
+        this.mData = data;
     }
 
     /**
@@ -70,14 +70,14 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @param data the data
      */
     public void set(T data) {
-        if (hasListener) {
-            if (data != this.data) {
-                this.onUpdate
+        if (mHasListener) {
+            if (data != this.mData) {
+                this.mOnUpdate
                         .call(); // onUpdate callback is to set the mask bit on modification to the
                 // field
             }
         }
-        this.data = data;
+        this.mData = data;
     }
 
     /**
@@ -86,7 +86,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @return the t
      */
     public T get() {
-        return data;
+        return mData;
     }
 
     /**
@@ -121,7 +121,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
 
     @Override
     public String toString() {
-        return "SyncVar{" + "data=" + data + ", id='" + id + '\'' + '}';
+        return "SyncVar{" + "data=" + mData + ", id='" + mId + '\'' + '}';
     }
 
     /** The interface Sync var update handler. */
@@ -136,7 +136,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @param handleFieldChange the handle field change
      */
     public void registerListener(ISyncVarUpdateHandler handleFieldChange) {
-        this.hasListener = true;
-        this.onUpdate = handleFieldChange;
+        this.mHasListener = true;
+        this.mOnUpdate = handleFieldChange;
     }
 }

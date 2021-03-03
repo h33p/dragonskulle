@@ -47,14 +47,14 @@ public abstract class NetworkableComponent<T> extends Component {
     /**
      * Connects all sync vars in the Object to the network Object. This allows them to be updated.
      */
-    private boolean[] fieldsMask;
+    private boolean[] mFieldsMask;
 
     /** The Fields. */
-    private List<Field> fields;
+    private List<Field> mFields;
 
     /** Init fields. */
     public void initFields() {
-        fields =
+        mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> SyncVar.class.isAssignableFrom(field.getType()))
                         .collect(Collectors.toList());
@@ -62,13 +62,13 @@ public abstract class NetworkableComponent<T> extends Component {
 
     /** Connect sync vars. */
     public void connectSyncVars() {
-        fields =
+        mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> SyncVar.class.isAssignableFrom(field.getType()))
                         .collect(Collectors.toList());
-        fieldsMask = new boolean[fields.size()];
+        mFieldsMask = new boolean[mFields.size()];
         int i = 0;
-        for (Field f : fields) {
+        for (Field f : mFields) {
             try {
                 SyncVar sv =
                         (SyncVar) f.get(this); // retrieves syncvar from child and adds it to the
@@ -89,13 +89,13 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public byte[] serialize() {
         ArrayList<Byte> networkId = getIdBytes();
-        int maskLength = this.fields.size(); // 1byte
+        int maskLength = this.mFields.size(); // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ArrayList<Byte> contents = new ArrayList<>();
         // need to add in an id before
-        for (int i = 0; i < this.fields.size(); i++) {
-            boolean didVarChange = this.fieldsMask[i];
-            Field f = this.fields.get(i);
+        for (int i = 0; i < this.mFields.size(); i++) {
+            boolean didVarChange = this.mFieldsMask[i];
+            Field f = this.mFields.get(i);
             if (didVarChange) {
                 try {
                     mask.add((byte) 1);
@@ -103,12 +103,12 @@ public abstract class NetworkableComponent<T> extends Component {
                     for (byte b : syncVarBytes) {
                         contents.add(b);
                     }
-                    if (i < this.fields.size() - 1) {
+                    if (i < this.mFields.size() - 1) {
                         for (byte b : FIELD_SEPERATOR) {
                             contents.add(b);
                         }
                     }
-                    this.fieldsMask[i] = false; // reset flag
+                    this.mFieldsMask[i] = false; // reset flag
                 } catch (IllegalAccessException | IOException e) {
                     e.printStackTrace();
                 }
@@ -145,25 +145,25 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public byte[] serializeFully() {
         ArrayList<Byte> networkId = getIdBytes();
-        int maskLength = this.fields.size(); // 1byte
+        int maskLength = this.mFields.size(); // 1byte
         ArrayList<Byte> mask = new ArrayList<>();
         for (int i = 0; i < maskLength; i++) {
             mask.add((byte) 1);
         }
         ArrayList<Byte> contents = new ArrayList<>();
-        for (int i = 0; i < this.fields.size(); i++) {
-            Field f = this.fields.get(i);
+        for (int i = 0; i < this.mFields.size(); i++) {
+            Field f = this.mFields.get(i);
             try {
                 byte[] syncVarBytes = ((SyncVar) f.get(this)).serialize();
                 for (byte b : syncVarBytes) {
                     contents.add(b);
                 }
-                if (i < this.fields.size() - 1) { // removes trailing seperator
+                if (i < this.mFields.size() - 1) { // removes trailing seperator
                     for (byte b : FIELD_SEPERATOR) {
                         contents.add(b);
                     }
                 }
-                this.fieldsMask[i] = false; // reset flag
+                this.mFieldsMask[i] = false; // reset flag
             } catch (IllegalAccessException | IOException e) {
                 e.printStackTrace();
             }
@@ -323,7 +323,7 @@ public abstract class NetworkableComponent<T> extends Component {
             //            System.out.println("[updateFromMaskOffset] getting " + offset);
             //            System.out.println("[updateFromMaskOffset] fields " +
             // this.fields.get(offset));
-            Field E = this.fields.get(offset);
+            Field E = this.mFields.get(offset);
             //            System.out.println("[updateFromMaskOffset] setting field from " +
             // newValue.getClass());
             E.set(this, newValue);
@@ -340,7 +340,7 @@ public abstract class NetworkableComponent<T> extends Component {
      * @param maskId the mask id
      */
     private void handleFieldChange(int maskId) {
-        this.fieldsMask[maskId] = true;
+        this.mFieldsMask[maskId] = true;
     }
 
     /**
@@ -350,7 +350,7 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public boolean hasBeenModified() {
         boolean hasTrueInMask = false;
-        for (boolean b : fieldsMask) {
+        for (boolean b : mFieldsMask) {
             if (b) {
                 hasTrueInMask = true;
                 break;
@@ -362,7 +362,7 @@ public abstract class NetworkableComponent<T> extends Component {
     @Override
     public String toString() {
         StringBuilder fieldsString = new StringBuilder("Field{\n");
-        for (Field field : fields) {
+        for (Field field : mFields) {
             try {
                 fieldsString.append(field.get(this).toString());
             } catch (IllegalAccessException e) {
@@ -376,7 +376,7 @@ public abstract class NetworkableComponent<T> extends Component {
                 + id
                 + '\''
                 + ", fieldsMask="
-                + Arrays.toString(fieldsMask)
+                + Arrays.toString(mFieldsMask)
                 + ", fields="
                 + fieldsString
                 + '}';

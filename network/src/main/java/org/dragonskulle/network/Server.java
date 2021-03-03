@@ -20,17 +20,17 @@ import org.dragonskulle.network.components.NetworkableComponent;
  */
 public class Server {
     /** The Port. */
-    private int port;
+    private int mPort;
     /** The Server listener. */
-    private ServerListener serverListener;
+    private ServerListener mServerListener;
     /** The socket connections to all clients. */
-    private final SocketStore sockets = new SocketStore();
+    private final SocketStore mSockets = new SocketStore();
     /** The Server thread. */
-    private Thread serverThread;
+    private Thread mServerThread;
     /** The Server runner. */
-    private ServerRunner serverRunner;
+    private ServerRunner mServerRunner;
     /** The game instance for the server. */
-    private ServerGameInstance game;
+    private ServerGameInstance mGame;
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
@@ -45,24 +45,24 @@ public class Server {
      */
     public Server(int port, ServerListener listener) {
         System.out.println("[S] Setting up server");
-        serverListener = listener;
+        mServerListener = listener;
         try {
             ServerSocket server_sock =
                     new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
-            sockets.initServer(server_sock);
-            if (this.port == 0) {
-                this.port = sockets.getServerPort();
+            mSockets.initServer(server_sock);
+            if (this.mPort == 0) {
+                this.mPort = mSockets.getServerPort();
             } else {
-                this.port = port;
+                this.mPort = port;
             }
             this.createGame();
 
-            serverRunner = new ServerRunner();
-            serverThread = new Thread(this.serverRunner);
-            serverThread.setDaemon(true);
-            serverThread.setName("Server");
+            mServerRunner = new ServerRunner();
+            mServerThread = new Thread(this.mServerRunner);
+            mServerThread.setDaemon(true);
+            mServerThread.setName("Server");
             System.out.println("[S] Starting server");
-            serverThread.start();
+            mServerThread.start();
 
             //            String command;
             //            Scanner scanner = new Scanner(System.in);
@@ -103,7 +103,7 @@ public class Server {
      * @param sendBytesToClient the socket of the requesting client, to be called if a communication
      *     directly to the client is needed
      */
-    static void executeBytes(
+    public static void executeBytes(
             byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
         byte[] message;
         switch (messageType) {
@@ -122,12 +122,12 @@ public class Server {
     /** Dispose. */
     public void dispose() {
         try {
-            this.serverRunner.cancel();
-            this.serverThread.join();
-            this.sockets.close();
-            if (serverListener != null) {
-                this.serverListener.serverClosed();
-                this.serverListener = null;
+            this.mServerRunner.cancel();
+            this.mServerThread.join();
+            this.mSockets.close();
+            if (mServerListener != null) {
+                this.mServerListener.serverClosed();
+                this.mServerListener = null;
             }
         } catch (InterruptedException e) {
             System.out.println("Error disposing");
@@ -137,9 +137,15 @@ public class Server {
 
     /** Create game. */
     public void createGame() {
-        this.game = new ServerGameInstance();
+        this.mGame = new ServerGameInstance();
     }
 
+    /**
+     * Find networkable component by id.
+     *
+     * @param componentId the component id
+     * @return the networkable component
+     */
     public NetworkableComponent findComponent(String componentId) {
         NetworkableComponent found = null;
         for (NetworkObject e : this.networkObjects) {
@@ -164,8 +170,8 @@ public class Server {
         @Override
         public void run() {
             while (open && !Thread.currentThread().isInterrupted()) {
-                if (game.isSetup()) {
-                    Socket clientSocket = sockets.acceptClient();
+                if (mGame.isSetup()) {
+                    Socket clientSocket = mSockets.acceptClient();
                     if (clientSocket != null) {
                         Thread clientThread = new Thread(clientRunner(clientSocket));
                         clientThread.setDaemon(true);
@@ -203,23 +209,23 @@ public class Server {
                 final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
                 byte[] bArray; // max flatbuffer size
                 byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
-                this.sockets.addClient(sock);
+                this.mSockets.addClient(sock);
                 BufferedReader in =
                         new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 BufferedInputStream bIn = new BufferedInputStream(sock.getInputStream());
                 PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
                 // create client as object
                 ClientInstance client = new ClientInstance(sock.getInetAddress(), sock.getPort());
-                serverListener.clientConnected(client, out);
+                mServerListener.clientConnected(client, out);
                 connected = sock.isConnected();
 
                 if (connected) {
                     NetworkObject networkObject =
                             new NetworkObject(
                                     client,
-                                    this.sockets::broadcast,
-                                    this.sockets::sendBytesToClient);
-                    networkObject.spawnMap(this.game.cloneMap());
+                                    this.mSockets::broadcast,
+                                    this.mSockets::sendBytesToClient);
+                    networkObject.spawnMap(this.mGame.cloneMap());
                     String capitalId = networkObject.spawnCapital();
                     this.networkObjects.add(networkObject);
 
@@ -278,16 +284,16 @@ public class Server {
                         bArray = NetworkMessage.readMessageFromStream(bIn);
                         if (bArray.length != 0) {
                             if (Arrays.equals(bArray, terminateBytes)) {
-                                this.sockets.terminateClient(sock); // close and remove
-                                serverListener.clientDisconnected(client);
+                                this.mSockets.terminateClient(sock); // close and remove
+                                mServerListener.clientDisconnected(client);
                                 connected = false;
                             } else {
                                 processBytes(client, bArray);
                             }
                         }
                     } catch (IOException e) {
-                        this.sockets.terminateClient(sock); // close and remove
-                        serverListener.clientDisconnected(client);
+                        this.mSockets.terminateClient(sock); // close and remove
+                        mServerListener.clientDisconnected(client);
                         connected = false;
                     }
                 }
@@ -319,7 +325,7 @@ public class Server {
      */
     private void processBytes(ClientInstance client, byte[] bytes) {
 
-        serverListener.receivedBytes(client, bytes);
+        mServerListener.receivedBytes(client, bytes);
         try {
             parseBytes(client, bytes);
         } catch (DecodingException e) {
@@ -339,7 +345,7 @@ public class Server {
         System.out.println("bytes parsing");
         try {
             NetworkMessage.parse(
-                    bytes, (parsedBytes) -> this.sockets.sendBytesToClient(client, parsedBytes));
+                    bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));
         } catch (Exception e) {
             System.out.println("Error in parseBytes");
             e.printStackTrace();

@@ -8,14 +8,6 @@ import java.util.Scanner;
  *     server
  */
 public class CreateClient {
-    /** The Ip. */
-    static String ip;
-    /** The Port. */
-    static String port;
-    /** The Client. */
-    static NetworkClient client;
-    /** The Command. */
-    static String command;
 
     /**
      * The entry point of application.
@@ -25,11 +17,15 @@ public class CreateClient {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter IP: ");
-        ip = scanner.nextLine();
+        /** The Ip. */
+        String ip = scanner.nextLine();
         System.out.println("Enter Port: ");
-        port = scanner.nextLine();
+        /** The Port. */
+        String port = scanner.nextLine();
         System.out.println("Creating client");
         ClientListener clientEars = new ClientEars();
+        /** The Client. */
+        NetworkClient client;
         if (ip.equals(port)) {
             client = new NetworkClient("127.0.0.1", 7000, clientEars);
         } else {
@@ -40,7 +36,8 @@ public class CreateClient {
         OUTER_LOOP:
         while (true) {
             System.out.println("Enter Command: ");
-            command = scanner.nextLine();
+            /** The Command. */
+            String command = scanner.nextLine();
             switch (command.toUpperCase()) {
                 case ("K"):
                     System.out.println("Killing Client");

@@ -10,11 +10,11 @@ import org.dragonskulle.game.map.HexagonTile;
 /** @author Oscar L The type Server game instance. */
 public class ServerGameInstance {
     /** The Map store, should be depreciated in favour of a HexMap object. */
-    private HexagonTile[][] map;
+    private HexagonTile[][] mMap;
 
     /** Instantiates a new Server game instance. */
     ServerGameInstance() {
-        this.map = new HexMap(9).createHexMap();
+        this.mMap = new HexMap(9).createHexMap();
     }
 
     /**
@@ -27,7 +27,7 @@ public class ServerGameInstance {
         // TODO be replaced with HexMap.serialize();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(map);
+        oos.writeObject(mMap);
         oos.flush();
         return bos.toByteArray();
     }
@@ -38,7 +38,7 @@ public class ServerGameInstance {
      * @return the boolean
      */
     public boolean isSetup() {
-        return this.map != null;
+        return this.mMap != null;
     }
 >>>>>>> 4328d84... creating map on server creation and then sending bytes to connecting clients. Need to alter send recieve bytes protocl because messages are large and can get chopped in half
 }

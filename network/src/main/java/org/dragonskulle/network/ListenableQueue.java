@@ -31,9 +31,9 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
     }
 
     /** The Delegate. */
-    private final Queue<E> delegate; // backing queue
+    private final Queue<E> mDelegate; // backing queue
     /** The Listeners. */
-    private final List<Listener<E>> listeners = new ArrayList<>();
+    private final List<Listener<E>> mListeners = new ArrayList<>();
 
     /**
      * Instantiates a new Listenable queue.
@@ -41,7 +41,7 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
      * @param delegate the delegate
      */
     public ListenableQueue(Queue<E> delegate) {
-        this.delegate = delegate;
+        this.mDelegate = delegate;
     }
 
     /**
@@ -51,7 +51,7 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
      * @return the listenable queue
      */
     public ListenableQueue<E> registerListener(Listener<E> listener) {
-        listeners.add(listener);
+        mListeners.add(listener);
         return this;
     }
 
@@ -59,8 +59,8 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
     public boolean offer(E e) {
         // here, we put an element in the backing queue,
         // then notify listeners
-        if (delegate.offer(e)) {
-            listeners.forEach(listener -> listener.onElementAdded(e));
+        if (mDelegate.offer(e)) {
+            mListeners.forEach(listener -> listener.onElementAdded(e));
             return true;
         } else {
             return false;
@@ -70,21 +70,21 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
     // following methods just delegate to backing instance
     @Override
     public E poll() {
-        return delegate.poll();
+        return mDelegate.poll();
     }
 
     @Override
     public E peek() {
-        return delegate.peek();
+        return mDelegate.peek();
     }
 
     @Override
     public int size() {
-        return delegate.size();
+        return mDelegate.size();
     }
 
     @Override
     public Iterator<E> iterator() {
-        return delegate.iterator();
+        return mDelegate.iterator();
     }
 }

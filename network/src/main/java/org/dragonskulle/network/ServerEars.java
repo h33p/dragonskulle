@@ -10,39 +10,39 @@ import java.util.TimerTask;
 /** @author Oscar L This is the handler for the server, it will handle events */
 public class ServerEars implements ServerListener {
     /** The Log of messages to be displayed. */
-    ListenableQueue<String> log;
+    private final ListenableQueue<String> mLog;
     /** The Alive ping timer. */
-    Timer aliveTimer;
+    private final Timer mAliveTimer;
 
     /** Instantiates a new Server listener. */
     ServerEars() {
         System.out.println("Creating ServerListener");
-        log = new ListenableQueue<>(new LinkedList<>());
-        log.registerListener((e) -> System.out.println("[SE-LOG] " + log.poll()));
-        aliveTimer = new Timer();
-        aliveTimer.schedule(new LogServerAlive(), 0, 15000);
+        mLog = new ListenableQueue<>(new LinkedList<>());
+        mLog.registerListener((e) -> System.out.println("[SE-LOG] " + mLog.poll()));
+        mAliveTimer = new Timer();
+        mAliveTimer.schedule(new LogServerAlive(), 0, 15000);
     }
 
     @Override
     public void clientConnected(ClientInstance client, PrintWriter out) {
-        log.add("Client Connected");
+        mLog.add("Client Connected");
     }
 
     @Override
     public void clientDisconnected(ClientInstance client) {
-        log.add("Client Disconnected");
+        mLog.add("Client Disconnected");
     }
 
     @Override
     public void receivedInput(ClientInstance client, String msg) {
 
-        log.add("Received Input From Client: " + msg);
+        mLog.add("Received Input From Client: " + msg);
     }
 
     @Override
     public void serverClosed() {
-        log.add("Server Closed");
-        this.aliveTimer.cancel();
+        mLog.add("Server Closed");
+        this.mAliveTimer.cancel();
     }
 
     @Override

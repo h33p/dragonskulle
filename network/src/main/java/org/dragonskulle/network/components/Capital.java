@@ -12,7 +12,7 @@ public class Capital extends NetworkableComponent {
      * @return the sync me
      */
     public SyncBool getSyncMe() {
-        return syncMe;
+        return mSyncMe;
     }
 
     /**
@@ -21,13 +21,13 @@ public class Capital extends NetworkableComponent {
      * @return the sync me also
      */
     public SyncString getSyncMeAlso() {
-        return syncMeAlso;
+        return mSyncMeAlso;
     }
 
     /** A syncable field. */
-    SyncBool syncMe = new SyncBool(false);
+    private SyncBool mSyncMe = new SyncBool(false);
     /** A syncable field. */
-    SyncString syncMeAlso = new SyncString("Hello World");
+    private SyncString mSyncMeAlso = new SyncString("Hello World");
 
     /** Instantiates a new Capital. */
     public Capital() {
@@ -40,7 +40,7 @@ public class Capital extends NetworkableComponent {
      * @param val the val
      */
     public void setBooleanSyncMe(boolean val) {
-        this.syncMe.set(val);
+        this.mSyncMe.set(val);
     }
 
     /**
@@ -49,7 +49,7 @@ public class Capital extends NetworkableComponent {
      * @param val the val
      */
     public void setStringSyncMeAlso(String val) {
-        this.syncMeAlso.set(val);
+        this.mSyncMeAlso.set(val);
     }
 
     @Override

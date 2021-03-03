@@ -20,22 +20,22 @@ public class NetworkClient {
     /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = 512;
     /** The Socket connection to the server. */
-    private Socket socket;
+    private Socket mSocket;
     /** The Input stream. Possibly depreciated in favour of byte streams. */
-    private BufferedReader in;
+    private BufferedReader mIn;
     /** The Output stream. Possibly depreciated in favour of byte streams. */
-    private PrintWriter out;
+    private PrintWriter mOut;
     /** The byte output stream. */
-    private DataOutputStream dOut;
+    private DataOutputStream mDOut;
     /** The byte input stream. */
-    private BufferedInputStream bIn;
+    private BufferedInputStream mBIn;
     /** The Game Instance. */
-    private ClientGameInstance game;
+    private ClientGameInstance mGame;
 
     /** The Client listener to notify of important events. */
-    private ClientListener clientListener;
+    private ClientListener mClientListener;
     /** True if the socket is open. */
-    private boolean open = true;
+    private boolean mOpen = true;
 
     /**
      * Instantiates a new Network client.
@@ -45,27 +45,27 @@ public class NetworkClient {
      * @param listener the listener
      */
     public NetworkClient(String ip, int port, ClientListener listener) {
-        clientListener = listener;
+        mClientListener = listener;
         try {
-            socket = new Socket(ip, port);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            bIn = new BufferedInputStream(socket.getInputStream());
-            out = new PrintWriter(socket.getOutputStream(), true);
-            dOut = new DataOutputStream(socket.getOutputStream());
-            this.game = new ClientGameInstance();
+            mSocket = new Socket(ip, port);
+            mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+            mBIn = new BufferedInputStream(mSocket.getInputStream());
+            mOut = new PrintWriter(mSocket.getOutputStream(), true);
+            mDOut = new DataOutputStream(mSocket.getOutputStream());
+            this.mGame = new ClientGameInstance();
             Thread clientThread = new Thread(this.clientRunner());
             clientThread.setName("Client Connection");
             clientThread.setDaemon(true);
             clientThread.start();
             listener.connectedToServer();
         } catch (UnknownHostException exception) {
-            open = false;
+            mOpen = false;
             listener.unknownHost();
         } catch (IOException exception) {
-            open = false;
+            mOpen = false;
             listener.couldNotConnect();
         } catch (Exception exception) {
-            open = false;
+            mOpen = false;
             exception.printStackTrace();
         }
     }
@@ -82,16 +82,16 @@ public class NetworkClient {
                 System.out.println("Should update requested component");
                 System.out.println("Current component is");
                 String networkableId = NetworkableComponent.getIdFromBytes(payload);
-                this.game.printNetworkable(networkableId);
+                this.mGame.printNetworkable(networkableId);
                 updateNetworkable(payload);
                 System.out.println("Component after update");
-                this.game.printNetworkable(networkableId);
+                this.mGame.printNetworkable(networkableId);
                 break;
             case (byte) 20:
                 try {
                     System.out.println("Trying to spawn map");
                     HexagonTile[][] map = deserializeMap(payload);
-                    this.game.spawnMap(map);
+                    this.mGame.spawnMap(map);
                     System.out.println("Spawned map");
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
@@ -102,7 +102,7 @@ public class NetworkClient {
                     System.out.println("Trying to spawn capital");
                     Capital capital = deserializeCapitol(payload);
                     System.out.println("deserialized capital bytes, now spawning locally");
-                    this.game.spawnCapital(capital);
+                    this.mGame.spawnCapital(capital);
                     System.out.println("Spawned capital");
                 } catch (DecodingException e) {
                     e.printStackTrace();
@@ -149,24 +149,24 @@ public class NetworkClient {
      */
     private void updateNetworkable(byte[] payload) {
         System.out.println("Starting to update networkable");
-        this.game.updateNetworkable(payload);
+        this.mGame.updateNetworkable(payload);
         System.out.println("updated networkable");
     }
 
     /** Dispose. */
     public void dispose() {
         try {
-            if (open) {
+            if (mOpen) {
                 this.sendBytes(new byte[MAX_TRANSMISSION_SIZE]);
-                open = false;
+                mOpen = false;
                 closeAllConnections();
-                clientListener.disconnected();
+                mClientListener.disconnected();
             }
-            socket = null;
-            in = null;
-            out = null;
-            dOut = null;
-            clientListener = null;
+            mSocket = null;
+            mIn = null;
+            mOut = null;
+            mDOut = null;
+            mClientListener = null;
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -187,10 +187,10 @@ public class NetworkClient {
      * @param bytes the bytes
      */
     public void sendBytes(byte[] bytes) {
-        if (open) {
+        if (mOpen) {
             try {
                 System.out.println("sending bytes");
-                dOut.write(bytes);
+                mDOut.write(bytes);
             } catch (IOException e) {
                 System.out.println("Failed to send bytes");
             }
@@ -203,7 +203,7 @@ public class NetworkClient {
      * @return the boolean
      */
     public boolean isConnected() {
-        return open;
+        return mOpen;
     }
 
     /**
@@ -217,12 +217,12 @@ public class NetworkClient {
         return () -> {
             byte[] bArray;
             byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
-            while (open) {
+            while (mOpen) {
                 try {
-                    bArray = NetworkMessage.readMessageFromStream(bIn);
+                    bArray = NetworkMessage.readMessageFromStream(mBIn);
                     if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
-                            clientListener.disconnected();
+                            mClientListener.disconnected();
                             this.dispose();
                             break;
                         } else {
@@ -231,8 +231,8 @@ public class NetworkClient {
                     }
 
                 } catch (IOException ignore) { // if fails to read from in stream
-                    if (clientListener != null) {
-                        clientListener.error("failed to read from input stream");
+                    if (mClientListener != null) {
+                        mClientListener.error("failed to read from input stream");
                     }
                     if (this.isConnected()) {
                         this.dispose();
@@ -249,7 +249,7 @@ public class NetworkClient {
      * @param bytes the bytes
      */
     private void processBytes(byte[] bytes) {
-        clientListener.receivedBytes(bytes);
+        mClientListener.receivedBytes(bytes);
         try {
             parseBytes(bytes);
         } catch (DecodingException e) {
@@ -275,32 +275,32 @@ public class NetworkClient {
 
     /** Close all connections. */
     private void closeAllConnections() {
-        open = false;
+        mOpen = false;
 
         try {
-            if (socket != null) {
-                socket.close();
+            if (mSocket != null) {
+                mSocket.close();
             }
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         try {
-            if (in != null) {
-                in.close();
+            if (mIn != null) {
+                mIn.close();
             }
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         try {
-            if (out != null) {
-                out.close();
+            if (mOut != null) {
+                mOut.close();
             }
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         try {
-            if (dOut != null) {
-                dOut.close();
+            if (mDOut != null) {
+                mDOut.close();
             }
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -308,15 +308,15 @@ public class NetworkClient {
     }
 
     public boolean hasMap() {
-        return this.game.hasSpawnedMap();
+        return this.mGame.hasSpawnedMap();
     }
 
     public Boolean hasCapital() {
-        return this.game.hasSpawnedCapital();
+        return this.mGame.hasSpawnedCapital();
     }
 
     public String getCapitalId() {
-        return this.game.getNetworkedComponents().stream()
+        return this.mGame.getNetworkedComponents().stream()
                 .filter(e -> e.getClass().isAssignableFrom(Capital.class))
                 .findFirst()
                 .orElseGet(null)
@@ -324,6 +324,6 @@ public class NetworkClient {
     }
 
     public NetworkableComponent getNetworkableComponent(String networkableId) {
-        return this.game.getNetworkedComponents(networkableId);
+        return this.mGame.getNetworkedComponents(networkableId);
     }
 }

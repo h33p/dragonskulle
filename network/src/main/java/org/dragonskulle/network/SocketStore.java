@@ -17,15 +17,15 @@ import java.util.ArrayList;
  */
 public class SocketStore {
     /** The Server. */
-    private ServerSocket server;
+    private ServerSocket mServer;
     /** The Store for all the sockets. */
-    private final ArrayList<Socket> store;
+    private final ArrayList<Socket> mStore;
     /** The timeout for accepting a client. */
-    static final int SO_TIMEOUT = 3000;
+    private static final int SO_TIMEOUT = 3000;
 
     /** Instantiates a new Socket store. */
     public SocketStore() {
-        this.store = new ArrayList<>();
+        this.mStore = new ArrayList<>();
     }
 
     /**
@@ -36,7 +36,7 @@ public class SocketStore {
     public void broadcast(byte[] buf) {
         System.out.println("Broadcasting bytes");
         DataOutputStream dOut;
-        for (Socket connection : store) {
+        for (Socket connection : mStore) {
             try {
                 if (connection.isClosed()) {
                     System.out.println("Client socket output has closed");
@@ -60,8 +60,8 @@ public class SocketStore {
      */
     public void initServer(ServerSocket serverSocket) {
         try {
-            this.server = serverSocket;
-            this.server.setSoTimeout(SO_TIMEOUT);
+            this.mServer = serverSocket;
+            this.mServer.setSoTimeout(SO_TIMEOUT);
             System.out.println("[SS] Server created @ " + serverSocket.getLocalSocketAddress());
         } catch (SocketException e) {
             System.out.println("Failed to create server");
@@ -78,7 +78,7 @@ public class SocketStore {
         // TODO add check for invalid socket
         System.out.println("Adding client");
         System.out.println("Socket :" + sock.toString());
-        this.store.add(sock);
+        this.mStore.add(sock);
     }
 
     /**
@@ -87,18 +87,18 @@ public class SocketStore {
      * @return the server port
      */
     public int getServerPort() {
-        return this.server.getLocalPort();
+        return this.mServer.getLocalPort();
     }
 
     /** Closes the server. */
     public void close() {
         try {
-            this.server.close();
+            this.mServer.close();
         } catch (Exception ignored) {
         }
 
-        this.store.clear();
-        this.server = null;
+        this.mStore.clear();
+        this.mServer = null;
     }
 
     /**
@@ -122,7 +122,7 @@ public class SocketStore {
      */
     public String getServerIp() {
         try {
-            this.server.getInetAddress();
+            this.mServer.getInetAddress();
             return InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -137,7 +137,7 @@ public class SocketStore {
      */
     public Socket acceptClient() {
         try {
-            return this.server.accept();
+            return this.mServer.accept();
         } catch (IOException ignored) {
         }
         return null;
@@ -152,7 +152,7 @@ public class SocketStore {
     public boolean terminateClient(Socket sock) {
         // if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
-        this.store.remove(sock);
+        this.mStore.remove(sock);
         return true;
     }
 
@@ -166,7 +166,7 @@ public class SocketStore {
         if (!sock.isClosed()) {
             this.terminateClient(sock);
         } else {
-            this.store.remove(sock);
+            this.mStore.remove(sock);
         }
     }
 
@@ -177,7 +177,7 @@ public class SocketStore {
      * @param response_bytes the response bytes
      */
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
-        for (Socket sock : this.store) {
+        for (Socket sock : this.mStore) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
                 System.out.println("Sending bytes to client");
                 try {

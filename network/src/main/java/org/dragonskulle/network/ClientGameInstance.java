@@ -14,13 +14,13 @@ import org.dragonskulle.network.components.NetworkableComponent;
  */
 public class ClientGameInstance {
     /** The Map. */
-    private HexagonTile[][] map;
+    private HexagonTile[][] mMap;
 
     /** The Networked components. */
-    private final ArrayList<NetworkableComponent> networkedComponents = new ArrayList<>();
+    private final ArrayList<NetworkableComponent> mNetworkedComponents = new ArrayList<>();
 
     /** True if a capital has been spawned. */
-    private Boolean hasCapital = false;
+    private Boolean mHasCapital = false;
 
     /**
      * Gets networked components.
@@ -28,7 +28,7 @@ public class ClientGameInstance {
      * @return the networked components
      */
     public ArrayList<NetworkableComponent> getNetworkedComponents() {
-        return networkedComponents;
+        return mNetworkedComponents;
     }
 
     /**
@@ -38,7 +38,7 @@ public class ClientGameInstance {
      * @return the networked components
      */
     public NetworkableComponent getNetworkedComponents(String id) {
-        return networkedComponents.stream()
+        return mNetworkedComponents.stream()
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElse(null);
@@ -50,7 +50,7 @@ public class ClientGameInstance {
      * @return the boolean
      */
     public boolean isSetup() {
-        return this.map != null;
+        return this.mMap != null;
     }
 
     /**
@@ -59,8 +59,8 @@ public class ClientGameInstance {
      * @param capital the capital
      */
     public void spawnCapital(Capital capital) {
-        this.networkedComponents.add(capital);
-        this.hasCapital = true;
+        this.mNetworkedComponents.add(capital);
+        this.mHasCapital = true;
     }
 
     /**
@@ -69,7 +69,7 @@ public class ClientGameInstance {
      * @param spawnedMap the spawned map
      */
     public void spawnMap(HexagonTile[][] spawnedMap) {
-        this.map = spawnedMap;
+        this.mMap = spawnedMap;
     }
 
     /**
@@ -100,7 +100,7 @@ public class ClientGameInstance {
      * @return the networkable
      */
     private NetworkableComponent getNetworkable(String id) {
-        for (NetworkableComponent networkedComponent : this.networkedComponents) {
+        for (NetworkableComponent networkedComponent : this.mNetworkedComponents) {
             if (networkedComponent.getId().equals(id)) {
                 return networkedComponent;
             }
@@ -123,10 +123,10 @@ public class ClientGameInstance {
      * @return
      */
     public boolean hasSpawnedMap() {
-        return this.map != null;
+        return this.mMap != null;
     }
 
     public Boolean hasSpawnedCapital() {
-        return this.hasCapital;
+        return this.mHasCapital;
     }
 }

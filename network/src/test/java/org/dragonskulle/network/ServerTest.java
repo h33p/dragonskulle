@@ -12,58 +12,58 @@ import org.junit.*;
 
 /** @author Oscar L */
 public class ServerTest {
-    private static Logger logger = Logger.getLogger(ServerTest.class.getName());
+    private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
-    private static StartServer serverInstance;
-    private static ServerEars serverListener;
-    private static NetworkClient networkClient;
-    private static ClientEars clientListener;
+    private static StartServer mServerInstance;
+    private static ServerEars mServerListener;
+    private static NetworkClient mNetworkClient;
+    private static ClientEars mClientListener;
 
     @BeforeClass
     public static void setUp() {
-        serverInstance = new StartServer();
-        clientListener = new ClientEars();
+        mServerInstance = new StartServer();
+        mClientListener = new ClientEars();
     }
 
     @AfterClass
     public static void tearDown() {
-        serverInstance.dispose();
+        mServerInstance.dispose();
     }
 
     @Test
     public void testSpawnMap() {
-        networkClient = new NetworkClient("127.0.0.1", 7000, clientListener);
-        await().atMost(8, SECONDS).until(() -> networkClient.hasMap());
-        networkClient.dispose();
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener);
+        await().atMost(8, SECONDS).until(() -> mNetworkClient.hasMap());
+        mNetworkClient.dispose();
     }
 
     @Test
     public void testCapitalSpawned() {
-        networkClient = new NetworkClient("127.0.0.1", 7000, clientListener);
-        await().atMost(TIMEOUT * 2, SECONDS).until(() -> networkClient.hasMap());
-        await().atMost(TIMEOUT * 2, SECONDS).until(() -> networkClient.hasCapital());
-        assertFalse(serverInstance.server.networkObjects.isEmpty());
-        String capitalId = networkClient.getCapitalId();
-        final Capital nc = (Capital) serverInstance.server.findComponent(capitalId);
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener);
+        await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasMap());
+        await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
+        assertFalse(mServerInstance.server.networkObjects.isEmpty());
+        String capitalId = mNetworkClient.getCapitalId();
+        final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId);
         assertNotNull(nc);
-        logger.info("\t-----> " + capitalId);
+        mLogger.info("\t-----> " + capitalId);
         assert (nc.getSyncMe().get() == false);
         assert (nc.getSyncMeAlso().get().equals("Hello World"));
-        networkClient.dispose();
+        mNetworkClient.dispose();
     }
 
     @Test
     public void testCapitalUpdated() {
-        networkClient = new NetworkClient("127.0.0.1", 7000, clientListener);
-        await().atMost(TIMEOUT * 2, SECONDS).until(() -> networkClient.hasMap());
-        await().atMost(TIMEOUT * 2, SECONDS).until(() -> networkClient.hasCapital());
-        assertFalse(serverInstance.server.networkObjects.isEmpty());
-        NetworkObject object = serverInstance.server.networkObjects.get(0);
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener);
+        await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasMap());
+        await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
+        assertFalse(mServerInstance.server.networkObjects.isEmpty());
+        NetworkObject object = mServerInstance.server.networkObjects.get(0);
         assertNotNull(object);
-        String capitalId = networkClient.getCapitalId();
+        String capitalId = mNetworkClient.getCapitalId();
         assertNotNull(capitalId);
-        logger.info("\t-----> " + capitalId);
-        final Capital nc = (Capital) serverInstance.server.findComponent(capitalId);
+        mLogger.info("\t-----> " + capitalId);
+        final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId);
         assert (nc.getSyncMe().get() == false);
         assert (nc.getSyncMeAlso().get().equals("Hello World"));
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
@@ -71,6 +71,6 @@ public class ServerTest {
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
         assert (nc.getSyncMeAlso().get().equals("Goodbye World"));
-        networkClient.dispose();
+        mNetworkClient.dispose();
     }
 }

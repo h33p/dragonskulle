@@ -192,6 +192,11 @@ public class NetworkObject {
     /** Children of the object will be networkable and updated on clients */
     private final ArrayList<NetworkableComponent> children = new ArrayList<>();
 
+    /**
+     * Gets network object id.
+     *
+     * @return the network object id
+     */
     public String getNetworkObjectId() {
         return networkObjectId;
     }
