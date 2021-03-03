@@ -7,7 +7,13 @@ import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
+import org.dragonskulle.components.Camera;
+import org.dragonskulle.components.Renderable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 public class RenderedApp {
@@ -15,6 +21,7 @@ public class RenderedApp {
     public static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
+    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 2);
 
     private long mWindow;
     private Renderer mRenderer;
@@ -69,6 +76,32 @@ public class RenderedApp {
         int startSecondFrame = 0;
         double lastElapsed = (double) System.currentTimeMillis() * 0.001;
         long startTime = System.currentTimeMillis();
+
+        Renderable[] renderables = new Renderable[INSTANCE_COUNT];
+
+        for (int i = 0; i < INSTANCE_COUNT; i++) renderables[i] = new Renderable();
+
+        renderables[0].mesh = Mesh.CUBE;
+
+        final Vector3f[] colors = {
+            new Vector3f(1.f, 0.f, 0.f),
+            new Vector3f(0.f, 1.f, 0.f),
+            new Vector3f(0.f, 0.f, 1.f),
+            new Vector3f(1.f, 0.5f, 0.f),
+            new Vector3f(0.f, 1.f, 0.5f),
+            new Vector3f(0.5f, 0.f, 1.f),
+            new Vector3f(1.f, 1.f, 0.f),
+            new Vector3f(0.f, 1.f, 1.f),
+            new Vector3f(1.f, 0.f, 1.f),
+        };
+
+        for (int i = 1; i < INSTANCE_COUNT; i++)
+            ((UnlitMaterial)renderables[i].material).color = colors[i % colors.length];
+
+        List<Renderable> renderableList = Arrays.asList(renderables);
+
+        Camera cam = new Camera();
+
         while (!glfwWindowShouldClose(mWindow)) {
             try (MemoryStack stack = stackPush()) {
                 long timerTime = System.currentTimeMillis();
@@ -81,7 +114,23 @@ public class RenderedApp {
                     mRenderer.onResize();
                 }
 
-                mRenderer.render(null, null, curtime);
+                for (int i = 0; i < renderables.length; i++) {
+                    Matrix4f matrix = renderables[i].matrix;
+
+                    float rotFactor = curtime * (float) (i * 2 - 1);
+
+                    matrix.rotationXYZ(
+                            rotFactor * 0.9f * 0,
+                            (float) java.lang.Math.sin(rotFactor) * 0.1f * (float) (i * 2 - 1),
+                            rotFactor);
+
+                    matrix.setTranslation(
+                            0.f,
+                            0.f,
+                            (float) i * 1f * (float) java.lang.Math.sin(-curtime * 0.05f));
+                }
+
+                mRenderer.render(cam, renderableList);
             }
 
             // Debug FPS counter

@@ -32,7 +32,7 @@ class VulkanMeshBuffer implements NativeResource {
     private int mMaxVertexOffset;
     private int mMaxIndexOffset;
 
-    private boolean mDirty = false;
+    @Getter private boolean mDirty = false;
     private Map<Mesh, MeshDescriptor> mLoadedMeshes = new HashMap<Mesh, MeshDescriptor>();
 
     @Builder
@@ -42,6 +42,8 @@ class VulkanMeshBuffer implements NativeResource {
         private int mIndexOffset;
         private int mIndexCount;
     }
+
+    private VulkanMeshBuffer() {}
 
     public VulkanMeshBuffer(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
@@ -60,25 +62,36 @@ class VulkanMeshBuffer implements NativeResource {
         return mLoadedMeshes.get(mesh);
     }
 
-    public void addMesh(Mesh mesh) {
-        if (!mLoadedMeshes.containsKey(mesh)) {
+    public MeshDescriptor addMesh(Mesh mesh) {
+        MeshDescriptor ret = mLoadedMeshes.get(mesh);
+        if (ret == null) {
             mDirty = true;
-            MeshDescriptor newDescriptor =
-                    new MeshDescriptor(mMaxVertexOffset, mMaxIndexOffset, mesh.indices.length);
+            ret = new MeshDescriptor(mMaxVertexOffset, mMaxIndexOffset, mesh.indices.length);
             mMaxVertexOffset += mesh.vertices.length * Vertex.SIZEOF;
             mMaxIndexOffset += mesh.indices.length * 4;
-            mLoadedMeshes.put(mesh, newDescriptor);
+            mLoadedMeshes.put(mesh, ret);
         }
+        return ret;
     }
 
-    public void commitChanges(VkQueue graphicsQueue, long commandPool) {
-        // TODO: do without freeing
+    public VulkanMeshBuffer commitChanges(VkQueue graphicsQueue, long commandPool) {
         if (mDirty) {
             mDirty = false;
-            if (mVertexBuffer != null) mVertexBuffer.free();
-            if (mIndexBuffer != null) mIndexBuffer.free();
-            mVertexBuffer = createVertexBuffer(graphicsQueue, commandPool);
-            mIndexBuffer = createIndexBuffer(graphicsQueue, commandPool);
+            VulkanMeshBuffer ret = new VulkanMeshBuffer();
+
+            ret.mDevice = mDevice;
+            ret.mPhysicalDevice = mPhysicalDevice;
+
+            ret.mMaxVertexOffset = mMaxIndexOffset;
+            ret.mMaxIndexOffset = mMaxIndexOffset;
+
+            ret.mLoadedMeshes = mLoadedMeshes;
+            ret.mVertexBuffer = createVertexBuffer(graphicsQueue, commandPool);
+            ret.mIndexBuffer = createIndexBuffer(graphicsQueue, commandPool);
+
+            return ret;
+        } else {
+            return this;
         }
     }
 

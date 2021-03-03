@@ -61,4 +61,11 @@ public class TextureMapping {
     public int hashCode() {
         return filtering.value + wrapU.value * 10 + wrapV.value * 100 + wrapW.value * 1000;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof TextureMapping)) return false;
+        return hashCode() == o.hashCode();
+    }
 }

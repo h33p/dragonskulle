@@ -8,6 +8,7 @@ import java.nio.LongBuffer;
 import java.util.logging.Logger;
 import lombok.Builder;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
 /**
@@ -17,21 +18,30 @@ import org.lwjgl.vulkan.*;
  *
  * @author Aurimas Blažulionis
  */
-class VulkanPipeline {
+class VulkanPipeline implements NativeResource {
     public long pipeline;
     public long layout;
 
-    // private IMaterial mMaterial;
     private VkDevice mDevice;
-    private long mDescriptorSetLayout;
+    private ShaderSet mShaderSet;
 
     public static final Logger LOGGER = Logger.getLogger("render");
+
+    private static int MATRIX_SIZE = 4 * 4 * 4;
 
     @Builder
     public static class BindingDescription {
         public int bindingID;
         public int size;
         public int inputRate;
+
+        public static BindingDescription instanced(int size) {
+            return new BindingDescription(1, size, VK_VERTEX_INPUT_RATE_INSTANCE);
+        }
+
+        public static BindingDescription instancedWithMatrix(int size) {
+            return instanced(size + MATRIX_SIZE);
+        }
     }
 
     @Builder
@@ -40,23 +50,26 @@ class VulkanPipeline {
         public int location;
         public int format;
         public int offset;
+
+        public static AttributeDescription[] withMatrix(AttributeDescription... descriptions) {
+            AttributeDescription[] ret = new AttributeDescription[4 + descriptions.length];
+            for (int i = 0; i < 4; i++)
+                ret[i] = new AttributeDescription(1, i + 3, VK_FORMAT_R32G32B32A32_SFLOAT, i * 16);
+            for (int i = 0; i < descriptions.length; i++)
+                ret[i + 4] =
+                        new AttributeDescription(
+                                1, i + 7, descriptions[i].format, 64 + descriptions[i].offset);
+            return ret;
+        }
     }
 
     /** Get vulkan binding descriptors for the vertex shader */
     private static VkVertexInputBindingDescription.Buffer getBindingDescriptions(
             MemoryStack stack, BindingDescription instanceBindingDescription) {
 
-        BindingDescription[] justRaw = {
-            Vertex.BINDING_DESCRIPTION, UniformBufferObject.BINDING_DESCRIPTION
+        BindingDescription[] bindingDescriptions = {
+            Vertex.BINDING_DESCRIPTION, instanceBindingDescription
         };
-        BindingDescription[] withShader = {
-            Vertex.BINDING_DESCRIPTION,
-            UniformBufferObject.BINDING_DESCRIPTION,
-            instanceBindingDescription
-        };
-
-        BindingDescription[] bindingDescriptions =
-                instanceBindingDescription == null ? justRaw : withShader;
 
         VkVertexInputBindingDescription.Buffer bindingDescriptionsOut =
                 VkVertexInputBindingDescription.callocStack(bindingDescriptions.length, stack);
@@ -80,18 +93,11 @@ class VulkanPipeline {
 
         VkVertexInputAttributeDescription.Buffer attributeDescriptionsOut =
                 VkVertexInputAttributeDescription.callocStack(
-                        Vertex.ATTRIBUTE_DESCRIPTIONS.length
-                                + UniformBufferObject.ATTRIBUTE_DESCRIPTIONS.length
-                                + attributeDescriptions.length,
-                        stack);
+                        Vertex.ATTRIBUTE_DESCRIPTIONS.length + attributeDescriptions.length, stack);
 
         int cnt = 0;
 
-        AttributeDescription[][] descs = {
-            Vertex.ATTRIBUTE_DESCRIPTIONS,
-            UniformBufferObject.ATTRIBUTE_DESCRIPTIONS,
-            attributeDescriptions
-        };
+        AttributeDescription[][] descs = {Vertex.ATTRIBUTE_DESCRIPTIONS, attributeDescriptions};
 
         for (AttributeDescription[] descArray : descs) {
             for (AttributeDescription descIn : descArray) {
@@ -107,21 +113,22 @@ class VulkanPipeline {
     }
 
     public VulkanPipeline(
-            IMaterial material,
+            ShaderSet shaderSet,
+            Long uniformSetLayout,
+            Long textureSetLayout,
             VkDevice device,
             VkExtent2D extent,
-            long descriptorSetLayout,
             long renderPass) {
         LOGGER.info("Setup pipeline");
 
-        // mMaterial = material;
         mDevice = device;
+        mShaderSet = shaderSet;
 
         // This here will be used for stack allocation and keeping track of shader indices
         int shaderStageCount = 0;
 
         Shader vertShader = null;
-        ShaderBuf vertShaderBuf = material.getVertexShader();
+        ShaderBuf vertShaderBuf = mShaderSet.getVertexShader();
 
         if (vertShaderBuf != null) {
             vertShader = Shader.getShader(vertShaderBuf, mDevice);
@@ -131,7 +138,7 @@ class VulkanPipeline {
         }
 
         Shader fragShader = null;
-        ShaderBuf fragShaderBuf = material.getFragmentShader();
+        ShaderBuf fragShaderBuf = mShaderSet.getFragmentShader();
 
         if (fragShaderBuf != null) {
             fragShader = Shader.getShader(fragShaderBuf, mDevice);
@@ -166,9 +173,10 @@ class VulkanPipeline {
                         VkPipelineVertexInputStateCreateInfo.callocStack(stack);
                 vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
                 vertexInputInfo.pVertexBindingDescriptions(
-                        getBindingDescriptions(stack, material.vertexInstanceBindingDescription()));
+                        getBindingDescriptions(stack, mShaderSet.getVertexBindingDescription()));
                 vertexInputInfo.pVertexAttributeDescriptions(
-                        getAttributeDescriptions(stack, material.vertexAttributeDescriptions()));
+                        getAttributeDescriptions(
+                                stack, mShaderSet.getVertexAttributeDescriptions()));
 
                 pipelineInfo.pVertexInputState(vertexInputInfo);
             }
@@ -256,7 +264,7 @@ class VulkanPipeline {
 
             // TODO: Dynamic states
 
-            int fragmentConstantSize = material.fragmentPushConstantSize();
+            int fragmentConstantSize = mShaderSet.getFragmentPushConstantSize();
 
             int constantRanges = 1 + fragmentConstantSize > 0 ? 1 : 0;
 
@@ -279,8 +287,25 @@ class VulkanPipeline {
             VkPipelineLayoutCreateInfo pipelineLayoutInfo =
                     VkPipelineLayoutCreateInfo.callocStack(stack);
             pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
-            LongBuffer pDescriptorSetLayout = stack.longs(descriptorSetLayout);
-            pipelineLayoutInfo.pSetLayouts(pDescriptorSetLayout);
+
+            int descriptorSetCount = 0;
+
+            if (uniformSetLayout != null) descriptorSetCount++;
+
+            if (textureSetLayout != null) descriptorSetCount++;
+
+            if (descriptorSetCount > 0) {
+                LongBuffer pDescriptorSetLayout = stack.mallocLong(descriptorSetCount);
+
+                if (uniformSetLayout != null) pDescriptorSetLayout.put(uniformSetLayout);
+
+                if (textureSetLayout != null) pDescriptorSetLayout.put(textureSetLayout);
+
+                pDescriptorSetLayout.rewind();
+
+                pipelineLayoutInfo.pSetLayouts(pDescriptorSetLayout);
+            }
+
             pipelineLayoutInfo.pPushConstantRanges(pushConstantRanges);
 
             LongBuffer pPipelineLayout = stack.longs(0);
@@ -330,9 +355,9 @@ class VulkanPipeline {
         }
     }
 
+    @Override
     public void free() {
         vkDestroyPipeline(mDevice, pipeline, null);
         vkDestroyPipelineLayout(mDevice, layout, null);
-        vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, null);
     }
 }

@@ -62,4 +62,17 @@ public class Resource<T> implements NativeResource {
     protected void finalize() {
         free();
     }
+
+    @Override
+    public int hashCode() {
+        return get().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Resource)) return false;
+        Resource<?> res = (Resource<?>) o;
+        return get().equals(res.get());
+    }
 }

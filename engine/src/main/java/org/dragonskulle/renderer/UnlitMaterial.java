@@ -2,75 +2,49 @@
 package org.dragonskulle.renderer;
 
 import java.nio.ByteBuffer;
-import org.dragonskulle.core.Resource;
+import org.dragonskulle.renderer.TextureMapping.*;
 import org.dragonskulle.renderer.VulkanPipeline.AttributeDescription;
 import org.dragonskulle.renderer.VulkanPipeline.BindingDescription;
-import org.lwjgl.system.MemoryStack;
+import static org.lwjgl.vulkan.VK10.*;
+import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 
 public class UnlitMaterial implements IMaterial {
+    public static class UnlitShaderSet extends ShaderSet {
+        public UnlitShaderSet() {
+            mVertexShader = ShaderBuf.getResource("unlit", ShaderKind.VERTEX_SHADER);
+            mFragmentShader = ShaderBuf.getResource("unlit", ShaderKind.FRAGMENT_SHADER);
 
-    private Resource<ShaderBuf> mVertexShader =
-            ShaderBuf.getResource("shader", ShaderKind.VERTEX_SHADER);
-    private Resource<ShaderBuf> mFragmentShader =
-            ShaderBuf.getResource("shader", ShaderKind.FRAGMENT_SHADER);
-
-    /// Vertex shader
-
-    public ShaderBuf getVertexShader() {
-        return mVertexShader.get();
+            mVertexBindingDescription = BindingDescription.instancedWithMatrix(4 * 3);
+            mVertexAttributeDescriptions = AttributeDescription.withMatrix(new AttributeDescription(1, 0, VK_FORMAT_R32G32B32_SFLOAT, 0));
+            mNumFragmentTextures = 1;
+        }
     }
 
-    public BindingDescription vertexInstanceBindingDescription() {
-        return null;
+    private static UnlitShaderSet sShaderSet = new UnlitShaderSet();
+
+    private SampledTexture[] mFragmentTextures = {
+        new SampledTexture(
+                Texture.getResource("test_cc0_texture.jpg"),
+                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT))
+    };
+
+    public Vector3f color = new Vector3f(1.f);
+
+    public ShaderSet getShaderSet() {
+        return sShaderSet;
     }
 
-    public AttributeDescription[] vertexAttributeDescriptions() {
-        return null;
+    public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
+        offset = ShaderSet.writeMatrix(offset, buffer, matrix);
+        color.get(offset, buffer);
     }
 
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer) {}
-
-    // public boolean hasVertexLighting();
-    public int vertexUniformDataSize() {
-        return 0;
+    public SampledTexture[] getFragmentTextures() {
+        return mFragmentTextures;
     }
 
-    public boolean isVertexUniformDataDirty() {
-        return false;
-    }
-
-    public void writeVertexUniformData(int offset, ByteBuffer buffer) {}
-
-    // TODO: Add this
-    // public Texture[] getVertexTextures();
-
-    /// TODO: Geometry shader
-
-    /// Fragment shader
-
-    public ShaderBuf getFragmentShader() {
-        return mFragmentShader.get();
-    }
-
-    public int fragmentPushConstantSize() {
-        return 0;
-    }
-
-    public ByteBuffer getFragmentPushConstants(MemoryStack stack) {
-        return null;
-    }
-
-    public int fragmentUniformDataSize() {
-        return 0;
-    }
-
-    public boolean isFragmentUniformDataDirty() {
-        return false;
-    }
-
-    public void writeFragmentUniformData(int offset, ByteBuffer buffer) {}
-
-    public int numFragmentTextures() {
-        return 1;
+    public void free() {
+        for (SampledTexture tex : mFragmentTextures) tex.free();
     }
 }
