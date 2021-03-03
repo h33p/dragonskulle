@@ -4,9 +4,7 @@ package org.dragonskulle.network.components;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncString;
 
-/**
- * The Capital Component.
- */
+/** The Capital Component. */
 public class Capital extends NetworkableComponent {
     /**
      * Gets sync me.
@@ -26,18 +24,12 @@ public class Capital extends NetworkableComponent {
         return syncMeAlso;
     }
 
-    /**
-     * A syncable field.
-     */
+    /** A syncable field. */
     SyncBool syncMe = new SyncBool(false);
-    /**
-     * A syncable field.
-     */
+    /** A syncable field. */
     SyncString syncMeAlso = new SyncString("Hello World");
 
-    /**
-     * Instantiates a new Capital.
-     */
+    /** Instantiates a new Capital. */
     public Capital() {
         super();
     }

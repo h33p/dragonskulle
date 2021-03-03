@@ -64,30 +64,31 @@ public class Server {
             System.out.println("[S] Starting server");
             serverThread.start();
 
-//            String command;
-//            Scanner scanner = new Scanner(System.in);
-//            String[] input;
-//            OUTER_LOOP:
-//            while (true) {
-//                System.out.println("Enter Command: (B)roadcast -s {message} | (K)ill");
-//                command = scanner.nextLine();
-//                input = command.split(" -s ");
-//                switch (input[0].toUpperCase()) {
-//                    case ("B"):
-//                        try {
-//                            System.out.println("Broadcasting {" + input[1] + "}");
-//                            this.sockets.broadcast(input[1].getBytes());
-//                        } catch (IndexOutOfBoundsException e) {
-//                            System.out.println("Please provide -s tag");
-//                        }
-//                        break;
-//                    case ("K"):
-//                        System.out.println("Killing Server");
-//                        this.dispose();
-//                        break OUTER_LOOP;
-//                    default:
-//                }
-//            }
+            //            String command;
+            //            Scanner scanner = new Scanner(System.in);
+            //            String[] input;
+            //            OUTER_LOOP:
+            //            while (true) {
+            //                System.out.println("Enter Command: (B)roadcast -s {message} |
+            // (K)ill");
+            //                command = scanner.nextLine();
+            //                input = command.split(" -s ");
+            //                switch (input[0].toUpperCase()) {
+            //                    case ("B"):
+            //                        try {
+            //                            System.out.println("Broadcasting {" + input[1] + "}");
+            //                            this.sockets.broadcast(input[1].getBytes());
+            //                        } catch (IndexOutOfBoundsException e) {
+            //                            System.out.println("Please provide -s tag");
+            //                        }
+            //                        break;
+            //                    case ("K"):
+            //                        System.out.println("Killing Server");
+            //                        this.dispose();
+            //                        break OUTER_LOOP;
+            //                    default:
+            //                }
+            //            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -139,6 +140,17 @@ public class Server {
         this.game = new ServerGameInstance();
     }
 
+    public NetworkableComponent findComponent(String componentId) {
+        NetworkableComponent found = null;
+        for (NetworkObject e : this.networkObjects) {
+            found = e.findComponent(componentId);
+            if (found != null) {
+                break;
+            }
+        }
+        return found;
+    }
+
     /**
      * ServerRunner is the thread which constantly checks for new client requests, if a client has
      * requested a socket, it will provide it a thread to communicate on and accept the socket.
@@ -184,7 +196,7 @@ public class Server {
         }
         return () -> {
             try {
-                // should spawn map and capitol here instead
+                System.out.println("Spawning client thread");
                 boolean connected;
                 String stream;
                 int hasBytes = 0;
@@ -262,15 +274,21 @@ public class Server {
                             3000);
                 }
                 while (connected) {
-                    bArray = NetworkMessage.readMessageFromStream(bIn);
-                    if (bArray.length != 0) {
-                        if (Arrays.equals(bArray, terminateBytes)) {
-                            this.sockets.terminateClient(sock); // close and remove
-                            serverListener.clientDisconnected(client);
-                            connected = false;
-                        } else {
-                            processBytes(client, bArray);
+                    try {
+                        bArray = NetworkMessage.readMessageFromStream(bIn);
+                        if (bArray.length != 0) {
+                            if (Arrays.equals(bArray, terminateBytes)) {
+                                this.sockets.terminateClient(sock); // close and remove
+                                serverListener.clientDisconnected(client);
+                                connected = false;
+                            } else {
+                                processBytes(client, bArray);
+                            }
                         }
+                    } catch (IOException e) {
+                        this.sockets.terminateClient(sock); // close and remove
+                        serverListener.clientDisconnected(client);
+                        connected = false;
                     }
                 }
             } catch (Exception exception) {

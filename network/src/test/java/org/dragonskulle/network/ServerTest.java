@@ -1,18 +1,18 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.*;
+
+import java.util.logging.Logger;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.junit.*;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 public class ServerTest {
+    private static Logger logger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
     private static StartServer serverInstance;
     private static ServerEars serverListener;
@@ -43,25 +43,13 @@ public class ServerTest {
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> networkClient.hasMap());
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> networkClient.hasCapital());
         assertFalse(serverInstance.server.networkObjects.isEmpty());
-        NetworkObject object = serverInstance.server.networkObjects.get(0);
-        assertNotNull(object);
         String capitalId = networkClient.getCapitalId();
-        assertNotNull(capitalId);
-        Capital tmp = (Capital) object.get(capitalId);
-        if (tmp == null) {
-            for (int i = 0; i < 10; i++) {
-                tmp = (Capital) object.get(capitalId);
-                if (tmp != null) {
-                    break;
-                }
-            }
-        }
-        final Capital nc = tmp;
-        await().atMost(TIMEOUT, SECONDS).until(() -> nc != null);
+        final Capital nc = (Capital) serverInstance.server.findComponent(capitalId);
+        assertNotNull(nc);
+        logger.info("\t-----> " + capitalId);
         assert (nc.getSyncMe().get() == false);
         assert (nc.getSyncMeAlso().get().equals("Hello World"));
         networkClient.dispose();
-
     }
 
     @Test
@@ -74,24 +62,15 @@ public class ServerTest {
         assertNotNull(object);
         String capitalId = networkClient.getCapitalId();
         assertNotNull(capitalId);
-        Capital tmp = (Capital) object.get(capitalId);
-        if (tmp == null) {
-            for (int i = 0; i < 10; i++) {
-                tmp = (Capital) object.get(capitalId);
-                if (tmp != null) {
-                    break;
-                }
-            }
-        }
-        final Capital nc = tmp;
-        await().atMost(TIMEOUT, SECONDS).until(() -> nc != null);
+        logger.info("\t-----> " + capitalId);
+        final Capital nc = (Capital) serverInstance.server.findComponent(capitalId);
         assert (nc.getSyncMe().get() == false);
         assert (nc.getSyncMeAlso().get().equals("Hello World"));
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
-        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMeAlso().get() == "Goodbye World");
+        assert (nc.getSyncMe().get().equals(true));
+        await().atMost(TIMEOUT, SECONDS)
+                .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
+        assert (nc.getSyncMeAlso().get().equals("Goodbye World"));
         networkClient.dispose();
-
     }
-
-
 }

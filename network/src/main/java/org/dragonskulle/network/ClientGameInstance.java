@@ -4,8 +4,6 @@ package org.dragonskulle.network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -21,9 +19,7 @@ public class ClientGameInstance {
     /** The Networked components. */
     private final ArrayList<NetworkableComponent> networkedComponents = new ArrayList<>();
 
-    /**
-     * True if a capital has been spawned.
-     */
+    /** True if a capital has been spawned. */
     private Boolean hasCapital = false;
 
     /**
@@ -33,6 +29,19 @@ public class ClientGameInstance {
      */
     public ArrayList<NetworkableComponent> getNetworkedComponents() {
         return networkedComponents;
+    }
+
+    /**
+     * Gets a networked component by id.
+     *
+     * @param id the Id of the component
+     * @return the networked components
+     */
+    public NetworkableComponent getNetworkedComponents(String id) {
+        return networkedComponents.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -110,6 +119,7 @@ public class ClientGameInstance {
 
     /**
      * Function for testing
+     *
      * @return
      */
     public boolean hasSpawnedMap() {

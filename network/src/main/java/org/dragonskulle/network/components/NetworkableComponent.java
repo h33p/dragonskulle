@@ -9,7 +9,6 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;

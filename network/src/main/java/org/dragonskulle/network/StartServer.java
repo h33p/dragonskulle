@@ -10,17 +10,15 @@ public class StartServer {
     /** The Port. */
     static final int PORT = 7000;
 
-    StartServer(){
+    StartServer() {
         attachShutDownHook();
         serverListener = new ServerEars();
         server = new Server(PORT, serverListener);
     }
 
-//    public static void main(String[] args) {
-//        attachShutDownHook();
-//        serverListener = new ServerEars();
-//        server = new Server(PORT, serverListener);
-//    }
+    public static void main(String[] args) {
+        StartServer ss = new StartServer();
+    }
 
     /** Attach shut down hook. */
     public static void attachShutDownHook() {
@@ -35,7 +33,7 @@ public class StartServer {
         System.out.println("Shut Down Hook Attached.");
     }
 
-    public void dispose(){
+    public void dispose() {
         server.dispose();
     }
 }

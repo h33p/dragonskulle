@@ -43,6 +43,19 @@ public class NetworkObject {
         return this.children.get(this.children.indexOf(n));
     }
 
+    /**
+     * Finds a networkable component by id.
+     *
+     * @param componentId the id
+     * @return the networkable
+     */
+    public NetworkableComponent findComponent(String componentId) {
+        return this.children.stream()
+                .filter(e -> e.getId().equals(componentId))
+                .findFirst()
+                .orElse(null);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,6 +80,25 @@ public class NetworkObject {
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElse(null); // will return null if not found
+    }
+
+    public ArrayList<NetworkableComponent> getChildren() {
+        return this.children;
+    }
+
+    @Override
+    public String toString() {
+        return "NetworkObject{"
+                + "children="
+                + children
+                + ", networkObjectId='"
+                + networkObjectId
+                + '\''
+                + ", owner="
+                + owner
+                + ", isDormant="
+                + isDormant
+                + '}';
     }
 
     /** A callback to broadcast a message to all clients */
@@ -159,6 +191,10 @@ public class NetworkObject {
 
     /** Children of the object will be networkable and updated on clients */
     private final ArrayList<NetworkableComponent> children = new ArrayList<>();
+
+    public String getNetworkObjectId() {
+        return networkObjectId;
+    }
 
     /** The UUID of the object. */
     public String networkObjectId = UUID.randomUUID().toString();
