@@ -40,5 +40,4 @@ public class ServerGameInstance {
     public boolean isSetup() {
         return this.mMap != null;
     }
->>>>>>> 4328d84... creating map on server creation and then sending bytes to connecting clients. Need to alter send recieve bytes protocl because messages are large and can get chopped in half
 }

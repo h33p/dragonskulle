@@ -25,9 +25,9 @@ public class Capital extends NetworkableComponent {
     }
 
     /** A syncable field. */
-    private SyncBool mSyncMe = new SyncBool(false);
+    SyncBool mSyncMe = new SyncBool(false);
     /** A syncable field. */
-    private SyncString mSyncMeAlso = new SyncString("Hello World");
+    SyncString mSyncMeAlso = new SyncString("Hello World");
 
     /** Instantiates a new Capital. */
     public Capital() {
