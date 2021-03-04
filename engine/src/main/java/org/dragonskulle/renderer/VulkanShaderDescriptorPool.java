@@ -30,16 +30,19 @@ class VulkanShaderDescriptorPool implements NativeResource {
         public int size;
     }
 
+    @Builder
+    private static class DescriptorSetInfo {
+        DescriptorBinding bindingDescription;
+        VulkanBuffer uniformBuffer;
+        int stageFlags;
+    }
+
     private VkDevice mDevice;
     private long mPool;
     @Getter private long mSetLayout;
     private long[] mDescriptorSets;
 
-    private VulkanBuffer mVertexUniformBuffers;
-    private DescriptorBinding mVertexUniformBindingDescription;
-
-    private VulkanBuffer mFragmentUniformBuffers;
-    private DescriptorBinding mFragmentUniformBindingDescription;
+    private DescriptorSetInfo[] mDescriptorSetInfos;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
@@ -101,47 +104,22 @@ class VulkanShaderDescriptorPool implements NativeResource {
      */
     private void updateDescriptorSet(int index) {
         try (MemoryStack stack = stackPush()) {
-
             long descriptorSet = mDescriptorSets[index];
 
-            int bindingCount = 0;
-
-            boolean hasFragmentUniform = mFragmentUniformBuffers != null;
-            bindingCount += hasFragmentUniform ? 1 : 0;
-
-            boolean hasVertexUniform = mVertexUniformBuffers != null;
-            bindingCount += hasVertexUniform ? 1 : 0;
-
             VkWriteDescriptorSet.Buffer descriptorWrites =
-                    VkWriteDescriptorSet.callocStack(bindingCount, stack);
+                    VkWriteDescriptorSet.callocStack(mDescriptorSetInfos.length, stack);
 
-            if (hasFragmentUniform) {
+            for (int i = 0; i < mDescriptorSetInfos.length; i++) {
+                DescriptorSetInfo info = mDescriptorSetInfos[i];
                 VkDescriptorBufferInfo.Buffer bufferInfo =
                         VkDescriptorBufferInfo.callocStack(1, stack);
-                bufferInfo.offset(mFragmentUniformBindingDescription.size * index);
-                bufferInfo.range(mFragmentUniformBindingDescription.size);
-                bufferInfo.buffer(mFragmentUniformBuffers.buffer);
+                bufferInfo.offset(info.bindingDescription.size * index);
+                bufferInfo.range(info.bindingDescription.size);
+                bufferInfo.buffer(info.uniformBuffer.buffer);
 
-                VkWriteDescriptorSet uboDescriptorWrite = descriptorWrites.get(--bindingCount);
+                VkWriteDescriptorSet uboDescriptorWrite = descriptorWrites.get(i);
                 uboDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-                uboDescriptorWrite.dstBinding(mFragmentUniformBindingDescription.bindingID);
-                uboDescriptorWrite.dstArrayElement(0);
-                uboDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-                uboDescriptorWrite.descriptorCount(1);
-                uboDescriptorWrite.pBufferInfo(bufferInfo);
-                uboDescriptorWrite.dstSet(descriptorSet);
-            }
-
-            if (hasVertexUniform) {
-                VkDescriptorBufferInfo.Buffer bufferInfo =
-                        VkDescriptorBufferInfo.callocStack(1, stack);
-                bufferInfo.offset(mVertexUniformBindingDescription.size * index);
-                bufferInfo.range(mVertexUniformBindingDescription.size);
-                bufferInfo.buffer(mVertexUniformBuffers.buffer);
-
-                VkWriteDescriptorSet uboDescriptorWrite = descriptorWrites.get(--bindingCount);
-                uboDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-                uboDescriptorWrite.dstBinding(mVertexUniformBindingDescription.bindingID);
+                uboDescriptorWrite.dstBinding(info.bindingDescription.bindingID);
                 uboDescriptorWrite.dstArrayElement(0);
                 uboDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
                 uboDescriptorWrite.descriptorCount(1);
@@ -160,31 +138,16 @@ class VulkanShaderDescriptorPool implements NativeResource {
 
             int layoutCount = shaderSet.numUniformBindings();
 
-            boolean hasFragmentUniform = shaderSet.getFragmentUniformDataSize() > 0;
-            boolean hasVertexUniform = shaderSet.getVertexUniformDataSize() > 0;
-
             if (layoutCount == 0) return 0;
 
-            VkDescriptorPoolSize.Buffer poolSizes =
-                    VkDescriptorPoolSize.callocStack(layoutCount, stack);
+            VkDescriptorPoolSize.Buffer poolSize = VkDescriptorPoolSize.callocStack(1, stack);
 
-            if (hasFragmentUniform) {
-                poolSizes.get(--layoutCount).type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-                poolSizes.get(layoutCount).descriptorCount(descriptorCount);
-            }
-
-            if (hasVertexUniform) {
-                poolSizes.get(--layoutCount).type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-                poolSizes.get(layoutCount).descriptorCount(descriptorCount);
-            }
-
-            if (layoutCount != 0) {
-                throw new RuntimeException("BUG in VulkanDescriptorPool");
-            }
+            poolSize.type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            poolSize.descriptorCount(descriptorCount * layoutCount);
 
             VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.callocStack(stack);
             poolInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);
-            poolInfo.pPoolSizes(poolSizes);
+            poolInfo.pPoolSizes(poolSize);
             poolInfo.maxSets(descriptorCount);
 
             LongBuffer pDescriptorPool = stack.longs(0);
@@ -211,61 +174,43 @@ class VulkanShaderDescriptorPool implements NativeResource {
         LOGGER.fine("Create descriptor set layout");
 
         try (MemoryStack stack = stackPush()) {
-
             int bindingCount = shaderSet.numUniformBindings();
 
-            int fragmentUniformDataSize = shaderSet.getFragmentUniformDataSize();
-            boolean hasFragmentUniform = fragmentUniformDataSize > 0;
-            int vertexUniformDataSize = shaderSet.getVertexUniformDataSize();
-            boolean hasVertexUniform = vertexUniformDataSize > 0;
+            mDescriptorSetInfos = new DescriptorSetInfo[bindingCount];
+
+            int[][] uniformDataInfos = {
+                {shaderSet.getVertexUniformDataSize(), VK_SHADER_STAGE_VERTEX_BIT},
+                {shaderSet.getFragmentUniformDataSize(), VK_SHADER_STAGE_FRAGMENT_BIT}
+            };
+
+            int infoIndex = 0;
+
+            for (int[] dataInfo : uniformDataInfos) {
+                if (dataInfo[0] < 0) continue;
+
+                mDescriptorSetInfos[infoIndex++] =
+                        new DescriptorSetInfo(
+                                new DescriptorBinding(bindingCount, dataInfo[0]),
+                                new VulkanBuffer(
+                                        mDevice,
+                                        physicalDevice,
+                                        dataInfo[0] * descriptorCount,
+                                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                                                | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
+                                dataInfo[1]);
+            }
 
             VkDescriptorSetLayoutBinding.Buffer layoutBindings =
-                    VkDescriptorSetLayoutBinding.callocStack(bindingCount, stack);
+                    VkDescriptorSetLayoutBinding.callocStack(mDescriptorSetInfos.length, stack);
 
-            // The layout here is reversed, the last pool size is at offset 0
-
-            if (hasFragmentUniform) {
-                VkDescriptorSetLayoutBinding uboLayoutBinding = layoutBindings.get(--bindingCount);
-                uboLayoutBinding.binding(bindingCount);
+            for (int i = 0; i < mDescriptorSetInfos.length; i++) {
+                DescriptorSetInfo info = mDescriptorSetInfos[i];
+                VkDescriptorSetLayoutBinding uboLayoutBinding = layoutBindings.get(i);
+                uboLayoutBinding.binding(i);
                 uboLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
                 uboLayoutBinding.descriptorCount(1);
-                uboLayoutBinding.stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT);
-
-                mFragmentUniformBuffers =
-                        new VulkanBuffer(
-                                mDevice,
-                                physicalDevice,
-                                fragmentUniformDataSize * descriptorCount,
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                        | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-                mFragmentUniformBindingDescription =
-                        new DescriptorBinding(bindingCount, fragmentUniformDataSize);
-            }
-
-            if (hasVertexUniform) {
-                VkDescriptorSetLayoutBinding uboLayoutBinding = layoutBindings.get(--bindingCount);
-                uboLayoutBinding.binding(bindingCount);
-                uboLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-                uboLayoutBinding.descriptorCount(1);
-                uboLayoutBinding.stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
-
-                mVertexUniformBuffers =
-                        new VulkanBuffer(
-                                mDevice,
-                                physicalDevice,
-                                vertexUniformDataSize * descriptorCount,
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-                                        | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-                mVertexUniformBindingDescription =
-                        new DescriptorBinding(bindingCount, vertexUniformDataSize);
-            }
-
-            if (bindingCount != 0) {
-                throw new RuntimeException("BUG in VulkanDescriptorPool");
+                uboLayoutBinding.stageFlags(info.stageFlags);
             }
 
             VkDescriptorSetLayoutCreateInfo layoutInfo =
@@ -289,11 +234,9 @@ class VulkanShaderDescriptorPool implements NativeResource {
     @Override
     public void free() {
 
-        if (mFragmentUniformBuffers != null) mFragmentUniformBuffers.free();
-        mFragmentUniformBuffers = null;
-
-        if (mVertexUniformBuffers != null) mVertexUniformBuffers.free();
-        mVertexUniformBuffers = null;
+        if (mDescriptorSetInfos != null)
+            for (DescriptorSetInfo info : mDescriptorSetInfos) info.uniformBuffer.free();
+        mDescriptorSetInfos = null;
 
         vkDestroyDescriptorPool(mDevice, mPool, null);
         vkDestroyDescriptorSetLayout(mDevice, mSetLayout, null);

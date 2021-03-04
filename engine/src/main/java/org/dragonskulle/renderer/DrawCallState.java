@@ -29,14 +29,11 @@ class DrawCallState implements NativeResource {
     private VulkanShaderDescriptorPool mDescriptorPool;
     @Getter private ShaderSet mShaderSet;
     @Getter private VulkanPipeline mPipeline;
-    private long mTextureSetLayout;
     private TextureSetFactory mTextureSetFactory;
     private VulkanSampledTextureFactory mTextureFactory;
     private Mesh mMesh;
     @Getter private VulkanMeshBuffer.MeshDescriptor mMeshDescriptor;
     private Map<TextureHashKey, DrawData> mDrawData = new HashMap<>();
-
-    private int mDescriptorSetCount = 0;
 
     private TextureHashKey mTmpTextureHashKey = new TextureHashKey();
 
@@ -125,11 +122,11 @@ class DrawCallState implements NativeResource {
         }
 
         public void endDrawData(int imageIndex, Long descriptorSet) {
-            int descriptorSetIndex = 0;
-
-            if (descriptorSet != null) mDescriptorSets[descriptorSetIndex++] = descriptorSet;
-            if (mTextureSet != null)
-                mDescriptorSets[descriptorSetIndex++] = mTextureSet.getDescriptorSet(imageIndex);
+            mDescriptorSets =
+                    combineDescriptorSets(
+                            mDescriptorSets,
+                            descriptorSet,
+                            mTextureSet == null ? null : mTextureSet.getDescriptorSet(imageIndex));
         }
     }
 
@@ -173,22 +170,14 @@ class DrawCallState implements NativeResource {
         mTextureSetFactory = textureSetFactory;
         mTextureFactory = textureFactory;
 
-        if (shaderSet.getNumFragmentTextures() > 0) {
-            mTextureSetLayout = layoutFactory.getLayout(shaderSet.getNumFragmentTextures());
-        }
-
-        mDescriptorSetCount = 0;
-        if (mDescriptorPool != null) mDescriptorSetCount++;
-        if (mTextureSetLayout != 0) mDescriptorSetCount++;
-
-        mPipeline =
-                new VulkanPipeline(
-                        shaderSet,
+        long[] descriptorSetLayouts =
+                combineDescriptorSetLayouts(
                         mDescriptorPool == null ? null : mDescriptorPool.getSetLayout(),
-                        mTextureSetLayout == 0 ? null : mTextureSetLayout,
-                        device,
-                        extent,
-                        renderPass);
+                        shaderSet.getNumFragmentTextures() < 0
+                                ? null
+                                : layoutFactory.getLayout(shaderSet.getNumFragmentTextures()));
+
+        mPipeline = new VulkanPipeline(shaderSet, descriptorSetLayouts, device, extent, renderPass);
     }
 
     public Collection<DrawData> getDrawData() {
@@ -214,7 +203,6 @@ class DrawCallState implements NativeResource {
         // If we never had this texture set, create a pool
         if (drawData == null) {
             drawData = new DrawData();
-            if (mDescriptorSetCount > 0) drawData.mDescriptorSets = new long[mDescriptorSetCount];
             if (mShaderSet.mNumFragmentTextures > 0) {
                 SampledTexture[] matTextures = material.getFragmentTextures();
                 SampledTexture[] textures = new SampledTexture[mShaderSet.getNumFragmentTextures()];
@@ -246,5 +234,18 @@ class DrawCallState implements NativeResource {
     public void free() {
         if (mPipeline != null) mPipeline.free();
         mPipeline = null;
+    }
+
+    private static long[] combineDescriptorSets(long[] arr, Long... entries) {
+        int elemCount = 0;
+        for (Long l : entries) if (l != null) elemCount++;
+        long[] ret = (arr != null && elemCount == arr.length) ? arr : new long[elemCount];
+        elemCount = 0;
+        for (Long l : entries) if (l != null) ret[elemCount++] = l;
+        return ret;
+    }
+
+    private static long[] combineDescriptorSetLayouts(Long... layouts) {
+        return combineDescriptorSets(null, layouts);
     }
 }

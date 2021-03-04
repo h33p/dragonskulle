@@ -77,8 +77,7 @@ class VulkanPipeline implements NativeResource {
 
     public VulkanPipeline(
             ShaderSet shaderSet,
-            Long uniformSetLayout,
-            Long textureSetLayout,
+            long[] descriptorSetLayouts,
             VkDevice device,
             VkExtent2D extent,
             long renderPass) {
@@ -251,21 +250,8 @@ class VulkanPipeline implements NativeResource {
                     VkPipelineLayoutCreateInfo.callocStack(stack);
             pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
 
-            int descriptorSetCount = 0;
-
-            if (uniformSetLayout != null) descriptorSetCount++;
-
-            if (textureSetLayout != null) descriptorSetCount++;
-
-            if (descriptorSetCount > 0) {
-                LongBuffer pDescriptorSetLayout = stack.mallocLong(descriptorSetCount);
-
-                if (uniformSetLayout != null) pDescriptorSetLayout.put(uniformSetLayout);
-
-                if (textureSetLayout != null) pDescriptorSetLayout.put(textureSetLayout);
-
-                pDescriptorSetLayout.rewind();
-
+            if (descriptorSetLayouts.length > 0) {
+                LongBuffer pDescriptorSetLayout = stack.longs(descriptorSetLayouts);
                 pipelineLayoutInfo.pSetLayouts(pDescriptorSetLayout);
             }
 

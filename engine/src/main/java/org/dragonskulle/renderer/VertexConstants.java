@@ -13,15 +13,15 @@ import org.joml.*;
  */
 class VertexConstants {
     public static int SIZEOF = 4 * 4 * 4 * 2;
-    public static int OFFSETOF_VIEW = 0;
-    public static int OFFSETOF_PROJ = 4 * 4 * 4;
+    public static int VIEW_OFFSET = 0;
+    public static int PROJ_OFFSET = 4 * 4 * 4;
 
     public Matrix4fc view = new Matrix4f();
     public Matrix4fc proj = new Matrix4f();
 
     public void copyTo(ByteBuffer buffer, int offset) {
-        view.get(OFFSETOF_VIEW + offset, buffer);
-        proj.get(OFFSETOF_PROJ + offset, buffer);
+        view.get(VIEW_OFFSET + offset, buffer);
+        proj.get(PROJ_OFFSET + offset, buffer);
     }
 
     public void copyTo(ByteBuffer buffer) {

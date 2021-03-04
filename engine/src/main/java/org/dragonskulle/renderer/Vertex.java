@@ -21,9 +21,9 @@ import org.joml.*;
 @EqualsAndHashCode
 public class Vertex implements Serializable {
     public static int SIZEOF = (3 + 3 + 2) * 4;
-    public static int OFFSETOF_POS = 0;
-    public static int OFFSETOF_COL = OFFSETOF_POS + 3 * 4;
-    public static int OFFSETOF_UV = OFFSETOF_COL + 3 * 4;
+    public static int POS_OFFSET = 0;
+    public static int COL_OFFSET = POS_OFFSET + 3 * 4;
+    public static int UV_OFFSET = COL_OFFSET + 3 * 4;
 
     /** Binding descriptor for vertex buffer */
     public static final BindingDescription BINDING_DESCRIPTION =
@@ -31,9 +31,9 @@ public class Vertex implements Serializable {
 
     /** Attribute descriptions for vertex buffer */
     public static final AttributeDescription[] ATTRIBUTE_DESCRIPTIONS = {
-        new AttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, OFFSETOF_POS),
-        new AttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, OFFSETOF_COL),
-        new AttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, OFFSETOF_UV),
+        new AttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, POS_OFFSET),
+        new AttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, COL_OFFSET),
+        new AttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, UV_OFFSET),
     };
 
     @Getter private Vector3fc mPos;
@@ -42,9 +42,9 @@ public class Vertex implements Serializable {
 
     /** Copy the vertice to a byte buffer */
     public void copyTo(int offset, ByteBuffer buffer) {
-        mPos.get(offset + OFFSETOF_POS, buffer);
-        mColor.get(offset + OFFSETOF_COL, buffer);
-        mUv.get(offset + OFFSETOF_UV, buffer);
+        mPos.get(offset + POS_OFFSET, buffer);
+        mColor.get(offset + COL_OFFSET, buffer);
+        mUv.get(offset + UV_OFFSET, buffer);
     }
 
     public void copyTo(ByteBuffer buffer) {

@@ -169,21 +169,12 @@ class VulkanMeshBuffer implements NativeResource {
                 }
                 vkUnmapMemory(mDevice, stagingBuffer.memory);
 
-                VulkanBuffer vertexBuffer =
-                        new VulkanBuffer(
-                                mDevice,
-                                mPhysicalDevice,
-                                size,
-                                VK_BUFFER_USAGE_TRANSFER_DST_BIT
-                                        | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-                VkCommandBuffer commandBuffer =
-                        Renderer.beginSingleUseCommandBuffer(mDevice, commandPool);
-                stagingBuffer.copyTo(commandBuffer, vertexBuffer, size);
-                Renderer.endSingleUseCommandBuffer(
-                        commandBuffer, mDevice, graphicsQueue, commandPool);
-                return vertexBuffer;
+                return transitionToLocalMemory(
+                        stagingBuffer,
+                        size,
+                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                        graphicsQueue,
+                        commandPool);
             }
         }
     }
@@ -226,22 +217,35 @@ class VulkanMeshBuffer implements NativeResource {
                 }
                 vkUnmapMemory(mDevice, stagingBuffer.memory);
 
-                VulkanBuffer indexBuffer =
-                        new VulkanBuffer(
-                                mDevice,
-                                mPhysicalDevice,
-                                size,
-                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-                VkCommandBuffer commandBuffer =
-                        Renderer.beginSingleUseCommandBuffer(mDevice, commandPool);
-                stagingBuffer.copyTo(commandBuffer, indexBuffer, size);
-                Renderer.endSingleUseCommandBuffer(
-                        commandBuffer, mDevice, graphicsQueue, commandPool);
-
-                return indexBuffer;
+                return transitionToLocalMemory(
+                        stagingBuffer,
+                        size,
+                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                        graphicsQueue,
+                        commandPool);
             }
         }
+    }
+
+    /** Transition a staging buffer into device local memory */
+    private VulkanBuffer transitionToLocalMemory(
+            VulkanBuffer stagingBuffer,
+            long size,
+            int usageBits,
+            VkQueue graphicsQueue,
+            long commandPool) {
+        VulkanBuffer outputBuffer =
+                new VulkanBuffer(
+                        mDevice,
+                        mPhysicalDevice,
+                        size,
+                        VK_BUFFER_USAGE_TRANSFER_DST_BIT | usageBits,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        VkCommandBuffer commandBuffer = Renderer.beginSingleUseCommandBuffer(mDevice, commandPool);
+        stagingBuffer.copyTo(commandBuffer, outputBuffer, size);
+        Renderer.endSingleUseCommandBuffer(commandBuffer, mDevice, graphicsQueue, commandPool);
+
+        return outputBuffer;
     }
 }

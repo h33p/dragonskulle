@@ -16,7 +16,7 @@ public interface IMaterial extends NativeResource {
      *
      * @return the shader set containing all shared properties of materials of this type
      */
-    public ShaderSet getShaderSet();
+    ShaderSet getShaderSet();
 
     /**
      * Write instanced material properties to specified offset
@@ -25,7 +25,7 @@ public interface IMaterial extends NativeResource {
      * @param buffer buffer to write into
      * @param matrix transformation matrix of the object. TODO: is this matrix necessary?
      */
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix);
+    void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix);
 
-    public SampledTexture[] getFragmentTextures();
+    SampledTexture[] getFragmentTextures();
 }
