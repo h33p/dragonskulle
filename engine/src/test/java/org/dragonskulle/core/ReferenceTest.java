@@ -41,4 +41,16 @@ public class ReferenceTest {
 
         Assert.assertNull("Object reference was not null after being cleared", ref.get());
     }
+
+    @Test
+    public void referenceIsNotValidAfterClearing() {
+        Object obj1 = new Object();
+        Reference<Object> ref = new Reference<>(obj1);
+
+        Assert.assertTrue("Reference was invalid when it was actually valid", ref.isValid());
+
+        ref.clear();
+
+        Assert.assertFalse("Reference was still valid after being cleared", ref.isValid());
+    }
 }

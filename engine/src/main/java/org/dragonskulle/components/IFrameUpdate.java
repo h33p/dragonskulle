@@ -15,5 +15,5 @@ public interface IFrameUpdate {
      *
      * @param deltaTime Approximate time since last call to frameUpdate
      */
-    void frameUpdate(double deltaTime);
+    void frameUpdate(float deltaTime);
 }
