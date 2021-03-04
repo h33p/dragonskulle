@@ -16,7 +16,7 @@ import org.lwjgl.system.NativeResource;
  * on.
  *
  * <p>Check {@code UnlitMaterial} how this class is used, but essentially you would want to create a
- * new class extending {@class ShaderSet}, whose default constructor loads the correct shaders, and
+ * new class extending {@code ShaderSet}, whose default constructor loads the correct shaders, and
  * sets up their layout properties to be correct.
  *
  * @author Aurimas Blažulionis
