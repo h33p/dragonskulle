@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -88,14 +87,9 @@ public class NetworkClient {
                 this.mGame.printNetworkable(networkableId);
                 break;
             case (byte) 20:
-                try {
-                    System.out.println("Trying to spawn map");
-                    HexagonTile[][] map = deserializeMap(payload);
-                    this.mGame.spawnMap(map);
-                    System.out.println("Spawned map");
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
+                System.out.println("Trying to spawn map, need to get the actual map");
+                this.mGame.spawnMap(payload);
+                System.out.println("Spawned map");
                 break;
             case (byte) 21:
                 try {
@@ -124,22 +118,6 @@ public class NetworkClient {
      */
     private Capital deserializeCapitol(byte[] payload) throws DecodingException {
         return NetworkableComponent.from(Capital.class, payload);
-    }
-
-    /**
-     * Deserialize map hexagon tile [ ] [ ].
-     *
-     * @param payload the payload
-     * @return the hexagon tile [ ] [ ]
-     * @throws IOException Thrown if any errors occur in deserialization.
-     * @throws ClassNotFoundException Thrown if any errors occur in deserialization.
-     */
-    private HexagonTile[][] deserializeMap(byte[] payload)
-            throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(payload);
-        ObjectInput in = new ObjectInputStream(bis);
-        HexagonTile[][] map = (HexagonTile[][]) in.readObject();
-        return map;
     }
 
     /**

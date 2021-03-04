@@ -4,7 +4,6 @@ package org.dragonskulle.network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -14,7 +13,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
  */
 public class ClientGameInstance {
     /** The Map. */
-    private HexagonTile[][] mMap;
+    private byte[] mMap;
 
     /** The Networked components. */
     private final ArrayList<NetworkableComponent> mNetworkedComponents = new ArrayList<>();
@@ -68,7 +67,7 @@ public class ClientGameInstance {
      *
      * @param spawnedMap the spawned map
      */
-    public void spawnMap(HexagonTile[][] spawnedMap) {
+    public void spawnMap(byte[] spawnedMap) {
         this.mMap = spawnedMap;
     }
 
