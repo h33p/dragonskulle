@@ -81,7 +81,7 @@ public class RenderedApp {
 
         for (int i = 0; i < INSTANCE_COUNT; i++) renderables[i] = new Renderable();
 
-        renderables[0].mesh = Mesh.CUBE;
+        renderables[0].setMesh(Mesh.CUBE);
 
         final Vector3f[] colors = {
             new Vector3f(1.f, 0.f, 0.f),
@@ -96,7 +96,7 @@ public class RenderedApp {
         };
 
         for (int i = 1; i < INSTANCE_COUNT; i++)
-            ((UnlitMaterial) renderables[i].material).color = colors[i % colors.length];
+            renderables[i].getMaterial(UnlitMaterial.class).color = colors[i % colors.length];
 
         List<Renderable> renderableList = Arrays.asList(renderables);
 
@@ -150,5 +150,7 @@ public class RenderedApp {
                 lastElapsed = elapsed;
             }
         }
+
+        for (Renderable r : renderables) r.free();
     }
 }

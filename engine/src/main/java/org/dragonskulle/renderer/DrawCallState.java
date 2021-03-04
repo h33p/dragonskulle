@@ -76,8 +76,8 @@ class DrawCallState implements NativeResource {
         }
 
         public void setRenderable(Renderable renderable) {
-            mShaderSet = renderable.material.getShaderSet();
-            mMesh = renderable.mesh;
+            mShaderSet = renderable.getMaterial().getShaderSet();
+            mMesh = renderable.getMesh();
         }
 
         @Override
@@ -107,7 +107,7 @@ class DrawCallState implements NativeResource {
         public void updateInstanceBuffer(ShaderSet shaderSet, ByteBuffer buffer) {
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
-                object.material.writeVertexInstanceData(cur_off, buffer, object.matrix);
+                object.getMaterial().writeVertexInstanceData(cur_off, buffer, object.matrix);
                 cur_off += shaderSet.getVertexBindingDescription().size;
             }
         }
@@ -198,14 +198,15 @@ class DrawCallState implements NativeResource {
     }
 
     public void addObject(Renderable object) {
-        mTmpTextureHashKey.setMaterial(object.material);
+        IMaterial material = object.getMaterial();
+        mTmpTextureHashKey.setMaterial(material);
         DrawData drawData = mDrawData.get(mTmpTextureHashKey);
         // If we never had this texture set, create a pool
         if (drawData == null) {
             drawData = new DrawData();
             if (mDescriptorSetCount > 0) drawData.mDescriptorSets = new long[mDescriptorSetCount];
             if (mShaderSet.mNumFragmentTextures > 0) {
-                SampledTexture[] matTextures = object.material.getFragmentTextures();
+                SampledTexture[] matTextures = material.getFragmentTextures();
                 SampledTexture[] textures = new SampledTexture[mShaderSet.getNumFragmentTextures()];
                 int matTexturesLength = matTextures.length;
 
@@ -216,7 +217,7 @@ class DrawCallState implements NativeResource {
 
                 drawData.mTextureSet = mTextureSetFactory.getSet(textures, mTextureFactory);
             }
-            mDrawData.put(new TextureHashKey(object.material), drawData);
+            mDrawData.put(new TextureHashKey(material), drawData);
         }
         drawData.mObjects.add(object);
     }
