@@ -7,6 +7,7 @@ import static org.lwjgl.vulkan.VK10.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -35,6 +36,9 @@ class VulkanMeshBuffer implements NativeResource {
     @Getter private boolean mDirty = false;
     private Map<Mesh, MeshDescriptor> mLoadedMeshes = new HashMap<Mesh, MeshDescriptor>();
 
+    private static final Logger LOGGER = Logger.getLogger("render");
+
+    /** Description where mesh data resides in */
     @Builder
     @Getter
     public static class MeshDescriptor {
@@ -66,9 +70,9 @@ class VulkanMeshBuffer implements NativeResource {
         MeshDescriptor ret = mLoadedMeshes.get(mesh);
         if (ret == null) {
             mDirty = true;
-            ret = new MeshDescriptor(mMaxVertexOffset, mMaxIndexOffset, mesh.indices.length);
-            mMaxVertexOffset += mesh.vertices.length * Vertex.SIZEOF;
-            mMaxIndexOffset += mesh.indices.length * 4;
+            ret = new MeshDescriptor(mMaxVertexOffset, mMaxIndexOffset, mesh.getIndices().length);
+            mMaxVertexOffset += mesh.getVertices().length * Vertex.SIZEOF;
+            mMaxIndexOffset += mesh.getIndices().length * 4;
             mLoadedMeshes.put(mesh, ret);
         }
         return ret;
@@ -112,12 +116,12 @@ class VulkanMeshBuffer implements NativeResource {
      * <p>As the name implies, this buffer holds vertices
      */
     private VulkanBuffer createVertexBuffer(VkQueue graphicsQueue, long commandPool) {
-        Renderer.LOGGER.info("Create vertex buffer");
+        LOGGER.fine("Create vertex buffer");
 
         int vertexCount = 0;
 
         for (Mesh m : mLoadedMeshes.keySet()) {
-            vertexCount += m.vertices.length;
+            vertexCount += m.getVertices().length;
         }
 
         try (MemoryStack stack = stackPush()) {
@@ -138,7 +142,7 @@ class VulkanMeshBuffer implements NativeResource {
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
                 for (Map.Entry<Mesh, MeshDescriptor> mesh : mLoadedMeshes.entrySet()) {
                     int voff = mesh.getValue().mVertexOffset;
-                    for (Vertex v : mesh.getKey().vertices) {
+                    for (Vertex v : mesh.getKey().getVertices()) {
                         v.copyTo(voff, byteBuffer);
                         voff += Vertex.SIZEOF;
                     }
@@ -170,12 +174,12 @@ class VulkanMeshBuffer implements NativeResource {
      * <p>This buffer holds indices of the vertices to render in multiples of 3.
      */
     private VulkanBuffer createIndexBuffer(VkQueue graphicsQueue, long commandPool) {
-        Renderer.LOGGER.info("Setup index buffer");
+        LOGGER.info("Setup index buffer");
 
         int indexCount = 0;
 
         for (Mesh m : mLoadedMeshes.keySet()) {
-            indexCount += m.indices.length;
+            indexCount += m.getIndices().length;
         }
 
         try (MemoryStack stack = stackPush()) {
@@ -196,7 +200,7 @@ class VulkanMeshBuffer implements NativeResource {
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
                 for (Map.Entry<Mesh, MeshDescriptor> mesh : mLoadedMeshes.entrySet()) {
                     ByteBuffer buf = byteBuffer.position(mesh.getValue().mIndexOffset);
-                    for (int i : mesh.getKey().indices) {
+                    for (int i : mesh.getKey().getIndices()) {
                         buf.putInt(i);
                     }
                 }

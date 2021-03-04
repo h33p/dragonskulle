@@ -6,6 +6,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -28,6 +29,8 @@ class TextureSet implements NativeResource {
     @Getter private long mPool;
     @Getter private long mSetLayout;
     private long[] mDescriptorSets;
+
+    public static final Logger LOGGER = Logger.getLogger("render");
 
     public TextureSet(
             VkDevice device,
@@ -103,7 +106,7 @@ class TextureSet implements NativeResource {
     }
 
     private long createDescriptorPool(int textureCount, int descriptorSetCount) {
-        Renderer.LOGGER.info("Setup texture descriptor pool");
+        LOGGER.fine("Setup texture descriptor pool");
 
         try (MemoryStack stack = stackPush()) {
 

@@ -86,8 +86,8 @@ public class Renderer implements NativeResource {
     private static final Set<String> DEVICE_EXTENSIONS =
             Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
 
-    public static final Logger LOGGER = Logger.getLogger("render");
-    public static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
+    private static final Logger LOGGER = Logger.getLogger("render");
+    static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
     private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
     private static final int INSTANCE_BUFFER_SIZE = envInt("INSTANCE_BUFFER_SIZE", 8);
@@ -111,12 +111,8 @@ public class Renderer implements NativeResource {
 
         public VulkanBuffer instanceBuffer;
 
-        // private VulkanImage mImage;
         private long mImageView;
         private VkDevice mDevice;
-
-        // private static final TextureMapping MAPPING =
-        //        new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT);
 
         /** Create a image context */
         private ImageContext(
@@ -179,8 +175,10 @@ public class Renderer implements NativeResource {
      *
      * @param appName name of the rendered application.
      * @param window handle to GLFW window.
+     * @throws RuntimeException when initialization fails.
      */
-    public Renderer(String appName, long window) throws Exception {
+    public Renderer(String appName, long window) throws RuntimeException {
+        LOGGER.info("Initialize renderer");
         this.mWindow = window;
         mInstance = createInstance(appName);
         if (DEBUG_MODE) mDebugMessenger = createDebugLogger();
@@ -210,10 +208,9 @@ public class Renderer implements NativeResource {
      * @param objects list of objects that should be rendered
      */
     public void render(Camera camera, List<Renderable> objects) {
-        // Right here we will hotload images as they come
-        // Also handle vertex, and index buffers
-
         if (mImageContexts == null) recreateSwapchain();
+
+        camera.updateAspectRatio(mExtent.width(), mExtent.height());
 
         try (MemoryStack stack = stackPush()) {
             FrameContext ctx = mFrameContexts[mFrameCounter];
@@ -347,7 +344,7 @@ public class Renderer implements NativeResource {
             IntBuffer x = stack.ints(0);
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(mWindow, x, y);
-            LOGGER.info(String.format("%d %d", x.get(0), y.get(0)));
+            LOGGER.finer(String.format("%d %d", x.get(0), y.get(0)));
             if (x.get(0) == 0 || y.get(0) == 0) return;
         }
 
@@ -422,7 +419,7 @@ public class Renderer implements NativeResource {
      * instance will also enable debug validation layers, which allow to track down issues.
      */
     private VkInstance createInstance(String appName) {
-        LOGGER.info("Create instance");
+        LOGGER.fine("Create instance");
 
         try (MemoryStack stack = stackPush()) {
             // Prepare basic Vulkan App information
@@ -486,7 +483,7 @@ public class Renderer implements NativeResource {
      * frame. Do not pop the stack before using up createInfo!!!
      */
     private void setupDebugValidationLayers(VkInstanceCreateInfo createInfo, MemoryStack stack) {
-        LOGGER.info("Setup VK validation layers");
+        LOGGER.fine("Setup VK validation layers");
 
         Set<String> wantedSet = new HashSet<>(WANTED_VALIDATION_LAYERS_LIST);
 
@@ -595,7 +592,7 @@ public class Renderer implements NativeResource {
      * <p>This method uses window to get its surface that the renderer will draw to
      */
     private long createSurface() {
-        LOGGER.info("Create surface");
+        LOGGER.fine("Create surface");
 
         try (MemoryStack stack = stackPush()) {
             LongBuffer pSurface = stack.callocLong(1);
@@ -612,14 +609,14 @@ public class Renderer implements NativeResource {
 
     /** Sets up one physical device for use */
     private PhysicalDevice pickPhysicalDevice() {
-        LOGGER.info("Pick physical device");
+        LOGGER.fine("Pick physical device");
         PhysicalDevice physicalDevice =
                 PhysicalDevice.pickPhysicalDevice(
                         mInstance, mSurface, TARGET_GPU, DEVICE_EXTENSIONS);
         if (physicalDevice == null) {
             throw new RuntimeException("Failed to find compatible GPU!");
         }
-        LOGGER.info(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
+        LOGGER.fine(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
         return physicalDevice;
     }
 
@@ -627,7 +624,7 @@ public class Renderer implements NativeResource {
 
     /** Creates a logical device with required features */
     private VkDevice createLogicalDevice() {
-        LOGGER.info("Create logical device");
+        LOGGER.fine("Create logical device");
 
         try (MemoryStack stack = stackPush()) {
             FloatBuffer queuePriority = stack.floats(1.0f);
@@ -711,7 +708,7 @@ public class Renderer implements NativeResource {
      * <p>This method creates a command pool which is used for creating command buffers.
      */
     private long createCommandPool() {
-        LOGGER.info("Create command pool");
+        LOGGER.fine("Create command pool");
 
         try (MemoryStack stack = stackPush()) {
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
@@ -736,7 +733,7 @@ public class Renderer implements NativeResource {
 
     /** Sets up the swapchain required for rendering */
     private long createSwapchain() {
-        LOGGER.info("Setup swapchain");
+        LOGGER.fine("Setup swapchain");
 
         try (MemoryStack stack = stackPush()) {
             int presentMode = mPhysicalDevice.getSwapchainSupport().choosePresentMode();
@@ -850,7 +847,7 @@ public class Renderer implements NativeResource {
      * <p>TODO: move to material system? Move to render pass manager?
      */
     private long createRenderPass() {
-        LOGGER.info("Create render pass");
+        LOGGER.fine("Create render pass");
 
         try (MemoryStack stack = stackPush()) {
             VkAttachmentDescription.Buffer attachments =
@@ -951,7 +948,7 @@ public class Renderer implements NativeResource {
      * <p>As the name implies, this buffer holds base per-instance data
      */
     private VulkanBuffer createInstanceBuffer(int sizeOfBuffer) {
-        LOGGER.info("Create instance buffer");
+        LOGGER.fine("Create instance buffer");
 
         try (MemoryStack stack = stackPush()) {
             return new VulkanBuffer(
@@ -969,7 +966,7 @@ public class Renderer implements NativeResource {
      *
      * <p>This command buffer can be flushed with {@code endSingleUseCommandBuffer}
      */
-    public static VkCommandBuffer beginSingleUseCommandBuffer(VkDevice device, long commandPool) {
+    static VkCommandBuffer beginSingleUseCommandBuffer(VkDevice device, long commandPool) {
         try (MemoryStack stack = stackPush()) {
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
             allocInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);
@@ -997,7 +994,7 @@ public class Renderer implements NativeResource {
     }
 
     /** Ends and frees the single use command buffer */
-    public static void endSingleUseCommandBuffer(
+    static void endSingleUseCommandBuffer(
             VkCommandBuffer commandBuffer,
             VkDevice device,
             VkQueue graphicsQueue,
@@ -1025,7 +1022,7 @@ public class Renderer implements NativeResource {
     /// Frame Context setup
 
     private FrameContext[] createFrameContexts(int framesInFlight) {
-        LOGGER.info("Setup sync objects");
+        LOGGER.fine("Setup sync objects");
 
         try (MemoryStack stack = stackPush()) {
             FrameContext[] frames = new FrameContext[framesInFlight];
@@ -1071,10 +1068,7 @@ public class Renderer implements NativeResource {
 
     /// Record command buffer to temporary object
 
-    // private VulkanMeshBuffer mCurrentMeshBuffer;
-    // private Map<Integer, VulkanMeshBuffer> mDiscardedMeshBuffers = new HashMap<>();
-    // private Map<DrawCallState.HashKey, DrawCallState> mDrawInstances = new HashMap<>();
-    public void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables) {
+    void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables) {
         for (DrawCallState state : mDrawInstances.values()) state.startDrawData(mCurrentMeshBuffer);
 
         DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
@@ -1121,9 +1115,8 @@ public class Renderer implements NativeResource {
         }
     }
 
-    public void recordCommandBuffer(ImageContext ctx, Camera camera) {
+    void recordCommandBuffer(ImageContext ctx, Camera camera) {
 
-        camera.updateAspectRatio(mExtent.width(), mExtent.height());
         mVertexConstants.proj = camera.getProj();
         mVertexConstants.view = camera.getView();
 
@@ -1180,7 +1173,7 @@ public class Renderer implements NativeResource {
                         0,
                         pConstants);
 
-                for (DrawCallState.DrawData drawData : callState.getDrawData().values()) {
+                for (DrawCallState.DrawData drawData : callState.getDrawData()) {
                     try (MemoryStack innerStack = stackPush()) {
 
                         LongBuffer offsets =

@@ -8,6 +8,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -27,6 +28,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     private SwapchainSupportDetails mSwapchainSupport;
     private FeatureSupportDetails mFeatureSupport;
     private String mDeviceName;
+    private static final Logger LOGGER = Logger.getLogger("render");
 
     private int mScore;
     private QueueFamilyIndices mIndices;
@@ -115,6 +117,11 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return Integer.compare(other.mScore, mScore);
     }
 
+    /**
+     * Find supported depth texture format
+     *
+     * @return supported format for depth texture
+     */
     public int findDepthFormat() {
         return findSupportedFormat(
                 DEPTH_FORMATS,
@@ -174,6 +181,10 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 return d;
             }
         }
+
+        LOGGER.severe("Failed to find suitable physical device!");
+        LOGGER.info("Valid devices:");
+        for (PhysicalDevice d : devices) LOGGER.info(d.mDeviceName);
 
         return null;
     }

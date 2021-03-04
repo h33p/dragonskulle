@@ -25,7 +25,7 @@ class VulkanPipeline implements NativeResource {
     private VkDevice mDevice;
     private ShaderSet mShaderSet;
 
-    public static final Logger LOGGER = Logger.getLogger("render");
+    private static final Logger LOGGER = Logger.getLogger("render");
 
     private static int MATRIX_SIZE = 4 * 4 * 4;
 
@@ -119,7 +119,7 @@ class VulkanPipeline implements NativeResource {
             VkDevice device,
             VkExtent2D extent,
             long renderPass) {
-        LOGGER.info("Setup pipeline");
+        LOGGER.fine("Setup pipeline");
 
         mDevice = device;
         mShaderSet = shaderSet;

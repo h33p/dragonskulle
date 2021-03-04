@@ -5,6 +5,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,6 +40,8 @@ class VulkanShaderDescriptorPool implements NativeResource {
 
     private VulkanBuffer mFragmentUniformBuffers;
     private DescriptorBinding mFragmentUniformBindingDescription;
+
+    public static final Logger LOGGER = Logger.getLogger("render");
 
     public static VulkanShaderDescriptorPool createPool(
             VkDevice device,
@@ -151,7 +154,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
     }
 
     private long createDescriptorPool(ShaderSet shaderSet, int descriptorCount) {
-        Renderer.LOGGER.info("Setup descriptor pool");
+        LOGGER.fine("Setup descriptor pool");
 
         try (MemoryStack stack = stackPush()) {
 
@@ -205,7 +208,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
      */
     private long createDescriptorSetLayoutAndBuffers(
             ShaderSet shaderSet, PhysicalDevice physicalDevice, int descriptorCount) {
-        Renderer.LOGGER.info("Create descriptor set layout");
+        LOGGER.fine("Create descriptor set layout");
 
         try (MemoryStack stack = stackPush()) {
 

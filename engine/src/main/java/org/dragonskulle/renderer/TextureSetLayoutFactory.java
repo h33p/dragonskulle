@@ -6,6 +6,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
@@ -20,6 +21,8 @@ class TextureSetLayoutFactory implements NativeResource {
     private VkDevice mDevice;
 
     private HashMap<Integer, Long> mLayouts = new HashMap<>();
+
+    public static final Logger LOGGER = Logger.getLogger("render");
 
     public TextureSetLayoutFactory(VkDevice device) {
         mDevice = device;
@@ -46,7 +49,7 @@ class TextureSetLayoutFactory implements NativeResource {
      * has.
      */
     private long createDescriptorSetLayout(int textureCount) {
-        Renderer.LOGGER.info("Create texture descriptor set layout");
+        LOGGER.fine("Create texture descriptor set layout");
 
         try (MemoryStack stack = stackPush()) {
             VkDescriptorSetLayoutBinding.Buffer layoutBindings =

@@ -18,7 +18,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class RenderedApp {
 
-    public static final Logger LOGGER = Logger.getLogger("render");
+    private static final Logger LOGGER = Logger.getLogger("render");
 
     public static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
     private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 2);
@@ -39,6 +39,7 @@ public class RenderedApp {
      */
     public void run(int width, int height, String appName) throws Exception {
         DEBUG.set(DEBUG_MODE);
+
         initWindow(width, height, appName);
         mRenderer = new Renderer(appName, mWindow);
         mainLoop();

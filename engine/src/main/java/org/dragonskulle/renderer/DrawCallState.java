@@ -4,6 +4,7 @@ package org.dragonskulle.renderer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +17,10 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
 
 /**
- * Class abstracting a single draw call
+ * Class abstracting a single graphics pipeline
  *
- * <p>This stores all data that is unique per draw.
+ * <p>This stores all data that is unique per material/pipeline, along with lists of objects that
+ * are drawn using instanced rendering.
  *
  * @author Aurimas Blažulionis
  */
@@ -32,7 +34,7 @@ class DrawCallState implements NativeResource {
     private VulkanSampledTextureFactory mTextureFactory;
     private Mesh mMesh;
     @Getter private VulkanMeshBuffer.MeshDescriptor mMeshDescriptor;
-    @Getter private Map<TextureHashKey, DrawData> mDrawData = new HashMap<>();
+    private Map<TextureHashKey, DrawData> mDrawData = new HashMap<>();
 
     private int mDescriptorSetCount = 0;
 
@@ -95,6 +97,7 @@ class DrawCallState implements NativeResource {
         }
     }
 
+    /** Describes addition data needed for a single instanced draw call */
     @Accessors(prefix = "m")
     @Getter
     public static class DrawData {
@@ -147,7 +150,7 @@ class DrawCallState implements NativeResource {
                 key.mMesh);
     }
 
-    public DrawCallState(
+    private DrawCallState(
             VkDevice device,
             PhysicalDevice physicalDevice,
             VkExtent2D extent,
@@ -158,7 +161,6 @@ class DrawCallState implements NativeResource {
             int imageCount,
             ShaderSet shaderSet,
             Mesh mesh) {
-        // mDrawData = new DrawData();
         mDescriptorPool =
                 VulkanShaderDescriptorPool.createPool(
                         device, physicalDevice, shaderSet, imageCount);
@@ -183,6 +185,10 @@ class DrawCallState implements NativeResource {
                         device,
                         extent,
                         renderPass);
+    }
+
+    public Collection<DrawData> getDrawData() {
+        return mDrawData.values();
     }
 
     public void startDrawData(VulkanMeshBuffer meshBuffer) {

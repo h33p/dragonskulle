@@ -59,11 +59,6 @@ public class Resource<T> implements NativeResource {
     }
 
     @Override
-    protected void finalize() {
-        free();
-    }
-
-    @Override
     public int hashCode() {
         return get().hashCode();
     }
