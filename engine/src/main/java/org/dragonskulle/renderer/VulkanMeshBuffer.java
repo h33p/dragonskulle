@@ -219,7 +219,7 @@ class VulkanMeshBuffer implements NativeResource {
                 vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
                 for (Map.Entry<Mesh, MeshDescriptor> mesh : mLoadedMeshes.entrySet()) {
-                    ByteBuffer buf = byteBuffer.position(mesh.getValue().mIndexOffset);
+                    ByteBuffer buf = (ByteBuffer) byteBuffer.position(mesh.getValue().mIndexOffset);
                     for (int i : mesh.getKey().getIndices()) {
                         buf.putInt(i);
                     }
