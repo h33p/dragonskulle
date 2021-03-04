@@ -5,8 +5,6 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.ByteBuffer;
 import lombok.Builder;
-import org.dragonskulle.renderer.VulkanPipeline.AttributeDescription;
-import org.dragonskulle.renderer.VulkanPipeline.BindingDescription;
 import org.joml.*;
 
 /**

@@ -6,7 +6,6 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import java.util.logging.Logger;
-import lombok.Builder;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
@@ -26,42 +25,6 @@ class VulkanPipeline implements NativeResource {
     private ShaderSet mShaderSet;
 
     private static final Logger LOGGER = Logger.getLogger("render");
-
-    private static int MATRIX_SIZE = 4 * 4 * 4;
-
-    @Builder
-    public static class BindingDescription {
-        public int bindingID;
-        public int size;
-        public int inputRate;
-
-        public static BindingDescription instanced(int size) {
-            return new BindingDescription(1, size, VK_VERTEX_INPUT_RATE_INSTANCE);
-        }
-
-        public static BindingDescription instancedWithMatrix(int size) {
-            return instanced(size + MATRIX_SIZE);
-        }
-    }
-
-    @Builder
-    public static class AttributeDescription {
-        public int bindingID;
-        public int location;
-        public int format;
-        public int offset;
-
-        public static AttributeDescription[] withMatrix(AttributeDescription... descriptions) {
-            AttributeDescription[] ret = new AttributeDescription[4 + descriptions.length];
-            for (int i = 0; i < 4; i++)
-                ret[i] = new AttributeDescription(1, i + 3, VK_FORMAT_R32G32B32A32_SFLOAT, i * 16);
-            for (int i = 0; i < descriptions.length; i++)
-                ret[i + 4] =
-                        new AttributeDescription(
-                                1, i + 7, descriptions[i].format, 64 + descriptions[i].offset);
-            return ret;
-        }
-    }
 
     /** Get vulkan binding descriptors for the vertex shader */
     private static VkVertexInputBindingDescription.Buffer getBindingDescriptions(
