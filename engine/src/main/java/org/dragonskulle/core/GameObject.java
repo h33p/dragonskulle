@@ -61,10 +61,18 @@ public class GameObject implements Serializable {
         return instance;
     }
 
+    public static GameObject instantiate(GameObject object, HexTransform transform) {
+        GameObject instance = object.createClone();
+        Transform t = transform.getTransform();
+        t.setGameObject(instance);
+        instance.mTransform = t;
+        return instance;
+    }
+
     /**
      * Find an instance of a GameObject with a given name in the currently active scene. This is
-     * very slow and should not be used in any update loops. Instead, you should get all references
-     * to necessary GameObject's in onAwake or onStart and save them for future use.
+     * very, very slow and should not be used in any update loops. Instead, you should get all
+     * references to necessary GameObjects in onAwake or onStart and save them for future use.
      *
      * @param name Name of the object to search for
      * @return A reference to the first GameObject found, or null if nothing is found
@@ -419,6 +427,15 @@ public class GameObject implements Serializable {
      */
     public boolean isRootObject() {
         return mParent == null;
+    }
+
+    /**
+     * Getter for mName
+     *
+     * @return mName
+     */
+    public String getName() {
+        return mName;
     }
 
     /**
