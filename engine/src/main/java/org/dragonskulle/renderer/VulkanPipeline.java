@@ -297,8 +297,8 @@ class VulkanPipeline implements NativeResource {
                         String.format("Failed to create graphics pipeline! Err: %x", -result));
             }
 
-            fragShader.free();
-            vertShader.free();
+            if (fragShader != null) fragShader.free();
+            if (vertShader != null) vertShader.free();
 
             pipeline = pPipeline.get(0);
         }
