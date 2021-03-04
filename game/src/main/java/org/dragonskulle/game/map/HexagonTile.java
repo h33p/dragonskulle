@@ -3,13 +3,14 @@ package org.dragonskulle.game.map;
 
 import static java.lang.Math.sqrt;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 // based on https://www.redblobgames.com/grids/hexagons/implementation.html
 
 /** The Hexagon Tile Object */
-public class HexagonTile {
+public class HexagonTile implements Serializable {
 
     /**
      * This is the axial storage system for each tile
