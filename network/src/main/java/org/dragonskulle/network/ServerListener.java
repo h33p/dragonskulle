@@ -3,7 +3,7 @@ package org.dragonskulle.network;
 
 import java.io.PrintWriter;
 
-/** The interface Server listener. */
+/** @author Oscar L The interface Server listener. */
 public interface ServerListener {
     /**
      * Client connected event.

@@ -6,8 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * The type Sync var.
- *
+ * @author Oscar L The type Sync var.
  * @param <T> the type parameter
  */
 public class SyncVar<T extends Serializable> implements Serializable {

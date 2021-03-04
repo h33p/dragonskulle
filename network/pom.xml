@@ -14,48 +14,98 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
 
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
                 <executions>
-                    <execution>
-                        <id>only-server</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <classifier>only-server</classifier>
-
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <mainClass>org.dragonskulle.network.StartServer</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </execution>
 
                     <execution>
-                        <id>only-client</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-
+                        <id>make-assembly-client</id>
                         <configuration>
-                            <classifier>only-client</classifier>
-
+                            <appendAssemblyId>false</appendAssemblyId>
                             <archive>
                                 <manifest>
-                                    <addClasspath>true</addClasspath>
                                     <mainClass>org.dragonskulle.network.components.NetworkCommunicationsTest</mainClass>
                                 </manifest>
                             </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <finalName>only-client</finalName>
                         </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>make-assembly-server</id>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <archive>
+                                <manifest>
+                                    <mainClass>org.dragonskulle.network.StartServer</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <finalName>only-server</finalName>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
+
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-assembly-plugin</artifactId>-->
+
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>only-server</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>jar</goal>-->
+            <!--                        </goals>-->
+            <!--                        <phase>package</phase>-->
+            <!--                        <configuration>-->
+            <!--                            <classifier>only-server</classifier>-->
+
+            <!--                            <archive>-->
+            <!--                                <manifest>-->
+            <!--                                    <addClasspath>true</addClasspath>-->
+            <!--                                    <mainClass>org.dragonskulle.network.StartServer</mainClass>-->
+            <!--                                </manifest>-->
+            <!--                            </archive>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+
+            <!--                    <execution>-->
+            <!--                        <id>only-client</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>jar</goal>-->
+            <!--                        </goals>-->
+            <!--                        <phase>package</phase>-->
+
+            <!--                        <configuration>-->
+            <!--                            <classifier>only-client</classifier>-->
+
+            <!--                            <archive>-->
+            <!--                                <manifest>-->
+            <!--                                    <addClasspath>true</addClasspath>-->
+            <!--                                    <mainClass>org.dragonskulle.network.components.NetworkCommunicationsTest</mainClass>-->
+            <!--                                </manifest>-->
+            <!--                            </archive>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
         </plugins>
     </build>
     <dependencies>
@@ -73,6 +123,18 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>13.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.3.0</version>
+            <type>maven-plugin</type>
+        </dependency>
     </dependencies>
 
 </project>

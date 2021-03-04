@@ -2,8 +2,9 @@
 package org.dragonskulle.network;
 
 /**
- * This interface is to handle client commands, this can be extended to run command when a message
- * is received. Important events are logged here
+ * @author Oscar L
+ *     <p>This interface is to handle client commands, this can be extended to run command when a
+ *     message is received. Important events are logged here
  */
 public interface ClientListener {
     /** Unknown host. */

@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-/** How to start the server Start server. */
+/** @author Oscar L How to start the server Start server. */
 public class StartServer {
     /** The Server listener. */
     static ServerListener serverListener;

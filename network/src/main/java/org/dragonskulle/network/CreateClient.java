@@ -3,7 +3,10 @@ package org.dragonskulle.network;
 
 import java.util.Scanner;
 
-/** This is for testing, it creates a CLI client instance and can connect to the server */
+/**
+ * @author Oscar L This is for testing, it creates a CLI client instance and can connect to the
+ *     server
+ */
 public class CreateClient {
     /** The Ip. */
     static String ip;

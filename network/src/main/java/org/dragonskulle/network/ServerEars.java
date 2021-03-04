@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/** This is the handler for the server, it will handle events */
+/** @author Oscar L This is the handler for the server, it will handle events */
 public class ServerEars implements ServerListener {
     /** The Log of messages to be displayed. */
     ListenableQueue<String> log;

@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-/** The type Sync int. */
+/** @author Oscar L The type Sync int. */
 public class SyncInt extends AbstractSync<Integer> {
 
     /**

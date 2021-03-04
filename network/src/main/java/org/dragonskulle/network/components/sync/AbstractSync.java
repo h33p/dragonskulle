@@ -4,8 +4,7 @@ package org.dragonskulle.network.components.sync;
 import java.io.Serializable;
 
 /**
- * The type Abstract sync. New Sync Types must extend this class.
- *
+ * @author Oscar L The type Abstract sync. New Sync Types must extend this class.
  * @param <T> the type parameter
  */
 abstract class AbstractSync<T extends Serializable> extends SyncVar<T> {

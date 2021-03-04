@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import org.dragonskulle.game.map.HexMap;
 import org.dragonskulle.game.map.HexagonTile;
 
-/** The type Server game instance. */
+/** @author Oscar L The type Server game instance. */
 public class ServerGameInstance {
     /** The Map store, should be depreciated in favour of a HexMap object. */
     private HexagonTile[][] map;

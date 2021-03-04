@@ -9,8 +9,8 @@ import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
- * The type Client game instance, used to store all game data. This will be replaced by the game
- * engines data.
+ * @author Oscar L The type Client game instance, used to store all game data. This will be replaced
+ *     by the game engines data.
  */
 public class ClientGameInstance {
     /** The Map. */

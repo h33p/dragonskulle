@@ -6,7 +6,7 @@ import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
 
-/** The Network communications test class. */
+/** @author Oscar L The Network communications test class. */
 public class NetworkCommunicationsTest {
 
     /** Instantiates a new Network communications test. */

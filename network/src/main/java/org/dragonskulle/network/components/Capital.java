@@ -4,7 +4,7 @@ package org.dragonskulle.network.components;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncString;
 
-/** The Capital Component. */
+/** @author Oscar L The Capital Component. */
 public class Capital extends NetworkableComponent {
     /**
      * Gets sync me.
@@ -51,4 +51,7 @@ public class Capital extends NetworkableComponent {
     public void setStringSyncMeAlso(String val) {
         this.syncMeAlso.set(val);
     }
+
+    @Override
+    protected void onDestroy() {}
 }

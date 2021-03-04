@@ -8,11 +8,11 @@ import java.util.*;
 import sun.misc.IOUtils;
 
 /**
- * The Network message structure which is sent. It will follow the format below. 0 : Print Contents
- * [DEBUG] 20-50 : spawn 20 : spawn map 21 : spawn capitol
- *
- * <p>// schema // ::S:: (5bytes) // messageType (1Byte) // payloadSize (4 bytes) // payload (n
- * bytes) // ::E:: (5 bytes)
+ * @author Oscar L
+ *     <p>The Network message structure which is sent. It will follow the format below. 0 : Print
+ *     Contents [DEBUG] 20-50 : spawn 20 : spawn map 21 : spawn capitol
+ *     <p>// schema // ::S:: (5bytes) // messageType (1Byte) // payloadSize (4 bytes) // payload (n
+ *     bytes) // ::E:: (5 bytes)
  */
 public class NetworkMessage {
     /** The constant MAX_TRANSMISSION_SIZE. */

@@ -3,7 +3,7 @@ package org.dragonskulle.network;
 
 import java.net.InetAddress;
 
-/** The type Client instance. */
+/** @author Oscar L The type Client instance. */
 public class ClientInstance {
     /** The Ip. */
     public final InetAddress IP;

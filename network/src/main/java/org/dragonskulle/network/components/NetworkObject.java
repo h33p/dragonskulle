@@ -5,7 +5,7 @@ import java.util.*;
 import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
 
-/** The NetworkObject deals with any networked variables. */
+/** @author Oscar L The NetworkObject deals with any networked variables. */
 public class NetworkObject {
     /**
      * Instantiates a new Network object.

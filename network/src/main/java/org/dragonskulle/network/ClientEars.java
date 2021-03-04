@@ -4,8 +4,8 @@ package org.dragonskulle.network;
 import java.util.Arrays;
 
 /**
- * ClientEars is the client implementation of ClientListener, this is where custom executions can be
- * defined for different commands received.
+ * @author Oscar L ClientEars is the client implementation of ClientListener, this is where custom
+ *     executions can be defined for different commands received.
  */
 public class ClientEars implements ClientListener {
     @Override

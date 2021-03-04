@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -10,13 +8,14 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.SyncVar;
+import org.jetbrains.annotations.NotNull;
 import sun.misc.IOUtils;
 
 /**
- * Any component that extends this, its syncvars will be updated with the server.
- *
+ * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  * @param <T> the type parameter
  */
 public abstract class NetworkableComponent<T> extends Component {

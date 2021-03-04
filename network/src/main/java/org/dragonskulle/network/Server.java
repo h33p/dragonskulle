@@ -3,7 +3,6 @@ package org.dragonskulle.network;
 // based on
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 
-import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -15,8 +14,9 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
- * This is the main Server Class, it handles setup and stores all client connections. It can
- * broadcast messages to every client and receive from individual clients.
+ * @author Oscar L
+ *     <p>This is the main Server Class, it handles setup and stores all client connections. It can
+ *     broadcast messages to every client and receive from individual clients.
  */
 public class Server {
     /** The Port. */

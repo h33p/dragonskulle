@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import com.sun.xml.internal.org.jvnet.mimepull.DecodingException;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -12,9 +11,10 @@ import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
- * This is the client usage, you will create an instance, by providing the correct server to connect
- * to. ClientListener is the handler for commands that the client receives. {@link
- * org.dragonskulle.network.ClientListener}**
+ * @author Oscar L
+ *     <p>This is the client usage, you will create an instance, by providing the correct server to
+ *     connect to. ClientListener is the handler for commands that the client receives. {@link
+ *     org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
     /** The constant MAX_TRANSMISSION_SIZE. */
