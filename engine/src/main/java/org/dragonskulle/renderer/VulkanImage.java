@@ -29,6 +29,11 @@ class VulkanImage implements NativeResource {
 
     private VulkanBuffer mStagingBuffer;
 
+    /**
+     * Create a depth texture
+     *
+     * <p>Staging buffer should be freed after the command buffer is flushed/freed.
+     */
     public static VulkanImage createDepthImage(
             VkCommandBuffer commandBuffer,
             VkDevice device,

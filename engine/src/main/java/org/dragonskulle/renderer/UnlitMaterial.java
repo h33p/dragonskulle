@@ -8,6 +8,14 @@ import org.dragonskulle.renderer.TextureMapping.*;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
+/**
+ * Reference unlit material
+ *
+ * <p>This material provides basic unlit rendering of objects with textures. One texture is
+ * settable, alongside per-object colour value.
+ *
+ * @author Aurimas Blažulionis
+ */
 public class UnlitMaterial implements IMaterial {
     public static class UnlitShaderSet extends ShaderSet {
         public UnlitShaderSet() {
@@ -30,7 +38,8 @@ public class UnlitMaterial implements IMaterial {
                 new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT))
     };
 
-    public Vector3f color = new Vector3f(1.f);
+    /** Colour of the surface. It will multiply the texture's colour */
+    public Vector3f colour = new Vector3f(1.f);
 
     public ShaderSet getShaderSet() {
         return sShaderSet;
@@ -38,7 +47,7 @@ public class UnlitMaterial implements IMaterial {
 
     public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
-        color.get(offset, buffer);
+        colour.get(offset, buffer);
     }
 
     public SampledTexture[] getFragmentTextures() {

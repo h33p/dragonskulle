@@ -13,7 +13,9 @@ import org.lwjgl.vulkan.*;
 import org.lwjgl.vulkan.VkDevice;
 
 /**
- * Create and manage texture samplers for a device
+ * Create and manage texture sampler layouts for a device
+ *
+ * <p>These layouts are freed whenever this factory is freed.
  *
  * @author Aurimas Blažulionis
  */
@@ -28,8 +30,16 @@ class TextureSetLayoutFactory implements NativeResource {
         mDevice = device;
     }
 
+    /**
+     * Get a texture descriptor set layout
+     *
+     * <p>This layout does not need to be destroyed, it is cached within this factory.
+     *
+     * @param textureCount number of textures used in the layout
+     * @return created layout, or null if textureCount was zero, or there was an error creating the
+     *     layout
+     */
     public Long getLayout(int textureCount) {
-
         if (textureCount < 0) return null;
 
         Long layout = mLayouts.get(textureCount);
@@ -81,6 +91,8 @@ class TextureSetLayoutFactory implements NativeResource {
         }
     }
 
+    /** Free the underlying resources */
+    @Override
     public void free() {
         for (long layout : mLayouts.values()) {
             vkDestroyDescriptorSetLayout(mDevice, layout, null);

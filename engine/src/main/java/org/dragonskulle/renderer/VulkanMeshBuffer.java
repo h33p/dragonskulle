@@ -66,6 +66,15 @@ class VulkanMeshBuffer implements NativeResource {
         return mLoadedMeshes.get(mesh);
     }
 
+    /**
+     * Adds a mesh to the mesh buffer
+     *
+     * <p>This method will add the mesh in, but if it was not loaded in already, it is necessary to
+     * create a new mesh buffer by calling {@code commitChanges}.
+     *
+     * @param mesh mesh to add
+     * @return descriptor of the offsets within mesh buffer for the mesh
+     */
     public MeshDescriptor addMesh(Mesh mesh) {
         MeshDescriptor ret = mLoadedMeshes.get(mesh);
         if (ret == null) {
@@ -78,6 +87,17 @@ class VulkanMeshBuffer implements NativeResource {
         return ret;
     }
 
+    /**
+     * Commits mesh buffer changes.
+     *
+     * <p>This method will commit any changes, and return a new mesh buffer, if there were such
+     * changes.
+     *
+     * @param graphicsQueue graphics vulkan queue
+     * @param commandPool command pool of the device
+     * @return new VulkanMeshBuffer if this one was dirty (check with {@code isDirty}), {@code this}
+     *     otherwise.
+     */
     public VulkanMeshBuffer commitChanges(VkQueue graphicsQueue, long commandPool) {
         if (mDirty) {
             mDirty = false;

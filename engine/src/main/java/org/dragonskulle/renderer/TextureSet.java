@@ -26,12 +26,23 @@ class TextureSet implements NativeResource {
 
     private VkDevice mDevice;
 
+    /** Descriptor pool of this TextureSet */
     @Getter private long mPool;
+    /** Layout of the descriptor sets */
     @Getter private long mSetLayout;
+
     private long[] mDescriptorSets;
 
     public static final Logger LOGGER = Logger.getLogger("render");
 
+    /**
+     * Create a new TextureSet
+     *
+     * @param device current vulkan device
+     * @param factory factory of texture set layouts
+     * @param textures textures used
+     * @param descriptorSetCount number of descriptor sets to create
+     */
     public TextureSet(
             VkDevice device,
             TextureSetLayoutFactory factory,
@@ -75,6 +86,7 @@ class TextureSet implements NativeResource {
         }
     }
 
+    /** Update the descriptor set to have correct textures attached */
     private void updateDescriptorSet(int index) {
         try (MemoryStack stack = stackPush()) {
 
@@ -105,6 +117,13 @@ class TextureSet implements NativeResource {
         }
     }
 
+    /**
+     * Create a new descriptor pool
+     *
+     * @param textureCount number of textures used
+     * @param descriptorSetCount number of descriptor sets to create
+     * @return the created descriptor pool
+     */
     private long createDescriptorPool(int textureCount, int descriptorSetCount) {
         LOGGER.fine("Setup texture descriptor pool");
 
@@ -133,12 +152,15 @@ class TextureSet implements NativeResource {
         }
     }
 
+    /** Retrieve a descriptor set by image index */
     public long getDescriptorSet(int index) {
         return mDescriptorSets[index];
     }
 
+    /** Free underlying descriptor pool */
     @Override
     public void free() {
-        vkDestroyDescriptorPool(mDevice, mPool, null);
+        if (mPool != 0) vkDestroyDescriptorPool(mDevice, mPool, null);
+        mPool = 0;
     }
 }
