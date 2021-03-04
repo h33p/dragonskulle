@@ -1,11 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
+import static org.lwjgl.vulkan.VK10.*;
+
 import java.nio.ByteBuffer;
 import org.dragonskulle.renderer.TextureMapping.*;
 import org.dragonskulle.renderer.VulkanPipeline.AttributeDescription;
 import org.dragonskulle.renderer.VulkanPipeline.BindingDescription;
-import static org.lwjgl.vulkan.VK10.*;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
@@ -16,7 +17,9 @@ public class UnlitMaterial implements IMaterial {
             mFragmentShader = ShaderBuf.getResource("unlit", ShaderKind.FRAGMENT_SHADER);
 
             mVertexBindingDescription = BindingDescription.instancedWithMatrix(4 * 3);
-            mVertexAttributeDescriptions = AttributeDescription.withMatrix(new AttributeDescription(1, 0, VK_FORMAT_R32G32B32_SFLOAT, 0));
+            mVertexAttributeDescriptions =
+                    AttributeDescription.withMatrix(
+                            new AttributeDescription(1, 0, VK_FORMAT_R32G32B32_SFLOAT, 0));
             mNumFragmentTextures = 1;
         }
     }

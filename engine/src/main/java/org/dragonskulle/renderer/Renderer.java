@@ -1123,7 +1123,7 @@ public class Renderer implements NativeResource {
 
     public void recordCommandBuffer(ImageContext ctx, Camera camera) {
 
-        camera.updateProjection(mExtent.width(), mExtent.height());
+        camera.updateAspectRatio(mExtent.width(), mExtent.height());
         mVertexConstants.proj = camera.getProj();
         mVertexConstants.view = camera.getView();
 

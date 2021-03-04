@@ -53,11 +53,9 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     static class FeatureSupportDetails {
         boolean anisotropyEnable;
         float maxAnisotropy;
-        // TODO: build a "slow" path for when this is not supported
-        boolean dynamicSamplerIndexing;
 
         public boolean isSuitable() {
-            return true; // dynamicSamplerIndexing;
+            return true;
         }
     }
 
@@ -77,17 +75,12 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             this.mFeatureSupport = new FeatureSupportDetails();
             this.mFeatureSupport.anisotropyEnable = features.samplerAnisotropy();
             this.mFeatureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
-            this.mFeatureSupport.dynamicSamplerIndexing =
-                    features.shaderSampledImageArrayDynamicIndexing();
 
             this.mScore = 0;
 
             // Prioritize dedicated graphics cards
             if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
                 this.mScore += 5000;
-
-            // This incredibly helps with perf
-            if (mFeatureSupport.dynamicSamplerIndexing) this.mScore += 5000;
 
             // Check maximum texture sizes, prioritize largest
             this.mScore += properties.limits().maxImageDimension2D();

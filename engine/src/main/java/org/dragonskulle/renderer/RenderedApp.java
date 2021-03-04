@@ -96,7 +96,7 @@ public class RenderedApp {
         };
 
         for (int i = 1; i < INSTANCE_COUNT; i++)
-            ((UnlitMaterial)renderables[i].material).color = colors[i % colors.length];
+            ((UnlitMaterial) renderables[i].material).color = colors[i % colors.length];
 
         List<Renderable> renderableList = Arrays.asList(renderables);
 
