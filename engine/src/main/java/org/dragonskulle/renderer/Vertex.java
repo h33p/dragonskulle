@@ -3,8 +3,10 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.vulkan.VK10.*;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.joml.*;
@@ -16,7 +18,8 @@ import org.joml.*;
  */
 @Builder
 @Accessors(prefix = "m")
-public class Vertex {
+@EqualsAndHashCode
+public class Vertex implements Serializable {
     public static int SIZEOF = (3 + 3 + 2) * 4;
     public static int OFFSETOF_POS = 0;
     public static int OFFSETOF_COL = OFFSETOF_POS + 3 * 4;

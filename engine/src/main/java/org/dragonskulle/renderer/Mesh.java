@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import lombok.Builder;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.joml.*;
@@ -14,8 +16,7 @@ import org.joml.*;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Builder
-public class Mesh {
+public class Mesh implements Serializable {
     @Getter
     /** Vertices of the mesh */
     private Vertex[] mVertices;
@@ -23,6 +24,8 @@ public class Mesh {
     @Getter
     /** Indices of the mesh. In pairs of 3, forming triangles */
     private int[] mIndices;
+
+    private int mCachedHashCode = 0;
 
     private static final Vertex[] HEXAGON_VERTICES = {
         new Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, 0.0f)),
@@ -82,5 +85,28 @@ public class Mesh {
     /** Standard cube mesh */
     public static final Mesh CUBE = new Mesh(CUBE_VERTICES, CUBE_INDICES);
 
+    public Mesh(Vertex[] vertices, int[] indices) {
+        mVertices = vertices;
+        mIndices = indices;
+    }
+
     // TODO: mesh optimization methods, and other utilities
+
+    @Override
+    public int hashCode() {
+        if (mCachedHashCode == 0)
+            mCachedHashCode = Objects.hash(Arrays.hashCode(mVertices), Arrays.hashCode(mIndices));
+        return mCachedHashCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Mesh)) return false;
+        if (o.hashCode() != hashCode()) return false;
+        Mesh mesh = (Mesh) o;
+        // There is a potential chance for collision, yes,
+        // but that is extremely unlikely. Billions to one!
+        return mVertices.length == mesh.mVertices.length && mIndices.length == mesh.mIndices.length;
+    }
 }

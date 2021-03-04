@@ -110,7 +110,11 @@ class DrawCallState implements NativeResource {
         public void updateInstanceBuffer(ShaderSet shaderSet, ByteBuffer buffer) {
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
-                object.getMaterial().writeVertexInstanceData(cur_off, buffer, object.matrix);
+                object.getMaterial()
+                        .writeVertexInstanceData(
+                                cur_off,
+                                buffer,
+                                object.getGameObject().getTransform().getWorldMatrix());
                 cur_off += shaderSet.getVertexBindingDescription().size;
             }
         }

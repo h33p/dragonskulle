@@ -1,6 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +22,7 @@ import org.lwjgl.system.NativeResource;
  */
 @Accessors(prefix = "m")
 @Builder
-class SampledTexture implements NativeResource {
+class SampledTexture implements NativeResource, Serializable {
     @Getter private Resource<Texture> mTexture;
     @Getter private TextureMapping mMapping;
 
@@ -38,4 +43,17 @@ class SampledTexture implements NativeResource {
         SampledTexture other = (SampledTexture) o;
         return mMapping.equals(other.mMapping) && mTexture.equals(other.mTexture);
     }
+
+    private void readObject(ObjectInputStream inputStream)
+            throws ClassNotFoundException, IOException {
+        mTexture = Texture.getResource(inputStream.readUTF());
+        mMapping = (TextureMapping) inputStream.readObject();
+    }
+
+    private void writeObject(ObjectOutputStream outputStream) throws IOException {
+        outputStream.writeUTF(mTexture.get().getName());
+        outputStream.writeObject(mMapping);
+    }
+
+    private void readObjectNoData() throws ObjectStreamException {}
 }

@@ -3,6 +3,7 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.vulkan.VK10.*;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import org.dragonskulle.renderer.TextureMapping.*;
 import org.joml.Matrix4fc;
@@ -16,7 +17,7 @@ import org.joml.Vector3f;
  *
  * @author Aurimas Blažulionis
  */
-public class UnlitMaterial implements IMaterial {
+public class UnlitMaterial implements IMaterial, Serializable {
     public static class UnlitShaderSet extends ShaderSet {
         public UnlitShaderSet() {
             mVertexShader = ShaderBuf.getResource("unlit", ShaderKind.VERTEX_SHADER);

@@ -11,7 +11,7 @@ import org.joml.*;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class Camera {
+public class Camera extends Component implements ILateFrameUpdate {
     /** Option whether camera is in perspective (3D), or orthographic (2D) mode */
     public static enum Projection {
         ORTHOGRAPHIC,
@@ -44,14 +44,9 @@ public class Camera {
     /** Current screen aspect ratio */
     private float mAspectRatio = 1.f;
 
-    // TODO: remove this, it's temporary
     @Getter
-    Matrix4f mView =
-            new Matrix4f()
-                    .lookAt(
-                            new Vector3f(2.0f, 2.0f, 2.0f),
-                            new Vector3f(0.0f, 0.0f, -0.05f),
-                            new Vector3f(0.0f, 0.0f, 1.0f));
+    @Accessors(prefix = "s")
+    private static Camera sMainCamera = null;
 
     /**
      * Get the current projection matrix
@@ -80,5 +75,19 @@ public class Camera {
 
     public void updateAspectRatio(int width, int height) {
         mAspectRatio = (float) width / (float) height;
+    }
+
+    public Matrix4fc getView() {
+        return getGameObject().getTransform().getWorldMatrix();
+    }
+
+    @Override
+    public void lateFrameUpdate(float deltaTime) {
+        if (sMainCamera == null) sMainCamera = this;
+    }
+
+    @Override
+    public void onDestroy() {
+        if (sMainCamera == this) sMainCamera = null;
     }
 }

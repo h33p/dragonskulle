@@ -7,8 +7,6 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.IMaterial;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
-import org.joml.Matrix4f;
-import org.lwjgl.system.NativeResource;
 
 /**
  * Class describing a renderable object
@@ -16,14 +14,11 @@ import org.lwjgl.system.NativeResource;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class Renderable implements NativeResource {
+public class Renderable extends Component {
     /** Mesh of the object */
     @Getter @Setter private Mesh mMesh = Mesh.HEXAGON;
     /** Material of the object */
     @Getter @Setter private IMaterial mMaterial = new UnlitMaterial();
-
-    // TODO: remove this
-    public Matrix4f matrix = new Matrix4f();
 
     /** Construct a Renderable with default parameters */
     public Renderable() {}
@@ -54,7 +49,7 @@ public class Renderable implements NativeResource {
 
     /** Free the underlying resources */
     @Override
-    public void free() {
+    public void onDestroy() {
         mMaterial.free();
     }
 }
