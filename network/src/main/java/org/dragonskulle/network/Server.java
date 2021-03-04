@@ -38,6 +38,8 @@ public class Server {
             } else {
                 this.port = port;
             }
+            this.createGame();
+
             serverRunner = new ServerRunner();
             serverThread = new Thread(this.serverRunner);
             serverThread.setDaemon(true);
@@ -106,13 +108,15 @@ public class Server {
 
         @Override
         public void run() {
-            while (open && !Thread.currentThread().isInterrupted()) {
-                Socket clientSocket = sockets.acceptClient();
-                if (clientSocket != null) {
-                    Thread clientThread = new Thread(clientRunner(clientSocket));
-                    clientThread.setDaemon(true);
-                    clientThread.setName("Client " + clientSocket.getInetAddress().toString());
-                    clientThread.start();
+            while (open  && !Thread.currentThread().isInterrupted()) {
+                if(game.isSetup()) {
+                    Socket clientSocket = sockets.acceptClient();
+                    if (clientSocket != null) {
+                        Thread clientThread = new Thread(clientRunner(clientSocket));
+                        clientThread.setDaemon(true);
+                        clientThread.setName("Client " + clientSocket.getInetAddress().toString());
+                        clientThread.start();
+                    }
                 }
             }
         }
@@ -142,7 +146,7 @@ public class Server {
                 boolean connected;
                 String stream;
                 int hasBytes = 0;
-                final int MAX_TRANSMISSION_SIZE = 512;
+                final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
                 byte[] bArray; //max flatbuffer size
                 byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; //max flatbuffer size
                 this.sockets.addClient(sock);
@@ -184,8 +188,19 @@ public class Server {
 
     private void spawnMap(ClientInstance clientInstance) {
         System.out.println("spawning map on client");
+<<<<<<< HEAD
         byte[] spawnMapMessage = NetworkMessage.build((byte) 20, "MAP".getBytes());
         sockets.sendBytesToClient(clientInstance, spawnMapMessage);
+=======
+        try {
+            byte[] mapBytes = this.game.cloneMap();
+            System.out.println("Map bytes :: " + mapBytes.length + "bytes");
+            byte[] spawnMapMessage = NetworkMessage.build((byte) 20, mapBytes);
+            sockets.sendBytesToClient(clientInstance, spawnMapMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+>>>>>>> 4328d84... creating map on server creation and then sending bytes to connecting clients. Need to alter send recieve bytes protocl because messages are large and can get chopped in half
     }
 
     private void spawnCapitol() {

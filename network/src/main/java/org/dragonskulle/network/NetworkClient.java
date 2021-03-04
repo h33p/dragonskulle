@@ -144,6 +144,7 @@ public class NetworkClient {
         try {
             NetworkMessage.parse(bytes);
         } catch (Exception e) {
+
             throw new DecodingException("Message is not of valid type");
         }
     }

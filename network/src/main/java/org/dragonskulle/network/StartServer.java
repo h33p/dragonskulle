@@ -11,7 +11,6 @@ public class StartServer {
         attachShutDownHook();
         serverListener = new ServerEars();
         server = new Server(PORT, serverListener);
-        server.createGame();
     }
 
     public static void attachShutDownHook() {

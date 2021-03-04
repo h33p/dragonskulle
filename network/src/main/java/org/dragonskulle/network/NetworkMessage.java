@@ -3,7 +3,7 @@ package org.dragonskulle.network;
 import java.util.*;
 
 public class NetworkMessage {
-    private static final int MAX_TRANSMISSION_SIZE = 512;
+    private static final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
     private static final byte[] END_SIGNATURE = {58, 58, 69, 58, 58};
 
