@@ -198,7 +198,7 @@ public class NetworkMessage {
     }
 
     /**
-     * Converts an ArrayList<Byte></Byte> to a byte array.
+     * Converts an Array of Bytes to a byte array.
      *
      * @param in the in
      * @return the byte [ ]

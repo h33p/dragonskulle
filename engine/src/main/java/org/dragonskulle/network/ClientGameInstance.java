@@ -119,7 +119,7 @@ public class ClientGameInstance {
     /**
      * Function for testing
      *
-     * @return
+     * @return Returns the status of the spawned map
      */
     public boolean hasSpawnedMap() {
         return this.mMap != null;
