@@ -69,13 +69,24 @@ public class HexTransform {
     }
 
     /**
-     * The only constructor for HexTransform. Since this is a wrapper for Transform, mTransform must
-     * be set
+     * Constructor if this is going to be used as a wrapper for an existing Transform
      *
      * @param transform The Transform this class is wrapping
      */
     public HexTransform(Transform transform) {
         mTransform = transform;
+    }
+
+    /**
+     * Create a new Transform from Hex coordinates. This can be used for instantiating GameObjects
+     * at a given Hex position
+     *
+     * @param axial The axial coordinates for the transform
+     */
+    public HexTransform(Vector3f axial) {
+        mTransform = new Transform();
+        axialToCartesian(axial);
+        mTransform.setPosition(axial);
     }
 
     /**
@@ -138,5 +149,14 @@ public class HexTransform {
         }
 
         return rounded.set(rx, rz, 0);
+    }
+
+    /**
+     * Getter for mTransform
+     *
+     * @return mTransform
+     */
+    public Transform getTransform() {
+        return mTransform;
     }
 }

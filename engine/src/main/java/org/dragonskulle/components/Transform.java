@@ -268,7 +268,7 @@ public class Transform extends Component {
     public Matrix4f getWorldMatrix() {
         if (mShouldUpdate) {
             mShouldUpdate = false;
-            if (mGameObject.isRootObject()) {
+            if (mGameObject == null || mGameObject.isRootObject()) {
                 mWorldMatrix = mLocalMatrix;
             } else {
                 // Store our local matrix in mWorldMatrix

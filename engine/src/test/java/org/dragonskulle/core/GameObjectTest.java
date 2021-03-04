@@ -2,11 +2,17 @@
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
-import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.Component;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class GameObjectTest {
+
+    private static class TestComponent extends Component {
+
+        @Override
+        protected void onDestroy() {}
+    }
 
     // TODO: rewrite tests
 
@@ -44,8 +50,6 @@ public class GameObjectTest {
         boolean val = children.contains(child2);
 
         Assert.assertTrue("Child's root did not contain the child in all children", val);
-
-        Assert.assertFalse(null instanceof IOnAwake);
     }
 
     /** Test whether a game object is removed from its parent when it is destroyed */
@@ -113,17 +117,61 @@ public class GameObjectTest {
                 "GameObject did not have a transform after cloning", objClone.getTransform());
     }
 
-    /*
-    Tests still to do:
+    /** Test that an instantiated GameObject is setup correctly */
+    @Test
+    public void instantiatePerformedCorrectly() {
+        String parentName = "parent";
+        String childName = "child";
 
-        Check that all components are returned and in the correct order
+        // Setup the object
+        GameObject object = new GameObject(parentName);
+        GameObject objectChild = new GameObject(childName);
+        TestComponent component = new TestComponent();
 
+        objectChild.addComponent(component);
+        object.addChild(objectChild);
 
+        // Create the clone
+        GameObject clonedObject = object.createClone();
 
+        // Check that the clonedObject is not the same as the original
+        Assert.assertNotEquals(
+                "Cloned object was the same object as the original", object, clonedObject);
 
+        // Check that the number of children are equal
+        Assert.assertEquals(
+                "Number of children on cloned object incorrect",
+                1,
+                clonedObject.getChildren().size());
 
-        If anyone has any suggestions feel free to add them
+        GameObject clonedObjectChild = clonedObject.getChildren().get(0);
 
+        // Check that the child is not the same as the original
+        Assert.assertNotEquals(
+                "Child was the same object as the original", objectChild, clonedObjectChild);
 
-     */
+        // Check the name's of the GameObject's
+        Assert.assertEquals(
+                "Cloned object's name was incorrect", parentName, clonedObject.getName());
+        Assert.assertEquals(
+                "Cloned object's child's name was incorrect",
+                childName,
+                clonedObjectChild.getName());
+
+        // Check that the child's parent is correct
+        Assert.assertEquals(
+                "Cloned object's child had incorrect parent",
+                clonedObject,
+                clonedObjectChild.getParent());
+
+        // Check that the component exists in the child
+        Assert.assertEquals(
+                "Child did not contain the component", 1, clonedObjectChild.getComponents().size());
+
+        // Check that the type of the component is correct
+        Component clonedComponent = clonedObjectChild.getComponents().get(0);
+
+        Assert.assertTrue(
+                "Component had the incorrect type", clonedComponent instanceof TestComponent);
+    }
 }
