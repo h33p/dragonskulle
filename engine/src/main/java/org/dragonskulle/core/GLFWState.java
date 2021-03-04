@@ -41,6 +41,11 @@ public class GLFWState implements NativeResource {
         mRenderer = new Renderer(appName, mWindow);
     }
 
+    /**
+     * Process GLFW events and check if the app should close.
+     *
+     * @return {@code true} if the app should stay running, {@code false} if the app should close.
+     */
     public boolean processEvents() {
         glfwPollEvents();
 
