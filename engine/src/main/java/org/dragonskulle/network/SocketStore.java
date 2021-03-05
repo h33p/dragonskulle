@@ -41,10 +41,10 @@ public class SocketStore {
                 if (connection.isClosed()) {
                     System.out.println("Client socket output has closed");
                 }
-                System.out.println("--broadcasting to client " + connection.toString());
+//                System.out.println("--broadcasting to client " + connection.toString());
                 dOut = new DataOutputStream(connection.getOutputStream());
                 dOut.write(buf);
-                System.out.println("--broadcast success");
+//                System.out.println("--broadcast success");
 
             } catch (IOException e) {
                 System.out.println("Error in broadcasting");

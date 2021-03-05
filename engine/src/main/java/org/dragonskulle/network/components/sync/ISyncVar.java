@@ -23,7 +23,7 @@ public interface ISyncVar {
     /**
      * Deserialize sync var.
      *
-     * @param buff the buff
+     * @param stream the input stream
      * @throws IOException the io exception
      * @throws ClassNotFoundException the class not found exception
      */

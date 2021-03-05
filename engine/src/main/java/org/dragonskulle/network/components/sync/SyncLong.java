@@ -60,7 +60,7 @@ public class SyncLong implements ISyncVar {
     /**
      * Deserialize SyncBool.
      *
-     * @param buff the buff
+     * @param in the object stream
      * @throws IOException the io exception
      */
     @Override

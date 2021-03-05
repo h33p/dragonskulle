@@ -4,24 +4,33 @@ package org.dragonskulle.network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * @author Oscar L The type Client game instance, used to store all game data. This will be replaced
- *     by the game engines data.
+ * by the game engines data.
  */
 public class ClientGameInstance {
-    /** The Map. */
+    /**
+     * The Map.
+     */
     private byte[] mMap;
 
-    /** The Networked components. */
+    /**
+     * The Networked components.
+     */
     private final ArrayList<NetworkableComponent> mNetworkedComponents = new ArrayList<>();
 
-    /** The Networked objects. */
+    /**
+     * The Networked objects.
+     */
     private final ArrayList<NetworkObject> mNetworkedObjects = new ArrayList<>();
-    /** True if a capital has been spawned. */
+    /**
+     * True if a capital has been spawned.
+     */
     private Boolean mHasCapital = false;
 
     /**
@@ -49,17 +58,28 @@ public class ClientGameInstance {
      * @return the networked components
      */
     public NetworkableComponent getNetworkedComponent(int id) {
-        return mNetworkedComponents.stream().filter(e -> e.getId() == id).findFirst().orElse(null);
+        NetworkableComponent found = null;
+        for (NetworkObject nob : mNetworkedObjects) {
+            NetworkableComponent nc = nob.findComponent(id);
+            if (nc != null) {
+                found = nc;
+                break;
+            }
+        }
+        return found;
     }
 
     /**
      * Gets a network object by id.
      *
-     * @param id the Id of the object
+     * @param networkObjectId the Id of the object
      * @return the network object
      */
-    public NetworkObject getNetworkObject(int id) {
-        return mNetworkedObjects.stream().filter(e -> e.getId() == id).findFirst().orElse(null);
+    public NetworkObject getNetworkObject(int networkObjectId) {
+        System.out.println("Should find network object by id");
+        System.out.println("looking for " + networkObjectId);
+        System.out.println(mNetworkedComponents);
+        return mNetworkedObjects.stream().filter(e -> e.getId() == networkObjectId).findFirst().orElse(null);
     }
 
     /**
@@ -76,9 +96,19 @@ public class ClientGameInstance {
      *
      * @param capital the capital
      */
-    public void spawnCapital(Capital capital) {
-        this.mNetworkedComponents.add(capital);
-        this.mHasCapital = true;
+    public int spawnCapital(int networkObjectId, Capital capital) {
+        NetworkObject nob = this.mNetworkedObjects.stream().filter(e -> e.getId() == networkObjectId).findFirst().orElse(null);
+        if (nob != null) {
+            nob.addChild(capital);
+            this.mHasCapital = true;
+        } else {
+            nob = new NetworkObject(networkObjectId);
+            nob.addChild(capital);
+            this.mNetworkedObjects.add(nob);
+            this.mHasCapital = true;
+            System.out.print("Created new nob with id " + networkObjectId);
+        }
+        return capital.getId();
     }
 
     /**
@@ -100,12 +130,18 @@ public class ClientGameInstance {
         int idToUpdate = NetworkObject.getIdFromBytes(payload);
         NetworkObject networkObjectToUpdate = getNetworkObject(idToUpdate);
         if (networkObjectToUpdate != null) {
-            System.out.println("found networkab object, should update");
+            System.out.println("found network object, should update");
             try {
+                System.out.println("BEFORE UPDATE");
+                System.out.println(networkObjectToUpdate.toString());
                 networkObjectToUpdate.updateFromBytes(payload);
+                System.out.println("AFTER UPDATE");
+                System.out.println(networkObjectToUpdate.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            System.out.println("didnt find network object from id");
         }
     }
 

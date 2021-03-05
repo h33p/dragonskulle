@@ -34,8 +34,8 @@ public class Capital extends NetworkableComponent {
      *
      * @param componentId the id
      */
-    public Capital(int componentId) {
-        super(componentId);
+    public Capital(int ownerId, int componentId) {
+        super(ownerId,componentId);
     }
 
     /** Instantiates a new Capital without id, this will be set from the bytes */

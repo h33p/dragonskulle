@@ -60,7 +60,7 @@ public class SyncBool implements ISyncVar {
     /**
      * Deserialize SyncBool.
      *
-     * @param buff the buff
+     * @param in the input stream
      * @throws IOException the io exception
      */
     @Override

@@ -8,6 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
+
+import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
@@ -15,16 +17,19 @@ import org.dragonskulle.network.components.sync.ISyncVar;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  * @param <T> the type parameter
+ * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
 public abstract class NetworkableComponent<T> extends Component {
 
-    NetworkableComponent(int networkComponentId) {
+    NetworkableComponent(int ownerId, int networkComponentId) {
         this.id = networkComponentId;
+        this.ownerId = ownerId;
     }
 
-    NetworkableComponent() {}
+    NetworkableComponent() {
+    }
+
     /**
      * Gets id.
      *
@@ -43,18 +48,38 @@ public abstract class NetworkableComponent<T> extends Component {
         this.id = id;
     }
 
-    /** The Id. */
+    /**
+     * Sets owner id.
+     *
+     * @param id the id
+     */
+    public void setOwnerId(int id) {
+        System.out.println("Setting owner id from " + ownerId + " to " + id);
+        this.ownerId = id;
+    }
+
+    /**
+     * The Id.
+     */
     private int id;
 
+    /**
+     * The network object that owns this
+     */
+    private int ownerId;
     /**
      * Connects all sync vars in the Object to the network Object. This allows them to be updated.
      */
     private boolean[] mFieldsMask;
 
-    /** The Fields. */
+    /**
+     * The Fields.
+     */
     private Field[] mFields;
 
-    /** Init fields. */
+    /**
+     * Init fields.
+     */
     public void initFields() {
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -62,7 +87,9 @@ public abstract class NetworkableComponent<T> extends Component {
                         .toArray(Field[]::new);
     }
 
-    /** Connect sync vars. */
+    /**
+     * Connect sync vars.
+     */
     public void connectSyncVars() {
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -91,7 +118,9 @@ public abstract class NetworkableComponent<T> extends Component {
      * @return the bytes of the component
      */
     public byte[] serialize(boolean force) {
-        ArrayList<Byte> networkId = getIdBytes();
+        ArrayList<Byte> componentIdBytes = getComponentIdBytes();
+        ArrayList<Byte> ownerIdBytes = getOwnerIdBytes();
+
         int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -119,7 +148,8 @@ public abstract class NetworkableComponent<T> extends Component {
             e.printStackTrace();
         }
         ArrayList<Byte> payload = new ArrayList<>();
-        payload.addAll(networkId);
+        payload.addAll(componentIdBytes);
+        payload.addAll(ownerIdBytes);
         payload.add((byte) maskLength);
         payload.addAll(mask);
         for (byte b : bos.toByteArray())
@@ -142,13 +172,28 @@ public abstract class NetworkableComponent<T> extends Component {
      * @return the bytes
      */
     @NotNull
-    private ArrayList<Byte> getIdBytes() {
-        ArrayList<Byte> networkId = new ArrayList<>(); // 4 bytes
+    private ArrayList<Byte> getComponentIdBytes() {
+        ArrayList<Byte> componentId = new ArrayList<>(); // 4 bytes
         byte[] bytes = NetworkMessage.convertIntToByteArray(this.getId());
         for (Byte aByte : bytes) {
-            networkId.add(aByte);
+            componentId.add(aByte);
         }
-        return networkId;
+        return componentId;
+    }
+
+    /**
+     * Gets the bytes of the network object id. (OWNER)
+     *
+     * @return the bytes
+     */
+    @NotNull
+    private ArrayList<Byte> getOwnerIdBytes() {
+        ArrayList<Byte> ownerId = new ArrayList<>(); // 4 bytes
+        byte[] bytes = NetworkMessage.convertIntToByteArray(this.getOwnerId());
+        for (Byte aByte : bytes) {
+            ownerId.add(aByte);
+        }
+        return ownerId;
     }
 
     /**
@@ -163,9 +208,9 @@ public abstract class NetworkableComponent<T> extends Component {
     /**
      * Creates a networkable from the bytes.
      *
-     * @param <T> the type parameter
+     * @param <T>    the type parameter
      * @param target the target
-     * @param bytes the bytes
+     * @param bytes  the bytes
      * @return the component
      * @throws DecodingException thrown if error in decoding
      */
@@ -189,14 +234,20 @@ public abstract class NetworkableComponent<T> extends Component {
      * @throws IOException the io exception
      */
     public void updateFromBytes(byte[] payload) throws IOException {
-        int id = getIdFromBytes(payload);
+        System.out.println("Updating from mask bytes");
+        System.out.println(Hex.encodeHexString(payload));
+        int id = getComponentIdFromBytes(payload, 0);
+        int ownerId = getComponentIdFromBytes(payload, 4);
         this.setId(id);
+        this.setOwnerId(ownerId);
         int maskLength =
-                NetworkMessage.getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore netid
+                NetworkMessage.getFieldLengthFromBytes(payload, 4 + 4); // offset of 4 to ignore netid
+        System.out.println("{ub} mask length are "+ maskLength);
         boolean[] masks =
                 NetworkMessage.getMaskFromBytes(
-                        payload, maskLength, 4); // offset of 4 to ignore netid
-        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4); // offset of 4 to ignore netid
+                        payload, maskLength, 4 + 4 + 4); // offset of 4 to ignore netid
+        System.out.println("{ub} masks are "+ Arrays.toString(masks));
+        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4 + 4 + 4); // offset of 4 to ignore netid
     }
 
     /**
@@ -205,8 +256,8 @@ public abstract class NetworkableComponent<T> extends Component {
      * @param payload the payload
      * @return the id from bytes
      */
-    public static int getIdFromBytes(byte[] payload) {
-        return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
+    public static int getComponentIdFromBytes(byte[] payload, int offset) {
+        return NetworkMessage.convertByteArrayToInt(Arrays.copyOfRange(payload, offset, offset + 4));
     }
 
     /**
@@ -249,6 +300,8 @@ public abstract class NetworkableComponent<T> extends Component {
         return "NetworkableComponent{"
                 + "id='"
                 + id
+                + "', ownerId='"
+                + ownerId
                 + '\''
                 + ", fieldsMask="
                 + Arrays.toString(mFieldsMask)
@@ -260,7 +313,7 @@ public abstract class NetworkableComponent<T> extends Component {
     /**
      * Gets contents from bytes.
      *
-     * @param buff the buff
+     * @param buff   the buff
      * @param offset the offset
      * @return the contents from bytes
      * @throws IOException the io exception
@@ -277,18 +330,27 @@ public abstract class NetworkableComponent<T> extends Component {
         for (int i = 0; i < mask.length; i++) {
             if (mask[i]) {
                 try {
-                    System.out.println("[updateSyncVarsFromBytes] getting " + i);
+//                    System.out.println("[updateSyncVarsFromBytes] getting " + i);
                     Field field = this.mFields[i];
-                    System.out.println("[updateSyncVarsFromBytes] field " + field);
+//                    System.out.println("[updateSyncVarsFromBytes] field " + field);
                     ISyncVar obj = (ISyncVar) field.get(this);
-                    System.out.println("[updateSyncVarsFromBytes] deserializing");
-
+//                    System.out.println("[updateSyncVarsFromBytes] deserializing");
                     obj.deserialize(stream);
-                    System.out.println("[updateSyncVarsFromBytes] done");
+//                    System.out.println("[updateSyncVarsFromBytes] done");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
     }
+
+    public int getOwnerId() {
+        return this.ownerId;
+    }
 }
+//Sent child
+//0000000a00000000020101aced0005771001000d476f6f6462796520576f726c64
+//0000000a00000000020101aced000577 1001000d476f6f64627965 20576f726c64
+//Received child
+//0000000a00000000020101aced0005770e00000b48656c6c6f20576f726c64
+//0000000a00000000020101aced000577 0e00000b48656c6c6f     20576f726c64

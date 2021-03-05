@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
 
+import org.apache.commons.codec.binary.Hex;
 import sun.misc.IOUtils;
 
 /**
@@ -53,6 +54,7 @@ public class NetworkMessage {
      * @param client the client
      */
     public static void parse(byte[] buff, NetworkClient client) {
+        System.out.println("Client parsing :: "+ Hex.encodeHexString(buff));
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;

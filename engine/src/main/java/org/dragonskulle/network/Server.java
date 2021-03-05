@@ -10,29 +10,42 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * @author Oscar L
- *     <p>This is the main Server Class, it handles setup and stores all client connections. It can
- *     broadcast messages to every client and receive from individual clients.
+ * <p>This is the main Server Class, it handles setup and stores all client connections. It can
+ * broadcast messages to every client and receive from individual clients.
  */
 public class Server {
 
     private boolean mAutoProcessMessages = false;
-    /** The Port. */
+    /**
+     * The Port.
+     */
     private int mPort;
-    /** The Server listener. */
+    /**
+     * The Server listener.
+     */
     private ServerListener mServerListener;
-    /** The socket connections to all clients. */
+    /**
+     * The socket connections to all clients.
+     */
     private final SocketStore mSockets = new SocketStore();
-    /** The Server thread. */
+    /**
+     * The Server thread.
+     */
     private Thread mServerThread;
-    /** The Server runner. */
+    /**
+     * The Server runner.
+     */
     private ServerRunner mServerRunner;
-    /** The game instance for the server. */
+    /**
+     * The game instance for the server.
+     */
     private ServerGameInstance mGame;
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
@@ -46,7 +59,7 @@ public class Server {
     /**
      * Instantiates a new Server.
      *
-     * @param port the port
+     * @param port     the port
      * @param listener the listener
      */
     public Server(int port, ServerListener listener) {
@@ -77,9 +90,9 @@ public class Server {
     /**
      * Instantiates a new Server in debug mode
      *
-     * @param port the port
+     * @param port     the port
      * @param listener the listener
-     * @param debug sets debug mode
+     * @param debug    sets debug mode
      */
     public Server(int port, ServerListener listener, boolean debug) {
         System.out.println("[S] Setting up server in debug mode");
@@ -110,10 +123,10 @@ public class Server {
     /**
      * Execute bytes on the server.
      *
-     * @param messageType the message type
-     * @param payload the payload
+     * @param messageType       the message type
+     * @param payload           the payload
      * @param sendBytesToClient the socket of the requesting client, to be called if a communication
-     *     directly to the client is needed
+     *                          directly to the client is needed
      */
     public static void executeBytes(
             byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
@@ -131,7 +144,9 @@ public class Server {
         }
     }
 
-    /** Dispose. */
+    /**
+     * Dispose.
+     */
     public void dispose() {
         try {
             this.mServerRunner.cancel();
@@ -147,7 +162,9 @@ public class Server {
         }
     }
 
-    /** Create game. */
+    /**
+     * Create game.
+     */
     public void createGame() {
         this.mGame = new ServerGameInstance();
     }
@@ -176,7 +193,9 @@ public class Server {
      * indefinitely.
      */
     private class ServerRunner implements Runnable {
-        /** The Open. */
+        /**
+         * The Open.
+         */
         volatile boolean mOpen = true;
 
         private final Timer mProcessTimer = new Timer();
@@ -199,7 +218,9 @@ public class Server {
             }
         }
 
-        /** Cancel. */
+        /**
+         * Cancel.
+         */
         public void cancel() {
             this.mOpen = false;
             this.mProcessTimer.cancel();
@@ -222,20 +243,19 @@ public class Server {
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {};
+            return () -> {
+            };
         }
         return () -> {
             try {
                 System.out.println("Spawning client thread");
                 boolean connected;
-                String stream;
                 int hasBytes = 0;
                 final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
                 byte[] bArray; // max flatbuffer size
                 byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
                 this.mSockets.addClient(sock);
-                BufferedReader in =
-                        new BufferedReader(new InputStreamReader(sock.getInputStream()));
+
                 BufferedInputStream bIn = new BufferedInputStream(sock.getInputStream());
                 PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
                 // create client as object
@@ -246,13 +266,9 @@ public class Server {
                 if (connected) {
                     // Spawn network object for the map and capital
                     NetworkObject networkObject =
-                            new NetworkObject(
-                                    this.allocateId(),
-                                    client,
-                                    this.mSockets::broadcast,
-                                    this.mSockets::sendBytesToClient);
-                    networkObject.spawnMap(this.mGame.cloneMap());
-                    int capitalId = networkObject.spawnCapital();
+                            new NetworkObject(this.allocateId());
+                    networkObject.spawnMap(this.mGame.cloneMap(), (message) -> this.mSockets.sendBytesToClient(client, message));
+                    int capitalId = networkObject.spawnCapital(networkObject.getId(), this.mSockets::broadcast);
                     this.networkObjects.add(networkObject);
 
                     // Simulation of calling fixed update;
@@ -276,7 +292,6 @@ public class Server {
                             begin,
                             timeInterval);
 
-                    Server self = this;
                     //                    set bool of capitol at some point in the future
                     timer.schedule(
                             new TimerTask() {
@@ -363,21 +378,20 @@ public class Server {
      * Gets networkable child.
      *
      * @param networkObject the network object
-     * @param id the id
+     * @param id            the id
      * @return the networkable child
      */
     private NetworkableComponent getNetworkableChild(NetworkObject networkObject, int id) {
         final NetworkObject serverNetworkObject =
                 this.networkObjects.get(this.networkObjects.indexOf(networkObject));
-        NetworkableComponent child = serverNetworkObject.get(id);
-        return child;
+        return serverNetworkObject.get(id);
     }
 
     /**
      * Process bytes.
      *
      * @param client the client
-     * @param bytes the bytes
+     * @param bytes  the bytes
      */
     private void processBytes(ClientInstance client, byte[] bytes) {
 
@@ -394,7 +408,7 @@ public class Server {
      * Parse bytes.
      *
      * @param client the client
-     * @param bytes the bytes
+     * @param bytes  the bytes
      * @throws DecodingException Thrown if there was any issue with the bytes
      */
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
@@ -409,7 +423,9 @@ public class Server {
         }
     }
 
-    /** The interface Send bytes to client curry. */
+    /**
+     * The interface Send bytes to client curry.
+     */
     public interface SendBytesToClientCurry {
         /**
          * Send.
@@ -419,18 +435,24 @@ public class Server {
         void send(byte[] bytes);
     }
 
-    /** The interface Fixed update simulation. */
+    /**
+     * The interface Fixed update simulation.
+     */
     private interface FixedUpdateSimulation {
-        /** Call. */
+        /**
+         * Call.
+         */
         void call();
     }
 
-    /** Fixed broadcast update. */
+    /**
+     * Fixed broadcast update.
+     */
     public void fixedBroadcastUpdate() {
-        System.out.println("fixed broadcast update");
+//        System.out.println("fixed broadcast update");
         processRequests();
         for (NetworkObject networkObject : this.networkObjects) {
-            networkObject.broadcastUpdate();
+            networkObject.broadcastUpdate(this.mSockets::broadcast);
         }
     }
 

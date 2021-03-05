@@ -64,7 +64,7 @@ public class SyncShort implements ISyncVar, Serializable {
     /**
      * Deserialize sync var.
      *
-     * @param buff the buff
+     * @param in the input stream
      * @throws IOException the io exception
      */
     public void deserialize(ObjectInputStream in) throws IOException, ClassNotFoundException {

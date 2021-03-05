@@ -63,7 +63,7 @@ abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializ
     /**
      * Deserialize sync var.
      *
-     * @param buff the buff
+     * @param in The input stream
      * @throws IOException the io exception
      * @throws ClassNotFoundException the class not found exception
      */
