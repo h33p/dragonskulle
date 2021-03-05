@@ -7,7 +7,6 @@ import java.util.Objects;
 /** @author Oscar L The type Sync String. */
 public class SyncString implements ISyncVar {
 
-
     /** The Data. */
     private String mData;
     /** The On update. */
@@ -95,7 +94,7 @@ public class SyncString implements ISyncVar {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SyncString syncString = (SyncString) o;
-        return mData == syncString.mData;
+        return mData.equals(syncString.mData);
     }
 
     @Override

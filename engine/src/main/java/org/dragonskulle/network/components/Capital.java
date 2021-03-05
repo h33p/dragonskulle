@@ -29,7 +29,11 @@ public class Capital extends NetworkableComponent {
     /** A syncable field. */
     SyncString mSyncMeAlso = new SyncString("Hello World");
 
-    /** Instantiates a new Capital. */
+    /**
+     * Instantiates a new Capital.
+     *
+     * @param componentId the id
+     */
     public Capital(int componentId) {
         super(componentId);
     }

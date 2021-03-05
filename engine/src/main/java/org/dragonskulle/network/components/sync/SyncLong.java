@@ -7,7 +7,6 @@ import java.util.Objects;
 /** @author Oscar L The type Sync Long. */
 public class SyncLong implements ISyncVar {
 
-
     /** The Data. */
     private long mData;
     /** The On update. */

@@ -74,7 +74,7 @@ public class ServerTest {
         await().atMost(3, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
-        assert (nc.getSyncMe().get().equals(true));
+        assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
         assert (nc.getSyncMeAlso().get().equals("Goodbye World"));

@@ -7,7 +7,6 @@ import java.util.Objects;
 /** @author Oscar L The type Sync bool. */
 public class SyncBool implements ISyncVar {
 
-
     /** The Data. */
     private boolean mData;
     /** The On update. */
@@ -63,13 +62,13 @@ public class SyncBool implements ISyncVar {
     }
 
     /**
-          * Deserialize SyncBool.
-          *
-          * @param buff the buff
-          * @throws IOException the io exception
-          */
+     * Deserialize SyncBool.
+     *
+     * @param buff the buff
+     * @throws IOException the io exception
+     */
     @Override
-    public void deserialize(byte[] buff) throws IOException{
+    public void deserialize(byte[] buff) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
         ObjectInput in = new ObjectInputStream(bis);
         this.mData = in.readBoolean();
@@ -92,8 +91,8 @@ public class SyncBool implements ISyncVar {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) return true;
         SyncBool syncBool = (SyncBool) o;
         return mData == syncBool.mData;
     }

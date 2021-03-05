@@ -19,6 +19,7 @@ public class NetworkObject {
     /**
      * Instantiates a new Network object.
      *
+     * @param id the id
      * @param client the client
      * @param broadcastCallback the broadcast callback
      * @param clientCallback the client callback
@@ -163,33 +164,6 @@ public class NetworkObject {
         }
         return out;
     }
-
-    //            ArrayList<Byte> bytes = new ArrayList<>();
-    //
-    //            byte[] idBytes = NetworkMessage.convertIntToByteArray(this.networkObjectId);
-    //            for (byte idByte : idBytes) {
-    //                bytes.add(idByte);
-    //            }
-    //
-    // byte[] sizeOfMaskBytes = NetworkMessage.convertIntToByteArray(didChildUpdateMask.length);
-    //        for (byte sizeOfMaskByte : sizeOfMaskBytes) {
-    //        bytes.add(sizeOfMaskByte);
-    //    }
-    //            for (int i = 0; i < didChildUpdateMask.length; i++) {
-    //                if(didChildUpdateMask[i]){
-    //                    //child did update
-    //                    byte [] childBytes = this.children.get(i).serialize();
-    //                    int size = childBytes.length;
-    //                    byte[] sizeBytes = NetworkMessage.convertIntToByteArray(size);
-    //                    for (byte sizeByte : sizeBytes) {
-    //                        bytes.add(sizeByte);
-    //                    }
-    //                    for (byte childByte : childBytes) {
-    //                        bytes.add(childByte);
-    //                    }
-    //                }
-    //            }
-    //            return NetworkMessage.toByteArray(bytes);
 
     /** A callback to broadcast a message to all clients */
     public interface ServerBroadcastCallback {
