@@ -58,11 +58,11 @@ public class SyncBool implements ISyncVar {
     }
 
     /**
-          * Deserialize SyncBool.
-          *
-          * @param buff the buff
-          * @throws IOException the io exception
-          */
+     * Deserialize SyncBool.
+     *
+     * @param buff the buff
+     * @throws IOException the io exception
+     */
     @Override
     public void deserialize(ObjectInputStream in) throws IOException{
         this.mData = in.readBoolean();
@@ -84,8 +84,8 @@ public class SyncBool implements ISyncVar {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) return true;
         SyncBool syncBool = (SyncBool) o;
         return mData == syncBool.mData;
     }
