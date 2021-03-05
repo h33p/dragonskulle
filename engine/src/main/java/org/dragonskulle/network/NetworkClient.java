@@ -91,14 +91,9 @@ public class NetworkClient {
      */
     public void executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
-            case (byte) 10:
-                System.out.println("Should update requested component");
-                System.out.println("Current component is");
-                int networkableId = NetworkableComponent.getIdFromBytes(payload);
-                this.mGame.printNetworkable(networkableId);
-                updateNetworkable(payload);
-                System.out.println("Component after update");
-                this.mGame.printNetworkable(networkableId);
+            case (byte) 15:
+                System.out.println("Should update requested network object");
+                updateNetworkObject(payload);
                 break;
             case (byte) 20:
                 System.out.println("Trying to spawn map, need to get the actual map");
@@ -139,10 +134,10 @@ public class NetworkClient {
      *
      * @param payload the payload
      */
-    private void updateNetworkable(byte[] payload) {
-        System.out.println("Starting to update networkable");
-        this.mGame.updateNetworkable(payload);
-        System.out.println("updated networkable");
+    private void updateNetworkObject(byte[] payload) {
+        System.out.println("Starting to update network object");
+        this.mGame.updateNetworkObject(payload);
+        System.out.println("updated network object");
     }
 
     /** Dispose. */
@@ -212,7 +207,7 @@ public class NetworkClient {
         public void run() {
             byte[] bArray;
             byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
-            if (!mAutoProcessMessages) {
+            if (mAutoProcessMessages) {
                 mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 5000);
             }
             while (mOpen && !Thread.currentThread().isInterrupted()) {
@@ -353,7 +348,7 @@ public class NetworkClient {
     }
 
     public int getCapitalId() {
-        return this.mGame.getNetworkedComponents().stream()
+        return this.mGame.getNetworkedComponent().stream()
                 .filter(e -> e.getClass().isAssignableFrom(Capital.class))
                 .findFirst()
                 .orElseGet(null)
@@ -361,6 +356,6 @@ public class NetworkClient {
     }
 
     public NetworkableComponent getNetworkableComponent(int networkableId) {
-        return this.mGame.getNetworkedComponents(networkableId);
+        return this.mGame.getNetworkedComponent(networkableId);
     }
 }

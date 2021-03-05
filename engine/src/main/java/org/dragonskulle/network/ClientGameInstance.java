@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
@@ -18,6 +19,8 @@ public class ClientGameInstance {
     /** The Networked components. */
     private final ArrayList<NetworkableComponent> mNetworkedComponents = new ArrayList<>();
 
+    /** The Networked objects. */
+    private final ArrayList<NetworkObject> mNetworkedObjects = new ArrayList<>();
     /** True if a capital has been spawned. */
     private Boolean mHasCapital = false;
 
@@ -26,8 +29,17 @@ public class ClientGameInstance {
      *
      * @return the networked components
      */
-    public ArrayList<NetworkableComponent> getNetworkedComponents() {
+    public ArrayList<NetworkableComponent> getNetworkedComponent() {
         return mNetworkedComponents;
+    }
+
+    /**
+     * Gets networke objects.
+     *
+     * @return the network objects
+     */
+    public ArrayList<NetworkObject> getNetworkObjects() {
+        return mNetworkedObjects;
     }
 
     /**
@@ -36,11 +48,18 @@ public class ClientGameInstance {
      * @param id the Id of the component
      * @return the networked components
      */
-    public NetworkableComponent getNetworkedComponents(int id) {
-        return mNetworkedComponents.stream()
-                .filter(e -> e.getId() == id)
-                .findFirst()
-                .orElse(null);
+    public NetworkableComponent getNetworkedComponent(int id) {
+        return mNetworkedComponents.stream().filter(e -> e.getId() == id).findFirst().orElse(null);
+    }
+
+    /**
+     * Gets a network object by id.
+     *
+     * @param id the Id of the object
+     * @return the network object
+     */
+    public NetworkObject getNetworkObject(int id) {
+        return mNetworkedObjects.stream().filter(e -> e.getId() == id).findFirst().orElse(null);
     }
 
     /**
@@ -76,16 +95,14 @@ public class ClientGameInstance {
      *
      * @param payload the payload
      */
-    public void updateNetworkable(byte[] payload) {
+    public void updateNetworkObject(byte[] payload) {
         // 4 bytes will be allocated for the id
-        int idToUpdate = NetworkableComponent.getIdFromBytes(payload);
-        NetworkableComponent networkableComponentToUpdate = getNetworkable(idToUpdate);
-        if (networkableComponentToUpdate != null) {
+        int idToUpdate = NetworkObject.getIdFromBytes(payload);
+        NetworkObject networkObjectToUpdate = getNetworkObject(idToUpdate);
+        if (networkObjectToUpdate != null) {
             System.out.println("found networkable, should update");
             try {
-                networkableComponentToUpdate.updateFromBytes(payload);
-                //                System.out.println("if i got here i actually updated the correct
-                // game component");
+                networkObjectToUpdate.updateFromBytes(payload);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -100,7 +117,7 @@ public class ClientGameInstance {
      */
     private NetworkableComponent getNetworkable(int id) {
         for (NetworkableComponent networkedComponent : this.mNetworkedComponents) {
-            if (networkedComponent.getId()== id) {
+            if (networkedComponent.getId() == id) {
                 return networkedComponent;
             }
         }

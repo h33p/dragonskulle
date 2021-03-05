@@ -21,6 +21,8 @@ public class NetworkMessage {
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
     /** The constant END_SIGNATURE. */
     private static final byte[] END_SIGNATURE = {58, 58, 69, 58, 58};
+    /** The constant FIELD_SEPERATOR. */
+    public static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
 
     /*payload byte codes
     0 : Print Contents [DEBUG]
@@ -300,5 +302,38 @@ public class NetworkMessage {
         System.arraycopy(b, 0, result, aLen, bLen);
 
         return result;
+    }
+
+    /**
+     * Gets field length from bytes.
+     *
+     * @param buff the buff
+     * @param offset the offset
+     * @return the field length from bytes
+     */
+    public static int getFieldLengthFromBytes(byte[] buff, int offset) {
+        assert (buff != null);
+        return buff[offset];
+    }
+
+    /**
+     * Gets mask from bytes.
+     *
+     * @param buff the buff
+     * @param maskLength the mask length
+     * @param offset the offset
+     * @return the mask from bytes
+     */
+    public static ArrayList<Boolean> getMaskFromBytes(byte[] buff, int maskLength, int offset) {
+        ArrayList<Boolean> out = new ArrayList<>();
+        byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
+        for (byte maskByte : maskBytes) {
+            if (maskByte == (byte) 1) {
+                out.add(true);
+            } else {
+                out.add(false);
+            }
+        }
+        return out;
     }
 }

@@ -10,7 +10,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -445,7 +444,7 @@ public class Server {
         }
     }
 
-    private int allocateId(){
+    private int allocateId() {
         return mNetworkObjectCounter.getAndIncrement();
     }
 }

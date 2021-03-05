@@ -4,7 +4,6 @@ package org.dragonskulle.network.components;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.dragonskulle.components.Component;
@@ -20,13 +19,11 @@ import sun.misc.IOUtils;
  */
 public abstract class NetworkableComponent<T> extends Component {
 
-
-    NetworkableComponent(int networkComponentId){
+    NetworkableComponent(int networkComponentId) {
         this.id = networkComponentId;
     }
 
-    NetworkableComponent(){
-    }
+    NetworkableComponent() {}
     /**
      * Gets id.
      *
@@ -215,11 +212,14 @@ public abstract class NetworkableComponent<T> extends Component {
     public void updateFromBytes(byte[] payload) throws IOException {
         int id = getIdFromBytes(payload);
         this.setId(id);
-        int maskLength = getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore netid
+        int maskLength =
+                NetworkMessage.getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore netid
         ArrayList<Boolean> masks =
-                getMaskFromBytes(payload, maskLength, 4); // offset of 4 to ignore netid
+                NetworkMessage.getMaskFromBytes(
+                        payload, maskLength, 4); // offset of 4 to ignore netid
         ArrayList<SyncVar> contents =
-                getContentsFromBytes(payload, 1 + maskLength + 4); // offset of 4 to ignore netid
+                getSyncVarContentsFromBytes(
+                        payload, 1 + maskLength + 4); // offset of 4 to ignore netid
         System.out.println("[updateFromBytes] contents -> " + contents);
         for (int i = 0; i < maskLength; i++) {
             boolean didUpdate = masks.get(i);
@@ -237,88 +237,6 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public static int getIdFromBytes(byte[] payload) {
         return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
-    }
-
-    /**
-     * Gets contents from bytes.
-     *
-     * @param buff the buff
-     * @param offset the offset
-     * @return the contents from bytes
-     * @throws IOException the io exception
-     */
-    private static ArrayList<SyncVar> getContentsFromBytes(byte[] buff, int offset)
-            throws IOException {
-        ArrayList<SyncVar> out = new ArrayList<>();
-        ArrayList<Byte> syncVarBytes;
-        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
-        if (didSkip == offset) {
-            syncVarBytes = new ArrayList<>();
-            while (bis.available() > 0) {
-                bis.mark(FIELD_SEPERATOR.length);
-                byte[] nextFiveBytes = IOUtils.readNBytes(bis, FIELD_SEPERATOR.length);
-                bis.reset();
-                if (Arrays.equals(nextFiveBytes, FIELD_SEPERATOR)) {
-                    // seek field bytes
-                    IOUtils.readExactlyNBytes(bis, 5);
-                    // end of sync var;
-                    // try to deserialize.
-                    try {
-                        out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
-                        syncVarBytes.clear(); // clears current sync bytes that have been read
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    for (byte b : IOUtils.readNBytes(bis, 1)) {
-                        syncVarBytes.add(b); // read one byte from stream
-                    }
-                }
-            }
-            if (!syncVarBytes.isEmpty()) {
-                try {
-                    out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return out;
-    }
-
-    /**
-     * Gets mask from bytes.
-     *
-     * @param buff the buff
-     * @param maskLength the mask length
-     * @param offset the offset
-     * @return the mask from bytes
-     */
-    private static ArrayList<Boolean> getMaskFromBytes(byte[] buff, int maskLength, int offset) {
-        ArrayList<Boolean> out = new ArrayList<>();
-        byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
-        for (byte maskByte : maskBytes) {
-            if (maskByte == (byte) 1) {
-                out.add(true);
-            } else {
-                out.add(false);
-            }
-        }
-        return out;
-    }
-
-    /**
-     * Gets field length from bytes.
-     *
-     * @param buff the buff
-     * @param offset the offset
-     * @return the field length from bytes
-     */
-    private static int getFieldLengthFromBytes(byte[] buff, int offset) {
-        assert (buff != null);
-        return buff[offset];
     }
 
     /**
@@ -387,5 +305,54 @@ public abstract class NetworkableComponent<T> extends Component {
                 + ", fields="
                 + fieldsString
                 + '}';
+    }
+
+    /**
+     * Gets contents from bytes.
+     *
+     * @param buff the buff
+     * @param offset the offset
+     * @return the contents from bytes
+     * @throws IOException the io exception
+     */
+    private static ArrayList<SyncVar> getSyncVarContentsFromBytes(byte[] buff, int offset)
+            throws IOException {
+        ArrayList<SyncVar> out = new ArrayList<>();
+        ArrayList<Byte> syncVarBytes;
+        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
+        final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
+        if (didSkip == offset) {
+            syncVarBytes = new ArrayList<>();
+            while (bis.available() > 0) {
+                bis.mark(FIELD_SEPERATOR.length);
+                byte[] nextFiveBytes = IOUtils.readNBytes(bis, FIELD_SEPERATOR.length);
+                bis.reset();
+                if (Arrays.equals(nextFiveBytes, FIELD_SEPERATOR)) {
+                    // seek field bytes
+                    IOUtils.readExactlyNBytes(bis, 5);
+                    // end of sync var;
+                    // try to deserialize.
+                    try {
+                        out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
+                        syncVarBytes.clear(); // clears current sync bytes that have been read
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    for (byte b : IOUtils.readNBytes(bis, 1)) {
+                        syncVarBytes.add(b); // read one byte from stream
+                    }
+                }
+            }
+            if (!syncVarBytes.isEmpty()) {
+                try {
+                    out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return out;
     }
 }
