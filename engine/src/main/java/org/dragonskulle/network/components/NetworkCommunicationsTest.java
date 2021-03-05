@@ -14,7 +14,7 @@ public class NetworkCommunicationsTest {
         System.out.println("A server should be setup before running. Continue?");
         new Scanner(System.in).nextLine();
         ClientListener clientListener = new ClientEars();
-        NetworkClient networkClient = new NetworkClient("127.0.0.1", 7000, clientListener);
+        NetworkClient networkClient = new NetworkClient("127.0.0.1", 7000, clientListener, true);
         //        NetworkObject networkObject = new NetworkObject(networkClient);
     }
 

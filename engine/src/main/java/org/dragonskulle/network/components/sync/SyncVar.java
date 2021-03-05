@@ -12,47 +12,33 @@ import java.util.UUID;
 public class SyncVar<T extends Serializable> implements Serializable {
     /** The Data. */
     private T mData;
-    /** The Id. */
-    private final String mId;
+//    /** The Id. */
+//    private final String mId;
     /** The Has listener. */
     private transient boolean mHasListener = false;
     /** The On update. */
     private transient ISyncVarUpdateHandler mOnUpdate;
 
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public String getId() {
-        return mId;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        SyncVar<?> syncVar = (SyncVar<?>) o;
-        if (getId().equals(syncVar.getId())) return true;
-        if (getClass() != o.getClass()) return false;
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId());
-    }
-
-    /**
-     * Instantiates a new Sync var.
-     *
-     * @param id the id
-     * @param data the data
-     */
-    public SyncVar(String id, T data) {
-        this.mId = id;
-        this.mData = data;
-    }
+//    /**
+//     * Gets id.
+//     *
+//     * @return the id
+//     */
+//    public String getId() {
+//        return mId;
+//    }
+//
+//
+//    /**
+//     * Instantiates a new Sync var.
+//     *
+//     * @param id the id
+//     * @param data the data
+//     */
+//    public SyncVar(String id, T data) {
+//        this.mId = id;
+//        this.mData = data;
+//    }
 
     /**
      * Instantiates a new Sync var.
@@ -60,7 +46,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @param data the data
      */
     public SyncVar(T data) {
-        this.mId = UUID.randomUUID().toString();
+//        this.mId = UUID.randomUUID().toString();
         this.mData = data;
     }
 
@@ -121,7 +107,20 @@ public class SyncVar<T extends Serializable> implements Serializable {
 
     @Override
     public String toString() {
-        return "SyncVar{" + "data=" + mData + ", id='" + mId + '\'' + '}';
+        return "SyncVar{" + "data=" + mData + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SyncVar<?> syncVar = (SyncVar<?>) o;
+        return mData.equals(syncVar.mData);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mData);
     }
 
     /** The interface Sync var update handler. */

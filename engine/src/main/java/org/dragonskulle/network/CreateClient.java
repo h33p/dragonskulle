@@ -27,9 +27,9 @@ public class CreateClient {
         /** The Client. */
         NetworkClient client;
         if (ip.equals(port)) {
-            client = new NetworkClient("127.0.0.1", 7000, clientEars);
+            client = new NetworkClient("127.0.0.1", 7000, clientEars,true);
         } else {
-            client = new NetworkClient(ip, Integer.parseInt(port), clientEars);
+            client = new NetworkClient(ip, Integer.parseInt(port), clientEars,true);
         }
         System.out.println("Commands are (K)ill and (S)end");
 

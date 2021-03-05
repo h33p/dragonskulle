@@ -4,7 +4,7 @@ package org.dragonskulle.network;
 /** @author Oscar L How to start the server Start server. */
 public class StartServer {
     /** The Server. */
-    public static Server server;
+    public Server server;
     /** The Port. */
     static final int PORT = 7000;
 
@@ -15,18 +15,27 @@ public class StartServer {
         server = new Server(PORT, serverListener);
     }
 
+    StartServer(boolean debug) {
+        attachShutDownHook();
+        /** The Server listener. */
+        ServerListener serverListener = new ServerEars();
+        if(debug) {
+            server = new Server(PORT, serverListener, debug);
+        }
+    }
+
     public static void main(String[] args) {
-        StartServer ss = new StartServer();
+        StartServer ss = new StartServer(true);
     }
 
     /** Attach shut down hook. */
-    public static void attachShutDownHook() {
+    public void attachShutDownHook() {
         Runtime.getRuntime()
                 .addShutdownHook(
                         new Thread(
                                 () -> {
                                     System.out.println("Shutting down server");
-                                    server.dispose();
+                                    this.server.dispose();
                                 }));
 
         System.out.println("Shut Down Hook Attached.");

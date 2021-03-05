@@ -12,18 +12,26 @@ import java.util.ArrayList;
 
 /**
  * @author Oscar L SocketStore is for storing all the information about connected clients. It stores
- *     all of the sockets and can close and broadcast to all clients. It should be used alongside
- *     Server, it is the backbone of the server functions.
+ * all of the sockets and can close and broadcast to all clients. It should be used alongside
+ * Server, it is the backbone of the server functions.
  */
 public class SocketStore {
-    /** The Server. */
+    /**
+     * The Server.
+     */
     private ServerSocket mServer;
-    /** The Store for all the sockets. */
+    /**
+     * The Store for all the sockets.
+     */
     private final ArrayList<Socket> mStore;
-    /** The timeout for accepting a client. */
+    /**
+     * The timeout for accepting a client.
+     */
     private static final int SO_TIMEOUT = 3000;
 
-    /** Instantiates a new Socket store. */
+    /**
+     * Instantiates a new Socket store.
+     */
     public SocketStore() {
         this.mStore = new ArrayList<>();
     }
@@ -90,10 +98,14 @@ public class SocketStore {
         return this.mServer.getLocalPort();
     }
 
-    /** Closes the server. */
+    /**
+     * Closes the server.
+     */
     public void close() {
         try {
-            this.mServer.close();
+            if (this.mServer != null) {
+                this.mServer.close();
+            }
         } catch (Exception ignored) {
         }
 
@@ -173,7 +185,7 @@ public class SocketStore {
     /**
      * Send bytes to client.
      *
-     * @param client the client
+     * @param client         the client
      * @param response_bytes the response bytes
      */
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
