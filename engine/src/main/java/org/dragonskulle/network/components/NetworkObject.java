@@ -12,7 +12,7 @@ import sun.misc.IOUtils;
 /** @author Oscar L The NetworkObject deals with any networked variables. */
 public class NetworkObject {
     /** The UUID of the object. */
-    public int networkObjectId;
+    public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
 
@@ -109,8 +109,6 @@ public class NetworkObject {
                 + '\''
                 + ", owner="
                 + owner
-                + ", isDormant="
-                + isDormant
                 + '}';
     }
 
@@ -267,12 +265,6 @@ public class NetworkObject {
 
     /** The Client Connection to the server */
     final ClientInstance owner;
-
-    /**
-     * if True, then the server will not accept commands from the object. It can still receive
-     * commands.
-     */
-    boolean isDormant = false;
 
     /** Broadcasts updates all of the modified children as one message */
     public void broadcastUpdate() {

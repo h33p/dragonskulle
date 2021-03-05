@@ -17,14 +17,14 @@ public class CreateClient {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter IP: ");
-        /** The Ip. */
+        /* The Ip. */
         String ip = scanner.nextLine();
         System.out.println("Enter Port: ");
-        /** The Port. */
+        /* The Port. */
         String port = scanner.nextLine();
         System.out.println("Creating client");
         ClientListener clientEars = new ClientEars();
-        /** The Client. */
+        /* The Client. */
         NetworkClient client;
         if (ip.equals(port)) {
             client = new NetworkClient("127.0.0.1", 7000, clientEars, true);

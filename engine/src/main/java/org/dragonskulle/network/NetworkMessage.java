@@ -121,7 +121,7 @@ public class NetworkMessage {
         return ((bytes[0] & 0xFF) << 24)
                 | ((bytes[1] & 0xFF) << 16)
                 | ((bytes[2] & 0xFF) << 8)
-                | ((bytes[3] & 0xFF) << 0);
+                | ((bytes[3] & 0xFF));
     }
 
     /**
@@ -207,7 +207,7 @@ public class NetworkMessage {
      */
     public static byte[] toByteArray(List<Byte> in) {
         final int n = in.size();
-        byte ret[] = new byte[n];
+        byte[] ret = new byte[n];
         for (int i = 0; i < n; i++) {
             ret[i] = in.get(i);
         }
@@ -276,6 +276,7 @@ public class NetworkMessage {
      * @param b the b
      * @return the t
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private static <T> T concatenate(T a, T b) {
         if (!a.getClass().isArray() || !b.getClass().isArray()) {
             throw new IllegalArgumentException();

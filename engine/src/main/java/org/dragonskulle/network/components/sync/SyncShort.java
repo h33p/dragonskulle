@@ -70,9 +70,8 @@ public class SyncShort implements ISyncVar, Serializable {
      *
      * @param buff the buff
      * @throws IOException the io exception
-     * @throws ClassNotFoundException the class not found exception
      */
-    public void deserialize(byte[] buff) throws IOException, ClassNotFoundException {
+    public void deserialize(byte[] buff) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
         ObjectInput in = new ObjectInputStream(bis);
         this.mData = in.readShort();

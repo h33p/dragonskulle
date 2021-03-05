@@ -154,8 +154,7 @@ public class SocketStore {
     public boolean terminateClient(Socket sock) {
         // if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
-        this.mStore.remove(sock);
-        return true;
+        return this.mStore.remove(sock);
     }
 
     /**

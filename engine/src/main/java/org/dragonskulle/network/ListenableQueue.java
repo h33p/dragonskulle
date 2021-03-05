@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The type Listenable queue.
@@ -83,6 +84,7 @@ public class ListenableQueue<E> extends AbstractQueue<E> {
         return mDelegate.size();
     }
 
+    @NotNull
     @Override
     public Iterator<E> iterator() {
         return mDelegate.iterator();
