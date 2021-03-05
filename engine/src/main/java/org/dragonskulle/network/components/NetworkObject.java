@@ -120,12 +120,12 @@ public class NetworkObject {
     public void updateFromBytes(byte[] payload) throws IOException {
         int maskLength =
                 NetworkMessage.getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore id
-        ArrayList<Boolean> masks =
+        boolean[] masks =
                 NetworkMessage.getMaskFromBytes(payload, maskLength, 4); // offset of 4 to ignore id
         ArrayList<byte[]> arrayOfChildrenBytes =
                 getChildrenUpdateBytes(payload, 1 + maskLength + 4);
         for (int i = 0; i < this.children.size(); i++) {
-            boolean didUpdate = masks.get(i);
+            boolean didUpdate = masks[i];
             if (didUpdate) {
                 this.children.get(i).updateFromBytes(arrayOfChildrenBytes.get(i));
             }

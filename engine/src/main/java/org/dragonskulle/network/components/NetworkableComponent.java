@@ -5,11 +5,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
-import org.dragonskulle.network.components.sync.SyncVar;
+import org.dragonskulle.network.components.sync.ISyncVar;
 import org.jetbrains.annotations.NotNull;
 import sun.misc.IOUtils;
 
@@ -54,28 +53,28 @@ public abstract class NetworkableComponent<T> extends Component {
     private boolean[] mFieldsMask;
 
     /** The Fields. */
-    private List<Field> mFields;
+    private Field[] mFields;
 
     /** Init fields. */
     public void initFields() {
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
-                        .filter(field -> SyncVar.class.isAssignableFrom(field.getType()))
-                        .collect(Collectors.toList());
+                        .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
+                        .toArray(Field[]::new);
     }
 
     /** Connect sync vars. */
     public void connectSyncVars() {
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
-                        .filter(field -> SyncVar.class.isAssignableFrom(field.getType()))
-                        .collect(Collectors.toList());
-        mFieldsMask = new boolean[mFields.size()];
+                        .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
+                        .toArray(Field[]::new);
+        mFieldsMask = new boolean[mFields.length];
         int i = 0;
         for (Field f : mFields) {
             try {
-                SyncVar sv =
-                        (SyncVar) f.get(this); // retrieves syncvar from child and adds it to the
+                ISyncVar sv =
+                        (ISyncVar) f.get(this); // retrieves syncvar from child and adds it to the
                 // connection array
                 int finalI = i;
                 sv.registerListener(() -> this.handleFieldChange(finalI));
@@ -93,21 +92,21 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public byte[] serialize() {
         ArrayList<Byte> networkId = getIdBytes();
-        int maskLength = this.mFields.size(); // 1byte
+        int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ArrayList<Byte> contents = new ArrayList<>();
         // need to add in an id before
-        for (int i = 0; i < this.mFields.size(); i++) {
+        for (int i = 0; i < this.mFields.length; i++) {
             boolean didVarChange = this.mFieldsMask[i];
-            Field f = this.mFields.get(i);
+            Field f = this.mFields[i];
             if (didVarChange) {
                 try {
                     mask.add((byte) 1);
-                    byte[] syncVarBytes = ((SyncVar) f.get(this)).serialize();
+                    byte[] syncVarBytes = ((ISyncVar) f.get(this)).serialize();
                     for (byte b : syncVarBytes) {
                         contents.add(b);
                     }
-                    if (i < this.mFields.size() - 1) {
+                    if (i < this.mFields.length - 1) {
                         for (byte b : FIELD_SEPERATOR) {
                             contents.add(b);
                         }
@@ -150,20 +149,20 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public byte[] serializeFully() {
         ArrayList<Byte> networkId = getIdBytes();
-        int maskLength = this.mFields.size(); // 1byte
+        int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>();
         for (int i = 0; i < maskLength; i++) {
             mask.add((byte) 1);
         }
         ArrayList<Byte> contents = new ArrayList<>();
-        for (int i = 0; i < this.mFields.size(); i++) {
-            Field f = this.mFields.get(i);
+        for (int i = 0; i < this.mFields.length; i++) {
+            Field f = this.mFields[i];
             try {
-                byte[] syncVarBytes = ((SyncVar) f.get(this)).serialize();
+                byte[] syncVarBytes = ((ISyncVar) f.get(this)).serialize();
                 for (byte b : syncVarBytes) {
                     contents.add(b);
                 }
-                if (i < this.mFields.size() - 1) { // removes trailing seperator
+                if (i < this.mFields.length - 1) { // removes trailing seperator
                     for (byte b : FIELD_SEPERATOR) {
                         contents.add(b);
                     }
@@ -214,19 +213,10 @@ public abstract class NetworkableComponent<T> extends Component {
         this.setId(id);
         int maskLength =
                 NetworkMessage.getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore netid
-        ArrayList<Boolean> masks =
+        boolean[] masks =
                 NetworkMessage.getMaskFromBytes(
                         payload, maskLength, 4); // offset of 4 to ignore netid
-        ArrayList<SyncVar> contents =
-                getSyncVarContentsFromBytes(
-                        payload, 1 + maskLength + 4); // offset of 4 to ignore netid
-        System.out.println("[updateFromBytes] contents -> " + contents);
-        for (int i = 0; i < maskLength; i++) {
-            boolean didUpdate = masks.get(i);
-            if (didUpdate) {
-                updateFromMaskOffset(i, contents.get(i));
-            }
-        }
+        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4); // offset of 4 to ignore netid
     }
 
     /**
@@ -237,26 +227,6 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public static int getIdFromBytes(byte[] payload) {
         return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
-    }
-
-    /**
-     * Updates one field from mask offset.
-     *
-     * @param offset the offset
-     * @param newValue the new value
-     */
-    private void updateFromMaskOffset(int offset, SyncVar newValue) {
-        try {
-            System.out.println("[updateFromMaskOffset] getting " + offset);
-            System.out.println("[updateFromMaskOffset] fields " + this.mFields.get(offset));
-            Field E = this.mFields.get(offset);
-            System.out.println("[updateFromMaskOffset] setting field from " + newValue.getClass());
-            E.set(this, newValue);
-            System.out.println("[updateFromMaskOffset] done");
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            System.out.println("error setting field in instance");
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -315,12 +285,15 @@ public abstract class NetworkableComponent<T> extends Component {
      * @return the contents from bytes
      * @throws IOException the io exception
      */
-    private static ArrayList<SyncVar> getSyncVarContentsFromBytes(byte[] buff, int offset)
+    private ArrayList<ISyncVar> updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
             throws IOException {
-        ArrayList<SyncVar> out = new ArrayList<>();
+        ArrayList<ISyncVar> out = new ArrayList<>();
         ArrayList<Byte> syncVarBytes;
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
         final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
+
+        int fieldIndex = mask.length;
+
         if (didSkip == offset) {
             syncVarBytes = new ArrayList<>();
             while (bis.available() > 0) {
@@ -333,9 +306,19 @@ public abstract class NetworkableComponent<T> extends Component {
                     // end of sync var;
                     // try to deserialize.
                     try {
-                        out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
+                        // Go to the field we need
+                        while (!mask[--fieldIndex]) ;
+
+                        System.out.println("[updateSyncVarsFromBytes] getting " + fieldIndex);
+                        Field field = this.mFields[fieldIndex];
+                        System.out.println("[updateSyncVarsFromBytes] field " + field);
+                        ISyncVar obj = (ISyncVar) field.get(this);
+                        System.out.println("[updateSyncVarsFromBytes] deserializing");
+
+                        obj.deserialize(NetworkMessage.toByteArray(syncVarBytes));
+                        System.out.println("[updateSyncVarsFromBytes] done");
                         syncVarBytes.clear(); // clears current sync bytes that have been read
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
                 } else {
@@ -345,9 +328,18 @@ public abstract class NetworkableComponent<T> extends Component {
                 }
             }
             if (!syncVarBytes.isEmpty()) {
+                // Go to the field we need
+                while (!mask[--fieldIndex]) ;
                 try {
-                    out.add(SyncVar.deserialize(NetworkMessage.toByteArray(syncVarBytes)));
-                } catch (ClassNotFoundException e) {
+                    System.out.println("[updateSyncVarsFromBytes] getting " + fieldIndex);
+                    Field field = this.mFields[fieldIndex];
+                    System.out.println("[updateSyncVarsFromBytes] field " + field);
+                    ISyncVar obj = (ISyncVar) field.get(this);
+                    System.out.println("[updateSyncVarsFromBytes] deserializing");
+
+                    obj.deserialize(NetworkMessage.toByteArray(syncVarBytes));
+                    System.out.println("[updateSyncVarsFromBytes] done");
+                } catch (ClassNotFoundException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
             }

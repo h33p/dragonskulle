@@ -324,15 +324,12 @@ public class NetworkMessage {
      * @param offset the offset
      * @return the mask from bytes
      */
-    public static ArrayList<Boolean> getMaskFromBytes(byte[] buff, int maskLength, int offset) {
-        ArrayList<Boolean> out = new ArrayList<>();
+    public static boolean[] getMaskFromBytes(byte[] buff, int maskLength, int offset) {
         byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
+        boolean[] out = new boolean[maskBytes.length];
+        int idx = 0;
         for (byte maskByte : maskBytes) {
-            if (maskByte == (byte) 1) {
-                out.add(true);
-            } else {
-                out.add(false);
-            }
+            out[idx++] = maskByte != 0;
         }
         return out;
     }
