@@ -100,7 +100,7 @@ public class ClientGameInstance {
         int idToUpdate = NetworkObject.getIdFromBytes(payload);
         NetworkObject networkObjectToUpdate = getNetworkObject(idToUpdate);
         if (networkObjectToUpdate != null) {
-            System.out.println("found networkable, should update");
+            System.out.println("found networkab object, should update");
             try {
                 networkObjectToUpdate.updateFromBytes(payload);
             } catch (IOException e) {

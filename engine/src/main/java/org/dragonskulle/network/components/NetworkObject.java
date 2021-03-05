@@ -5,13 +5,18 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
 import sun.misc.IOUtils;
 
-/** @author Oscar L The NetworkObject deals with any networked variables. */
+/**
+ * @author Oscar L The NetworkObject deals with any networked variables.
+ */
 public class NetworkObject {
-    /** The UUID of the object. */
+    /**
+     * The UUID of the object.
+     */
     public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
@@ -19,10 +24,10 @@ public class NetworkObject {
     /**
      * Instantiates a new Network object.
      *
-     * @param id the id
-     * @param client the client
+     * @param id                the id
+     * @param client            the client
      * @param broadcastCallback the broadcast callback
-     * @param clientCallback the client callback
+     * @param clientCallback    the client callback
      */
     public NetworkObject(
             int id,
@@ -34,17 +39,6 @@ public class NetworkObject {
         serverBroadcastCallback = broadcastCallback;
         sendBytesToClientCallback = clientCallback;
     }
-
-    //    /**
-    //     * Possibly a temporary function to edit a network object without a reference. @param i
-    // the
-    //     *
-    //     * @param i the
-    //     * @return the networkable
-    //     */
-    //    public NetworkableComponent get(int i) {
-    //        return this.children.get(i);
-    //    }
 
     /**
      * Get networkable.
@@ -163,7 +157,9 @@ public class NetworkObject {
         return out;
     }
 
-    /** A callback to broadcast a message to all clients */
+    /**
+     * A callback to broadcast a message to all clients
+     */
     public interface ServerBroadcastCallback {
         /**
          * Call.
@@ -173,21 +169,27 @@ public class NetworkObject {
         void call(byte[] bytes);
     }
 
-    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
+    /**
+     * A callback to broadcast a message to a SINGLE clients,this client is the owner
+     */
     public interface SendBytesToClientCallback {
         /**
          * Call.
          *
          * @param client the client
-         * @param bytes the bytes
+         * @param bytes  the bytes
          */
         void call(ClientInstance client, byte[] bytes);
     }
 
-    /** Stores the broadcast callback */
+    /**
+     * Stores the broadcast callback
+     */
     private final ServerBroadcastCallback serverBroadcastCallback;
 
-    /** Stores the single sender callback */
+    /**
+     * Stores the single sender callback
+     */
     private final SendBytesToClientCallback sendBytesToClientCallback;
 
     /**
@@ -211,7 +213,7 @@ public class NetworkObject {
     /**
      * Spawns a component and notifies all clients using callback.
      *
-     * @param component The component to be spawned, must extend NetworkableComponent
+     * @param component   The component to be spawned, must extend NetworkableComponent
      * @param messageCode The message code of the spawn.
      * @return The ID of the spawned component
      */
@@ -219,9 +221,6 @@ public class NetworkObject {
         System.out.println("spawning component on all clients");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
-        //        System.out.println("component bytes to spawn :: " +
-        // Arrays.toString(componentBytes));
-        //        System.out.println("component bytes : " + componentBytes.length);
         spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
         serverBroadcastCallback.call(spawnComponentBytes);
         addChild(component);
@@ -251,7 +250,9 @@ public class NetworkObject {
         sendBytesToClientCallback.call(owner, spawnMapMessage);
     }
 
-    /** Children of the object will be networkable and updated on clients */
+    /**
+     * Children of the object will be networkable and updated on clients
+     */
     private final ArrayList<NetworkableComponent> children = new ArrayList<>();
 
     /**
@@ -263,10 +264,14 @@ public class NetworkObject {
         return networkObjectId;
     }
 
-    /** The Client Connection to the server */
+    /**
+     * The Client Connection to the server
+     */
     final ClientInstance owner;
 
-    /** Broadcasts updates all of the modified children as one message */
+    /**
+     * Broadcasts updates all of the modified children as one message
+     */
     public void broadcastUpdate() {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
@@ -291,7 +296,6 @@ public class NetworkObject {
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId());
-
         byte[] sizeOfMaskBytes = NetworkMessage.convertIntToByteArray(didChildUpdateMask.length);
 
         ArrayList<Byte> contents = new ArrayList<>();
