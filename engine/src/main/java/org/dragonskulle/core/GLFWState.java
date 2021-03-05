@@ -9,7 +9,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
@@ -38,12 +37,13 @@ public class GLFWState implements NativeResource {
      * @param bindings input bindings
      * @throws RuntimeException if initialization fails
      */
-    public GLFWState(int width, int height, String appName, Bindings bindings) throws RuntimeException {
+    public GLFWState(int width, int height, String appName, Bindings bindings)
+            throws RuntimeException {
         DEBUG.set(DEBUG_MODE);
 
         initWindow(width, height, appName);
         mRenderer = new Renderer(appName, mWindow);
-        
+
         // Start detecting user input from the specified window, based on the bindings.
         Input.initialise(mWindow, bindings);
     }
@@ -55,7 +55,7 @@ public class GLFWState implements NativeResource {
      */
     public boolean processEvents() {
         Input.beforePoll();
-    	glfwPollEvents();
+        glfwPollEvents();
 
         if (mFramebufferResized) {
             mFramebufferResized = false;
