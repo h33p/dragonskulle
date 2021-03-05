@@ -57,12 +57,8 @@ public class SyncInt implements ISyncVar, Serializable {
      * @return the byte [ ]
      * @throws IOException the io exception
      */
-    public byte[] serialize() throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
+    public void serialize(ObjectOutputStream oos) throws IOException {
         oos.writeInt(this.mData);
-        oos.flush();
-        return bos.toByteArray();
     }
 
     /**
@@ -72,11 +68,8 @@ public class SyncInt implements ISyncVar, Serializable {
      * @throws IOException the io exception
      * @throws ClassNotFoundException the class not found exception
      */
-    public void deserialize(byte[] buff) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        ObjectInput in = new ObjectInputStream(bis);
+    public void deserialize(ObjectInputStream in) throws IOException, ClassNotFoundException {
         this.mData = in.readInt();
-        in.close();
     }
 
     /**

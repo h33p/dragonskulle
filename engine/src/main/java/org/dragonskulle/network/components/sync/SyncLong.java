@@ -7,7 +7,6 @@ import java.util.Objects;
 /** @author Oscar L The type Sync Long. */
 public class SyncLong implements ISyncVar {
 
-
     /** The Data. */
     private long mData;
     /** The On update. */
@@ -54,12 +53,8 @@ public class SyncLong implements ISyncVar {
      * @throws IOException the io exception
      */
     @Override
-    public byte[] serialize() throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
+    public void serialize(ObjectOutputStream oos) throws IOException {
         oos.writeLong(this.mData);
-        oos.flush();
-        return bos.toByteArray();
     }
 
     /**
@@ -69,11 +64,8 @@ public class SyncLong implements ISyncVar {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(byte[] buff) throws IOException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        ObjectInput in = new ObjectInputStream(bis);
+    public void deserialize(ObjectInputStream in) throws IOException {
         this.mData = in.readLong();
-        in.close();
     }
 
     /**
