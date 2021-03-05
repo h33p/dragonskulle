@@ -2,7 +2,10 @@
 package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import org.dragonskulle.components.Component;
@@ -10,7 +13,6 @@ import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.ISyncVar;
 import org.jetbrains.annotations.NotNull;
-import sun.misc.IOUtils;
 
 /**
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
@@ -43,9 +45,6 @@ public abstract class NetworkableComponent<T> extends Component {
 
     /** The Id. */
     private int id;
-
-    /** The constant FIELD_SEPERATOR. This is between all fields in the serialization. */
-    private static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
 
     /**
      * Connects all sync vars in the Object to the network Object. This allows them to be updated.
@@ -88,43 +87,53 @@ public abstract class NetworkableComponent<T> extends Component {
     /**
      * Serialize component.
      *
+     * @param force whether to write all fields in
      * @return the bytes of the component
      */
-    public byte[] serialize() {
+    public byte[] serialize(boolean force) {
         ArrayList<Byte> networkId = getIdBytes();
         int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
-        ArrayList<Byte> contents = new ArrayList<>();
-        // need to add in an id before
-        for (int i = 0; i < this.mFields.length; i++) {
-            boolean didVarChange = this.mFieldsMask[i];
-            Field f = this.mFields[i];
-            if (didVarChange) {
-                try {
-                    mask.add((byte) 1);
-                    byte[] syncVarBytes = ((ISyncVar) f.get(this)).serialize();
-                    for (byte b : syncVarBytes) {
-                        contents.add(b);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            // need to add in an id before
+            for (int i = 0; i < this.mFields.length; i++) {
+                boolean didVarChange = this.mFieldsMask[i];
+                Field f = this.mFields[i];
+                if (didVarChange || force) {
+                    try {
+                        mask.add((byte) 1);
+                        ((ISyncVar) f.get(this)).serialize(oos);
+                        this.mFieldsMask[i] = false; // reset flag
+                    } catch (IllegalAccessException | IOException e) {
+                        e.printStackTrace();
                     }
-                    if (i < this.mFields.length - 1) {
-                        for (byte b : FIELD_SEPERATOR) {
-                            contents.add(b);
-                        }
-                    }
-                    this.mFieldsMask[i] = false; // reset flag
-                } catch (IllegalAccessException | IOException e) {
-                    e.printStackTrace();
+                } else {
+                    mask.add((byte) 0);
                 }
-            } else {
-                mask.add((byte) 0);
             }
+            oos.flush();
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         ArrayList<Byte> payload = new ArrayList<>();
         payload.addAll(networkId);
         payload.add((byte) maskLength);
         payload.addAll(mask);
-        payload.addAll(contents);
+        for (byte b : bos.toByteArray())
+            payload.add(b);
         return NetworkMessage.toByteArray(payload);
+    }
+
+    /**
+     * Serialize component.
+     *
+     * @return the bytes of the component
+     */
+    public byte[] serialize() {
+        return serialize(false);
     }
 
     /**
@@ -148,36 +157,7 @@ public abstract class NetworkableComponent<T> extends Component {
      * @return the bytes
      */
     public byte[] serializeFully() {
-        ArrayList<Byte> networkId = getIdBytes();
-        int maskLength = this.mFields.length; // 1byte
-        ArrayList<Byte> mask = new ArrayList<>();
-        for (int i = 0; i < maskLength; i++) {
-            mask.add((byte) 1);
-        }
-        ArrayList<Byte> contents = new ArrayList<>();
-        for (int i = 0; i < this.mFields.length; i++) {
-            Field f = this.mFields[i];
-            try {
-                byte[] syncVarBytes = ((ISyncVar) f.get(this)).serialize();
-                for (byte b : syncVarBytes) {
-                    contents.add(b);
-                }
-                if (i < this.mFields.length - 1) { // removes trailing seperator
-                    for (byte b : FIELD_SEPERATOR) {
-                        contents.add(b);
-                    }
-                }
-                this.mFieldsMask[i] = false; // reset flag
-            } catch (IllegalAccessException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        ArrayList<Byte> payload = new ArrayList<>();
-        payload.addAll(networkId);
-        payload.add((byte) maskLength);
-        payload.addAll(mask);
-        payload.addAll(contents);
-        return NetworkMessage.toByteArray(payload);
+        return serialize(true);
     }
 
     /**
@@ -285,66 +265,30 @@ public abstract class NetworkableComponent<T> extends Component {
      * @return the contents from bytes
      * @throws IOException the io exception
      */
-    private ArrayList<ISyncVar> updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
+    private void updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
             throws IOException {
-        ArrayList<ISyncVar> out = new ArrayList<>();
-        ArrayList<Byte> syncVarBytes;
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
         final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
+        ObjectInputStream stream = new ObjectInputStream(bis);
 
-        int fieldIndex = -1;
+        if (didSkip != offset)
+            return;
 
-        if (didSkip == offset) {
-            syncVarBytes = new ArrayList<>();
-            while (bis.available() > 0) {
-                bis.mark(FIELD_SEPERATOR.length);
-                byte[] nextFiveBytes = IOUtils.readNBytes(bis, FIELD_SEPERATOR.length);
-                bis.reset();
-                if (Arrays.equals(nextFiveBytes, FIELD_SEPERATOR)) {
-                    // seek field bytes
-                    IOUtils.readExactlyNBytes(bis, 5);
-                    // end of sync var;
-                    // try to deserialize.
-                    try {
-                        // Go to the field we need
-                        while (!mask[++fieldIndex]) ;
-
-                        System.out.println("[updateSyncVarsFromBytes] getting " + fieldIndex);
-                        Field field = this.mFields[fieldIndex];
-                        System.out.println("[updateSyncVarsFromBytes] field " + field);
-                        ISyncVar obj = (ISyncVar) field.get(this);
-                        System.out.println("[updateSyncVarsFromBytes] deserializing");
-
-                        obj.deserialize(NetworkMessage.toByteArray(syncVarBytes));
-                        System.out.println("[updateSyncVarsFromBytes] done");
-                        syncVarBytes.clear(); // clears current sync bytes that have been read
-                    } catch (ClassNotFoundException | IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    for (byte b : IOUtils.readNBytes(bis, 1)) {
-                        syncVarBytes.add(b); // read one byte from stream
-                    }
-                }
-            }
-            if (!syncVarBytes.isEmpty()) {
-                // Go to the field we need
-                while (!mask[++fieldIndex]) ;
+        for (int i = 0; i < mask.length; i++) {
+            if (mask[i]) {
                 try {
-                    System.out.println("[updateSyncVarsFromBytes] getting " + fieldIndex);
-                    Field field = this.mFields[fieldIndex];
+                    System.out.println("[updateSyncVarsFromBytes] getting " + i);
+                    Field field = this.mFields[i];
                     System.out.println("[updateSyncVarsFromBytes] field " + field);
                     ISyncVar obj = (ISyncVar) field.get(this);
                     System.out.println("[updateSyncVarsFromBytes] deserializing");
 
-                    obj.deserialize(NetworkMessage.toByteArray(syncVarBytes));
+                    obj.deserialize(stream);
                     System.out.println("[updateSyncVarsFromBytes] done");
-                } catch (ClassNotFoundException | IllegalAccessException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-
-        return out;
     }
 }
