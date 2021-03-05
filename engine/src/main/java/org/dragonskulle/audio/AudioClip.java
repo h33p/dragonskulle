@@ -46,8 +46,10 @@ public class AudioClip {
         // Tries to open the audio stream.  Should not really get to the catch statements as
         // Silent.wav should be somewhere.
         try {
+
             AudioInputStream startingStream =
-                    AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
+                    AudioSystem.getAudioInputStream(
+                            new File("src/main/resources/audio/Silent.wav").getAbsoluteFile());
             mClip.open(startingStream);
 
         } catch (UnsupportedAudioFileException | IOException e) {

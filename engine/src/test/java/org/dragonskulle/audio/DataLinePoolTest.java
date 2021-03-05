@@ -15,6 +15,10 @@ import org.junit.Test;
 
 public class DataLinePoolTest {
 
+    private String filePath =
+            "src/main/resources/audio/"; // filePath is needed to point to the right files at all
+    // times
+
     /** This will test whether a Data Line can be created */
     @Test
     public void createDataLineTest() {
@@ -45,7 +49,8 @@ public class DataLinePoolTest {
 
             try {
                 AudioInputStream audio =
-                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
+                        AudioSystem.getAudioInputStream(
+                                new File(filePath + "waves.wav").getAbsoluteFile());
                 AudioClip clip = dataLine.openStream(audio);
 
                 Assert.assertNotNull(clip);
@@ -75,7 +80,8 @@ public class DataLinePoolTest {
             Assert.assertNotNull(dataLine);
             try {
                 AudioInputStream audio =
-                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
+                        AudioSystem.getAudioInputStream(
+                                new File(filePath + "waves.wav").getAbsoluteFile());
 
                 AudioClip clip = dataLine.openStream(audio);
 
@@ -117,7 +123,8 @@ public class DataLinePoolTest {
             try {
 
                 AudioInputStream audio =
-                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
+                        AudioSystem.getAudioInputStream(
+                                new File(filePath + "waves.wav").getAbsoluteFile());
 
                 AudioClip clip = dataLine.openStream(audio);
 
@@ -166,14 +173,15 @@ public class DataLinePoolTest {
             try {
 
                 AudioInputStream audio =
-                        AudioSystem.getAudioInputStream(new File("waves.wav").getAbsoluteFile());
+                        AudioSystem.getAudioInputStream(
+                                new File(filePath + "waves.wav").getAbsoluteFile());
                 ;
 
                 AudioClip clip = dataLine.openStream(audio);
 
                 AudioInputStream audio2 =
                         AudioSystem.getAudioInputStream(
-                                new File("thunderclap.wav").getAbsoluteFile());
+                                new File(filePath + "thunderclap.wav").getAbsoluteFile());
                 ;
 
                 AudioClip clip2 = dataLine.openStream(audio2);
