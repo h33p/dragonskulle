@@ -292,7 +292,7 @@ public abstract class NetworkableComponent<T> extends Component {
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
         final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
 
-        int fieldIndex = mask.length;
+        int fieldIndex = -1;
 
         if (didSkip == offset) {
             syncVarBytes = new ArrayList<>();
@@ -307,7 +307,7 @@ public abstract class NetworkableComponent<T> extends Component {
                     // try to deserialize.
                     try {
                         // Go to the field we need
-                        while (!mask[--fieldIndex]) ;
+                        while (!mask[++fieldIndex]) ;
 
                         System.out.println("[updateSyncVarsFromBytes] getting " + fieldIndex);
                         Field field = this.mFields[fieldIndex];
@@ -329,7 +329,7 @@ public abstract class NetworkableComponent<T> extends Component {
             }
             if (!syncVarBytes.isEmpty()) {
                 // Go to the field we need
-                while (!mask[--fieldIndex]) ;
+                while (!mask[++fieldIndex]) ;
                 try {
                     System.out.println("[updateSyncVarsFromBytes] getting " + fieldIndex);
                     Field field = this.mFields[fieldIndex];

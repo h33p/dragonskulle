@@ -3,9 +3,7 @@ package org.dragonskulle.network.components.sync;
 
 import java.io.*;
 
-/**
- * @author Oscar L The type Sync var.
- */
+/** @author Oscar L The type Sync var. */
 public interface ISyncVar {
 
     /** The interface Sync var update handler. */
