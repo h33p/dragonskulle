@@ -5,7 +5,6 @@ import java.io.*;
 
 /**
  * @author Oscar L The type Sync var.
- * @param <T> the type parameter
  */
 public interface ISyncVar {
 
