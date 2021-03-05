@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import org.lwjgl.glfw.GLFW;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -55,6 +57,14 @@ public class Input {
         }
     }
 
+    /**
+     * Called before {@link GLFW#glfwPollEvents} is executed.
+     */
+    public static void beforePoll() {
+		// Reset the necessary action values.
+    	Actions.refresh();
+	}
+    
     /**
      * Get {@link #sButtons}, which stores which buttons are pressed and triggers their actions.
      *
