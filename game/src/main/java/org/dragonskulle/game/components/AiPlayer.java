@@ -16,6 +16,14 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	protected int upperBoundTime;
 	protected int actualTime;
 	
+	protected float tileProbablity;
+	protected float buildingProabilty = 1 - tileProbablity;
+	
+	protected float upgradeBuilding;  // These three probabilities summed must == 1
+	protected float attackBuilding;
+	protected float sellBuilding;
+	
+	//TODO to choose where to attack, which building to use, what stat to upgrade.  Do we want these to be uniform or not?  I would say it's easier tp be uniform HOWEVER we can play around more easily if they're not uniform
 	
 	public AiPlayer(int lowerBound, int upperBound) {
 		
@@ -73,6 +81,8 @@ public class AiPlayer extends Player implements IFixedUpdate {
      * This will simulate the action to be done by the AI player.  For the base class this will be done using probability
      */
     private void simulateInput(){
+    	
+    	
 
     }
 }
