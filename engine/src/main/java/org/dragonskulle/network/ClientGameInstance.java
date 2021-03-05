@@ -36,9 +36,9 @@ public class ClientGameInstance {
      * @param id the Id of the component
      * @return the networked components
      */
-    public NetworkableComponent getNetworkedComponents(String id) {
+    public NetworkableComponent getNetworkedComponents(int id) {
         return mNetworkedComponents.stream()
-                .filter(e -> e.getId().equals(id))
+                .filter(e -> e.getId() == id)
                 .findFirst()
                 .orElse(null);
     }
@@ -77,8 +77,8 @@ public class ClientGameInstance {
      * @param payload the payload
      */
     public void updateNetworkable(byte[] payload) {
-        // 36 bytes will be allocated for the id
-        String idToUpdate = NetworkableComponent.getIdFromBytes(payload);
+        // 4 bytes will be allocated for the id
+        int idToUpdate = NetworkableComponent.getIdFromBytes(payload);
         NetworkableComponent networkableComponentToUpdate = getNetworkable(idToUpdate);
         if (networkableComponentToUpdate != null) {
             System.out.println("found networkable, should update");
@@ -98,9 +98,9 @@ public class ClientGameInstance {
      * @param id the id
      * @return the networkable
      */
-    private NetworkableComponent getNetworkable(String id) {
+    private NetworkableComponent getNetworkable(int id) {
         for (NetworkableComponent networkedComponent : this.mNetworkedComponents) {
-            if (networkedComponent.getId().equals(id)) {
+            if (networkedComponent.getId()== id) {
                 return networkedComponent;
             }
         }
@@ -112,7 +112,7 @@ public class ClientGameInstance {
      *
      * @param id the id of the component
      */
-    public void printNetworkable(String id) {
+    public void printNetworkable(int id) {
         System.out.println(Objects.requireNonNull(getNetworkable(id)).toString());
     }
 

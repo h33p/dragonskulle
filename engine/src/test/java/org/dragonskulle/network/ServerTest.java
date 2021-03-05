@@ -56,7 +56,7 @@ public class ServerTest {
         await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
-        String capitalId = mNetworkClient.getCapitalId();
+        int capitalId = mNetworkClient.getCapitalId();
         final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId);
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);

@@ -20,12 +20,19 @@ import sun.misc.IOUtils;
  */
 public abstract class NetworkableComponent<T> extends Component {
 
+
+    NetworkableComponent(int networkComponentId){
+        this.id = networkComponentId;
+    }
+
+    NetworkableComponent(){
+    }
     /**
      * Gets id.
      *
      * @return the id
      */
-    public String getId() {
+    public int getId() {
         return id;
     }
 
@@ -34,12 +41,12 @@ public abstract class NetworkableComponent<T> extends Component {
      *
      * @param id the id
      */
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
     /** The Id. */
-    private String id = UUID.randomUUID().toString();
+    private int id;
 
     /** The constant FIELD_SEPERATOR. This is between all fields in the serialization. */
     private static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
@@ -131,8 +138,9 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     @NotNull
     private ArrayList<Byte> getIdBytes() {
-        ArrayList<Byte> networkId = new ArrayList<Byte>(); // 36 bytes
-        for (Byte aByte : this.getId().getBytes()) {
+        ArrayList<Byte> networkId = new ArrayList<>(); // 4 bytes
+        byte[] bytes = NetworkMessage.convertIntToByteArray(this.getId());
+        for (Byte aByte : bytes) {
             networkId.add(aByte);
         }
         return networkId;
@@ -194,7 +202,7 @@ public abstract class NetworkableComponent<T> extends Component {
             return t;
         } catch (IOException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
-            throw new DecodingException("Error decoding capitol from bytes");
+            throw new DecodingException("Error decoding component from bytes");
         }
     }
 
@@ -205,13 +213,14 @@ public abstract class NetworkableComponent<T> extends Component {
      * @throws IOException the io exception
      */
     public void updateFromBytes(byte[] payload) throws IOException {
-        String id = getIdFromBytes(payload);
+        int id = getIdFromBytes(payload);
         this.setId(id);
-        int maskLength = getFieldLengthFromBytes(payload, 36); // offset of 36 to ignore netid
+        int maskLength = getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore netid
         ArrayList<Boolean> masks =
-                getMaskFromBytes(payload, maskLength, 36); // offset of 36 to ignore netid
+                getMaskFromBytes(payload, maskLength, 4); // offset of 4 to ignore netid
         ArrayList<SyncVar> contents =
-                getContentsFromBytes(payload, 1 + maskLength + 36); // offset of 36 to ignore netid
+                getContentsFromBytes(payload, 1 + maskLength + 4); // offset of 4 to ignore netid
+        System.out.println("[updateFromBytes] contents -> " + contents);
         for (int i = 0; i < maskLength; i++) {
             boolean didUpdate = masks.get(i);
             if (didUpdate) {
@@ -226,8 +235,8 @@ public abstract class NetworkableComponent<T> extends Component {
      * @param payload the payload
      * @return the id from bytes
      */
-    public static String getIdFromBytes(byte[] payload) {
-        return new String(Arrays.copyOf(payload, 36), Charset.defaultCharset());
+    public static int getIdFromBytes(byte[] payload) {
+        return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
     }
 
     /**
@@ -320,14 +329,12 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     private void updateFromMaskOffset(int offset, SyncVar newValue) {
         try {
-            //            System.out.println("[updateFromMaskOffset] getting " + offset);
-            //            System.out.println("[updateFromMaskOffset] fields " +
-            // this.fields.get(offset));
+            System.out.println("[updateFromMaskOffset] getting " + offset);
+            System.out.println("[updateFromMaskOffset] fields " + this.mFields.get(offset));
             Field E = this.mFields.get(offset);
-            //            System.out.println("[updateFromMaskOffset] setting field from " +
-            // newValue.getClass());
+            System.out.println("[updateFromMaskOffset] setting field from " + newValue.getClass());
             E.set(this, newValue);
-            //            System.out.println("[updateFromMaskOffset] done");
+            System.out.println("[updateFromMaskOffset] done");
         } catch (IllegalAccessException | IllegalArgumentException e) {
             System.out.println("error setting field in instance");
             e.printStackTrace();

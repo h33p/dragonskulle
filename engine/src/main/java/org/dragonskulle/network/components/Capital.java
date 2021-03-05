@@ -30,6 +30,11 @@ public class Capital extends NetworkableComponent {
     SyncString mSyncMeAlso = new SyncString("Hello World");
 
     /** Instantiates a new Capital. */
+    public Capital(int componentId) {
+        super(componentId);
+    }
+
+    /** Instantiates a new Capital without id, this will be set from the bytes */
     public Capital() {
         super();
     }

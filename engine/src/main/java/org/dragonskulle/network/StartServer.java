@@ -19,7 +19,7 @@ public class StartServer {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
-        if(debug) {
+        if (debug) {
             server = new Server(PORT, serverListener, debug);
         }
     }

@@ -3,7 +3,6 @@ package org.dragonskulle.network.components.sync;
 
 import java.io.*;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Oscar L The type Sync var.
@@ -12,33 +11,10 @@ import java.util.UUID;
 public class SyncVar<T extends Serializable> implements Serializable {
     /** The Data. */
     private T mData;
-//    /** The Id. */
-//    private final String mId;
     /** The Has listener. */
     private transient boolean mHasListener = false;
     /** The On update. */
     private transient ISyncVarUpdateHandler mOnUpdate;
-
-//    /**
-//     * Gets id.
-//     *
-//     * @return the id
-//     */
-//    public String getId() {
-//        return mId;
-//    }
-//
-//
-//    /**
-//     * Instantiates a new Sync var.
-//     *
-//     * @param id the id
-//     * @param data the data
-//     */
-//    public SyncVar(String id, T data) {
-//        this.mId = id;
-//        this.mData = data;
-//    }
 
     /**
      * Instantiates a new Sync var.
@@ -46,7 +22,6 @@ public class SyncVar<T extends Serializable> implements Serializable {
      * @param data the data
      */
     public SyncVar(T data) {
-//        this.mId = UUID.randomUUID().toString();
         this.mData = data;
     }
 
@@ -115,7 +90,7 @@ public class SyncVar<T extends Serializable> implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SyncVar<?> syncVar = (SyncVar<?>) o;
-        return mData.equals(syncVar.mData);
+        return Objects.equals(mData, syncVar.mData);
     }
 
     @Override

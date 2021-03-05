@@ -10,54 +10,36 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
-
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * @author Oscar L
- * <p>This is the client usage, you will create an instance, by providing the correct server to
- * connect to. ClientListener is the handler for commands that the client receives. {@link
- * org.dragonskulle.network.ClientListener}**
+ *     <p>This is the client usage, you will create an instance, by providing the correct server to
+ *     connect to. ClientListener is the handler for commands that the client receives. {@link
+ *     org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
-    /**
-     * The constant MAX_TRANSMISSION_SIZE.
-     */
+    /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = 512;
-    /**
-     * The Socket connection to the server.
-     */
+    /** The Socket connection to the server. */
     private Socket mSocket;
-    /**
-     * The Input stream. Possibly depreciated in favour of byte streams.
-     */
+    /** The Input stream. Possibly depreciated in favour of byte streams. */
     private BufferedReader mIn;
-    /**
-     * The Output stream. Possibly depreciated in favour of byte streams.
-     */
+    /** The Output stream. Possibly depreciated in favour of byte streams. */
     private PrintWriter mOut;
-    /**
-     * The byte output stream.
-     */
+    /** The byte output stream. */
     private DataOutputStream mDOut;
-    /**
-     * The byte input stream.
-     */
+    /** The byte input stream. */
     private BufferedInputStream mBIn;
-    /**
-     * The Game Instance.
-     */
+    /** The Game Instance. */
     private ClientGameInstance mGame;
 
-    /**
-     * The Client listener to notify of important events.
-     */
+    /** The Client listener to notify of important events. */
     private ClientListener mClientListener;
-    /**
-     * True if the socket is open.
-     */
+    /** True if the socket is open. */
     private boolean mOpen = true;
+
     private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
     private final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
     private ClientRunner mClientRunner;
@@ -67,11 +49,12 @@ public class NetworkClient {
     /**
      * Instantiates a new Network client.
      *
-     * @param ip       the ip
-     * @param port     the port
+     * @param ip the ip
+     * @param port the port
      * @param listener the listener
      */
-    public NetworkClient(String ip, int port, ClientListener listener, boolean autoProcessMessages) {
+    public NetworkClient(
+            String ip, int port, ClientListener listener, boolean autoProcessMessages) {
         this.mAutoProcessMessages = autoProcessMessages;
         mClientListener = listener;
         try {
@@ -104,14 +87,14 @@ public class NetworkClient {
      * Execute bytes after parsing. This will be different usage depending on server or client.
      *
      * @param messageType the message type
-     * @param payload     the payload
+     * @param payload the payload
      */
     public void executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
             case (byte) 10:
                 System.out.println("Should update requested component");
                 System.out.println("Current component is");
-                String networkableId = NetworkableComponent.getIdFromBytes(payload);
+                int networkableId = NetworkableComponent.getIdFromBytes(payload);
                 this.mGame.printNetworkable(networkableId);
                 updateNetworkable(payload);
                 System.out.println("Component after update");
@@ -162,9 +145,7 @@ public class NetworkClient {
         System.out.println("updated networkable");
     }
 
-    /**
-     * Dispose.
-     */
+    /** Dispose. */
     public void dispose() {
         try {
             if (mOpen) {
@@ -231,7 +212,7 @@ public class NetworkClient {
         public void run() {
             byte[] bArray;
             byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
-            if(!mAutoProcessMessages) {
+            if (!mAutoProcessMessages) {
                 mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 5000);
             }
             while (mOpen && !Thread.currentThread().isInterrupted()) {
@@ -258,13 +239,10 @@ public class NetworkClient {
                 }
             }
         }
-        /**
-         * Cancel.
-         */
+        /** Cancel. */
         public void cancel() {
             this.mProcessScheduler.cancel();
         }
-
     }
 
     private class ProcessRequestScheduled extends TimerTask {
@@ -332,9 +310,7 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Close all connections.
-     */
+    /** Close all connections. */
     private void closeAllConnections() {
         mOpen = false;
 
@@ -376,7 +352,7 @@ public class NetworkClient {
         return this.mGame.hasSpawnedCapital();
     }
 
-    public String getCapitalId() {
+    public int getCapitalId() {
         return this.mGame.getNetworkedComponents().stream()
                 .filter(e -> e.getClass().isAssignableFrom(Capital.class))
                 .findFirst()
@@ -384,7 +360,7 @@ public class NetworkClient {
                 .getId();
     }
 
-    public NetworkableComponent getNetworkableComponent(String networkableId) {
+    public NetworkableComponent getNetworkableComponent(int networkableId) {
         return this.mGame.getNetworkedComponents(networkableId);
     }
 }

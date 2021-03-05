@@ -2,36 +2,48 @@
 package org.dragonskulle.network.components;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
 
-/** @author Oscar L The NetworkObject deals with any networked variables. */
+/**
+ * @author Oscar L The NetworkObject deals with any networked variables.
+ */
 public class NetworkObject {
+    /**
+     * The UUID of the object.
+     */
+    public int networkObjectId;
+    private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
+
     /**
      * Instantiates a new Network object.
      *
-     * @param client the client
+     * @param client            the client
      * @param broadcastCallback the broadcast callback
-     * @param clientCallback the client callback
+     * @param clientCallback    the client callback
      */
     public NetworkObject(
+            int id,
             ClientInstance client,
             ServerBroadcastCallback broadcastCallback,
             SendBytesToClientCallback clientCallback) {
+        networkObjectId = id;
         owner = client;
         serverBroadcastCallback = broadcastCallback;
         sendBytesToClientCallback = clientCallback;
     }
 
-    /**
-     * Possibly a temporary function to edit a network object without a reference. @param i the
-     *
-     * @param i the
-     * @return the networkable
-     */
-    public NetworkableComponent get(int i) {
-        return this.children.get(i);
-    }
+//    /**
+//     * Possibly a temporary function to edit a network object without a reference. @param i the
+//     *
+//     * @param i the
+//     * @return the networkable
+//     */
+//    public NetworkableComponent get(int i) {
+//        return this.children.get(i);
+//    }
 
     /**
      * Get networkable.
@@ -49,9 +61,9 @@ public class NetworkObject {
      * @param componentId the id
      * @return the networkable
      */
-    public NetworkableComponent findComponent(String componentId) {
+    public NetworkableComponent findComponent(int componentId) {
         return this.children.stream()
-                .filter(e -> e.getId().equals(componentId))
+                .filter(e -> e.getId() == componentId)
                 .findFirst()
                 .orElse(null);
     }
@@ -75,9 +87,9 @@ public class NetworkObject {
      * @param id the id
      * @return the networkable
      */
-    public NetworkableComponent get(String id) {
+    public NetworkableComponent get(int id) {
         return this.children.stream()
-                .filter(e -> e.getId().equals(id))
+                .filter(e -> e.getId() == id)
                 .findFirst()
                 .orElse(null); // will return null if not found
     }
@@ -101,7 +113,9 @@ public class NetworkObject {
                 + '}';
     }
 
-    /** A callback to broadcast a message to all clients */
+    /**
+     * A callback to broadcast a message to all clients
+     */
     public interface ServerBroadcastCallback {
         /**
          * Call.
@@ -111,21 +125,27 @@ public class NetworkObject {
         void call(byte[] bytes);
     }
 
-    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
+    /**
+     * A callback to broadcast a message to a SINGLE clients,this client is the owner
+     */
     public interface SendBytesToClientCallback {
         /**
          * Call.
          *
          * @param client the client
-         * @param bytes the bytes
+         * @param bytes  the bytes
          */
         void call(ClientInstance client, byte[] bytes);
     }
 
-    /** Stores the broadcast callback */
+    /**
+     * Stores the broadcast callback
+     */
     private final ServerBroadcastCallback serverBroadcastCallback;
 
-    /** Stores the single sender callback */
+    /**
+     * Stores the single sender callback
+     */
     private final SendBytesToClientCallback sendBytesToClientCallback;
 
     /**
@@ -149,11 +169,11 @@ public class NetworkObject {
     /**
      * Spawns a component and notifies all clients using callback.
      *
-     * @param component The component to be spawned, must extend NetworkableComponent
+     * @param component   The component to be spawned, must extend NetworkableComponent
      * @param messageCode The message code of the spawn.
      * @return The ID of the spawned component
      */
-    private String spawnComponent(NetworkableComponent component, byte messageCode) {
+    private int spawnComponent(NetworkableComponent component, byte messageCode) {
         System.out.println("spawning component on all clients");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
@@ -171,8 +191,8 @@ public class NetworkObject {
      *
      * @return The id of the spawned component
      */
-    public String spawnCapital() {
-        Capital capital = new Capital();
+    public int spawnCapital() {
+        Capital capital = new Capital(this.allocateId());
         capital.connectSyncVars();
         return spawnComponent(capital, (byte) 21);
     }
@@ -189,7 +209,9 @@ public class NetworkObject {
         sendBytesToClientCallback.call(owner, spawnMapMessage);
     }
 
-    /** Children of the object will be networkable and updated on clients */
+    /**
+     * Children of the object will be networkable and updated on clients
+     */
     private final ArrayList<NetworkableComponent> children = new ArrayList<>();
 
     /**
@@ -197,14 +219,13 @@ public class NetworkObject {
      *
      * @return the network object id
      */
-    public String getNetworkObjectId() {
+    public int getNetworkObjectId() {
         return networkObjectId;
     }
 
-    /** The UUID of the object. */
-    public String networkObjectId = UUID.randomUUID().toString();
-
-    /** The Client Connection to the server */
+    /**
+     * The Client Connection to the server
+     */
     final ClientInstance owner;
 
     /**
@@ -213,7 +234,9 @@ public class NetworkObject {
      */
     boolean isDormant = false;
 
-    /** Broadcasts updates all of the modified children */
+    /**
+     * Broadcasts updates all of the modified children
+     */
     public void broadcastUpdate() {
         for (NetworkableComponent child : this.children) {
             if (child.hasBeenModified()) {
@@ -221,5 +244,12 @@ public class NetworkObject {
                 serverBroadcastCallback.call(NetworkMessage.build((byte) 10, child.serialize()));
             }
         }
+    }
+
+    private int allocateId() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.networkObjectId);
+        sb.append(this.mNetworkComponentCounter.getAndIncrement());
+        return Integer.parseInt(sb.toString());
     }
 }
