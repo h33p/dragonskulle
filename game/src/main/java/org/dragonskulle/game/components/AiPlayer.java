@@ -16,8 +16,8 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	protected int upperBoundTime;
 	protected int actualTime;
 	
-	protected float tileProbablity;
-	protected float buildingProabilty = 1 - tileProbablity;
+	protected float tileProbability;
+	protected float buildingProabilty = 1 - tileProbability;
 	
 	protected float upgradeBuilding;  // These three probabilities summed must == 1
 	protected float attackBuilding;
@@ -82,7 +82,37 @@ public class AiPlayer extends Player implements IFixedUpdate {
      */
     private void simulateInput(){
     	
+    	//TODO Need to know how we are interacting with triggerEvent().  Cos here you can choose exact command to do (Much Much easier)
+    	//TODO ATM have the set up probabilties to choose which event to do.  Need to add which building/tile to use
     	
+    	if (ownedBuildings.size() == 1) {
+    		//TODO Choose which tile to use;
+    		return;
+    	}
+    	else {
+    		float randomNumber = random.nextFloat();
+    		
+    		if (randomNumber <= tileProbability) {
+    			//TODO Choose which tile to use
+    			return;
+    		}
+    		else {
+    			randomNumber = random.nextFloat();
+    			
+    			if (randomNumber <= upgradeBuilding) {
+    				//TODO Choose which building to upgrade & which stat to upgrade
+    				return;
+    			}
+    			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
+    				//TODO Choose which building to attack
+    				return;
+    			}
+    			else {
+    				//TODO Choose which building to sell
+    				return;
+    			}
+    		}
+    	}
 
     }
 }
