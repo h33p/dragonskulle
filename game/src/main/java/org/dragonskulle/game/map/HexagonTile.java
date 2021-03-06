@@ -6,12 +6,14 @@ import org.dragonskulle.components.Component;
 
 import static java.lang.Math.sqrt;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-// based on https://www.redblobgames.com/grids/hexagons/implementation.html
+
 
 /** The Hexagon Tile Object */
+
 public class HexagonTile  {
 
     /**
@@ -21,11 +23,6 @@ public class HexagonTile  {
     private final int r;
     private final int s;
 
-    /**
-     * @param q
-     * @param r
-     * @param s
-     */
 
      HexagonTile(int q, int r, int s) {
         this.q = q;
