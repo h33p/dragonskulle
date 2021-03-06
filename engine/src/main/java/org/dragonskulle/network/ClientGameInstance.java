@@ -67,13 +67,20 @@ public class ClientGameInstance {
      * @return the network object
      */
     public NetworkObject getNetworkObject(int networkObjectId) {
-        System.out.println("Should find network object by id");
-        System.out.println("looking for " + networkObjectId);
-        System.out.println(mNetworkedComponents);
-        return mNetworkedObjects.stream()
-                .filter(e -> e.getId() == networkObjectId)
-                .findFirst()
-                .orElse(null);
+        System.out.println(mNetworkedObjects);
+        NetworkObject nob =
+                mNetworkedObjects.stream()
+                        .filter(e -> e.getId() == networkObjectId)
+                        .findFirst()
+                        .orElse(null);
+        if (nob != null) {
+            return nob;
+        }
+
+        //        System.out.println("couldn't find nob id :" + networkObjectId);
+        nob = new NetworkObject(networkObjectId);
+        this.mNetworkedObjects.add(nob); //            System.out.println("managed to add new nob");
+        return nob;
     }
 
     /**
@@ -91,20 +98,9 @@ public class ClientGameInstance {
      * @param capital the capital
      */
     public int spawnCapital(int networkObjectId, Capital capital) {
-        NetworkObject nob =
-                this.mNetworkedObjects.stream()
-                        .filter(e -> e.getId() == networkObjectId)
-                        .findFirst()
-                        .orElse(null);
-        if (nob != null) {
-            nob.addChild(capital);
-            this.mHasCapital = true;
-        } else {
-            nob = new NetworkObject(networkObjectId);
-            nob.addChild(capital);
-            this.mNetworkedObjects.add(nob);
-            this.mHasCapital = true;
-        }
+        NetworkObject nob = getNetworkObject(networkObjectId);
+        nob.addChild(capital);
+        this.mHasCapital = true;
         return capital.getId();
     }
 
@@ -130,7 +126,7 @@ public class ClientGameInstance {
             try {
                 System.out.println("BEFORE UPDATE");
                 System.out.println(networkObjectToUpdate.toString());
-                networkObjectToUpdate.updateFromBytes(payload);
+                networkObjectToUpdate.updateFromBytes(payload, this);
                 System.out.println("AFTER UPDATE");
                 System.out.println(networkObjectToUpdate.toString());
             } catch (IOException e) {

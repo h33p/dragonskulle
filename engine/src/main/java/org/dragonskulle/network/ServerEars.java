@@ -2,7 +2,6 @@
 package org.dragonskulle.network;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -47,8 +46,8 @@ public class ServerEars implements ServerListener {
 
     @Override
     public void receivedBytes(ClientInstance client, byte[] bytes) {
-        System.out.println("--\ngot bytes");
-        System.out.println(Arrays.toString(bytes));
+        //        System.out.println("--\ngot bytes");
+        //        System.out.println(Arrays.toString(bytes));
     }
 }
 

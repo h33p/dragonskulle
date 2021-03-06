@@ -5,6 +5,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
+import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.NetworkableComponent;
 import sun.misc.IOUtils;
 
 /**
@@ -222,6 +224,9 @@ public class NetworkMessage {
      * @param sendBytesToClient the send bytes to client
      */
     public static void parse(byte[] buff, Server.SendBytesToClientCurry sendBytesToClient) {
+        if (buff.length == 0 || Arrays.equals(buff, new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
+            return;
+        }
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;
@@ -355,5 +360,20 @@ public class NetworkMessage {
             out.add(mask);
         }
         return toByteArray(out);
+    }
+
+    public static byte getChildClassTypeByte(Class<? extends NetworkableComponent> aClass) {
+        if (aClass == Capital.class) {
+            return (byte) 255;
+        }
+        return (byte) 0;
+    }
+
+    public static Class<? extends NetworkableComponent> getChildClassFromByte(byte bClass) {
+        if (bClass == (byte) 255) {
+            return Capital.class;
+        }
+
+        return null;
     }
 }

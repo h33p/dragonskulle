@@ -98,6 +98,8 @@ public class ServerTest {
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
         assertNotNull(capitalId);
+        mLogger.info("Capital ID : " + capitalId);
+        mLogger.info("mClient has these objects : " + mNetworkClient.getNetworkableObjects());
         final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(capitalId);
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);
@@ -107,14 +109,18 @@ public class ServerTest {
     }
 
     @Test
-    public void testCapitalUpdatedClient() {
+    public void
+            testCapitalUpdatedClient() { // need to write a better test, this is not processing all
+        // requests it catches
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
 
-        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
-        mNetworkClient.processSingleRequest();
-        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
+        await().atLeast(30, SECONDS).until(() -> false);
+        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasRequests());
+        mNetworkClient.processRequests();
+        await().atMost(3, SECONDS).until(() -> !mNetworkClient.hasRequests());
+        await().atMost(3, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));

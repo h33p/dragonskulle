@@ -5,12 +5,11 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.logging.Logger;
+import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
@@ -196,6 +195,10 @@ public class NetworkClient {
         return mOpen;
     }
 
+    public ArrayList<NetworkObject> getNetworkableObjects() {
+        return this.mGame.getNetworkObjects();
+    }
+
     /**
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
@@ -248,17 +251,16 @@ public class NetworkClient {
     }
 
     private void queueRequest(byte[] bArray) {
-        //        mLogger.info("queuing request");
+        mLogger.info("queuing request :: " + Hex.encodeHexString(bArray));
         this.mRequests.add(bArray);
     }
 
     public void processRequests() {
-        if (!this.mRequests.isEmpty()) {
-            for (int i = 0; i < this.mRequests.size(); i++) {
-                byte[] requestBytes = this.mRequests.poll();
-                if (requestBytes != null) {
-                    processBytes(requestBytes);
-                }
+        mLogger.warning("processing all " + this.mRequests.size() + " requests");
+        while (!this.mRequests.isEmpty()) {
+            byte[] requestBytes = this.mRequests.poll();
+            if (requestBytes != null) {
+                processBytes(requestBytes);
             }
         }
     }
@@ -283,6 +285,7 @@ public class NetworkClient {
      */
     private void processBytes(byte[] bytes) {
         mClientListener.receivedBytes(bytes);
+        mLogger.info("parsing bytes :: " + Hex.encodeHexString(bytes));
         try {
             parseBytes(bytes);
         } catch (DecodingException e) {
