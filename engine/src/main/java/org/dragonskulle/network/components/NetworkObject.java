@@ -103,22 +103,26 @@ public class NetworkObject {
         System.out.println("Updating network object from bytes");
         System.out.println("Bytes " + Hex.encodeHexString(payload)
         );
-        int networkId =
-                NetworkableComponent.getComponentIdFromBytes(payload, 0);
+
+        int networkId = NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
         System.out.println("network id is : " + networkId);
-        int maskLength =
-                NetworkMessage.getFieldLengthFromBytes(payload, 4 + 4); // offset of 4 to ignore id, another 4 to avoid networkObject id
+
+        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore id, another 4 to avoid networkObject id
         System.out.println("mask length is " + maskLength);
-        boolean[] masks =
-                NetworkMessage.getMaskFromBytes(payload, maskLength, 4 + 4); // offset of 4 to ignore id, another 4 to avoid networkObject id
+
+        //DEBUG
+        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4 + 1);
         System.out.println("masks are " + Arrays.toString(masks));
+
         ArrayList<byte[]> arrayOfChildrenBytes =
-                getChildrenUpdateBytes(payload, 1 + maskLength + 4 + 4);
+                getChildrenUpdateBytes(payload, 1 + maskLength + 4 );
         System.out.println("Children Bytes are");
         for (int i = 0; i < maskLength; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
                 this.children.get(i).updateFromBytes(arrayOfChildrenBytes.get(i));
+            } else {
+                System.out.println("Shouldn't update child");
             }
         }
     }
@@ -151,6 +155,10 @@ public class NetworkObject {
             if (!objectBytes.isEmpty()) {
                 out.add(NetworkMessage.toByteArray(objectBytes));
             }
+        }
+        //TODO I THINK ITS HERE
+        for (byte[] bytes : out) {
+            System.out.println("CHILD BYTES FOR DECODING :: " + Hex.encodeHexString(bytes));
         }
         return out;
     }
@@ -276,13 +284,17 @@ public class NetworkObject {
     }
 
     private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
+        System.out.println("generating broadcast update bytes");
+        System.out.println("didUpdateChildMask :: " + Arrays.toString(didChildUpdateMask));
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); //4
-        byte[] sizeOfMaskBytes = NetworkMessage.convertIntToByteArray(didChildUpdateMask.length);//4
+        byte sizeOfMaskBytes = (byte) didChildUpdateMask.length;//1
 
         ArrayList<Byte> childChunk = new ArrayList<>();
         ArrayList<Byte> contents = new ArrayList<>();
+
+
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {
                 // child did update
@@ -314,14 +326,12 @@ public class NetworkObject {
             bytes.add(idByte);
         }
 
-//        System.out.println("{B} mask length :: "+sizeOfMaskBytes.length);
-//        System.out.println("{B} mask length is :: "+ didChildUpdateMask.length);
-//        System.out.println("{B} Masks are :: "+ Arrays.toString(didChildUpdateMask));
+        System.out.println("{B} mask length :: " + 1);
+        System.out.println("{B} mask length is :: " + didChildUpdateMask.length);
+        System.out.println("{B} Masks are :: " + Arrays.toString(didChildUpdateMask));
 
-        // add size of mask
-        for (byte sizeOfMaskByte : sizeOfMaskBytes) {
-            bytes.add(sizeOfMaskByte);
-        }
+        // add size of mask only one byte
+        bytes.add(sizeOfMaskBytes);
 
         // add mask
         byte[] maskBytes = new byte[didChildUpdateMask.length];
@@ -336,6 +346,8 @@ public class NetworkObject {
             }
         }
 
+        System.out.println("MASK BYTES " + Arrays.toString(maskBytes));
+        System.out.println("Hex of mask bytes I am reading from is " + Hex.encodeHexString(maskBytes));
         // add contents
         bytes.addAll(contents);
         byte[] out = NetworkMessage.toByteArray(bytes);

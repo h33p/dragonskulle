@@ -337,7 +337,9 @@ public class NetworkMessage {
      * @return the mask from bytes
      */
     public static boolean[] getMaskFromBytes(byte[] buff, int maskLength, int offset) {
+        System.out.println("Hex of mask bytes I am reading from is "+ Hex.encodeHexString(buff));
         byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
+        System.out.println("Hex of the mask bytes are "+ Hex.encodeHexString(maskBytes));
         boolean[] out = new boolean[maskBytes.length];
         int idx = 0;
         for (byte maskByte : maskBytes) {

@@ -56,6 +56,7 @@ abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializ
      * @return the byte [ ]
      * @throws IOException the io exception
      */
+    @Override
     public void serialize(ObjectOutputStream oos) throws IOException {
         oos.writeObject(this.mData);
     }
@@ -68,6 +69,7 @@ abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializ
      * @throws ClassNotFoundException the class not found exception
      */
     @SuppressWarnings("unchecked")
+    @Override
     public void deserialize(ObjectInputStream in) throws IOException, ClassNotFoundException {
         // TODO: handle this somehow
         this.mData = (T) in.readObject();

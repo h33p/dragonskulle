@@ -52,11 +52,11 @@ public class SyncShort implements ISyncVar, Serializable {
     }
 
     /**
-     * Serialize byte [ ].
+     * Serialize the SyncShort.
      *
-     * @return the byte [ ]
      * @throws IOException the io exception
      */
+    @Override
     public void serialize(ObjectOutputStream oos) throws IOException {
         oos.writeShort(this.mData);
     }
@@ -67,6 +67,7 @@ public class SyncShort implements ISyncVar, Serializable {
      * @param in the input stream
      * @throws IOException the io exception
      */
+    @Override
     public void deserialize(ObjectInputStream in) throws IOException, ClassNotFoundException {
         this.mData = in.readShort();
     }

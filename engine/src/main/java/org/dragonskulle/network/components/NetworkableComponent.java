@@ -126,7 +126,6 @@ public abstract class NetworkableComponent<T> extends Component {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
             ObjectOutputStream oos = new ObjectOutputStream(bos);
-            // need to add in an id before
             for (int i = 0; i < this.mFields.length; i++) {
                 boolean didVarChange = this.mFieldsMask[i];
                 Field f = this.mFields[i];
@@ -147,14 +146,27 @@ public abstract class NetworkableComponent<T> extends Component {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         ArrayList<Byte> payload = new ArrayList<>();
+        System.out.println("Component Bytes destructured");
         payload.addAll(componentIdBytes);
+        System.out.println("ComponentID : " + Hex.encodeHexString(NetworkMessage.toByteArray(componentIdBytes)) + " | length: " + componentIdBytes.size());
         payload.addAll(ownerIdBytes);
+        System.out.println("OwnerId : " + Hex.encodeHexString(NetworkMessage.toByteArray(ownerIdBytes)) + " | length: " + ownerIdBytes.size());
         payload.add((byte) maskLength);
+        System.out.println("MaskLength : " + maskLength + " | length: " + 1);
         payload.addAll(mask);
-        for (byte b : bos.toByteArray())
+        System.out.println("Mask : " + Hex.encodeHexString(NetworkMessage.toByteArray(mask)) + " | length: " + mask.size());
+
+        byte[] contents = bos.toByteArray();
+        for (byte b : contents) {
             payload.add(b);
-        return NetworkMessage.toByteArray(payload);
+        }
+        System.out.println("Contents : " + Hex.encodeHexString(contents) + " | length: " + contents.length);
+
+        byte[] componentBytes = NetworkMessage.toByteArray(payload);
+        System.out.println("Full Component Bytes are :" + Hex.encodeHexString(componentBytes));
+        return componentBytes;
     }
 
     /**
@@ -234,20 +246,19 @@ public abstract class NetworkableComponent<T> extends Component {
      * @throws IOException the io exception
      */
     public void updateFromBytes(byte[] payload) throws IOException {
-        System.out.println("Updating from mask bytes");
+        System.out.println("Updating component from mask bytes");
         System.out.println(Hex.encodeHexString(payload));
-        int id = getComponentIdFromBytes(payload, 0);
-        int ownerId = getComponentIdFromBytes(payload, 4);
+        int id = getComponentIdFromBytes(payload, 0); //read 4 bytes
+        int ownerId = getComponentIdFromBytes(payload, 4); //read 4 bytes but with offset of 4 to avoid previous id
         this.setId(id);
         this.setOwnerId(ownerId);
         int maskLength =
-                NetworkMessage.getFieldLengthFromBytes(payload, 4 + 4); // offset of 4 to ignore netid
-        System.out.println("{ub} mask length are "+ maskLength);
+                NetworkMessage.getFieldLengthFromBytes(payload, 4 + 4); // offset of 8 for previous, length is one as int is being cast to one byte
         boolean[] masks =
                 NetworkMessage.getMaskFromBytes(
-                        payload, maskLength, 4 + 4 + 4); // offset of 4 to ignore netid
-        System.out.println("{ub} masks are "+ Arrays.toString(masks));
-        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4 + 4 + 4); // offset of 4 to ignore netid
+                        payload, maskLength, 4 + 4); // offset of 8 for previous, this length will be the maskLength
+        System.out.println("{ub} masks are " + Arrays.toString(masks));
+        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4 + 4);
     }
 
     /**
@@ -257,7 +268,9 @@ public abstract class NetworkableComponent<T> extends Component {
      * @return the id from bytes
      */
     public static int getComponentIdFromBytes(byte[] payload, int offset) {
-        return NetworkMessage.convertByteArrayToInt(Arrays.copyOfRange(payload, offset, offset + 4));
+        byte[] bytes = Arrays.copyOfRange(payload, offset, offset + 4);
+
+        return NetworkMessage.convertByteArrayToInt(bytes);
     }
 
     /**
@@ -320,24 +333,28 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     private void updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
             throws IOException {
+        System.out.println("UPDATE SYNC VAR FROM BYTES");
+        System.out.println(Hex.encodeHexString(buff));
+
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
+        final long didSkip = bis.skip(offset);
+
         ObjectInputStream stream = new ObjectInputStream(bis);
 
         if (didSkip != offset)
             return;
-
         for (int i = 0; i < mask.length; i++) {
             if (mask[i]) {
                 try {
-//                    System.out.println("[updateSyncVarsFromBytes] getting " + i);
+                    System.out.println("[updateSyncVarsFromBytes] getting " + i);
                     Field field = this.mFields[i];
-//                    System.out.println("[updateSyncVarsFromBytes] field " + field);
+                    System.out.println("[updateSyncVarsFromBytes] field " + field);
                     ISyncVar obj = (ISyncVar) field.get(this);
-//                    System.out.println("[updateSyncVarsFromBytes] deserializing");
+                    System.out.println("[updateSyncVarsFromBytes] deserializing");
                     obj.deserialize(stream);
-//                    System.out.println("[updateSyncVarsFromBytes] done");
+                    System.out.println("[updateSyncVarsFromBytes] done");
                 } catch (Exception e) {
+                    System.out.println("Failed to deserialize " + this.mFields[i].getName());
                     e.printStackTrace();
                 }
             }

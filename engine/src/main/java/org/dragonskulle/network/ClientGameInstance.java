@@ -106,7 +106,7 @@ public class ClientGameInstance {
             nob.addChild(capital);
             this.mNetworkedObjects.add(nob);
             this.mHasCapital = true;
-            System.out.print("Created new nob with id " + networkObjectId);
+            System.out.println("Created new nob with id " + networkObjectId);
         }
         return capital.getId();
     }

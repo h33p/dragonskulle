@@ -15,19 +15,21 @@ public interface ISyncVar {
     /**
      * Serialize Sync Var.
      *
-     * @return the byte [ ]
      * @throws IOException the io exception
      */
-    public void serialize(ObjectOutputStream oos) throws IOException;
+    void serialize(ObjectOutputStream oos) throws IOException;
+
 
     /**
      * Deserialize sync var.
      *
-     * @param stream the input stream
+     * @param bytes the input bytes
+     * @return The number of bytes read
      * @throws IOException the io exception
      * @throws ClassNotFoundException the class not found exception
      */
     void deserialize(ObjectInputStream stream) throws IOException, ClassNotFoundException;
+
 
     /**
      * Register listener.

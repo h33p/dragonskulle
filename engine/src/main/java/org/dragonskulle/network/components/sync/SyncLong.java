@@ -47,7 +47,7 @@ public class SyncLong implements ISyncVar {
     }
 
     /**
-     * Serialize the SyncBool.
+     * Serialize the SyncLong.
      *
      * @return the bytes
      * @throws IOException the io exception
@@ -67,6 +67,7 @@ public class SyncLong implements ISyncVar {
     public void deserialize(ObjectInputStream in) throws IOException {
         this.mData = in.readLong();
     }
+
 
     /**
      * Register listener.

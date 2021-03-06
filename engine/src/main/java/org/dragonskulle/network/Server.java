@@ -271,54 +271,34 @@ public class Server {
                     int capitalId = networkObject.spawnCapital(networkObject.getId(), this.mSockets::broadcast);
                     this.networkObjects.add(networkObject);
 
-                    // Simulation of calling fixed update;
-                    Timer timer = new Timer();
-                    int begin = 0;
-                    int timeInterval = 1000;
-                    FixedUpdateSimulation fixedUpdate = this::fixedBroadcastUpdate;
-                    timer.schedule(
-                            new TimerTask() {
-                                int counter = 0;
-
-                                @Override
-                                public void run() {
-                                    fixedUpdate.call();
-                                    counter++;
-                                    if (counter >= 20) {
-                                        timer.cancel();
-                                    }
-                                }
-                            },
-                            begin,
-                            timeInterval);
-
-                    //                    set bool of capitol at some point in the future
-                    timer.schedule(
-                            new TimerTask() {
-                                @Override
-                                public void run() {
-                                    Capital networkCapital =
-                                            (Capital) getNetworkableChild(networkObject, capitalId);
-                                    if (networkCapital != null) {
-                                        networkCapital.setBooleanSyncMe(true);
-                                    }
-                                }
-                            },
-                            3000);
-
-                    // set string of capitol at some point in the future
-                    timer.schedule(
-                            new TimerTask() {
-                                @Override
-                                public void run() {
-                                    Capital networkCapital =
-                                            (Capital) getNetworkableChild(networkObject, capitalId);
-                                    if (networkCapital != null) {
-                                        networkCapital.setStringSyncMeAlso("Goodbye World");
-                                    }
-                                }
-                            },
-                            3000);
+//                    Timer timer = new Timer();
+//                    //                    set bool of capitol at some point in the future
+//                    timer.schedule(
+//                            new TimerTask() {
+//                                @Override
+//                                public void run() {
+//                                    Capital networkCapital =
+//                                            (Capital) getNetworkableChild(networkObject, capitalId);
+//                                    if (networkCapital != null) {
+//                                        networkCapital.setBooleanSyncMe(true);
+//                                    }
+//                                }
+//                            },
+//                            3000);
+//
+//                    // set string of capitol at some point in the future
+//                    timer.schedule(
+//                            new TimerTask() {
+//                                @Override
+//                                public void run() {
+//                                    Capital networkCapital =
+//                                            (Capital) getNetworkableChild(networkObject, capitalId);
+//                                    if (networkCapital != null) {
+//                                        networkCapital.setStringSyncMeAlso("Goodbye World");
+//                                    }
+//                                }
+//                            },
+//                            3000);
                 }
                 while (connected) {
                     try {
