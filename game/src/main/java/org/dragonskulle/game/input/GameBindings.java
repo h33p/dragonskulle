@@ -12,6 +12,9 @@ import org.lwjgl.glfw.GLFW;
  */
 public class GameBindings extends Bindings {
 
+	/**
+	 * Create all initial game bindings.
+	 */
     public GameBindings() {
         addBinding(GLFW.GLFW_KEY_UP, GameActions.UP, GameActions.MENU_UP);
         addBinding(GLFW.GLFW_KEY_W, GameActions.UP, GameActions.MENU_UP);
