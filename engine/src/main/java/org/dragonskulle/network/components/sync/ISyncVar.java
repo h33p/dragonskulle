@@ -19,7 +19,6 @@ public interface ISyncVar {
      */
     void serialize(ObjectOutputStream oos) throws IOException;
 
-
     /**
      * Deserialize sync var.
      *
@@ -29,7 +28,6 @@ public interface ISyncVar {
      * @throws ClassNotFoundException the class not found exception
      */
     void deserialize(ObjectInputStream stream) throws IOException, ClassNotFoundException;
-
 
     /**
      * Register listener.

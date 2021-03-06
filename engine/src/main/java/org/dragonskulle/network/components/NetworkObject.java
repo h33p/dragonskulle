@@ -5,19 +5,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.codec.binary.Hex;
-import org.dragonskulle.network.ClientInstance;
 import org.dragonskulle.network.NetworkMessage;
 import sun.misc.IOUtils;
 
-/**
- * @author Oscar L The NetworkObject deals with any networked variables.
- */
+/** @author Oscar L The NetworkObject deals with any networked variables. */
 public class NetworkObject {
-    /**
-     * The UUID of the object.
-     */
+    /** The UUID of the object. */
     public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
@@ -100,23 +93,20 @@ public class NetworkObject {
     }
 
     public void updateFromBytes(byte[] payload) throws IOException {
-        System.out.println("Updating network object from bytes");
-        System.out.println("Bytes " + Hex.encodeHexString(payload)
-        );
 
-        int networkId = NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
-        System.out.println("network id is : " + networkId);
+        int networkId =
+                NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
 
-        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, 4); // offset of 4 to ignore id, another 4 to avoid networkObject id
-        System.out.println("mask length is " + maskLength);
+        int maskLength =
+                NetworkMessage.getFieldLengthFromBytes(
+                        payload,
+                        4); // offset of 4 to ignore id, another 4 to avoid networkObject id
 
-        //DEBUG
-        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4 + 1);
-        System.out.println("masks are " + Arrays.toString(masks));
+        // DEBUG
+        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4);
 
         ArrayList<byte[]> arrayOfChildrenBytes =
-                getChildrenUpdateBytes(payload, 1 + maskLength + 4 );
-        System.out.println("Children Bytes are");
+                getChildrenUpdateBytes(payload, 1 + maskLength + 4);
         for (int i = 0; i < maskLength; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
@@ -156,16 +146,10 @@ public class NetworkObject {
                 out.add(NetworkMessage.toByteArray(objectBytes));
             }
         }
-        //TODO I THINK ITS HERE
-        for (byte[] bytes : out) {
-            System.out.println("CHILD BYTES FOR DECODING :: " + Hex.encodeHexString(bytes));
-        }
         return out;
     }
 
-    /**
-     * A callback to broadcast a message to all clients
-     */
+    /** A callback to broadcast a message to all clients */
     public interface ServerBroadcastCallback {
         /**
          * Call.
@@ -175,9 +159,7 @@ public class NetworkObject {
         void call(byte[] bytes);
     }
 
-    /**
-     * A callback to broadcast a message to a SINGLE clients,this client is the owner
-     */
+    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
     public interface SendBytesToClientCallback {
         /**
          * Call.
@@ -208,11 +190,14 @@ public class NetworkObject {
     /**
      * Spawns a component and notifies all clients using callback.
      *
-     * @param component   The component to be spawned, must extend NetworkableComponent
+     * @param component The component to be spawned, must extend NetworkableComponent
      * @param messageCode The message code of the spawn.
      * @return The ID of the spawned component
      */
-    private int spawnComponent(NetworkableComponent component, byte messageCode, ServerBroadcastCallback broadcastCallback) {
+    private int spawnComponent(
+            NetworkableComponent component,
+            byte messageCode,
+            ServerBroadcastCallback broadcastCallback) {
         System.out.println("spawning component on all clients");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
@@ -245,9 +230,7 @@ public class NetworkObject {
         clientCallback.call(spawnMapMessage);
     }
 
-    /**
-     * Children of the object will be networkable and updated on clients
-     */
+    /** Children of the object will be networkable and updated on clients */
     private final ArrayList<NetworkableComponent> children = new ArrayList<>();
 
     /**
@@ -259,10 +242,7 @@ public class NetworkObject {
         return networkObjectId;
     }
 
-
-    /**
-     * Broadcasts updates all of the modified children as one message
-     */
+    /** Broadcasts updates all of the modified children as one message */
     public void broadcastUpdate(ServerBroadcastCallback broadcastCallback) {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
@@ -285,25 +265,18 @@ public class NetworkObject {
 
     private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
         System.out.println("generating broadcast update bytes");
-        System.out.println("didUpdateChildMask :: " + Arrays.toString(didChildUpdateMask));
         ArrayList<Byte> bytes = new ArrayList<>();
 
-        byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); //4
-        byte sizeOfMaskBytes = (byte) didChildUpdateMask.length;//1
+        byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4
+        byte sizeOfMaskBytes = (byte) didChildUpdateMask.length; // 1
 
         ArrayList<Byte> childChunk = new ArrayList<>();
         ArrayList<Byte> contents = new ArrayList<>();
-
 
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {
                 // child did update
                 byte[] childBytes = this.children.get(i).serialize();
-                int size = childBytes.length;
-                byte[] sizeBytes = NetworkMessage.convertIntToByteArray(size);
-//                for (byte sizeByte : sizeBytes) { //4 bytes
-//                    childChunk.add(sizeByte);
-//                }
                 for (byte childByte : childBytes) {
                     childChunk.add(childByte);
                 }
@@ -314,21 +287,14 @@ public class NetworkObject {
                     }
                 }
 
-                System.out.println("Child Bytes are " + Hex.encodeHexString(NetworkMessage.toByteArray(childChunk)));
                 contents.addAll(childChunk);
             }
         }
 
-        System.out.println("{B} id length :: " + idBytes.length);
-        System.out.println("{B} id is :: " + getNetworkObjectId());
         // add id
         for (byte idByte : idBytes) {
             bytes.add(idByte);
         }
-
-        System.out.println("{B} mask length :: " + 1);
-        System.out.println("{B} mask length is :: " + didChildUpdateMask.length);
-        System.out.println("{B} Masks are :: " + Arrays.toString(didChildUpdateMask));
 
         // add size of mask only one byte
         bytes.add(sizeOfMaskBytes);
@@ -346,13 +312,9 @@ public class NetworkObject {
             }
         }
 
-        System.out.println("MASK BYTES " + Arrays.toString(maskBytes));
-        System.out.println("Hex of mask bytes I am reading from is " + Hex.encodeHexString(maskBytes));
         // add contents
         bytes.addAll(contents);
         byte[] out = NetworkMessage.toByteArray(bytes);
-        System.out.println("BROADCAST BYTES");
-        System.out.println(Hex.encodeHexString(out));
         return out;
     }
 

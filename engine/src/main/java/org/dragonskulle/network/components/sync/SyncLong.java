@@ -68,7 +68,6 @@ public class SyncLong implements ISyncVar {
         this.mData = in.readLong();
     }
 
-
     /**
      * Register listener.
      *

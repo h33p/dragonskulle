@@ -64,7 +64,7 @@ public class SyncBool implements ISyncVar {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(ObjectInputStream in) throws IOException{
+    public void deserialize(ObjectInputStream in) throws IOException {
         this.mData = in.readBoolean();
     }
 

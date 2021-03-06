@@ -25,7 +25,7 @@ public class StartServer {
     }
 
     public static void main(String[] args) {
-        StartServer ss = new StartServer(true);
+        StartServer ss = new StartServer();
     }
 
     /** Attach shut down hook. */

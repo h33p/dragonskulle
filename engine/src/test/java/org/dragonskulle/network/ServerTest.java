@@ -32,26 +32,26 @@ public class ServerTest {
     @Test
     public void testSpawnMap() {
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
-        testMap();
+        testMapClient();
         mNetworkClient.dispose();
     }
 
-    private void testMap() {
-        await().atMost(3, SECONDS).until(() -> mNetworkClient.hasRequests());
+    private void testMapClient() {
+        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
         await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
     }
 
     @Test
-    public void testCapitalSpawned() {
+    public void testCapitalSpawnedServer() {
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
-        testMap();
-        testCapitalSpawnDefault();
+        testMapClient();
+        testCapitalSpawnDefaultServer();
         mNetworkClient.dispose();
     }
 
-    private Capital testCapitalSpawnDefault() {
-        await().atMost(3, SECONDS).until(() -> mNetworkClient.hasRequests());
+    private Capital testCapitalSpawnDefaultServer() {
+        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
         await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
@@ -67,12 +67,52 @@ public class ServerTest {
     }
 
     @Test
-    public void testCapitalUpdated() {
+    public void testCapitalUpdatedServer() {
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
-        testMap();
-        Capital nc = testCapitalSpawnDefault();
+        testMapClient();
+        Capital nc = testCapitalSpawnDefaultServer();
 
-        await().atMost(3, SECONDS).until(() -> mNetworkClient.hasRequests());
+        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
+        mNetworkClient.processSingleRequest();
+        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
+        assert (nc.getSyncMe().get() == true);
+        await().atMost(TIMEOUT, SECONDS)
+                .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
+        assert (nc.getSyncMeAlso().get().equals("Goodbye World"));
+        mNetworkClient.dispose();
+    }
+
+    @Test
+    public void testCapitalSpawnedClient() {
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
+        testMapClient();
+        testCapitalSpawnDefaultClient();
+        mNetworkClient.dispose();
+    }
+
+    private Capital testCapitalSpawnDefaultClient() {
+        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
+        mNetworkClient.processSingleRequest();
+        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
+        await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
+        assertFalse(mServerInstance.server.networkObjects.isEmpty());
+        int capitalId = mNetworkClient.getCapitalId();
+        assertNotNull(capitalId);
+        final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(capitalId);
+        assertNotNull(nc);
+        mLogger.info("\t-----> " + capitalId);
+        assert (nc.getSyncMe().get() == false);
+        assert (nc.getSyncMeAlso().get().equals("Hello World"));
+        return nc;
+    }
+
+    @Test
+    public void testCapitalUpdatedClient() {
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
+        testMapClient();
+        Capital nc = testCapitalSpawnDefaultClient();
+
+        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);

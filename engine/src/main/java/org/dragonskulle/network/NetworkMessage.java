@@ -5,33 +5,23 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-
-import org.apache.commons.codec.binary.Hex;
 import sun.misc.IOUtils;
 
 /**
  * @author Oscar L
- * <p>The Network message structure which is sent. It will follow the format below. 0 : Print
- * Contents [DEBUG] 20-50 : spawn 20 : spawn map 21 : spawn capitol
- * <p>// schema // ::S:: (5bytes) // messageType (1Byte) // payloadSize (4 bytes) // payload (n
- * bytes) // ::E:: (5 bytes)
+ *     <p>The Network message structure which is sent. It will follow the format below. 0 : Print
+ *     Contents [DEBUG] 20-50 : spawn 20 : spawn map 21 : spawn capitol
+ *     <p>// schema // ::S:: (5bytes) // messageType (1Byte) // payloadSize (4 bytes) // payload (n
+ *     bytes) // ::E:: (5 bytes)
  */
 public class NetworkMessage {
-    /**
-     * The constant MAX_TRANSMISSION_SIZE.
-     */
+    /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
-    /**
-     * The constant START_SIGNATURE.
-     */
+    /** The constant START_SIGNATURE. */
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
-    /**
-     * The constant END_SIGNATURE.
-     */
+    /** The constant END_SIGNATURE. */
     private static final byte[] END_SIGNATURE = {58, 58, 69, 58, 58};
-    /**
-     * The constant FIELD_SEPERATOR.
-     */
+    /** The constant FIELD_SEPERATOR. */
     public static final byte[] FIELD_SEPERATOR = {58, 58, 10, 58, 58};
 
     /*payload byte codes
@@ -50,11 +40,10 @@ public class NetworkMessage {
     /**
      * Parse bytes.
      *
-     * @param buff   the buff
+     * @param buff the buff
      * @param client the client
      */
     public static void parse(byte[] buff, NetworkClient client) {
-        System.out.println("Client parsing :: "+ Hex.encodeHexString(buff));
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;
@@ -85,7 +74,7 @@ public class NetworkMessage {
      * Verify the message ends correctly.
      *
      * @param offset the offset of the original message to the end trailer
-     * @param bytes  the bytes
+     * @param bytes the bytes
      * @return the boolean
      */
     private static boolean verifyMessageEnd(int offset, byte[] bytes) {
@@ -111,9 +100,9 @@ public class NetworkMessage {
     /**
      * Get payload from the whole message.
      *
-     * @param bytes       the bytes
+     * @param bytes the bytes
      * @param messageType the message type
-     * @param offset      the offset of the original message to the payload
+     * @param offset the offset of the original message to the payload
      * @param payloadSize the payload size
      * @return the byte [ ]
      */
@@ -142,8 +131,8 @@ public class NetworkMessage {
      * @return the byte [ ]
      */
     public static byte[] convertIntToByteArray(int value) {
-        return new byte[]{
-                (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
+        return new byte[] {
+            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
         };
     }
 
@@ -171,7 +160,7 @@ public class NetworkMessage {
      * Builds a message to be transmitted over the socket connection.
      *
      * @param messageType the message type
-     * @param payload     the payload
+     * @param payload the payload
      * @return the bytes to be sent
      */
     public static byte[] build(byte messageType, byte[] payload) {
@@ -229,7 +218,7 @@ public class NetworkMessage {
      * Parses a network message from bytes and executes the correct functions. This is for server
      * use.
      *
-     * @param buff              the buff
+     * @param buff the buff
      * @param sendBytesToClient the send bytes to client
      */
     public static void parse(byte[] buff, Server.SendBytesToClientCurry sendBytesToClient) {
@@ -283,8 +272,8 @@ public class NetworkMessage {
      * Concatenates two arrays.
      *
      * @param <T> the type parameter
-     * @param a   the a
-     * @param b   the b
+     * @param a the a
+     * @param b the b
      * @return the t
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
@@ -319,7 +308,7 @@ public class NetworkMessage {
     /**
      * Gets field length from bytes.
      *
-     * @param buff   the buff
+     * @param buff the buff
      * @param offset the offset
      * @return the field length from bytes
      */
@@ -331,15 +320,13 @@ public class NetworkMessage {
     /**
      * Gets mask from bytes.
      *
-     * @param buff       the buff
+     * @param buff the buff
      * @param maskLength the mask length
-     * @param offset     the offset
+     * @param offset the offset
      * @return the mask from bytes
      */
     public static boolean[] getMaskFromBytes(byte[] buff, int maskLength, int offset) {
-        System.out.println("Hex of mask bytes I am reading from is "+ Hex.encodeHexString(buff));
         byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
-        System.out.println("Hex of the mask bytes are "+ Hex.encodeHexString(maskBytes));
         boolean[] out = new boolean[maskBytes.length];
         int idx = 0;
         for (byte maskByte : maskBytes) {

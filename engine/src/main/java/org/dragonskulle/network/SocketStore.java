@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import org.apache.commons.codec.binary.Hex;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -36,17 +34,14 @@ public class SocketStore {
      * @param buf the buf to be broadcasted
      */
     public void broadcast(byte[] buf) {
-        System.out.println("Broadcasting bytes :: " + Hex.encodeHexString(buf));
         DataOutputStream dOut;
         for (Socket connection : mStore) {
             try {
                 if (connection.isClosed()) {
                     System.out.println("Client socket output has closed");
                 }
-//                System.out.println("--broadcasting to client " + connection.toString());
                 dOut = new DataOutputStream(connection.getOutputStream());
                 dOut.write(buf);
-//                System.out.println("--broadcast success");
 
             } catch (IOException e) {
                 System.out.println("Error in broadcasting");
