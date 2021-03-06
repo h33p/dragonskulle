@@ -1,59 +1,57 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.util.HashMap;
-import java.util.Map;
+import lombok.Getter;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Renderable;
+import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 
 /**
  * @author Leela Muppala
  *     <p>This class generates and stores a map The hexagon map object
  */
-public class HexMap extends Component {
+class HexagonMap extends Component implements IOnStart {
 
-    public final int size;
+    @Getter
+    private  int size;
+
+    @Getter
+    private HexagonTile[][] map;
+
+    @Getter
+    private GameObject[][] mapObject;
 
     /** @param size - the size of the map */
-    public HexMap(int size) {
+    HexagonMap(int size) {
         this.size = size;
-
         if (size < 0) {
             throw new IllegalArgumentException("The size must greater than 0");
         }
+
+        this.map = createHexMap();
+
     }
 
     /**
-     * HashMap to find the the max number of nulls to add in the 2d array when storing a map
-     * Currently the sizes are restricted to 1 - 33
+     * @param input - The size of the hexagon map
+     * @return - an int which gives the number of nulls to add in the 2d array to generate a hexagon shape
+     * Can only input odd numbered size due to hexagon shape
      */
-    private static final Map<Integer, Integer> nulls =
-            new HashMap<Integer, Integer>() {
-                {
-                    put(1, 0);
-                    put(3, 1);
-                    put(5, 2);
-                    put(7, 3);
-                    put(9, 4);
-                    put(11, 5);
-                    put(13, 6);
-                    put(15, 7);
-                    put(17, 9);
-                    put(19, 10);
-                    put(21, 11);
-                    put(23, 13);
-                    put(25, 15);
-                    put(27, 17);
-                    put(29, 19);
-                    put(31, 21);
-                    put(32, 23);
-                    put(33, 25);
-                }
-            };
+    private int nulls (int input) {
+         if (input%2 == 0 ) {
+             throw new IllegalArgumentException("the input size must be an odd number");
+         }
+         return (input -1) / 2;
+    }
 
-    /** Hex(q,r) is stored as array[r][q] */
-    public HexagonTile[][] createHexMap() {
+    /** Hex(q,r) is stored as array[r][q]
+     * Map is automatically created and stored in HexMap
+     * @return - Returns the HexMap*/
 
-        int max_empty = nulls.get(size); // The max number of empty spaces in one row of the array
+    HexagonTile[][] createHexMap() {
+        int max_empty = nulls(size); // The max number of empty spaces in one row of the array
         int empty = max_empty;
         HexagonTile[][] map = new HexagonTile[size][size];
         int loop = size / 2;
@@ -66,7 +64,12 @@ public class HexMap extends Component {
                     map[r][q] = null; // No tile in this location
                     inside_empty--;
                 } else if (inside_empty == 0) {
-                    HexagonTile tile = new HexagonTile(q, r, -q - r);
+
+//                    GameObject hexagon = new GameObject("hexagon");
+//                    HexagonTile tile = new HexagonTile(q, r, -q-r);
+//                    hexagon.addComponent(tile);
+
+                    HexagonTile tile = new HexagonTile(q, r, -q-r);
                     map[r][q] = tile;
                 }
             }
@@ -90,18 +93,38 @@ public class HexMap extends Component {
             int inside_val = 1;
             for (int q = 0; q < size; q++) {
                 if (inside_val <= current_val) {
+
                     HexagonTile tile = new HexagonTile(q, r, -q - r);
                     map[r][q] = tile;
+
                     inside_val++;
                 } else {
                     map[r][q] = null;
                 }
             }
         }
-
         return map;
     }
 
     @Override
     public void onDestroy() {}
+
+    @Override
+    public void onStart() {
+
+        mapObject = new GameObject[size][size];
+        GameObject hexagon = new GameObject("hexagon");
+        //hexagon.addComponent(new Renderable());
+        for (int r = 0; r < size; r++) {
+            for (int q = 0; q < size; q++) {
+
+                if (map[r][q] != null) {
+                    //TODO set correct transform
+                    GameObject.instantiate(hexagon);
+
+                }
+            }
+        }
+
+    }
 }

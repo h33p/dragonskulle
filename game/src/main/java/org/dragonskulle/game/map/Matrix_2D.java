@@ -2,6 +2,12 @@
 package org.dragonskulle.game.map;
 
 public class Matrix_2D {
+
+    public final double a;
+    public final double b;
+    public final double c;
+    public final double d;
+
     public Matrix_2D(double a, double b, double c, double d) {
         this.a = a;
         this.b = b;
@@ -9,8 +15,4 @@ public class Matrix_2D {
         this.d = d;
     }
 
-    public final double a;
-    public final double b;
-    public final double c;
-    public final double d;
 }
