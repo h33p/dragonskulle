@@ -27,6 +27,18 @@ public abstract class NetworkableComponent<T> extends Component {
 
     NetworkableComponent() {}
 
+    public static NetworkableComponent createFromBytes(byte[] payload) {
+        Class<? extends NetworkableComponent> clazz =
+                NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
+        assert clazz != null;
+        try {
+            return NetworkableComponent.from(clazz, payload);
+        } catch (DecodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Gets id.
      *
@@ -106,6 +118,7 @@ public abstract class NetworkableComponent<T> extends Component {
     public byte[] serialize(boolean force) {
         ArrayList<Byte> componentIdBytes = getComponentIdBytes();
         ArrayList<Byte> ownerIdBytes = getOwnerIdBytes();
+        byte childClassType = NetworkMessage.getChildClassTypeByte(this.getClass());
 
         int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
@@ -136,6 +149,7 @@ public abstract class NetworkableComponent<T> extends Component {
         ArrayList<Byte> payload = new ArrayList<>();
         payload.addAll(componentIdBytes);
         payload.addAll(ownerIdBytes);
+        payload.add(childClassType);
         payload.add((byte) maskLength);
         payload.addAll(mask);
 
@@ -229,16 +243,19 @@ public abstract class NetworkableComponent<T> extends Component {
                         payload, 4); // read 4 bytes but with offset of 4 to avoid previous id
         this.setId(id);
         this.setOwnerId(ownerId);
+        Class<?> clazz =
+                NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
         int maskLength =
                 NetworkMessage.getFieldLengthFromBytes(
-                        payload, 4 + 4); // offset of 8 for previous, length is one as int is being
+                        payload,
+                        4 + 4 + 1); // offset of 8 for previous, length is one as int is being
         // cast to one byte
         boolean[] masks =
                 NetworkMessage.getMaskFromBytes(
                         payload,
                         maskLength,
-                        4 + 4); // offset of 8 for previous, this length will be the maskLength
-        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4 + 4);
+                        4 + 4 + 1); // offset of 8 for previous, this length will be the maskLength
+        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4 + 4 + 1);
     }
 
     /**
@@ -306,6 +323,7 @@ public abstract class NetworkableComponent<T> extends Component {
     /**
      * Gets contents from bytes.
      *
+     * @param mask the mask
      * @param buff the buff
      * @param offset the offset
      * @return the contents from bytes

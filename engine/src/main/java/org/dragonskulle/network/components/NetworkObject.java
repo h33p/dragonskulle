@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkMessage;
 import sun.misc.IOUtils;
 
@@ -92,7 +93,7 @@ public class NetworkObject {
         return this.networkObjectId;
     }
 
-    public void updateFromBytes(byte[] payload) throws IOException {
+    public void updateFromBytes(byte[] payload, ClientGameInstance instance) throws IOException {
 
         int networkId =
                 NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
@@ -110,7 +111,18 @@ public class NetworkObject {
         for (int i = 0; i < maskLength; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
-                this.children.get(i).updateFromBytes(arrayOfChildrenBytes.get(i));
+                try {
+                    this.children.get(i).updateFromBytes(arrayOfChildrenBytes.get(i));
+                } catch (IndexOutOfBoundsException e) {
+                    System.out.println(
+                            "child doesnt exist in nob, must create but i dont know the type?");
+                    NetworkableComponent component =
+                            NetworkableComponent.createFromBytes(arrayOfChildrenBytes.get(i));
+                    assert component != null;
+                    if (component.getClass() == Capital.class) {
+                        instance.spawnCapital(component.getOwnerId(), (Capital) component);
+                    }
+                }
             } else {
                 System.out.println("Shouldn't update child");
             }
@@ -264,7 +276,7 @@ public class NetworkObject {
     }
 
     private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
-        System.out.println("generating broadcast update bytes");
+        //        System.out.println("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4

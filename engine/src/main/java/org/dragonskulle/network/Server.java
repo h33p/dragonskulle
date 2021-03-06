@@ -355,6 +355,10 @@ public class Server {
         }
     }
 
+    public void clearPendingRequests() {
+        this.mRequests.clear();
+    }
+
     /**
      * Gets networkable child.
      *

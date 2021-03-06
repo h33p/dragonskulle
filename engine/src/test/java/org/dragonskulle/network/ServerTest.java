@@ -31,6 +31,7 @@ public class ServerTest {
 
     @Test
     public void testSpawnMap() {
+        mServerInstance.clearPendingRequests();
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         mNetworkClient.dispose();
@@ -44,6 +45,8 @@ public class ServerTest {
 
     @Test
     public void testCapitalSpawnedServer() {
+        mServerInstance.clearPendingRequests();
+
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         testCapitalSpawnDefaultServer();
@@ -68,6 +71,8 @@ public class ServerTest {
 
     @Test
     public void testCapitalUpdatedServer() {
+        mServerInstance.clearPendingRequests();
+
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultServer();
@@ -84,6 +89,8 @@ public class ServerTest {
 
     @Test
     public void testCapitalSpawnedClient() {
+        mServerInstance.clearPendingRequests();
+
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         testCapitalSpawnDefaultClient();
@@ -97,7 +104,6 @@ public class ServerTest {
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
-        assertNotNull(capitalId);
         final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(capitalId);
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);
@@ -108,16 +114,21 @@ public class ServerTest {
 
     @Test
     public void testCapitalUpdatedClient() {
+        mServerInstance.clearPendingRequests();
+
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
-
+        nc = (Capital) mNetworkClient.getNetworkableComponent(nc.getId());
         await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
-        mNetworkClient.processSingleRequest();
-        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
+        mNetworkClient.processRequests();
+        Capital finalNc = nc;
+        assertNotNull(finalNc);
+        mLogger.info(finalNc.toString());
+        await().atMost(TIMEOUT, SECONDS).until(() -> finalNc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
-                .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
+                .until(() -> finalNc.getSyncMeAlso().get().equals("Goodbye World"));
         assert (nc.getSyncMeAlso().get().equals("Goodbye World"));
         mNetworkClient.dispose();
     }

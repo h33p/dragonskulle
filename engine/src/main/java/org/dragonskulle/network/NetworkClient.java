@@ -90,7 +90,7 @@ public class NetworkClient {
      * @param messageType the message type
      * @param payload the payload
      */
-    public void executeBytes(byte messageType, byte[] payload) {
+    public byte executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
             case (byte) 15:
                 System.out.println("Should update requested network object");
@@ -118,6 +118,7 @@ public class NetworkClient {
                         "unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
+        return messageType;
     }
 
     /**
@@ -255,10 +256,7 @@ public class NetworkClient {
     public void processRequests() {
         if (!this.mRequests.isEmpty()) {
             for (int i = 0; i < this.mRequests.size(); i++) {
-                byte[] requestBytes = this.mRequests.poll();
-                if (requestBytes != null) {
-                    processBytes(requestBytes);
-                }
+                processSingleRequest();
             }
         }
     }
@@ -271,9 +269,13 @@ public class NetworkClient {
         if (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
             if (requestBytes != null) {
-                processBytes(requestBytes);
+                System.out.println("Processing message with type: " + processBytes(requestBytes));
             }
         }
+    }
+
+    public void clearPendingRequests() {
+        this.mRequests.clear();
     }
 
     /**
@@ -281,13 +283,14 @@ public class NetworkClient {
      *
      * @param bytes the bytes
      */
-    private void processBytes(byte[] bytes) {
+    private byte processBytes(byte[] bytes) {
         mClientListener.receivedBytes(bytes);
         try {
-            parseBytes(bytes);
+            return parseBytes(bytes);
         } catch (DecodingException e) {
             System.out.println(e.getMessage());
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
+            return (byte) -1;
         }
     }
 
@@ -297,9 +300,9 @@ public class NetworkClient {
      * @param bytes the bytes
      * @throws DecodingException the decoding exception
      */
-    private void parseBytes(byte[] bytes) throws DecodingException {
+    private byte parseBytes(byte[] bytes) throws DecodingException {
         try {
-            NetworkMessage.parse(bytes, this);
+            return NetworkMessage.parse(bytes, this);
         } catch (Exception e) {
             System.out.println("error parsing bytes");
             e.printStackTrace();

@@ -44,4 +44,8 @@ public class StartServer {
     public void dispose() {
         server.dispose();
     }
+
+    public void clearPendingRequests() {
+        server.clearPendingRequests();
+    }
 }

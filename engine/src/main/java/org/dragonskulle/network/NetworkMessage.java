@@ -5,6 +5,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
+import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.NetworkableComponent;
 import sun.misc.IOUtils;
 
 /**
@@ -43,7 +45,7 @@ public class NetworkMessage {
      * @param buff the buff
      * @param client the client
      */
-    public static void parse(byte[] buff, NetworkClient client) {
+    public static byte parse(byte[] buff, NetworkClient client) {
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;
@@ -62,12 +64,13 @@ public class NetworkMessage {
                     System.out.println("Type : " + messageType);
                     System.out.println("Payload : " + Arrays.toString(payload));
                 } else {
-                    client.executeBytes(messageType, payload);
+                    return client.executeBytes(messageType, payload);
                 }
             }
         } else {
             System.out.println("invalid message start");
         }
+        return (byte) -1;
     }
 
     /**
@@ -355,5 +358,20 @@ public class NetworkMessage {
             out.add(mask);
         }
         return toByteArray(out);
+    }
+
+    public static byte getChildClassTypeByte(Class<? extends NetworkableComponent> aClass) {
+        if (aClass == Capital.class) {
+            return (byte) 255;
+        }
+        return (byte) 0;
+    }
+
+    public static Class<? extends NetworkableComponent> getChildClassFromByte(byte bClass) {
+        if (bClass == (byte) 255) {
+            return Capital.class;
+        }
+
+        return null;
     }
 }
