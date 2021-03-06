@@ -104,6 +104,9 @@ public class ServerTest {
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
+        assertNotNull(capitalId);
+        mLogger.info("Capital ID : " + capitalId);
+        mLogger.info("mClient has these objects : " + mNetworkClient.getNetworkableObjects());
         final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(capitalId);
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);
@@ -113,19 +116,18 @@ public class ServerTest {
     }
 
     @Test
-    public void testCapitalUpdatedClient() {
-        mServerInstance.clearPendingRequests();
-
+    public void
+            testCapitalUpdatedClient() { // need to write a better test, this is not processing all
+        // requests it catches
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
-        nc = (Capital) mNetworkClient.getNetworkableComponent(nc.getId());
-        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
+
+        await().atLeast(30, SECONDS).until(() -> false);
+        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processRequests();
-        Capital finalNc = nc;
-        assertNotNull(finalNc);
-        mLogger.info(finalNc.toString());
-        await().atMost(TIMEOUT, SECONDS).until(() -> finalNc.getSyncMe().get() == true);
+        await().atMost(3, SECONDS).until(() -> !mNetworkClient.hasRequests());
+        await().atMost(3, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> finalNc.getSyncMeAlso().get().equals("Goodbye World"));

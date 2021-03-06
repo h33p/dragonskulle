@@ -5,8 +5,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkMessage;
+import org.dragonskulle.network.NetworkObjectDoesNotHaveChildError;
 import sun.misc.IOUtils;
 
 /** @author Oscar L The NetworkObject deals with any networked variables. */
@@ -15,6 +17,8 @@ public class NetworkObject {
     public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
+
+    Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
 
     /**
      * Instantiates a new Network object.
@@ -94,8 +98,7 @@ public class NetworkObject {
     }
 
     public void updateFromBytes(byte[] payload, ClientGameInstance instance) throws IOException {
-
-        int networkId =
+        int networkObjectId =
                 NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
 
         int maskLength =
@@ -105,23 +108,38 @@ public class NetworkObject {
 
         // DEBUG
         boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4);
-
         ArrayList<byte[]> arrayOfChildrenBytes =
                 getChildrenUpdateBytes(payload, 1 + maskLength + 4);
         for (int i = 0; i < maskLength; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
                 try {
-                    this.children.get(i).updateFromBytes(arrayOfChildrenBytes.get(i));
-                } catch (IndexOutOfBoundsException e) {
+                    int componentId =
+                            NetworkableComponent.getComponentIdFromBytes(
+                                    arrayOfChildrenBytes.get(i), 0); // read 4 bytes
+                    int ownerId =
+                            NetworkableComponent.getComponentIdFromBytes(
+                                    arrayOfChildrenBytes.get(i), 4); // re
+                    mLogger.info(
+                            "Parent id of child to update is :"
+                                    + ownerId
+                                    + "\nComponent id of children bytes to update is : "
+                                    + componentId);
+                    NetworkableComponent noc = this.findComponent(componentId);
+                    if (noc == null) {
+                        throw new NetworkObjectDoesNotHaveChildError("Can't find " + componentId);
+                    }
+                    noc.updateFromBytes(arrayOfChildrenBytes.get(i));
+                } catch (NetworkObjectDoesNotHaveChildError e) {
                     System.out.println(
                             "child doesnt exist in nob, must create but i dont know the type?");
-                    NetworkableComponent component =
-                            NetworkableComponent.createFromBytes(arrayOfChildrenBytes.get(i));
-                    assert component != null;
-                    if (component.getClass() == Capital.class) {
-                        instance.spawnCapital(component.getOwnerId(), (Capital) component);
-                    }
+                    mLogger.warning("SHOULD REQUEST COPY FROM SERVER -> implement");
+                    //                    NetworkableComponent component =
+                    // NetworkableComponent.createFromBytes(arrayOfChildrenBytes.get(i));
+                    //                    if(component.getClass()==Capital.class){
+                    //                        instance.spawnCapital(component.getOwnerId(),
+                    // (Capital) component);
+                    //                    }
                 }
             } else {
                 System.out.println("Shouldn't update child");

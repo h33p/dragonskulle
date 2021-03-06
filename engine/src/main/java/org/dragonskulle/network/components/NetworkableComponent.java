@@ -32,11 +32,13 @@ public abstract class NetworkableComponent<T> extends Component {
                 NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
         assert clazz != null;
         try {
+            // instead of doing this we should request the whole object from the server
             return NetworkableComponent.from(clazz, payload);
         } catch (DecodingException e) {
+            System.out.println("error creating from bytes with clazz");
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     /**
@@ -120,6 +122,7 @@ public abstract class NetworkableComponent<T> extends Component {
         ArrayList<Byte> ownerIdBytes = getOwnerIdBytes();
         byte childClassType = NetworkMessage.getChildClassTypeByte(this.getClass());
 
+        byte typeByte = NetworkMessage.getChildClassTypeByte(this.getClass());
         int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -149,7 +152,7 @@ public abstract class NetworkableComponent<T> extends Component {
         ArrayList<Byte> payload = new ArrayList<>();
         payload.addAll(componentIdBytes);
         payload.addAll(ownerIdBytes);
-        payload.add(childClassType);
+        payload.add(typeByte);
         payload.add((byte) maskLength);
         payload.addAll(mask);
 

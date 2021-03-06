@@ -265,7 +265,7 @@ public class Server {
                                 public void run() {
                                     fixedUpdate.call();
                                     counter++;
-                                    if (counter >= 20) {
+                                    if (counter >= 100) {
                                         timer.cancel();
                                     }
                                 }
@@ -397,7 +397,7 @@ public class Server {
      * @throws DecodingException Thrown if there was any issue with the bytes
      */
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
-        System.out.println("bytes parsing");
+        //        System.out.println("bytes parsing");
         try {
             NetworkMessage.parse(
                     bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));

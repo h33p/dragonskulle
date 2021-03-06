@@ -57,8 +57,6 @@ public class ClientGameInstance {
      * @return the network object
      */
     public NetworkObject getNetworkObject(int networkObjectId) {
-        //        System.out.println("Should find network object by id");
-        //        System.out.println("looking for " + networkObjectId);
         System.out.println(mNetworkedObjects);
         NetworkObject nob =
                 mNetworkedObjects.stream()
@@ -71,9 +69,7 @@ public class ClientGameInstance {
 
         //        System.out.println("couldn't find nob id :" + networkObjectId);
         nob = new NetworkObject(networkObjectId);
-        if (this.mNetworkedObjects.add(nob)) {
-            //            System.out.println("managed to add new nob");
-        }
+        this.mNetworkedObjects.add(nob); //            System.out.println("managed to add new nob");
         return nob;
     }
 
@@ -95,7 +91,6 @@ public class ClientGameInstance {
         NetworkObject nob = getNetworkObject(networkObjectId);
         nob.addChild(capital);
         this.mHasCapital = true;
-        //        System.out.println("spawned capital on nob: " + nob.toString());
         return capital.getId();
     }
 

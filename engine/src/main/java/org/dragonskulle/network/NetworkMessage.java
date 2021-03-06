@@ -225,6 +225,9 @@ public class NetworkMessage {
      * @param sendBytesToClient the send bytes to client
      */
     public static void parse(byte[] buff, Server.SendBytesToClientCurry sendBytesToClient) {
+        if (buff.length == 0 || Arrays.equals(buff, new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
+            return;
+        }
         int i = 0;
         boolean validStart = verifyMessageStart(buff);
         i += 5;
