@@ -49,7 +49,6 @@ public class SyncString implements ISyncVar {
     /**
      * Serialize the SyncBool.
      *
-     * @return the bytes
      * @throws IOException the io exception
      */
     @Override

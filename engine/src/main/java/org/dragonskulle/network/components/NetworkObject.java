@@ -276,6 +276,8 @@ public class NetworkObject {
     /**
      * Broadcasts updates all of the modified children as one message @param broadcastCallback the
      * broadcast callback
+     *
+     * @param broadcastCallback the broadcast callback
      */
     public void broadcastUpdate(ServerBroadcastCallback broadcastCallback) {
         // write 4 byte size of each child, then write child bytes.

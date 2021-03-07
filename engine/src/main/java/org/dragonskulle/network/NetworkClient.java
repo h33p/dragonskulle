@@ -53,6 +53,7 @@ public class NetworkClient {
      * @param ip the ip
      * @param port the port
      * @param listener the listener
+     * @param autoProcessMessages the auto process messages
      */
     public NetworkClient(
             String ip, int port, ClientListener listener, boolean autoProcessMessages) {
