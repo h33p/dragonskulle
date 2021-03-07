@@ -32,6 +32,7 @@ public class Capital extends NetworkableComponent {
     /**
      * Instantiates a new Capital.
      *
+     * @param ownerId the owner id
      * @param componentId the id
      */
     public Capital(int ownerId, int componentId) {

@@ -52,9 +52,9 @@ public class SyncInt implements ISyncVar, Serializable {
     }
 
     /**
-     * Serialize byte [ ].
+     * Serialize bytes.
      *
-     * @return the byte [ ]
+     * @param oos The output stream
      * @throws IOException the io exception
      */
     public void serialize(ObjectOutputStream oos) throws IOException {
@@ -67,7 +67,7 @@ public class SyncInt implements ISyncVar, Serializable {
      * @param in the input stream
      * @throws IOException the io exception
      */
-    public void deserialize(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    public void deserialize(ObjectInputStream in) throws IOException {
         this.mData = in.readInt();
     }
 

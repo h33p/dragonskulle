@@ -49,7 +49,7 @@ public class SyncLong implements ISyncVar {
     /**
      * Serialize the SyncLong.
      *
-     * @return the bytes
+     * @param oos The output stream
      * @throws IOException the io exception
      */
     @Override

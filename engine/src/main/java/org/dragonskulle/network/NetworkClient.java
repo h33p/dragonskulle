@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
-
 import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
@@ -15,47 +14,29 @@ import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * @author Oscar L
- * <p>This is the client usage, you will create an instance, by providing the correct server to
- * connect to. ClientListener is the handler for commands that the client receives. {@link
- * org.dragonskulle.network.ClientListener}**
+ *     <p>This is the client usage, you will create an instance, by providing the correct server to
+ *     connect to. ClientListener is the handler for commands that the client receives. {@link
+ *     org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
-    /**
-     * The constant MAX_TRANSMISSION_SIZE.
-     */
+    /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = 512;
-    /**
-     * The Socket connection to the server.
-     */
+    /** The Socket connection to the server. */
     private Socket mSocket;
-    /**
-     * The Input stream. Possibly depreciated in favour of byte streams.
-     */
+    /** The Input stream. Possibly depreciated in favour of byte streams. */
     private BufferedReader mIn;
-    /**
-     * The Output stream. Possibly depreciated in favour of byte streams.
-     */
+    /** The Output stream. Possibly depreciated in favour of byte streams. */
     private PrintWriter mOut;
-    /**
-     * The byte output stream.
-     */
+    /** The byte output stream. */
     private DataOutputStream mDOut;
-    /**
-     * The byte input stream.
-     */
+    /** The byte input stream. */
     private BufferedInputStream mBIn;
-    /**
-     * The Game Instance.
-     */
+    /** The Game Instance. */
     private ClientGameInstance mGame;
 
-    /**
-     * The Client listener to notify of important events.
-     */
+    /** The Client listener to notify of important events. */
     private ClientListener mClientListener;
-    /**
-     * True if the socket is open.
-     */
+    /** True if the socket is open. */
     private boolean mOpen = true;
 
     private int mCapitalId;
@@ -66,12 +47,11 @@ public class NetworkClient {
     private boolean mAutoProcessMessages = false;
     private final Timer mProcessScheduler = new Timer();
 
-
     /**
      * Instantiates a new Network client.
      *
-     * @param ip       the ip
-     * @param port     the port
+     * @param ip the ip
+     * @param port the port
      * @param listener the listener
      */
     public NetworkClient(
@@ -84,7 +64,7 @@ public class NetworkClient {
             mBIn = new BufferedInputStream(mSocket.getInputStream());
             mOut = new PrintWriter(mSocket.getOutputStream(), true);
             mDOut = new DataOutputStream(mSocket.getOutputStream());
-            this.mGame = new ClientGameInstance();
+            this.mGame = new ClientGameInstance(this::sendBytes);
 
             mClientRunner = new ClientRunner();
             mClientThread = new Thread(mClientRunner);
@@ -108,7 +88,8 @@ public class NetworkClient {
      * Execute bytes after parsing. This will be different usage depending on server or client.
      *
      * @param messageType the message type
-     * @param payload     the payload
+     * @param payload the payload
+     * @return the byte
      */
     public byte executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
@@ -132,6 +113,13 @@ public class NetworkClient {
                 } catch (DecodingException e) {
                     e.printStackTrace();
                 }
+                break;
+            case (byte) 22:
+                System.out.println("Trying to spawn component");
+                NetworkableComponent component = NetworkableComponent.createFromBytes(payload);
+                assert component != null;
+                int componentId = this.mGame.spawnComponent(component.getOwnerId(), component);
+                System.out.println("Spawned Component");
                 break;
             default:
                 System.out.println(
@@ -161,9 +149,7 @@ public class NetworkClient {
         this.mGame.updateNetworkObject(payload);
     }
 
-    /**
-     * Dispose.
-     */
+    /** Dispose. */
     public void dispose() {
         try {
             if (mOpen) {
@@ -231,8 +217,11 @@ public class NetworkClient {
         } else {
             mProcessScheduler.cancel();
         }
-            return true;
+        return true;
+    }
 
+    public ClientGameInstance getGame() {
+        return this.mGame;
     }
 
     /**
@@ -273,9 +262,7 @@ public class NetworkClient {
             }
         }
 
-        /**
-         * Cancel.
-         */
+        /** Cancel. */
         public void cancel() {
             setProcessMessagesAutomatically(false);
         }
@@ -326,7 +313,7 @@ public class NetworkClient {
      */
     private byte processBytes(byte[] bytes) {
         mClientListener.receivedBytes(bytes);
-        mLogger.info("parsing bytes :: " + Hex.encodeHexString(bytes));
+        //        mLogger.info("parsing bytes :: " + Hex.encodeHexString(bytes));
         try {
             return parseBytes(bytes);
         } catch (DecodingException e) {
@@ -352,9 +339,7 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Close all connections.
-     */
+    /** Close all connections. */
     private void closeAllConnections() {
         mOpen = false;
 

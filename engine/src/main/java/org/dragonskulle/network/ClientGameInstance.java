@@ -9,12 +9,50 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
+ * The type Client game instance.
+ *
  * @author Oscar L The type Client game instance, used to store all game data. This will be replaced
  *     by the game engines data.
  */
 public class ClientGameInstance {
+
+    /**
+     * Instantiates a new Client game instance.
+     *
+     * @param callback the callback
+     */
+    ClientGameInstance(NetworkClientSendBytesCallback callback) {
+        this.sendBytesCallback = callback;
+    }
+
+    /**
+     * Spawn component int.
+     *
+     * @param ownerId the owner id
+     * @param component the component
+     * @return the int
+     */
+    public int spawnComponent(int ownerId, NetworkableComponent component) {
+        NetworkObject nob = getNetworkObject(ownerId);
+        nob.addChild(component);
+        return component.getId();
+    }
+
+    /** The interface Network client send bytes callback. */
+    public interface NetworkClientSendBytesCallback {
+        /**
+         * Send.
+         *
+         * @param bytes the bytes
+         */
+        void send(byte[] bytes);
+    }
+
     /** The Map. */
     private byte[] mMap;
+
+    /** The Send bytes callback. */
+    public NetworkClientSendBytesCallback sendBytesCallback;
 
     /** The Networked objects. */
     private final ArrayList<NetworkObject> mNetworkedObjects = new ArrayList<>();
@@ -37,8 +75,6 @@ public class ClientGameInstance {
      * @return the networked components
      */
     public NetworkableComponent getNetworkedComponent(int id) {
-        System.out.println("trying to find needle : " + id);
-        System.out.println("in haystack :" + this.mNetworkedObjects.toString());
         NetworkableComponent found = null;
         for (NetworkObject nob : mNetworkedObjects) {
             NetworkableComponent nc = nob.findComponent(id);
@@ -85,7 +121,9 @@ public class ClientGameInstance {
     /**
      * Spawn a capital locally.
      *
+     * @param networkObjectId the network object id
      * @param capital the capital
+     * @return the int
      */
     public int spawnCapital(int networkObjectId, Capital capital) {
         NetworkObject nob = getNetworkObject(networkObjectId);
@@ -162,6 +200,11 @@ public class ClientGameInstance {
         return this.mMap != null;
     }
 
+    /**
+     * Has spawned capital boolean.
+     *
+     * @return the boolean
+     */
     public Boolean hasSpawnedCapital() {
         return this.mHasCapital;
     }

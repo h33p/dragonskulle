@@ -1,18 +1,17 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 
 import java.util.logging.Logger;
-
 import org.dragonskulle.network.components.Capital;
 import org.junit.*;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 public class ServerTest {
     private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
@@ -120,18 +119,35 @@ public class ServerTest {
 
     @Test
     public void
-    testCapitalUpdatedClient() { // need to write a better test, this is not processing all
+            testCapitalUpdatedClient() { // need to write a better test, this is not processing all
         // requests it catches
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
 
-        await().atMost(2, SECONDS).until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
+        await().atMost(2, SECONDS)
+                .until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
         assert (nc.getSyncMeAlso().get().equals("Goodbye World"));
         mNetworkClient.dispose();
+    }
+
+    @Test
+    public void testClientRespawnRequest() {
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
+        testMapClient();
+        Capital component1 = testCapitalSpawnDefaultClient();
+        mNetworkClient.dispose();
+
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
+        testMapClient();
+        mNetworkClient.setProcessMessagesAutomatically(true);
+        with().pollInterval(800, MILLISECONDS)
+                .await()
+                .atMost(TIMEOUT, SECONDS)
+                .until(() -> mNetworkClient.getNetworkableComponent(component1.getId()) != null);
     }
 }

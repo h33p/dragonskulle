@@ -265,6 +265,7 @@ public abstract class NetworkableComponent<T> extends Component {
      * Gets id from bytes.
      *
      * @param payload the payload
+     * @param offset the offset
      * @return the id from bytes
      */
     public static int getComponentIdFromBytes(byte[] payload, int offset) {

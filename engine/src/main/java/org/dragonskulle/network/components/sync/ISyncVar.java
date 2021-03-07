@@ -15,6 +15,7 @@ public interface ISyncVar {
     /**
      * Serialize Sync Var.
      *
+     * @param oos the oos
      * @throws IOException the io exception
      */
     void serialize(ObjectOutputStream oos) throws IOException;
@@ -22,8 +23,7 @@ public interface ISyncVar {
     /**
      * Deserialize sync var.
      *
-     * @param bytes the input bytes
-     * @return The number of bytes read
+     * @param stream the stream
      * @throws IOException the io exception
      * @throws ClassNotFoundException the class not found exception
      */

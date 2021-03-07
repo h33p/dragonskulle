@@ -44,6 +44,7 @@ public class NetworkMessage {
      *
      * @param buff the buff
      * @param client the client
+     * @return the byte
      */
     public static byte parse(byte[] buff, NetworkClient client) {
         int i = 0;
@@ -80,7 +81,7 @@ public class NetworkMessage {
      * @param bytes the bytes
      * @return the boolean
      */
-    private static boolean verifyMessageEnd(int offset, byte[] bytes) {
+    public static boolean verifyMessageEnd(int offset, byte[] bytes) {
         try {
             byte[] consumedSignature = Arrays.copyOfRange(bytes, offset, offset + 5);
             return (Arrays.equals(END_SIGNATURE, consumedSignature));
@@ -95,7 +96,7 @@ public class NetworkMessage {
      * @param bytes the bytes
      * @return the boolean
      */
-    private static boolean verifyMessageStart(byte[] bytes) {
+    public static boolean verifyMessageStart(byte[] bytes) {
         byte[] consumedSignature = Arrays.copyOfRange(bytes, 0, 5);
         return (Arrays.equals(START_SIGNATURE, consumedSignature));
     }
@@ -109,7 +110,7 @@ public class NetworkMessage {
      * @param payloadSize the payload size
      * @return the byte [ ]
      */
-    private static byte[] getPayload(byte[] bytes, byte messageType, int offset, int payloadSize) {
+    public static byte[] getPayload(byte[] bytes, byte messageType, int offset, int payloadSize) {
         byte[] payload = Arrays.copyOfRange(bytes, offset, offset + payloadSize);
         return payload;
     }
@@ -145,7 +146,7 @@ public class NetworkMessage {
      * @param bytes the bytes
      * @return the payload size
      */
-    private static int getPayloadSize(byte[] bytes) {
+    public static int getPayloadSize(byte[] bytes) {
         return convertByteArrayToInt(Arrays.copyOfRange(bytes, 6, 11)); // inclusive, exclusive
     }
 
@@ -155,7 +156,7 @@ public class NetworkMessage {
      * @param bytes the bytes
      * @return the message type
      */
-    private static byte getMessageType(byte[] bytes) {
+    public static byte getMessageType(byte[] bytes) {
         return bytes[5];
     }
 
@@ -215,43 +216,6 @@ public class NetworkMessage {
             ret[i] = in.get(i);
         }
         return ret;
-    }
-
-    /**
-     * Parses a network message from bytes and executes the correct functions. This is for server
-     * use.
-     *
-     * @param buff the buff
-     * @param sendBytesToClient the send bytes to client
-     */
-    public static void parse(byte[] buff, Server.SendBytesToClientCurry sendBytesToClient) {
-        if (buff.length == 0 || Arrays.equals(buff, new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
-            return;
-        }
-        int i = 0;
-        boolean validStart = verifyMessageStart(buff);
-        i += 5;
-        if (validStart) {
-            //            System.out.println("Valid Message Start\n");
-            byte messageType = getMessageType(buff);
-            i += 1;
-            int payloadSize = getPayloadSize(buff);
-            i += 4;
-            byte[] payload = getPayload(buff, messageType, i, payloadSize);
-            i += payloadSize;
-            boolean consumedMessage = verifyMessageEnd(i, buff);
-            if (consumedMessage) {
-                if (messageType == (byte) 0) {
-                    System.out.println("\nValid Message");
-                    System.out.println("Type : " + messageType);
-                    System.out.println("Payload : " + Arrays.toString(payload));
-                } else {
-                    Server.executeBytes(messageType, payload, sendBytesToClient);
-                }
-            }
-        } else {
-            System.out.println("invalid message start");
-        }
     }
 
     /**
@@ -365,13 +329,13 @@ public class NetworkMessage {
 
     public static byte getChildClassTypeByte(Class<? extends NetworkableComponent> aClass) {
         if (aClass == Capital.class) {
-            return (byte) 255;
+            return (byte) 21;
         }
         return (byte) 0;
     }
 
     public static Class<? extends NetworkableComponent> getChildClassFromByte(byte bClass) {
-        if (bClass == (byte) 255) {
+        if (bClass == (byte) 21) {
             return Capital.class;
         }
 
