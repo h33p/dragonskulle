@@ -115,20 +115,31 @@ public class Server {
      * @param sendBytesToClient the socket of the requesting client, to be called if a communication
      *     directly to the client is needed
      */
-    public static void executeBytes(
+    public void executeBytes(
             byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
         byte[] message;
         switch (messageType) {
             case (byte) 22:
                 message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
+                //                sendBytesToClient.send(message);
+                break;
+            case (byte) 50:
+                message = clientRequestedRespawn(payload);
                 sendBytesToClient.send(message);
                 break;
             default:
                 System.out.println("Should implement spawn and create building ____");
                 message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
-                sendBytesToClient.send(message);
+                //                sendBytesToClient.send(message);
                 break;
         }
+    }
+
+    private byte[] clientRequestedRespawn(byte[] payload) {
+        int componentRequestedId = NetworkMessage.convertByteArrayToInt(payload);
+        System.out.println("The component id to respawn is " + componentRequestedId);
+        NetworkableComponent component = this.findComponent(componentRequestedId);
+        return NetworkMessage.build((byte) 22, component.serializeFully());
     }
 
     /** Dispose. */
@@ -399,12 +410,48 @@ public class Server {
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
         //        System.out.println("bytes parsing");
         try {
-            NetworkMessage.parse(
-                    bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));
+            parse(bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));
         } catch (Exception e) {
             System.out.println("Error in parseBytes");
             e.printStackTrace();
             throw new DecodingException("Message is not of valid type");
+        }
+    }
+
+    /**
+     * Parses a network message from bytes and executes the correct functions. This is for server
+     * use.
+     *
+     * @param buff the buff
+     * @param sendBytesToClient the send bytes to client
+     */
+    public void parse(byte[] buff, SendBytesToClientCurry sendBytesToClient) {
+        if (buff.length == 0 || Arrays.equals(buff, new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
+            return;
+        }
+        int i = 0;
+        boolean validStart = NetworkMessage.verifyMessageStart(buff);
+        i += 5;
+        if (validStart) {
+            //            System.out.println("Valid Message Start\n");
+            byte messageType = NetworkMessage.getMessageType(buff);
+            i += 1;
+            int payloadSize = NetworkMessage.getPayloadSize(buff);
+            i += 4;
+            byte[] payload = NetworkMessage.getPayload(buff, messageType, i, payloadSize);
+            i += payloadSize;
+            boolean consumedMessage = NetworkMessage.verifyMessageEnd(i, buff);
+            if (consumedMessage) {
+                if (messageType == (byte) 0) {
+                    System.out.println("\nValid Message");
+                    System.out.println("Type : " + messageType);
+                    System.out.println("Payload : " + Arrays.toString(payload));
+                } else {
+                    executeBytes(messageType, payload, sendBytesToClient);
+                }
+            }
+        } else {
+            System.out.println("invalid message start");
         }
     }
 

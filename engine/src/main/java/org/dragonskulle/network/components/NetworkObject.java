@@ -126,20 +126,18 @@ public class NetworkObject {
                                     + "\nComponent id of children bytes to update is : "
                                     + componentId);
                     NetworkableComponent noc = this.findComponent(componentId);
+                    System.out.println("Did i manage to find the component? " + (noc == null));
                     if (noc == null) {
-                        throw new NetworkObjectDoesNotHaveChildError("Can't find " + componentId);
+                        throw new NetworkObjectDoesNotHaveChildError(
+                                "Can't find component", componentId);
+                    } else {
+                        noc.updateFromBytes(arrayOfChildrenBytes.get(i));
                     }
-                    noc.updateFromBytes(arrayOfChildrenBytes.get(i));
                 } catch (NetworkObjectDoesNotHaveChildError e) {
-                    System.out.println(
-                            "child doesnt exist in nob, must create but i dont know the type?");
-                    mLogger.warning("SHOULD REQUEST COPY FROM SERVER -> implement");
-                    //                    NetworkableComponent component =
-                    // NetworkableComponent.createFromBytes(arrayOfChildrenBytes.get(i));
-                    //                    if(component.getClass()==Capital.class){
-                    //                        instance.spawnCapital(component.getOwnerId(),
-                    // (Capital) component);
-                    //                    }
+                    instance.sendBytesCallback.send(
+                            NetworkMessage.build(
+                                    (byte) 50,
+                                    NetworkMessage.convertIntToByteArray(e.invalidComponentId)));
                 }
             } else {
                 System.out.println("Shouldn't update child");
@@ -344,8 +342,7 @@ public class NetworkObject {
 
         // add contents
         bytes.addAll(contents);
-        byte[] out = NetworkMessage.toByteArray(bytes);
-        return out;
+        return NetworkMessage.toByteArray(bytes);
     }
 
     private int allocateId() {

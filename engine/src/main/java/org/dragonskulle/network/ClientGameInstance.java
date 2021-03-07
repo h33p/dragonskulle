@@ -13,8 +13,25 @@ import org.dragonskulle.network.components.NetworkableComponent;
  *     by the game engines data.
  */
 public class ClientGameInstance {
+
+    ClientGameInstance(NetworkClientSendBytesCallback callback) {
+        this.sendBytesCallback = callback;
+    }
+
+    public int spawnComponent(int ownerId, NetworkableComponent component) {
+        NetworkObject nob = getNetworkObject(ownerId);
+        nob.addChild(component);
+        return component.getId();
+    }
+
+    public interface NetworkClientSendBytesCallback {
+        void send(byte[] bytes);
+    }
+
     /** The Map. */
     private byte[] mMap;
+
+    public NetworkClientSendBytesCallback sendBytesCallback;
 
     /** The Networked objects. */
     private final ArrayList<NetworkObject> mNetworkedObjects = new ArrayList<>();
@@ -37,8 +54,6 @@ public class ClientGameInstance {
      * @return the networked components
      */
     public NetworkableComponent getNetworkedComponent(int id) {
-        System.out.println("trying to find needle : " + id);
-        System.out.println("in haystack :" + this.mNetworkedObjects.toString());
         NetworkableComponent found = null;
         for (NetworkObject nob : mNetworkedObjects) {
             NetworkableComponent nc = nob.findComponent(id);
