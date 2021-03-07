@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
+
 import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
@@ -14,29 +15,47 @@ import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * @author Oscar L
- *     <p>This is the client usage, you will create an instance, by providing the correct server to
- *     connect to. ClientListener is the handler for commands that the client receives. {@link
- *     org.dragonskulle.network.ClientListener}**
+ * <p>This is the client usage, you will create an instance, by providing the correct server to
+ * connect to. ClientListener is the handler for commands that the client receives. {@link
+ * org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
-    /** The constant MAX_TRANSMISSION_SIZE. */
+    /**
+     * The constant MAX_TRANSMISSION_SIZE.
+     */
     private static final int MAX_TRANSMISSION_SIZE = 512;
-    /** The Socket connection to the server. */
+    /**
+     * The Socket connection to the server.
+     */
     private Socket mSocket;
-    /** The Input stream. Possibly depreciated in favour of byte streams. */
+    /**
+     * The Input stream. Possibly depreciated in favour of byte streams.
+     */
     private BufferedReader mIn;
-    /** The Output stream. Possibly depreciated in favour of byte streams. */
+    /**
+     * The Output stream. Possibly depreciated in favour of byte streams.
+     */
     private PrintWriter mOut;
-    /** The byte output stream. */
+    /**
+     * The byte output stream.
+     */
     private DataOutputStream mDOut;
-    /** The byte input stream. */
+    /**
+     * The byte input stream.
+     */
     private BufferedInputStream mBIn;
-    /** The Game Instance. */
+    /**
+     * The Game Instance.
+     */
     private ClientGameInstance mGame;
 
-    /** The Client listener to notify of important events. */
+    /**
+     * The Client listener to notify of important events.
+     */
     private ClientListener mClientListener;
-    /** True if the socket is open. */
+    /**
+     * True if the socket is open.
+     */
     private boolean mOpen = true;
 
     private int mCapitalId;
@@ -45,12 +64,14 @@ public class NetworkClient {
     private ClientRunner mClientRunner;
     private Thread mClientThread;
     private boolean mAutoProcessMessages = false;
+    private final Timer mProcessScheduler = new Timer();
+
 
     /**
      * Instantiates a new Network client.
      *
-     * @param ip the ip
-     * @param port the port
+     * @param ip       the ip
+     * @param port     the port
      * @param listener the listener
      */
     public NetworkClient(
@@ -87,7 +108,7 @@ public class NetworkClient {
      * Execute bytes after parsing. This will be different usage depending on server or client.
      *
      * @param messageType the message type
-     * @param payload the payload
+     * @param payload     the payload
      */
     public byte executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
@@ -140,7 +161,9 @@ public class NetworkClient {
         this.mGame.updateNetworkObject(payload);
     }
 
-    /** Dispose. */
+    /**
+     * Dispose.
+     */
     public void dispose() {
         try {
             if (mOpen) {
@@ -200,19 +223,30 @@ public class NetworkClient {
         return this.mGame.getNetworkObjects();
     }
 
+    public boolean setProcessMessagesAutomatically(boolean toggle) {
+        mLogger.info("Processing Messages Automatically :" + toggle);
+        this.mAutoProcessMessages = toggle;
+        if (toggle) {
+            mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 1000);
+        } else {
+            mProcessScheduler.cancel();
+        }
+            return true;
+
+    }
+
     /**
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
      */
     private class ClientRunner implements Runnable {
-        private final Timer mProcessScheduler = new Timer();
 
         @Override
         public void run() {
             byte[] bArray;
             byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
             if (mAutoProcessMessages) {
-                mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 5000);
+                mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 1000);
             }
             while (mOpen && !Thread.currentThread().isInterrupted()) {
                 try {
@@ -239,9 +273,11 @@ public class NetworkClient {
             }
         }
 
-        /** Cancel. */
+        /**
+         * Cancel.
+         */
         public void cancel() {
-            this.mProcessScheduler.cancel();
+            setProcessMessagesAutomatically(false);
         }
     }
 
@@ -316,7 +352,9 @@ public class NetworkClient {
         }
     }
 
-    /** Close all connections. */
+    /**
+     * Close all connections.
+     */
     private void closeAllConnections() {
         mOpen = false;
 

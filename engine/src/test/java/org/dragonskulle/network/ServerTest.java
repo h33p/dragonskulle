@@ -6,10 +6,13 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 import java.util.logging.Logger;
+
 import org.dragonskulle.network.components.Capital;
 import org.junit.*;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 public class ServerTest {
     private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
@@ -40,7 +43,7 @@ public class ServerTest {
     private void testMapClient() {
         await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
-        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
+        await().atMost(3, SECONDS).until(() -> mNetworkClient.hasMap());
     }
 
     @Test
@@ -117,20 +120,17 @@ public class ServerTest {
 
     @Test
     public void
-            testCapitalUpdatedClient() { // need to write a better test, this is not processing all
+    testCapitalUpdatedClient() { // need to write a better test, this is not processing all
         // requests it catches
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
 
-        await().atLeast(30, SECONDS).until(() -> false);
-        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasRequests());
-        mNetworkClient.processRequests();
-        await().atMost(3, SECONDS).until(() -> !mNetworkClient.hasRequests());
-        await().atMost(3, SECONDS).until(() -> nc.getSyncMe().get() == true);
+        await().atMost(2, SECONDS).until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
+        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
-                .until(() -> finalNc.getSyncMeAlso().get().equals("Goodbye World"));
+                .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
         assert (nc.getSyncMeAlso().get().equals("Goodbye World"));
         mNetworkClient.dispose();
     }
