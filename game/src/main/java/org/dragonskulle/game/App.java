@@ -8,6 +8,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
 import org.joml.Matrix4f;
@@ -87,6 +88,6 @@ public class App {
         mainScene.addRootObject(cube);
 
         // Run the game
-        Engine.getInstance().start("Germany", mainScene);
+        Engine.getInstance().start("Germany", new GameBindings(), mainScene);
     }
 }
