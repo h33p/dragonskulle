@@ -114,6 +114,6 @@ public class Camera extends Component implements ILateFrameUpdate {
 
     @Override
     public void onDestroy() {
-        if (sMainCamera.get() == this) sMainCamera = null;
+        if (getMainCamera() == this) sMainCamera = null;
     }
 }
