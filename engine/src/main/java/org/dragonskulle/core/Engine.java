@@ -216,7 +216,10 @@ public class Engine {
                 mTmpRenderables.add((Renderable) component);
             }
         }
-        mGLFWState.getRenderer().render(Camera.getMainCamera(), mTmpRenderables);
+
+        Camera mainCamera = Camera.getMainCamera();
+
+        if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
     }
 
     /** Finish the loading of a new scene. */
