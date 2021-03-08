@@ -3,6 +3,7 @@ package org.dragonskulle.game.components;
 import java.util.List;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.core.Time;
 
 /**
  * Abstract Player class, Both AIPlayer and HumanPlayer will extend this
@@ -12,10 +13,31 @@ import org.dragonskulle.components.Component;
 abstract public class Player extends Component {
 	
 	protected List<Building> ownedBuildings;
+	protected int tokens;  //NEED TO BE SYNCED
+	protected final int TOKEN_RATE = 5;
+	protected final float UPDATE_TIME = 1;
+	protected float lastTokenUpdate = Time.getTimeInSeconds() - UPDATE_TIME;
+	
 	/**
 	 * This method will take the action decided by the user and will tell the server to perform one action 
 	 */
 	protected void triggerEvent() {
+		;
+	}
+	
+	/**
+	 * This method will update the amount of tokens the user has per UPDATE_TIME.  Goes through all owned buildings to check if need to update tokens
+	 */
+	protected void updateTokens() {
+		float time = Time.getTimeInSeconds();
 		
+		if (time - lastTokenUpdate > UPDATE_TIME) {
+			for (Building building: ownedBuildings) {
+				tokens += building.getToken();
+				
+			}
+			tokens += TOKEN_RATE;
+			lastTokenUpdate = time;
+		}
 	}
 }
