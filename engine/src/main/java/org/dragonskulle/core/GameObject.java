@@ -68,14 +68,14 @@ public class GameObject implements Serializable {
      * Create a clone of a GameObject, providing a new transform for the object
      *
      * @param object GameObject to be copied
-     * @param transform New transform for the object
+     * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
+     *     instance)
      * @return The new instance of the GameObject
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
-        Transform newTransform = new Transform(transform.getLocalMatrix());
-        newTransform.setGameObject(instance);
-        instance.mTransform = newTransform;
+        transform.setGameObject(instance);
+        instance.mTransform = transform;
         return instance;
     }
 
@@ -137,6 +137,28 @@ public class GameObject implements Serializable {
      * @param active controls whether the object is active by default
      * @param handler handler callback that allows to do initial setup
      */
+    public GameObject(String name, boolean active, Transform transform, IBuildHandler handler) {
+        this(name, active, transform);
+        handler.handleBuild(this);
+    }
+
+    /**
+     * Constructor for game object, allows initial setup
+     *
+     * @param name name of the object
+     * @param handler handler callback that allows to do initial setup
+     */
+    public GameObject(String name, Transform transform, IBuildHandler handler) {
+        this(name, true, transform, handler);
+    }
+
+    /**
+     * Constructor for game object, allows initial setup
+     *
+     * @param name name of the object
+     * @param active controls whether the object is active by default
+     * @param handler handler callback that allows to do initial setup
+     */
     public GameObject(String name, boolean active, IBuildHandler handler) {
         this(name, active);
         handler.handleBuild(this);
@@ -180,7 +202,12 @@ public class GameObject implements Serializable {
      * @param transform Object transformation
      */
     public GameObject(String name, boolean active, Transform transform) {
-        this(name, active, transform.getLocalMatrix());
+        mRoot = null;
+        mParent = null;
+        mName = name;
+        mActive = active;
+        mTransform = transform;
+        mTransform.setGameObject(this);
     }
 
     /**
@@ -210,7 +237,7 @@ public class GameObject implements Serializable {
         mComponents.stream()
                 .filter(type::isInstance)
                 .map(component -> component.getReference(type))
-                .filter(component -> component != null)
+                .filter(Reference::isValid)
                 .collect(Collectors.toCollection(() -> ret));
     }
 
@@ -225,7 +252,7 @@ public class GameObject implements Serializable {
         return mComponents.stream()
                 .filter(type::isInstance)
                 .map(component -> component.getReference(type))
-                .filter(component -> component != null)
+                .filter(Reference::isValid)
                 .findFirst()
                 .orElse(null);
     }
@@ -350,6 +377,31 @@ public class GameObject implements Serializable {
      */
     public void buildChild(String name, boolean active, IBuildHandler handler) {
         GameObject go = new GameObject(name, active);
+        this.addChild(go);
+        handler.handleBuild(go);
+    }
+
+    /**
+     * Build a child for the GameObject. It will create an object of given name, attach to the
+     * parent, and then call the build handler method.
+     *
+     * @param name name of the object
+     * @param handler handler callback to do initial setup
+     */
+    public void buildChild(String name, Transform transform, IBuildHandler handler) {
+        buildChild(name, true, transform, handler);
+    }
+
+    /**
+     * Build a child for the GameObject. It will create an object of given name, attach to the
+     * parent, and then call the build handler method.
+     *
+     * @param name name of the object
+     * @param handler handler callback to do initial setup
+     */
+    public void buildChild(
+            String name, boolean active, Transform transform, IBuildHandler handler) {
+        GameObject go = new GameObject(name, active, transform);
         this.addChild(go);
         handler.handleBuild(go);
     }
