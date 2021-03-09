@@ -51,7 +51,6 @@ public class NetworkMessage {
         boolean validStart = verifyMessageStart(buff);
         i += 5;
         if (validStart) {
-            //            System.out.println("Valid Message Start\n");
             byte messageType = getMessageType(buff);
             i += 1;
             int payloadSize = getPayloadSize(buff);

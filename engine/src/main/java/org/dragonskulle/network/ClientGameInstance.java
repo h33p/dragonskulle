@@ -4,6 +4,8 @@ package org.dragonskulle.network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.logging.Logger;
+
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -15,6 +17,8 @@ import org.dragonskulle.network.components.NetworkableComponent;
  *     by the game engines data.
  */
 public class ClientGameInstance {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
 
     /**
      * Instantiates a new Client game instance.
@@ -93,7 +97,7 @@ public class ClientGameInstance {
      * @return the network object
      */
     public NetworkObject getNetworkObject(int networkObjectId) {
-        System.out.println(mNetworkedObjects);
+        mLogger.info(mNetworkedObjects.toString());
         NetworkObject nob =
                 mNetworkedObjects.stream()
                         .filter(e -> e.getId() == networkObjectId)
@@ -103,9 +107,9 @@ public class ClientGameInstance {
             return nob;
         }
 
-        //        System.out.println("couldn't find nob id :" + networkObjectId);
+        //        mLogger.info("couldn't find nob id :" + networkObjectId);
         nob = new NetworkObject(networkObjectId);
-        this.mNetworkedObjects.add(nob); //            System.out.println("managed to add new nob");
+        this.mNetworkedObjects.add(nob); //            mLogger.info("managed to add new nob");
         return nob;
     }
 
@@ -152,16 +156,16 @@ public class ClientGameInstance {
         NetworkObject networkObjectToUpdate = getNetworkObject(idToUpdate);
         if (networkObjectToUpdate != null) {
             try {
-                System.out.println("BEFORE UPDATE");
-                System.out.println(networkObjectToUpdate.toString());
+                mLogger.info("BEFORE UPDATE");
+                mLogger.info(networkObjectToUpdate.toString());
                 networkObjectToUpdate.updateFromBytes(payload, this);
-                System.out.println("AFTER UPDATE");
-                System.out.println(networkObjectToUpdate.toString());
+                mLogger.info("AFTER UPDATE");
+                mLogger.info(networkObjectToUpdate.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("didnt find network object from id");
+            mLogger.info("didnt find network object from id");
         }
     }
 
@@ -188,7 +192,7 @@ public class ClientGameInstance {
      * @param id the id of the component
      */
     public void printNetworkable(int id) {
-        System.out.println(Objects.requireNonNull(getNetworkable(id)).toString());
+        mLogger.info(Objects.requireNonNull(getNetworkable(id)).toString());
     }
 
     /**

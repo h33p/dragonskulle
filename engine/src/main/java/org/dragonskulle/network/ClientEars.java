@@ -2,34 +2,36 @@
 package org.dragonskulle.network;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * @author Oscar L ClientEars is the client implementation of ClientListener, this is where custom
  *     executions can be defined for different commands received.
  */
 public class ClientEars implements ClientListener {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
     @Override
     public void unknownHost() {
-        System.out.println("[Client] Unknown Host");
+        mLogger.info("[Client] Unknown Host");
     }
 
     @Override
     public void couldNotConnect() {
-        System.out.println("[Client] Could not connect");
+        mLogger.info("[Client] Could not connect");
     }
 
     @Override
     public void receivedInput(String msg) {
-        System.out.println("[Client] Received Input {" + msg + "}");
+        mLogger.info("[Client] Received Input {" + msg + "}");
     }
 
     @Override
     public void receivedBytes(byte[] bytes) {
         if (bytes.length > 15) {
-            System.out.print(
+            mLogger.info(
                     "[Client] Received Bytes :: "
                             + Arrays.toString(Arrays.copyOfRange(bytes, 0, 15)));
-            System.out.println(
+            mLogger.info(
                     " \t...\t   "
                             + Arrays.toString(
                                     Arrays.copyOfRange(bytes, bytes.length - 15, bytes.length)));
@@ -38,21 +40,21 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void serverClosed() {
-        System.out.println("[Client] Server Closed");
+        mLogger.info("[Client] Server Closed");
     }
 
     @Override
     public void disconnected() {
-        System.out.println("[Client] Disconnected from server");
+        mLogger.info("[Client] Disconnected from server");
     }
 
     @Override
     public void connectedToServer() {
-        System.out.println("[Client] Connected from server");
+        mLogger.info("[Client] Connected from server");
     }
 
     @Override
     public void error(String s) {
-        System.out.println("[Client] ERROR: " + s);
+        mLogger.info("[Client] ERROR: " + s);
     }
 }

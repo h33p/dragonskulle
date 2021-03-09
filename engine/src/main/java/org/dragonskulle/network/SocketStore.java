@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 /**
  * @author Oscar L SocketStore is for storing all the information about connected clients. It stores
@@ -16,6 +17,8 @@ import java.util.ArrayList;
  *     Server, it is the backbone of the server functions.
  */
 public class SocketStore {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     /** The Server. */
     private ServerSocket mServer;
     /** The Store for all the sockets. */
@@ -38,14 +41,14 @@ public class SocketStore {
         for (Socket connection : mStore) {
             try {
                 if (connection.isClosed()) {
-                    System.out.println("Client socket output has closed");
+                    mLogger.info("Client socket output has closed");
                 }
                 dOut = new DataOutputStream(connection.getOutputStream());
                 dOut.write(buf);
 
             } catch (IOException e) {
-                System.out.println("Error in broadcasting");
-                System.out.println(e.toString());
+                mLogger.info("Error in broadcasting");
+                mLogger.info(e.toString());
             }
         }
     }
@@ -59,9 +62,9 @@ public class SocketStore {
         try {
             this.mServer = serverSocket;
             this.mServer.setSoTimeout(SO_TIMEOUT);
-            System.out.println("[SS] Server created @ " + serverSocket.getLocalSocketAddress());
+            mLogger.info("[SS] Server created @ " + serverSocket.getLocalSocketAddress());
         } catch (SocketException e) {
-            System.out.println("Failed to create server");
+            mLogger.info("Failed to create server");
             e.printStackTrace();
         }
     }
@@ -73,8 +76,8 @@ public class SocketStore {
      */
     public void addClient(Socket sock) {
         // TODO add check for invalid socket
-        System.out.println("Adding client");
-        System.out.println("Socket :" + sock.toString());
+        mLogger.info("Adding client");
+        mLogger.info("Socket :" + sock.toString());
         this.mStore.add(sock);
     }
 
@@ -177,7 +180,7 @@ public class SocketStore {
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
         for (Socket sock : this.mStore) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
-                System.out.println("Sending bytes to client");
+                mLogger.info("Sending bytes to client");
                 try {
                     DataOutputStream dOut = new DataOutputStream(sock.getOutputStream());
                     dOut.write(response_bytes);

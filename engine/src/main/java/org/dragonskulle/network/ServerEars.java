@@ -5,9 +5,12 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 /** @author Oscar L This is the handler for the server, it will handle events */
 public class ServerEars implements ServerListener {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     /** The Log of messages to be displayed. */
     private final ListenableQueue<String> mLog;
     /** The Alive ping timer. */
@@ -15,9 +18,9 @@ public class ServerEars implements ServerListener {
 
     /** Instantiates a new Server listener. */
     ServerEars() {
-        System.out.println("Creating ServerListener");
+        mLogger.info("Creating ServerListener");
         mLog = new ListenableQueue<>(new LinkedList<>());
-        mLog.registerListener((e) -> System.out.println("[SE-LOG] " + mLog.poll()));
+        mLog.registerListener((e) -> mLogger.info("[SE-LOG] " + mLog.poll()));
         mAliveTimer = new Timer();
         mAliveTimer.schedule(new LogServerAlive(), 0, 15000);
     }
@@ -46,14 +49,16 @@ public class ServerEars implements ServerListener {
 
     @Override
     public void receivedBytes(ClientInstance client, byte[] bytes) {
-        //        System.out.println("--\ngot bytes");
-        //        System.out.println(Arrays.toString(bytes));
+        //        mLogger.info("--\ngot bytes");
+        //        mLogger.info(Arrays.toString(bytes));
     }
 }
 
 /** The type Log server alive. */
 class LogServerAlive extends TimerTask {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     public void run() {
-        System.out.println("[SE~TT] Server Alive @ " + System.currentTimeMillis());
+        mLogger.info("[SE~TT] Server Alive @ " + System.currentTimeMillis());
     }
 }

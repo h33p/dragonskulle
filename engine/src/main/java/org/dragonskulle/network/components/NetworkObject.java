@@ -13,12 +13,13 @@ import sun.misc.IOUtils;
 
 /** @author Oscar L The NetworkObject deals with any networked variables. */
 public class NetworkObject {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     /** The UUID of the object. */
     public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
 
-    Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
 
     /**
      * Instantiates a new Network object.
@@ -126,7 +127,7 @@ public class NetworkObject {
                                     + "\nComponent id of children bytes to update is : "
                                     + componentId);
                     NetworkableComponent noc = this.findComponent(componentId);
-                    System.out.println("Did i manage to find the component? " + (noc == null));
+                    mLogger.info("Did i manage to find the component? " + (noc == null));
                     if (noc == null) {
                         throw new NetworkObjectDoesNotHaveChildError(
                                 "Can't find component", componentId);
@@ -140,7 +141,7 @@ public class NetworkObject {
                                     NetworkMessage.convertIntToByteArray(e.invalidComponentId)));
                 }
             } else {
-                System.out.println("Shouldn't update child");
+                mLogger.info("Shouldn't update child");
             }
         }
     }
@@ -226,7 +227,7 @@ public class NetworkObject {
             NetworkableComponent component,
             byte messageCode,
             ServerBroadcastCallback broadcastCallback) {
-        System.out.println("spawning component on all clients");
+        mLogger.info("spawning component on all clients");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
         spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
@@ -255,8 +256,8 @@ public class NetworkObject {
      * @param clientCallback the client callback
      */
     public void spawnMap(byte[] mapBytes, SendBytesToClientCallback clientCallback) {
-        System.out.println("spawning map on client");
-        System.out.println("Map bytes :: " + mapBytes.length + "bytes");
+        mLogger.info("spawning map on client");
+        mLogger.info("Map bytes :: " + mapBytes.length + "bytes");
         byte[] spawnMapMessage = NetworkMessage.build((byte) 20, mapBytes);
         clientCallback.call(spawnMapMessage);
     }
@@ -285,7 +286,7 @@ public class NetworkObject {
         boolean[] didChildUpdateMask = new boolean[this.children.size()];
         for (int i = 0; i < this.children.size(); i++) {
             if (this.children.get(i).hasBeenModified()) {
-                System.out.println("child has been modified in a networkobject");
+                mLogger.info("child has been modified in a networkobject");
                 didChildUpdateMask[i] = true;
                 if (!shouldBroadcast) {
                     shouldBroadcast = true;
@@ -294,13 +295,13 @@ public class NetworkObject {
         }
         if (shouldBroadcast) {
             byte[] bytes = generateBroadcastUpdateBytes(didChildUpdateMask);
-            System.out.println("Broadcast update size:: " + bytes.length);
+            mLogger.info("Broadcast update size:: " + bytes.length);
             broadcastCallback.call(NetworkMessage.build((byte) 15, bytes));
         }
     }
 
     private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
-        //        System.out.println("generating broadcast update bytes");
+        //        mLogger.info("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4

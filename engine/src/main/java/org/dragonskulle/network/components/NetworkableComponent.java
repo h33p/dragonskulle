@@ -8,6 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.logging.Logger;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
@@ -19,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
 public abstract class NetworkableComponent<T> extends Component {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
 
     NetworkableComponent(int ownerId, int networkComponentId) {
         this.id = networkComponentId;
@@ -28,6 +31,8 @@ public abstract class NetworkableComponent<T> extends Component {
     NetworkableComponent() {}
 
     public static NetworkableComponent createFromBytes(byte[] payload) {
+        Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
+
         Class<? extends NetworkableComponent> clazz =
                 NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
         assert clazz != null;
@@ -35,7 +40,7 @@ public abstract class NetworkableComponent<T> extends Component {
             // instead of doing this we should request the whole object from the server
             return NetworkableComponent.from(clazz, payload);
         } catch (DecodingException e) {
-            System.out.println("error creating from bytes with clazz");
+            mLogger.info("error creating from bytes with clazz");
             e.printStackTrace();
             return null;
         }
@@ -348,7 +353,7 @@ public abstract class NetworkableComponent<T> extends Component {
                     ISyncVar obj = (ISyncVar) field.get(this);
                     obj.deserialize(stream);
                 } catch (Exception e) {
-                    System.out.println("Failed to deserialize " + this.mFields[i].getName());
+                    mLogger.info("Failed to deserialize " + this.mFields[i].getName());
                     e.printStackTrace();
                 }
             }

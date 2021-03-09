@@ -19,6 +19,8 @@ import org.dragonskulle.network.components.NetworkableComponent;
  *     org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = 512;
     /** The Socket connection to the server. */
@@ -41,7 +43,6 @@ public class NetworkClient {
 
     private int mCapitalId;
     private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
-    private final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
     private ClientRunner mClientRunner;
     private Thread mClientThread;
     private boolean mAutoProcessMessages = false;
@@ -95,35 +96,35 @@ public class NetworkClient {
     public byte executeBytes(byte messageType, byte[] payload) {
         switch (messageType) {
             case (byte) 15:
-                System.out.println("Should update requested network object");
+                mLogger.info("Should update requested network object");
                 updateNetworkObject(payload);
                 break;
             case (byte) 20:
-                System.out.println("Trying to spawn map, need to get the actual map");
+                mLogger.info("Trying to spawn map, need to get the actual map");
                 this.mGame.spawnMap(payload);
-                System.out.println("Spawned map");
+                mLogger.info("Spawned map");
                 break;
             case (byte) 21:
                 try {
-                    System.out.println("Trying to spawn capital");
+                    mLogger.info("Trying to spawn capital");
                     Capital capital = deserializeCapitol(payload);
                     this.mCapitalId = this.mGame.spawnCapital(capital.getOwnerId(), capital);
                     if (capital.getId() == mCapitalId) {
-                        System.out.println("Spawned capital");
+                        mLogger.info("Spawned capital");
                     }
                 } catch (DecodingException e) {
                     e.printStackTrace();
                 }
                 break;
             case (byte) 22:
-                System.out.println("Trying to spawn component");
+                mLogger.info("Trying to spawn component");
                 NetworkableComponent component = NetworkableComponent.createFromBytes(payload);
                 assert component != null;
                 int componentId = this.mGame.spawnComponent(component.getOwnerId(), component);
-                System.out.println("Spawned Component");
+                mLogger.info("Spawned Component");
                 break;
             default:
-                System.out.println(
+                mLogger.info(
                         "unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
@@ -189,10 +190,10 @@ public class NetworkClient {
     public void sendBytes(byte[] bytes) {
         if (mOpen) {
             try {
-                System.out.println("sending bytes");
+                mLogger.info("sending bytes");
                 mDOut.write(bytes);
             } catch (IOException e) {
-                System.out.println("Failed to send bytes");
+                mLogger.info("Failed to send bytes");
             }
         }
     }
@@ -298,7 +299,7 @@ public class NetworkClient {
         if (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
             if (requestBytes != null) {
-                System.out.println("Processing message with type: " + processBytes(requestBytes));
+                mLogger.info("Processing message with type: " + processBytes(requestBytes));
             }
         }
     }
@@ -318,8 +319,8 @@ public class NetworkClient {
         try {
             return parseBytes(bytes);
         } catch (DecodingException e) {
-            System.out.println(e.getMessage());
-            System.out.println(new String(bytes, StandardCharsets.UTF_8));
+            mLogger.info(e.getMessage());
+            mLogger.info(new String(bytes, StandardCharsets.UTF_8));
             return (byte) -1;
         }
     }
@@ -334,7 +335,7 @@ public class NetworkClient {
         try {
             return NetworkMessage.parse(bytes, this);
         } catch (Exception e) {
-            System.out.println("error parsing bytes");
+            mLogger.info("error parsing bytes");
             e.printStackTrace();
             throw new DecodingException("Message is not of valid type");
         }

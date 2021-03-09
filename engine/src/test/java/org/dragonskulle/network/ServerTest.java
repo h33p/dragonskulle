@@ -7,6 +7,7 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.dragonskulle.network.components.Capital;
 import org.junit.*;
@@ -22,7 +23,8 @@ public class ServerTest {
 
     @BeforeClass
     public static void setUp() {
-        mServerInstance = new StartServer(true);
+        LogManager.getLogManager().reset();
+        mServerInstance = new StartServer(true,true);
         mClientListener = new ClientEars();
     }
 
@@ -147,7 +149,7 @@ public class ServerTest {
         mNetworkClient.setProcessMessagesAutomatically(true);
         with().pollInterval(800, MILLISECONDS)
                 .await()
-                .atMost(TIMEOUT, SECONDS)
+                .atMost(TIMEOUT*2, SECONDS)
                 .until(() -> mNetworkClient.getNetworkableComponent(component1.getId()) != null);
     }
 }

@@ -1,8 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import java.util.logging.Logger;
+
 /** @author Oscar L How to start the server Start server. */
 public class StartServer {
+    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     /** The Server. */
     public Server server;
     /** The Port. */
@@ -15,12 +19,15 @@ public class StartServer {
         server = new Server(PORT, serverListener);
     }
 
-    StartServer(boolean debug) {
+    StartServer(boolean autoProcessMessages, boolean startFixedUpdate) {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
-        if (debug) {
-            server = new Server(PORT, serverListener, debug);
+        if (autoProcessMessages) {
+            server = new Server(PORT, serverListener, autoProcessMessages);
+            if(startFixedUpdate){
+                server.startFixedUpdate();
+            }
         }
     }
 
@@ -34,11 +41,11 @@ public class StartServer {
                 .addShutdownHook(
                         new Thread(
                                 () -> {
-                                    System.out.println("Shutting down server");
+                                    mLogger.info("Shutting down server");
                                     this.server.dispose();
                                 }));
 
-        System.out.println("Shut Down Hook Attached.");
+        mLogger.info("Shut Down Hook Attached.");
     }
 
     public void dispose() {
