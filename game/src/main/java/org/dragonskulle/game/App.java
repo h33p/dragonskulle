@@ -33,7 +33,7 @@ public class App {
     private static final float SHIFT_FACTOR = (float) Math.pow(2.0, 1.0 / (float) INSTANCE_COUNT);
 
     /** Entrypoint of the program. Creates and runs one app instance */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // Create a scene
         Scene mainScene = new Scene("mainScene");
 
@@ -152,7 +152,10 @@ public class App {
 
         mainScene.addRootObject(monstrocity);
 
+        // Load the main scene as the presentation scene
+        Engine.getInstance().loadPresentationScene(mainScene);
+
         // Run the game
-        Engine.getInstance().start("Germany", new GameBindings(), mainScene);
+        Engine.getInstance().start("Germany", new GameBindings());
     }
 }
