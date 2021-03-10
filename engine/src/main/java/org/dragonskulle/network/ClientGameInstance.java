@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Logger;
-
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -18,7 +17,6 @@ import org.dragonskulle.network.components.NetworkableComponent;
  */
 public class ClientGameInstance {
     private final Logger mLogger = Logger.getLogger(this.getClass().getName());
-
 
     /**
      * Instantiates a new Client game instance.
@@ -38,7 +36,7 @@ public class ClientGameInstance {
      */
     public int spawnComponent(int ownerId, NetworkableComponent component) {
         NetworkObject nob = getNetworkObject(ownerId);
-        nob.addChild(component);
+        nob.addNetworkableComponent(component);
         return component.getId();
     }
 
@@ -131,7 +129,7 @@ public class ClientGameInstance {
      */
     public int spawnCapital(int networkObjectId, Capital capital) {
         NetworkObject nob = getNetworkObject(networkObjectId);
-        nob.addChild(capital);
+        nob.addNetworkableComponent(capital);
         this.mHasCapital = true;
         return capital.getId();
     }
@@ -177,7 +175,8 @@ public class ClientGameInstance {
      */
     private NetworkableComponent getNetworkable(int id) {
         for (NetworkObject mNetworkedObject : mNetworkedObjects) {
-            for (NetworkableComponent networkedComponent : mNetworkedObject.getChildren()) {
+            for (NetworkableComponent networkedComponent :
+                    mNetworkedObject.getNetworkableChildren()) {
                 if (networkedComponent.getId() == id) {
                     return networkedComponent;
                 }

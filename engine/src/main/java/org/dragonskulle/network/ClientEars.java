@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  */
 public class ClientEars implements ClientListener {
     private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+
     @Override
     public void unknownHost() {
         mLogger.info("[Client] Unknown Host");

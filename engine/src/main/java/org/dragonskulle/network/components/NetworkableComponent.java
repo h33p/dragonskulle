@@ -9,7 +9,6 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Logger;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
@@ -94,7 +93,7 @@ public abstract class NetworkableComponent<T> extends Component {
                         .toArray(Field[]::new);
     }
 
-    /** Connect sync vars. */
+    /** Connect sync vars. Only should be ran on server */
     public void connectSyncVars() {
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())

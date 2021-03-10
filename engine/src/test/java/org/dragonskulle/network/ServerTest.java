@@ -24,7 +24,7 @@ public class ServerTest {
     @BeforeClass
     public static void setUp() {
         LogManager.getLogManager().reset();
-        mServerInstance = new StartServer(true,true);
+        mServerInstance = new StartServer(true, true);
         mClientListener = new ClientEars();
     }
 
@@ -50,11 +50,16 @@ public class ServerTest {
     @Test
     public void testCapitalSpawnedServer() {
         mServerInstance.clearPendingRequests();
-
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         testCapitalSpawnDefaultServer();
         mNetworkClient.dispose();
+    }
+
+    private void modifyCapital(Capital captial) {
+        Capital component = (Capital) mServerInstance.server.findComponent(captial.getId());
+        component.setBooleanSyncMe(true);
+        component.setStringSyncMeAlso("Goodbye World");
     }
 
     private Capital testCapitalSpawnDefaultServer() {
@@ -64,7 +69,6 @@ public class ServerTest {
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
-        assertNotNull(capitalId);
         final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId);
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);
@@ -80,7 +84,7 @@ public class ServerTest {
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultServer();
-
+        modifyCapital(nc);
         await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
@@ -108,7 +112,6 @@ public class ServerTest {
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
-        assertNotNull(capitalId);
         mLogger.info("Capital ID : " + capitalId);
         mLogger.info("mClient has these objects : " + mNetworkClient.getNetworkableObjects());
         final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(capitalId);
@@ -120,13 +123,11 @@ public class ServerTest {
     }
 
     @Test
-    public void
-            testCapitalUpdatedClient() { // need to write a better test, this is not processing all
-        // requests it catches
+    public void testCapitalUpdatedClient() {
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
-
+        modifyCapital(nc);
         await().atMost(2, SECONDS)
                 .until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
@@ -143,13 +144,13 @@ public class ServerTest {
         testMapClient();
         Capital component1 = testCapitalSpawnDefaultClient();
         mNetworkClient.dispose();
-
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
+        modifyCapital(component1);
         mNetworkClient.setProcessMessagesAutomatically(true);
-        with().pollInterval(800, MILLISECONDS)
+        with().atMost(TIMEOUT * 2, SECONDS)
+                .pollInterval(1000, MILLISECONDS)
                 .await()
-                .atMost(TIMEOUT*2, SECONDS)
                 .until(() -> mNetworkClient.getNetworkableComponent(component1.getId()) != null);
     }
 }

@@ -25,7 +25,7 @@ public class StartServer {
         ServerListener serverListener = new ServerEars();
         if (autoProcessMessages) {
             server = new Server(PORT, serverListener, autoProcessMessages);
-            if(startFixedUpdate){
+            if (startFixedUpdate) {
                 server.startFixedUpdate();
             }
         }

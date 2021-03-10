@@ -1,14 +1,12 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 public class ListenableArray<E> extends ArrayList<E> {
     /**
      * The interface Listener.
@@ -28,13 +26,9 @@ public class ListenableArray<E> extends ArrayList<E> {
         void onElementRemoved(Object o);
     }
 
-    /**
-     * The Delegate.
-     */
+    /** The Delegate. */
     private final ArrayList<E> mDelegate;
-    /**
-     * The Listeners.
-     */
+    /** The Listeners. */
     private final List<ListenableArray.Listener<E>> mListeners = new ArrayList<>();
 
     /**
@@ -70,26 +64,23 @@ public class ListenableArray<E> extends ArrayList<E> {
     public void add(int index, E element) {
         this.mDelegate.add(index, element);
         mListeners.forEach(listener -> listener.onElementAdded(element));
-
     }
 
     public E remove(int index) {
         E removed = mDelegate.remove(index);
-        if(removed!=null){
+        if (removed != null) {
             mListeners.forEach(listener -> listener.onElementRemoved(index, removed));
         }
         return removed;
     }
 
-
     public boolean remove(Object o) {
-        if(mDelegate.remove(o)){
+        if (mDelegate.remove(o)) {
             mListeners.forEach(listener -> listener.onElementRemoved(o));
             return true;
         }
         return false;
     }
-
 
     @Override
     public int size() {

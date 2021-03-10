@@ -11,9 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-
-import org.dragonskulle.core.Engine;
-import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -21,39 +18,25 @@ import org.dragonskulle.network.components.NetworkableComponent;
  * The type Server.
  *
  * @author Oscar L
- * <p>This is the main Server Class, it handles setup and stores all client connections. It can
- * broadcast messages to every client and receive from individual clients.
+ *     <p>This is the main Server Class, it handles setup and stores all client connections. It can
+ *     broadcast messages to every client and receive from individual clients.
  */
 public class Server {
     private final Logger mLogger = Logger.getLogger(this.getClass().getName());
 
-    /**
-     * If the client will automatically process any recieved messages.
-     */
+    /** If the client will automatically process any recieved messages. */
     private boolean mAutoProcessMessages = false;
-    /**
-     * The Port.
-     */
+    /** The Port. */
     private int mPort;
-    /**
-     * The Server listener.
-     */
+    /** The Server listener. */
     private ServerListener mServerListener;
-    /**
-     * The socket connections to all clients.
-     */
+    /** The socket connections to all clients. */
     private final SocketStore mSockets = new SocketStore();
-    /**
-     * The Server thread.
-     */
+    /** The Server thread. */
     private Thread mServerThread;
-    /**
-     * The Server runner.
-     */
+    /** The Server runner. */
     private ServerRunner mServerRunner;
-    /**
-     * The game instance for the server.
-     */
+    /** The game instance for the server. */
     private ServerGameInstance mGame;
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
@@ -61,20 +44,17 @@ public class Server {
      */
     public final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
 
-    /**
-     * The M requests.
-     */
+    /** The M requests. */
     private final ListenableQueue<Request> mRequests = new ListenableQueue<>(new LinkedList<>());
-    /**
-     * The M network object counter.
-     */
+    /** The M network object counter. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
+
     private final Timer mFixedUpdate = new Timer();
 
     /**
      * Instantiates a new Server.
      *
-     * @param port     the port
+     * @param port the port
      * @param listener the listener
      */
     public Server(int port, ServerListener listener) {
@@ -101,12 +81,11 @@ public class Server {
         }
     }
 
-
     /**
      * Instantiates a new Server in debug mode
      *
-     * @param port              the port
-     * @param listener          the listener
+     * @param port the port
+     * @param listener the listener
      * @param autoProcessUpdate sets debug mode
      */
     public Server(int port, ServerListener listener, boolean autoProcessUpdate) {
@@ -138,10 +117,10 @@ public class Server {
     /**
      * Execute bytes on the server.
      *
-     * @param messageType       the message type
-     * @param payload           the payload
+     * @param messageType the message type
+     * @param payload the payload
      * @param sendBytesToClient the socket of the requesting client, to be called if a communication
-     *                          directly to the client is needed
+     *     directly to the client is needed
      */
     public void executeBytes(
             byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
@@ -172,7 +151,6 @@ public class Server {
                     @Override
                     public void run() {
                         fixedUpdate.call();
-
                     }
                 },
                 begin,
@@ -196,9 +174,7 @@ public class Server {
         return NetworkMessage.build((byte) 22, component.serializeFully());
     }
 
-    /**
-     * Dispose.
-     */
+    /** Dispose. */
     public void dispose() {
         try {
             cancelFixedUpdate();
@@ -215,9 +191,7 @@ public class Server {
         }
     }
 
-    /**
-     * Create game.
-     */
+    /** Create game. */
     public void createGame() {
         this.mGame = new ServerGameInstance();
     }
@@ -246,14 +220,10 @@ public class Server {
      * indefinitely.
      */
     private class ServerRunner implements Runnable {
-        /**
-         * The Open.
-         */
+        /** The Open. */
         volatile boolean mOpen = true;
 
-        /**
-         * The M process timer.
-         */
+        /** The M process timer. */
         private final Timer mProcessTimer = new Timer();
 
         @Override
@@ -274,18 +244,14 @@ public class Server {
             }
         }
 
-        /**
-         * Cancel.
-         */
+        /** Cancel. */
         public void cancel() {
             this.mOpen = false;
             this.mProcessTimer.cancel();
         }
     }
 
-    /**
-     * The type Fixed broad cast update schedule.
-     */
+    /** The type Fixed broad cast update schedule. */
     private class FixedBroadCastUpdateSchedule extends TimerTask {
         public void run() {
             processRequests();
@@ -302,8 +268,7 @@ public class Server {
      */
     private Runnable clientRunner(Socket sock) {
         if (sock == null) {
-            return () -> {
-            };
+            return () -> {};
         }
         return () -> {
             try {
@@ -333,36 +298,40 @@ public class Server {
                                     networkObject.getId(), this.mSockets::broadcast);
                     this.networkObjects.add(networkObject);
 
-                    // Simulation of calling fixed update;
-                    Timer timer = new Timer();
-
-                    //                    set bool of capitol at some point in the future
-                    timer.schedule(
-                            new TimerTask() {
-                                @Override
-                                public void run() {
-                                    Capital networkCapital =
-                                            (Capital) getNetworkableChild(networkObject, capitalId);
-                                    if (networkCapital != null) {
-                                        networkCapital.setBooleanSyncMe(true);
-                                    }
-                                }
-                            },
-                            3000);
-
-                    // set string of capitol at some point in the future
-                    timer.schedule(
-                            new TimerTask() {
-                                @Override
-                                public void run() {
-                                    Capital networkCapital =
-                                            (Capital) getNetworkableChild(networkObject, capitalId);
-                                    if (networkCapital != null) {
-                                        networkCapital.setStringSyncMeAlso("Goodbye World");
-                                    }
-                                }
-                            },
-                            3000);
+                    //                    // Simulation of calling fixed update;
+                    //                    Timer timer = new Timer();
+                    //
+                    //                    //                    set bool of capitol at some point in
+                    // the future
+                    //                    timer.schedule(
+                    //                            new TimerTask() {
+                    //                                @Override
+                    //                                public void run() {
+                    //                                    Capital networkCapital =
+                    //                                            (Capital)
+                    // getNetworkableChild(networkObject, capitalId);
+                    //                                    if (networkCapital != null) {
+                    //                                        networkCapital.setBooleanSyncMe(true);
+                    //                                    }
+                    //                                }
+                    //                            },
+                    //                            3000);
+                    //
+                    //                    // set string of capitol at some point in the future
+                    //                    timer.schedule(
+                    //                            new TimerTask() {
+                    //                                @Override
+                    //                                public void run() {
+                    //                                    Capital networkCapital =
+                    //                                            (Capital)
+                    // getNetworkableChild(networkObject, capitalId);
+                    //                                    if (networkCapital != null) {
+                    //
+                    // networkCapital.setStringSyncMeAlso("Goodbye World");
+                    //                                    }
+                    //                                }
+                    //                            },
+                    //                            3000);
                 }
                 while (connected) {
                     try {
@@ -400,9 +369,7 @@ public class Server {
         this.mRequests.add(new Request(client, bArray));
     }
 
-    /**
-     * Process requests.
-     */
+    /** Process requests. */
     public void processRequests() {
         if (!this.mRequests.isEmpty()) {
             for (int i = 0; i < this.mRequests.size(); i++) {
@@ -423,9 +390,7 @@ public class Server {
         return !this.mRequests.isEmpty();
     }
 
-    /**
-     * Process single request.
-     */
+    /** Process single request. */
     public void processSingleRequest() {
         if (!this.mRequests.isEmpty()) {
             Request request = this.mRequests.poll();
@@ -435,9 +400,7 @@ public class Server {
         }
     }
 
-    /**
-     * Clear pending requests.
-     */
+    /** Clear pending requests. */
     public void clearPendingRequests() {
         this.mRequests.clear();
     }
@@ -446,7 +409,7 @@ public class Server {
      * Gets networkable child.
      *
      * @param networkObject the network object
-     * @param id            the id
+     * @param id the id
      * @return the networkable child
      */
     private NetworkableComponent getNetworkableChild(NetworkObject networkObject, int id) {
@@ -459,7 +422,7 @@ public class Server {
      * Process bytes.
      *
      * @param client the client
-     * @param bytes  the bytes
+     * @param bytes the bytes
      */
     private void processBytes(ClientInstance client, byte[] bytes) {
 
@@ -476,7 +439,7 @@ public class Server {
      * Parse bytes.
      *
      * @param client the client
-     * @param bytes  the bytes
+     * @param bytes the bytes
      * @throws DecodingException Thrown if there was any issue with the bytes
      */
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
@@ -494,11 +457,11 @@ public class Server {
      * Parses a network message from bytes and executes the correct functions. This is for server
      * use.
      *
-     * @param buff              the buff
+     * @param buff the buff
      * @param sendBytesToClient the send bytes to client
      */
     public void parse(byte[] buff, SendBytesToClientCurry sendBytesToClient) {
-        if (buff.length == 0 || Arrays.equals(buff, new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
+        if (buff.length == 0 || Arrays.equals(buff, new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
             return;
         }
         int i = 0;
@@ -527,9 +490,7 @@ public class Server {
         }
     }
 
-    /**
-     * The interface Send bytes to client curry.
-     */
+    /** The interface Send bytes to client curry. */
     public interface SendBytesToClientCurry {
         /**
          * Send.
@@ -539,19 +500,13 @@ public class Server {
         void send(byte[] bytes);
     }
 
-    /**
-     * The interface Fixed update simulation.
-     */
+    /** The interface Fixed update simulation. */
     private interface FixedUpdateSimulation {
-        /**
-         * Call.
-         */
+        /** Call. */
         void call();
     }
 
-    /**
-     * Fixed broadcast update.
-     */
+    /** Fixed broadcast update. */
     public void fixedBroadcastUpdate() {
         //        mLogger.info("fixed broadcast update");
         processRequests();
@@ -560,24 +515,18 @@ public class Server {
         }
     }
 
-    /**
-     * The type Request.
-     */
+    /** The type Request. */
     private class Request {
-        /**
-         * The Client.
-         */
+        /** The Client. */
         public final ClientInstance client;
-        /**
-         * The Bytes.
-         */
+        /** The Bytes. */
         public final byte[] bytes;
 
         /**
          * Instantiates a new Request.
          *
          * @param client the client
-         * @param bytes  the bytes
+         * @param bytes the bytes
          */
         Request(ClientInstance client, byte[] bytes) {
             this.client = client;
