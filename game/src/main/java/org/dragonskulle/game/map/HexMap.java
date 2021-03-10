@@ -6,11 +6,13 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Renderable;
 import org.dragonskulle.core.GameObject;
+import lombok.experimental.Accessors;
 
 /**
  * @author Leela Muppala
  *     <p>This class generates and stores a map The hexagon map object
  */
+@Accessors (prefix = "m")
 class HexagonMap extends Component implements IOnStart {
 
     @Getter private int mSize;

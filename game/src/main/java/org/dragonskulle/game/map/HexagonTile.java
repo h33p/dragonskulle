@@ -11,15 +11,14 @@ import lombok.extern.java.Log;
 public class HexagonTile {
 
     /** This is the axial storage system for each tile */
-    private final int q;
-
-    private final int r;
-    private final int s;
+    private final int mQ;
+    private final int mR;
+    private final int mS;
 
     HexagonTile(int q, int r, int s) {
-        this.q = q;
-        this.r = r;
-        this.s = s;
+        this.mQ = q;
+        this.mR = r;
+        this.mS = s;
         if (q + r + s != 0) {
             log.warning("The coordinates do not add up to 0");
         }
@@ -27,7 +26,7 @@ public class HexagonTile {
 
     /** The length of the tile */
     private int length() {
-        return (int) ((Math.abs(q) + Math.abs(r) + Math.abs(s)) / 2);
+        return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
     }
 
     /** Rotation matrix for converting to cartesian form */
@@ -36,6 +35,6 @@ public class HexagonTile {
 
     @Override
     public String toString() {
-        return Arrays.toString(new int[] {this.q, this.r, this.s});
+        return Arrays.toString(new int[] {this.mQ, this.mR, this.mS});
     }
 }
