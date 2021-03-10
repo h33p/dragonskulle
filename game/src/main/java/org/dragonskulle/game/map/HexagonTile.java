@@ -12,6 +12,7 @@ public class HexagonTile {
 
     /** This is the axial storage system for each tile */
     private final int mQ;
+
     private final int mR;
     private final int mS;
 
