@@ -12,6 +12,7 @@ import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Renderable;
+import org.dragonskulle.input.Bindings;
 
 /**
  * Engine core
@@ -48,14 +49,15 @@ public class Engine {
      * Loads a new scene and start the engine
      *
      * @param gameName Name of the game
+     * @param bindings User input bindings
      * @param scene Initial scene for the engine to run
      */
-    public void start(String gameName, Scene scene) {
+    public void start(String gameName, Bindings bindings, Scene scene) {
         loadScene(scene);
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
-        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName);
+        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
         mainLoop();

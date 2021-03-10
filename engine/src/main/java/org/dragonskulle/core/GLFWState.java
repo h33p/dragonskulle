@@ -9,6 +9,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.input.Bindings;
+import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
 import org.lwjgl.system.NativeResource;
 
@@ -32,13 +34,18 @@ public class GLFWState implements NativeResource {
      * @param width initial window width
      * @param height initial window height
      * @param appName name of the app
+     * @param bindings input bindings
      * @throws RuntimeException if initialization fails
      */
-    public GLFWState(int width, int height, String appName) throws RuntimeException {
+    public GLFWState(int width, int height, String appName, Bindings bindings)
+            throws RuntimeException {
         DEBUG.set(DEBUG_MODE);
 
         initWindow(width, height, appName);
         mRenderer = new Renderer(appName, mWindow);
+
+        // Start detecting user input from the specified window, based on the bindings.
+        Input.initialise(mWindow, bindings);
     }
 
     /**
@@ -47,6 +54,7 @@ public class GLFWState implements NativeResource {
      * @return {@code true} if the app should stay running, {@code false} if the app should close.
      */
     public boolean processEvents() {
+        Input.beforePoll();
         glfwPollEvents();
 
         if (mFramebufferResized) {
