@@ -43,7 +43,7 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     private void mapScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
-    		//
+    		// Check to see whether the user has pressed a tile.  And then send that to server 
     		
     	}
     	
@@ -52,6 +52,7 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     private void buildingScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
+    		// Check to see if user has pressed a button.  If it has then send to server and all time change perspective
     		
     	}
     }
@@ -59,6 +60,8 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     private void expansionScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
+    		
+    		// Check to see if user has pressed a button.  If it has then send to server and all time change perspective
     		
     	}
     }
