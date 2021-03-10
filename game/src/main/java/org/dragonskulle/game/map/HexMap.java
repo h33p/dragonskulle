@@ -4,9 +4,7 @@ package org.dragonskulle.game.map;
 import lombok.Getter;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.Renderable;
 import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
 
 /**
  * @author Leela Muppala
@@ -14,14 +12,11 @@ import org.dragonskulle.core.Reference;
  */
 class HexagonMap extends Component implements IOnStart {
 
-    @Getter
-    private  int size;
+    @Getter private int size;
 
-    @Getter
-    private HexagonTile[][] map;
+    @Getter private HexagonTile[][] map;
 
-    @Getter
-    private GameObject[][] mapObject;
+    @Getter private GameObject[][] mapObject;
 
     /** @param size - the size of the map */
     HexagonMap(int size) {
@@ -31,25 +26,25 @@ class HexagonMap extends Component implements IOnStart {
         }
 
         this.map = createHexMap();
-
     }
 
     /**
      * @param input - The size of the hexagon map
-     * @return - an int which gives the number of nulls to add in the 2d array to generate a hexagon shape
-     * Can only input odd numbered size due to hexagon shape
+     * @return - an int which gives the number of nulls to add in the 2d array to generate a hexagon
+     *     shape Can only input odd numbered size due to hexagon shape
      */
-    private int nulls (int input) {
-         if (input%2 == 0 ) {
-             throw new IllegalArgumentException("the input size must be an odd number");
-         }
-         return (input -1) / 2;
+    private int nulls(int input) {
+        if (input % 2 == 0) {
+            throw new IllegalArgumentException("the input size must be an odd number");
+        }
+        return (input - 1) / 2;
     }
 
-    /** Hex(q,r) is stored as array[r][q]
-     * Map is automatically created and stored in HexMap
-     * @return - Returns the HexMap*/
-
+    /**
+     * Hex(q,r) is stored as array[r][q] Map is automatically created and stored in HexMap
+     *
+     * @return - Returns the HexMap
+     */
     HexagonTile[][] createHexMap() {
         int max_empty = nulls(size); // The max number of empty spaces in one row of the array
         int empty = max_empty;
@@ -65,11 +60,11 @@ class HexagonMap extends Component implements IOnStart {
                     inside_empty--;
                 } else if (inside_empty == 0) {
 
-//                    GameObject hexagon = new GameObject("hexagon");
-//                    HexagonTile tile = new HexagonTile(q, r, -q-r);
-//                    hexagon.addComponent(tile);
+                    //                    GameObject hexagon = new GameObject("hexagon");
+                    //                    HexagonTile tile = new HexagonTile(q, r, -q-r);
+                    //                    hexagon.addComponent(tile);
 
-                    HexagonTile tile = new HexagonTile(q, r, -q-r);
+                    HexagonTile tile = new HexagonTile(q, r, -q - r);
                     map[r][q] = tile;
                 }
             }
@@ -114,17 +109,15 @@ class HexagonMap extends Component implements IOnStart {
 
         mapObject = new GameObject[size][size];
         GameObject hexagon = new GameObject("hexagon");
-        //hexagon.addComponent(new Renderable());
+        // hexagon.addComponent(new Renderable());
         for (int r = 0; r < size; r++) {
             for (int q = 0; q < size; q++) {
 
                 if (map[r][q] != null) {
-                    //TODO set correct transform
+                    // TODO set correct transform
                     GameObject.instantiate(hexagon);
-
                 }
             }
         }
-
     }
 }

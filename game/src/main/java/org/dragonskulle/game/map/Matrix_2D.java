@@ -14,5 +14,4 @@ public class Matrix_2D {
         this.c = c;
         this.d = d;
     }
-
 }

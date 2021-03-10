@@ -1,11 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import org.dragonskulle.components.Renderable;
+import java.lang.System.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-
-import java.lang.System.*;
 
 public class MapTest {
     public static void main(String[] args) {
@@ -13,7 +11,7 @@ public class MapTest {
 
         GameObject hexagonMap = new GameObject("hexagonMap");
         hexagonMap.addComponent(new HexagonMap(11));
-        //hexagonMap.addComponent(new Renderable());
+        // hexagonMap.addComponent(new Renderable());
 
         Reference<HexagonMap> myComponent = hexagonMap.getComponent(HexagonMap.class);
         HexagonMap myObject = myComponent.get();
