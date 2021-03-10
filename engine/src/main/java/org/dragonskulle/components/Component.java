@@ -124,4 +124,18 @@ public abstract class Component implements Serializable {
     public final Reference<Component> getReference() {
         return mReference;
     }
+
+    /**
+     * Getter for mReference
+     *
+     * <p>This getter type checks and casts the reference to a more concrete type
+     *
+     * @param type type to try cast into
+     * @return mReference cast into the type, if valid. Null otherwise.
+     */
+    @SuppressWarnings("unchecked")
+    public final <T extends Component> Reference<T> getReference(Class<T> type) {
+        if (type.isInstance(this)) return (Reference<T>) mReference;
+        return null;
+    }
 }

@@ -4,12 +4,15 @@ package org.dragonskulle.core;
 import java.util.ArrayList;
 import java.util.HashSet;
 import org.dragonskulle.audio.AudioManager;
+import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Renderable;
+import org.dragonskulle.input.Bindings;
 
 /**
  * Engine core
@@ -25,6 +28,9 @@ public class Engine {
     private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
     private static final float UPDATE_TIME = 1 / (float) UPDATES_PER_SECOND;
 
+    private static final int WINDOW_WIDTH = 1600;
+    private static final int WINDOW_HEIGHT = 900;
+
     private boolean mIsRunning = false;
 
     protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
@@ -38,12 +44,24 @@ public class Engine {
     private final HashSet<Scene> mActiveScenes = new HashSet<>();
     private Scene mPresentationScene = null;
 
+    private GLFWState mGLFWState = null;
+    private ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
+
     private Engine() {}
 
-    /** Start the engine */
-    public void start() {
+    /**
+     * Loads a new scene and start the engine
+     *
+     * @param gameName Name of the game
+     * @param bindings User input bindings
+     * @param scene Initial scene for the engine to run
+     */
+    public void start(String gameName, Bindings bindings, Scene scene) {
+        loadScene(scene);
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
+
+        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
         mainLoop();
@@ -142,6 +160,7 @@ public class Engine {
             startEnabledComponents();
 
             // TODO: Process inputs here before any updates are performed
+            mIsRunning = mGLFWState.processEvents();
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
@@ -158,7 +177,7 @@ public class Engine {
             // Call LateFrameUpdate on the presentation scene
             lateFrameUpdate(deltaTime);
 
-            // TODO: Perform rendering here
+            renderFrame();
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
@@ -256,6 +275,19 @@ public class Engine {
         mDestroyedComponents.clear();
     }
 
+    private void renderFrame() {
+        mTmpRenderables.clear();
+        for (Component component : mPresentationScene.getEnabledComponents()) {
+            if (component instanceof Renderable) {
+                mTmpRenderables.add((Renderable) component);
+            }
+        }
+
+        Camera mainCamera = Camera.getMainCamera();
+
+        if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
+    }
+
     /**
      * Switch all scenes. Disabling any scenes that need to be disabled, enabling all those that
      * should be enabled and switching the presentation scene if necessary.
@@ -296,6 +328,7 @@ public class Engine {
         // TODO: Release all resources that are still used at the time of shutdown here
 
         AudioManager.getInstance().cleanup();
+        mGLFWState.free();
     }
 
     /**

@@ -42,7 +42,7 @@ public abstract class Actions {
      *
      * <p>Currently only used for resetting {@link #sScroll}.
      */
-    public static void refresh() {
+    static void refresh() {
         if (sScroll != null) {
             sScroll.reset();
         }

@@ -57,7 +57,7 @@ class SwapchainSupportDetails {
                                                         == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                         .findAny()
                         .orElseGet(() -> formats.get(0));
-        LOGGER.info(
+        LOGGER.fine(
                 String.format(
                         "Picked surface format: %d %d", format.format(), format.colorSpace()));
         return format;
@@ -87,13 +87,13 @@ class SwapchainSupportDetails {
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(window, x, y);
 
-            LOGGER.info(String.format("Extent TRY: %dx%d", x.get(0), y.get(0)));
-            LOGGER.info(
+            LOGGER.finer(String.format("Extent TRY: %dx%d", x.get(0), y.get(0)));
+            LOGGER.finer(
                     String.format(
                             "MAX: %dx%d",
                             capabilities.maxImageExtent().width(),
                             capabilities.maxImageExtent().height()));
-            LOGGER.info(
+            LOGGER.finer(
                     String.format(
                             "MIN: %dx%d",
                             capabilities.minImageExtent().width(),
@@ -108,7 +108,7 @@ class SwapchainSupportDetails {
                             Integer.min(y.get(0), capabilities.maxImageExtent().height()),
                             capabilities.minImageExtent().height()));
 
-            LOGGER.info(String.format("Extent: %dx%d", extent.width(), extent.height()));
+            LOGGER.finer(String.format("Extent: %dx%d", extent.width(), extent.height()));
 
             return extent;
         }

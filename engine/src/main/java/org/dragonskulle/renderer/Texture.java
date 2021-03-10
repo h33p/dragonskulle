@@ -21,9 +21,10 @@ public class Texture implements NativeResource {
     private int mHeight;
     private int mChannels;
     private ByteBuffer mBuffer;
+    private String mName;
 
-    public static Resource<Texture> getResource(String name) {
-        name = String.format("textures/%s", name);
+    public static Resource<Texture> getResource(String inName) {
+        String name = String.format("textures/%s", inName);
 
         return ResourceManager.getResource(
                 Texture.class,
@@ -40,6 +41,7 @@ public class Texture implements NativeResource {
                         ret.mWidth = pX.get(0);
                         ret.mHeight = pY.get(0);
                         ret.mChannels = pC.get(0);
+                        ret.mName = inName;
                     }
                     return ret;
                 },

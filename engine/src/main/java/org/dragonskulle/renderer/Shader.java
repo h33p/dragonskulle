@@ -5,6 +5,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
+import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
@@ -24,6 +25,8 @@ public class Shader implements NativeResource {
     @Accessors(prefix = "m")
     @Getter
     private long mModule;
+
+    private static final Logger LOGGER = Logger.getLogger("render");
 
     public static Shader getShader(ShaderBuf shader, VkDevice device) {
         try (MemoryStack stack = stackPush()) {
@@ -46,7 +49,7 @@ public class Shader implements NativeResource {
     }
 
     public static Shader getShader(String name, ShaderKind kind, VkDevice device) {
-        RenderedApp.LOGGER.fine("Get shader... " + name);
+        LOGGER.fine("Get shader... " + name);
 
         try (Resource<ShaderBuf> resource = ShaderBuf.getResource(name, kind)) {
             return resource == null ? null : getShader(resource.get(), device);
