@@ -11,7 +11,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -40,19 +39,17 @@ public class App {
 
         // The game needs a camera!
         GameObject camera = new GameObject("mainCamera");
+
+        Transform tr = camera.getTransform();
+        // Set where it's at
+        tr.setPosition(0f, 0f, 1f);
+        tr.rotateDeg(30f, 0f, 0f);
+        tr.translateLocal(0f, -8f, 0f);
+        // Make sure it's an actual camera
         camera.addComponent(new Camera());
 
-        // And it needs to be somewhere!
-        Transform cameraTransform =
-                new Transform(
-                        new Matrix4f()
-                                .lookAt(
-                                        new Vector3f(2.0f, 2.0f, 2.0f),
-                                        new Vector3f(0.0f, 0.0f, -0.05f),
-                                        new Vector3f(0.0f, 0.0f, 1.0f)));
-
         // And it needs to be in the game
-        mainScene.addRootObject(GameObject.instantiate(camera, cameraTransform));
+        mainScene.addRootObject(camera);
 
         // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");
@@ -77,15 +74,83 @@ public class App {
             mainScene.addRootObject(GameObject.instantiate(hexagon));
         }
 
-        // Create a cube
-        GameObject cube = new GameObject("cube");
-        cube.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-
-        // You spin me right round...
-        cube.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
+        // Create a cube. This syntax is slightly different
+        // This here, will allow you to "build" the cube in one go
+        GameObject cube =
+                new GameObject(
+                        "cube",
+                        (go) -> {
+                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
+                            // You spin me right round...
+                            go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
+                        });
 
         // Aaand, spawn it!
         mainScene.addRootObject(cube);
+
+        // Create a monstrocity
+        //
+        // This demonstrates use of nested game objects. It's extremely powerful to compose objects
+        // like so, and the lambda syntax is rather intuitive to build this hierarchy tree with.
+        GameObject monstrocity =
+                new GameObject(
+                        "monstrocity",
+                        (inMonstrocity) -> {
+                            inMonstrocity.getTransform().setPosition(3.f, 3.f, 0.f);
+                            inMonstrocity.addComponent(
+                                    new Renderable(Mesh.CUBE, new UnlitMaterial()));
+                            inMonstrocity.addComponent(new Spinner(360.f, 1000.f, 0.1f));
+
+                            // Add a "arm" on the left side
+                            inMonstrocity.buildChild(
+                                    "leftSide",
+                                    (side) -> {
+                                        side.getTransform().setPosition(-1.5f, 0.f, 1.5f);
+                                        side.addComponent(
+                                                new Renderable(Mesh.CUBE, new UnlitMaterial()));
+                                        side.addComponent(new Spinner(-180.f, 100.f, 1.f));
+
+                                        // assume this is a hand
+                                        side.buildChild(
+                                                "leftHand",
+                                                (tip) -> {
+                                                    tip.getTransform().setPosition(0.f, 0.f, 0.5f);
+                                                    tip.getTransform().scale(0.5f, 0.5f, 3.f);
+                                                    tip.addComponent(
+                                                            new Renderable(
+                                                                    Mesh.CUBE,
+                                                                    new UnlitMaterial()));
+                                                    tip.addComponent(
+                                                            new Spinner(360.f, 100.f, .1f));
+                                                });
+                                    });
+
+                            // Do the same thing on the other side
+                            inMonstrocity.buildChild(
+                                    "rightSide",
+                                    (side) -> {
+                                        side.getTransform().setPosition(1.5f, 0.f, 1.5f);
+                                        side.addComponent(
+                                                new Renderable(Mesh.CUBE, new UnlitMaterial()));
+                                        side.addComponent(new Spinner(180.f, 100.f, 1.f));
+
+                                        // assume this is a hand
+                                        side.buildChild(
+                                                "rightHand",
+                                                (tip) -> {
+                                                    tip.getTransform().setPosition(0.f, 0.f, 0.5f);
+                                                    tip.getTransform().scale(0.5f, 0.5f, 3.f);
+                                                    tip.addComponent(
+                                                            new Renderable(
+                                                                    Mesh.CUBE,
+                                                                    new UnlitMaterial()));
+                                                    tip.addComponent(
+                                                            new Spinner(-360.f, 100.f, .1f));
+                                                });
+                                    });
+                        });
+
+        mainScene.addRootObject(monstrocity);
 
         // Run the game
         Engine.getInstance().start("Germany", new GameBindings(), mainScene);

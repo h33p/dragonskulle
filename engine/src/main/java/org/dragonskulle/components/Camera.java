@@ -3,6 +3,7 @@ package org.dragonskulle.components;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.Reference;
 import org.joml.*;
 
 /**
@@ -21,7 +22,7 @@ public class Camera extends Component implements ILateFrameUpdate {
     /** Controls camera projection mode */
     public Projection projection = Projection.PERSPECTIVE;
     /** Controls field of view in perspective mode */
-    public float fov = 45.f;
+    public float fov = 70.f;
     /** Controls how wide the screen is in orthographic mode */
     public float orthographicSize = 10.f;
     /**
@@ -44,9 +45,19 @@ public class Camera extends Component implements ILateFrameUpdate {
     /** Current screen aspect ratio */
     private float mAspectRatio = 1.f;
 
-    @Getter
-    @Accessors(prefix = "s")
-    private static Camera sMainCamera = null;
+    private Vector3f mTmpTranslation = new Vector3f();
+    private Matrix4f mToView = new Matrix4f();
+
+    private static Reference<Camera> sMainCamera = null;
+
+    /**
+     * Access the main camera
+     *
+     * @return current main camera. Should not be stored for long duration.
+     */
+    public static Camera getMainCamera() {
+        return sMainCamera == null ? null : sMainCamera.get();
+    }
 
     /**
      * Get the current projection matrix
@@ -69,25 +80,40 @@ public class Camera extends Component implements ILateFrameUpdate {
                         true);
                 break;
         }
-        mProj.scale(1.f, -1.f, 1.f);
+
+        mProj.scale(1.f, -1.f, 1.f).lookAt(0.f, 0.f, 0.f, 0.f, nearPlane, 0f, 0.f, 0.f, 1.f);
+
         return mProj;
     }
 
+    /**
+     * Update the screen's aspect ratio
+     *
+     * @param width current screen width
+     * @param height current screen height
+     */
     public void updateAspectRatio(int width, int height) {
         mAspectRatio = (float) width / (float) height;
     }
 
+    /**
+     * Get world to view transformation matrix
+     *
+     * @return world to view space transformation matrix
+     */
     public Matrix4fc getView() {
-        return getGameObject().getTransform().getWorldMatrix();
+        Matrix4fc worldMatrix = getGameObject().getTransform().getWorldMatrix();
+        return mToView.set(worldMatrix)
+                .setTranslation(worldMatrix.getTranslation(mTmpTranslation).mul(-1.f));
     }
 
     @Override
     public void lateFrameUpdate(float deltaTime) {
-        if (sMainCamera == null) sMainCamera = this;
+        if (sMainCamera == null) sMainCamera = getReference(Camera.class);
     }
 
     @Override
     public void onDestroy() {
-        if (sMainCamera == this) sMainCamera = null;
+        if (getMainCamera() == this) sMainCamera = null;
     }
 }
