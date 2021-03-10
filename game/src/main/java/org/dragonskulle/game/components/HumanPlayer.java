@@ -19,6 +19,9 @@ public class HumanPlayer extends Player implements IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
+    	updateTokens(deltaTime);
+    	processInput();
+    	triggerEvent();
     	
     }
     
