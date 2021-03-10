@@ -33,7 +33,9 @@ abstract public class Player extends Component {
 	protected void updateTokens(float time) {
 				
 		lastTokenUpdate += time;
-		if (time > UPDATE_TIME) {
+		if (lastTokenUpdate > UPDATE_TIME) {
+			
+			//Add tokens
 			for (Building building: ownedBuildings) {
 				tokens += building.getToken();
 				
