@@ -4,6 +4,7 @@ package org.dragonskulle.game.map;
 import lombok.Getter;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Renderable;
 import org.dragonskulle.core.GameObject;
 
 /**
@@ -12,20 +13,20 @@ import org.dragonskulle.core.GameObject;
  */
 class HexagonMap extends Component implements IOnStart {
 
-    @Getter private int size;
+    @Getter private int mSize;
 
-    @Getter private HexagonTile[][] map;
+    @Getter private HexagonTile[][] mMap;
 
-    @Getter private GameObject[][] mapObject;
+    @Getter private GameObject[][] mMapObject;
 
     /** @param size - the size of the map */
     HexagonMap(int size) {
-        this.size = size;
+        this.mSize = size;
         if (size < 0) {
             throw new IllegalArgumentException("The size must greater than 0");
         }
 
-        this.map = createHexMap();
+        this.mMap = createHexMap();
     }
 
     /**
@@ -46,15 +47,15 @@ class HexagonMap extends Component implements IOnStart {
      * @return - Returns the HexMap
      */
     HexagonTile[][] createHexMap() {
-        int max_empty = nulls(size); // The max number of empty spaces in one row of the array
+        int max_empty = nulls(mSize); // The max number of empty spaces in one row of the array
         int empty = max_empty;
-        HexagonTile[][] map = new HexagonTile[size][size];
-        int loop = size / 2;
+        HexagonTile[][] map = new HexagonTile[mSize][mSize];
+        int loop = mSize / 2;
 
         /** Generates the first part of the map */
         for (int r = 0; r < loop; r++) {
             int inside_empty = empty;
-            for (int q = 0; q < size; q++) {
+            for (int q = 0; q < mSize; q++) {
                 if (inside_empty > 0) {
                     map[r][q] = null; // No tile in this location
                     inside_empty--;
@@ -72,21 +73,21 @@ class HexagonMap extends Component implements IOnStart {
         }
 
         /** Generates the middle part of the map */
-        int r_m = (size / 2);
-        for (int q = 0; q < size; q++) {
+        int r_m = (mSize / 2);
+        for (int q = 0; q < mSize; q++) {
             HexagonTile tile = new HexagonTile(q, r_m, -q - r_m);
             map[r_m][q] = tile;
         }
 
         /** Generates the last part of the map */
-        loop = (size / 2) + 1;
-        int min_val = size - max_empty;
-        int current_val = size;
-        for (int r = loop; r < size; r++) {
+        loop = (mSize / 2) + 1;
+        int min_val = mSize - max_empty;
+        int current_val = mSize;
+        for (int r = loop; r < mSize; r++) {
             current_val--; // The number of cells with actual coordinates, it decreases with every
             // row
             int inside_val = 1;
-            for (int q = 0; q < size; q++) {
+            for (int q = 0; q < mSize; q++) {
                 if (inside_val <= current_val) {
 
                     HexagonTile tile = new HexagonTile(q, r, -q - r);
@@ -107,13 +108,13 @@ class HexagonMap extends Component implements IOnStart {
     @Override
     public void onStart() {
 
-        mapObject = new GameObject[size][size];
+        mMapObject = new GameObject[mSize][mSize];
         GameObject hexagon = new GameObject("hexagon");
-        // hexagon.addComponent(new Renderable());
-        for (int r = 0; r < size; r++) {
-            for (int q = 0; q < size; q++) {
+        hexagon.addComponent(new Renderable());
+        for (int r = 0; r < mSize; r++) {
+            for (int q = 0; q < mSize; q++) {
 
-                if (map[r][q] != null) {
+                if (mMap[r][q] != null) {
                     // TODO set correct transform
                     GameObject.instantiate(hexagon);
                 }

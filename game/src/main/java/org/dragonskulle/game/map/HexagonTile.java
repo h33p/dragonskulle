@@ -4,8 +4,10 @@ package org.dragonskulle.game.map;
 import static java.lang.Math.sqrt;
 
 import java.util.Arrays;
+import lombok.extern.java.Log;
 
 /** The Hexagon Tile Object */
+@Log
 public class HexagonTile {
 
     /** This is the axial storage system for each tile */
@@ -19,7 +21,7 @@ public class HexagonTile {
         this.r = r;
         this.s = s;
         if (q + r + s != 0) {
-            throw new IllegalArgumentException("q + r + s must be 0");
+            log.warning("The coordinates do not add up to 0");
         }
     }
 
