@@ -3,6 +3,8 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Component;
@@ -13,6 +15,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Renderable;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.ui.UIManager;
 
 /**
  * Engine core
@@ -21,6 +24,7 @@ import org.dragonskulle.input.Bindings;
  *     <p>The core of the engine, contains the main loop which executes all game logic. Gives all
  *     components access to engine components such as the AudioManager and InputManager.
  */
+@Accessors(prefix = "m")
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -40,7 +44,7 @@ public class Engine {
     private Scene mActiveScene = null;
     private Scene mNewScene = null;
 
-    private GLFWState mGLFWState = null;
+    @Getter private GLFWState mGLFWState = null;
     private ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
 
     private Engine() {}
@@ -107,6 +111,8 @@ public class Engine {
 
             // TODO: Process inputs here before any updates are performed
             mIsRunning = mGLFWState.processEvents();
+
+            UIManager.getInstance().updateHover(mActiveScene.getEnabledComponents());
 
             frameUpdate(deltaTime);
 

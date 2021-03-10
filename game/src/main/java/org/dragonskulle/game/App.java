@@ -10,9 +10,12 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Mesh;
+import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.UnlitMaterial;
+import org.dragonskulle.ui.*;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.joml.Vector4f;
 
 public class App {
 
@@ -151,6 +154,85 @@ public class App {
                         });
 
         mainScene.addRootObject(monstrocity);
+
+        // UI Example:
+        GameObject ui =
+                new GameObject(
+                        "ui",
+                        new UITransform(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.2f)));
+                            root.getTransform().scale(0.95f, 0.95f, 1f);
+                        });
+
+        ui.buildChild(
+                "square",
+                new UITransform(true),
+                (square) -> {
+                    square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 1f)));
+                    square.buildChild(
+                            "square2",
+                            new UITransform(true),
+                            (square2) -> {
+                                square2.addComponent(
+                                        new UIRenderable(
+                                                new Vector4f(0.6f, 0.6f, 0.6f, 1f),
+                                                new SampledTexture("test_cc0_texture.jpg")));
+                                square2.getTransform().scale(0.3f, 0.3f, 0.3f);
+                                square2.getTransform().translate(0f, -1.8f, 0f);
+                                UIButton uiButton =
+                                        new UIButton(
+                                                (button, __) -> {
+                                                    button.getGameObject()
+                                                            .getTransform()
+                                                            .rotateDeg(0f, 0f, 15f);
+                                                },
+                                                null,
+                                                null,
+                                                (button, deltaTime) -> {
+                                                    button.getGameObject()
+                                                            .getTransform()
+                                                            .rotateDeg(0f, 0f, -60f * deltaTime);
+                                                });
+                                square2.addComponent(uiButton);
+                            });
+
+                    square.buildChild(
+                            "button1",
+                            new UITransform(true),
+                            (button) -> {
+                                button.addComponent(
+                                        new UIRenderable(new SampledTexture("ui/wide_button.png")));
+                                button.getTransform().scale(0.8f, 0.8f, 1f);
+                                button.getTransform().translate(0f, 0.4f, 0f);
+
+                                Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                (uiButton, __) -> {
+                                                    if (uiRef.isValid()) {
+                                                        Renderable uiRend = uiRef.get();
+                                                        Transform uiTransform =
+                                                                uiRend.getGameObject()
+                                                                        .getTransform();
+                                                        if (uiRend.isEnabled()) {
+                                                            // uiTransform.setPosition(-0.5f, -0.5f,
+                                                            // 0f);
+                                                            uiTransform.scale(0.1f, 0.1f, 1f);
+                                                        } else {
+                                                            uiTransform.setPosition(0f, 0f, 0f);
+                                                            uiTransform.scale(10f, 10f, 1f);
+                                                        }
+                                                        uiRend.setEnabled(!uiRend.isEnabled());
+                                                    }
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+                });
+
+        mainScene.addRootObject(ui);
 
         // Run the game
         Engine.getInstance().start("Germany", new GameBindings(), mainScene);

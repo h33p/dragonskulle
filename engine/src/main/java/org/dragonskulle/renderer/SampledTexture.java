@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Objects;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
@@ -21,10 +20,22 @@ import org.lwjgl.system.NativeResource;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Builder
-class SampledTexture implements NativeResource, Serializable {
+public class SampledTexture implements NativeResource, Serializable {
     @Getter private Resource<Texture> mTexture;
     @Getter private TextureMapping mMapping;
+
+    public SampledTexture(Resource<Texture> texture, TextureMapping mapping) {
+        mTexture = texture;
+        mMapping = mapping;
+    }
+
+    public SampledTexture(String textureName, TextureMapping mapping) {
+        this(Texture.getResource(textureName), mapping);
+    }
+
+    public SampledTexture(String textureName) {
+        this(textureName, new TextureMapping());
+    }
 
     @Override
     public void free() {
