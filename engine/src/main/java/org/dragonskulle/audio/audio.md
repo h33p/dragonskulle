@@ -38,3 +38,8 @@ This guide will explain how to add Background Music & Sound Effects to the proje
 - To set the current master volume do ``AudioManager.setVolume(SoundChannel.channel, int volumeBetween0and100)``
 
 - To set the current master mute do ``AudioManager.setMute(SoundChannel.channel, boolean muteisTrue)``
+
+## Sound Files.
+
+- This audio player only works with .wav (also with AIFF or AU but I have not tested these).  All sounds MUST be like this file type
+- At the moment please put them in the resources/audio folder (This is dependent on audioFix being pushed in which will be sorted ASAP)
