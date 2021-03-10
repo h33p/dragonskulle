@@ -4,6 +4,7 @@ package org.dragonskulle.input;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * Once initialised for a specific window, input will listen to all user input and reflect this in
@@ -53,6 +54,12 @@ public class Input {
         } else {
             log.warning("Input is not attatched to a window.");
         }
+    }
+
+    /** Called before {@link GLFW#glfwPollEvents} is executed. */
+    public static void beforePoll() {
+        // Reset the necessary action values.
+        Actions.refresh();
     }
 
     /**
