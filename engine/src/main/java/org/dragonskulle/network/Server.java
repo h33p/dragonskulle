@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -22,7 +23,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
  *     broadcast messages to every client and receive from individual clients.
  */
 public class Server {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(Server.class.getName());
 
     /** If the client will automatically process any recieved messages. */
     private boolean mAutoProcessMessages = false;
@@ -43,6 +44,8 @@ public class Server {
      * merged in.
      */
     public final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
+
+    public boolean linkedToScene = false;
 
     /** The M requests. */
     private final ListenableQueue<Request> mRequests = new ListenableQueue<>(new LinkedList<>());
@@ -170,7 +173,7 @@ public class Server {
     private byte[] clientRequestedRespawn(byte[] payload) {
         int componentRequestedId = NetworkMessage.convertByteArrayToInt(payload);
         mLogger.info("The component id to respawn is " + componentRequestedId);
-        NetworkableComponent component = this.findComponent(componentRequestedId);
+        NetworkableComponent component = this.findComponent(componentRequestedId).get();
         return NetworkMessage.build((byte) 22, component.serializeFully());
     }
 
@@ -202,8 +205,8 @@ public class Server {
      * @param componentId the component id
      * @return the networkable component
      */
-    public NetworkableComponent findComponent(int componentId) {
-        NetworkableComponent found = null;
+    public Reference<NetworkableComponent> findComponent(int componentId) {
+        Reference<NetworkableComponent> found = null;
         for (NetworkObject e : this.networkObjects) {
             found = e.findComponent(componentId);
             if (found != null) {
@@ -211,6 +214,12 @@ public class Server {
             }
         }
         return found;
+    }
+
+    public void spawnObject(NetworkObject networkable) {
+        mLogger.warning("spawned object on server");
+        networkable.getNetworkableChildren().forEach(e -> e.get().connectSyncVars());
+        this.networkObjects.add(networkable);
     }
 
     /**
@@ -289,7 +298,7 @@ public class Server {
 
                 if (connected) {
                     // Spawn network object for the map and capital
-                    NetworkObject networkObject = new NetworkObject(this.allocateId());
+                    NetworkObject networkObject = new NetworkObject(this.allocateId(), true);
                     networkObject.spawnMap(
                             this.mGame.cloneMap(),
                             (message) -> this.mSockets.sendBytesToClient(client, message));
@@ -297,41 +306,6 @@ public class Server {
                             networkObject.spawnCapital(
                                     networkObject.getId(), this.mSockets::broadcast);
                     this.networkObjects.add(networkObject);
-
-                    //                    // Simulation of calling fixed update;
-                    //                    Timer timer = new Timer();
-                    //
-                    //                    //                    set bool of capitol at some point in
-                    // the future
-                    //                    timer.schedule(
-                    //                            new TimerTask() {
-                    //                                @Override
-                    //                                public void run() {
-                    //                                    Capital networkCapital =
-                    //                                            (Capital)
-                    // getNetworkableChild(networkObject, capitalId);
-                    //                                    if (networkCapital != null) {
-                    //                                        networkCapital.setBooleanSyncMe(true);
-                    //                                    }
-                    //                                }
-                    //                            },
-                    //                            3000);
-                    //
-                    //                    // set string of capitol at some point in the future
-                    //                    timer.schedule(
-                    //                            new TimerTask() {
-                    //                                @Override
-                    //                                public void run() {
-                    //                                    Capital networkCapital =
-                    //                                            (Capital)
-                    // getNetworkableChild(networkObject, capitalId);
-                    //                                    if (networkCapital != null) {
-                    //
-                    // networkCapital.setStringSyncMeAlso("Goodbye World");
-                    //                                    }
-                    //                                }
-                    //                            },
-                    //                            3000);
                 }
                 while (connected) {
                     try {
@@ -381,6 +355,23 @@ public class Server {
         }
     }
 
+    public int spawnComponent(NetworkableComponent component, int networkObjectToSpawnOn) {
+        NetworkObject networkObject = this.getNetworkObject(networkObjectToSpawnOn);
+        if (networkObject != null) {
+            int capitalId = networkObject.spawnComponent(component, this.mSockets::broadcast);
+            this.networkObjects.add(networkObject);
+            return capitalId;
+        }
+        return -1;
+    }
+
+    private NetworkObject getNetworkObject(int networkObjectToSpawnOn) {
+        return this.networkObjects.stream()
+                .filter(e -> e.getId() == networkObjectToSpawnOn)
+                .findFirst()
+                .orElse(null);
+    }
+
     /**
      * Has requests boolean.
      *
@@ -415,7 +406,7 @@ public class Server {
     private NetworkableComponent getNetworkableChild(NetworkObject networkObject, int id) {
         final NetworkObject serverNetworkObject =
                 this.networkObjects.get(this.networkObjects.indexOf(networkObject));
-        return serverNetworkObject.get(id);
+        return serverNetworkObject.get(id).get();
     }
 
     /**
@@ -508,7 +499,11 @@ public class Server {
 
     /** Fixed broadcast update. */
     public void fixedBroadcastUpdate() {
-        //        mLogger.info("fixed broadcast update");
+        mLogger.warning(
+                "server fixed broadcast update, i have n objects as children "
+                        + networkObjects.size());
+        mLogger.warning(networkObjects.toString());
+
         processRequests();
         for (NetworkObject networkObject : this.networkObjects) {
             networkObject.broadcastUpdate(this.mSockets::broadcast);

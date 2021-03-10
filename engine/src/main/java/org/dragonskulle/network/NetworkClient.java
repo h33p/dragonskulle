@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.components.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -19,7 +21,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
  *     org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
 
     /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = 512;
@@ -86,6 +88,40 @@ public class NetworkClient {
         }
     }
 
+    public NetworkClient(
+            String ip,
+            int port,
+            ClientListener listener,
+            boolean autoProcessMessages,
+            Scene mainScene) {
+        this.mAutoProcessMessages = autoProcessMessages;
+        mClientListener = listener;
+        try {
+            mSocket = new Socket(ip, port);
+            mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+            mBIn = new BufferedInputStream(mSocket.getInputStream());
+            mOut = new PrintWriter(mSocket.getOutputStream(), true);
+            mDOut = new DataOutputStream(mSocket.getOutputStream());
+            this.mGame = new ClientGameInstance(this::sendBytes, mainScene);
+
+            mClientRunner = new ClientRunner();
+            mClientThread = new Thread(mClientRunner);
+            mClientThread.setName("Client Connection");
+            mClientThread.setDaemon(true);
+            mClientThread.start();
+            listener.connectedToServer();
+        } catch (UnknownHostException exception) {
+            mOpen = false;
+            listener.unknownHost();
+        } catch (IOException exception) {
+            mOpen = false;
+            listener.couldNotConnect();
+        } catch (Exception exception) {
+            mOpen = false;
+            exception.printStackTrace();
+        }
+    }
+
     /**
      * Execute bytes after parsing. This will be different usage depending on server or client.
      *
@@ -124,7 +160,7 @@ public class NetworkClient {
                 mLogger.info("Spawned Component");
                 break;
             default:
-                mLogger.info(
+                mLogger.warning(
                         "unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
@@ -207,7 +243,7 @@ public class NetworkClient {
         return mOpen;
     }
 
-    public ArrayList<NetworkObject> getNetworkableObjects() {
+    public ArrayList<Reference<NetworkObject>> getNetworkableObjects() {
         return this.mGame.getNetworkObjects();
     }
 
@@ -224,6 +260,10 @@ public class NetworkClient {
 
     public ClientGameInstance getGame() {
         return this.mGame;
+    }
+
+    public void linkToScene(Scene mainScene) {
+        this.mGame.linkToScene(mainScene);
     }
 
     /**
@@ -388,6 +428,6 @@ public class NetworkClient {
     }
 
     public NetworkableComponent getNetworkableComponent(int networkableId) {
-        return this.mGame.getNetworkedComponent(networkableId);
+        return this.mGame.getNetworkedComponent(networkableId).get();
     }
 }

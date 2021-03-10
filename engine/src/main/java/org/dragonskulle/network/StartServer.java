@@ -5,21 +5,21 @@ import java.util.logging.Logger;
 
 /** @author Oscar L How to start the server Start server. */
 public class StartServer {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(StartServer.class.getName());
 
     /** The Server. */
     public Server server;
     /** The Port. */
     static final int PORT = 7000;
 
-    StartServer() {
+    public StartServer() {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
         server = new Server(PORT, serverListener);
     }
 
-    StartServer(boolean autoProcessMessages, boolean startFixedUpdate) {
+    public StartServer(boolean autoProcessMessages, boolean startFixedUpdate) {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();

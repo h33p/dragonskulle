@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  *     executions can be defined for different commands received.
  */
 public class ClientEars implements ClientListener {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(ClientEars.class.getName());
 
     @Override
     public void unknownHost() {

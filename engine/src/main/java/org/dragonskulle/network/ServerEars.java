@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 /** @author Oscar L This is the handler for the server, it will handle events */
 public class ServerEars implements ServerListener {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(ServerEars.class.getName());
 
     /** The Log of messages to be displayed. */
     private final ListenableQueue<String> mLog;
@@ -56,7 +56,7 @@ public class ServerEars implements ServerListener {
 
 /** The type Log server alive. */
 class LogServerAlive extends TimerTask {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(LogServerAlive.class.getName());
 
     public void run() {
         mLogger.info("[SE~TT] Server Alive @ " + System.currentTimeMillis());

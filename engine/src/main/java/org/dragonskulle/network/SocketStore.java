@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *     Server, it is the backbone of the server functions.
  */
 public class SocketStore {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(SocketStore.class.getName());
 
     /** The Server. */
     private ServerSocket mServer;

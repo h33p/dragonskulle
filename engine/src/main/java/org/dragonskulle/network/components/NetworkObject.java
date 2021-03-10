@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import org.dragonskulle.components.Component;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.ClientGameInstance;
@@ -17,13 +15,14 @@ import sun.misc.IOUtils;
 
 /** @author Oscar L The NetworkObject deals with any networked variables. */
 public class NetworkObject extends GameObject {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
-
+    private final Reference<NetworkObject> mReference = new Reference<>(this);
+    private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
+    private boolean isServer = false;
     /** The UUID of the object. */
     public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
-    private boolean linkedToScene = false;
+    private boolean linkedToScene;
 
     public void linkToScene() {
         this.linkedToScene = true;
@@ -34,9 +33,14 @@ public class NetworkObject extends GameObject {
      *
      * @param id the id
      */
-    public NetworkObject(int id) {
+    public NetworkObject(int id, boolean isServer) {
         super("network_object_" + id);
         networkObjectId = id;
+        this.isServer = isServer;
+    }
+
+    public Reference<NetworkObject> getNetReference() {
+        return this.mReference;
     }
 
     /**
@@ -49,7 +53,15 @@ public class NetworkObject extends GameObject {
         if (linkedToScene) {
             return this.getComponent(n.getClass()).get();
         } else {
-            return this.nonLinkedToGameChildren.get(this.nonLinkedToGameChildren.indexOf(n));
+            final Reference<NetworkableComponent> networkableComponentReference =
+                    this.nonLinkedToGameChildren.stream()
+                            .filter(e -> e.get().equals(n))
+                            .findFirst()
+                            .orElse(null);
+            if (networkableComponentReference != null) {
+                return networkableComponentReference.get();
+            }
+            return null;
         }
     }
 
@@ -59,15 +71,15 @@ public class NetworkObject extends GameObject {
      * @param componentId the id
      * @return the networkable
      */
-    public NetworkableComponent findComponent(int componentId) {
+    public Reference<NetworkableComponent> findComponent(int componentId) {
         if (linkedToScene) {
             return this.getNetworkableChildren().stream()
-                    .filter(e -> e.getId() == componentId)
+                    .filter(e -> e.get().getId() == componentId)
                     .findFirst()
                     .orElse(null);
         }
         return this.nonLinkedToGameChildren.stream()
-                .filter(e -> e.getId() == componentId)
+                .filter(e -> e.get().getId() == componentId)
                 .findFirst()
                 .orElse(null);
     }
@@ -91,26 +103,25 @@ public class NetworkObject extends GameObject {
      * @param id the id
      * @return the networkable
      */
-    public NetworkableComponent get(int id) {
+    public Reference<NetworkableComponent> get(int id) {
         if (linkedToScene) {
             return getNetworkableChildren().stream()
-                    .filter(e -> e.getId() == id)
+                    .filter(e -> e.get().getId() == id)
                     .findFirst()
                     .orElse(null);
         }
         return this.nonLinkedToGameChildren.stream()
-                .filter(e -> e.getId() == id)
+                .filter(e -> e.get().getId() == id)
                 .findFirst()
                 .orElse(null); // will return null if not found
     }
 
-    public ArrayList<NetworkableComponent> getNetworkableChildren() {
+    public ArrayList<Reference<NetworkableComponent>> getNetworkableChildren() {
         if (linkedToScene) {
-            List<Reference<Component>> networkableChildren = new ArrayList<>();
-            this.getComponentsByIface(NetworkableComponent.class, networkableChildren);
-            return networkableChildren.stream()
-                    .map(e -> (NetworkableComponent) e.get())
-                    .collect(Collectors.toCollection(ArrayList::new));
+            mLogger.warning("is Linked to scene so getting reference of components");
+            ArrayList<Reference<NetworkableComponent>> networkableChildren = new ArrayList<>();
+            this.getComponents(NetworkableComponent.class, networkableChildren);
+            return networkableChildren;
         }
         return this.nonLinkedToGameChildren;
     }
@@ -158,13 +169,13 @@ public class NetworkObject extends GameObject {
                                     + ownerId
                                     + "\nComponent id of children bytes to update is : "
                                     + componentId);
-                    NetworkableComponent noc = this.findComponent(componentId);
+                    Reference<NetworkableComponent> noc = this.findComponent(componentId);
                     mLogger.info("Did i manage to find the component? " + (noc == null));
                     if (noc == null) {
                         throw new NetworkObjectDoesNotHaveChildError(
                                 "Can't find component", componentId);
                     } else {
-                        noc.updateFromBytes(arrayOfChildrenBytes.get(i));
+                        noc.get().updateFromBytes(arrayOfChildrenBytes.get(i));
                     }
                 } catch (NetworkObjectDoesNotHaveChildError e) {
                     instance.sendBytesCallback.send(
@@ -237,9 +248,12 @@ public class NetworkObject extends GameObject {
      */
     public void addNetworkableComponent(NetworkableComponent child) {
         if (linkedToScene) {
+            // TODO Problem is here
+            mLogger.warning("Linked to scene adding component to scene");
             this.addComponent(child);
+            mLogger.warning("HERE");
         } else {
-            this.nonLinkedToGameChildren.add(child);
+            this.nonLinkedToGameChildren.add(child.getNetReference());
         }
     }
 
@@ -248,10 +262,10 @@ public class NetworkObject extends GameObject {
      *
      * @param children The networkable components to be added
      */
-    public void addChildren(NetworkableComponent[] children) {
+    public void addChildren(Reference<NetworkableComponent>[] children) {
         if (linkedToScene) {
-            for (NetworkableComponent child : children) {
-                this.addComponent(child);
+            for (Reference<NetworkableComponent> child : children) {
+                this.addComponent(child.get());
             }
         } else {
             Collections.addAll(this.nonLinkedToGameChildren, children);
@@ -270,9 +284,23 @@ public class NetworkObject extends GameObject {
             byte messageCode,
             ServerBroadcastCallback broadcastCallback) {
         mLogger.info("spawning component on all clients");
+        if (isServer) {
+            component.connectSyncVars();
+        }
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
         spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
+        broadcastCallback.call(spawnComponentBytes);
+        addNetworkableComponent(component);
+        return component.getId();
+    }
+
+    public int spawnComponent(
+            NetworkableComponent component, ServerBroadcastCallback broadcastCallback) {
+        mLogger.info("spawning component on all clients");
+        byte[] spawnComponentBytes;
+        byte[] componentBytes = component.serializeFully();
+        spawnComponentBytes = NetworkMessage.build((byte) 22, componentBytes);
         broadcastCallback.call(spawnComponentBytes);
         addNetworkableComponent(component);
         return component.getId();
@@ -287,7 +315,6 @@ public class NetworkObject extends GameObject {
      */
     public int spawnCapital(int ownerId, ServerBroadcastCallback broadcastCallback) {
         Capital capital = new Capital(ownerId, this.allocateId());
-        capital.connectSyncVars();
         return spawnComponent(capital, (byte) 21, broadcastCallback);
     }
 
@@ -308,7 +335,8 @@ public class NetworkObject extends GameObject {
      * Children of the object will be networkable and updated on clients, only used if not spawned
      * in a game scene
      */
-    private final ArrayList<NetworkableComponent> nonLinkedToGameChildren = new ArrayList<>();
+    private final ArrayList<Reference<NetworkableComponent>> nonLinkedToGameChildren =
+            new ArrayList<>();
 
     /**
      * Gets network object id.
@@ -328,11 +356,13 @@ public class NetworkObject extends GameObject {
     public void broadcastUpdate(ServerBroadcastCallback broadcastCallback) {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
-        ArrayList<NetworkableComponent> networkableChildren = this.getNetworkableChildren();
+        ArrayList<Reference<NetworkableComponent>> networkableChildren =
+                this.getNetworkableChildren();
         boolean[] didChildUpdateMask = new boolean[networkableChildren.size()];
+        mLogger.warning("Networkable Object has n children : " + networkableChildren.size());
         for (int i = 0; i < networkableChildren.size(); i++) {
-            if (networkableChildren.get(i).hasBeenModified()) {
-                mLogger.info("child has been modified in a networkobject");
+            if (networkableChildren.get(i).get().hasBeenModified()) {
+                mLogger.warning("child has been modified in a networkobject");
                 didChildUpdateMask[i] = true;
                 if (!shouldBroadcast) {
                     shouldBroadcast = true;
@@ -355,12 +385,13 @@ public class NetworkObject extends GameObject {
 
         ArrayList<Byte> childChunk = new ArrayList<>();
         ArrayList<Byte> contents = new ArrayList<>();
-        ArrayList<NetworkableComponent> networkableChildren = this.getNetworkableChildren();
+        ArrayList<Reference<NetworkableComponent>> networkableChildren =
+                this.getNetworkableChildren();
 
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {
                 // child did update
-                byte[] childBytes = networkableChildren.get(i).serialize();
+                byte[] childBytes = networkableChildren.get(i).get().serialize();
                 for (byte childByte : childBytes) {
                     childChunk.add(childByte);
                 }

@@ -57,7 +57,7 @@ public class ServerTest {
     }
 
     private void modifyCapital(Capital captial) {
-        Capital component = (Capital) mServerInstance.server.findComponent(captial.getId());
+        Capital component = (Capital) mServerInstance.server.findComponent(captial.getId()).get();
         component.setBooleanSyncMe(true);
         component.setStringSyncMeAlso("Goodbye World");
     }
@@ -69,7 +69,7 @@ public class ServerTest {
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
-        final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId);
+        final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId).get();
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);
         assert (nc.getSyncMe().get() == false);

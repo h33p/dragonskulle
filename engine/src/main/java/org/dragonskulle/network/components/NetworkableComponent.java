@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Logger;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.ISyncVar;
@@ -20,14 +21,15 @@ import org.jetbrains.annotations.NotNull;
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
 public abstract class NetworkableComponent<T> extends Component {
-    private final Logger mLogger = Logger.getLogger(this.getClass().getName());
+    private static final Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
+    private final Reference<NetworkableComponent> mReference = new Reference<>(this);
 
-    NetworkableComponent(int ownerId, int networkComponentId) {
+    public NetworkableComponent(int ownerId, int networkComponentId) {
         this.id = networkComponentId;
         this.ownerId = ownerId;
     }
 
-    NetworkableComponent() {}
+    public NetworkableComponent() {}
 
     public static NetworkableComponent createFromBytes(byte[] payload) {
         Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
@@ -95,6 +97,7 @@ public abstract class NetworkableComponent<T> extends Component {
 
     /** Connect sync vars. Only should be ran on server */
     public void connectSyncVars() {
+        mLogger.warning("Connecting sync vars for component");
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
@@ -294,10 +297,14 @@ public abstract class NetworkableComponent<T> extends Component {
      */
     public boolean hasBeenModified() {
         boolean hasTrueInMask = false;
-        for (boolean b : mFieldsMask) {
-            if (b) {
-                hasTrueInMask = true;
-                break;
+        if (mFields == null) {
+            mLogger.warning("mFields is not set yet, the component hasn't connected");
+        } else {
+            for (boolean b : mFieldsMask) {
+                if (b) {
+                    hasTrueInMask = true;
+                    break;
+                }
             }
         }
         return hasTrueInMask;
@@ -361,5 +368,9 @@ public abstract class NetworkableComponent<T> extends Component {
 
     public int getOwnerId() {
         return this.ownerId;
+    }
+
+    public Reference<NetworkableComponent> getNetReference() {
+        return this.mReference;
     }
 }
