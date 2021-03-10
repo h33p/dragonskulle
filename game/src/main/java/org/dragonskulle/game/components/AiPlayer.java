@@ -25,6 +25,13 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	
 	//TODO to choose where to attack, which building to use, what stat to upgrade.  Do we want these to be uniform or not?  I would say it's easier tp be uniform HOWEVER we can play around more easily if they're not uniform
 	
+	/**
+	 * A Constructor for an AI Player 
+	 * @param lowerBound the lower bound in time for how often you want the AI player to play
+	 * @param upperBound the upper bound in time for how often you want the AI player to play
+	 * 
+	 * <p> So if you set the lowerBound to 2 and upperBound the AI Player will have a go every 2 - 5 seconds (Depending on the random number picked) <\p>
+	 */
 	public AiPlayer(int lowerBound, int upperBound) {
 		
 		//this.super();

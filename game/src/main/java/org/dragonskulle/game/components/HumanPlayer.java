@@ -40,6 +40,9 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     	}
     }
     
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
@@ -49,6 +52,9 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     	
     }
     
+    /**
+     * This will choose what to do when the user can see what to do with a building
+     */
     private void buildingScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
@@ -57,6 +63,9 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     	}
     }
 
+    /**
+     * This will choose what to do when the user can see what to do with a building
+     */
     private void expansionScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
