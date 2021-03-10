@@ -3,6 +3,7 @@ package org.dragonskulle.game.components;
 import java.util.List;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Time;
 
 /**

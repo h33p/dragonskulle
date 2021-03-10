@@ -1,6 +1,8 @@
 package org.dragonskulle.game.components;
 
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.game.input.GameActions;
+import org.joml.Vector2d;
 
 /**
  * This class will allow a user to interact with game.
@@ -30,14 +32,31 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     	else if (screenOn == Screen.BUILDING_SCREEN){
     		buildingScreen();
     	}
+    	else if (screenOn == Screen.TILE_SCREEN) {
+    		expansionScreen();
+    	}
     }
     
     private void mapScreen() {
-    	;//Need way to check if click hits tile
+    	if (GameActions.LEFT_CLICK.isActivated()) {
+    		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
+    		//
+    		
+    	}
+    	
     }
     
     private void buildingScreen() {
-    	;
+    	if (GameActions.LEFT_CLICK.isActivated()) {
+    		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
+    		
+    	}
     }
 
+    private void expansionScreen() {
+    	if (GameActions.LEFT_CLICK.isActivated()) {
+    		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
+    		
+    	}
+    }
 }
