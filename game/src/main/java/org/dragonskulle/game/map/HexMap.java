@@ -116,9 +116,9 @@ class HexagonMap extends Component implements IOnStart {
         for (int r = 0; r < mSize; r++) {
             for (int q = 0; q < mSize; q++) {
 
-                if (mMap[r][q] != null) {
+                if (mMap[q][r] != null) {
                     // TODO set correct transform
-                    GameObject.instantiate(hexagon);
+                    mMapObject[q][r] = GameObject.instantiate(hexagon);
                 }
             }
         }
