@@ -3,6 +3,7 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.vulkan.VK10.*;
 
+import java.io.Serializable;
 import lombok.Getter;
 
 /**
@@ -10,7 +11,7 @@ import lombok.Getter;
  *
  * @author Aurimas Blažulionis
  */
-public class TextureMapping {
+public class TextureMapping implements Serializable {
 
     public TextureFiltering filtering;
 
@@ -31,6 +32,10 @@ public class TextureMapping {
 
     public TextureMapping(TextureFiltering filtering, TextureWrapping wrap) {
         this(filtering, wrap, wrap, wrap);
+    }
+
+    public TextureMapping() {
+        this(TextureFiltering.LINEAR, TextureWrapping.REPEAT);
     }
 
     public static enum TextureFiltering {
@@ -60,5 +65,12 @@ public class TextureMapping {
     @Override
     public int hashCode() {
         return filtering.value + wrapU.value * 10 + wrapV.value * 100 + wrapW.value * 1000;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof TextureMapping)) return false;
+        return hashCode() == o.hashCode();
     }
 }

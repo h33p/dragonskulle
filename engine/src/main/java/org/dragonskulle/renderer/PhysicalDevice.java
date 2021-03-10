@@ -8,6 +8,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -27,9 +28,14 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     private SwapchainSupportDetails mSwapchainSupport;
     private FeatureSupportDetails mFeatureSupport;
     private String mDeviceName;
+    private static final Logger LOGGER = Logger.getLogger("render");
 
     private int mScore;
     private QueueFamilyIndices mIndices;
+
+    private static int[] DEPTH_FORMATS = {
+        VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT
+    };
 
     /** Describes indices used for various device queues */
     static class QueueFamilyIndices {
@@ -111,6 +117,33 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return Integer.compare(other.mScore, mScore);
     }
 
+    /**
+     * Find supported depth texture format
+     *
+     * @return supported format for depth texture
+     */
+    public int findDepthFormat() {
+        return findSupportedFormat(
+                DEPTH_FORMATS,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    }
+
+    private int findSupportedFormat(int[] candidates, int tiling, int features) {
+        try (MemoryStack stack = stackPush()) {
+            VkFormatProperties props = VkFormatProperties.callocStack(stack);
+            for (int format : candidates) {
+                vkGetPhysicalDeviceFormatProperties(mDevice, format, props);
+                if (tiling == VK_IMAGE_TILING_LINEAR
+                        && (props.linearTilingFeatures() & features) == features) return format;
+                else if (tiling == VK_IMAGE_TILING_OPTIMAL
+                        && (props.optimalTilingFeatures() & features) == features) return format;
+            }
+
+            throw new RuntimeException("Failed to find supported format!");
+        }
+    }
+
     /** Update swapchain support details */
     public void onRecreateSwapchain(long surface) {
         mSwapchainSupport = new SwapchainSupportDetails(mDevice, surface);
@@ -148,6 +181,10 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 return d;
             }
         }
+
+        LOGGER.severe("Failed to find suitable physical device!");
+        LOGGER.info("Valid devices:");
+        for (PhysicalDevice d : devices) LOGGER.info(d.mDeviceName);
 
         return null;
     }
