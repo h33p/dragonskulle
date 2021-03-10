@@ -70,6 +70,7 @@ public class AiPlayer extends Player implements IFixedUpdate {
 
     @Override
     public void fixedUpdate(float deltaTime) {
+    	updateTokens(deltaTime);
     	if (playGame(deltaTime)) {
     		simulateInput();
     		triggerEvent();
