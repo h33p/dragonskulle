@@ -1,6 +1,7 @@
 package org.dragonskulle.game.components;
 
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.joml.Vector2d;
 
@@ -12,6 +13,12 @@ public class HumanPlayer extends Player implements IFrameUpdate {
 
 	private Screen screenOn = Screen.MAP_SCREEN;
 
+	
+	public HumanPlayer(Reference<HexMap> map, Building capital) {
+		
+		super(map, capital);
+		
+	}
     @Override
     protected void onDestroy() {
     	

@@ -1,5 +1,6 @@
 package org.dragonskulle.game.components;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.dragonskulle.components.Component;
@@ -14,11 +15,20 @@ import org.dragonskulle.core.Time;
 abstract public class Player extends Component {
 	
 	protected List<Building> ownedBuildings;
-	protected int tokens;  //NEED TO BE SYNCED
+	protected Reference<HexMap> mapComponent;
+	
+	protected int tokens = 0;  //NEED TO BE SYNCED
 	protected final int TOKEN_RATE = 5;
 	protected final float UPDATE_TIME = 1;
 	protected float lastTokenUpdate = 0;
-	protected Reference<HexMap> mapComponent;
+	
+	
+	public Player(Reference<HexMap> map, Building capital) {
+		mapComponent = map;
+		ownedBuildings = new ArrayList<Building>();
+		ownedBuildings.add(capital);
+		updateTokens(UPDATE_TIME + 1);
+	}
 	
 	/**
 	 * This method will take the action decided by the user and will tell the server to perform one action 

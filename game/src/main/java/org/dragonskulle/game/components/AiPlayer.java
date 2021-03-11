@@ -1,8 +1,10 @@
 package org.dragonskulle.game.components;
 
+import java.util.List;
 import java.util.Random;
 
 import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.core.Reference;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
@@ -10,18 +12,19 @@ import org.dragonskulle.components.IFixedUpdate;
  */
 public class AiPlayer extends Player implements IFixedUpdate {
     
-	protected Random random;
 	protected float timeSinceStart;
 	protected int lowerBoundTime;
 	protected int upperBoundTime;
 	protected int actualTime;
 	
-	protected float tileProbability;
+	protected Random random = new Random();
+	
+	protected float tileProbability = (float)0.5;
 	protected float buildingProabilty = 1 - tileProbability;
 	
-	protected float upgradeBuilding;  // These three probabilities summed must == 1
-	protected float attackBuilding;
-	protected float sellBuilding;
+	protected float upgradeBuilding = (float) 0.2;  // These three probabilities summed must == 1
+	protected float attackBuilding = (float) 0.7;
+	protected float sellBuilding = (float) 0.1;
 	
 	//TODO to choose where to attack, which building to use, what stat to upgrade.  Do we want these to be uniform or not?  I would say it's easier tp be uniform HOWEVER we can play around more easily if they're not uniform
 	
@@ -32,11 +35,12 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	 * 
 	 * <p> So if you set the lowerBound to 2 and upperBound the AI Player will have a go every 2 - 5 seconds (Depending on the random number picked) <\p>
 	 */
-	public AiPlayer(int lowerBound, int upperBound) {
+	public AiPlayer(int lowerBound, int upperBound, Reference<HexMap> map, Building capital) {
 		
-		//this.super();
+		super(map, capital);
 		lowerBoundTime = lowerBound;
 		upperBoundTime = upperBound;
+		timeSinceStart = 0;
 		
 		createNewRandomTime();
 		
