@@ -217,8 +217,6 @@ public class App {
                                                                 uiRend.getGameObject()
                                                                         .getTransform();
                                                         if (uiRend.isEnabled()) {
-                                                            // uiTransform.setPosition(-0.5f, -0.5f,
-                                                            // 0f);
                                                             uiTransform.scale(0.1f, 0.1f, 1f);
                                                         } else {
                                                             uiTransform.setPosition(0f, 0f, 0f);
