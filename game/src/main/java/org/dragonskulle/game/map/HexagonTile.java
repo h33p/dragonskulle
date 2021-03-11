@@ -2,6 +2,7 @@
 package org.dragonskulle.game.map;
 
 import java.util.Arrays;
+import lombok.Getter;
 import lombok.extern.java.Log;
 
 /**
@@ -13,9 +14,11 @@ import lombok.extern.java.Log;
 public class HexagonTile {
 
     /** This is the axial storage system for each tile */
-    private final int mQ;
-    private final int mR;
-    private final int mS;
+    @Getter private final int mQ;
+
+    @Getter private final int mR;
+
+    @Getter private final int mS;
 
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
