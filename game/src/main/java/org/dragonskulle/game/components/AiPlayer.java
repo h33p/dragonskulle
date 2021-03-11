@@ -108,10 +108,12 @@ public class AiPlayer extends Player implements IFixedUpdate {
     		
     		if (randomNumber <= tileProbability) {
     			//TODO Choose which tile to use
+    			//Need way to choose which tile to use
     			return;
     		}
     		else {
     			randomNumber = random.nextFloat();
+    			Building building = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
     			
     			if (randomNumber <= upgradeBuilding) {
     				//TODO Choose which building to upgrade & which stat to upgrade
