@@ -30,7 +30,8 @@ public class ClientApp {
      * @throws Exception the exception
      */
     public static void main(String[] args) throws Exception {
-        LogManager.getLogManager().reset();
+//        LogManager.getLogManager().reset();
+        setLoggingLevel(Level.WARNING);
         System.out.println("A server should be setup before running. Continue?");
         new Scanner(System.in).nextLine();
         ClientListener clientListener = new ClientEars();

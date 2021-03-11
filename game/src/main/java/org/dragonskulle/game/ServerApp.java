@@ -2,8 +2,10 @@
 package org.dragonskulle.game;
 
 import static org.dragonskulle.game.ClientApp.issue35Workaround;
+import static org.dragonskulle.game.ClientApp.setLoggingLevel;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import org.dragonskulle.components.*;
@@ -21,7 +23,8 @@ public class ServerApp {
 
     /** Entrypoint of the program. Creates and runs one app instance */
     public static void main(String[] args) throws Exception {
-        LogManager.getLogManager().reset();
+//        LogManager.getLogManager().reset();
+        setLoggingLevel(Level.WARNING);
         final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
         final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
         StartServer serverInstance = new StartServer(mNetworkObjectCounter, true, true);

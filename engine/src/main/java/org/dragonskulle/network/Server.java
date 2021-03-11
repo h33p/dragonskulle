@@ -280,7 +280,7 @@ public class Server {
             while (mOpen && !Thread.currentThread().isInterrupted()) {
                 if (mGame.isSetup()) {
                     if (!mAutoProcessMessages) {
-                        mProcessTimer.schedule(new FixedBroadCastUpdateSchedule(), 0, 1500);
+                        mProcessTimer.schedule(new FixedBroadCastUpdateSchedule(), 0, 400);
                     }
                     Socket clientSocket = mSockets.acceptClient();
                     if (clientSocket != null) {

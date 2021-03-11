@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.ClientGameInstance;
+import org.dragonskulle.network.ListenableArray;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.NetworkObjectDoesNotHaveChildError;
 import org.dragonskulle.network.components.Capital.Capital;
@@ -16,16 +18,21 @@ import org.dragonskulle.network.components.Capital.CapitalRenderable;
 import org.dragonskulle.network.components.Capital.NetworkedTransform;
 import sun.misc.IOUtils;
 
-/** @author Oscar L The NetworkObject deals with any networked variables. */
+/**
+ * @author Oscar L The NetworkObject deals with any networked variables.
+ */
 public class NetworkObject extends GameObject {
     private final Reference<NetworkObject> mReference = new Reference<>(this);
     private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
     private boolean isServer = false;
-    /** The UUID of the object. */
+    /**
+     * The UUID of the object.
+     */
     public final int networkObjectId;
 
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
     private boolean linkedToScene;
+    private ArrayList<Integer> sleepingChildren = new ArrayList<>();
 
     public void linkToScene() {
         this.linkedToScene = true;
@@ -155,7 +162,7 @@ public class NetworkObject extends GameObject {
         boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4);
         ArrayList<byte[]> arrayOfChildrenBytes =
                 getChildrenUpdateBytes(payload, 1 + maskLength + 4);
-        int j =0;
+        int j = 0;
         for (int i = 0; i < masks.length; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
@@ -180,16 +187,32 @@ public class NetworkObject extends GameObject {
                         noc.get().updateFromBytes(arrayOfChildrenBytes.get(j));
                     }
                 } catch (NetworkObjectDoesNotHaveChildError e) {
-                    instance.sendBytesCallback.send(
-                            NetworkMessage.build(
-                                    (byte) 50,
-                                    NetworkMessage.convertIntToByteArray(e.invalidComponentId)));
+                    mLogger.warning("NOB doesn't have child, " + e.invalidComponentId);
+                    if (sleepingChildren.contains(e.invalidComponentId)) {
+                        mLogger.warning("Not requesting update as child is sleeping until we receive spawn request");
+                    } else {
+                        this.markSleepingChildUpdatesUntilSpawn(e.invalidComponentId);
+                        instance.sendBytesCallback.send(
+                                NetworkMessage.build(
+                                        (byte) 50,
+                                        NetworkMessage.convertIntToByteArray(e.invalidComponentId)));
+                        break;
+                    }
                 }
                 j++;
             } else {
                 mLogger.info("Shouldn't update child");
             }
         }
+    }
+
+    private void markSleepingChildUpdatesUntilSpawn(int invalidComponentId) {
+        mLogger.warning("Marking component to sleep");
+        Collections.synchronizedList(this.sleepingChildren).add(invalidComponentId);
+    }
+
+    private void removeChildFromSleepingState(int invalidComponentId) {
+        Collections.synchronizedList(this.sleepingChildren).remove(invalidComponentId);
     }
 
     private ArrayList<byte[]> getChildrenUpdateBytes(byte[] buff, int offset) throws IOException {
@@ -224,7 +247,9 @@ public class NetworkObject extends GameObject {
         return out;
     }
 
-    /** A callback to broadcast a message to all clients */
+    /**
+     * A callback to broadcast a message to all clients
+     */
     public interface ServerBroadcastCallback {
         /**
          * Call.
@@ -234,7 +259,9 @@ public class NetworkObject extends GameObject {
         void call(byte[] bytes);
     }
 
-    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
+    /**
+     * A callback to broadcast a message to a SINGLE clients,this client is the owner
+     */
     public interface SendBytesToClientCallback {
         /**
          * Call.
@@ -250,10 +277,13 @@ public class NetworkObject extends GameObject {
      * @param child The networkable component to be added
      */
     public void addNetworkableComponent(NetworkableComponent child) {
+
         if (linkedToScene) {
             mLogger.warning("Linked to scene adding component to scene");
             spawnRenderableOnGame(child); // only if !isServer
             this.addComponent(child);
+            //remove child from sleeping state if it exists
+            Collections.synchronizedCollection(this.sleepingChildren).remove(child.getId());
             mLogger.warning(
                     "my networkable components are : " + this.getNetworkableChildren().toString());
         } else {
@@ -290,7 +320,7 @@ public class NetworkObject extends GameObject {
     /**
      * Spawns a component and notifies all clients using callback.
      *
-     * @param component The component to be spawned, must extend NetworkableComponent
+     * @param component   The component to be spawned, must extend NetworkableComponent
      * @param messageCode The message code of the spawn.
      * @return The ID of the spawned component
      */
@@ -324,7 +354,7 @@ public class NetworkObject extends GameObject {
     /**
      * Spawns a capital using the @link{spawnComponent} method
      *
-     * @param ownerId the owner id
+     * @param ownerId           the owner id
      * @param broadcastCallback the broadcast callback
      * @return The id of the spawned component
      */
@@ -340,7 +370,7 @@ public class NetworkObject extends GameObject {
     /**
      * Sends the map to the client, this is called on connect
      *
-     * @param mapBytes The bytes of the serialized map.
+     * @param mapBytes       The bytes of the serialized map.
      * @param clientCallback the client callback
      */
     public void spawnMap(byte[] mapBytes, SendBytesToClientCallback clientCallback) {

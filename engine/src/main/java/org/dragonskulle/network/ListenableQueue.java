@@ -14,6 +14,12 @@ import org.jetbrains.annotations.NotNull;
 // https://stackoverflow.com/questions/56336731/on-add-element-in-queue-call-a-listener-to-notify-queue-element-is-variable
 public class ListenableQueue<E> extends AbstractQueue<E> {
 
+    public void addIfUnique(E bArray) {
+        if(!this.mDelegate.contains(bArray)){
+            this.add(bArray);
+        }
+    }
+
     /**
      * The interface Listener.
      *

@@ -274,7 +274,7 @@ public class NetworkClient {
         this.mAutoProcessMessages = toggle;
         if (toggle) {
             mProcessScheduler.purge();
-            mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 500); //bit faster than server
+            mProcessScheduler.schedule(new ProcessRequestScheduled(), 0, 200); //bit faster than server
         } else {
             mProcessScheduler.purge();
         }
@@ -343,7 +343,7 @@ public class NetworkClient {
 
     private void queueRequest(byte[] bArray) {
         mLogger.info("queuing request :: " + Hex.encodeHexString(bArray));
-        this.mRequests.add(bArray);
+        this.mRequests.addIfUnique(bArray);
     }
 
     public void processRequests() {
