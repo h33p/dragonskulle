@@ -1,5 +1,6 @@
 package org.dragonskulle.game.components;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -108,7 +109,7 @@ public class AiPlayer extends Player implements IFixedUpdate {
     		
     		if (randomNumber <= tileProbability) {
     			//TODO Choose which tile to use
-    			//Need way to choose which tile to use
+    			//Need way to choose which tile to use -- Guessing best way is to use Building again
     			return;
     		}
     		else {
@@ -121,7 +122,18 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			}
     			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
     				//TODO Choose which building to attack
-    				return;
+    				ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
+    				for (Building building: ownedBuildings) {
+    					
+    					List<Building> attackableBuilding = building.attackableBuildings();
+    					Building[] listToAdd = {building, attackableBuilding};
+    					
+    					buildingsToAttack.add(listToAdd);
+    				}
+    				
+    				Building[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
+    				
+    				//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
     			}
     			else {
     				//TODO Choose which building to sell
@@ -129,6 +141,12 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			}
     		}
     	}
-
+    }
+    
+    private List<HexTiles> hexTilesToExpand(){
+    	List<HexTiles> hexTilesToExpand = new ArrayList<HexTiles>();
+    	for (Building building: ownedBuildings) {
+    		;
+    	}
     }
 }
