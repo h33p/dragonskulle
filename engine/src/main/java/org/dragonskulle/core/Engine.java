@@ -44,7 +44,9 @@ public class Engine {
     private Scene mActiveScene = null;
     private Scene mNewScene = null;
 
+    /** Engine's GLFW window state */
     @Getter private GLFWState mGLFWState = null;
+
     private ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
 
     private Engine() {}

@@ -50,11 +50,23 @@ public class Renderable extends Component {
         return null;
     }
 
+    /**
+     * Write vertex data into an instance buffer
+     *
+     * @param offset offset into which we should write
+     * @param buffer byte buffer into which we should write
+     */
     public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
         mMaterial.writeVertexInstanceData(
                 offset, buffer, getGameObject().getTransform().getWorldMatrix());
     }
 
+    /**
+     * Get object depth from the camera
+     *
+     * @param camPosition input camera position
+     * @param tmpVec temporary vector that can be used for calculations
+     */
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
         getGameObject().getTransform().getPosition(tmpVec);
         return camPosition.distanceSquared(tmpVec);

@@ -53,18 +53,35 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     private final Vector3f mTmpCursorPos = new Vector3f();
 
+    /** Default constructor for UIRenderable */
     public UIRenderable() {
         super(Mesh.QUAD, new UIMaterial());
     }
 
+    /**
+     * Constructor for UIRenderable
+     *
+     * @param colour colour of the rendered UI element
+     * @param texture texture of the rendered UI element
+     */
     public UIRenderable(Vector4fc colour, SampledTexture texture) {
         super(Mesh.QUAD, new UIMaterial(colour, texture));
     }
 
+    /**
+     * Constructor for UIRenderable
+     *
+     * @param colour colour of the rendered UI element
+     */
     public UIRenderable(Vector4fc colour) {
         super(Mesh.QUAD, new UIMaterial(colour));
     }
 
+    /**
+     * Constructor for UIRenderable
+     *
+     * @param texture texture of the rendered UI element
+     */
     public UIRenderable(SampledTexture texture) {
         super(Mesh.QUAD, new UIMaterial(texture));
     }

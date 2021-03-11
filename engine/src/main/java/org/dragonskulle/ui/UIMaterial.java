@@ -59,15 +59,31 @@ public class UIMaterial implements IMaterial, Serializable {
 
     public UIMaterial() {}
 
+    /**
+     * Constructor for UIMaterial
+     *
+     * @param colour initial colour value of the object
+     * @param texture initial texture of the object
+     */
     public UIMaterial(Vector4fc colour, SampledTexture texture) {
         this.colour.set(colour);
         mFragmentTextures[0] = texture;
     }
 
+    /**
+     * Constructor for UIMaterial
+     *
+     * @param colour initial colour value of the object
+     */
     public UIMaterial(Vector4fc colour) {
         this.colour.set(colour);
     }
 
+    /**
+     * Constructor for UIMaterial
+     *
+     * @param texture initial texture of the object
+     */
     public UIMaterial(SampledTexture texture) {
         mFragmentTextures[0] = texture;
     }

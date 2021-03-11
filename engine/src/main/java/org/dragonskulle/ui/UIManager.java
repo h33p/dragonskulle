@@ -29,7 +29,7 @@ public class UIManager {
     /**
      * Reference to currently hovered UI element.
      *
-     * <p>It will always be the top most button.
+     * <p>It will always be the top most element.
      */
     @Getter private Reference<UIRenderable> mHoveredObject;
 

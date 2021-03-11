@@ -24,15 +24,32 @@ public class SampledTexture implements NativeResource, Serializable {
     @Getter private Resource<Texture> mTexture;
     @Getter private TextureMapping mMapping;
 
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param texture input texture resource
+     * @param mapping input texture mapping
+     */
     public SampledTexture(Resource<Texture> texture, TextureMapping mapping) {
         mTexture = texture;
         mMapping = mapping;
     }
 
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param textureName input texture resource name
+     * @param mapping input texture mapping
+     */
     public SampledTexture(String textureName, TextureMapping mapping) {
         this(Texture.getResource(textureName), mapping);
     }
 
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param textureName input texture resource name
+     */
     public SampledTexture(String textureName) {
         this(textureName, new TextureMapping());
     }
