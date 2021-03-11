@@ -8,17 +8,12 @@ import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.hamcrest.MatcherAssert;
 import org.junit.*;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 public class ServerTest {
     private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
@@ -29,7 +24,7 @@ public class ServerTest {
 
     @BeforeClass
     public static void setUp() {
-//        LogManager.getLogManager().reset();
+        //        LogManager.getLogManager().reset();
         AtomicInteger networkObjectCounter = new AtomicInteger(0);
         mServerInstance = new StartServer(networkObjectCounter, true, true);
         mClientListener = new ClientEars();
@@ -49,7 +44,7 @@ public class ServerTest {
 
     private void testMapClient() {
         await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
-//        mLogger.info("Requests: " + )
+        //        mLogger.info("Requests: " + )
         mNetworkClient.processSingleRequest();
         await().atMost(3, SECONDS).until(() -> mNetworkClient.hasMap());
     }
@@ -137,9 +132,7 @@ public class ServerTest {
         modifyCapital(nc);
         await().atMost(1, SECONDS)
                 .until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
-        await()
-                .atMost(TIMEOUT, SECONDS)
-                .until(() -> nc.getSyncMe().get() == true);
+        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
@@ -161,10 +154,12 @@ public class ServerTest {
         with().atMost(20, SECONDS)
                 .pollInterval(2000, MILLISECONDS)
                 .await()
-                .until(() -> {
-                    final NetworkableComponent n = mNetworkClient.getNetworkableComponent(component1.getId());
-                    mLogger.warning("n in assert : " + n);
-                    return n != null;
-                });
+                .until(
+                        () -> {
+                            final NetworkableComponent n =
+                                    mNetworkClient.getNetworkableComponent(component1.getId());
+                            mLogger.warning("n in assert : " + n);
+                            return n != null;
+                        });
     }
 }

@@ -2,7 +2,6 @@
 package org.dragonskulle.network;
 
 import java.util.*;
-
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -15,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class ListenableQueue<E> extends AbstractQueue<E> {
 
     public void addIfUnique(E bArray) {
-        if(!this.mDelegate.contains(bArray)){
+        if (!this.mDelegate.contains(bArray)) {
             this.add(bArray);
         }
     }

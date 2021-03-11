@@ -166,11 +166,11 @@ public class ClientGameInstance {
     public int spawnCapital(int networkObjectId, Capital capital) {
         NetworkObject nob = getNetworkObject(networkObjectId).get();
         mLogger.warning("adding networkable to nob");
-        if(isLinkedToScene) {
+        if (isLinkedToScene) {
             nob.linkToScene();
         }
         nob.addNetworkableComponent(capital);
-//        this.mNetworkObjectReferences.add(nob.getNetReference());
+        //        this.mNetworkObjectReferences.add(nob.getNetReference());
         this.mHasCapital = true;
         return capital.getId();
     }

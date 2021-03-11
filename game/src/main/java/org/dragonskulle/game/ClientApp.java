@@ -16,6 +16,7 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.NetworkManager;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
 import org.joml.Matrix4f;
@@ -30,7 +31,7 @@ public class ClientApp {
      * @throws Exception the exception
      */
     public static void main(String[] args) throws Exception {
-//        LogManager.getLogManager().reset();
+        LogManager.getLogManager().reset();
         setLoggingLevel(Level.WARNING);
         System.out.println("A server should be setup before running. Continue?");
         new Scanner(System.in).nextLine();
@@ -41,7 +42,7 @@ public class ClientApp {
         Scene mainScene = new Scene("mainScene");
         System.out.println("Creating client instance");
         NetworkClient clientInstance =
-                new NetworkClient("127.0.0.1", 7000, clientListener, true, mainScene);
+                new NetworkClient("127.0.0.1", 7000, clientListener, false, mainScene);
         System.out.println("Created client instance");
 
         GameObject camera = new GameObject("mainCamera");
@@ -54,6 +55,11 @@ public class ClientApp {
                                         new Vector3f(0.0f, 0.0f, -0.05f),
                                         new Vector3f(0.0f, 0.0f, 1.0f)));
         mainScene.addRootObject(GameObject.instantiate(camera, cameraTransform));
+
+        GameObject networkManagerGO = new GameObject("client_network_manager");
+        networkManagerGO.addComponent(new NetworkManager(clientInstance::processRequests));
+        mainScene.addRootObject(networkManagerGO);
+
         issue35Workaround(mainScene);
         Engine.getInstance().start("Client", new GameBindings(), mainScene);
     }
