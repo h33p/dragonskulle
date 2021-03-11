@@ -37,6 +37,7 @@ class HexagonMap extends Component implements IOnStart {
         this.SIZE = size;
 
         if (size < 0) {
+            size = 0;
             log.warning("The size should be greater than 0");
         }
 
@@ -60,7 +61,7 @@ class HexagonMap extends Component implements IOnStart {
     /**
      * Hex(q,r) is stored as array[r][q] Map is created and stored in HexMap.
      *
-     * @return Returns the HexMap of HexagonTiles
+     * @return Returns a 2d array of HexagonTiles.
      */
     HexagonTile[][] createTiles() {
         int max_empty = getSpaces(SIZE); // The max number of empty spaces in one row of the array
