@@ -46,15 +46,18 @@ abstract public class Player extends Component {
 	 * This method will update the amount of tokens the user has per UPDATE_TIME.  Goes through all owned buildings to check if need to update tokens
 	 */
 	protected void updateTokens(float time) {
-				
+			
+		
 		lastTokenUpdate += time;
+		//Checks to see how long its been since lastTokenUpdate 
 		if (lastTokenUpdate > UPDATE_TIME) {
 			
-			//Add tokens
+			//Add tokens for each building
 			for (Building building: ownedBuildings) {
 				tokens += building.getToken();
 				
 			}
+			//Add final tokens
 			tokens += TOKEN_RATE;
 			lastTokenUpdate = 0;
 		}
