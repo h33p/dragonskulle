@@ -13,7 +13,11 @@ public class HumanPlayer extends Player implements IFrameUpdate {
 
 	private Screen screenOn = Screen.MAP_SCREEN;
 
-	
+	/**
+	 * The constructor for the human player
+	 * @param map the map being used for this game
+	 * @param capital the capital used by the player
+	 */
 	public HumanPlayer(Reference<HexMap> map, Building capital) {
 		
 		super(map, capital);

@@ -23,6 +23,11 @@ abstract public class Player extends Component {
 	protected float lastTokenUpdate = 0;
 	
 	
+	/**
+	 * The base constructor for player 
+	 * @param map the map being used for this game
+	 * @param capital the capital used by the player
+	 */
 	public Player(Reference<HexMap> map, Building capital) {
 		mapComponent = map;
 		ownedBuildings = new ArrayList<Building>();
