@@ -1,11 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.util.AbstractQueue;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+
 import org.jetbrains.annotations.NotNull;
 
 /**

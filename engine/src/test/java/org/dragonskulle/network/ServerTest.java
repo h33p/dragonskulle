@@ -10,10 +10,15 @@ import static org.junit.Assert.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
 import org.dragonskulle.network.components.Capital.Capital;
+import org.dragonskulle.network.components.NetworkableComponent;
+import org.hamcrest.MatcherAssert;
 import org.junit.*;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 public class ServerTest {
     private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
@@ -24,7 +29,7 @@ public class ServerTest {
 
     @BeforeClass
     public static void setUp() {
-        LogManager.getLogManager().reset();
+//        LogManager.getLogManager().reset();
         AtomicInteger networkObjectCounter = new AtomicInteger(0);
         mServerInstance = new StartServer(networkObjectCounter, true, true);
         mClientListener = new ClientEars();
@@ -37,7 +42,6 @@ public class ServerTest {
 
     @Test
     public void testSpawnMap() {
-        mServerInstance.clearPendingRequests();
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         mNetworkClient.dispose();
@@ -45,6 +49,7 @@ public class ServerTest {
 
     private void testMapClient() {
         await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
+//        mLogger.info("Requests: " + )
         mNetworkClient.processSingleRequest();
         await().atMost(3, SECONDS).until(() -> mNetworkClient.hasMap());
     }
@@ -130,9 +135,11 @@ public class ServerTest {
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
         modifyCapital(nc);
-        await().atMost(2, SECONDS)
+        await().atMost(1, SECONDS)
                 .until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
-        await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
+        await()
+                .atMost(TIMEOUT, SECONDS)
+                .until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
         await().atMost(TIMEOUT, SECONDS)
                 .until(() -> nc.getSyncMeAlso().get().equals("Goodbye World"));
@@ -150,9 +157,14 @@ public class ServerTest {
         testMapClient();
         modifyCapital(component1);
         mNetworkClient.setProcessMessagesAutomatically(true);
-        with().atMost(TIMEOUT * 2, SECONDS)
-                .pollInterval(1000, MILLISECONDS)
+        AtomicInteger timesPolled = new AtomicInteger(0);
+        with().atMost(20, SECONDS)
+                .pollInterval(2000, MILLISECONDS)
                 .await()
-                .until(() -> mNetworkClient.getNetworkableComponent(component1.getId()) != null);
+                .until(() -> {
+                    final NetworkableComponent n = mNetworkClient.getNetworkableComponent(component1.getId());
+                    mLogger.warning("n in assert : " + n);
+                    return n != null;
+                });
     }
 }

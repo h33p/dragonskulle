@@ -4,6 +4,7 @@ package org.dragonskulle.game;
 import java.util.Scanner;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Renderable;
@@ -29,7 +30,7 @@ public class ClientApp {
      * @throws Exception the exception
      */
     public static void main(String[] args) throws Exception {
-        setLoggingLevel(Level.WARNING);
+        LogManager.getLogManager().reset();
         System.out.println("A server should be setup before running. Continue?");
         new Scanner(System.in).nextLine();
         ClientListener clientListener = new ClientEars();

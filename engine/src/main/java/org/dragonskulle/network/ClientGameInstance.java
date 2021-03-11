@@ -99,7 +99,7 @@ public class ClientGameInstance {
      */
     public Reference<NetworkableComponent> getNetworkedComponent(int id) {
         Reference<NetworkableComponent> found = null;
-        for (Reference<NetworkObject> nob : mNetworkObjectReferences) {
+        for (Reference<NetworkObject> nob : getNetworkObjects()) {
             Reference<NetworkableComponent> nc = nob.get().findComponent(id);
             if (nc != null) {
                 found = nc;
@@ -166,9 +166,11 @@ public class ClientGameInstance {
     public int spawnCapital(int networkObjectId, Capital capital) {
         NetworkObject nob = getNetworkObject(networkObjectId).get();
         mLogger.warning("adding networkable to nob");
-        nob.linkToScene();
+        if(isLinkedToScene) {
+            nob.linkToScene();
+        }
         nob.addNetworkableComponent(capital);
-        //        nob.addComponent(CapitalRenderable.get());
+//        this.mNetworkObjectReferences.add(nob.getNetReference());
         this.mHasCapital = true;
         return capital.getId();
     }
@@ -193,11 +195,7 @@ public class ClientGameInstance {
         NetworkObject networkObjectToUpdate = getNetworkObject(idToUpdate).get();
         if (networkObjectToUpdate != null) {
             try {
-                mLogger.info("BEFORE UPDATE");
-                mLogger.info(networkObjectToUpdate.toString());
                 networkObjectToUpdate.updateFromBytes(payload, this);
-                mLogger.info("AFTER UPDATE");
-                mLogger.info(networkObjectToUpdate.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }

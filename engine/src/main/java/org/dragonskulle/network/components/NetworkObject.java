@@ -152,20 +152,20 @@ public class NetworkObject extends GameObject {
                         payload,
                         4); // offset of 4 to ignore id, another 4 to avoid networkObject id
 
-        // DEBUG
         boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4);
         ArrayList<byte[]> arrayOfChildrenBytes =
                 getChildrenUpdateBytes(payload, 1 + maskLength + 4);
-        for (int i = 0; i < maskLength; i++) {
+        int j =0;
+        for (int i = 0; i < masks.length; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
                 try {
                     int componentId =
                             NetworkableComponent.getComponentIdFromBytes(
-                                    arrayOfChildrenBytes.get(i), 0); // read 4 bytes
+                                    arrayOfChildrenBytes.get(j), 0); // read 4 bytes
                     int ownerId =
                             NetworkableComponent.getComponentIdFromBytes(
-                                    arrayOfChildrenBytes.get(i), 4); // re
+                                    arrayOfChildrenBytes.get(j), 4); // re
                     mLogger.info(
                             "Parent id of child to update is :"
                                     + ownerId
@@ -177,7 +177,7 @@ public class NetworkObject extends GameObject {
                         throw new NetworkObjectDoesNotHaveChildError(
                                 "Can't find component", componentId);
                     } else {
-                        noc.get().updateFromBytes(arrayOfChildrenBytes.get(i));
+                        noc.get().updateFromBytes(arrayOfChildrenBytes.get(j));
                     }
                 } catch (NetworkObjectDoesNotHaveChildError e) {
                     instance.sendBytesCallback.send(
@@ -185,6 +185,7 @@ public class NetworkObject extends GameObject {
                                     (byte) 50,
                                     NetworkMessage.convertIntToByteArray(e.invalidComponentId)));
                 }
+                j++;
             } else {
                 mLogger.info("Shouldn't update child");
             }
@@ -378,7 +379,7 @@ public class NetworkObject extends GameObject {
                 this.getNetworkableChildren();
         boolean[] didChildUpdateMask = new boolean[networkableChildren.size()];
         mLogger.warning("Networkable Object has n children : " + networkableChildren.size());
-        for (int i = 0; i < networkableChildren.size(); i++) {
+        for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (networkableChildren.get(i).get().hasBeenModified()) {
                 mLogger.warning("child has been modified in a networkobject");
                 didChildUpdateMask[i] = true;

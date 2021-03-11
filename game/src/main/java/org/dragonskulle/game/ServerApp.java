@@ -4,6 +4,8 @@ package org.dragonskulle.game;
 import static org.dragonskulle.game.ClientApp.issue35Workaround;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.LogManager;
+
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -19,6 +21,7 @@ public class ServerApp {
 
     /** Entrypoint of the program. Creates and runs one app instance */
     public static void main(String[] args) throws Exception {
+        LogManager.getLogManager().reset();
         final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
         final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
         StartServer serverInstance = new StartServer(mNetworkObjectCounter, true, true);
