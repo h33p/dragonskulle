@@ -5,12 +5,16 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.game.building.stat.AttackStat;
 import org.dragonskulle.game.building.stat.DefenceStat;
+import org.dragonskulle.game.building.stat.TokenGenerationStat;
+import org.dragonskulle.game.building.stat.ViewDistanceStat;
 
 @Log
 public class Building extends Component {
 
     private AttackStat mAttack = new AttackStat();
     private DefenceStat mDefence = new DefenceStat();
+    private TokenGenerationStat mTokenGeneration = new TokenGenerationStat();
+    private ViewDistanceStat mViewDistance = new ViewDistanceStat();
 
     public Building() {
         log.info("Building.");
