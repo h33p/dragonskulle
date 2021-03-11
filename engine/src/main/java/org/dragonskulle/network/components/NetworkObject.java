@@ -13,6 +13,7 @@ import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.NetworkObjectDoesNotHaveChildError;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.Capital.CapitalRenderable;
+import org.dragonskulle.network.components.Capital.NetworkedTransform;
 import sun.misc.IOUtils;
 
 /** @author Oscar L The NetworkObject deals with any networked variables. */
@@ -328,11 +329,10 @@ public class NetworkObject extends GameObject {
      */
     public int serverSpawnCapital(int ownerId, ServerBroadcastCallback broadcastCallback) {
         Capital capital = new Capital(ownerId, this.allocateId());
-        //        NetworkableComponent transformComponent = new NetworkedTransform(
-        //                this.getId(), allocateId(), true);
-        //        transformComponent.connectSyncVars();
-        //        this.addNetworkableComponent(
-        //                transformComponent);
+        NetworkableComponent transformComponent =
+                new NetworkedTransform(this.getId(), allocateId(), true);
+        transformComponent.connectSyncVars();
+        this.addNetworkableComponent(transformComponent);
         return serverSpawnComponent(capital, (byte) 21, broadcastCallback);
     }
 

@@ -38,17 +38,10 @@ public class ServerApp {
         mainScene.addRootObject(GameObject.instantiate(camera, cameraTransform));
 
         serverInstance.linkToScene(mainScene);
-        //        NetworkObject networkCube = new NetworkObject(allocateId(mNetworkObjectCounter),
-        // true);
-        //
-        //        networkCube.addNetworkableComponent(
-        //                new NetworkedTransform(
-        //                        networkCube.getId(), allocateId(mNetworkComponentCounter), true));
-        //        networkCube.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-        //        //        networkCube.addComponent(new NetworkedSpinner());
-        //
-        //        spawnNetworkable(serverInstance.server, mainScene, networkCube);
-
+        //        GameObject networkManagerGO = new GameObject("server_network_manager");
+        //        networkManagerGO.addComponent(new
+        // NetworkManager(serverInstance.server::fixedBroadcastUpdate));
+        //        mainScene.addRootObject(networkManagerGO);
         issue35Workaround(mainScene);
 
         Engine.getInstance().start("Server", new GameBindings(), mainScene);

@@ -3,13 +3,12 @@ package org.dragonskulle.network.components.Capital;
 
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.sync.SyncFloat;
+import org.dragonskulle.network.components.sync.SyncVector3;
+import org.joml.Vector3f;
 
 /** @author Oscar L */
 public class NetworkedTransform extends NetworkableComponent implements IFrameUpdate {
-    public SyncFloat x = new SyncFloat(0f);
-    public SyncFloat y = new SyncFloat(0f);
-
+    public SyncVector3 position = new SyncVector3(new Vector3f(0, 0, 0));
     int shouldFlipDirection = 1;
 
     boolean isServer = false;
@@ -29,24 +28,24 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
     @Override
     public void frameUpdate(float deltaTime) {
         if (isServer) {
-            float newX = x.get() + shouldFlipDirection * (0.001f * deltaTime);
-            if (newX > 0.0005) {
+            float oldX = position.get().x;
+            if (oldX > 0.5) {
                 shouldFlipDirection = -1;
-            } else if (newX < -0.0035) {
+            } else if (oldX < -0.3) {
                 shouldFlipDirection = 1;
             }
-            this.x.set(newX);
-            getGameObject().getTransform().translate(shouldFlipDirection * newX, 0, 0);
+            getGameObject().getTransform().translate(shouldFlipDirection * (deltaTime), 0, 0);
+            position.set(getGameObject().getTransform().getLocalPosition());
+        } else {
+            getGameObject().getTransform().setPosition(position.get());
         }
     }
 
     @Override
     public String toString() {
         return "NetworkedTransform{"
-                + "x="
-                + x
-                + ", y="
-                + y
+                + "position="
+                + position
                 + ", shouldFlipDirection="
                 + shouldFlipDirection
                 + ", isServer="

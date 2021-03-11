@@ -38,7 +38,6 @@ public abstract class NetworkableComponent<T> extends Component {
                 NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
         assert clazz != null;
         try {
-            // instead of doing this we should request the whole object from the server
             return NetworkableComponent.from(clazz, payload);
         } catch (DecodingException e) {
             mLogger.info("error creating from bytes with clazz");

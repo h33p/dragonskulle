@@ -154,8 +154,8 @@ public class Server {
 
     public void startFixedUpdate() {
         int begin = 0;
-        int timeInterval = 1000;
-        FixedUpdateSimulation fixedUpdate = this::fixedBroadcastUpdate;
+        int timeInterval = 200;
+        FixedUpdate fixedUpdate = this::fixedBroadcastUpdate;
         mFixedUpdate.schedule(
                 new TimerTask() {
                     @Override
@@ -513,7 +513,7 @@ public class Server {
     }
 
     /** The interface Fixed update simulation. */
-    private interface FixedUpdateSimulation {
+    public interface FixedUpdate {
         /** Call. */
         void call();
     }
