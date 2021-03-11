@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
  * <ul>
  *   <li>The cursor's current position.
  *   <li>The starting location of a cursor drag (with the drag being triggered by {@link
- *       Action#DRAG}).
+ *       Actions#TRIGGER_DRAG}).
  *   <li>The distance of a drag.
  *   <li>The angle of a drag.
  * </ul>
