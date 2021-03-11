@@ -1,12 +1,14 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import static java.lang.Math.sqrt;
-
 import java.util.Arrays;
 import lombok.extern.java.Log;
 
-/** The Hexagon Tile Object */
+/**
+ * @author Leela Muppala
+ *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
+ *     coordinates of each tile.
+ */
 @Log
 public class HexagonTile {
 
@@ -16,6 +18,14 @@ public class HexagonTile {
     private final int mR;
     private final int mS;
 
+    /**
+     * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
+     * 0.
+     *
+     * @param q The first coordinate.
+     * @param r The second coordinate.
+     * @param s The third coordinate.
+     */
     HexagonTile(int q, int r, int s) {
         this.mQ = q;
         this.mR = r;
@@ -29,10 +39,6 @@ public class HexagonTile {
     private int length() {
         return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
     }
-
-    /** Rotation matrix for converting to cartesian form */
-    private static final Matrix_2D rotationMatrix =
-            new Matrix_2D(sqrt(3.0), sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0);
 
     @Override
     public String toString() {
