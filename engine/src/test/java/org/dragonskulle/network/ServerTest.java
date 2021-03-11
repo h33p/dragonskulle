@@ -7,9 +7,10 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.Capital.Capital;
 import org.junit.*;
 
 /** @author Oscar L */
@@ -24,7 +25,8 @@ public class ServerTest {
     @BeforeClass
     public static void setUp() {
         LogManager.getLogManager().reset();
-        mServerInstance = new StartServer(true, true);
+        AtomicInteger networkObjectCounter = new AtomicInteger(0);
+        mServerInstance = new StartServer(networkObjectCounter, true, true);
         mClientListener = new ClientEars();
     }
 

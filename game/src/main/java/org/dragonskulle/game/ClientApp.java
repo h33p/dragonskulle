@@ -53,7 +53,7 @@ public class ClientApp {
                                         new Vector3f(0.0f, 0.0f, 1.0f)));
         mainScene.addRootObject(GameObject.instantiate(camera, cameraTransform));
         issue35Workaround(mainScene);
-        Engine.getInstance().start("Germany", new GameBindings(), mainScene);
+        Engine.getInstance().start("Client", new GameBindings(), mainScene);
     }
 
     public static void setLoggingLevel(Level targetLevel) {
@@ -65,7 +65,7 @@ public class ClientApp {
         System.out.println("level set: " + targetLevel.getName());
     }
 
-    private static void issue35Workaround(Scene mainScene) {
+    public static void issue35Workaround(Scene mainScene) {
         // <<Issue #35 Workaround
         // Create a cube
         GameObject cube = new GameObject("cube");

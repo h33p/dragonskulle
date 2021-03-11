@@ -11,6 +11,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.NetworkObjectDoesNotHaveChildError;
+import org.dragonskulle.network.components.Capital.Capital;
+import org.dragonskulle.network.components.Capital.CapitalRenderable;
 import sun.misc.IOUtils;
 
 /** @author Oscar L The NetworkObject deals with any networked variables. */
@@ -118,7 +120,6 @@ public class NetworkObject extends GameObject {
 
     public ArrayList<Reference<NetworkableComponent>> getNetworkableChildren() {
         if (linkedToScene) {
-            mLogger.warning("is Linked to scene so getting reference of components");
             ArrayList<Reference<NetworkableComponent>> networkableChildren = new ArrayList<>();
             this.getComponents(NetworkableComponent.class, networkableChildren);
             return networkableChildren;
@@ -248,12 +249,24 @@ public class NetworkObject extends GameObject {
      */
     public void addNetworkableComponent(NetworkableComponent child) {
         if (linkedToScene) {
-            // TODO Problem is here
             mLogger.warning("Linked to scene adding component to scene");
+            spawnRenderableOnGame(child); // only if !isServer
             this.addComponent(child);
-            mLogger.warning("HERE");
+            mLogger.warning(
+                    "my networkable components are : " + this.getNetworkableChildren().toString());
         } else {
             this.nonLinkedToGameChildren.add(child.getNetReference());
+        }
+    }
+
+    private void spawnRenderableOnGame(NetworkableComponent child) {
+        mLogger.warning("attempting to spawn renderable for networkable component");
+        Class<?> clazz = child.getClass();
+        mLogger.warning(
+                "attempting to spawn renderable for networkable component clazz -> " + clazz);
+        if (clazz.equals(Capital.class)) {
+            mLogger.warning("attempting to spawn capital renderable");
+            this.addComponent(CapitalRenderable.get());
         }
     }
 
@@ -279,11 +292,11 @@ public class NetworkObject extends GameObject {
      * @param messageCode The message code of the spawn.
      * @return The ID of the spawned component
      */
-    private int spawnComponent(
+    private int serverSpawnComponent(
             NetworkableComponent component,
             byte messageCode,
             ServerBroadcastCallback broadcastCallback) {
-        mLogger.info("spawning component on all clients");
+        mLogger.info("spawning component on all clients 2");
         if (isServer) {
             component.connectSyncVars();
         }
@@ -295,9 +308,9 @@ public class NetworkObject extends GameObject {
         return component.getId();
     }
 
-    public int spawnComponent(
+    public int serverSpawnComponent(
             NetworkableComponent component, ServerBroadcastCallback broadcastCallback) {
-        mLogger.info("spawning component on all clients");
+        mLogger.info("spawning component on all clients 1");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
         spawnComponentBytes = NetworkMessage.build((byte) 22, componentBytes);
@@ -313,9 +326,14 @@ public class NetworkObject extends GameObject {
      * @param broadcastCallback the broadcast callback
      * @return The id of the spawned component
      */
-    public int spawnCapital(int ownerId, ServerBroadcastCallback broadcastCallback) {
+    public int serverSpawnCapital(int ownerId, ServerBroadcastCallback broadcastCallback) {
         Capital capital = new Capital(ownerId, this.allocateId());
-        return spawnComponent(capital, (byte) 21, broadcastCallback);
+        //        NetworkableComponent transformComponent = new NetworkedTransform(
+        //                this.getId(), allocateId(), true);
+        //        transformComponent.connectSyncVars();
+        //        this.addNetworkableComponent(
+        //                transformComponent);
+        return serverSpawnComponent(capital, (byte) 21, broadcastCallback);
     }
 
     /**

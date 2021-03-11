@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -50,7 +51,7 @@ public class Server {
     /** The M requests. */
     private final ListenableQueue<Request> mRequests = new ListenableQueue<>(new LinkedList<>());
     /** The M network object counter. */
-    private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
+    private final AtomicInteger mNetworkObjectCounter;
 
     private final Timer mFixedUpdate = new Timer();
 
@@ -60,8 +61,9 @@ public class Server {
      * @param port the port
      * @param listener the listener
      */
-    public Server(int port, ServerListener listener) {
+    public Server(int port, ServerListener listener, AtomicInteger mNetworkObjectCounter) {
         mLogger.info("[S] Setting up server");
+        this.mNetworkObjectCounter = mNetworkObjectCounter;
         mServerListener = listener;
         try {
             ServerSocket server_sock =
@@ -91,8 +93,13 @@ public class Server {
      * @param listener the listener
      * @param autoProcessUpdate sets debug mode
      */
-    public Server(int port, ServerListener listener, boolean autoProcessUpdate) {
+    public Server(
+            int port,
+            ServerListener listener,
+            boolean autoProcessUpdate,
+            AtomicInteger mNetworkObjectCounter) {
         mLogger.info("[S] Setting up server in debug mode");
+        this.mNetworkObjectCounter = mNetworkObjectCounter;
         this.mAutoProcessMessages = autoProcessUpdate;
         mServerListener = listener;
         try {
@@ -219,7 +226,12 @@ public class Server {
     public void spawnObject(NetworkObject networkable) {
         mLogger.warning("spawned object on server");
         networkable.getNetworkableChildren().forEach(e -> e.get().connectSyncVars());
-        this.networkObjects.add(networkable);
+        spawnNetworkObjectOnServer(networkable);
+    }
+
+    public void linkToScene(Scene mainScene) {
+        this.linkedToScene = true;
+        this.mGame.setScene(mainScene);
     }
 
     /**
@@ -299,13 +311,14 @@ public class Server {
                 if (connected) {
                     // Spawn network object for the map and capital
                     NetworkObject networkObject = new NetworkObject(this.allocateId(), true);
+                    networkObject.linkToScene();
                     networkObject.spawnMap(
                             this.mGame.cloneMap(),
                             (message) -> this.mSockets.sendBytesToClient(client, message));
                     int capitalId =
-                            networkObject.spawnCapital(
+                            networkObject.serverSpawnCapital(
                                     networkObject.getId(), this.mSockets::broadcast);
-                    this.networkObjects.add(networkObject);
+                    spawnNetworkObjectOnServer(networkObject);
                 }
                 while (connected) {
                     try {
@@ -333,6 +346,13 @@ public class Server {
         };
     }
 
+    private void spawnNetworkObjectOnServer(NetworkObject networkObject) {
+        if (linkedToScene) {
+            this.mGame.spawnNetworkObjectOnScene(networkObject);
+        }
+        this.networkObjects.add(networkObject);
+    }
+
     /**
      * Queue request.
      *
@@ -358,9 +378,10 @@ public class Server {
     public int spawnComponent(NetworkableComponent component, int networkObjectToSpawnOn) {
         NetworkObject networkObject = this.getNetworkObject(networkObjectToSpawnOn);
         if (networkObject != null) {
-            int capitalId = networkObject.spawnComponent(component, this.mSockets::broadcast);
-            this.networkObjects.add(networkObject);
-            return capitalId;
+            int componentId =
+                    networkObject.serverSpawnComponent(component, this.mSockets::broadcast);
+            spawnNetworkObjectOnServer(networkObject);
+            return componentId;
         }
         return -1;
     }

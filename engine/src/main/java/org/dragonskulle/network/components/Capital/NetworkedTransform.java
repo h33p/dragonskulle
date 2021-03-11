@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game;
+package org.dragonskulle.network.components.Capital;
 
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -38,5 +38,19 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
             this.x.set(newX);
             getGameObject().getTransform().translate(shouldFlipDirection * newX, 0, 0);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "NetworkedTransform{"
+                + "x="
+                + x
+                + ", y="
+                + y
+                + ", shouldFlipDirection="
+                + shouldFlipDirection
+                + ", isServer="
+                + isServer
+                + '}';
     }
 }

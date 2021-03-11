@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -137,7 +137,11 @@ public class ClientGameInstance {
     private Reference<NetworkObject> spawnNewNetworkObject(int networkObjectId) {
         final NetworkObject nob = new NetworkObject(networkObjectId, false);
         mLogger.warning("adding a new root object to the scene");
-        this.linkedScene.addRootObject(nob);
+        mLogger.warning("nob to be spawned is : " + nob.toString());
+        if (isLinkedToScene) {
+            nob.linkToScene();
+            this.linkedScene.addRootObject(nob);
+        }
         Reference<NetworkObject> ref = nob.getNetReference();
         this.mNetworkObjectReferences.add(ref);
         return ref;
@@ -164,6 +168,7 @@ public class ClientGameInstance {
         mLogger.warning("adding networkable to nob");
         nob.linkToScene();
         nob.addNetworkableComponent(capital);
+        //        nob.addComponent(CapitalRenderable.get());
         this.mHasCapital = true;
         return capital.getId();
     }

@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
+import static org.dragonskulle.game.ClientApp.issue35Workaround;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
@@ -9,8 +11,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.*;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.UnlitMaterial;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -21,7 +21,7 @@ public class ServerApp {
     public static void main(String[] args) throws Exception {
         final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
         final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
-        StartServer serverInstance = new StartServer(true, true);
+        StartServer serverInstance = new StartServer(mNetworkObjectCounter, true, true);
 
         // Create a scene
         Scene mainScene = new Scene("mainScene");
@@ -37,22 +37,26 @@ public class ServerApp {
                                         new Vector3f(0.0f, 0.0f, 1.0f)));
         mainScene.addRootObject(GameObject.instantiate(camera, cameraTransform));
 
-        NetworkObject networkCube = new NetworkObject(allocateId(mNetworkObjectCounter), true);
+        serverInstance.linkToScene(mainScene);
+        //        NetworkObject networkCube = new NetworkObject(allocateId(mNetworkObjectCounter),
+        // true);
+        //
+        //        networkCube.addNetworkableComponent(
+        //                new NetworkedTransform(
+        //                        networkCube.getId(), allocateId(mNetworkComponentCounter), true));
+        //        networkCube.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
+        //        //        networkCube.addComponent(new NetworkedSpinner());
+        //
+        //        spawnNetworkable(serverInstance.server, mainScene, networkCube);
 
-        networkCube.addNetworkableComponent(
-                new NetworkedTransform(
-                        networkCube.getId(), allocateId(mNetworkComponentCounter), true));
-        networkCube.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-        //        networkCube.addComponent(new NetworkedSpinner());
+        issue35Workaround(mainScene);
 
-        spawnNetworkable(serverInstance.server, mainScene, networkCube);
-
-        Engine.getInstance().start("Germany", new GameBindings(), mainScene);
+        Engine.getInstance().start("Server", new GameBindings(), mainScene);
     }
 
     private static void spawnNetworkable(Server server, Scene mainScene, NetworkObject object) {
         server.spawnObject(object);
-        mainScene.addRootObject(GameObject.instantiate(object));
+        mainScene.addRootObject(object);
     }
 
     /**

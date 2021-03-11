@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.network.components;
+package org.dragonskulle.network.components.Capital;
 
+import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncString;
 
@@ -25,9 +26,9 @@ public class Capital extends NetworkableComponent {
     }
 
     /** A syncable field. */
-    SyncBool mSyncMe = new SyncBool(false);
+    public SyncBool mSyncMe = new SyncBool(false);
     /** A syncable field. */
-    SyncString mSyncMeAlso = new SyncString("Hello World");
+    public SyncString mSyncMeAlso = new SyncString("Hello World");
 
     /**
      * Instantiates a new Capital.

@@ -2,12 +2,16 @@
 package org.dragonskulle.network;
 
 import java.util.Random;
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.network.components.NetworkObject;
 
 /** @author Oscar L The type Server game instance. */
 public class ServerGameInstance {
     /** The Map store, should be depreciated in favour of a HexMap object. */
     private final byte[] mMap =
             new byte[600]; // This is a placeholder to hold the map, in reality a clone of the
+
+    private Scene scene;
     // current map will be made.
 
     /** Instantiates a new Server game instance. */
@@ -32,5 +36,13 @@ public class ServerGameInstance {
      */
     public boolean isSetup() {
         return this.mMap != null;
+    }
+
+    public void spawnNetworkObjectOnScene(NetworkObject networkObject) {
+        this.scene.addRootObject(networkObject);
+    }
+
+    public void setScene(Scene mainScene) {
+        this.scene = mainScene;
     }
 }

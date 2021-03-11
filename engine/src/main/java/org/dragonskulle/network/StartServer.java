@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import org.dragonskulle.core.Scene;
 
 /** @author Oscar L How to start the server Start server. */
 public class StartServer {
@@ -12,19 +14,22 @@ public class StartServer {
     /** The Port. */
     static final int PORT = 7000;
 
-    public StartServer() {
+    public StartServer(AtomicInteger networkObjectCounter) {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
-        server = new Server(PORT, serverListener);
+        server = new Server(PORT, serverListener, networkObjectCounter);
     }
 
-    public StartServer(boolean autoProcessMessages, boolean startFixedUpdate) {
+    public StartServer(
+            AtomicInteger networkObjectCounter,
+            boolean autoProcessMessages,
+            boolean startFixedUpdate) {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
         if (autoProcessMessages) {
-            server = new Server(PORT, serverListener, autoProcessMessages);
+            server = new Server(PORT, serverListener, autoProcessMessages, networkObjectCounter);
             if (startFixedUpdate) {
                 server.startFixedUpdate();
             }
@@ -32,7 +37,8 @@ public class StartServer {
     }
 
     public static void main(String[] args) {
-        StartServer ss = new StartServer();
+        AtomicInteger networkObjectCounter = new AtomicInteger(0);
+        StartServer ss = new StartServer(networkObjectCounter);
     }
 
     /** Attach shut down hook. */
@@ -54,5 +60,9 @@ public class StartServer {
 
     public void clearPendingRequests() {
         server.clearPendingRequests();
+    }
+
+    public void linkToScene(Scene mainScene) {
+        this.server.linkToScene(mainScene);
     }
 }

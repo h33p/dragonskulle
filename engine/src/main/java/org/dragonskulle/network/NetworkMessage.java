@@ -5,7 +5,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.Capital.Capital;
+import org.dragonskulle.network.components.Capital.NetworkedTransform;
 import org.dragonskulle.network.components.NetworkableComponent;
 import sun.misc.IOUtils;
 
@@ -329,6 +330,8 @@ public class NetworkMessage {
     public static byte getChildClassTypeByte(Class<? extends NetworkableComponent> aClass) {
         if (aClass == Capital.class) {
             return (byte) 21;
+        } else if (aClass == NetworkedTransform.class) {
+            return (byte) 23;
         }
         return (byte) 0;
     }
@@ -336,6 +339,8 @@ public class NetworkMessage {
     public static Class<? extends NetworkableComponent> getChildClassFromByte(byte bClass) {
         if (bClass == (byte) 21) {
             return Capital.class;
+        } else if (bClass == (byte) 23) {
+            return NetworkedTransform.class;
         }
 
         return null;

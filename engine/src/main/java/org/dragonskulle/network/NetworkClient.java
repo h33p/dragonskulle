@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.network.components.Capital;
+import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -130,6 +130,7 @@ public class NetworkClient {
      * @return the byte
      */
     public byte executeBytes(byte messageType, byte[] payload) {
+        mLogger.warning("EXEB - " + messageType);
         switch (messageType) {
             case (byte) 15:
                 mLogger.info("Should update requested network object");
