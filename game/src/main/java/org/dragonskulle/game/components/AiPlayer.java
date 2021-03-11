@@ -16,7 +16,7 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	protected float timeSinceStart;
 	protected int lowerBoundTime;
 	protected int upperBoundTime;
-	protected int actualTime;
+	protected int timeToWait;
 	
 	protected Random random = new Random();
 	
@@ -58,9 +58,10 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	protected boolean playGame(float deltaTime) {
 		timeSinceStart += deltaTime;
 		
-		if (timeSinceStart >= actualTime) {
+		//Checks to see how long since last time AI player played and if longer than how long they have to wait
+		if (timeSinceStart >= timeToWait) {
 			timeSinceStart = 0;
-			createNewRandomTime();
+			createNewRandomTime();  //Creates new Random Number
 			return true;
 		}
 		
@@ -73,8 +74,8 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	protected void createNewRandomTime() {
 		do {
 			
-			actualTime = random.nextInt(upperBoundTime+1);
-		} while (actualTime < lowerBoundTime);
+			timeToWait = random.nextInt(upperBoundTime+1);
+		} while (timeToWait < lowerBoundTime);
 	}
 	
 	@Override
@@ -84,6 +85,7 @@ public class AiPlayer extends Player implements IFixedUpdate {
 
     @Override
     public void fixedUpdate(float deltaTime) {
+    	
     	updateTokens(deltaTime);
     	if (playGame(deltaTime)) {
     		simulateInput();
@@ -143,10 +145,27 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	}
     }
     
-    private List<HexTiles> hexTilesToExpand(){
-    	List<HexTiles> hexTilesToExpand = new ArrayList<HexTiles>();
+    private List<HexagonTiles> hexTilesToExpand(){
+    	List<HexagonTiles> hexTilesToExpand = new ArrayList<HexagonTile>();
     	for (Building building: ownedBuildings) {
-    		;
+    		List<HexagonTiles> hexTilesWhichCanBeSeen = building.getHexTiles();
+    		
+    		int r_pos = building.getR();
+    		int q_pos = building.getS();
+    		
+    		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
+    			if ((Math.abs(Math.abs(hexTile.getR())) - Math.abs(r_pos)) <= 1 && Math.abs(Math.abs(hexTile.getQ()) - Math.abs(q_pos)) == 1) {  // Rework to check for every building.
+    				;//IGNORE TILE IT'S WITHIN 1 HEX	
+    			}
+    			else if (mapComponent.get(hexTile.getR(), hexTile.getQ()) != null) {
+    				; //Ignore cos theres already a building there
+    			}
+    			
+    			// Can add extra checks here.
+    			else {
+    				hexTilesToExpand.add(hexTile);
+    			}
+    		}
     	}
     }
 }
