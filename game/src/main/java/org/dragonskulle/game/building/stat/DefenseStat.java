@@ -1,20 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building.stat;
 
-public class AttackStat extends Stat<Double> {
-
-    private double normalise(int level) {
-        double min = Double.valueOf(LEVEL_MIN);
-        double max = Double.valueOf(LEVEL_MAX);
-        double value = Double.valueOf(level);
-
-        return (value - min) / (max - min);
-    }
+public class DefenseStat extends Stat<Double> {
 
     @Override
     protected Double levelToValue() {
-        System.out.println(normalise(mLevel));
-
         switch (mLevel) {
             case 0:
                 return 0d;
