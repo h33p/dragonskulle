@@ -3,7 +3,9 @@ package org.dragonskulle.game.components;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.game.map.HexagonMap;
 import org.joml.Vector2d;
+
 
 /**
  * This class will allow a user to interact with game.
@@ -18,7 +20,7 @@ public class HumanPlayer extends Player implements IFrameUpdate {
 	 * @param map the map being used for this game
 	 * @param capital the capital used by the player
 	 */
-	public HumanPlayer(Reference<HexagongMap> map, Building capital) {
+	public HumanPlayer(Reference<HexagonMap> map, Building capital) {
 		
 		super(map, capital);
 		

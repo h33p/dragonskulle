@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 
 /**
@@ -39,7 +40,7 @@ public class AiPlayer extends Player implements IFixedUpdate {
 	 * 
 	 * <p> So if you set the lowerBound to 2 and upperBound the AI Player will have a go every 2 - 5 seconds (Depending on the random number picked) <\p>
 	 */
-	public AiPlayer(int lowerBound, int upperBound, Reference<HexMap> map, Building capital) {
+	public AiPlayer(int lowerBound, int upperBound, Reference<HexagonMap> map, Building capital) {
 		
 		super(map, capital);
 		lowerBoundTime = lowerBound;

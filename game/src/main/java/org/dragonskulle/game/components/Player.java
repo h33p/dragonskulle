@@ -6,6 +6,7 @@ import java.util.List;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Time;
+import org.dragonskulle.game.map.HexagonMap;
 
 /**
  * Abstract Player class, Both AIPlayer and HumanPlayer will extend this
