@@ -80,6 +80,13 @@ public class GameObject implements Serializable {
         return instance;
     }
 
+    /**
+     * Create a clone of a GameObject, providing a new transform for the object as a HexTransform
+     *
+     * @param object GameObject to be copied
+     * @param transform HexTransform containing the new transform for the object
+     * @return The new instance of the GameObject
+     */
     public static GameObject instantiate(GameObject object, HexTransform transform) {
         GameObject instance = object.createClone();
         Transform t = transform.getTransform();

@@ -36,8 +36,8 @@ public class Engine {
     protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
     protected final HashSet<Component> mDestroyedComponents = new HashSet<>();
 
-    private final HashSet<Scene> mScenesToEnable = new HashSet<>();
-    private final HashSet<Scene> mScenesToDisable = new HashSet<>();
+    private final HashSet<Scene> mScenesToActivate = new HashSet<>();
+    private final HashSet<Scene> mScenesToDeactivate = new HashSet<>();
     private final HashSet<Scene> mScenesToUnload = new HashSet<>();
     private Scene mNewPresentationScene = null;
 
@@ -67,35 +67,29 @@ public class Engine {
     }
 
     /**
-     * Loads a new scene that will be run from the next frame onwards.
+     * If scene is already loaded, it will be activated from the next frame. If it isn't loaded,
+     * it will be loaded and started on the next frame
      *
      * @param scene Scene to be loaded
      */
-    public void loadScene(Scene scene) {
-        mScenesToEnable.add(scene);
+    public void activateScene(Scene scene) {
+        mScenesToActivate.add(scene);
     }
 
     /**
-     * Load a new scene that will not run until it's loaded
+     * If scene is already loaded, it will be deactivated from the next frame. If it isn't loaded,
+     * it will be loaded but not started.
      *
      * @param scene Scene to be loaded
-     */
-    public void loadSceneInactive(Scene scene) {
-        mScenesToDisable.add(scene);
-    }
-
-    /**
-     * Deactivate a loaded scene. It will remain in the game in a dormant state until loaded again
-     *
-     * @param scene Scene to be deactivated
      */
     public void deactivateScene(Scene scene) {
-        mScenesToDisable.add(scene);
+        mScenesToDeactivate.add(scene);
     }
 
     /**
-     * Unload a currently active scene. This removes all references to the scene so it will be
-     * freed and can no longer be used
+     * Completely unload a scene from the engine. This will remove the scene regardless of whether
+     * it is active, inactive or the presentation scene. No references to the scene will be kept in
+     * the engine.
      *
      * @param scene Scene to unload
      */
@@ -109,7 +103,7 @@ public class Engine {
      * @param scene Scene to be rendered to the user
      */
     public void loadPresentationScene(Scene scene) {
-        mScenesToEnable.add(scene);
+        mScenesToActivate.add(scene);
         mNewPresentationScene = scene;
     }
 
@@ -137,10 +131,10 @@ public class Engine {
             cumulativeTime += deltaTime;
             secondTimer += deltaTime;
 
-            // Update scene lists
+            // Update scenes
             switchScenes();
 
-            // Update all component lists in scenes
+            // Update all component lists in active scenes
             updateScenesComponentsList();
 
             // Wake up all components that aren't awake (Called on all active scenes)
@@ -155,9 +149,6 @@ public class Engine {
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
 
-            // Perform all updates that we can fit in the time since last frame
-            // Means that multiple fixed updates can happen before the next frame
-            // if rendering to screen is taking a very long time
             while (cumulativeTime > UPDATE_TIME) {
                 cumulativeTime -= UPDATE_TIME;
 
@@ -283,6 +274,7 @@ public class Engine {
      * should be enabled and switching the presentation scene if necessary.
      */
     private void switchScenes() {
+
         // Load the new presentation scene
         if (mNewPresentationScene != null) {
             if (mPresentationScene != null) {
@@ -299,13 +291,13 @@ public class Engine {
         }
 
         // Disable all scenes that need to be disabled
-        for (Scene s : mScenesToDisable) {
+        for (Scene s : mScenesToDeactivate) {
             mActiveScenes.remove(s);
             mInactiveScenes.add(s);
         }
 
         // Enable all scenes that need to be enabled
-        for (Scene s : mScenesToEnable) {
+        for (Scene s : mScenesToActivate) {
             mInactiveScenes.remove(s);
             mActiveScenes.add(s);
         }
@@ -315,6 +307,9 @@ public class Engine {
             mScenesToUnload.remove(s);
             mActiveScenes.remove(s);
             mInactiveScenes.remove(s);
+            if (mPresentationScene != null && mPresentationScene == s) {
+                mPresentationScene = null;
+            }
         }
     }
 
@@ -341,6 +336,15 @@ public class Engine {
     public void addDestroyedComponent(Component component) {}
 
     /**
+     * Getter for mInactiveScenes
+     *
+     * @return mInactiveScenes
+     */
+    public ArrayList<Scene> getInactiveScenes() {
+        return new ArrayList<>(mInactiveScenes);
+    }
+
+    /**
      * Getter for mActiveScenes
      *
      * @return mActiveScenes
@@ -354,7 +358,7 @@ public class Engine {
      *
      * @return mPresentationScene
      */
-    public Scene getNewPresentationScene() {
+    public Scene getPresentationScene() {
         return mPresentationScene;
     }
 
