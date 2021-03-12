@@ -8,6 +8,7 @@ import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -24,7 +25,7 @@ public class ServerTest {
 
     @BeforeClass
     public static void setUp() {
-        //        LogManager.getLogManager().reset();
+        LogManager.getLogManager().reset();
         AtomicInteger networkObjectCounter = new AtomicInteger(0);
         mServerInstance = new StartServer(networkObjectCounter, true, true);
         mClientListener = new ClientEars();
@@ -67,7 +68,7 @@ public class ServerTest {
     private Capital testCapitalSpawnDefaultServer() {
         await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
         mNetworkClient.processSingleRequest();
-        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
+        await().atMost(1800, MILLISECONDS).until(() -> mNetworkClient.hasMap());
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
         assertFalse(mServerInstance.server.networkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
@@ -130,7 +131,7 @@ public class ServerTest {
         testMapClient();
         Capital nc = testCapitalSpawnDefaultClient();
         modifyCapital(nc);
-        await().atMost(1, SECONDS)
+        await().atMost(1800, MILLISECONDS)
                 .until(() -> mNetworkClient.setProcessMessagesAutomatically(true));
         await().atMost(TIMEOUT, SECONDS).until(() -> nc.getSyncMe().get() == true);
         assert (nc.getSyncMe().get() == true);
