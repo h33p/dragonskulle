@@ -161,6 +161,10 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	}
     }
     
+    /**
+     * A private method which will return all the hex tiles which can be used to place a building in
+     * @return A list of hexagon tiles which can be expanded into.
+     */
     private List<HexagonTile> hexTilesToExpand(){
     	List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
     	for (Building building: ownedBuildings) {
@@ -188,6 +192,11 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	return hexTilesToExpand;
     }
     
+    /**
+     * This will check if the hex tile chosen to build in is within 1 place of any other building.
+     * @param hexTile The hex tile to build in
+     * @return {@code true} if that hextile is valid to build in or {@code false} if it's not valid 
+     */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
     	int r_value = hexTile.getmR();
 		int q_value = hexTile.getmQ();
