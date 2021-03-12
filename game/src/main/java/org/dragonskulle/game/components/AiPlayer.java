@@ -91,7 +91,6 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	updateTokens(deltaTime);
     	if (playGame(deltaTime)) {
     		simulateInput();
-    		triggerEvent();
     		
     	}
     }
@@ -110,7 +109,9 @@ public class AiPlayer extends Player implements IFixedUpdate {
     		if (tilesToUse.size() != 0) {
     			int randomIndex = random.nextInt(tilesToUse.size());
     			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
-    			//now have Hexagon tile to expand to 
+    			//now have Hexagon tile to expand to
+    			triggerEvent(); //Send data to this which will then package & send to server
+    			return;
     		}
     		else {
     			return; //end
@@ -129,6 +130,8 @@ public class AiPlayer extends Player implements IFixedUpdate {
         			int randomIndex = random.nextInt(tilesToUse.size());
         			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
         			//now have Hexagon tile to expand to 
+        			triggerEvent();  //Send data to this which will then package & send to server
+        			return;
         		}
         		else {
         			return; //end
@@ -136,14 +139,16 @@ public class AiPlayer extends Player implements IFixedUpdate {
     		}
     		else {
     			randomNumber = random.nextFloat();
-    			Building building = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
+    			
     			
     			if (randomNumber <= upgradeBuilding) {
     				
-    				//KNow which building eed to choose which stat
-    				//How to choose what stat to improve -- need to wait to se how building is doing it
-    				//TODO Choose which building to upgrade & which stat to upgrade
-    				return;
+    				Building building = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
+    				Stat[] statsArray = building.getStats();
+    				Stat statToUpgrade = statsArray[random.nextInt(statsArray.length)];
+    				triggerEvent();  //Send data to this which will then package & send to server
+        			return;
+    				
     			}
     			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
     				//TODO Choose which building to attack
@@ -161,7 +166,8 @@ public class AiPlayer extends Player implements IFixedUpdate {
     				if (buildingsToAttack.size() != 0) {
     					Building[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
     					//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
-    					return;
+    					triggerEvent();  //Send data to this which will then package & send to server
+    	    			return;
     				}
     				else {
     					return;
@@ -170,11 +176,12 @@ public class AiPlayer extends Player implements IFixedUpdate {
     				
     			}
     			else {
-    				//TODO Choose which building to sell
+    				
     				if (ownedBuildings > 1) {
     					Building buildingToSell = ownedBuildings.get(random.nextInt(ownedBuildings.size()));	
     					//Now have building to sell
-        				return;
+    					triggerEvent();  //Send data to this which will then package & send to server
+    	    			return;
     				}
     				else {
     					return;
