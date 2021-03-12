@@ -4,9 +4,11 @@ package org.dragonskulle.components;
 import org.dragonskulle.core.GameObject;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
+import org.joml.Vector3fc;
 
 /**
  * Base Transform class
@@ -14,40 +16,50 @@ import org.joml.Vector4f;
  * @author Harry Stoltz
  *     <p>All GameObjects will have a Transform object which stores the position, rotation and scale
  *     of the object (As right, up, forward and position in a 4x4 Matrix). The Transform can be used
- *     to get 3D position, scale and rotation. Or can be cast to HexTransform to get the position,
- *     scale and rotation in Hex coordinates.
+ *     to get 3D position, scale and rotation.
  */
 public class Transform extends Component {
     private static final float DEG_TO_RAD = (float) Math.PI / 180.f;
 
-    private final Matrix4f mLocalMatrix;
-    private Matrix4f mWorldMatrix;
-    private boolean mShouldUpdate = true;
+    protected final Matrix4f mLocalMatrix;
+    protected Matrix4f mWorldMatrix;
+    protected boolean mShouldUpdate = true;
 
     /** Default constructor. mLocalMatrix is just the identity matrix */
     public Transform() {
-        mLocalMatrix = new Matrix4f().identity();
-        mWorldMatrix = new Matrix4f().identity();
+        mLocalMatrix = new Matrix4f();
+        mWorldMatrix = new Matrix4f();
     }
 
     /**
-     * Constructor
+     * Constructor with initial position
      *
      * @param position Starting position for the object
      */
-    public Transform(Vector3f position) {
-        mLocalMatrix = new Matrix4f().identity().translate(position);
-        mWorldMatrix = new Matrix4f().identity();
+    public Transform(Vector3fc position) {
+        this(position.x(), position.y(), position.z());
     }
 
     /**
-     * Constructor
+     * Constructor with initial position
+     *
+     * @param x X position axis
+     * @param y Y position axis
+     * @param z Z position axis
+     */
+    public Transform(float x, float y, float z) {
+        mLocalMatrix = new Matrix4f().translate(x, y, z);
+        mWorldMatrix = new Matrix4f();
+    }
+
+    /**
+     * Constructor with initial transformation matrix
      *
      * @param matrix Matrix to be used for mLocalMatrix
      */
-    public Transform(Matrix4f matrix) {
+    public Transform(Matrix4fc matrix) {
         mLocalMatrix = new Matrix4f(matrix);
-        mWorldMatrix = new Matrix4f().identity();
+        mWorldMatrix = new Matrix4f();
     }
 
     /**
@@ -55,8 +67,19 @@ public class Transform extends Component {
      *
      * @param position Vector3f containing the desired position
      */
-    public void setPosition(Vector3f position) {
-        mLocalMatrix.setColumn(3, new Vector4f(position, 1.f));
+    public void setPosition(Vector3fc position) {
+        setPosition(position.x(), position.y(), position.z());
+    }
+
+    /**
+     * Set the position of the object relative to the parent
+     *
+     * @param x X coordinate of position
+     * @param y Y coordinate of position
+     * @param z Z coordinate of position
+     */
+    public void setPosition(float x, float y, float z) {
+        mLocalMatrix.setTranslation(x, y, z);
         setUpdateFlag();
     }
 
@@ -65,9 +88,8 @@ public class Transform extends Component {
      *
      * @param eulerAngles Vector containing euler angles to rotate object with
      */
-    public void rotateRad(Vector3f eulerAngles) {
-        mLocalMatrix.rotateXYZ(eulerAngles);
-        setUpdateFlag();
+    public void rotateRad(Vector3fc eulerAngles) {
+        rotateRad(eulerAngles.x(), eulerAngles.y(), eulerAngles.z());
     }
 
     /**
@@ -99,7 +121,7 @@ public class Transform extends Component {
      *
      * @param quaternion Quaternion to rotate object with
      */
-    public void rotate(Quaternionf quaternion) {
+    public void rotate(Quaternionfc quaternion) {
         mLocalMatrix.rotate(quaternion);
         setUpdateFlag();
     }
@@ -109,7 +131,7 @@ public class Transform extends Component {
      *
      * @param translation Vector translation to perform
      */
-    public void translate(Vector3f translation) {
+    public void translate(Vector3fc translation) {
         mLocalMatrix.translate(translation);
         setUpdateFlag();
     }
@@ -127,12 +149,24 @@ public class Transform extends Component {
     }
 
     /**
+     * Translate the object relative to current orientation
+     *
+     * @param x Translation in X-axis
+     * @param y Translation in Y-axis
+     * @param z Translation in Z-axis
+     */
+    public void translateLocal(float x, float y, float z) {
+        mLocalMatrix.translateLocal(x, y, z);
+        setUpdateFlag();
+    }
+
+    /**
      * Scale the object
      *
      * @param scale Vector to scale object with
      */
-    public void scale(Vector3f scale) {
-        mLocalMatrix.scale(scale);
+    public void scale(Vector3fc scale) {
+        mLocalMatrix.scaleLocal(scale.x(), scale.y(), scale.z());
         setUpdateFlag();
     }
 
@@ -162,12 +196,33 @@ public class Transform extends Component {
     /**
      * Get the transformation matrix relative to the parent transform
      *
-     * @return A copy of the local matrix
+     * @return A constant reference to the local matrix
      */
-    public Matrix4f getLocalMatrix() {
-        Matrix4f dest = new Matrix4f();
-        mLocalMatrix.get(dest);
-        return dest;
+    public Matrix4fc getLocalMatrix() {
+        return mLocalMatrix;
+    }
+
+    /**
+     * Get the transformation matrix relative to the parent transform (mutable version)
+     *
+     * <p>Calling this method will trigger transform update. Use only if you are going to modify the
+     * matrix.
+     *
+     * @return Mutable reference to the local matrix
+     */
+    public Matrix4f getLocalMatrixMut() {
+        setUpdateFlag();
+        return mLocalMatrix;
+    }
+
+    /**
+     * Set the transformation matrix relative to the parent transform
+     *
+     * @param from transformation matrix to set
+     */
+    public void setLocalMatrix(Matrix4fc from) {
+        mLocalMatrix.set(from);
+        setUpdateFlag();
     }
 
     /**
@@ -264,23 +319,20 @@ public class Transform extends Component {
      * is used as the worldMatrix. If it isn't a root object and mShouldUpdate is true, recursively
      * call getWorldMatrix up to the first Transform that has mShouldUpdate as false
      *
-     * @return mWorldMatrix
+     * @return constant mWorldMatrix
      */
-    public Matrix4f getWorldMatrix() {
+    public Matrix4fc getWorldMatrix() {
         if (mShouldUpdate) {
             mShouldUpdate = false;
-            if (mGameObject.isRootObject()) {
+            if (mGameObject == null || mGameObject.isRootObject()) {
                 mWorldMatrix = mLocalMatrix;
             } else {
-                // Store our local matrix in mWorldMatrix
-                mWorldMatrix.set(mLocalMatrix);
-
-                // Then multiply by parent's world matrix
+                // Multiply parent's world matrix by the local matrix
                 // Which gives us the matrix multiplication mLocalMatrix * parentWorldMatrix
                 // so when doing mWorldMatrix * (vector)
-                // It is the same as doing mLocalMatrix * parentWorldMatrix * (vector)
+                // It is the same as doing parentWorldMatrix * mLocalMatrix * (vector)
                 // so that any parent transformations are done prior to the local transformation
-                mWorldMatrix.mul(mGameObject.getParentTransform().getWorldMatrix());
+                mGameObject.getParentTransform().getWorldMatrix().mul(mLocalMatrix, mWorldMatrix);
             }
         }
         return mWorldMatrix;

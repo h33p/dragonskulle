@@ -3,14 +3,11 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.vulkan.VK10.*;
 
-import lombok.Builder;
-
 /**
  * Describes layout of all attributes on the vertex shader
  *
  * @author Aurimas Blažulionis
  */
-@Builder
 public class AttributeDescription {
     public int bindingID;
     public int location;
@@ -19,6 +16,14 @@ public class AttributeDescription {
 
     public static final int MATRIX_ROW_SIZE = 4 * 4;
     public static final int MATRIX_SIZE = MATRIX_ROW_SIZE * 4;
+
+    /** Constructor for AttributeDescription */
+    public AttributeDescription(int bindingID, int location, int format, int offset) {
+        this.bindingID = bindingID;
+        this.location = location;
+        this.format = format;
+        this.offset = offset;
+    }
 
     /**
      * Creates attribute descriptiions by appending the initial transformation matrix to the start.
