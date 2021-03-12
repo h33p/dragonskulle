@@ -16,7 +16,7 @@ import org.dragonskulle.core.GameObject;
  */
 @Accessors(prefix = "m")
 @Log
-class HexagonMap extends Component implements IOnStart {
+public class HexagonMap extends Component implements IOnStart {
 
     /** The size that is used to create the map. */
     @Getter private final int mSize;
@@ -33,7 +33,7 @@ class HexagonMap extends Component implements IOnStart {
      *
      * @param size the size of the map
      */
-    HexagonMap(int size) {
+    public HexagonMap(int size) {
         this.mSize = size;
 
         if (size < 0) {
