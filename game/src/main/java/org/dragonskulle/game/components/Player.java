@@ -15,7 +15,7 @@ import org.dragonskulle.core.Time;
 abstract public class Player extends Component {
 	
 	protected List<Building> ownedBuildings;
-	protected Reference<HexMap> mapComponent;
+	protected Reference<HexagonMap> mapComponent;
 	
 	protected int tokens = 0;  //NEED TO BE SYNCED
 	protected final int TOKEN_RATE = 5;
@@ -28,7 +28,7 @@ abstract public class Player extends Component {
 	 * @param map the map being used for this game
 	 * @param capital the capital used by the player
 	 */
-	public Player(Reference<HexMap> map, Building capital) {
+	public Player(Reference<HexagonMap> map, Building capital) {
 		mapComponent = map;
 		ownedBuildings = new ArrayList<Building>();
 		ownedBuildings.add(capital);
