@@ -107,11 +107,16 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	if (ownedBuildings.size() == 1) {
     		//TODO Choose which tile to use;
     		List<HexagonTile> tilesToUse = hexTilesToExpand();
-			int randomIndex = random.nextInt(tilesToUse.size());
-			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+    		if (tilesToUse.size() != 0) {
+    			int randomIndex = random.nextInt(tilesToUse.size());
+    			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+    			//now have Hexagon tile to expand to 
+    		}
+    		else {
+    			return; //end
+    		}
 			
-			//now have Hexagon tile to expand to 
-    		return;
+    		
     	}
     	else {
     		float randomNumber = random.nextFloat();
@@ -120,10 +125,14 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			//TODO Choose which tile to use
     			//Need way to choose which tile to use -- Guessing best way is to use Building again
     			List<HexagonTile> tilesToUse = hexTilesToExpand();
-    			int randomIndex = random.nextInt(tilesToUse.size());
-    			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
-    			//Now have hexagon tile to expand to
-    			return;
+        		if (tilesToUse.size() != 0) {
+        			int randomIndex = random.nextInt(tilesToUse.size());
+        			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+        			//now have Hexagon tile to expand to 
+        		}
+        		else {
+        			return; //end
+        		}
     		}
     		else {
     			randomNumber = random.nextFloat();
@@ -141,22 +150,37 @@ public class AiPlayer extends Player implements IFixedUpdate {
     				ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
     				for (Building building: ownedBuildings) {
     					
-    					List<Building> attackableBuilding = building.attackableBuildings();
-    					Building[] listToAdd = {building, attackableBuilding};
+    					List<Building> attackableBuildings = building.attackableBuildings();
+    					for (Building buildingWhichCouldBeAttacked : attackableBuildings) {
+    						Building[] listToAdd = {building, buildingWhichCouldBeAttacked};
     					
-    					buildingsToAttack.add(listToAdd);
+    						buildingsToAttack.add(listToAdd);
+    					}
     				}
     				
-    				Building[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
+    				if (buildingsToAttack.size() != 0) {
+    					Building[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
+    					//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
+    					return;
+    				}
+    				else {
+    					return;
+    				}
     				
-    				//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
+    				
     			}
     			else {
     				//TODO Choose which building to sell
-    				Building buildingToSell = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
+    				if (ownedBuildings > 1) {
+    					Building buildingToSell = ownedBuildings.get(random.nextInt(ownedBuildings.size()));	
+    					//Now have building to sell
+        				return;
+    				}
+    				else {
+    					return;
+    				}
     				
-    				//Now have building to sell
-    				return;
+    				
     			}
     		}
     	}
