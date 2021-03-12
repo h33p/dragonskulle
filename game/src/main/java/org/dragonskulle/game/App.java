@@ -8,6 +8,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.components.HumanPlayer;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
@@ -156,16 +157,16 @@ public class App {
         mainScene.addRootObject(monstrocity);
 
         // UI Example:
-        GameObject ui =
+        GameObject uiPlayer =
                 new GameObject(
                         "ui",
                         new UITransform(false),
                         (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.2f)));
+                            root.addComponent(new HumanPlayer());
                             root.getTransform().scale(0.95f, 0.95f, 1f);
                         });
 
-        ui.buildChild(
+        /*ui.buildChild(
                 "square",
                 new UITransform(true),
                 (square) -> {
@@ -229,8 +230,8 @@ public class App {
                                 button.addComponent(newButton);
                             });
                 });
-
-        mainScene.addRootObject(ui);
+*/
+        mainScene.addRootObject(uiPlayer);
 
         // Run the game
         Engine.getInstance().start("Germany", new GameBindings(), mainScene);

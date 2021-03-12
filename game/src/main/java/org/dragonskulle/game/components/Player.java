@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Time;
 import org.dragonskulle.game.map.HexagonMap;
@@ -13,7 +14,7 @@ import org.dragonskulle.game.map.HexagonMap;
  *
  * @author Harry Stoltz, Oscar Lindenbaum and Nathaniel Lowis
  */
-abstract public class Player extends Component {
+public class Player extends Component implements IFixedUpdate{
 	
 	protected List<Building> ownedBuildings;
 	protected Reference<HexagonMap> mapComponent;
@@ -47,7 +48,7 @@ abstract public class Player extends Component {
 	 * This method will take the action decided by the user and performed locally.
 	 */
 	protected void triggerEvent() {
-		
+		;
 	}
 	
 	
@@ -70,5 +71,17 @@ abstract public class Player extends Component {
 			tokens += TOKEN_RATE;
 			lastTokenUpdate = 0;
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void fixedUpdate(float deltaTime) {
+		// TODO Auto-generated method stub
+		
 	}
 }

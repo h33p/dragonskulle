@@ -13,7 +13,7 @@ import org.dragonskulle.game.map.HexagonTile;
  * This base class will allow AI players to be created and used throughout the game.
  * @author Oscar L, Nathaniel Lowis
  */
-public class AiPlayer extends Player implements IFixedUpdate {
+public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove extends
     
 	protected float timeSinceStart;
 	protected int lowerBoundTime;
