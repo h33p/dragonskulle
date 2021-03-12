@@ -49,7 +49,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 		mapScreen = getGameObject().buildChild("map screen", new UITransform(), (go) -> {
 			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 			
-		});  //This will draw a rectangle to the screen.  
+		});  //This will draw a rectangle to the screen.  Need way to change screen  
 		
 		placeScreen = getGameObject().buildChild("place screen", new UITransform(), (go) -> {
 			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));		//Make way to go back
@@ -60,6 +60,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 					
 					screenOn = Screen.MAP_SCREEN;
 				}));			
+			});
+			go.buildChild("Go Back", new UITransform(true), (box)-> {
+				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
+				box.addComponent(new UIButton((handle, __) -> {
+					
+					screenOn = Screen.MAP_SCREEN;
+				}));	
 			});
 		});
 		
@@ -85,6 +92,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 					//TODO When clicked need to sell building
 					screenOn = Screen.MAP_SCREEN;
 				}));
+			});
+			go.buildChild("Go Back", new UITransform(true), (box)-> {
+				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
+				box.addComponent(new UIButton((handle, __) -> {
+					
+					screenOn = Screen.MAP_SCREEN;
+				}));	
 			});
 		});
 		
