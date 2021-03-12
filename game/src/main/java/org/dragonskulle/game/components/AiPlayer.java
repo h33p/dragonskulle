@@ -105,6 +105,11 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	
     	if (ownedBuildings.size() == 1) {
     		//TODO Choose which tile to use;
+    		List<HexagonTile> tilesToUse = hexTilesToExpand();
+			int randomIndex = random.nextInt(tilesToUse.size());
+			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+			
+			//now have Hexagon tile to expand to 
     		return;
     	}
     	else {
@@ -113,6 +118,10 @@ public class AiPlayer extends Player implements IFixedUpdate {
     		if (randomNumber <= tileProbability) {
     			//TODO Choose which tile to use
     			//Need way to choose which tile to use -- Guessing best way is to use Building again
+    			List<HexagonTile> tilesToUse = hexTilesToExpand();
+    			int randomIndex = random.nextInt(tilesToUse.size());
+    			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+    			//Now have hexagon tile to expand to
     			return;
     		}
     		else {
