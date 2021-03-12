@@ -14,7 +14,7 @@ import org.dragonskulle.game.map.HexagonMap;
  *
  * @author Harry Stoltz, Oscar Lindenbaum and Nathaniel Lowis
  */
-public class Player extends Component implements IFixedUpdate{
+public class Player extends Component implements IFixedUpdate{		//TODO Work out what's happening with Player
 	
 	protected List<Building> ownedBuildings;
 	protected Reference<HexagonMap> mapComponent;
@@ -30,7 +30,7 @@ public class Player extends Component implements IFixedUpdate{
 	 * @param map the map being used for this game
 	 * @param capital the capital used by the player
 	 */
-	public Player(Reference<HexagonMap> map, Building capital) {
+	public Player(Reference<HexagonMap> map, Building capital) {		//TODO DO we need?
 		mapComponent = map;
 		ownedBuildings = new ArrayList<Building>();
 		ownedBuildings.add(capital);
@@ -40,7 +40,7 @@ public class Player extends Component implements IFixedUpdate{
 	/**
 	 * This method will take the action decided by the user and will tell the server to perform one action 
 	 */
-	protected void attemptEvent() {
+	protected void attemptEvent() {		
 		;
 	}
 	

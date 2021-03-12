@@ -48,6 +48,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 		
 		mapScreen = getGameObject().buildChild("map screen", new UITransform(), (go) -> {
 			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+			//TODO How to click hex
 			
 		});  //This will draw a rectangle to the screen.  Need way to change screen  
 		
@@ -119,10 +120,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     	buildingScreen.get().setActive(screenOn == Screen.BUILDING_SCREEN);
     	if (screenOn == Screen.MAP_SCREEN) {
     		mapScreen();
-    	}
-    	//TODO decide whether to do stuff serverSide - actual stuff or clientSide - UI stuff
-    	//triggerEvent();
-    	
+    	}    	
     }
     
     /**
@@ -139,10 +137,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     		if (hexChosen != null) {
     			Building buildingOnTile = HexagonMap.getBuilding(hexChosen.getR(), hexChosen.getQ());
     			if (buildingOnTile == null) {
-    				// Check if it can place a building there
+    				// TODO Check if it can place a building there
     				
     			}
-    			else if (buildingOnTile in ownedBuildings) {//This is in Player class.  Need to sort out
+    			else if (buildingOnTile in ownedBuildings) {//TODO This is in Player class.  Need to sort out
     				//TODO Need to change to buildingScreen
     				screenOn = Screen.BUILDING_SCREEN;
     			}

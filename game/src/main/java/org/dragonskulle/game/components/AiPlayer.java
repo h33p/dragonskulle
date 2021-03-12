@@ -13,7 +13,7 @@ import org.dragonskulle.game.map.HexagonTile;
  * This base class will allow AI players to be created and used throughout the game.
  * @author Oscar L, Nathaniel Lowis
  */
-public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove extends
+public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove extends -- Work out whats happening with player
     
 	protected float timeSinceStart;
 	protected int lowerBoundTime;
@@ -28,9 +28,7 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
 	protected float upgradeBuilding = (float) 0.2;  // These three probabilities summed must == 1
 	protected float attackBuilding = (float) 0.7;
 	protected float sellBuilding = (float) 0.1;
-	
-	//TODO to choose where to attack, which building to use, what stat to upgrade.  Do we want these to be uniform or not?  I would say it's easier to be uniform HOWEVER we can play around more easily if they're not uniform
-	
+		
 	/**
 	 * A Constructor for an AI Player 
 	 * @param lowerBound the lower bound in time for how often you want the AI player to play
@@ -40,7 +38,7 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
 	 * 
 	 * <p> So if you set the lowerBound to 2 and upperBound the AI Player will have a go every 2 - 5 seconds (Depending on the random number picked) <\p>
 	 */
-	public AiPlayer(int lowerBound, int upperBound, Reference<HexagonMap> map, Building capital) {
+	public AiPlayer(int lowerBound, int upperBound, Reference<HexagonMap> map, Building capital) {		//TODO remove and replace with onStart
 		
 		super(map, capital);
 		lowerBoundTime = lowerBound;
@@ -101,7 +99,6 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     private void simulateInput(){
     	
     	//TODO Need to know how we are interacting with triggerEvent().  Cos here you can choose exact command to do (Much Much easier)
-    	//TODO ATM have the set up probabilties to choose which event to do.  Need to add which building/tile to use
     	
     	if (ownedBuildings.size() == 1) {  //TODO Refactor it so it's only done once
     		
@@ -110,7 +107,7 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     			int randomIndex = random.nextInt(tilesToUse.size());
     			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
     			//now have Hexagon tile to expand to
-    			triggerEvent(); //Send data to this which will then package & send to server
+    			triggerEvent(); //TODO Send data to this which will then package & send to server
     			return;
     		}
     		else {
@@ -123,14 +120,12 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     		float randomNumber = random.nextFloat();
     		
     		if (randomNumber <= tileProbability) {
-    			//TODO Choose which tile to use
-    			//Need way to choose which tile to use -- Guessing best way is to use Building again
     			List<HexagonTile> tilesToUse = hexTilesToExpand();
         		if (tilesToUse.size() != 0) {
         			int randomIndex = random.nextInt(tilesToUse.size());
         			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
         			//now have Hexagon tile to expand to 
-        			triggerEvent();  //Send data to this which will then package & send to server
+        			triggerEvent();  //TODO Send data to this which will then package & send to server
         			return;
         		}
         		else {
@@ -146,12 +141,11 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     				Building building = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
     				Stat[] statsArray = building.getStats();
     				Stat statToUpgrade = statsArray[random.nextInt(statsArray.length)];
-    				triggerEvent();  //Send data to this which will then package & send to server
+    				triggerEvent();  //TODO Send data to this which will then package & send to server
         			return;
     				
     			}
     			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
-    				//TODO Choose which building to attack
     				ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
     				for (Building building: ownedBuildings) {
     					
@@ -166,7 +160,7 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     				if (buildingsToAttack.size() != 0) {
     					Building[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
     					//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
-    					triggerEvent();  //Send data to this which will then package & send to server
+    					triggerEvent();  //TODO Send data to this which will then package & send to server
     	    			return;
     				}
     				else {
@@ -180,7 +174,7 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     				if (ownedBuildings > 1) {
     					Building buildingToSell = ownedBuildings.get(random.nextInt(ownedBuildings.size()));	
     					//Now have building to sell
-    					triggerEvent();  //Send data to this which will then package & send to server
+    					triggerEvent();  //TODO Send data to this which will then package & send to server
     	    			return;
     				}
     				else {
@@ -210,7 +204,7 @@ public class AiPlayer extends Player implements IFixedUpdate {  //TODO remove ex
     			if (mapComponent.get(hexTile.getmR(), hexTile.getmQ()) != null) {
     				; //Ignore cos theres already a building there
     			}
-    			else if (!checkCloseBuildings(hexTile)) {  // Rework to check for every building.
+    			else if (!checkCloseBuildings(hexTile)) {  
     				;//IGNORE TILE IT'S WITHIN 1 HEX	
     			}
     			
