@@ -3,6 +3,7 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.Transform;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -111,6 +112,37 @@ public class GameObjectTest {
 
         Assert.assertNotNull(
                 "GameObject did not have a transform after cloning", objClone.getTransform());
+    }
+
+    /** Test whether updating a parent synchronizes its subchildren */
+    @Test
+    public void indirectTransformsSynchronized() {
+        GameObject subchild = new GameObject("subchild", new Transform(0f, 0f, 2f));
+
+        GameObject root =
+                new GameObject(
+                        "parent",
+                        new Transform(0f, 0f, -1f),
+                        (go) -> {
+                            // Rather than adding a child directly, build another child,
+                            // and add it there
+                            go.buildChild(
+                                    "child",
+                                    (child) -> {
+                                        child.addChild(subchild);
+                                    });
+                        });
+
+        // We initially start with world space Z coordinate being 2 - 1 = 1
+        Assert.assertTrue(1f == subchild.getTransform().getPosition().z);
+
+        root.getTransform().translate(0f, 0f, 1f);
+
+        Assert.assertTrue(2f == subchild.getTransform().getPosition().z);
+
+        root.getTransform().translate(0f, 0f, -1f);
+
+        Assert.assertTrue(1f == subchild.getTransform().getPosition().z);
     }
 
     /*
