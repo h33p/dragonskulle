@@ -15,6 +15,7 @@ import org.dragonskulle.game.building.stat.DefenceStat;
 import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 
 @Accessors(prefix = "m")
@@ -28,8 +29,8 @@ public class Building extends Component {
     
     private Reference<HexagonTile> mTile;
     
-    public Building(Reference<HexagonTile> tile) {
-    	mTile = tile;
+    public Building(Reference<HexagonMap> hexagonMap, Reference<HexagonTile> hexagonTile) {
+    	mTile = hexagonTile;
     	
     	mAttack = new AttackStat();
         mDefence = new DefenceStat();
@@ -41,23 +42,12 @@ public class Building extends Component {
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         
-        /*
-        String l0 = String.format("Level: %d \tValue: %f\n", mAttack.getLevel(), mAttack.getValue());
-        mAttack.increaseLevel();
-        String l1 = String.format("Level: %d \tValue: %f\n", mAttack.getLevel(), mAttack.getValue());
-        mAttack.increaseLevel();
-        String l2 = String.format("Level: %d \tValue: %f\n", mAttack.getLevel(), mAttack.getValue());
-        mAttack.increaseLevel();
-        String l3 = String.format("Level: %d \tValue: %f\n", mAttack.getLevel(), mAttack.getValue());
-        mAttack.increaseLevel();
-        String l4 = String.format("Level: %d \tValue: %f\n", mAttack.getLevel(), mAttack.getValue());
-        mAttack.increaseLevel();
-        String l5 = String.format("Level: %d \tValue: %f\n", mAttack.getLevel(), mAttack.getValue());
-        
-        log.info(
-        		l0 + l1 + l2 + l3 + l4 + l5
-        );
-        */
+        // Move out of constructor;
+        HexagonMap map = hexagonMap.get();
+    	HexagonTile tile = mTile.get();
+    	if(map != null && tile != null) {
+    		map.storeBuilding(this, tile.getQ(), tile.getR());
+    	}
         
     }
     

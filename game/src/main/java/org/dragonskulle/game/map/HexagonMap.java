@@ -104,7 +104,7 @@ public class HexagonMap extends Component implements IOnStart {
      * @param q The q coordinate.
      * @param r The r coordinate.
      */
-    public void setBuilding(Building building, int q, int r) {
+    public void storeBuilding(Building building, int q, int r) {
     	// Ensure the parameters are valid coordinates.
     	if(isValid(q, r) == false) return;
     	
@@ -122,14 +122,16 @@ public class HexagonMap extends Component implements IOnStart {
     }
     
     /**
-     * Stop storing the {@link Reference reference} to the Building at the specified position. 
+     * Stop storing the {@link Reference} to the Building at the specified position. 
+     * <p>
+     * Stores {@code null} at the position instead.
      * 
      * @param q The q coordinate.
      * @param r The r coordinate.
      */
     public void removeBuilding(int q, int r) {
     	// Simply set the reference to null.
-    	setBuilding(null, q, r);
+    	storeBuilding(null, q, r);
     }
 
     /**
