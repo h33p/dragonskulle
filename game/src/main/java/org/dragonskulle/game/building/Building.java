@@ -28,9 +28,11 @@ public class Building extends Component {
     @Getter private ViewDistanceStat mViewDistance;
     
     private Reference<HexagonTile> mTile;
+    private Reference<HexagonMap> mHexagonMap;
     
     public Building(Reference<HexagonMap> hexagonMap, Reference<HexagonTile> hexagonTile) {
     	mTile = hexagonTile;
+    	mHexagonMap = hexagonMap;
     	
     	mAttack = new AttackStat();
         mDefence = new DefenceStat();
@@ -75,6 +77,53 @@ public class Building extends Component {
     		return false;
     	}
     	
+    }
+    
+    public ArrayList<HexagonTile> getViewTiles() {
+    	ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+    	
+    	HexagonTile tile = mTile.get();
+    	HexagonMap map = mHexagonMap.get();
+    	if(tile == null || map == null) return tiles;
+    	
+    	
+    	int distance = mViewDistance.getValue();
+    	int qCentre = tile.getQ();
+    	int rCentre = tile.getR();
+    	
+    	int i = 0;
+    	
+    	for(int r = -distance; r <= distance; r++) {
+    		for(int q = -distance; q <= distance; q++) {
+    			int s = -q - r;
+    			if(Math.abs(s) > distance) {
+    				log.info(String.format("INVALID S: q = %d, r = %d, s = %d ", q, r, s));
+    				continue;
+    			}
+    			
+    			if(q == 0 && r == 0) {
+    				log.info(String.format("Current tile: q = %d, r = %d, s = %d ", q, r, s));
+    				continue;
+    			}
+    			
+    			log.info(String.format("q = %d, r = %d, s = %d ", q, r, s));
+    			i++;
+    			HexagonTile selectedTile = map.getTile(qCentre + q, rCentre + r);
+    			if(selectedTile == null) {
+    				log.info("TILE IS NULL");
+    				continue;
+    			}
+    			
+    			tiles.add(selectedTile);
+    			
+    		}
+    		
+    	}
+    	
+    	log.info("i = " + i);
+    	
+    	
+    	return tiles;
     }
     
     public ArrayList<Building> getAttackableBuildings() {
