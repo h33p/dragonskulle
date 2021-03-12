@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.stat.AttackStat;
 import org.dragonskulle.game.building.stat.DefenceStat;
 import org.dragonskulle.game.building.stat.Stat;
@@ -25,9 +26,9 @@ public class Building extends Component {
     @Getter private TokenGenerationStat mTokenGeneration;
     @Getter private ViewDistanceStat mViewDistance;
     
-    private HexagonTile mTile;
+    private Reference<HexagonTile> mTile;
     
-    public Building(HexagonTile tile) {
+    public Building(Reference<HexagonTile> tile) {
     	mTile = tile;
     	
     	mAttack = new AttackStat();
@@ -80,7 +81,7 @@ public class Building extends Component {
     		return true;
     	} else {
     		//log.info(String.format("Failed attack: random number %f was not greater or equal to target %f (target calculated using %f and %f).", successChance, target, mAttack.getValue(), opponent.getDefence().getValue()));
-    		log.info(String.format("Failed attack: random number %f was greater or equal to target %f.", successChance, target));
+    		log.info(String.format("Failed attack: random number %f was not greater or equal to target %f.", successChance, target));
     		return false;
     	}
     	
@@ -89,7 +90,9 @@ public class Building extends Component {
     public ArrayList<Building> getAttackableBuildings() {
     	ArrayList<Building> buildings = new ArrayList<Building>();
     	
-    	mTile.getQ();
+    	HexagonTile tile = mTile.get();
+    	if(tile == null) return null;
+    	tile.getQ();
     	
     	return buildings;
     }

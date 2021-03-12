@@ -6,12 +6,12 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Renderable;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 
 /**
@@ -33,7 +33,7 @@ public class HexagonMap extends Component implements IOnStart {
     @Getter private GameObject[][] mGameObjectMap;
 
     /** Store a {@link Building} at the q and r coordinates. */
-    private HashMap<Integer, HashMap<Integer, Building>> mBuildings = new HashMap<Integer, HashMap<Integer, Building>>();
+    private HashMap<Integer, HashMap<Integer, Reference<Building>>> mBuildings = new HashMap<Integer, HashMap<Integer, Reference<Building>>>();
     
     /**
      * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
@@ -86,21 +86,21 @@ public class HexagonMap extends Component implements IOnStart {
     	if(isValid(q, r) == false) return null;
     	
     	// Get the inner HashMap.
-		HashMap<Integer, Building> qBuildings = mBuildings.get(q);
+		HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
 		if(qBuildings == null) {
 			// The inner HashMap does not exist, so no building can exist.
 			return null;
 		}
 		
 		// Try to get the building.
-		Building building = qBuildings.get(r);		
-    	return building;	
+		Reference<Building> buildingReference = qBuildings.get(r);		
+    	return buildingReference.get();	
     }
     
     /**
-     * Store a {@link Building} at the specified position.
+     * Store a {@link Reference reference} to the {@link Building} at the specified position.
      * 
-     * @param building
+     * @param building The Building to be stored.
      * @param q The q coordinate.
      * @param r The r coordinate.
      */
@@ -109,20 +109,20 @@ public class HexagonMap extends Component implements IOnStart {
     	if(isValid(q, r) == false) return;
     	
     	// Try to get the inner HashMap, using the q coordinate as the key.
-    	HashMap<Integer, Building> qBuildings = mBuildings.get(q);
+    	HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
     	if(qBuildings == null) {
     		// An inner HashMap does not exist, so create one.
-    		HashMap<Integer, Building> innerMap = new HashMap<Integer, Building>();
+    		HashMap<Integer, Reference<Building>> innerMap = new HashMap<Integer, Reference<Building>>();
     		mBuildings.put(q, innerMap);
     		qBuildings = innerMap;
     	}
     	
-    	// Put the building in the inner map.
-    	qBuildings.put(r, building);
+    	// Put a reference to the building in the inner map.
+    	qBuildings.put(r, new Reference<Building>(building));
     }
     
     /**
-     * Stop storing the Building at the specified position. 
+     * Stop storing the {@link Reference reference} to the Building at the specified position. 
      * 
      * @param q The q coordinate.
      * @param r The r coordinate.
