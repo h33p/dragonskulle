@@ -18,7 +18,7 @@ public class HumanPlayer extends Player implements IFrameUpdate {
 	 * @param map the map being used for this game
 	 * @param capital the capital used by the player
 	 */
-	public HumanPlayer(Reference<HexagonMap> map, Building capital) {
+	public HumanPlayer(Reference<HexagongMap> map, Building capital) {
 		
 		super(map, capital);
 		
