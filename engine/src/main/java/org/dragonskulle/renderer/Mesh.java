@@ -79,11 +79,26 @@ public class Mesh implements Serializable {
         0, 5, 4
     };
 
+    private static final Vertex[] QUAD_VERTICES = {
+        new Vertex(new Vector3f(-1.f, -1.f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
+        new Vertex(new Vector3f(-1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
+        new Vertex(new Vector3f(1.f, -1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
+        new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 1f)),
+    };
+
+    private static final int[] QUAD_INDICES = {
+        0, 1, 2,
+        1, 3, 2
+    };
+
     /** Standard hexagon mesh */
     public static final Mesh HEXAGON = new Mesh(HEXAGON_VERTICES, HEXAGON_INDICES);
 
     /** Standard cube mesh */
     public static final Mesh CUBE = new Mesh(CUBE_VERTICES, CUBE_INDICES);
+
+    /** Standard quad mesh */
+    public static final Mesh QUAD = new Mesh(QUAD_VERTICES, QUAD_INDICES);
 
     public Mesh(Vertex[] vertices, int[] indices) {
         mVertices = vertices;
