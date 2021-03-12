@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.map.HexagonTile;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
@@ -145,21 +146,23 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	}
     }
     
-    private List<HexagonTiles> hexTilesToExpand(){
-    	List<HexagonTiles> hexTilesToExpand = new ArrayList<HexagonTile>();
+    private List<HexagonTile> hexTilesToExpand(){
+    	List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
     	for (Building building: ownedBuildings) {
-    		List<HexagonTiles> hexTilesWhichCanBeSeen = building.getHexTiles();
+    		List<HexagonTile> hexTilesWhichCanBeSeen = building.getHexTiles();
     		
     		int r_pos = building.getR();
     		int q_pos = building.getS();
     		
     		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
-    			if ((Math.abs(Math.abs(hexTile.getR())) - Math.abs(r_pos)) <= 1 && Math.abs(Math.abs(hexTile.getQ()) - Math.abs(q_pos)) == 1) {  // Rework to check for every building.
-    				;//IGNORE TILE IT'S WITHIN 1 HEX	
-    			}
-    			else if (mapComponent.get(hexTile.getR(), hexTile.getQ()) != null) {
+    			   			
+    			if (mapComponent.get(hexTile.getmR(), hexTile.getmQ()) != null) {
     				; //Ignore cos theres already a building there
     			}
+    			else if (!checkCloseBuildings(hexTile)) {  // Rework to check for every building.
+    				;//IGNORE TILE IT'S WITHIN 1 HEX	
+    			}
+    			
     			
     			// Can add extra checks here.
     			else {
@@ -167,5 +170,21 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			}
     		}
     	}
+    	return hexTilesToExpand;
+    }
+    
+    private boolean checkCloseBuildings(HexagonTile hexTile) {
+    	int r_value = hexTile.getmR();
+		int q_value = hexTile.getmQ();
+    	int index = 0;
+    	boolean validPlace = true;
+    	while (validPlace && index < ownedBuildings.size()) { 
+			Builidng buildingToCheck = ownedBuildings.get(index);
+			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getmR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(building.getmQ())) <= 1)){
+				return false;
+			}
+			index++;
+		}
+    	return true;
     }
 }
