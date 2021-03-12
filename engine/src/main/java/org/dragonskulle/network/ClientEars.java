@@ -14,26 +14,26 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void unknownHost() {
-        mLogger.info("[Client] Unknown Host");
+        mLogger.fine("[Client] Unknown Host");
     }
 
     @Override
     public void couldNotConnect() {
-        mLogger.info("[Client] Could not connect");
+        mLogger.fine("[Client] Could not connect");
     }
 
     @Override
     public void receivedInput(String msg) {
-        mLogger.info("[Client] Received Input {" + msg + "}");
+        mLogger.fine("[Client] Received Input {" + msg + "}");
     }
 
     @Override
     public void receivedBytes(byte[] bytes) {
         if (bytes.length > 15) {
-            mLogger.info(
+            mLogger.fine(
                     "[Client] Received Bytes :: "
                             + Arrays.toString(Arrays.copyOfRange(bytes, 0, 15)));
-            mLogger.info(
+            mLogger.fine(
                     " \t...\t   "
                             + Arrays.toString(
                                     Arrays.copyOfRange(bytes, bytes.length - 15, bytes.length)));
@@ -42,21 +42,21 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void serverClosed() {
-        mLogger.info("[Client] Server Closed");
+        mLogger.fine("[Client] Server Closed");
     }
 
     @Override
     public void disconnected() {
-        mLogger.info("[Client] Disconnected from server");
+        mLogger.fine("[Client] Disconnected from server");
     }
 
     @Override
     public void connectedToServer() {
-        mLogger.info("[Client] Connected from server");
+        mLogger.fine("[Client] Connected from server");
     }
 
     @Override
     public void error(String s) {
-        mLogger.info("[Client] ERROR: " + s);
+        mLogger.fine("[Client] ERROR: " + s);
     }
 }

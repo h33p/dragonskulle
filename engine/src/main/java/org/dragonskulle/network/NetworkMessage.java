@@ -18,8 +18,6 @@ import sun.misc.IOUtils;
  *     bytes) // ::E:: (5 bytes)
  */
 public class NetworkMessage {
-    /** The constant MAX_TRANSMISSION_SIZE. */
-    private static final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
     /** The constant START_SIGNATURE. */
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
     /** The constant END_SIGNATURE. */
@@ -168,8 +166,9 @@ public class NetworkMessage {
      * @return the bytes to be sent
      */
     public static byte[] build(byte messageType, byte[] payload) {
-        assert payload.length <= MAX_TRANSMISSION_SIZE - 15;
-        ArrayList<Byte> message = new ArrayList<>(MAX_TRANSMISSION_SIZE); // [MAX_MESSAGE_SIZE];
+        assert payload.length <= NetworkConfig.MAX_TRANSMISSION_SIZE - 15;
+        ArrayList<Byte> message =
+                new ArrayList<>(NetworkConfig.MAX_TRANSMISSION_SIZE); // [MAX_MESSAGE_SIZE];
 
         // START SIGNATURE
         for (byte b : START_SIGNATURE) {
@@ -192,7 +191,7 @@ public class NetworkMessage {
 
         message.addAll(
                 new ArrayList<>(
-                        MAX_TRANSMISSION_SIZE
+                        NetworkConfig.MAX_TRANSMISSION_SIZE
                                 - 15
                                 - payload.length)); // adding null bytes to fill message size
         // END SIGNATURE

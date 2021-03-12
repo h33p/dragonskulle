@@ -13,7 +13,6 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.*;
-import org.dragonskulle.network.components.NetworkObject;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -25,7 +24,6 @@ public class ServerApp {
         LogManager.getLogManager().reset();
         setLoggingLevel(Level.WARNING);
         final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
-        final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
         StartServer serverInstance = new StartServer(mNetworkObjectCounter, true, true);
 
         // Create a scene
@@ -51,19 +49,5 @@ public class ServerApp {
         issue35Workaround(mainScene);
 
         Engine.getInstance().start("Server", new GameBindings(), mainScene);
-    }
-
-    private static void spawnNetworkable(Server server, Scene mainScene, NetworkObject object) {
-        server.spawnObject(object);
-        mainScene.addRootObject(object);
-    }
-
-    /**
-     * Allocate id int.
-     *
-     * @return the int
-     */
-    private static int allocateId(AtomicInteger counter) {
-        return counter.getAndIncrement();
     }
 }

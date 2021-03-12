@@ -41,14 +41,14 @@ public class SocketStore {
         for (Socket connection : mStore) {
             try {
                 if (connection.isClosed()) {
-                    mLogger.info("Client socket output has closed");
+                    mLogger.fine("Client socket output has closed");
                 }
                 dOut = new DataOutputStream(connection.getOutputStream());
                 dOut.write(buf);
 
             } catch (IOException e) {
-                mLogger.info("Error in broadcasting");
-                mLogger.info(e.toString());
+                mLogger.fine("Error in broadcasting");
+                mLogger.fine(e.toString());
             }
         }
     }
@@ -62,9 +62,9 @@ public class SocketStore {
         try {
             this.mServer = serverSocket;
             this.mServer.setSoTimeout(SO_TIMEOUT);
-            mLogger.info("[SS] Server created @ " + serverSocket.getLocalSocketAddress());
+            mLogger.fine("[SS] Server created @ " + serverSocket.getLocalSocketAddress());
         } catch (SocketException e) {
-            mLogger.info("Failed to create server");
+            mLogger.fine("Failed to create server");
             e.printStackTrace();
         }
     }
@@ -76,8 +76,8 @@ public class SocketStore {
      */
     public void addClient(Socket sock) {
         // TODO add check for invalid socket
-        mLogger.info("Adding client");
-        mLogger.info("Socket :" + sock.toString());
+        mLogger.fine("Adding client");
+        mLogger.fine("Socket :" + sock.toString());
         this.mStore.add(sock);
     }
 
@@ -180,7 +180,7 @@ public class SocketStore {
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
         for (Socket sock : this.mStore) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
-                mLogger.info("Sending bytes to client");
+                mLogger.fine("Sending bytes to client");
                 try {
                     DataOutputStream dOut = new DataOutputStream(sock.getOutputStream());
                     dOut.write(response_bytes);

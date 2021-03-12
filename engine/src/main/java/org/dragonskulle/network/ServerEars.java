@@ -18,9 +18,9 @@ public class ServerEars implements ServerListener {
 
     /** Instantiates a new Server listener. */
     ServerEars() {
-        mLogger.info("Creating ServerListener");
+        mLogger.fine("Creating ServerListener");
         mLog = new ListenableQueue<>(new LinkedList<>());
-        mLog.registerListener((e) -> mLogger.info("[SE-LOG] " + mLog.poll()));
+        mLog.registerListener((e) -> mLogger.fine("[SE-LOG] " + mLog.poll()));
         mAliveTimer = new Timer();
         mAliveTimer.schedule(new LogServerAlive(), 0, 15000);
     }
@@ -49,8 +49,8 @@ public class ServerEars implements ServerListener {
 
     @Override
     public void receivedBytes(ClientInstance client, byte[] bytes) {
-        //        mLogger.info("--\ngot bytes");
-        //        mLogger.info(Arrays.toString(bytes));
+        //        mLogger.fine("--\ngot bytes");
+        //        mLogger.fine(Arrays.toString(bytes));
     }
 }
 
@@ -59,6 +59,6 @@ class LogServerAlive extends TimerTask {
     private static final Logger mLogger = Logger.getLogger(LogServerAlive.class.getName());
 
     public void run() {
-        mLogger.info("[SE~TT] Server Alive @ " + System.currentTimeMillis());
+        mLogger.fine("[SE~TT] Server Alive @ " + System.currentTimeMillis());
     }
 }

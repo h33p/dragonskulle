@@ -6,7 +6,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * @author Oscar L The type Abstract sync. New Sync Types must extend this class.
+ * @author Oscar L The generic sync is a non optimised version of ISyncVar. Either create an
+ *     optimised @link{ISyncVar} or extend this class.
  * @param <T> the type parameter
  */
 abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {

@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.exceptions.DecodingException;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 
@@ -66,7 +67,7 @@ public class Server {
      *     in sync.
      */
     public Server(int port, ServerListener listener, AtomicInteger mNetworkObjectCounter) {
-        mLogger.info("[S] Setting up server");
+        mLogger.fine("[S] Setting up server");
         this.mNetworkObjectCounter = mNetworkObjectCounter;
         mServerListener = listener;
         try {
@@ -83,7 +84,7 @@ public class Server {
             mServerThread = new Thread(this.mServerRunner);
             mServerThread.setDaemon(true);
             mServerThread.setName("Server");
-            mLogger.info("[S] Starting server");
+            mLogger.fine("[S] Starting server");
             mServerThread.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,7 +105,7 @@ public class Server {
             ServerListener listener,
             boolean autoProcessUpdate,
             AtomicInteger mNetworkObjectCounter) {
-        mLogger.info("[S] Setting up server in debug mode");
+        mLogger.fine("[S] Setting up server in debug mode");
         this.mNetworkObjectCounter = mNetworkObjectCounter;
         this.mAutoProcessMessages = autoProcessUpdate;
         mServerListener = listener;
@@ -123,7 +124,7 @@ public class Server {
             mServerThread = new Thread(this.mServerRunner);
             mServerThread.setDaemon(true);
             mServerThread.setName("Server");
-            mLogger.info("[S] Starting server");
+            mLogger.fine("[S] Starting server");
             mServerThread.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -141,7 +142,7 @@ public class Server {
     public void executeBytes(
             byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
         byte[] message;
-        mLogger.warning("EXECB - " + messageType);
+        mLogger.info("EXECB - " + messageType);
         switch (messageType) {
             case (byte) 22:
                 message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
@@ -152,7 +153,7 @@ public class Server {
                 sendBytesToClient.send(message);
                 break;
             default:
-                mLogger.info("Should implement spawn and create building ____");
+                mLogger.fine("Should implement spawn and create building ____");
                 message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
                 //                sendBytesToClient.send(message);
                 break;
@@ -189,7 +190,7 @@ public class Server {
      */
     private byte[] clientRequestedRespawn(byte[] payload) {
         int componentRequestedId = NetworkMessage.convertByteArrayToInt(payload);
-        mLogger.info("The component id to respawn is " + componentRequestedId);
+        mLogger.fine("The component id to respawn is " + componentRequestedId);
         NetworkableComponent component = this.findComponent(componentRequestedId).get();
         return NetworkMessage.build((byte) 22, component.serializeFully());
     }
@@ -206,8 +207,8 @@ public class Server {
                 this.mServerListener = null;
             }
         } catch (InterruptedException e) {
-            mLogger.info("Error disposing");
-            mLogger.info(e.toString());
+            mLogger.fine("Error disposing");
+            mLogger.fine(e.toString());
         }
     }
 
@@ -239,7 +240,7 @@ public class Server {
      * @param networkable the networkable
      */
     public void spawnObject(NetworkObject networkable) {
-        mLogger.warning("spawned object on server");
+        mLogger.info("spawned object on server");
         networkable.getNetworkableChildren().forEach(e -> e.get().connectSyncVars());
         spawnNetworkObjectOnServer(networkable);
     }
@@ -310,12 +311,12 @@ public class Server {
         }
         return () -> {
             try {
-                mLogger.info("Spawning client thread");
+                mLogger.fine("Spawning client thread");
                 boolean connected;
                 int hasBytes = 0;
-                final int MAX_TRANSMISSION_SIZE = NetworkConfig.MAX_TRANSMISSION_SIZE;
                 byte[] bArray; // max flatbuffer size
-                byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
+                byte[] terminateBytes =
+                        new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]; // max flatbuffer size
                 this.mSockets.addClient(sock);
 
                 BufferedInputStream bIn = new BufferedInputStream(sock.getInputStream());
@@ -476,8 +477,8 @@ public class Server {
         try {
             parseBytes(client, bytes);
         } catch (DecodingException e) {
-            mLogger.info(e.getMessage());
-            mLogger.info(new String(bytes, StandardCharsets.UTF_8));
+            mLogger.fine(e.getMessage());
+            mLogger.fine(new String(bytes, StandardCharsets.UTF_8));
         }
     }
 
@@ -489,11 +490,11 @@ public class Server {
      * @throws DecodingException Thrown if there was any issue with the bytes
      */
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
-        //        mLogger.info("bytes parsing");
+        //        mLogger.fine("bytes parsing");
         try {
             parse(bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));
         } catch (Exception e) {
-            mLogger.info("Error in parseBytes");
+            mLogger.fine("Error in parseBytes");
             e.printStackTrace();
             throw new DecodingException("Message is not of valid type");
         }
@@ -514,7 +515,7 @@ public class Server {
         boolean validStart = NetworkMessage.verifyMessageStart(buff);
         i += 5;
         if (validStart) {
-            //            mLogger.info("Valid Message Start\n");
+            //            mLogger.fine("Valid Message Start\n");
             byte messageType = NetworkMessage.getMessageType(buff);
             i += 1;
             int payloadSize = NetworkMessage.getPayloadSize(buff);
@@ -524,20 +525,20 @@ public class Server {
             boolean consumedMessage = NetworkMessage.verifyMessageEnd(i, buff);
             if (consumedMessage) {
                 if (messageType == (byte) 0) {
-                    mLogger.info("\nValid Message");
-                    mLogger.info("Type : " + messageType);
-                    mLogger.info("Payload : " + Arrays.toString(payload));
+                    mLogger.fine("\nValid Message");
+                    mLogger.fine("Type : " + messageType);
+                    mLogger.fine("Payload : " + Arrays.toString(payload));
                 } else {
                     executeBytes(messageType, payload, sendBytesToClient);
                 }
             }
         } else {
-            mLogger.info("invalid message start");
+            mLogger.fine("invalid message start");
         }
     }
 
     /** The interface Send bytes to client curry. */
-    public interface SendBytesToClientCurry {
+    interface SendBytesToClientCurry {
         /**
          * Send.
          *
@@ -554,7 +555,7 @@ public class Server {
 
     /** Fixed broadcast update. */
     public void fixedBroadcastUpdate() {
-        mLogger.warning(networkObjects.toString());
+        mLogger.info(networkObjects.toString());
 
         processRequests();
         for (NetworkObject networkObject : this.networkObjects) {

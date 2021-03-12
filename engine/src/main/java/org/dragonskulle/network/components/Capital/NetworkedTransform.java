@@ -32,7 +32,7 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
     @Override
     public void frameUpdate(float deltaTime) {
         if (isServer) {
-            float oldX = position.get().x;
+            float oldX = position.get().x();
             if (oldX > 0.5) {
                 shouldFlipDirection = -1;
             } else if (oldX < -0.3) {
@@ -41,7 +41,7 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
             getGameObject().getTransform().translate(shouldFlipDirection * (deltaTime), 0, 0);
             position.set(getGameObject().getTransform().getLocalPosition());
         } else {
-            getGameObject().getTransform().setPosition(position.get());
+            getGameObject().getTransform().setPosition((Vector3f) position.get());
         }
     }
 

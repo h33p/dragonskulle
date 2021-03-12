@@ -11,16 +11,15 @@ import java.util.*;
 import java.util.logging.Logger;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.network.DecodingException;
+import org.dragonskulle.exceptions.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.ISyncVar;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @param <T> the type parameter
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
-public abstract class NetworkableComponent<T> extends Component {
+public abstract class NetworkableComponent extends Component {
     private static final Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
     /** A reference to itself. */
     private final Reference<NetworkableComponent> mReference = new Reference<>(this);
@@ -59,7 +58,7 @@ public abstract class NetworkableComponent<T> extends Component {
         try {
             return NetworkableComponent.from(clazz, payload);
         } catch (DecodingException e) {
-            mLogger.info("error creating from bytes with clazz");
+            mLogger.fine("error creating from bytes with clazz");
             e.printStackTrace();
             return null;
         }
@@ -115,7 +114,7 @@ public abstract class NetworkableComponent<T> extends Component {
 
     /** Connect sync vars. Only should be ran on server */
     public void connectSyncVars() {
-        mLogger.warning("Connecting sync vars for component");
+        mLogger.info("Connecting sync vars for component");
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
@@ -316,7 +315,7 @@ public abstract class NetworkableComponent<T> extends Component {
     public boolean hasBeenModified() {
         boolean hasTrueInMask = false;
         if (mFields == null) {
-            mLogger.warning("mFields is not set yet, the component hasn't connected");
+            mLogger.info("mFields is not set yet, the component hasn't connected");
         } else {
             for (boolean b : mFieldsMask) {
                 if (b) {
@@ -376,7 +375,7 @@ public abstract class NetworkableComponent<T> extends Component {
                     ISyncVar obj = (ISyncVar) field.get(this);
                     obj.deserialize(stream);
                 } catch (Exception e) {
-                    mLogger.info("Failed to deserialize " + this.mFields[i].getName());
+                    mLogger.fine("Failed to deserialize " + this.mFields[i].getName());
                     e.printStackTrace();
                 }
             }

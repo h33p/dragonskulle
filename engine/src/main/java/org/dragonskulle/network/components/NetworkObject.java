@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.exceptions.NetworkObjectDoesNotHaveChildException;
 import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkMessage;
-import org.dragonskulle.network.NetworkObjectDoesNotHaveChildError;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.Capital.CapitalRenderable;
 import org.dragonskulle.network.components.Capital.NetworkedTransform;
@@ -51,6 +51,7 @@ public class NetworkObject extends GameObject {
      * Instantiates a new Network object.
      *
      * @param id the id
+     * @param isServer true if the object is on the server
      */
     public NetworkObject(int id, boolean isServer) {
         super("network_object_" + id);
@@ -205,23 +206,23 @@ public class NetworkObject extends GameObject {
                     int ownerId =
                             NetworkableComponent.getComponentIdFromBytes(
                                     arrayOfChildrenBytes.get(j), 4); // re
-                    mLogger.info(
+                    mLogger.fine(
                             "Parent id of child to update is :"
                                     + ownerId
                                     + "\nComponent id of children bytes to update is : "
                                     + componentId);
                     Reference<NetworkableComponent> noc = this.findComponent(componentId);
-                    mLogger.info("Did i manage to find the component? " + (noc == null));
+                    mLogger.fine("Did i manage to find the component? " + (noc == null));
                     if (noc == null) {
-                        throw new NetworkObjectDoesNotHaveChildError(
+                        throw new NetworkObjectDoesNotHaveChildException(
                                 "Can't find component", componentId);
                     } else {
                         noc.get().updateFromBytes(arrayOfChildrenBytes.get(j));
                     }
-                } catch (NetworkObjectDoesNotHaveChildError e) {
-                    mLogger.warning("NOB doesn't have child, " + e.invalidComponentId);
+                } catch (NetworkObjectDoesNotHaveChildException e) {
+                    mLogger.info("NOB doesn't have child, " + e.invalidComponentId);
                     if (sleepingChildren.contains(e.invalidComponentId)) {
-                        mLogger.warning(
+                        mLogger.info(
                                 "Not requesting update as child is sleeping until we receive spawn request");
                     } else {
                         this.markSleepingChildUpdatesUntilSpawn(e.invalidComponentId);
@@ -235,7 +236,7 @@ public class NetworkObject extends GameObject {
                 }
                 j++;
             } else {
-                mLogger.info("Shouldn't update child");
+                mLogger.fine("Shouldn't update child");
             }
         }
     }
@@ -246,7 +247,7 @@ public class NetworkObject extends GameObject {
      * @param invalidComponentId the child to be put to sleep.
      */
     private void markSleepingChildUpdatesUntilSpawn(int invalidComponentId) {
-        mLogger.warning("Marking component to sleep");
+        mLogger.info("Marking component to sleep");
         Collections.synchronizedList(this.sleepingChildren).add(invalidComponentId);
     }
 
@@ -256,7 +257,11 @@ public class NetworkObject extends GameObject {
      * @param invalidComponentId the child id
      */
     private void removeChildFromSleepingState(int invalidComponentId) {
-        Collections.synchronizedList(this.sleepingChildren).remove(invalidComponentId);
+
+        List sleepers = Collections.synchronizedList(this.sleepingChildren);
+        if (sleepers.contains(invalidComponentId)) {
+            sleepers.remove((Object) invalidComponentId);
+        }
     }
 
     /**
@@ -327,12 +332,12 @@ public class NetworkObject extends GameObject {
     public void addNetworkableComponent(NetworkableComponent child) {
 
         if (linkedToScene) {
-            mLogger.warning("Linked to scene adding component to scene");
+            mLogger.info("Linked to scene adding component to scene");
             spawnRenderableOnGame(child); // only if !isServer
             this.addComponent(child);
             // remove child from sleeping state if it exists
             removeChildFromSleepingState(child.getId());
-            mLogger.warning(
+            mLogger.info(
                     "my networkable components are : " + this.getNetworkableChildren().toString());
         } else {
             this.nonLinkedToGameChildren.add(child.getNetReference());
@@ -345,12 +350,11 @@ public class NetworkObject extends GameObject {
      * @param child the child
      */
     private void spawnRenderableOnGame(NetworkableComponent child) {
-        mLogger.warning("attempting to spawn renderable for networkable component");
+        mLogger.info("attempting to spawn renderable for networkable component");
         Class<?> clazz = child.getClass();
-        mLogger.warning(
-                "attempting to spawn renderable for networkable component clazz -> " + clazz);
+        mLogger.info("attempting to spawn renderable for networkable component clazz -> " + clazz);
         if (clazz.equals(Capital.class)) {
-            mLogger.warning("attempting to spawn capital renderable");
+            mLogger.info("attempting to spawn capital renderable");
             this.addComponent(CapitalRenderable.get());
         }
     }
@@ -381,7 +385,7 @@ public class NetworkObject extends GameObject {
             NetworkableComponent component,
             byte messageCode,
             ServerBroadcastCallback broadcastCallback) {
-        mLogger.info("spawning component on all clients 2");
+        mLogger.fine("spawning component on all clients 2");
         if (isServer) {
             component.connectSyncVars();
         }
@@ -402,7 +406,7 @@ public class NetworkObject extends GameObject {
      */
     public int serverSpawnComponent(
             NetworkableComponent component, ServerBroadcastCallback broadcastCallback) {
-        mLogger.info("spawning component on all clients 1");
+        mLogger.fine("spawning component on all clients 1");
         byte[] spawnComponentBytes;
         byte[] componentBytes = component.serializeFully();
         spawnComponentBytes = NetworkMessage.build((byte) 22, componentBytes);
@@ -434,8 +438,8 @@ public class NetworkObject extends GameObject {
      * @param clientCallback the client callback
      */
     public void spawnMap(byte[] mapBytes, SendBytesToClientCallback clientCallback) {
-        mLogger.info("spawning map on client");
-        mLogger.info("Map bytes :: " + mapBytes.length + "bytes");
+        mLogger.fine("spawning map on client");
+        mLogger.fine("Map bytes :: " + mapBytes.length + "bytes");
         byte[] spawnMapMessage = NetworkMessage.build((byte) 20, mapBytes);
         clientCallback.call(spawnMapMessage);
     }
@@ -468,10 +472,10 @@ public class NetworkObject extends GameObject {
         ArrayList<Reference<NetworkableComponent>> networkableChildren =
                 this.getNetworkableChildren();
         boolean[] didChildUpdateMask = new boolean[networkableChildren.size()];
-        mLogger.warning("Networkable Object has n children : " + networkableChildren.size());
+        mLogger.info("Networkable Object has n children : " + networkableChildren.size());
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (networkableChildren.get(i).get().hasBeenModified()) {
-                mLogger.warning("child has been modified in a networkobject");
+                mLogger.info("child has been modified in a networkobject");
                 didChildUpdateMask[i] = true;
                 if (!shouldBroadcast) {
                     shouldBroadcast = true;
@@ -480,7 +484,7 @@ public class NetworkObject extends GameObject {
         }
         if (shouldBroadcast) {
             byte[] bytes = generateBroadcastUpdateBytes(didChildUpdateMask);
-            mLogger.info("Broadcast update size:: " + bytes.length);
+            mLogger.fine("Broadcast update size:: " + bytes.length);
             broadcastCallback.call(NetworkMessage.build((byte) 15, bytes));
         }
     }
@@ -492,7 +496,7 @@ public class NetworkObject extends GameObject {
      * @return the bytes to be broadcasted
      */
     private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
-        //        mLogger.info("generating broadcast update bytes");
+        //        mLogger.fine("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4

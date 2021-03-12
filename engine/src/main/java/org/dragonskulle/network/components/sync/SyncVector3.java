@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /** @author Oscar L */
 public class SyncVector3 implements ISyncVar {
@@ -77,7 +78,7 @@ public class SyncVector3 implements ISyncVar {
      *
      * @return the value
      */
-    public Vector3f get() {
+    public Vector3fc get() {
         return mData;
     }
 }

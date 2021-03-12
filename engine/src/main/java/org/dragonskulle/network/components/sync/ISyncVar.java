@@ -7,7 +7,7 @@ import java.io.*;
 public interface ISyncVar {
 
     /** The interface Sync var update handler. */
-    public interface ISyncVarUpdateHandler {
+    interface ISyncVarUpdateHandler {
         /** Call. */
         void call();
     }

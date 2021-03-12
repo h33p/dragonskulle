@@ -41,6 +41,7 @@ public class Capital extends NetworkableComponent {
     }
 
     /** Instantiates a new Capital without id, this will be set from the bytes */
+    @Deprecated
     public Capital() {
         super();
     }

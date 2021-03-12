@@ -2,7 +2,7 @@
 package org.dragonskulle.network;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Reference;
@@ -60,9 +60,12 @@ public class ClientGameInstance {
      * @return the id of the component spawned
      */
     public int spawnComponent(int ownerId, NetworkableComponent component) {
-        mLogger.warning("Spawning component on game instance");
-        NetworkObject nob = getNetworkObject(ownerId).get();
-        nob.addNetworkableComponent(component);
+        mLogger.info("Spawning component on game instance");
+        Reference<NetworkObject> nobReference = getNetworkObject(ownerId);
+        if (nobReference == null) {
+            nobReference = spawnNewNetworkObject(ownerId);
+        }
+        nobReference.get().addNetworkableComponent(component);
         return component.getId();
     }
 
@@ -72,7 +75,7 @@ public class ClientGameInstance {
      * @param mainScene the game scene to be linked
      */
     public void linkToScene(Scene mainScene) {
-        mLogger.warning("LINKED TO SCENE");
+        mLogger.info("LINKED TO SCENE");
         this.isLinkedToScene = true;
         this.linkedScene = mainScene;
     }
@@ -99,7 +102,8 @@ public class ClientGameInstance {
      * An array of references to objects. If there is no game linked then it will only be stored on
      * the instance, otherwise the reference will be stored on the game scene.
      */
-    private final ArrayList<Reference<NetworkObject>> mNetworkObjectReferences = new ArrayList<>();
+    private final HashMap<Integer, Reference<NetworkObject>> mNetworkObjectReferences =
+            new HashMap<>();
     /** True if the players capital has been spawned. */
     private Boolean mHasCapital = false;
 
@@ -108,7 +112,7 @@ public class ClientGameInstance {
      *
      * @return the network objects
      */
-    public ArrayList<Reference<NetworkObject>> getNetworkObjects() {
+    public HashMap<Integer, Reference<NetworkObject>> getNetworkObjects() {
         return mNetworkObjectReferences;
     }
 
@@ -120,7 +124,7 @@ public class ClientGameInstance {
      */
     public Reference<NetworkableComponent> getNetworkedComponent(int id) {
         Reference<NetworkableComponent> found = null;
-        for (Reference<NetworkObject> nob : getNetworkObjects()) {
+        for (Reference<NetworkObject> nob : getNetworkObjects().values()) {
             Reference<NetworkableComponent> nc = nob.get().findComponent(id);
             if (nc != null) {
                 found = nc;
@@ -134,25 +138,15 @@ public class ClientGameInstance {
      * Gets a network object by id.
      *
      * @param networkObjectId the id of the object
-     * @return the network object found, if none exists one will be created and spawned.
+     * @return the network object found, if none exists then null.
      */
-    @NotNull
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
-        mLogger.info(mNetworkObjectReferences.toString());
-        Reference<NetworkObject> nob =
-                mNetworkObjectReferences.stream()
-                        .filter(e -> e.get().getId() == networkObjectId)
-                        .findFirst()
-                        .orElse(null);
-        if (nob != null) {
-            return nob;
-        }
-
-        mLogger.warning("couldn't find nob id :" + networkObjectId);
-        nob = this.spawnNewNetworkObject(networkObjectId);
-        //        new NetworkObject(networkObjectId);
-        //        this.mNetworkObjectReferences.add(nob); //            mLogger.info("managed to add
-        // new nob");
+        mLogger.fine(mNetworkObjectReferences.toString());
+        Reference<NetworkObject> nob = mNetworkObjectReferences.get(networkObjectId);
+        //                mNetworkObjectReferences.stream()
+        //                        .filter(e -> e.get().getId() == networkObjectId)
+        //                        .findFirst()
+        //                        .orElse(null);
         return nob;
     }
 
@@ -166,14 +160,14 @@ public class ClientGameInstance {
     @NotNull
     private Reference<NetworkObject> spawnNewNetworkObject(int networkObjectId) {
         final NetworkObject nob = new NetworkObject(networkObjectId, false);
-        mLogger.warning("adding a new root object to the scene");
-        mLogger.warning("nob to be spawned is : " + nob.toString());
+        mLogger.info("adding a new root object to the scene");
+        mLogger.info("nob to be spawned is : " + nob.toString());
         if (isLinkedToScene) {
             nob.linkToScene();
             this.linkedScene.addRootObject(nob);
         }
         Reference<NetworkObject> ref = nob.getNetReference();
-        this.mNetworkObjectReferences.add(ref);
+        this.mNetworkObjectReferences.put(nob.getId(), ref);
         return ref;
     }
 
@@ -194,12 +188,15 @@ public class ClientGameInstance {
      * @return the id of the spawned capital
      */
     public int spawnCapital(int networkObjectId, Capital capital) {
-        NetworkObject nob = getNetworkObject(networkObjectId).get();
-        mLogger.warning("adding networkable to nob");
-        if (isLinkedToScene) {
-            nob.linkToScene();
+        Reference<NetworkObject> nob = getNetworkObject(networkObjectId);
+        if (nob == null) {
+            nob = spawnNewNetworkObject(networkObjectId);
         }
-        nob.addNetworkableComponent(capital);
+        mLogger.info("adding networkable to nob");
+        if (isLinkedToScene) {
+            nob.get().linkToScene();
+        }
+        nob.get().addNetworkableComponent(capital);
         //        this.mNetworkObjectReferences.add(nob.getNetReference());
         this.mHasCapital = true;
         return capital.getId();
@@ -222,15 +219,15 @@ public class ClientGameInstance {
     public void updateNetworkObject(byte[] payload) {
         // 4 bytes will be allocated for the id
         int idToUpdate = NetworkObject.getIdFromBytes(payload);
-        NetworkObject networkObjectToUpdate = getNetworkObject(idToUpdate).get();
-        if (networkObjectToUpdate != null) {
-            try {
-                networkObjectToUpdate.updateFromBytes(payload, this);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            mLogger.info("didnt find network object from id");
+        Reference<NetworkObject> networkObjectToUpdate = getNetworkObject(idToUpdate);
+        if (networkObjectToUpdate == null) {
+            mLogger.info("couldn't find nob id :" + idToUpdate);
+            networkObjectToUpdate = this.spawnNewNetworkObject(idToUpdate);
+        }
+        try {
+            networkObjectToUpdate.get().updateFromBytes(payload, this);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -241,7 +238,7 @@ public class ClientGameInstance {
      * @return the reference to the networkable component found
      */
     private Reference<NetworkableComponent> getNetworkable(int id) {
-        for (Reference<NetworkObject> mNetworkedObject : mNetworkObjectReferences) {
+        for (Reference<NetworkObject> mNetworkedObject : getNetworkObjects().values()) {
             for (Reference<NetworkableComponent> networkedComponent :
                     mNetworkedObject.get().getNetworkableChildren()) {
                 if (networkedComponent.get().getId() == id) {
@@ -258,7 +255,7 @@ public class ClientGameInstance {
      * @param id the id of the component
      */
     public void printNetworkable(int id) {
-        mLogger.info(Objects.requireNonNull(getNetworkable(id)).toString());
+        mLogger.fine(Objects.requireNonNull(getNetworkable(id)).toString());
     }
 
     /**

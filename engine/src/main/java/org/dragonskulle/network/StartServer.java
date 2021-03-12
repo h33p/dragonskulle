@@ -47,11 +47,11 @@ public class StartServer {
                 .addShutdownHook(
                         new Thread(
                                 () -> {
-                                    mLogger.info("Shutting down server");
+                                    mLogger.fine("Shutting down server");
                                     this.server.dispose();
                                 }));
 
-        mLogger.info("Shut Down Hook Attached.");
+        mLogger.fine("Shut Down Hook Attached.");
     }
 
     /** Disposes of the server instance. */
