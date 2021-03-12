@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.HexTransform;
 import org.dragonskulle.components.Transform;
@@ -24,6 +26,7 @@ import org.joml.Matrix4fc;
  *     actions but each component that is added to the GameObject will be able to interact with
  *     itself in the world and other GameObjects.
  */
+@Accessors(prefix = "m")
 public class GameObject implements Serializable {
 
     private final Reference<GameObject> mReference = new Reference<>(this);
@@ -36,6 +39,8 @@ public class GameObject implements Serializable {
     private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
     private boolean mActive;
+    /** How deep the object is within the game object structure */
+    @Getter private int mDepth = 0;
 
     /**
      * A handler interface for building game objects
@@ -356,6 +361,7 @@ public class GameObject implements Serializable {
             child.mRoot = mRoot;
         }
         child.mParent = this;
+        child.setDepth(mDepth + 1);
         mChildren.add(child);
     }
 
@@ -372,6 +378,7 @@ public class GameObject implements Serializable {
         for (GameObject child : children) {
             child.mRoot = root;
             child.mParent = this;
+            child.setDepth(this.mDepth + 1);
         }
         mChildren.addAll(children);
     }
@@ -472,6 +479,7 @@ public class GameObject implements Serializable {
         if (mParent != null) {
             mParent.removeChild(this);
             mParent = null;
+            setDepth(0);
         }
         mRoot = null;
     }
@@ -620,5 +628,16 @@ public class GameObject implements Serializable {
      */
     protected GameObject getParent() {
         return mParent;
+    }
+
+    /**
+     * Setter for mDepth
+     *
+     * <p>This method will recursively update mDepth for all mChildren
+     */
+    protected void setDepth(int newDepth) {
+        mDepth = newDepth;
+
+        for (GameObject child : mChildren) child.setDepth(mDepth + 1);
     }
 }

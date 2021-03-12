@@ -21,9 +21,9 @@ import org.joml.Vector3fc;
 public class Transform extends Component {
     private static final float DEG_TO_RAD = (float) Math.PI / 180.f;
 
-    private final Matrix4f mLocalMatrix;
-    private Matrix4f mWorldMatrix;
-    private boolean mShouldUpdate = true;
+    protected final Matrix4f mLocalMatrix;
+    protected Matrix4f mWorldMatrix;
+    protected boolean mShouldUpdate = true;
 
     /** Default constructor. mLocalMatrix is just the identity matrix */
     public Transform() {
