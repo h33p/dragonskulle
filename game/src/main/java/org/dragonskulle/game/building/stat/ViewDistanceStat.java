@@ -4,7 +4,8 @@ public class ViewDistanceStat extends Stat<Integer> {
 
 	@Override
 	protected Integer levelToValue() {
-		return mLevel;
+		// View distance is always 3.
+		return 3;
 	}
 
 }

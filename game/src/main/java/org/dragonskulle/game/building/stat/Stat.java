@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 @Accessors(prefix = "m")
-abstract class Stat<T> {
+public abstract class Stat<T> {
 
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 0;

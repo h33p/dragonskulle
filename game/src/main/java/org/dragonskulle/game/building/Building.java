@@ -5,13 +5,16 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.dragonskulle.components.Component;
 import org.dragonskulle.game.building.stat.AttackStat;
 import org.dragonskulle.game.building.stat.DefenceStat;
+import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
+import org.dragonskulle.game.map.HexagonTile;
 
 @Accessors(prefix = "m")
 @Log
@@ -21,8 +24,12 @@ public class Building extends Component {
     @Getter private DefenceStat mDefence;
     @Getter private TokenGenerationStat mTokenGeneration;
     @Getter private ViewDistanceStat mViewDistance;
-
-    public Building() {
+    
+    private HexagonTile mTile;
+    
+    public Building(HexagonTile tile) {
+    	mTile = tile;
+    	
     	mAttack = new AttackStat();
         mDefence = new DefenceStat();
         mTokenGeneration = new TokenGenerationStat();
@@ -79,10 +86,33 @@ public class Building extends Component {
     	
     }
     
+    public ArrayList<Building> getAttackableBuildings() {
+    	ArrayList<Building> buildings = new ArrayList<Building>();
+    	
+    	mTile.getQ();
+    	
+    	return buildings;
+    }
+    
     public int getToken(){
     	return mTokenGeneration.getValue();
     }
 
+    /**
+     * Get an ArrayList of Stats that the Building has.
+     * 
+     * @return An ArrayList of Stats.
+     */
+    public ArrayList<Stat<?>> getStats(){
+    	ArrayList<Stat<?>> stats = new ArrayList<Stat<?>>();
+    	stats.add(mAttack);
+    	stats.add(mDefence);
+    	stats.add(mTokenGeneration);
+    	stats.add(mViewDistance);
+    	
+    	return stats;
+    }
+    
     @Override
     protected void onDestroy() {}
 }
