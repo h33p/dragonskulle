@@ -61,6 +61,20 @@ public class HexagonMap extends Component implements IOnStart {
     }
     
     /**
+     * Get the {@link HexagonTile} at the specified position, or {@code null} if it doesn't exist.
+     * 
+     * @param q The q coordinate.
+     * @param r The r coordinate.
+     * @return The HexagonTile, or {@code null}.
+     */
+    public HexagonTile getTile(int q, int r) {
+    	// Ensure the parameters are valid coordinates.
+    	if(isValid(q, r) == false) return null;
+    	
+    	return mTiles[r][q];
+    }
+    
+    /**
      * Get the building at the specified position, or {@code null} if the building does not exist.
      * 
      * @param q The q coordinate.
