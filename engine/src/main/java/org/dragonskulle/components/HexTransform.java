@@ -26,10 +26,10 @@ public class HexTransform {
 
     // Matrix that takes a cartesian coordinate into hex coordinate space
     // It's a 3x3 matrix so that a 3d vector can still be multiplied
-    public static final Matrix3f PIXEL_TO_HEX =
+    public static final Matrix3f WORLD_TO_HEX =
             new Matrix3f((float) Math.sqrt(3) / 3, 0, 0, -1f / 3f, 2f / 3f, 0, 0, 0, 0);
 
-    public static final Matrix3f HEX_TO_PIXEL =
+    public static final Matrix3f HEX_TO_WORLD =
             new Matrix3f((float) Math.sqrt(3), 0, 0, (float) Math.sqrt(3) / 2, 3f / 2f, 0, 0, 0, 0);
 
     private final Transform mTransform;
@@ -43,7 +43,7 @@ public class HexTransform {
      */
     public static void axialToCartesian(Vector3f axial) {
         // Multiply axial by the HEX_TO_PIXEL matrix
-        axial.mul(HEX_TO_PIXEL);
+        axial.mul(HEX_TO_WORLD);
 
         // And then multiply q and r by HEX_SIZE
         axial.x *= HEX_SIZE;
@@ -60,7 +60,7 @@ public class HexTransform {
      */
     public static void cartesianToAxial(Vector3f cartesian) {
         // Multiply cartesian by the PIXEL_TO_HEX matrix
-        cartesian.mul(PIXEL_TO_HEX);
+        cartesian.mul(WORLD_TO_HEX);
 
         // And then divide both q and r by HEX_SIZE
         cartesian.x /= HEX_SIZE;
