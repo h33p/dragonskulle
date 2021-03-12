@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Renderable;
@@ -107,11 +108,7 @@ class DrawCallState implements NativeResource {
         public void updateInstanceBuffer(ShaderSet shaderSet, ByteBuffer buffer) {
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
-                object.getMaterial()
-                        .writeVertexInstanceData(
-                                cur_off,
-                                buffer,
-                                object.getGameObject().getTransform().getWorldMatrix());
+                object.writeVertexInstanceData(cur_off, buffer);
                 cur_off += shaderSet.getVertexBindingDescription().size;
             }
         }
@@ -127,6 +124,22 @@ class DrawCallState implements NativeResource {
                             mDescriptorSets,
                             descriptorSet,
                             mTextureSet == null ? null : mTextureSet.getDescriptorSet(imageIndex));
+        }
+    }
+
+    /** Specifies a non-instanced draw object. Mainly used in object pre-sorting */
+    @Builder
+    @Accessors(prefix = "m")
+    @Getter
+    public static class NonInstancedDraw {
+        private DrawCallState mState;
+        private DrawData mData;
+        private int mObjectID;
+
+        public int getInstanceBufferOffset() {
+            ShaderSet shaderSet = mState.getShaderSet();
+            return mData.getInstanceBufferOffset()
+                    + shaderSet.getVertexBindingDescription().size * mObjectID;
         }
     }
 

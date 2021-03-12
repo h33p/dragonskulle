@@ -23,11 +23,52 @@ import org.lwjgl.system.NativeResource;
  */
 @Accessors(prefix = "m")
 public class ShaderSet implements NativeResource {
+
+    /**
+     * Enum describing common render orders
+     *
+     * <p>Generally, transparent objects should render on top of opaque ones, while UI should be
+     * rendered above all.
+     */
+    public static enum RenderOrder {
+        OPAQUE(1000),
+        TRANSPARENT(2000),
+        UI(10000);
+
+        @Getter private final int mValue;
+
+        private RenderOrder(int value) {
+            mValue = value;
+        }
+    }
+
     /** Vertex shader used */
     protected Resource<ShaderBuf> mVertexShader;
     /** Fragment shader used */
     protected Resource<ShaderBuf> mFragmentShader;
     // TODO: Geometry shaders
+
+    /** Controls the order in which the material is rendered. Lower values mean earlier */
+    @Getter protected int mRenderOrder = RenderOrder.OPAQUE.getValue();
+
+    /**
+     * Controls whether material should perform depth testing when rendering.
+     *
+     * <p>Generally, transparent and UI elements do not need depth testing.
+     */
+    @Getter protected boolean mDepthTest = true;
+
+    /** Controls whether the material should do alpha blending (transparency) */
+    @Getter protected boolean mAlphaBlend = false;
+
+    /**
+     * Constrols whether the material's objects need to be sorted before rendering
+     *
+     * <p>This option is required for UI elements, and other objects that depend on order being
+     * correct for rendering. Presorted objects will be rendered after non-presorted ones, so,
+     * OPAQUE pre-sorted object would be rendered after TRANSPARENT non-pre-sorted object.
+     */
+    @Getter protected boolean mPreSort = false;
 
     /**
      * Per instance binding description. Not setting will lead to no per-instance data being passed

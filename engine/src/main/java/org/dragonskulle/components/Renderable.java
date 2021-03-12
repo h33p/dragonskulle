@@ -1,12 +1,15 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
+import java.nio.ByteBuffer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.IMaterial;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Class describing a renderable object
@@ -16,9 +19,9 @@ import org.dragonskulle.renderer.UnlitMaterial;
 @Accessors(prefix = "m")
 public class Renderable extends Component {
     /** Mesh of the object */
-    @Getter @Setter private Mesh mMesh = Mesh.HEXAGON;
+    @Getter @Setter protected Mesh mMesh = Mesh.HEXAGON;
     /** Material of the object */
-    @Getter @Setter private IMaterial mMaterial = new UnlitMaterial();
+    @Getter @Setter protected IMaterial mMaterial = new UnlitMaterial();
 
     /** Construct a Renderable with default parameters */
     public Renderable() {}
@@ -45,6 +48,28 @@ public class Renderable extends Component {
     public <T extends IMaterial> T getMaterial(Class<T> type) {
         if (type.isInstance(mMaterial)) return type.cast(mMaterial);
         return null;
+    }
+
+    /**
+     * Write vertex data into an instance buffer
+     *
+     * @param offset offset into which we should write
+     * @param buffer byte buffer into which we should write
+     */
+    public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
+        mMaterial.writeVertexInstanceData(
+                offset, buffer, getGameObject().getTransform().getWorldMatrix());
+    }
+
+    /**
+     * Get object depth from the camera
+     *
+     * @param camPosition input camera position
+     * @param tmpVec temporary vector that can be used for calculations
+     */
+    public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
+        getGameObject().getTransform().getPosition(tmpVec);
+        return camPosition.distanceSquared(tmpVec);
     }
 
     /** Free the underlying resources */
