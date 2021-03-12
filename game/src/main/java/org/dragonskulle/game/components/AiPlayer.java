@@ -11,7 +11,7 @@ import org.dragonskulle.game.map.HexagonTile;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
- * @author Oscar L
+ * @author Oscar L, Nathaniel Lowis
  */
 public class AiPlayer extends Player implements IFixedUpdate {
     
@@ -104,8 +104,8 @@ public class AiPlayer extends Player implements IFixedUpdate {
     	//TODO Need to know how we are interacting with triggerEvent().  Cos here you can choose exact command to do (Much Much easier)
     	//TODO ATM have the set up probabilties to choose which event to do.  Need to add which building/tile to use
     	
-    	if (ownedBuildings.size() == 1) {
-    		//TODO Choose which tile to use;
+    	if (ownedBuildings.size() == 1) {  //TODO Refactor it so it's only done once
+    		
     		List<HexagonTile> tilesToUse = hexTilesToExpand();
     		if (tilesToUse.size() != 0) {
     			int randomIndex = random.nextInt(tilesToUse.size());
@@ -140,7 +140,7 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			
     			if (randomNumber <= upgradeBuilding) {
     				
-    				Building buildingToUpgrade = ownedBuildings.get(random.nextInt(ownedBuildings.size));
+    				//KNow which building eed to choose which stat
     				//How to choose what stat to improve -- need to wait to se how building is doing it
     				//TODO Choose which building to upgrade & which stat to upgrade
     				return;

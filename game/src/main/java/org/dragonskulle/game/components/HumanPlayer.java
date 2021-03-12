@@ -34,6 +34,7 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     public void frameUpdate(float deltaTime) {
     	updateTokens(deltaTime);
     	processInput();
+    	//TODO decide whether to do stuff serverSide - actual stuff or clientSide - UI stuff
     	triggerEvent();
     	
     }
@@ -59,7 +60,9 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     private void mapScreen() {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
-    		// Check to see whether the user has pressed a tile.  And then send that to server 
+    		// Check to see whether the user has pressed a tile.  And then send that to server
+    		
+    		//TODO CLIENT SIDE
     		
     	}
     	
@@ -72,7 +75,7 @@ public class HumanPlayer extends Player implements IFrameUpdate {
     	if (GameActions.LEFT_CLICK.isActivated()) {
     		Vector2d cursorPosition = GameActions.getCursor().getPosistion();
     		// Check to see if user has pressed a button.  If it has then send to server and all time change perspective
-    		
+    		//
     	}
     }
 
