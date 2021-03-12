@@ -4,13 +4,18 @@ package org.dragonskulle.game.map;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Renderable;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.game.building.Building;
 
 /**
- * @author Leela Muppala
+ * @author Leela Muppala and Craig Wilbourne
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
  */
@@ -27,6 +32,9 @@ public class HexagonMap extends Component implements IOnStart {
     /** A similar map to that of mMap made of a 2d array of HexagonTile gameObjects. */
     @Getter private GameObject[][] mGameObjectMap;
 
+    /** Store a {@link Building} at the q and r coordinates. */
+    private HashMap<Integer, HashMap<Integer, Building>> mBuildings = new HashMap<Integer, HashMap<Integer, Building>>();
+    
     /**
      * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
      * create the map.
@@ -42,6 +50,72 @@ public class HexagonMap extends Component implements IOnStart {
         }
 
         this.mTiles = createTiles();
+    }
+    
+    public boolean isValid(int q, int r) {
+    	if(q < 0 || q >= mSize || r < 0 || r > mSize) {
+			log.warning(String.format("The coordinates (q = %d, r = %d) are out of range.", q, r));
+			return false;
+		}
+    	return true;
+    }
+    
+    /**
+     * Get the building at the specified position, or {@code null} if the building does not exist.
+     * 
+     * @param q The q coordinate.
+     * @param r The r coordinate.
+     * @return The building, or {@code null} if there is no building at that position.
+     */
+    public Building getBuilding(int q, int r) {
+    	// Ensure the parameters are valid coordinates.
+    	if(isValid(q, r) == false) return null;
+    	
+    	// Get the inner HashMap.
+		HashMap<Integer, Building> qBuildings = mBuildings.get(q);
+		if(qBuildings == null) {
+			// The inner HashMap does not exist, so no building can exist.
+			return null;
+		}
+		
+		// Try to get the building.
+		Building building = qBuildings.get(r);		
+    	return building;	
+    }
+    
+    /**
+     * Store a {@link Building} at the specified position.
+     * 
+     * @param building
+     * @param q The q coordinate.
+     * @param r The r coordinate.
+     */
+    public void setBuilding(Building building, int q, int r) {
+    	// Ensure the parameters are valid coordinates.
+    	if(isValid(q, r) == false) return;
+    	
+    	// Try to get the inner HashMap, using the q coordinate as the key.
+    	HashMap<Integer, Building> qBuildings = mBuildings.get(q);
+    	if(qBuildings == null) {
+    		// An inner HashMap does not exist, so create one.
+    		HashMap<Integer, Building> innerMap = new HashMap<Integer, Building>();
+    		mBuildings.put(q, innerMap);
+    		qBuildings = innerMap;
+    	}
+    	
+    	// Put the building in the inner map.
+    	qBuildings.put(r, building);
+    }
+    
+    /**
+     * Stop storing the Building at the specified position. 
+     * 
+     * @param q The q coordinate.
+     * @param r The r coordinate.
+     */
+    public void removeBuilding(int q, int r) {
+    	// Simply set the reference to null.
+    	setBuilding(null, q, r);
     }
 
     /**
