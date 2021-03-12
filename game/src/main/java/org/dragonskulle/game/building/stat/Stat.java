@@ -47,6 +47,16 @@ abstract class Stat<T> {
     }
 
     /**
+     * Set the level. This will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     * 
+     * @param level The level.
+     */
+    public void setLevel(int level) {
+    	mLevel = level;
+    	boundLevel();
+    }
+    
+    /**
      * Get the value of the stat, at the current level.
      *
      * @return The value of the stat.
