@@ -26,6 +26,7 @@ public class GameBindings extends Bindings {
 
         addBinding(GLFW.GLFW_KEY_RIGHT, GameActions.RIGHT);
         addBinding(GLFW.GLFW_KEY_D, GameActions.RIGHT);
+        
         addBinding(GLFW.GLFW_MOUSE_BUTTON_LEFT, GameActions.LEFT_CLICK, GameActions.TRIGGER_DRAG, UIButton.UI_PRESS);
         addBinding(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GameActions.RIGHT_CLICK);
         addBinding(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, GameActions.ACTION_3);
