@@ -371,8 +371,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, IBuildHandler handler) {
-        buildChild(name, true, handler);
+    public Reference<GameObject> buildChild(String name, IBuildHandler handler) {
+        return buildChild(name, true, handler);
     }
 
     /**
@@ -382,10 +382,11 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, boolean active, IBuildHandler handler) {
+    public Reference<GameObject> buildChild(String name, boolean active, IBuildHandler handler) {
         GameObject go = new GameObject(name, active);
         this.addChild(go);
         handler.handleBuild(go);
+        return go.getReference();
     }
 
     /**
@@ -395,8 +396,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, Transform transform, IBuildHandler handler) {
-        buildChild(name, true, transform, handler);
+    public Reference<GameObject> buildChild(String name, Transform transform, IBuildHandler handler) {
+        return buildChild(name, true, transform, handler);
     }
 
     /**
@@ -406,11 +407,12 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(
+    public Reference<GameObject> buildChild(
             String name, boolean active, Transform transform, IBuildHandler handler) {
         GameObject go = new GameObject(name, active, transform);
         this.addChild(go);
         handler.handleBuild(go);
+        return go.getReference();
     }
 
     /**
