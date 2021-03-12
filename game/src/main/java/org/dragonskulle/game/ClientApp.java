@@ -19,8 +19,6 @@ import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.NetworkManager;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 /** @author Oscar L */
 public class ClientApp {
@@ -32,7 +30,6 @@ public class ClientApp {
      */
     public static void main(String[] args) throws Exception {
         LogManager.getLogManager().reset();
-        setLoggingLevel(Level.WARNING);
         System.out.println("A server should be setup before running. Continue?");
         new Scanner(System.in).nextLine();
         ClientListener clientListener = new ClientEars();
@@ -46,22 +43,29 @@ public class ClientApp {
         System.out.println("Created client instance");
 
         GameObject camera = new GameObject("mainCamera");
+        Transform tr = camera.getTransform();
+        // Set where it's at
+        tr.setPosition(0f, 0f, 1f);
+        tr.rotateDeg(30f, 0f, 0f);
+        tr.translateLocal(0f, -8f, 0f);
+        // Make sure it's an actual camera
         camera.addComponent(new Camera());
-        Transform cameraTransform =
-                new Transform(
-                        new Matrix4f()
-                                .lookAt(
-                                        new Vector3f(2.0f, 2.0f, 2.0f),
-                                        new Vector3f(0.0f, 0.0f, -0.05f),
-                                        new Vector3f(0.0f, 0.0f, 1.0f)));
-        mainScene.addRootObject(GameObject.instantiate(camera, cameraTransform));
 
-        GameObject networkManagerGO = new GameObject("client_network_manager");
-        networkManagerGO.addComponent(new NetworkManager(clientInstance::processRequests));
+        // And it needs to be in the game
+        mainScene.addRootObject(camera);
+
+        // attaching server fixed update to game
+        GameObject networkManagerGO =
+                new GameObject(
+                        "server_network_manager",
+                        (go) ->
+                                go.addComponent(
+                                        new NetworkManager(clientInstance::processRequests)));
         mainScene.addRootObject(networkManagerGO);
-
         issue35Workaround(mainScene);
-        Engine.getInstance().start("Client", new GameBindings(), mainScene);
+
+        Engine.getInstance().loadPresentationScene(mainScene);
+        Engine.getInstance().start("Client", new GameBindings());
     }
 
     public static void setLoggingLevel(Level targetLevel) {

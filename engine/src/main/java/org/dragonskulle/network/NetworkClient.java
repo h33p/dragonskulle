@@ -474,16 +474,32 @@ public class NetworkClient {
         return this.mCapitalId;
     }
 
+//    /**
+//     * Gets a networkable component by id, null if it doesn't exist.
+//     *
+//     * @param networkableId the networkable id
+//     * @return the networkable component found, null if not found
+//     */
+//    public NetworkableComponent getNetworkableComponent(int networkableId) {
+//        Reference<NetworkableComponent> networkableComponentReference =
+//                this.mGame.getNetworkedComponent(networkableId);
+//        if (networkableComponentReference != null) {
+//            return networkableComponentReference.get();
+//        }
+//        return null;
+//    }
+
     /**
-     * Gets a networkable component by id, null if it doesn't exist.
+     * Gets a networkable component by class, null if it doesn't exist.
      *
-     * @param networkableId the networkable id
-     * @return the networkable component found
+     * @param clazz the networkable component class
+     * @return the networkable component found, null if not found
      */
-    public NetworkableComponent getNetworkableComponent(int networkableId) {
-        mLogger.info("getNetworkableComponent call");
+    @SuppressWarnings("unchecked")
+    public NetworkableComponent getNetworkableComponent(
+            Class<? extends NetworkableComponent> clazz) {
         Reference<NetworkableComponent> networkableComponentReference =
-                this.mGame.getNetworkedComponent(networkableId);
+                this.mGame.getNetworkedComponent((Class<NetworkableComponent>) clazz);
         if (networkableComponentReference != null) {
             return networkableComponentReference.get();
         }

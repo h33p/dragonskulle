@@ -8,7 +8,6 @@ import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -25,7 +24,7 @@ public class ServerTest {
 
     @BeforeClass
     public static void setUp() {
-        LogManager.getLogManager().reset();
+        //        LogManager.getLogManager().reset();
         AtomicInteger networkObjectCounter = new AtomicInteger(0);
         mServerInstance = new StartServer(networkObjectCounter, true, true);
         mClientListener = new ClientEars();
@@ -70,7 +69,7 @@ public class ServerTest {
         mNetworkClient.processSingleRequest();
         await().atMost(1800, MILLISECONDS).until(() -> mNetworkClient.hasMap());
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
-        assertFalse(mServerInstance.server.networkObjects.isEmpty());
+        assertFalse(mServerInstance.server.mNetworkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
         final Capital nc = (Capital) mServerInstance.server.findComponent(capitalId).get();
         assertNotNull(nc);
@@ -101,7 +100,6 @@ public class ServerTest {
     @Test
     public void testCapitalSpawnedClient() {
         mServerInstance.clearPendingRequests();
-
         mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
         testMapClient();
         testCapitalSpawnDefaultClient();
@@ -113,16 +111,37 @@ public class ServerTest {
         mNetworkClient.processSingleRequest();
         await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
         await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
-        assertFalse(mServerInstance.server.networkObjects.isEmpty());
+        assertFalse(mServerInstance.server.mNetworkObjects.isEmpty());
         int capitalId = mNetworkClient.getCapitalId();
         mLogger.info("Capital ID : " + capitalId);
         mLogger.info("mClient has these objects : " + mNetworkClient.getNetworkableObjects());
-        final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(capitalId);
+        final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(Capital.class);
         assertNotNull(nc);
         mLogger.info("\t-----> " + capitalId);
         assert (nc.getSyncMe().get() == false);
         assert (nc.getSyncMeAlso().get().equals("Hello World"));
         return nc;
+    }
+
+    @Test
+    public void testCapitalSpawnDefaultClientByClass() {
+        mServerInstance.clearPendingRequests();
+        mNetworkClient = new NetworkClient("127.0.0.1", 7000, mClientListener, false);
+        testMapClient();
+        await().atMost(6, SECONDS).until(() -> mNetworkClient.hasRequests());
+        mNetworkClient.processSingleRequest();
+        await().atMost(1, SECONDS).until(() -> mNetworkClient.hasMap());
+        await().atMost(TIMEOUT * 2, SECONDS).until(() -> mNetworkClient.hasCapital());
+        assertFalse(mServerInstance.server.mNetworkObjects.isEmpty());
+        int capitalId = mNetworkClient.getCapitalId();
+        mLogger.info("Capital ID : " + capitalId);
+        mLogger.info("mClient has these objects : " + mNetworkClient.getNetworkableObjects());
+        final Capital nc = (Capital) mNetworkClient.getNetworkableComponent(Capital.class);
+        assertNotNull(nc);
+        mLogger.info("\t-----> " + capitalId);
+        assert (nc.getSyncMe().get() == false);
+        assert (nc.getSyncMeAlso().get().equals("Hello World"));
+        mNetworkClient.dispose();
     }
 
     @Test
@@ -158,7 +177,7 @@ public class ServerTest {
                 .until(
                         () -> {
                             final NetworkableComponent n =
-                                    mNetworkClient.getNetworkableComponent(component1.getId());
+                                    mNetworkClient.getNetworkableComponent(component1.getClass());
                             mLogger.warning("n in assert : " + n);
                             return n != null;
                         });

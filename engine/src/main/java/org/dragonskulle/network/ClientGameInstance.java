@@ -135,6 +135,27 @@ public class ClientGameInstance {
     }
 
     /**
+     * Gets a networked component by class.
+     *
+     * @param clazz the class of the component to retrieve
+     * @return the networked component found, if null then the component doesn't exists
+     */
+    public Reference<NetworkableComponent> getNetworkedComponent(
+            Class<NetworkableComponent> clazz) {
+        Reference<NetworkableComponent> found = null;
+        System.out.println("Trying to find noc by class " + clazz.getName());
+        for (Reference<NetworkObject> nob : getNetworkObjects().values()) {
+            System.out.println("nob checking in  :  " + nob.toString());
+            Reference<NetworkableComponent> nc = nob.get().getComponent(clazz);
+            if (nc != null) {
+                found = nc;
+                break;
+            }
+        }
+        return found;
+    }
+
+    /**
      * Gets a network object by id.
      *
      * @param networkObjectId the id of the object
@@ -143,10 +164,6 @@ public class ClientGameInstance {
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
         mLogger.fine(mNetworkObjectReferences.toString());
         Reference<NetworkObject> nob = mNetworkObjectReferences.get(networkObjectId);
-        //                mNetworkObjectReferences.stream()
-        //                        .filter(e -> e.get().getId() == networkObjectId)
-        //                        .findFirst()
-        //                        .orElse(null);
         return nob;
     }
 

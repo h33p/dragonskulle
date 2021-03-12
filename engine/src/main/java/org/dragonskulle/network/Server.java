@@ -45,7 +45,7 @@ public class Server {
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
-    public final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
+    public final HashMap<Integer, NetworkObject> mNetworkObjects = new HashMap<>();
 
     /** true if linked to a game scene. */
     public boolean linkedToScene = false;
@@ -225,7 +225,7 @@ public class Server {
      */
     public Reference<NetworkableComponent> findComponent(int componentId) {
         Reference<NetworkableComponent> found = null;
-        for (NetworkObject e : this.networkObjects) {
+        for (NetworkObject e : this.mNetworkObjects.values()) {
             found = e.findComponent(componentId);
             if (found != null) {
                 break;
@@ -375,7 +375,7 @@ public class Server {
         if (linkedToScene) {
             this.mGame.spawnNetworkObjectOnScene(networkObject);
         }
-        this.networkObjects.add(networkObject);
+        this.mNetworkObjects.put(networkObject.getId(), networkObject);
     }
 
     /**
@@ -426,10 +426,7 @@ public class Server {
      * @return the network object found, null if not found
      */
     private NetworkObject getNetworkObject(int networkObjectId) {
-        return this.networkObjects.stream()
-                .filter(e -> e.getId() == networkObjectId)
-                .findFirst()
-                .orElse(null);
+        return this.mNetworkObjects.get(networkObjectId);
     }
 
     /** @return true if the server has unprocess requests */
@@ -460,8 +457,7 @@ public class Server {
      * @return the networkable child
      */
     private NetworkableComponent getNetworkableChild(NetworkObject networkObject, int id) {
-        final NetworkObject serverNetworkObject =
-                this.networkObjects.get(this.networkObjects.indexOf(networkObject));
+        final NetworkObject serverNetworkObject = this.mNetworkObjects.get(networkObject.getId());
         return serverNetworkObject.get(id).get();
     }
 
@@ -555,10 +551,10 @@ public class Server {
 
     /** Fixed broadcast update. */
     public void fixedBroadcastUpdate() {
-        mLogger.info(networkObjects.toString());
+        mLogger.info(mNetworkObjects.toString());
 
         processRequests();
-        for (NetworkObject networkObject : this.networkObjects) {
+        for (NetworkObject networkObject : this.mNetworkObjects.values()) {
             networkObject.broadcastUpdate(this.mSockets::broadcast);
         }
     }
