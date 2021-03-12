@@ -52,7 +52,7 @@ public class Engine {
     /** Engine's GLFW window state */
     @Getter private GLFWState mGLFWState = null;
 
-    private ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
+    private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
 
     private Engine() {}
 
@@ -152,7 +152,7 @@ public class Engine {
             // TODO: Process inputs here before any updates are performed
             mIsRunning = mGLFWState.processEvents();
 
-            UIManager.getInstance().updateHover(mActiveScene.getEnabledComponents());
+            UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
