@@ -73,8 +73,8 @@ public class Engine {
     }
 
     /**
-     * If scene is already loaded, it will be activated from the next frame. If it isn't loaded,
-     * it will be loaded and started on the next frame
+     * If scene is already loaded, it will be activated from the next frame. If it isn't loaded, it
+     * will be loaded and started on the next frame
      *
      * @param scene Scene to be loaded
      */

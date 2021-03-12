@@ -2,9 +2,8 @@
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
-import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.Transform;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.Transform;
 import org.junit.Assert;
 import org.junit.Test;
 
