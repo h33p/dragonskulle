@@ -6,12 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-/** @author Oscar L */
+/** @author Oscar L A listenable array notifies its listeners when an element is added or removed */
 public class ListenableArray<E> extends ArrayList<E> {
     /**
-     * The interface Listener.
+     * The Listener interface.
      *
-     * @param <E> the type parameter
+     * @param <E> the type of elements in the list
      */
     interface Listener<E> {
         /**
@@ -34,14 +34,14 @@ public class ListenableArray<E> extends ArrayList<E> {
     /**
      * Instantiates a new Listenable array.
      *
-     * @param delegate the delegate
+     * @param delegate the delegate array @code{new LinkedList<>()}
      */
     public ListenableArray(ArrayList<E> delegate) {
         this.mDelegate = delegate;
     }
 
     /**
-     * Register listener listenable array.
+     * Registers a listener to the array.
      *
      * @param listener the listener
      * @return the listenable array

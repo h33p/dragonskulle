@@ -3,7 +3,7 @@ package org.dragonskulle.network;
 
 import java.net.InetAddress;
 
-/** @author Oscar L The type Client instance. */
+/** @author Oscar L Stores the information about the client connection to the server. */
 public class ClientInstance {
     /** The Ip. */
     public final InetAddress IP;

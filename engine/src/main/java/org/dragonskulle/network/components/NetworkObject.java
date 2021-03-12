@@ -16,18 +16,33 @@ import org.dragonskulle.network.components.Capital.CapitalRenderable;
 import org.dragonskulle.network.components.Capital.NetworkedTransform;
 import sun.misc.IOUtils;
 
-/** @author Oscar L The NetworkObject deals with any networked variables. */
+/**
+ * The type Network object.
+ *
+ * @author Oscar L The NetworkObject deals with any networked variables.
+ */
 public class NetworkObject extends GameObject {
+    /** A reference to itself. */
     private final Reference<NetworkObject> mReference = new Reference<>(this);
+
     private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
-    private boolean isServer = false;
-    /** The UUID of the object. */
+    /** true if the component is on the server. */
+    private final boolean isServer;
+    /** The id of the object. */
     public final int networkObjectId;
 
+    /** The counter used to assign children ids. */
     private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
+    /** true if linked to a game scene. */
     private boolean linkedToScene;
-    private ArrayList<Integer> sleepingChildren = new ArrayList<>();
 
+    /**
+     * Children are put to sleep when a respawn request has been made, this avoid multiple requests
+     * being made before it has received its first.
+     */
+    private final ArrayList<Integer> sleepingChildren = new ArrayList<>();
+
+    /** Sets that it is linked to a game scene. */
     public void linkToScene() {
         this.linkedToScene = true;
     }
@@ -43,6 +58,11 @@ public class NetworkObject extends GameObject {
         this.isServer = isServer;
     }
 
+    /**
+     * Gets a reference to the object.
+     *
+     * @return the reference
+     */
     public Reference<NetworkObject> getNetReference() {
         return this.mReference;
     }
@@ -50,8 +70,8 @@ public class NetworkObject extends GameObject {
     /**
      * Get networkable.
      *
-     * @param n the n
-     * @return the networkable
+     * @param n the component to get its game version
+     * @return the networkable retrieved. null if not found
      */
     public NetworkableComponent get(NetworkableComponent n) {
         if (linkedToScene) {
@@ -73,7 +93,7 @@ public class NetworkObject extends GameObject {
      * Finds a networkable component by id.
      *
      * @param componentId the id
-     * @return the networkable
+     * @return the networkable, null if not found.
      */
     public Reference<NetworkableComponent> findComponent(int componentId) {
         if (linkedToScene) {
@@ -102,10 +122,10 @@ public class NetworkObject extends GameObject {
     }
 
     /**
-     * Get networkable.
+     * Get networkable by id.
      *
      * @param id the id
-     * @return the networkable
+     * @return the networkable, null if not found.
      */
     public Reference<NetworkableComponent> get(int id) {
         if (linkedToScene) {
@@ -120,6 +140,12 @@ public class NetworkObject extends GameObject {
                 .orElse(null); // will return null if not found
     }
 
+    /**
+     * Gets all networkable children, if its linked to a game scene then it will get the components
+     * from the scene, otherwise its local copy.
+     *
+     * @return the networkable children
+     */
     public ArrayList<Reference<NetworkableComponent>> getNetworkableChildren() {
         if (linkedToScene) {
             ArrayList<Reference<NetworkableComponent>> networkableChildren = new ArrayList<>();
@@ -140,10 +166,22 @@ public class NetworkObject extends GameObject {
                 + '}';
     }
 
+    /**
+     * Gets the object id.
+     *
+     * @return the id
+     */
     public int getId() {
         return this.networkObjectId;
     }
 
+    /**
+     * Updates itself from bytes authored by server.
+     *
+     * @param payload the payload
+     * @param instance the instance
+     * @throws IOException thrown if failed to read client streams
+     */
     public void updateFromBytes(byte[] payload, ClientGameInstance instance) throws IOException {
         int networkObjectId =
                 NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
@@ -202,15 +240,33 @@ public class NetworkObject extends GameObject {
         }
     }
 
+    /**
+     * Marks a child as sleeping until it has been respawned.
+     *
+     * @param invalidComponentId the child to be put to sleep.
+     */
     private void markSleepingChildUpdatesUntilSpawn(int invalidComponentId) {
         mLogger.warning("Marking component to sleep");
         Collections.synchronizedList(this.sleepingChildren).add(invalidComponentId);
     }
 
+    /**
+     * Removes a child from sleeping state.
+     *
+     * @param invalidComponentId the child id
+     */
     private void removeChildFromSleepingState(int invalidComponentId) {
         Collections.synchronizedList(this.sleepingChildren).remove(invalidComponentId);
     }
 
+    /**
+     * Seperates the updates for each children from the bytes it receives.
+     *
+     * @param buff the buff
+     * @param offset the offset
+     * @return the children update bytes
+     * @throws IOException the io exception
+     */
     private ArrayList<byte[]> getChildrenUpdateBytes(byte[] buff, int offset) throws IOException {
         ArrayList<byte[]> out = new ArrayList<>();
         ArrayList<Byte> objectBytes;
@@ -275,7 +331,7 @@ public class NetworkObject extends GameObject {
             spawnRenderableOnGame(child); // only if !isServer
             this.addComponent(child);
             // remove child from sleeping state if it exists
-            Collections.synchronizedCollection(this.sleepingChildren).remove(child.getId());
+            removeChildFromSleepingState(child.getId());
             mLogger.warning(
                     "my networkable components are : " + this.getNetworkableChildren().toString());
         } else {
@@ -283,6 +339,11 @@ public class NetworkObject extends GameObject {
         }
     }
 
+    /**
+     * Spawns the renderable component for the networkable on the game.
+     *
+     * @param child the child
+     */
     private void spawnRenderableOnGame(NetworkableComponent child) {
         mLogger.warning("attempting to spawn renderable for networkable component");
         Class<?> clazz = child.getClass();
@@ -332,6 +393,13 @@ public class NetworkObject extends GameObject {
         return component.getId();
     }
 
+    /**
+     * Spawns the component on the server.
+     *
+     * @param component the component
+     * @param broadcastCallback the broadcast callback
+     * @return the id of the component spawned
+     */
     public int serverSpawnComponent(
             NetworkableComponent component, ServerBroadcastCallback broadcastCallback) {
         mLogger.info("spawning component on all clients 1");
@@ -417,6 +485,12 @@ public class NetworkObject extends GameObject {
         }
     }
 
+    /**
+     * Generates the updates for all of its children which changed.
+     *
+     * @param didChildUpdateMask the mask of children which updates
+     * @return the bytes to be broadcasted
+     */
     private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
         //        mLogger.info("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
@@ -473,6 +547,11 @@ public class NetworkObject extends GameObject {
         return NetworkMessage.toByteArray(bytes);
     }
 
+    /**
+     * Allocates an id in the form child id + parentId.
+     *
+     * @return the int
+     */
     private int allocateId() {
         StringBuilder sb = new StringBuilder();
         int componentId = this.mNetworkComponentCounter.incrementAndGet();
@@ -481,6 +560,12 @@ public class NetworkObject extends GameObject {
         return Integer.parseInt(sb.toString());
     }
 
+    /**
+     * Gets id of the object from the bytes.
+     *
+     * @param payload the payload
+     * @return the id from bytes
+     */
     public static int getIdFromBytes(byte[] payload) {
         return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
     }

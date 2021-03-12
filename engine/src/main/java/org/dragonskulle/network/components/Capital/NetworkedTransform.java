@@ -6,13 +6,17 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L A simple version of a networked transform, it moves the x value of the component
+ *     forward and backwards
+ */
 public class NetworkedTransform extends NetworkableComponent implements IFrameUpdate {
     public SyncVector3 position = new SyncVector3(new Vector3f(0, 0, 0));
     int shouldFlipDirection = 1;
 
     boolean isServer = false;
 
+    @Deprecated()
     public NetworkedTransform() {
         super();
     }

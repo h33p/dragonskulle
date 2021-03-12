@@ -41,11 +41,11 @@ public class NetworkMessage {
     // ::E:: (5 bytes)
 
     /**
-     * Parse bytes.
+     * Parse bytes, this method also only completes if the message is valid.
      *
      * @param buff the buff
      * @param client the client
-     * @return the byte
+     * @return -1 if failed, otherwise the message type
      */
     public static byte parse(byte[] buff, NetworkClient client) {
         int i = 0;
@@ -116,7 +116,7 @@ public class NetworkMessage {
     }
 
     /**
-     * Convert byte array to int int.
+     * Convert byte array of length 4, to int.
      *
      * @param bytes the bytes
      * @return the int
@@ -129,10 +129,10 @@ public class NetworkMessage {
     }
 
     /**
-     * Convert int to byte array byte [ ].
+     * Converts int to a byte array of length 4.
      *
-     * @param value the value
-     * @return the byte [ ]
+     * @param value the integer
+     * @return the bytes generated
      */
     public static byte[] convertIntToByteArray(int value) {
         return new byte[] {
@@ -305,11 +305,19 @@ public class NetworkMessage {
         return out;
     }
 
-    public static byte[] convertBoolArrayToBytes(boolean[] didChildUpdateMask) {
+    /**
+     * Converts a boolean array into bytes.
+     *
+     * @param bools the array of booleans
+     * @return the bytes from booleans
+     * @deprecated This method is not used properly implemented yet, and might not be
+     */
+    @Deprecated
+    public static byte[] convertBoolArrayToBytes(boolean[] bools) {
         ArrayList<Byte> out = new ArrayList<>();
         int bitCounter = 0;
         byte mask = 0;
-        for (boolean b : didChildUpdateMask) {
+        for (boolean b : bools) {
             if (b) {
                 mask |= 1;
             }
@@ -327,6 +335,13 @@ public class NetworkMessage {
         return toByteArray(out);
     }
 
+    /**
+     * Gets a child class's type byte. These are used to find a components constructor from it's
+     * spawn event.
+     *
+     * @param aClass the class
+     * @return the child class type byte
+     */
     public static byte getChildClassTypeByte(Class<? extends NetworkableComponent> aClass) {
         if (aClass == Capital.class) {
             return (byte) 21;
@@ -336,6 +351,13 @@ public class NetworkMessage {
         return (byte) 0;
     }
 
+    /**
+     * Gets a child class from its type byte. These are used to find a components constructor from
+     * it's spawn event.
+     *
+     * @param bClass the class
+     * @return the child class from byte
+     */
     public static Class<? extends NetworkableComponent> getChildClassFromByte(byte bClass) {
         if (bClass == (byte) 21) {
             return Capital.class;

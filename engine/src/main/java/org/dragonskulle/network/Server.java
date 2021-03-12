@@ -46,13 +46,15 @@ public class Server {
      */
     public final ArrayList<NetworkObject> networkObjects = new ArrayList<>();
 
+    /** true if linked to a game scene. */
     public boolean linkedToScene = false;
 
-    /** The M requests. */
+    /** The scheduled requests to be processed. */
     private final ListenableQueue<Request> mRequests = new ListenableQueue<>(new LinkedList<>());
-    /** The M network object counter. */
+    /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter;
 
+    /** Used to run @link{mFixedUpdate} when not linked to a game scene, for testing. */
     private final Timer mFixedUpdate = new Timer();
 
     /**
@@ -60,6 +62,8 @@ public class Server {
      *
      * @param port the port
      * @param listener the listener
+     * @param mNetworkObjectCounter the networkCounter from its parent, this is so id's are globally
+     *     in sync.
      */
     public Server(int port, ServerListener listener, AtomicInteger mNetworkObjectCounter) {
         mLogger.info("[S] Setting up server");
@@ -92,6 +96,8 @@ public class Server {
      * @param port the port
      * @param listener the listener
      * @param autoProcessUpdate sets debug mode
+     * @param mNetworkObjectCounter the networkCounter from its parent, this is so id's are globally
+     *     in sync
      */
     public Server(
             int port,
@@ -125,7 +131,7 @@ public class Server {
     }
 
     /**
-     * Execute bytes on the server.
+     * Executes bytes on the server.
      *
      * @param messageType the message type
      * @param payload the payload
@@ -153,6 +159,7 @@ public class Server {
         }
     }
 
+    /** Starts fixed update task. */
     public void startFixedUpdate() {
         int begin = 0;
         int timeInterval = 200;
@@ -168,15 +175,17 @@ public class Server {
                 timeInterval);
     }
 
+    /** Cancels the scheduled fixed update task. */
     public void cancelFixedUpdate() {
         this.mFixedUpdate.cancel();
     }
 
     /**
-     * Client requested respawn byte [ ].
+     * Clients can request a respawn of a component if it doesn't have it, we will send this whole
+     * component.
      *
      * @param payload the payload
-     * @return the byte [ ]
+     * @return the bytes to be send to the client
      */
     private byte[] clientRequestedRespawn(byte[] payload) {
         int componentRequestedId = NetworkMessage.convertByteArrayToInt(payload);
@@ -202,7 +211,7 @@ public class Server {
         }
     }
 
-    /** Create game. */
+    /** Creates game. */
     public void createGame() {
         this.mGame = new ServerGameInstance();
     }
@@ -224,15 +233,25 @@ public class Server {
         return found;
     }
 
+    /**
+     * Spawns a network object on the server and connects its sync vars.
+     *
+     * @param networkable the networkable
+     */
     public void spawnObject(NetworkObject networkable) {
         mLogger.warning("spawned object on server");
         networkable.getNetworkableChildren().forEach(e -> e.get().connectSyncVars());
         spawnNetworkObjectOnServer(networkable);
     }
 
-    public void linkToScene(Scene mainScene) {
+    /**
+     * Links the server to scene, this doesn't have to be used if testing.
+     *
+     * @param scene the game scene
+     */
+    public void linkToScene(Scene scene) {
         this.linkedToScene = true;
-        this.mGame.setScene(mainScene);
+        this.mGame.setScene(scene);
     }
 
     /**
@@ -242,11 +261,8 @@ public class Server {
      * indefinitely.
      */
     private class ServerRunner implements Runnable {
-        /** The Open. */
+        /** True if the server is open. */
         volatile boolean mOpen = true;
-
-        /** The M process timer. */
-        private final Timer mProcessTimer = new Timer();
 
         @Override
         public void run() {
@@ -270,11 +286,10 @@ public class Server {
         /** Cancel. */
         public void cancel() {
             this.mOpen = false;
-            this.mProcessTimer.cancel();
         }
     }
 
-    /** The type Fixed broad cast update schedule. */
+    /** The interface for a fixed update broadcast event. */
     private class FixedBroadCastUpdateSchedule extends TimerTask {
         public void run() {
             processRequests();
@@ -350,6 +365,11 @@ public class Server {
         };
     }
 
+    /**
+     * Spawns a network object on server, if linked to a game it will also spawn it on the game.
+     *
+     * @param networkObject the network object
+     */
     private void spawnNetworkObjectOnServer(NetworkObject networkObject) {
         if (linkedToScene) {
             this.mGame.spawnNetworkObjectOnScene(networkObject);
@@ -358,16 +378,16 @@ public class Server {
     }
 
     /**
-     * Queue request.
+     * Queues a request to be processed.
      *
      * @param client the client
-     * @param bArray the b array
+     * @param bArray the bytes to be processed later
      */
     private void queueRequest(ClientInstance client, byte[] bArray) {
         this.mRequests.add(new Request(client, bArray));
     }
 
-    /** Process requests. */
+    /** Process all requests. */
     public void processRequests() {
         if (!this.mRequests.isEmpty()) {
             for (int i = 0; i < this.mRequests.size(); i++) {
@@ -379,6 +399,14 @@ public class Server {
         }
     }
 
+    /**
+     * Spawn a networkable component on the server. If the network object that owns the component
+     * doesn't exist it will be created.
+     *
+     * @param component the component
+     * @param networkObjectToSpawnOn the network object to spawn on
+     * @return the component id, -1 if failed
+     */
     public int spawnComponent(NetworkableComponent component, int networkObjectToSpawnOn) {
         NetworkObject networkObject = this.getNetworkObject(networkObjectToSpawnOn);
         if (networkObject != null) {
@@ -390,23 +418,25 @@ public class Server {
         return -1;
     }
 
-    private NetworkObject getNetworkObject(int networkObjectToSpawnOn) {
+    /**
+     * Gets a network object.
+     *
+     * @param networkObjectId the id of the object
+     * @return the network object found, null if not found
+     */
+    private NetworkObject getNetworkObject(int networkObjectId) {
         return this.networkObjects.stream()
-                .filter(e -> e.getId() == networkObjectToSpawnOn)
+                .filter(e -> e.getId() == networkObjectId)
                 .findFirst()
                 .orElse(null);
     }
 
-    /**
-     * Has requests boolean.
-     *
-     * @return the boolean
-     */
+    /** @return true if the server has unprocess requests */
     public boolean hasRequests() {
         return !this.mRequests.isEmpty();
     }
 
-    /** Process single request. */
+    /** Processes a single request. */
     public void processSingleRequest() {
         if (!this.mRequests.isEmpty()) {
             Request request = this.mRequests.poll();
@@ -435,7 +465,7 @@ public class Server {
     }
 
     /**
-     * Process bytes.
+     * Processes bytes.
      *
      * @param client the client
      * @param bytes the bytes
@@ -533,7 +563,7 @@ public class Server {
     }
 
     /** The type Request. */
-    private class Request {
+    private static class Request {
         /** The Client. */
         public final ClientInstance client;
         /** The Bytes. */
@@ -552,9 +582,9 @@ public class Server {
     }
 
     /**
-     * Allocate id int.
+     * Allocates an id for an object.
      *
-     * @return the int
+     * @return the allocated id.
      */
     private int allocateId() {
         return mNetworkObjectCounter.getAndIncrement();

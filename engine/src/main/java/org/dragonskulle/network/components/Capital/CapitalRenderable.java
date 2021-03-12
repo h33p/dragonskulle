@@ -8,9 +8,11 @@ import org.dragonskulle.renderer.Mesh;
 
 /** @author Oscar L */
 public class CapitalRenderable {
-    //    public static Component get() {
-    //        return new Renderable(Mesh.CUBE, new UnlitMaterial());
-    //    }
+    /**
+     * Gets the renderable for the capital component.
+     *
+     * @return the component
+     */
     public static Component get() {
         return new Renderable(Mesh.CUBE, new CapitalMaterial());
     }

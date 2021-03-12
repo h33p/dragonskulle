@@ -22,15 +22,34 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class NetworkableComponent<T> extends Component {
     private static final Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
+    /** A reference to itself. */
     private final Reference<NetworkableComponent> mReference = new Reference<>(this);
 
+    /**
+     * Instantiates a new Networkable component.
+     *
+     * @param ownerId the owner id
+     * @param networkComponentId the network component id
+     */
     public NetworkableComponent(int ownerId, int networkComponentId) {
         this.id = networkComponentId;
         this.ownerId = ownerId;
     }
 
+    /**
+     * Instantiates a new Networkable component.
+     *
+     * @deprecated this constructor shouldn't be used apart from the updateComponent methods
+     */
+    @Deprecated
     public NetworkableComponent() {}
 
+    /**
+     * Creates a networkable component from bytes received.
+     *
+     * @param payload the payload
+     * @return the networkable component created, null if failed
+     */
     public static NetworkableComponent createFromBytes(byte[] payload) {
         Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
 
@@ -340,7 +359,6 @@ public abstract class NetworkableComponent<T> extends Component {
      * @param mask the mask
      * @param buff the buff
      * @param offset the offset
-     * @return the contents from bytes
      * @throws IOException the io exception
      */
     private void updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
@@ -365,10 +383,20 @@ public abstract class NetworkableComponent<T> extends Component {
         }
     }
 
+    /**
+     * Gets the owner id.
+     *
+     * @return the owner id
+     */
     public int getOwnerId() {
         return this.ownerId;
     }
 
+    /**
+     * Gets a reference to this component.
+     *
+     * @return the reference
+     */
     public Reference<NetworkableComponent> getNetReference() {
         return this.mReference;
     }

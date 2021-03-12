@@ -54,15 +54,22 @@ public class StartServer {
         mLogger.info("Shut Down Hook Attached.");
     }
 
+    /** Disposes of the server instance. */
     public void dispose() {
         server.dispose();
     }
 
+    /** Clears pending requests on the server instance. */
     public void clearPendingRequests() {
         server.clearPendingRequests();
     }
 
-    public void linkToScene(Scene mainScene) {
-        this.server.linkToScene(mainScene);
+    /**
+     * Links scene to server instance.
+     *
+     * @param scene the scene
+     */
+    public void linkToScene(Scene scene) {
+        this.server.linkToScene(scene);
     }
 }

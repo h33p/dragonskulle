@@ -27,10 +27,6 @@ public class NetworkClient {
     private static final int MAX_TRANSMISSION_SIZE = 512;
     /** The Socket connection to the server. */
     private Socket mSocket;
-    /** The Input stream. Possibly depreciated in favour of byte streams. */
-    private BufferedReader mIn;
-    /** The Output stream. Possibly depreciated in favour of byte streams. */
-    private PrintWriter mOut;
     /** The byte output stream. */
     private DataOutputStream mDOut;
     /** The byte input stream. */
@@ -43,11 +39,23 @@ public class NetworkClient {
     /** True if the socket is open. */
     private boolean mOpen = true;
 
+    /** The id of the clients capital, only assigned once spawned. */
     private int mCapitalId;
+    /** Stores all requests from the server once scheduled. */
     private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
+    /** The Runnable for @{mClientThread}. */
     private ClientRunner mClientRunner;
+    /**
+     * The thread that watches @link{dIn} for messages and adds them to the message
+     * queue @link{mRequests}.
+     */
     private Thread mClientThread;
-    private boolean mAutoProcessMessages = false;
+    /** True if requests are to be automatically processed every time period. */
+    private boolean mAutoProcessMessages;
+    /**
+     * Schedules the processing of received messages @link {mRequests} runs dependant
+     * on @link{mAutoProcessMessages}.
+     */
     private final Timer mProcessScheduler = new Timer();
 
     /**
@@ -56,7 +64,7 @@ public class NetworkClient {
      * @param ip the ip
      * @param port the port
      * @param listener the listener
-     * @param autoProcessMessages the auto process messages
+     * @param autoProcessMessages true if should auto process messages
      */
     public NetworkClient(
             String ip, int port, ClientListener listener, boolean autoProcessMessages) {
@@ -64,9 +72,7 @@ public class NetworkClient {
         mClientListener = listener;
         try {
             mSocket = new Socket(ip, port);
-            mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
             mBIn = new BufferedInputStream(mSocket.getInputStream());
-            mOut = new PrintWriter(mSocket.getOutputStream(), true);
             mDOut = new DataOutputStream(mSocket.getOutputStream());
             this.mGame = new ClientGameInstance(this::sendBytes);
 
@@ -88,21 +94,28 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Instantiates a new Network client.
+     *
+     * @param ip the ip
+     * @param port the port
+     * @param listener the listener
+     * @param autoProcessMessages true if should auto process messages
+     * @param scene the game scene to be linked
+     */
     public NetworkClient(
             String ip,
             int port,
             ClientListener listener,
             boolean autoProcessMessages,
-            Scene mainScene) {
+            Scene scene) {
         this.mAutoProcessMessages = autoProcessMessages;
         mClientListener = listener;
         try {
             mSocket = new Socket(ip, port);
-            mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
             mBIn = new BufferedInputStream(mSocket.getInputStream());
-            mOut = new PrintWriter(mSocket.getOutputStream(), true);
             mDOut = new DataOutputStream(mSocket.getOutputStream());
-            this.mGame = new ClientGameInstance(this::sendBytes, mainScene);
+            this.mGame = new ClientGameInstance(this::sendBytes, scene);
 
             mClientRunner = new ClientRunner();
             mClientThread = new Thread(mClientRunner);
@@ -123,11 +136,11 @@ public class NetworkClient {
     }
 
     /**
-     * Execute bytes after parsing. This will be different usage depending on server or client.
+     * Execute bytes after parsing. This is the client version.
      *
      * @param messageType the message type
      * @param payload the payload
-     * @return the byte
+     * @return the byteCode of the message processed.
      */
     public byte executeBytes(byte messageType, byte[] payload) {
         mLogger.warning("EXEB - " + messageType);
@@ -198,8 +211,6 @@ public class NetworkClient {
                 mClientListener.disconnected();
             }
             mSocket = null;
-            mIn = null;
-            mOut = null;
             mDOut = null;
             mClientListener = null;
 
@@ -215,12 +226,13 @@ public class NetworkClient {
      *
      * @param msg the msg
      */
+    @Deprecated
     public void send(String msg) {
         this.sendBytes(msg.getBytes());
     }
 
     /**
-     * Send bytes to the server.
+     * Sends bytes to the server.
      *
      * @param bytes the bytes
      */
@@ -244,10 +256,21 @@ public class NetworkClient {
         return mOpen;
     }
 
+    /**
+     * Gets networkable objects from the game.
+     *
+     * @return the networkable object references
+     */
     public ArrayList<Reference<NetworkObject>> getNetworkableObjects() {
         return this.mGame.getNetworkObjects();
     }
 
+    /**
+     * Sets the client to process messages automatically or not.
+     *
+     * @param toggle the toggle
+     * @return true once executed, for testing and can be ignored
+     */
     public boolean setProcessMessagesAutomatically(boolean toggle) {
         mLogger.info("Processing Messages Automatically :" + toggle);
         this.mAutoProcessMessages = toggle;
@@ -264,12 +287,22 @@ public class NetworkClient {
         return true;
     }
 
+    /**
+     * Gets the game instance.
+     *
+     * @return the game
+     */
     public ClientGameInstance getGame() {
         return this.mGame;
     }
 
-    public void linkToScene(Scene mainScene) {
-        this.mGame.linkToScene(mainScene);
+    /**
+     * Sets the linked scene.
+     *
+     * @param scene the scene
+     */
+    public void linkToScene(Scene scene) {
+        this.mGame.linkToScene(scene);
     }
 
     /**
@@ -316,17 +349,24 @@ public class NetworkClient {
         }
     }
 
+    /** The Auto Processing requests TimerTask. */
     private class ProcessRequestScheduled extends TimerTask {
         public void run() {
             processRequests();
         }
     }
 
+    /**
+     * Queue a new request for the client to process.
+     *
+     * @param bArray the bytes
+     */
     private void queueRequest(byte[] bArray) {
         mLogger.info("queuing request :: " + Hex.encodeHexString(bArray));
         this.mRequests.addIfUnique(bArray);
     }
 
+    /** Processes all requests. */
     public void processRequests() {
         mLogger.warning("processing all " + this.mRequests.size() + " requests");
         while (!this.mRequests.isEmpty()) {
@@ -337,10 +377,16 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Checks if the client has requests left to process.
+     *
+     * @return true if there are requests, false otherwise.
+     */
     public boolean hasRequests() {
         return !this.mRequests.isEmpty();
     }
 
+    /** Processes a single request. */
     public void processSingleRequest() {
         if (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
@@ -350,12 +396,13 @@ public class NetworkClient {
         }
     }
 
+    /** Clears the pending requests. */
     public void clearPendingRequests() {
         this.mRequests.clear();
     }
 
     /**
-     * Process bytes.
+     * Processes bytes from a message.
      *
      * @param bytes the bytes
      */
@@ -372,7 +419,7 @@ public class NetworkClient {
     }
 
     /**
-     * Parse bytes.
+     * Parses bytes from a message.
      *
      * @param bytes the bytes
      * @throws DecodingException the decoding exception
@@ -387,27 +434,13 @@ public class NetworkClient {
         }
     }
 
-    /** Close all connections. */
+    /** Closes all connections. */
     private void closeAllConnections() {
         mOpen = false;
 
         try {
             if (mSocket != null) {
                 mSocket.close();
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        try {
-            if (mIn != null) {
-                mIn.close();
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        try {
-            if (mOut != null) {
-                mOut.close();
             }
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -421,18 +454,31 @@ public class NetworkClient {
         }
     }
 
+    /** @return True if has a map, false otherwise. */
     public boolean hasMap() {
         return this.mGame.hasSpawnedMap();
     }
 
-    public Boolean hasCapital() {
+    /** @return True if has a capital, false otherwise. */
+    public boolean hasCapital() {
         return this.mGame.hasSpawnedCapital();
     }
 
+    /**
+     * Gets the capital id.
+     *
+     * @return the id
+     */
     public int getCapitalId() {
         return this.mCapitalId;
     }
 
+    /**
+     * Gets a networkable component by id, null if it doesn't exist.
+     *
+     * @param networkableId the networkable id
+     * @return the networkable component found
+     */
     public NetworkableComponent getNetworkableComponent(int networkableId) {
         mLogger.warning("getNetworkableComponent call");
         Reference<NetworkableComponent> networkableComponentReference =

@@ -13,6 +13,11 @@ public class SyncVector3 implements ISyncVar {
     /** The On update. */
     private transient ISyncVarUpdateHandler mOnUpdate;
 
+    /**
+     * Serialize the SyncVector3.
+     *
+     * @throws IOException thrown if couldn't write to stream
+     */
     @Override
     public void serialize(ObjectOutputStream oos) throws IOException {
         oos.writeFloat(mData.x);
@@ -20,8 +25,13 @@ public class SyncVector3 implements ISyncVar {
         oos.writeFloat(mData.z);
     }
 
+    /**
+     * Deserialize the SyncVector3.
+     *
+     * @throws IOException thrown if couldn't read from stream
+     */
     @Override
-    public void deserialize(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    public void deserialize(ObjectInputStream stream) throws IOException {
         mData.set(stream.readFloat(), stream.readFloat(), stream.readFloat());
     }
 

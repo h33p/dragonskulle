@@ -6,7 +6,8 @@ import java.util.logging.Logger;
 
 /**
  * @author Oscar L ClientEars is the client implementation of ClientListener, this is where custom
- *     executions can be defined for different commands received.
+ *     executions can be defined for different commands received. It is mainly used just to log
+ *     events to the console.
  */
 public class ClientEars implements ClientListener {
     private static final Logger mLogger = Logger.getLogger(ClientEars.class.getName());
