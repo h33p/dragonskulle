@@ -89,7 +89,10 @@ public class UIRenderable extends Renderable implements IOnAwake {
     @Override
     public void onAwake() {
         SampledTexture[] texs = mMaterial.getFragmentTextures();
-        Texture tex = texs != null && texs.length > 0 ? texs[0].getTexture().get() : null;
+        Texture tex =
+                texs != null && texs.length > 0 && texs[0] != null && texs[0].getTexture() != null
+                        ? texs[0].getTexture().get()
+                        : null;
 
         if (tex != null) mAspectRatio = (float) tex.getWidth() / (float) tex.getHeight();
     }
