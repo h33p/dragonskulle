@@ -129,6 +129,9 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			Building building = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
     			
     			if (randomNumber <= upgradeBuilding) {
+    				
+    				Building buildingToUpgrade = ownedBuildings.get(random.nextInt(ownedBuildings.size));
+    				//How to choose what stat to improve -- need to wait to se how building is doing it
     				//TODO Choose which building to upgrade & which stat to upgrade
     				return;
     			}
@@ -149,6 +152,9 @@ public class AiPlayer extends Player implements IFixedUpdate {
     			}
     			else {
     				//TODO Choose which building to sell
+    				Building buildingToSell = ownedBuildings.get(random.nextInt(ownedBuildings.size()));
+    				
+    				//Now have building to sell
     				return;
     			}
     		}
