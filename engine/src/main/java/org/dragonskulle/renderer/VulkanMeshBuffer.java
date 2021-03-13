@@ -55,7 +55,7 @@ class VulkanMeshBuffer implements NativeResource {
     }
 
     public long getVertexBuffer() {
-        return mVertexBuffer.buffer;
+        return mVertexBuffer != null ? mVertexBuffer.buffer : 0;
     }
 
     public long getIndexBuffer() {

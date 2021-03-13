@@ -105,11 +105,6 @@ public class Mesh implements Serializable {
         mIndices = indices;
     }
 
-    public Mesh() {
-        mVertices = new Vertex[0];
-        mIndices = new int[0];
-    }
-
     public static void addQuadToList(
             List<Vertex> vertices,
             List<Integer> indices,

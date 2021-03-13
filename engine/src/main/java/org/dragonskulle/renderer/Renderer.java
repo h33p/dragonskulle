@@ -1086,6 +1086,9 @@ public class Renderer implements NativeResource {
         DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
 
         for (Renderable renderable : renderables) {
+
+            if (renderable.getMesh() == null) continue;
+
             tmpKey.setRenderable(renderable);
 
             ShaderSet shaderSet = renderable.getMaterial().getShaderSet();

@@ -39,9 +39,7 @@ public class UIText extends Renderable {
      * @param font font to use for text
      */
     public UIText(Vector4fc colour, Resource<Font> font) {
-        super(
-                new Mesh(),
-                new UIMaterial(colour, new SampledTexture(font.clone().cast(Texture.class))));
+        super(null, new UIMaterial(colour, new SampledTexture(font.clone().cast(Texture.class))));
         mFont = font;
     }
 
