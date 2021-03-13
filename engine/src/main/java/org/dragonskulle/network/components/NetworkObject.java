@@ -13,7 +13,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
-import sun.misc.IOUtils;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * The type Network object.
@@ -161,6 +161,7 @@ public class NetworkObject extends Component implements IOnAwake {
         ArrayList<byte[]> arrayOfChildrenBytes =
                 getChildrenUpdateBytes(payload, MASK_OFFSET + maskLength);
         int j = 0;
+        final int mNetworkableComponentsSize = mNetworkableComponents.size();
         for (int i = 0; i < masks.length; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
@@ -169,12 +170,14 @@ public class NetworkObject extends Component implements IOnAwake {
                                 + ownerId
                                 + "\nComponent id of children bytes to update is : "
                                 + i);
-                NetworkableComponent noc = mNetworkableComponents.get(i).get();
-                mLogger.fine("Did i manage to find the component? " + (noc == null));
-                if (noc == null) {
-                    throw new IOException(String.format("Can't find component %d", i));
-                } else {
-                    noc.updateFromBytes(arrayOfChildrenBytes.get(j));
+                if (i < mNetworkableComponentsSize) {
+                    NetworkableComponent noc = mNetworkableComponents.get(i).get();
+                    mLogger.fine("Did i manage to find the component? " + (noc == null));
+                    if (noc == null) {
+                        throw new IOException(String.format("Can't find component %d", i));
+                    } else {
+                        noc.updateFromBytes(arrayOfChildrenBytes.get(j));
+                    }
                 }
                 j++;
             } else {
@@ -200,6 +203,7 @@ public class NetworkObject extends Component implements IOnAwake {
             objectBytes = new ArrayList<>();
             while (bis.available() > 0) {
                 bis.mark(NetworkMessage.FIELD_SEPERATOR.length);
+
                 byte[] nextFiveBytes =
                         IOUtils.readNBytes(bis, NetworkMessage.FIELD_SEPERATOR.length);
                 bis.reset();
