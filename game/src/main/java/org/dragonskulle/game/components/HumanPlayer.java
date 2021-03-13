@@ -184,7 +184,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     				
     			}
     			else if (hasPlayerGotBuilding(buildingOnTile)) { 
-    				//TODO Need to change to buildingScreen
+    				buildingChosen = buildingOnTile;
     				screenOn = Screen.BUILDING_SCREEN;
     			}
     			else {

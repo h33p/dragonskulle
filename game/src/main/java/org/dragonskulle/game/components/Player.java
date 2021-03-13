@@ -16,7 +16,7 @@ import lombok.Getter;
  *
  * @author Harry Stoltz, Oscar Lindenbaum and Nathaniel Lowis
  */
-public class Player {		//TODO Work out what's happening with Player
+public class Player {		
 	
 	private List<Building> ownedBuildings;
 	private Reference<HexagonMap> mapComponent;
