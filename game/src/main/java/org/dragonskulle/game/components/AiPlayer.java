@@ -105,7 +105,7 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
     	
     	//TODO Need to know how we are interacting with triggerEvent().  Cos here you can choose exact command to do (Much Much easier)
     	
-    	if (player.numberOfBuildings() == 1) {  //TODO Refactor it so it's only done once
+    	if (player.get().numberOfBuildings() == 1) {  //TODO Refactor it so it's only done once
     		
     		List<HexagonTile> tilesToUse = hexTilesToExpand();
     		if (tilesToUse.size() != 0) {
@@ -143,7 +143,7 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
     			
     			if (randomNumber <= upgradeBuilding) {
     				
-    				Building building = player.getBuilding(random.nextInt(player.numberOfBuildings()));
+    				Building building = player.getBuilding(random.nextInt(player.get().numberOfBuildings()));
     				Stat[] statsArray = building.getStats();
     				Stat statToUpgrade = statsArray[random.nextInt(statsArray.length)];
     				triggerEvent();  //TODO Send data to this which will then package & send to server
@@ -152,8 +152,8 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
     			}
     			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
     				ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
-    				for (int i = 0; i < player.numberOfBuildings(); i++) {
-    					Building building = player.getBuilding(i);
+    				for (int i = 0; i < player.get().numberOfBuildings(); i++) {
+    					Building building = player.get().getBuilding(i);
     					
     					List<Building> attackableBuildings = building.attackableBuildings();
     					for (Building buildingWhichCouldBeAttacked : attackableBuildings) {
@@ -177,7 +177,7 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
     			}
     			else {
     				
-    				if (player.numberOfBuildings() > 1) {
+    				if (player.get().numberOfBuildings() > 1) {
     					Building buildingToSell = player.getBuilding(random.nextInt(player.numberOfBuildings()));	
     					//Now have building to sell
     					triggerEvent();  //TODO Send data to this which will then package & send to server
@@ -199,8 +199,8 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
      */
     private List<HexagonTile> hexTilesToExpand(){
     	List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
-    	for (int i = 0; i < player.numberOfBuildings(); i++) {
-    		Building building = player.getBuilding(i);
+    	for (int i = 0; i < player.get().numberOfBuildings(); i++) {
+    		Building building = player.get().getBuilding(i);
     		List<HexagonTile> hexTilesWhichCanBeSeen = building.getHexTiles();
     		
     		int r_pos = building.getR();
@@ -208,7 +208,7 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
     		
     		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
     			   			
-    			if (player.getHexMap().get(hexTile.getmR(), hexTile.getmQ()) != null) {
+    			if (player.get().getHexMap().get(hexTile.getmR(), hexTile.getmQ()) != null) {
     				; //Ignore cos theres already a building there
     			}
     			else if (!checkCloseBuildings(hexTile)) {  
@@ -235,8 +235,8 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
 		int q_value = hexTile.getmQ();
     	int index = 0;
     	boolean validPlace = true;
-    	while (validPlace && index < player.numberOfBuildings()) { 
-			Builidng buildingToCheck = player.getBuilding(index);
+    	while (validPlace && index < player.get().numberOfBuildings()) { 
+			Builidng buildingToCheck = player.get().getBuilding(index);
 			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getmR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getmQ())) <= 1)){
 				return false;
 			}
