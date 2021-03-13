@@ -1,50 +1,20 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.Capital;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncString;
 
 /** @author Oscar L The Capital Component. */
+@Accessors(prefix = "m")
 public class Capital extends NetworkableComponent {
-    /**
-     * Gets sync me.
-     *
-     * @return the sync me
-     */
-    public SyncBool getSyncMe() {
-        return mSyncMe;
-    }
-
-    /**
-     * Gets sync me also.
-     *
-     * @return the sync me also
-     */
-    public SyncString getSyncMeAlso() {
-        return mSyncMeAlso;
-    }
 
     /** A syncable field. */
-    public SyncBool mSyncMe = new SyncBool(false);
+    @Getter public SyncBool mSyncMe = new SyncBool(false);
     /** A syncable field. */
-    public SyncString mSyncMeAlso = new SyncString("Hello World");
-
-    /**
-     * Instantiates a new Capital.
-     *
-     * @param ownerId the owner id
-     * @param componentId the id
-     */
-    public Capital(int ownerId, int componentId) {
-        super(ownerId, componentId);
-    }
-
-    /** Instantiates a new Capital without id, this will be set from the bytes */
-    @Deprecated
-    public Capital() {
-        super();
-    }
+    @Getter public SyncString mSyncMeAlso = new SyncString("Hello World");
 
     /**
      * Modifies the boolean sync me.

@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.Objects;
 
 /** @author Oscar L The type Sync String. */
-public class SyncString implements ISyncVar {
+public class SyncString implements ISyncVar, Serializable {
 
     /** The Data. */
     private String mData;

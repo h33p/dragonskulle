@@ -9,93 +9,30 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Logger;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.exceptions.DecodingException;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.sync.ISyncVar;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
+@Accessors(prefix = "m")
 public abstract class NetworkableComponent extends Component {
     private static final Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
     /** A reference to itself. */
     private final Reference<NetworkableComponent> mReference = new Reference<>(this);
 
-    /**
-     * Instantiates a new Networkable component.
-     *
-     * @param ownerId the owner id
-     * @param networkComponentId the network component id
-     */
-    public NetworkableComponent(int ownerId, int networkComponentId) {
-        this.id = networkComponentId;
-        this.ownerId = ownerId;
-    }
+    @Getter private NetworkObject mNetworkObject = null;
 
-    /**
-     * Instantiates a new Networkable component.
-     *
-     * @deprecated this constructor shouldn't be used apart from the updateComponent methods
-     */
-    @Deprecated
+    public static final int MASK_LENGTH_OFFSET = 0;
+    public static final int MASK_OFFSET = MASK_LENGTH_OFFSET + 1;
+
+    /** Instantiates a new Networkable component. */
     public NetworkableComponent() {}
 
-    /**
-     * Creates a networkable component from bytes received.
-     *
-     * @param payload the payload
-     * @return the networkable component created, null if failed
-     */
-    public static NetworkableComponent createFromBytes(byte[] payload) {
-        Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
-
-        Class<? extends NetworkableComponent> clazz =
-                NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
-        assert clazz != null;
-        try {
-            return NetworkableComponent.from(clazz, payload);
-        } catch (DecodingException e) {
-            mLogger.fine("error creating from bytes with clazz");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Sets id.
-     *
-     * @param id the id
-     */
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    /**
-     * Sets owner id.
-     *
-     * @param id the id
-     */
-    public void setOwnerId(int id) {
-        this.ownerId = id;
-    }
-
-    /** The Id. */
-    private int id;
-
-    /** The network object that owns this */
-    private int ownerId;
     /**
      * Connects all sync vars in the Object to the network Object. This allows them to be updated.
      */
@@ -105,20 +42,21 @@ public abstract class NetworkableComponent extends Component {
     private Field[] mFields;
 
     /** Init fields. */
-    public void initFields() {
+    public void initialize(NetworkObject networkObject) {
+
+        mNetworkObject = networkObject;
+
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
                         .toArray(Field[]::new);
+
+        if (networkObject.isServer()) connectSyncVars();
     }
 
     /** Connect sync vars. Only should be ran on server */
-    public void connectSyncVars() {
+    private void connectSyncVars() {
         mLogger.info("Connecting sync vars for component");
-        mFields =
-                Arrays.stream(this.getClass().getDeclaredFields())
-                        .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
-                        .toArray(Field[]::new);
         mFieldsMask = new boolean[mFields.length];
         int i = 0;
         for (Field f : mFields) {
@@ -142,11 +80,6 @@ public abstract class NetworkableComponent extends Component {
      * @return the bytes of the component
      */
     public byte[] serialize(boolean force) {
-        ArrayList<Byte> componentIdBytes = getComponentIdBytes();
-        ArrayList<Byte> ownerIdBytes = getOwnerIdBytes();
-        byte childClassType = NetworkMessage.getChildClassTypeByte(this.getClass());
-
-        byte typeByte = NetworkMessage.getChildClassTypeByte(this.getClass());
         int maskLength = this.mFields.length; // 1byte
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -174,9 +107,6 @@ public abstract class NetworkableComponent extends Component {
         }
 
         ArrayList<Byte> payload = new ArrayList<>();
-        payload.addAll(componentIdBytes);
-        payload.addAll(ownerIdBytes);
-        payload.add(typeByte);
         payload.add((byte) maskLength);
         payload.addAll(mask);
 
@@ -197,36 +127,6 @@ public abstract class NetworkableComponent extends Component {
     }
 
     /**
-     * Gets the bytes of the id.
-     *
-     * @return the bytes
-     */
-    @NotNull
-    private ArrayList<Byte> getComponentIdBytes() {
-        ArrayList<Byte> componentId = new ArrayList<>(); // 4 bytes
-        byte[] bytes = NetworkMessage.convertIntToByteArray(this.getId());
-        for (Byte aByte : bytes) {
-            componentId.add(aByte);
-        }
-        return componentId;
-    }
-
-    /**
-     * Gets the bytes of the network object id. (OWNER)
-     *
-     * @return the bytes
-     */
-    @NotNull
-    private ArrayList<Byte> getOwnerIdBytes() {
-        ArrayList<Byte> ownerId = new ArrayList<>(); // 4 bytes
-        byte[] bytes = NetworkMessage.convertIntToByteArray(this.getOwnerId());
-        for (Byte aByte : bytes) {
-            ownerId.add(aByte);
-        }
-        return ownerId;
-    }
-
-    /**
      * Serialize fully byte, is this ran on spawn when the whole component needs creating.
      *
      * @return the bytes
@@ -236,66 +136,16 @@ public abstract class NetworkableComponent extends Component {
     }
 
     /**
-     * Creates a networkable from the bytes.
-     *
-     * @param <T> the type parameter
-     * @param target the target
-     * @param bytes the bytes
-     * @return the component
-     * @throws DecodingException thrown if error in decoding
-     */
-    public static <T extends NetworkableComponent> T from(Class<T> target, byte[] bytes)
-            throws DecodingException {
-        try {
-            T t = target.newInstance();
-            t.initFields();
-            t.updateFromBytes(bytes);
-            return t;
-        } catch (IOException | InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-            throw new DecodingException("Error decoding component from bytes");
-        }
-    }
-
-    /**
      * Update fields from bytes.
      *
      * @param payload the payload
      * @throws IOException the io exception
      */
     public void updateFromBytes(byte[] payload) throws IOException {
-        int id = getComponentIdFromBytes(payload, 0); // read 4 bytes
-        int ownerId =
-                getComponentIdFromBytes(
-                        payload, 4); // read 4 bytes but with offset of 4 to avoid previous id
-        this.setId(id);
-        this.setOwnerId(ownerId);
-        Class<?> clazz =
-                NetworkMessage.getChildClassFromByte((byte) getComponentIdFromBytes(payload, 5));
-        int maskLength =
-                NetworkMessage.getFieldLengthFromBytes(
-                        payload,
-                        4 + 4 + 1); // offset of 8 for previous, length is one as int is being
+        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
         // cast to one byte
-        boolean[] masks =
-                NetworkMessage.getMaskFromBytes(
-                        payload,
-                        maskLength,
-                        4 + 4 + 1); // offset of 8 for previous, this length will be the maskLength
-        updateSyncVarsFromBytes(masks, payload, 1 + maskLength + 4 + 4 + 1);
-    }
-
-    /**
-     * Gets id from bytes.
-     *
-     * @param payload the payload
-     * @param offset the offset
-     * @return the id from bytes
-     */
-    public static int getComponentIdFromBytes(byte[] payload, int offset) {
-        byte[] bytes = Arrays.copyOfRange(payload, offset, offset + 4);
-
-        return NetworkMessage.convertByteArrayToInt(bytes);
+        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, MASK_OFFSET);
+        updateSyncVarsFromBytes(masks, payload, MASK_OFFSET + maskLength);
     }
 
     /**
@@ -340,12 +190,7 @@ public abstract class NetworkableComponent extends Component {
         fieldsString.append("\n}");
 
         return "NetworkableComponent{"
-                + "id='"
-                + id
-                + "', ownerId='"
-                + ownerId
-                + '\''
-                + ", fieldsMask="
+                + "fieldsMask="
                 + Arrays.toString(mFieldsMask)
                 + ", fields="
                 + fieldsString
@@ -380,15 +225,6 @@ public abstract class NetworkableComponent extends Component {
                 }
             }
         }
-    }
-
-    /**
-     * Gets the owner id.
-     *
-     * @return the owner id
-     */
-    public int getOwnerId() {
-        return this.ownerId;
     }
 
     /**

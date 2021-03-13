@@ -44,7 +44,7 @@ public class ServerGameInstance {
      * @param networkObject the network object
      */
     public void spawnNetworkObjectOnScene(NetworkObject networkObject) {
-        this.scene.addRootObject(networkObject);
+        this.scene.addRootObject(networkObject.getGameObject());
     }
 
     /**

@@ -11,9 +11,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
-import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * @author Oscar L
@@ -23,6 +21,15 @@ import org.dragonskulle.network.components.NetworkableComponent;
  */
 public class NetworkClient {
     private static final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
+
+    /** ID of object update message */
+    public static final byte MESSAGE_UPDATE_OBJECT = 15;
+
+    /** ID of spawn object message */
+    public static final byte MESSAGE_SPAWN_OBJECT = 16;
+
+    /** ID of spawn map message */
+    public static final byte MESSAGE_SPAWN_MAP = 20;
 
     /** The constant MAX_TRANSMISSION_SIZE. */
     private static final int MAX_TRANSMISSION_SIZE = 512;
@@ -40,8 +47,6 @@ public class NetworkClient {
     /** True if the socket is open. */
     private boolean mOpen = true;
 
-    /** The id of the clients capital, only assigned once spawned. */
-    private int mCapitalId;
     /** Stores all requests from the server once scheduled. */
     private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
     /** The Runnable for @{mClientThread}. */
@@ -146,33 +151,18 @@ public class NetworkClient {
     public byte executeBytes(byte messageType, byte[] payload) {
         mLogger.info("EXEB - " + messageType);
         switch (messageType) {
-            case (byte) 15:
+            case MESSAGE_UPDATE_OBJECT:
                 mLogger.fine("Should update requested network object");
                 updateNetworkObject(payload);
                 break;
-            case (byte) 20:
+            case MESSAGE_SPAWN_OBJECT:
+                mLogger.fine("Spawn a networked object");
+                spawnNetworkObject(payload);
+                break;
+            case MESSAGE_SPAWN_MAP:
                 mLogger.fine("Trying to spawn map, need to get the actual map");
                 this.mGame.spawnMap(payload);
                 mLogger.fine("Spawned map");
-                break;
-            case (byte) 21:
-                try {
-                    mLogger.fine("Trying to spawn capital");
-                    Capital capital = deserializeCapitol(payload);
-                    this.mCapitalId = this.mGame.spawnCapital(capital.getOwnerId(), capital);
-                    if (capital.getId() == mCapitalId) {
-                        mLogger.fine("Spawned capital");
-                    }
-                } catch (DecodingException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case (byte) 22:
-                mLogger.fine("Trying to spawn component");
-                NetworkableComponent component = NetworkableComponent.createFromBytes(payload);
-                assert component != null;
-                int componentId = this.mGame.spawnComponent(component.getOwnerId(), component);
-                mLogger.fine("Spawned Component");
                 break;
             default:
                 mLogger.info(
@@ -183,23 +173,21 @@ public class NetworkClient {
     }
 
     /**
-     * Deserialize the capital bytes.
-     *
-     * @param payload the payload
-     * @return the capital
-     * @throws DecodingException Thrown if any errors occur in deserialization.
-     */
-    private Capital deserializeCapitol(byte[] payload) throws DecodingException {
-        return NetworkableComponent.from(Capital.class, payload);
-    }
-
-    /**
      * Update networkable from bytes, this is authored by the server.
      *
      * @param payload the payload
      */
     private void updateNetworkObject(byte[] payload) {
         this.mGame.updateNetworkObject(payload);
+    }
+
+    /**
+     * Spawn a network object from bytes, this is authored by the server.
+     *
+     * @param payload payload containing the object info
+     */
+    private void spawnNetworkObject(byte[] payload) {
+        this.mGame.spawnNetworkObject(payload);
     }
 
     /** Dispose. */
@@ -463,46 +451,5 @@ public class NetworkClient {
     /** @return True if has a capital, false otherwise. */
     public boolean hasCapital() {
         return this.mGame.hasSpawnedCapital();
-    }
-
-    /**
-     * Gets the capital id.
-     *
-     * @return the id
-     */
-    public int getCapitalId() {
-        return this.mCapitalId;
-    }
-
-    /**
-     * Gets a networkable component by id, null if it doesn't exist.
-     *
-     * @param networkableId the networkable id
-     * @return the networkable component found, null if not found
-     */
-    public NetworkableComponent getNetworkableComponent(int networkableId) {
-        Reference<NetworkableComponent> networkableComponentReference =
-                this.mGame.getNetworkedComponent(networkableId);
-        if (networkableComponentReference != null) {
-            return networkableComponentReference.get();
-        }
-        return null;
-    }
-
-    /**
-     * Gets a networkable component by class, null if it doesn't exist.
-     *
-     * @param clazz the networkable component class
-     * @return the networkable component found, null if not found
-     */
-    @SuppressWarnings("unchecked")
-    public NetworkableComponent getNetworkableComponent(
-            Class<? extends NetworkableComponent> clazz) {
-        Reference<NetworkableComponent> networkableComponentReference =
-                this.mGame.getNetworkedComponent((Class<NetworkableComponent>) clazz);
-        if (networkableComponentReference != null) {
-            return networkableComponentReference.get();
-        }
-        return null;
     }
 }

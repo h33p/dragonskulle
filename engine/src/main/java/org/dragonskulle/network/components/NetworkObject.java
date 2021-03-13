@@ -4,16 +4,15 @@ package org.dragonskulle.network.components;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import org.dragonskulle.core.GameObject;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.exceptions.NetworkObjectDoesNotHaveChildException;
 import org.dragonskulle.network.ClientGameInstance;
+import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.NetworkMessage;
-import org.dragonskulle.network.components.Capital.Capital;
-import org.dragonskulle.network.components.Capital.CapitalRenderable;
-import org.dragonskulle.network.components.Capital.NetworkedTransform;
 import sun.misc.IOUtils;
 
 /**
@@ -21,31 +20,21 @@ import sun.misc.IOUtils;
  *
  * @author Oscar L The NetworkObject deals with any networked variables.
  */
-public class NetworkObject extends GameObject {
-    /** A reference to itself. */
-    private final Reference<NetworkObject> mReference = new Reference<>(this);
+@Accessors(prefix = "m")
+public class NetworkObject extends Component implements IOnAwake {
 
     private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
     /** true if the component is on the server. */
-    private final boolean isServer;
+    @Getter private final boolean mIsServer;
     /** The id of the object. */
     public final int networkObjectId;
 
-    /** The counter used to assign children ids. */
-    private final AtomicInteger mNetworkComponentCounter = new AtomicInteger(0);
-    /** true if linked to a game scene. */
-    private boolean linkedToScene;
+    @Getter
+    private final ArrayList<Reference<NetworkableComponent>> mNetworkableComponents =
+            new ArrayList<>();
 
-    /**
-     * Children are put to sleep when a respawn request has been made, this avoid multiple requests
-     * being made before it has received its first.
-     */
-    private final ArrayList<Integer> sleepingChildren = new ArrayList<>();
-
-    /** Sets that it is linked to a game scene. */
-    public void linkToScene() {
-        this.linkedToScene = true;
-    }
+    /** The network client ID that owns this */
+    private int ownerId;
 
     /**
      * Instantiates a new Network object.
@@ -54,46 +43,64 @@ public class NetworkObject extends GameObject {
      * @param isServer true if the object is on the server
      */
     public NetworkObject(int id, boolean isServer) {
-        super("network_object_" + id);
         networkObjectId = id;
-        this.isServer = isServer;
+        this.mIsServer = isServer;
+    }
+
+    @Override
+    public void onDestroy() {}
+
+    @Override
+    public void onAwake() {
+        getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
+
+        for (Reference<NetworkableComponent> comp : mNetworkableComponents)
+            comp.get().initialize(this);
     }
 
     /**
-     * Gets a reference to the object.
+     * Sets owner id.
      *
-     * @return the reference
+     * @param id the id
      */
-    public Reference<NetworkObject> getNetReference() {
-        return this.mReference;
+    public void setOwnerId(int id) {
+        this.ownerId = id;
     }
 
     /**
-     * Get networkable.
+     * Gets the bytes of the network object id. (OWNER)
      *
-     * @param n the component to get its game version
-     * @return the networkable retrieved. null if not found
+     * @return the bytes
      */
-    public NetworkableComponent get(NetworkableComponent n) {
-        final Reference<? extends NetworkableComponent> networkableComponentReference =
-                this.getComponent(n.getClass());
-        if (networkableComponentReference != null) {
-            return networkableComponentReference.get();
+    private ArrayList<Byte> getOwnerIdBytes() {
+        ArrayList<Byte> ownerId = new ArrayList<>(); // 4 bytes
+        byte[] bytes = NetworkMessage.convertIntToByteArray(this.getOwnerId());
+        for (Byte aByte : bytes) {
+            ownerId.add(aByte);
         }
-        return null;
+        return ownerId;
     }
 
     /**
-     * Finds a networkable component by id.
+     * Gets id from bytes.
      *
-     * @param componentId the id
-     * @return the networkable, null if not found.
+     * @param payload the payload
+     * @param offset the offset
+     * @return the id from bytes
      */
-    public Reference<NetworkableComponent> findComponent(int componentId) {
-        return this.getNetworkableChildren().stream()
-                .filter(e -> e.get().getId() == componentId)
-                .findFirst()
-                .orElse(null);
+    public static int getIntFromBytes(byte[] payload, int offset) {
+        byte[] bytes = Arrays.copyOfRange(payload, offset, offset + 4);
+
+        return NetworkMessage.convertByteArrayToInt(bytes);
+    }
+
+    /**
+     * Gets the owner id.
+     *
+     * @return the owner id
+     */
+    public int getOwnerId() {
+        return this.ownerId;
     }
 
     @Override
@@ -109,36 +116,11 @@ public class NetworkObject extends GameObject {
         return Objects.hash(networkObjectId);
     }
 
-    /**
-     * Get networkable by id.
-     *
-     * @param id the id
-     * @return the networkable, null if not found.
-     */
-    public Reference<NetworkableComponent> get(int id) {
-        return getNetworkableChildren().stream()
-                .filter(e -> e.get().getId() == id)
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
-     * Gets all networkable children, if its linked to a game scene then it will get the components
-     * from the scene, otherwise its local copy.
-     *
-     * @return the networkable children
-     */
-    public ArrayList<Reference<NetworkableComponent>> getNetworkableChildren() {
-        ArrayList<Reference<NetworkableComponent>> networkableChildren = new ArrayList<>();
-        this.getComponents(NetworkableComponent.class, networkableChildren);
-        return networkableChildren;
-    }
-
     @Override
     public String toString() {
         return "NetworkObject{"
                 + "children="
-                + getNetworkableChildren()
+                + getNetworkableComponents()
                 + ", networkObjectId='"
                 + networkObjectId
                 + '\''
@@ -154,6 +136,11 @@ public class NetworkObject extends GameObject {
         return this.networkObjectId;
     }
 
+    public static final int ID_OFFSET = 0;
+    public static final int OWNER_ID_OFFSET = ID_OFFSET + 4;
+    public static final int MASK_LENGTH_OFFSET = OWNER_ID_OFFSET + 4;
+    public static final int MASK_OFFSET = MASK_LENGTH_OFFSET + 1;
+
     /**
      * Updates itself from bytes authored by server.
      *
@@ -162,83 +149,37 @@ public class NetworkObject extends GameObject {
      * @throws IOException thrown if failed to read client streams
      */
     public void updateFromBytes(byte[] payload, ClientGameInstance instance) throws IOException {
-        int networkObjectId =
-                NetworkableComponent.getComponentIdFromBytes(payload, 0); // reads 4 bytes in
+        // TODO clear this up by using ByteStreams
+        int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
 
-        int maskLength =
-                NetworkMessage.getFieldLengthFromBytes(
-                        payload,
-                        4); // offset of 4 to ignore id, another 4 to avoid networkObject id
+        int ownerId = getIntFromBytes(payload, OWNER_ID_OFFSET);
+        this.setOwnerId(ownerId);
 
-        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, 4);
+        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
+
+        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, MASK_OFFSET);
         ArrayList<byte[]> arrayOfChildrenBytes =
-                getChildrenUpdateBytes(payload, 1 + maskLength + 4);
+                getChildrenUpdateBytes(payload, MASK_OFFSET + maskLength);
         int j = 0;
         for (int i = 0; i < masks.length; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
-                try {
-                    int componentId =
-                            NetworkableComponent.getComponentIdFromBytes(
-                                    arrayOfChildrenBytes.get(j), 0); // read 4 bytes
-                    int ownerId =
-                            NetworkableComponent.getComponentIdFromBytes(
-                                    arrayOfChildrenBytes.get(j), 4); // re
-                    mLogger.fine(
-                            "Parent id of child to update is :"
-                                    + ownerId
-                                    + "\nComponent id of children bytes to update is : "
-                                    + componentId);
-                    Reference<NetworkableComponent> noc = this.findComponent(componentId);
-                    mLogger.fine("Did i manage to find the component? " + (noc == null));
-                    if (noc == null) {
-                        throw new NetworkObjectDoesNotHaveChildException(
-                                "Can't find component", componentId);
-                    } else {
-                        noc.get().updateFromBytes(arrayOfChildrenBytes.get(j));
-                    }
-                } catch (NetworkObjectDoesNotHaveChildException e) {
-                    mLogger.info("NOB doesn't have child, " + e.invalidComponentId);
-                    if (sleepingChildren.contains(e.invalidComponentId)) {
-                        mLogger.info(
-                                "Not requesting update as child is sleeping until we receive spawn request");
-                    } else {
-                        this.markSleepingChildUpdatesUntilSpawn(e.invalidComponentId);
-                        instance.sendBytesCallback.send(
-                                NetworkMessage.build(
-                                        (byte) 50,
-                                        NetworkMessage.convertIntToByteArray(
-                                                e.invalidComponentId)));
-                        break;
-                    }
+                mLogger.fine(
+                        "Parent id of child to update is :"
+                                + ownerId
+                                + "\nComponent id of children bytes to update is : "
+                                + i);
+                NetworkableComponent noc = mNetworkableComponents.get(i).get();
+                mLogger.fine("Did i manage to find the component? " + (noc == null));
+                if (noc == null) {
+                    throw new IOException(String.format("Can't find component %d", i));
+                } else {
+                    noc.updateFromBytes(arrayOfChildrenBytes.get(j));
                 }
                 j++;
             } else {
                 mLogger.fine("Shouldn't update child");
             }
-        }
-    }
-
-    /**
-     * Marks a child as sleeping until it has been respawned.
-     *
-     * @param invalidComponentId the child to be put to sleep.
-     */
-    private void markSleepingChildUpdatesUntilSpawn(int invalidComponentId) {
-        mLogger.info("Marking component to sleep");
-        Collections.synchronizedList(this.sleepingChildren).add(invalidComponentId);
-    }
-
-    /**
-     * Removes a child from sleeping state.
-     *
-     * @param invalidComponentId the child id
-     */
-    private void removeChildFromSleepingState(int invalidComponentId) {
-
-        List sleepers = Collections.synchronizedList(this.sleepingChildren);
-        if (sleepers.contains(invalidComponentId)) {
-            sleepers.remove((Object) invalidComponentId);
         }
     }
 
@@ -303,126 +244,6 @@ public class NetworkObject extends GameObject {
     }
 
     /**
-     * Add a networkable child to network object
-     *
-     * @param child The networkable component to be added
-     */
-    public void addNetworkableComponent(NetworkableComponent child) {
-
-        if (linkedToScene) {
-            spawnRenderableOnGame(child); // only if !isServer
-        }
-        mLogger.info("Linked to scene adding component to scene");
-        this.addComponent(child);
-        // remove child from sleeping state if it exists
-        removeChildFromSleepingState(child.getId());
-        mLogger.info("my networkable components are : " + this.getNetworkableChildren().toString());
-    }
-
-    /**
-     * Spawns the renderable component for the networkable on the game.
-     *
-     * @param child the child
-     */
-    private void spawnRenderableOnGame(NetworkableComponent child) {
-        mLogger.info("attempting to spawn renderable for networkable component");
-        Class<?> clazz = child.getClass();
-        mLogger.info("attempting to spawn renderable for networkable component clazz -> " + clazz);
-        if (clazz.equals(Capital.class)) {
-            mLogger.info("attempting to spawn capital renderable");
-            this.addComponent(CapitalRenderable.get());
-        }
-    }
-
-    /**
-     * Add multiple networkable children to network object
-     *
-     * @param children The networkable components to be added
-     */
-    public void addChildren(Reference<NetworkableComponent>[] children) {
-        for (Reference<NetworkableComponent> child : children) {
-            this.addComponent(child.get());
-        }
-    }
-
-    /**
-     * Spawns a component and notifies all clients using callback.
-     *
-     * @param component The component to be spawned, must extend NetworkableComponent
-     * @param messageCode The message code of the spawn.
-     * @return The ID of the spawned component
-     */
-    private int serverSpawnComponent(
-            NetworkableComponent component,
-            byte messageCode,
-            ServerBroadcastCallback broadcastCallback) {
-        mLogger.fine("spawning component on all clients 2");
-        if (isServer) {
-            component.connectSyncVars();
-        }
-        byte[] spawnComponentBytes;
-        byte[] componentBytes = component.serializeFully();
-        spawnComponentBytes = NetworkMessage.build(messageCode, componentBytes);
-        broadcastCallback.call(spawnComponentBytes);
-        addNetworkableComponent(component);
-        return component.getId();
-    }
-
-    /**
-     * Spawns the component on the server.
-     *
-     * @param component the component
-     * @param broadcastCallback the broadcast callback
-     * @return the id of the component spawned
-     */
-    public int serverSpawnComponent(
-            NetworkableComponent component, ServerBroadcastCallback broadcastCallback) {
-        mLogger.fine("spawning component on all clients 1");
-        byte[] spawnComponentBytes;
-        byte[] componentBytes = component.serializeFully();
-        spawnComponentBytes = NetworkMessage.build((byte) 22, componentBytes);
-        broadcastCallback.call(spawnComponentBytes);
-        addNetworkableComponent(component);
-        return component.getId();
-    }
-
-    /**
-     * Spawns a capital using the @link{spawnComponent} method
-     *
-     * @param ownerId the owner id
-     * @param broadcastCallback the broadcast callback
-     * @return The id of the spawned component
-     */
-    public int serverSpawnCapital(int ownerId, ServerBroadcastCallback broadcastCallback) {
-        Capital capital = new Capital(ownerId, this.allocateId());
-        NetworkableComponent transformComponent =
-                new NetworkedTransform(this.getId(), allocateId(), true);
-        transformComponent.connectSyncVars();
-        this.addNetworkableComponent(transformComponent);
-        return serverSpawnComponent(capital, (byte) 21, broadcastCallback);
-    }
-
-    /**
-     * Sends the map to the client, this is called on connect
-     *
-     * @param mapBytes The bytes of the serialized map.
-     * @param clientCallback the client callback
-     */
-    public void spawnMap(byte[] mapBytes, SendBytesToClientCallback clientCallback) {
-        mLogger.fine("spawning map on client");
-        mLogger.fine("Map bytes :: " + mapBytes.length + "bytes");
-        byte[] spawnMapMessage = NetworkMessage.build((byte) 20, mapBytes);
-        clientCallback.call(spawnMapMessage);
-    }
-
-    /**
-     * Children of the object will be networkable and updated on clients, only used if not spawned
-     * in a game scene
-     */
-    private final ArrayList<Reference<NetworkableComponent>> nonLinkedToGameChildren =
-            new ArrayList<>();
-
-    /**
      * Gets network object id.
      *
      * @return the network object id
@@ -440,13 +261,10 @@ public class NetworkObject extends GameObject {
     public void broadcastUpdate(ServerBroadcastCallback broadcastCallback) {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
-        ArrayList<Reference<NetworkableComponent>> networkableChildren =
-                this.getNetworkableChildren();
-        boolean[] didChildUpdateMask = new boolean[networkableChildren.size()];
-        mLogger.info("Networkable Object has n children : " + networkableChildren.size());
+        boolean[] didChildUpdateMask = new boolean[mNetworkableComponents.size()];
+        mLogger.info("Networkable Object has n components : " + mNetworkableComponents.size());
         for (int i = 0; i < didChildUpdateMask.length; i++) {
-            if (networkableChildren.get(i).get().hasBeenModified()) {
-                mLogger.info("child has been modified in a networkobject");
+            if (mNetworkableComponents.get(i).get().hasBeenModified()) {
                 didChildUpdateMask[i] = true;
                 if (!shouldBroadcast) {
                     shouldBroadcast = true;
@@ -456,7 +274,8 @@ public class NetworkObject extends GameObject {
         if (shouldBroadcast) {
             byte[] bytes = generateBroadcastUpdateBytes(didChildUpdateMask);
             mLogger.fine("Broadcast update size:: " + bytes.length);
-            broadcastCallback.call(NetworkMessage.build((byte) 15, bytes));
+            broadcastCallback.call(
+                    NetworkMessage.build(NetworkClient.MESSAGE_UPDATE_OBJECT, bytes));
         }
     }
 
@@ -471,17 +290,16 @@ public class NetworkObject extends GameObject {
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4
+        byte[] ownerIdBytes = NetworkMessage.convertIntToByteArray(this.getOwnerId()); // 4
         byte sizeOfMaskBytes = (byte) didChildUpdateMask.length; // 1
 
         ArrayList<Byte> childChunk = new ArrayList<>();
         ArrayList<Byte> contents = new ArrayList<>();
-        ArrayList<Reference<NetworkableComponent>> networkableChildren =
-                this.getNetworkableChildren();
 
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {
                 // child did update
-                byte[] childBytes = networkableChildren.get(i).get().serialize();
+                byte[] childBytes = mNetworkableComponents.get(i).get().serialize();
                 for (byte childByte : childBytes) {
                     childChunk.add(childByte);
                 }
@@ -498,6 +316,11 @@ public class NetworkObject extends GameObject {
 
         // add id
         for (byte idByte : idBytes) {
+            bytes.add(idByte);
+        }
+
+        // add owner id
+        for (byte idByte : ownerIdBytes) {
             bytes.add(idByte);
         }
 
@@ -520,19 +343,6 @@ public class NetworkObject extends GameObject {
         // add contents
         bytes.addAll(contents);
         return NetworkMessage.toByteArray(bytes);
-    }
-
-    /**
-     * Allocates an id in the form child id + parentId.
-     *
-     * @return the int
-     */
-    private int allocateId() {
-        StringBuilder sb = new StringBuilder();
-        int componentId = this.mNetworkComponentCounter.incrementAndGet();
-        sb.append(componentId);
-        sb.append(this.networkObjectId);
-        return Integer.parseInt(sb.toString());
     }
 
     /**

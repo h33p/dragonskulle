@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.Objects;
 
 /** @author Oscar L The type Sync Long. */
-public class SyncLong implements ISyncVar {
+public class SyncLong implements ISyncVar, Serializable {
 
     /** The Data. */
     private long mData;

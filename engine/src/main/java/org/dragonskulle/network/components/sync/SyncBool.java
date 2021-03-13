@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.Objects;
 
 /** @author Oscar L The type Sync bool. */
-public class SyncBool implements ISyncVar {
+public class SyncBool implements ISyncVar, Serializable {
 
     /** The Data. */
     private boolean mData;

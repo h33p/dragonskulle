@@ -14,24 +14,12 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
     public SyncVector3 position = new SyncVector3(new Vector3f(0, 0, 0));
     int shouldFlipDirection = 1;
 
-    boolean isServer = false;
-
-    @Deprecated()
-    public NetworkedTransform() {
-        super();
-    }
-
-    public NetworkedTransform(int ownerId, int componentId, boolean isServer) {
-        super(ownerId, componentId);
-        this.isServer = isServer;
-    }
-
     @Override
     protected void onDestroy() {}
 
     @Override
     public void frameUpdate(float deltaTime) {
-        if (isServer) {
+        if (getNetworkObject().isServer()) {
             float oldX = position.get().x();
             if (oldX > 0.5) {
                 shouldFlipDirection = -1;
@@ -52,8 +40,6 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
                 + position
                 + ", shouldFlipDirection="
                 + shouldFlipDirection
-                + ", isServer="
-                + isServer
                 + '}';
     }
 }

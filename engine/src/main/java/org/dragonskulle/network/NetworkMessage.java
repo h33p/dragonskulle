@@ -5,9 +5,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-import org.dragonskulle.network.components.Capital.Capital;
-import org.dragonskulle.network.components.Capital.NetworkedTransform;
-import org.dragonskulle.network.components.NetworkableComponent;
 import sun.misc.IOUtils;
 
 /**
@@ -132,10 +129,29 @@ public class NetworkMessage {
      * @param value the integer
      * @return the bytes generated
      */
+    public static byte[] convertIntsToByteArray(int... values) {
+        byte[] bytes = new byte[4 * values.length];
+
+        int cnt = 0;
+
+        for (int value : values) {
+            bytes[cnt++] = (byte) (value >> 24);
+            bytes[cnt++] = (byte) (value >> 16);
+            bytes[cnt++] = (byte) (value >> 8);
+            bytes[cnt++] = (byte) value;
+        }
+
+        return bytes;
+    }
+
+    /**
+     * Converts int to a byte array of length 4.
+     *
+     * @param value the integer
+     * @return the bytes generated
+     */
     public static byte[] convertIntToByteArray(int value) {
-        return new byte[] {
-            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
-        };
+        return convertIntsToByteArray(value);
     }
 
     /**
@@ -295,7 +311,7 @@ public class NetworkMessage {
      * @return the mask from bytes
      */
     public static boolean[] getMaskFromBytes(byte[] buff, int maskLength, int offset) {
-        byte[] maskBytes = Arrays.copyOfRange(buff, 1 + offset, 1 + maskLength + offset);
+        byte[] maskBytes = Arrays.copyOfRange(buff, offset, maskLength + offset);
         boolean[] out = new boolean[maskBytes.length];
         int idx = 0;
         for (byte maskByte : maskBytes) {
@@ -332,38 +348,5 @@ public class NetworkMessage {
             out.add(mask);
         }
         return toByteArray(out);
-    }
-
-    /**
-     * Gets a child class's type byte. These are used to find a components constructor from it's
-     * spawn event.
-     *
-     * @param aClass the class
-     * @return the child class type byte
-     */
-    public static byte getChildClassTypeByte(Class<? extends NetworkableComponent> aClass) {
-        if (aClass == Capital.class) {
-            return (byte) 21;
-        } else if (aClass == NetworkedTransform.class) {
-            return (byte) 23;
-        }
-        return (byte) 0;
-    }
-
-    /**
-     * Gets a child class from its type byte. These are used to find a components constructor from
-     * it's spawn event.
-     *
-     * @param bClass the class
-     * @return the child class from byte
-     */
-    public static Class<? extends NetworkableComponent> getChildClassFromByte(byte bClass) {
-        if (bClass == (byte) 21) {
-            return Capital.class;
-        } else if (bClass == (byte) 23) {
-            return NetworkedTransform.class;
-        }
-
-        return null;
     }
 }

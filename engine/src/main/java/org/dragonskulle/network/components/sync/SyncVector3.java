@@ -4,11 +4,12 @@ package org.dragonskulle.network.components.sync;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /** @author Oscar L */
-public class SyncVector3 implements ISyncVar {
+public class SyncVector3 implements ISyncVar, Serializable {
     private Vector3f mData = new Vector3f();
 
     /** The On update. */
