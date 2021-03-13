@@ -9,20 +9,24 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Time;
 import org.dragonskulle.game.map.HexagonMap;
 
+import lombok.Getter;
+
 /**
  * Abstract Player class, Both AIPlayer and HumanPlayer will extend this
  *
  * @author Harry Stoltz, Oscar Lindenbaum and Nathaniel Lowis
  */
-public class Player extends Component implements IFixedUpdate{		//TODO Work out what's happening with Player
+public class Player {		//TODO Work out what's happening with Player
 	
-	protected List<Building> ownedBuildings;
-	protected Reference<HexagonMap> mapComponent;
+	private List<Building> ownedBuildings;
+	private Reference<HexagonMap> mapComponent;
+	@Getter private final int UNIQUE_ID;	
+	private static int nextID;
 	
-	protected int tokens = 0;  //TODO NEED TO BE SYNCint
-	protected final int TOKEN_RATE = 5;
-	protected final float UPDATE_TIME = 1;
-	protected float lastTokenUpdate = 0;
+	@Getter private int tokens = 0;  //TODO NEED TO BE SYNCint		
+	private final int TOKEN_RATE = 5;
+	private final float UPDATE_TIME = 1;
+	private float lastTokenUpdate = 0;
 	
 	
 	/**
@@ -31,31 +35,33 @@ public class Player extends Component implements IFixedUpdate{		//TODO Work out 
 	 * @param capital the capital used by the player
 	 */
 	public Player(Reference<HexagonMap> map, Building capital) {		//TODO DO we need?
+		UNIQUE_ID = 5;  			//TODO need to make this static so unique for each player
 		mapComponent = map;
 		ownedBuildings = new ArrayList<Building>();
 		ownedBuildings.add(capital);
 		updateTokens(UPDATE_TIME + 1);
 	}
 	
-	/**
-	 * This method will take the action decided by the user and will tell the server to perform one action 
-	 */
-	protected void attemptEvent() {		
-		;
+	public void addBuilding(Building building) {
+		ownedBuildings.add(building);
 	}
 	
-	/**
-	 * This method will take the action decided by the user and performed locally.
-	 */
-	protected void triggerEvent() {
-		;
+	public Building getBuilding(int index) {
+		return ownedBuildings.get(index);
+	}
+	
+	public int numberOfBuildings() {
+		return ownedBuildings.size();
 	}
 	
 	
+	public Reference<HexagonMap> getHexMap() {
+		return mapComponent;
+	}
 	/**
 	 * This method will update the amount of tokens the user has per UPDATE_TIME.  Goes through all owned buildings to check if need to update tokens
 	 */
-	protected void updateTokens(float time) {  //TODO move this to server once server integrated.
+	public void updateTokens(float time) {  //TODO move this to server once server integrated.
 			
 		
 		lastTokenUpdate += time;
@@ -73,15 +79,4 @@ public class Player extends Component implements IFixedUpdate{		//TODO Work out 
 		}
 	}
 
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void fixedUpdate(float deltaTime) {
-		// TODO Auto-generated method stub
-		
-	}
 }
