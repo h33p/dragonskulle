@@ -30,7 +30,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 	private Reference<GameObject> chooseAttack;
 	private Reference<GameObject> showStat;
 	
-	private Reference<Player> playerReference;
+	private Reference<Player> player;
 	
 
 	private HexagonTile hexChosen;
@@ -183,7 +183,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     				// TODO Check if it can place a building there
     				
     			}
-    			else if (buildingOnTile in ownedBuildings) {//TODO This is in Player class.  Need to sort out
+    			else if (hasPlayerGotBuilding(buildingOnTile)) { 
     				//TODO Need to change to buildingScreen
     				screenOn = Screen.BUILDING_SCREEN;
     			}
@@ -197,6 +197,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     		
     	}
     	
+    }
+    
+    private boolean hasPlayerGotBuilding(Building buildingToCheck) {
+    	for (int i = 0; i < player.get().numberOfBuildings(); i++) {
+    		Building building = player.get().getBuilding(i);
+    		
+    		if (building == buildingToCheck) {
+    			return true;
+    		}
+    	}
+    	return false;
+    		
     }
     
 
