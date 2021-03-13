@@ -11,7 +11,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.ClientGameInstance;
-import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import sun.misc.IOUtils;
 
@@ -275,7 +275,7 @@ public class NetworkObject extends Component implements IOnAwake {
             byte[] bytes = generateBroadcastUpdateBytes(didChildUpdateMask);
             mLogger.fine("Broadcast update size:: " + bytes.length);
             broadcastCallback.call(
-                    NetworkMessage.build(NetworkClient.MESSAGE_UPDATE_OBJECT, bytes));
+                    NetworkMessage.build(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT, bytes));
         }
     }
 

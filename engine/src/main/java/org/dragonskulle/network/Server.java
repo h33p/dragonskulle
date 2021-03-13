@@ -154,7 +154,9 @@ public class Server {
                 //                sendBytesToClient.send(message);
                 break;*/
             default:
-                // mLogger.fine("Should implement spawn and create building ____");
+                mLogger.info(
+                        "The server received a request from a client to do something "
+                                + messageType);
                 // message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
                 //                sendBytesToClient.send(message);
                 break;
@@ -162,7 +164,7 @@ public class Server {
     }
 
     /** Starts fixed update task. */
-    public void startFixedUpdate() {
+    public void startFixedUpdateDetachedFromGame() {
         int begin = 0;
         int timeInterval = 200;
         FixedUpdate fixedUpdate = this::fixedBroadcastUpdate;
@@ -170,7 +172,9 @@ public class Server {
                 new TimerTask() {
                     @Override
                     public void run() {
-                        fixedUpdate.call();
+                        if (mAutoProcessMessages) {
+                            fixedUpdate.call();
+                        }
                     }
                 },
                 begin,
@@ -212,6 +216,10 @@ public class Server {
     public void linkToScene(Scene scene) {
         this.linkedToScene = true;
         this.mGame.setScene(scene);
+    }
+
+    public void viewPendingRequests() {
+        System.out.println(this.mRequests.toString());
     }
 
     /**
@@ -275,7 +283,7 @@ public class Server {
                 int hasBytes = 0;
                 byte[] bArray; // max flatbuffer size
                 byte[] terminateBytes =
-                        new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]; // max flatbuffer size
+                        new byte[NetworkConfig.TERMINATE_BYTES_LENGTH]; // max flatbuffer size
                 this.mSockets.addClient(sock);
 
                 BufferedInputStream bIn = new BufferedInputStream(sock.getInputStream());
@@ -339,7 +347,7 @@ public class Server {
 
         byte[] spawnMessage =
                 NetworkMessage.build(
-                        NetworkClient.MESSAGE_SPAWN_OBJECT,
+                        NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT,
                         NetworkMessage.convertIntsToByteArray(netId, templateId));
         this.mSockets.sendBytesToClient(client, spawnMessage);
 
@@ -422,7 +430,7 @@ public class Server {
      * @throws DecodingException Thrown if there was any issue with the bytes
      */
     private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
-        //        mLogger.fine("bytes parsing");
+        mLogger.warning("bytes parsing");
         try {
             parse(bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));
         } catch (Exception e) {
@@ -477,12 +485,6 @@ public class Server {
          * @param bytes the bytes
          */
         void send(byte[] bytes);
-    }
-
-    /** The interface Fixed update simulation. */
-    public interface FixedUpdate {
-        /** Call. */
-        void call();
     }
 
     /** Fixed broadcast update. */

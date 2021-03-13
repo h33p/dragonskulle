@@ -16,7 +16,7 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
-import org.dragonskulle.network.NetworkManager;
+import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
 
@@ -57,13 +57,15 @@ public class ClientApp {
         // attaching server fixed update to game
         GameObject networkManagerGO =
                 new GameObject(
-                        "server_network_manager",
+                        "client_network_manager",
                         (go) ->
                                 go.addComponent(
-                                        new NetworkManager(clientInstance::processRequests)));
+                                        new ClientNetworkManager(
+                                                clientInstance::processRequests,
+                                                clientInstance::sendBytes)));
         mainScene.addRootObject(networkManagerGO);
-        issue35Workaround(mainScene);
 
+        issue35Workaround(mainScene);
         Engine.getInstance().loadPresentationScene(mainScene);
         Engine.getInstance().start("Client", new GameBindings());
     }

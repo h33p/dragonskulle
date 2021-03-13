@@ -6,11 +6,14 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.components.Capital.Capital;
+import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.requests.AttackGameActionRequest;
 import org.junit.*;
 import org.lwjgl.system.NativeResource;
 
@@ -24,13 +27,29 @@ public class ServerTest {
         private Server mServerInstance;
         private ClientEars mClientListener;
         private NetworkClient mNetworkClient;
+        private ClientNetworkManager clientNetworkManager;
 
         public TestContext(int port) {
             mServerListener = new ServerEars();
             mServerInstance = new Server(port, mServerListener, true, new AtomicInteger(0));
             mClientListener = new ClientEars();
             mNetworkClient = new NetworkClient("127.0.0.1", port, mClientListener, false);
-            mServerInstance.startFixedUpdate();
+            clientNetworkManager =
+                    new ClientNetworkManager(
+                            mNetworkClient::processRequests, mNetworkClient::sendBytes);
+            mServerInstance.startFixedUpdateDetachedFromGame();
+        }
+
+        public TestContext(int port, boolean serverAutoProcess) {
+            mServerListener = new ServerEars();
+            mServerInstance =
+                    new Server(port, mServerListener, serverAutoProcess, new AtomicInteger(0));
+            mClientListener = new ClientEars();
+            mNetworkClient = new NetworkClient("127.0.0.1", port, mClientListener, false);
+            clientNetworkManager =
+                    new ClientNetworkManager(
+                            mNetworkClient::processRequests, mNetworkClient::sendBytes);
+            //            mServerInstance.startFixedUpdateDetachedFromGame();
         }
 
         @Override
@@ -159,6 +178,18 @@ public class ServerTest {
             await().atMost(TIMEOUT, SECONDS)
                     .until(() -> nc.get().getSyncMeAlso().get().equals("Goodbye World"));
             assert (nc.get().getSyncMeAlso().get().equals("Goodbye World"));
+        }
+    }
+
+    @Test
+    public void testComponentCanSubmitActionRequest() {
+        try (TestContext ctx = new TestContext(7006, true)) {
+            ctx.mServerInstance.startFixedUpdateDetachedFromGame();
+            ctx.testMapClient();
+            Capital cap = ctx.testCapitalSpawnDefaultClient().get();
+            cap.submitRequest(new AttackGameActionRequest(200, 201, 202));
+            ctx.mServerInstance.processRequests();
+            new Scanner(System.in);
         }
     }
 }

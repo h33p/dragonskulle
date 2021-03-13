@@ -4,12 +4,13 @@ package org.dragonskulle.network.components.Capital;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.requests.INeedToTalkToTheServer;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncString;
 
 /** @author Oscar L The Capital Component. */
 @Accessors(prefix = "m")
-public class Capital extends NetworkableComponent {
+public class Capital extends NetworkableComponent implements INeedToTalkToTheServer {
 
     /** A syncable field. */
     @Getter public SyncBool mSyncMe = new SyncBool(false);

@@ -22,17 +22,6 @@ import org.dragonskulle.network.components.NetworkObject;
 public class NetworkClient {
     private static final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
 
-    /** ID of object update message */
-    public static final byte MESSAGE_UPDATE_OBJECT = 15;
-
-    /** ID of spawn object message */
-    public static final byte MESSAGE_SPAWN_OBJECT = 16;
-
-    /** ID of spawn map message */
-    public static final byte MESSAGE_SPAWN_MAP = 20;
-
-    /** The constant MAX_TRANSMISSION_SIZE. */
-    private static final int MAX_TRANSMISSION_SIZE = 512;
     /** The Socket connection to the server. */
     private Socket mSocket;
     /** The byte output stream. */
@@ -151,15 +140,15 @@ public class NetworkClient {
     public byte executeBytes(byte messageType, byte[] payload) {
         mLogger.info("EXEB - " + messageType);
         switch (messageType) {
-            case MESSAGE_UPDATE_OBJECT:
+            case NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT:
                 mLogger.fine("Should update requested network object");
                 updateNetworkObject(payload);
                 break;
-            case MESSAGE_SPAWN_OBJECT:
+            case NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT:
                 mLogger.fine("Spawn a networked object");
                 spawnNetworkObject(payload);
                 break;
-            case MESSAGE_SPAWN_MAP:
+            case NetworkConfig.Codes.MESSAGE_SPAWN_MAP:
                 mLogger.fine("Trying to spawn map, need to get the actual map");
                 this.mGame.spawnMap(payload);
                 mLogger.fine("Spawned map");
@@ -194,7 +183,7 @@ public class NetworkClient {
     public void dispose() {
         try {
             if (mOpen) {
-                this.sendBytes(new byte[MAX_TRANSMISSION_SIZE]);
+                this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
                 mOpen = false;
                 closeAllConnections();
                 mClientListener.disconnected();
@@ -303,7 +292,8 @@ public class NetworkClient {
         @Override
         public void run() {
             byte[] bArray;
-            byte[] terminateBytes = new byte[MAX_TRANSMISSION_SIZE]; // max flatbuffer size
+            byte[] terminateBytes =
+                    new byte[NetworkConfig.TERMINATE_BYTES_LENGTH]; // max flatbuffer size
             if (mAutoProcessMessages) {
                 setProcessMessagesAutomatically(true);
             }

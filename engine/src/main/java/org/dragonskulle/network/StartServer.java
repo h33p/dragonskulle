@@ -31,7 +31,7 @@ public class StartServer {
         if (autoProcessMessages) {
             server = new Server(PORT, serverListener, autoProcessMessages, networkObjectCounter);
             if (startFixedUpdate) {
-                server.startFixedUpdate();
+                server.startFixedUpdateDetachedFromGame();
             }
         }
     }

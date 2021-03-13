@@ -11,6 +11,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.*;
+import org.dragonskulle.network.components.NetworkManager;
 
 /** @author Oscar L */
 public class ServerApp {
