@@ -54,8 +54,6 @@ public class IOUtils {
      * @throws IllegalArgumentException if {@code length} is negative
      * @throws IOException if an I/O error occurs
      * @throws OutOfMemoryError if an array of the required size cannot be allocated.
-     * @implNote The number of bytes allocated to read data from this stream and return the result
-     *     is bounded by {@code 2*(long)len}, inclusive.
      * @since 11
      */
     public static byte[] readNBytes(InputStream is, int len) throws IOException {
