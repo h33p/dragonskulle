@@ -27,9 +27,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 	private Reference<GameObject> mapScreen;
 	private Reference<GameObject> placeScreen;
 	private Reference<GameObject> buildingScreen;
+	private Reference<GameObject> chooseAttack;
+	private Reference<GameObject> showStat;
+	
 	private Reference<Player> playerReference;
+	
 
 	private HexagonTile hexChosen;
+	private Building buildingChosen;
 	
 	/**
 	 * The constructor for the human player
@@ -53,7 +58,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 		});  //This will draw a rectangle to the screen.  Need way to change screen  
 		
 		placeScreen = getGameObject().buildChild("place screen", new UITransform(), (go) -> {
-			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));		//Make way to go back
+			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 			go.buildChild("confirm box", new UITransform(true), (box) -> {
 				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
 				box.addComponent(new UIButton((handle, __) -> {
@@ -77,14 +82,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));  //Make way to Go back
 				box.addComponent(new UIButton((handle, __) -> {
 					//TODO When clicked need to show options to upgrade building stats
-					screenOn = Screen.MAP_SCREEN;
+					screenOn = Screen.STAT_SCREEN;
 				}));
 			});
 			go.buildChild("Attack building", new UITransform(true), (box)-> {
 				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
 				box.addComponent(new UIButton((handle, __) -> {
 					//TODO When clicked need to show buildings which can be attacked -- get off building
-					screenOn = Screen.MAP_SCREEN;
+					screenOn = Screen.ATTACK_SCREEN;
 				}));
 			});
 			go.buildChild("Sell building", new UITransform(true), (box)-> {
@@ -94,6 +99,42 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 					screenOn = Screen.MAP_SCREEN;
 				}));
 			});
+			go.buildChild("Go Back", new UITransform(true), (box)-> {
+				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
+				box.addComponent(new UIButton((handle, __) -> {
+					
+					screenOn = Screen.MAP_SCREEN;
+				}));	
+			});
+		});
+		
+		chooseAttack = getGameObject().buildChild("attack screen", new UITransform(), (go) -> {
+			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+			
+			for (Building building : buildingChosen.attackableBuildings()) {
+				go.buildChild("Attack building", new UITransform(true), (box)-> {
+					box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
+					box.addComponent(new UIButton((handle, __) -> {
+						//TODO When clicked need to attack building
+						screenOn = Screen.MAP_SCREEN;
+					}));
+				});
+			}
+			
+			go.buildChild("Go Back", new UITransform(true), (box)-> {
+				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
+				box.addComponent(new UIButton((handle, __) -> {
+					
+					screenOn = Screen.MAP_SCREEN;
+				}));	
+			});
+		});
+		
+		showStat = getGameObject().buildChild("Stat screen", new UITransform(), (go) -> {
+			go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+			
+			;  	//TODO will add stuff for Stats AFTER prototype
+			
 			go.buildChild("Go Back", new UITransform(true), (box)-> {
 				box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
 				box.addComponent(new UIButton((handle, __) -> {
@@ -118,6 +159,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     	mapScreen.get().setActive(screenOn == Screen.MAP_SCREEN);
     	placeScreen.get().setActive(screenOn == Screen.TILE_SCREEN);
     	buildingScreen.get().setActive(screenOn == Screen.BUILDING_SCREEN);
+    	chooseAttack.get().setActive(screenOn == Screen.ATTACK_SCREEN);
+    	showStat.get().setActive(screenOn == Screen.STAT_SCREEN);
     	if (screenOn == Screen.MAP_SCREEN) {
     		mapScreen();
     	}    	
