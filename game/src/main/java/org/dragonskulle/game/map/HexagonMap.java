@@ -52,9 +52,16 @@ public class HexagonMap extends Component implements IOnStart {
         this.mTiles = createTiles();
     }
     
+    /**
+     * Check if the specified q and r, used to access {@link #mTiles}, are legal. 
+     * 
+     * @param q The q coordinate.
+     * @param r The r coordinate.
+     * @return {@code true} if the coordinates are valid, otherwise {@code false}.
+     */
     public boolean isValid(int q, int r) {
-    	if(q < 0 || q >= mSize || r < 0 || r > mSize) {
-			log.warning(String.format("The coordinates (q = %d, r = %d) are out of range.", q, r));
+    	if(q < 0 || q >= mSize || r < 0 || r >= mSize) {
+			//log.warning(String.format("The coordinates (q = %d, r = %d) are out of range.", q, r));
 			return false;
 		}
     	return true;

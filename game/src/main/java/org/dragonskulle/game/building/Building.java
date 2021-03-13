@@ -79,49 +79,55 @@ public class Building extends Component {
     	
     }
     
+    /**
+     * Get an ArrayList of {@link HexagonTile}s that are within the Building's view range, as specified by {@link #mViewDistance}.
+     * 
+     * @return All the HexagonTiles within the building's view range, excluding the building's HexagonTile. Otherwise, an empty ArrayList.
+     */
     public ArrayList<HexagonTile> getViewTiles() {
     	ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
     	
+    	// Attempt to get the current HexagonTile and HexagonMap.
     	HexagonTile tile = mTile.get();
     	HexagonMap map = mHexagonMap.get();
     	if(tile == null || map == null) return tiles;
     	
-    	
+    	// Get the current view distance.
     	int distance = mViewDistance.getValue();
+    	// Get the current q and r coordinates.
     	int qCentre = tile.getQ();
     	int rCentre = tile.getR();
     	
-    	int i = 0;
-    	
-    	for(int r = -distance; r <= distance; r++) {
-    		for(int q = -distance; q <= distance; q++) {
-    			int s = -q - r;
-    			if(Math.abs(s) > distance) {
-    				log.info(String.format("INVALID S: q = %d, r = %d, s = %d ", q, r, s));
+    	for(int rOffset = -distance; rOffset <= distance; rOffset++) {
+    		for(int qOffset = -distance; qOffset <= distance; qOffset++) {
+    			// Only get tiles whose s coordinates are within the desired range.
+    			int s = -qOffset - rOffset;
+    			if(s > distance || s < -distance) {
+    				//log.info(String.format("INVALID S: q = %d, r = %d, s = %d ", qOffset, rOffset, s));
     				continue;
     			}
     			
-    			if(q == 0 && r == 0) {
-    				log.info(String.format("Current tile: q = %d, r = %d, s = %d ", q, r, s));
+    			// Do not include the building's HexagonTile.
+    			if(qOffset == 0 && rOffset == 0) {
+    				//log.info(String.format("Current tile: q = %d, r = %d, s = %d ", qOffset, rOffset, s));
     				continue;
     			}
     			
-    			log.info(String.format("q = %d, r = %d, s = %d ", q, r, s));
-    			i++;
-    			HexagonTile selectedTile = map.getTile(qCentre + q, rCentre + r);
+    			//log.info(String.format("q = %d, r = %d, s = %d ", qOffset, rOffset, s));
+    			
+    			// Attempt to get the desired tile, and check if it exists.
+    			HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
     			if(selectedTile == null) {
-    				log.info("TILE IS NULL");
     				continue;
     			}
     			
-    			tiles.add(selectedTile);
-    			
+    			// Add the tile to the list.
+    			tiles.add(selectedTile);    			
     		}
     		
     	}
     	
-    	log.info("i = " + i);
-    	
+    	// log.info("Number of tiles in view range: " + tiles.size());
     	
     	return tiles;
     }
