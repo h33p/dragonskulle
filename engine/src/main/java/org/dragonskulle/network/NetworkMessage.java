@@ -124,9 +124,9 @@ public class NetworkMessage {
     }
 
     /**
-     * Converts int to a byte array of length 4.
+     * Converts int array to a byte array of length 4 * length.
      *
-     * @param value the integer
+     * @param values the integer values
      * @return the bytes generated
      */
     public static byte[] convertIntsToByteArray(int... values) {
