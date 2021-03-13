@@ -100,7 +100,10 @@ public class HexagonMap extends Component implements IOnStart {
 		}
 		
 		// Try to get the building.
-		Reference<Building> buildingReference = qBuildings.get(r);		
+		Reference<Building> buildingReference = qBuildings.get(r);
+		if(buildingReference == null) {
+			return null;
+		}
     	return buildingReference.get();	
     }
     

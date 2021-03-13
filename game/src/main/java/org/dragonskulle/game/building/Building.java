@@ -10,6 +10,7 @@ import java.util.Random;
 
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.building.stat.AttackDistanceStat;
 import org.dragonskulle.game.building.stat.AttackStat;
 import org.dragonskulle.game.building.stat.DefenceStat;
 import org.dragonskulle.game.building.stat.Stat;
@@ -26,6 +27,7 @@ public class Building extends Component {
     @Getter private DefenceStat mDefence;
     @Getter private TokenGenerationStat mTokenGeneration;
     @Getter private ViewDistanceStat mViewDistance;
+    @Getter private AttackDistanceStat mAttackDistance;
     
     private Reference<HexagonTile> mTile;
     private Reference<HexagonMap> mHexagonMap;
@@ -38,11 +40,13 @@ public class Building extends Component {
         mDefence = new DefenceStat();
         mTokenGeneration = new TokenGenerationStat();
         mViewDistance = new ViewDistanceStat();
+        mAttackDistance = new AttackDistanceStat();
     	
         mAttack.setLevel(5);
         mDefence.setLevel(5);
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
+        mAttackDistance.setLevel(5);
         
         // Move out of constructor;
         HexagonMap map = hexagonMap.get();
@@ -82,9 +86,34 @@ public class Building extends Component {
     /**
      * Get an ArrayList of {@link HexagonTile}s that are within the Building's view range, as specified by {@link #mViewDistance}.
      * 
-     * @return All the HexagonTiles within the building's view range, excluding the building's HexagonTile. Otherwise, an empty ArrayList.
+     * @return All the HexagonTiles within the building's view range, excluding the Building's HexagonTile, otherwise an empty ArrayList.
      */
     public ArrayList<HexagonTile> getViewTiles() {
+    	// Get the current view distance.
+    	int distance = mViewDistance.getValue();
+    	// Get the tiles within the view distance.
+    	return getTilesInRadius(distance);
+    }
+    
+    /**
+     * Get an ArrayList of {@link HexagonTile}s that are within the Building's attack range, as specified by {@link #mAttackDistance}.
+     * 
+     * @return All the HexagonTiles within the building's attack range, excluding the Building's HexagonTile, otherwise an empty ArrayList.
+     */
+    public ArrayList<HexagonTile> getAttackTiles() {
+    	// Get the current view distance.
+    	int distance = mAttackDistance.getValue();
+    	// Get the tiles within the view distance.
+    	return getTilesInRadius(distance);
+    }
+    
+    /**
+     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a set radius.
+     * 
+     * @param radius The radius.
+     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
+     */
+    private ArrayList<HexagonTile> getTilesInRadius(int radius){
     	ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
     	
     	// Attempt to get the current HexagonTile and HexagonMap.
@@ -92,17 +121,15 @@ public class Building extends Component {
     	HexagonMap map = mHexagonMap.get();
     	if(tile == null || map == null) return tiles;
     	
-    	// Get the current view distance.
-    	int distance = mViewDistance.getValue();
     	// Get the current q and r coordinates.
     	int qCentre = tile.getQ();
     	int rCentre = tile.getR();
     	
-    	for(int rOffset = -distance; rOffset <= distance; rOffset++) {
-    		for(int qOffset = -distance; qOffset <= distance; qOffset++) {
+    	for(int rOffset = -radius; rOffset <= radius; rOffset++) {
+    		for(int qOffset = -radius; qOffset <= radius; qOffset++) {
     			// Only get tiles whose s coordinates are within the desired range.
     			int s = -qOffset - rOffset;
-    			if(s > distance || s < -distance) {
+    			if(s > radius || s < -radius) {
     				//log.info(String.format("INVALID S: q = %d, r = %d, s = %d ", qOffset, rOffset, s));
     				continue;
     			}
@@ -124,20 +151,28 @@ public class Building extends Component {
     			// Add the tile to the list.
     			tiles.add(selectedTile);    			
     		}
-    		
     	}
     	
-    	// log.info("Number of tiles in view range: " + tiles.size());
+    	// log.info("Number of tiles in range: " + tiles.size());
     	
     	return tiles;
     }
     
+    // TODO: Add ownership
     public ArrayList<Building> getAttackableBuildings() {
     	ArrayList<Building> buildings = new ArrayList<Building>();
     	
-    	HexagonTile tile = mTile.get();
-    	if(tile == null) return null;
-    	tile.getQ();
+    	HexagonMap map = mHexagonMap.get();
+    	if(map == null) return buildings;
+    	
+    	ArrayList<HexagonTile> attackTiles = getAttackTiles();
+    	for (HexagonTile tile : attackTiles) {
+			Building building = map.getBuilding(tile.getQ(), tile.getR());
+			if(building == null) {
+				continue;
+			}
+			buildings.add(building);
+		}
     	
     	return buildings;
     }

@@ -1,10 +1,10 @@
 package org.dragonskulle.game.building.stat;
 
-public class ViewDistanceStat extends Stat<Integer> {
+public class AttackDistanceStat extends Stat<Integer> {
 
 	@Override
 	protected Integer levelToValue() {
-		return 1;
+		return 2;
 	}
 
 }
