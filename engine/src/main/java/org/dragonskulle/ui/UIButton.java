@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
+import org.dragonskulle.renderer.SampledTexture;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -104,7 +105,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
         if (mRenderable == null || !mRenderable.isValid()) {
-            getGameObject().addComponent(new UIRenderable());
+            getGameObject()
+                    .addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
             mRenderable = getGameObject().getComponent(UIRenderable.class);
         }
 

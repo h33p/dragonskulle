@@ -59,6 +59,19 @@ public class Resource<T> implements NativeResource {
     }
 
     @Override
+    public final Resource<T> clone() {
+        return instance != null ? instance.incRefCount() : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public final <F> Resource<F> cast(Class<F> type) {
+        if (type.isInstance(get())) {
+            return (Resource<F>) this;
+        }
+        return null;
+    }
+
+    @Override
     public int hashCode() {
         return get().hashCode();
     }

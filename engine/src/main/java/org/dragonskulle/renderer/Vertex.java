@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.joml.*;
 
@@ -36,9 +37,9 @@ public class Vertex implements Serializable {
         new AttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, UV_OFFSET),
     };
 
-    @Getter private Vector3fc mPos;
-    @Getter private Vector3fc mColor;
-    @Getter private Vector2fc mUv;
+    @Getter @Setter private Vector3fc mPos;
+    @Getter @Setter private Vector3fc mColor;
+    @Getter @Setter private Vector2fc mUv;
 
     /** Copy the vertice to a byte buffer */
     public void copyTo(int offset, ByteBuffer buffer) {

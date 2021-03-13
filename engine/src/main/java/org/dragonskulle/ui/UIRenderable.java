@@ -47,7 +47,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
      *
      * <p>This will be main texture.width / texture.height
      */
-    @Getter private float mAspectRatio = 1.f;
+    @Getter protected float mAspectRatio = 1.f;
 
     private final Matrix4f mTmpMatrix = new Matrix4f();
 

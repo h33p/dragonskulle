@@ -176,7 +176,7 @@ public class App {
                             (square2) -> {
                                 square2.addComponent(
                                         new UIRenderable(
-                                                new Vector4f(0.6f, 0.6f, 0.6f, 1f),
+                                                new Vector4f(0.6f, 0.6f, 0.6f, 0.1f),
                                                 new SampledTexture("test_cc0_texture.jpg")));
                                 square2.getTransform().scale(0.3f, 0.3f, 0.3f);
                                 square2.getTransform().translate(0f, -1.8f, 0f);
@@ -205,6 +205,15 @@ public class App {
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
                                 button.getTransform().scale(0.8f, 0.8f, 1f);
                                 button.getTransform().translate(0f, 0.4f, 0f);
+
+                                button.buildChild(
+                                        "text",
+                                        (handle) -> {
+                                            handle.addComponent(
+                                                    new UIText(
+                                                            new Vector3f(1f, 0.5f, 0.05f),
+                                                            "Clik meh!"));
+                                        });
 
                                 Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
 

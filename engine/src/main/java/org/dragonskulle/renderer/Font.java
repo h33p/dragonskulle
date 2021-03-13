@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
+import org.joml.Vector2f;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -22,9 +23,9 @@ public final class Font extends Texture {
     private static class Glyph implements IBox {
         @Getter private int mWidth;
         @Getter private int mHeight;
-        private int mYBearing;
-        private int mXBearing;
-        private int mAdvance;
+        @Getter private int mYBearing;
+        @Getter private int mXBearing;
+        @Getter private int mAdvance;
         private int mCode;
 
         public Glyph(int width, int height, int yBearing, int xBearing, int advance, int code) {
@@ -37,112 +38,64 @@ public final class Font extends Texture {
         }
     }
 
-    private interface IBox {
-        int getWidth();
-
-        int getHeight();
-    }
-
-    private static class BoxNode<T extends IBox> {
-        @Getter private T mBox;
-        private int mX;
-        private int mY;
-        private int mWidth;
-        private int mHeight;
-        private BoxNode<T> mLeft;
-        private BoxNode<T> mRight;
-        private boolean mFilledLeaf = false;
-
-        public BoxNode(int x, int y, int width, int height) {
-            mX = x;
-            mY = y;
-            mWidth = width;
-            mHeight = height;
-        }
-    }
-
     /**
-     * Box packer. Based on lightmap packing techniques
+     * Gets glyph coordinates and advances curpos
      *
-     * <p>One of which: https://blackpawn.com/texts/lightmaps/default.html
+     * @param charCode input character
+     * @param curpos current cursor position
+     * @param outStartPos start of the bounding box that will be written
+     * @param outEndPos end of the bounding box that will be written
+     * @param outUVStart lower UV coordinates that will be written
+     * @param outUVEnd upper UV coordinates that will be written
      */
-    private static class BoxPacker<T extends IBox> {
+    public void getGlyph(
+            int charCode,
+            int[] curpos,
+            Vector2f outStartPos,
+            Vector2f outEndPos,
+            Vector2f outUVStart,
+            Vector2f outUVEnd) {
+        BoxPacker.BoxNode<Glyph> glyphNode = mCharToGlyph.get(charCode);
 
-        private BoxNode<T> mRoot;
+        // If not found, fallback to default square box
+        if (glyphNode == null) glyphNode = mCharToGlyph.get(0);
 
-        public BoxPacker(int width, int height) {
-            mRoot = new BoxNode<T>(0, 0, width, height);
-        }
+        int curX = curpos[0];
+        int curY = curpos[1];
+        curY += nextLineOffset - glyphNode.getHeight();
 
-        // TODO: Add resizing support
+        float startX = curX + (float) glyphNode.getBox().getXBearing();
+        float endX = startX + (float) glyphNode.getWidth();
+        float startY = curY + (float) glyphNode.getBox().getYBearing();
+        float endY = startY + (float) glyphNode.getHeight();
 
-        private BoxNode<T> pack(BoxNode<T> node, T newBox) {
+        outStartPos.set(startX, startY);
+        outEndPos.set(endX, endY);
 
-            if (node.mFilledLeaf) {
-                return null;
-            } else if (node.mLeft != null && node.mRight != null) {
-                BoxNode<T> ret = pack(node.mLeft, newBox);
-                if (ret == null) ret = pack(node.mRight, newBox);
-                return ret;
-            } else {
+        float atlasScale = 1.f / (float) ATLAS_SIZE;
 
-                int width = newBox.getWidth();
-                int height = newBox.getHeight();
+        outUVStart.set(glyphNode.getX(), glyphNode.getY());
+        outUVEnd.set(
+                glyphNode.getX() + glyphNode.getWidth(), glyphNode.getY() + glyphNode.getHeight());
 
-                // Perfectly fits. Nice!
-                if (node.mWidth == width && node.mHeight == height) {
-                    node.mFilledLeaf = true;
-                    node.mBox = newBox;
-                    return node;
-                } else if (node.mWidth >= width && node.mHeight >= height) {
+        outUVStart.mul(atlasScale);
+        outUVEnd.mul(atlasScale);
 
-                    int remainingX = node.mWidth - width;
-                    int remainingY = node.mHeight - height;
+        curpos[0] += glyphNode.getBox().getAdvance();
 
-                    BoxNode<T> newLeft;
-                    BoxNode<T> newRight;
-
-                    if (remainingX < remainingY) {
-                        newLeft = new BoxNode<T>(node.mX, node.mY, node.mWidth, height);
-                        newRight =
-                                new BoxNode<T>(
-                                        node.mX,
-                                        node.mY + height,
-                                        node.mWidth,
-                                        node.mHeight - height);
-                    } else {
-                        newLeft = new BoxNode<T>(node.mX, node.mY, width, node.mHeight);
-                        newRight =
-                                new BoxNode<T>(
-                                        node.mX + width,
-                                        node.mY,
-                                        node.mWidth - width,
-                                        node.mHeight);
-                    }
-
-                    node.mLeft = newLeft;
-                    node.mRight = newRight;
-
-                    return pack(node.mLeft, newBox);
-                } else {
-                    return null;
-                }
-            }
-        }
-
-        public BoxNode<T> pack(T newBox) {
-            return pack(mRoot, newBox);
-        }
+        // todo: stbtt_GetCodepointKernAdvance
     }
 
-    private Map<Integer, BoxNode<Glyph>> mCharToGlyph = new TreeMap<>();
+    private Map<Integer, BoxPacker.BoxNode<Glyph>> mCharToGlyph = new TreeMap<>();
+    private int nextLineOffset = LINE_HEIGHT;
 
     private static final int[][] GLYPH_RANGES = {
         {' ', '~'},
+        {0, 0}
     };
 
-    private static final int ATLAS_SIZE = 1024;
-    private static final int LINE_HEIGHT = 200;
+    private static final int ATLAS_SIZE = 2048;
+    public static final int LINE_HEIGHT = 128;
 
     public static Resource<Font> getFontResource(String inName) {
         String name = String.format("fonts/%s", inName);
@@ -171,6 +124,10 @@ public final class Font extends Texture {
                             IntBuffer pDescent = stack.ints(0);
                             IntBuffer pLineGap = stack.ints(0);
                             stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
+
+                            ret.nextLineOffset =
+                                    (int) ((pAscent.get(0) - pDescent.get(0)) * scale)
+                                            + LINE_HEIGHT;
 
                             IntBuffer pOffsetToNext = stack.ints(0);
                             IntBuffer pOffsetToStart = stack.ints(0);
@@ -201,13 +158,14 @@ public final class Font extends Texture {
                                             info, i, pOffsetToNext, pOffsetToStart);
                                     stbtt_GetCodepointBitmapBox(
                                             info, i, scale, scale, pSX, pSY, pEX, pEY);
+
                                     glyphList.add(
                                             new Glyph(
                                                     pEX.get(0) - pSX.get(0),
                                                     pEY.get(0) - pSY.get(0),
-                                                    0,
-                                                    pOffsetToStart.get(0),
-                                                    pOffsetToNext.get(0),
+                                                    pEY.get(0),
+                                                    (int) (pOffsetToStart.get(0) * scale),
+                                                    (int) (pOffsetToNext.get(0) * scale),
                                                     i));
                                 }
                             }
@@ -219,15 +177,15 @@ public final class Font extends Texture {
                                                     b.getWidth() * b.getHeight()));
 
                             for (Glyph glyph : glyphList) {
-                                BoxNode<Glyph> packedGlyph = packer.pack(glyph);
+                                BoxPacker.BoxNode<Glyph> packedGlyph = packer.pack(glyph, 1);
 
                                 ret.mBuffer.rewind();
                                 tmpBuffer.rewind();
                                 stbtt_MakeCodepointBitmap(
                                         info,
                                         tmpBuffer,
-                                        glyph.mWidth,
-                                        glyph.mHeight,
+                                        glyph.getWidth(),
+                                        glyph.getHeight(),
                                         LINE_HEIGHT * 2,
                                         scale,
                                         scale,
@@ -237,8 +195,9 @@ public final class Font extends Texture {
                                 for (int i = 0; i < glyph.mHeight; i++) {
                                     for (int o = 0; o < glyph.mWidth; o++) {
                                         ret.mBuffer.position(
-                                                ((packedGlyph.mX + o)
-                                                                + (packedGlyph.mY + i) * ret.mWidth)
+                                                ((packedGlyph.getX() + o)
+                                                                + (packedGlyph.getY() + i)
+                                                                        * ret.mWidth)
                                                         * 4);
                                         ret.mBuffer.put((byte) 255);
                                         ret.mBuffer.put((byte) 255);
