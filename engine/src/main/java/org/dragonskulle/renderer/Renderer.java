@@ -214,6 +214,8 @@ public class Renderer implements NativeResource {
     public void render(Camera camera, List<Renderable> objects) {
         if (mImageContexts == null) recreateSwapchain();
 
+        if (mImageContexts == null) return;
+
         camera.updateAspectRatio(mExtent.width(), mExtent.height());
 
         try (MemoryStack stack = stackPush()) {

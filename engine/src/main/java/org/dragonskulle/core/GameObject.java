@@ -568,6 +568,15 @@ public class GameObject implements Serializable {
     }
 
     /**
+     * Getter for mTransform with cast
+     *
+     * @return mTransform cast to type if cast is valid, null otherwise
+     */
+    public <T extends Transform> T getTransform(Class<T> type) {
+        return type.isInstance(mTransform) ? type.cast(mTransform) : null;
+    }
+
+    /**
      * Getter for mTransform
      *
      * @return mTransform as a HexTransform

@@ -80,9 +80,9 @@ public class Mesh implements Serializable {
     };
 
     private static final Vertex[] QUAD_VERTICES = {
-        new Vertex(new Vector3f(-1.f, -1.f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
-        new Vertex(new Vector3f(-1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
-        new Vertex(new Vector3f(1.f, -1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
+        new Vertex(new Vector3f(0f, 0f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
+        new Vertex(new Vector3f(0f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
+        new Vertex(new Vector3f(1.f, 0f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
         new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 1f)),
     };
 

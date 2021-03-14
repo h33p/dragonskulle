@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
-import static org.dragonskulle.utils.MathUtils.lerp;
-
 import java.nio.ByteBuffer;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,8 +45,6 @@ public class UIRenderable extends Renderable implements IOnAwake {
      *
      * <p>This will be main texture.width / texture.height
      */
-    @Getter protected float mAspectRatio = 1.f;
-
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
     private final Vector3f mTmpCursorPos = new Vector3f();
@@ -94,7 +90,10 @@ public class UIRenderable extends Renderable implements IOnAwake {
                         ? texs[0].getTexture().get()
                         : null;
 
-        if (tex != null) mAspectRatio = (float) tex.getWidth() / (float) tex.getHeight();
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+
+        if (tex != null && uiTransform != null)
+            uiTransform.setTargetAspectRatio((float) tex.getWidth() / (float) tex.getHeight());
     }
 
     @Override
@@ -119,19 +118,20 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
         mTmpCursorPos.mulPosition(mTmpMatrix);
 
-        return mTmpCursorPos.x() >= -1.f
+        return mTmpCursorPos.x() >= 0.f
                 && mTmpCursorPos.x() <= 1.f
-                && mTmpCursorPos.y() >= -1.f
+                && mTmpCursorPos.y() >= 0.f
                 && mTmpCursorPos.y() <= 1.f;
     }
 
     private void updateTmpMatrix() {
-        mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
+        UITransform tr = getGameObject().getTransform(UITransform.class);
 
-        if (mMaintainAspect)
-            mTmpMatrix.scaleLocal(
-                    lerp(1f, mAspectRatio, mWidthHeightBlend),
-                    lerp(1f / mAspectRatio, 1.f, mWidthHeightBlend),
-                    1f);
+        if (tr != null) mTmpMatrix.set(tr.cornersToWorld());
+        else mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
+
+        Camera main = Camera.getMainCamera();
+
+        if (main != null) mTmpMatrix.scaleLocal(1.f / main.getAspectRatio(), 1f, 1f);
     }
 }

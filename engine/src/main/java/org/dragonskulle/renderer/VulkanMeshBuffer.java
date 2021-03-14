@@ -106,7 +106,7 @@ class VulkanMeshBuffer implements NativeResource {
             ret.mDevice = mDevice;
             ret.mPhysicalDevice = mPhysicalDevice;
 
-            ret.mMaxVertexOffset = mMaxIndexOffset;
+            ret.mMaxVertexOffset = mMaxVertexOffset;
             ret.mMaxIndexOffset = mMaxIndexOffset;
 
             ret.mLoadedMeshes = mLoadedMeshes;
@@ -166,6 +166,7 @@ class VulkanMeshBuffer implements NativeResource {
                         v.copyTo(voff, byteBuffer);
                         voff += Vertex.SIZEOF;
                     }
+                    byteBuffer.rewind();
                 }
                 vkUnmapMemory(mDevice, stagingBuffer.memory);
 
@@ -185,7 +186,7 @@ class VulkanMeshBuffer implements NativeResource {
      * <p>This buffer holds indices of the vertices to render in multiples of 3.
      */
     private VulkanBuffer createIndexBuffer(VkQueue graphicsQueue, long commandPool) {
-        LOGGER.info("Setup index buffer");
+        LOGGER.fine("Setup index buffer");
 
         int indexCount = 0;
 
@@ -214,6 +215,7 @@ class VulkanMeshBuffer implements NativeResource {
                     for (int i : mesh.getKey().getIndices()) {
                         buf.putInt(i);
                     }
+                    byteBuffer.rewind();
                 }
                 vkUnmapMemory(mDevice, stagingBuffer.memory);
 

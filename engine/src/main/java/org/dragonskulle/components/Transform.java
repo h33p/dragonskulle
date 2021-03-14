@@ -19,7 +19,7 @@ import org.joml.Vector3fc;
  *     to get 3D position, scale and rotation.
  */
 public class Transform extends Component {
-    private static final float DEG_TO_RAD = (float) Math.PI / 180.f;
+    protected static final float DEG_TO_RAD = (float) Math.PI / 180.f;
 
     protected final Matrix4f mLocalMatrix;
     protected Matrix4f mWorldMatrix;
@@ -183,7 +183,7 @@ public class Transform extends Component {
     }
 
     /** Set mShouldUpdate to true in all children transforms */
-    private void setUpdateFlag() {
+    protected void setUpdateFlag() {
         if (mShouldUpdate) {
             return;
         }
