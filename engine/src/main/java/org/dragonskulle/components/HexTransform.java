@@ -1,11 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
-import org.joml.Matrix3f;
-import org.joml.Vector3f;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.joml.Matrix3f;
+import org.joml.Vector3f;
 
 /**
  * Represents an objects position in hex coordinates

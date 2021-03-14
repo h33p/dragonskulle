@@ -2,13 +2,12 @@
 package org.dragonskulle.components;
 
 import java.io.Serializable;
-import org.dragonskulle.core.Engine;
-import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.Engine;
+import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 
 /**
  * Abstract class for a Component

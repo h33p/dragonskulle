@@ -3,10 +3,9 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-import org.dragonskulle.components.Component;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.components.Component;
 
 /**
  * Scene class
