@@ -3,9 +3,9 @@ package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Logger;
@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkMessage;
+import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.ISyncVar;
 
 /**
@@ -42,14 +43,31 @@ public abstract class NetworkableComponent extends Component {
     private Field[] mFields;
 
     /** Init fields. */
-    public void initialize(NetworkObject networkObject) {
+    public void initialize(NetworkObject networkObject, List<ClientRequest<?>> outRequests) {
 
         mNetworkObject = networkObject;
+
+        onNetworkInitialize();
 
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
                         .toArray(Field[]::new);
+
+        Field[] requestFields =
+                Arrays.stream(this.getClass().getDeclaredFields())
+                        .filter(field -> ClientRequest.class.isAssignableFrom(field.getType()))
+                        .toArray(Field[]::new);
+
+        try {
+            for (Field f : requestFields) {
+                f.setAccessible(true);
+                ClientRequest<?> req = (ClientRequest<?>) f.get(this);
+                outRequests.add(req);
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
         if (networkObject.isServer()) connectSyncVars();
     }
@@ -73,6 +91,8 @@ public abstract class NetworkableComponent extends Component {
         }
     }
 
+    protected void onNetworkInitialize() {}
+
     /**
      * Serialize component.
      *
@@ -84,14 +104,14 @@ public abstract class NetworkableComponent extends Component {
         ArrayList<Byte> mask = new ArrayList<>(maskLength);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            DataOutputStream stream = new DataOutputStream(bos);
             for (int i = 0; i < this.mFields.length; i++) {
                 boolean didVarChange = this.mFieldsMask[i];
                 Field f = this.mFields[i];
                 if (didVarChange || force) {
                     try {
                         mask.add((byte) 1);
-                        ((ISyncVar) f.get(this)).serialize(oos);
+                        ((ISyncVar) f.get(this)).serialize(stream);
                         this.mFieldsMask[i] = false; // reset flag
                     } catch (IllegalAccessException | IOException e) {
                         e.printStackTrace();
@@ -100,8 +120,8 @@ public abstract class NetworkableComponent extends Component {
                     mask.add((byte) 0);
                 }
             }
-            oos.flush();
-            oos.close();
+            stream.flush();
+            stream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -210,7 +230,7 @@ public abstract class NetworkableComponent extends Component {
         ByteArrayInputStream bis = new ByteArrayInputStream(buff);
         final long didSkip = bis.skip(offset);
 
-        ObjectInputStream stream = new ObjectInputStream(bis);
+        DataInputStream stream = new DataInputStream(bis);
 
         if (didSkip != offset) return;
         for (int i = 0; i < mask.length; i++) {

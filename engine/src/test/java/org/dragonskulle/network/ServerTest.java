@@ -6,14 +6,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
-import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.requests.AttackGameActionRequest;
 import org.junit.*;
 import org.lwjgl.system.NativeResource;
 
@@ -187,9 +185,10 @@ public class ServerTest {
             ctx.mServerInstance.startFixedUpdateDetachedFromGame();
             ctx.testMapClient();
             Capital cap = ctx.testCapitalSpawnDefaultClient().get();
-            cap.submitRequest(new AttackGameActionRequest(200, 201, 202));
+            cap.clientInvokeAttack(Capital.CORRECT_PASSWORD, 354);
             ctx.mServerInstance.processRequests();
-            new Scanner(System.in);
+            ctx.mNetworkClient.setProcessMessagesAutomatically(true);
+            await().atMost(TIMEOUT, SECONDS).until(() -> cap.getClientToggled().get() == 354);
         }
     }
 }

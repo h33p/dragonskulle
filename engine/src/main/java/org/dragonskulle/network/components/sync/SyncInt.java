@@ -57,8 +57,8 @@ public class SyncInt implements ISyncVar, Serializable {
      * @param oos The output stream
      * @throws IOException the io exception
      */
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeInt(this.mData);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeInt(this.mData);
     }
 
     /**
@@ -67,7 +67,7 @@ public class SyncInt implements ISyncVar, Serializable {
      * @param in the input stream
      * @throws IOException the io exception
      */
-    public void deserialize(ObjectInputStream in) throws IOException {
+    public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readInt();
     }
 

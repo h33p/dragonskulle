@@ -2,6 +2,7 @@
 package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -13,6 +14,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
+import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -32,6 +34,8 @@ public class NetworkObject extends Component implements IOnAwake {
     @Getter
     private final ArrayList<Reference<NetworkableComponent>> mNetworkableComponents =
             new ArrayList<>();
+
+    @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
 
     /** The network client ID that owns this */
     private int ownerId;
@@ -54,8 +58,15 @@ public class NetworkObject extends Component implements IOnAwake {
     public void onAwake() {
         getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
 
-        for (Reference<NetworkableComponent> comp : mNetworkableComponents)
-            comp.get().initialize(this);
+        for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
+            NetworkableComponent nc = comp.get();
+            nc.initialize(this, mClientRequests);
+        }
+
+        int id = 0;
+        for (ClientRequest<?> req : mClientRequests) {
+            req.attachNetworkObject(this, id++);
+        }
     }
 
     /**
@@ -134,6 +145,23 @@ public class NetworkObject extends Component implements IOnAwake {
      */
     public int getId() {
         return this.networkObjectId;
+    }
+
+    /**
+     * Handle a client request
+     *
+     * <p>This will take a client's request and handle it.
+     *
+     * <p>The dataflow looks like so:
+     *
+     * <p>ClientRequest::invoke to Server to here to ClientRequest::handle
+     */
+    public boolean handleClientRequest(int requestID, DataInputStream stream) throws IOException {
+        if (requestID < 0 || requestID >= mClientRequests.size()) return false;
+
+        mClientRequests.get(requestID).handle(stream);
+
+        return true;
     }
 
     public static final int ID_OFFSET = 0;

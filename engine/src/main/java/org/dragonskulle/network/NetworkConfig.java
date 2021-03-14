@@ -12,6 +12,8 @@ public class NetworkConfig {
         public static final byte MESSAGE_SPAWN_OBJECT = 16;
         /** ID of spawn map message */
         public static final byte MESSAGE_SPAWN_MAP = 20;
+        /** ID of client to server request message */
+        public static final byte MESSAGE_CLIENT_REQUEST = 21;
     }
 
     /** The constant MAX_TRANSMISSION_SIZE. */

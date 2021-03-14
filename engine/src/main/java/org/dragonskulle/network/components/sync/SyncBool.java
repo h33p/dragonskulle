@@ -52,8 +52,8 @@ public class SyncBool implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeBoolean(this.mData);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeBoolean(this.mData);
     }
 
     /**
@@ -63,7 +63,7 @@ public class SyncBool implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(ObjectInputStream in) throws IOException {
+    public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readBoolean();
     }
 

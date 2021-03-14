@@ -53,8 +53,8 @@ public class SyncLong implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeLong(this.mData);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeLong(this.mData);
     }
 
     /**
@@ -64,7 +64,7 @@ public class SyncLong implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(ObjectInputStream in) throws IOException {
+    public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readLong();
     }
 

@@ -52,8 +52,8 @@ public class SyncString implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeUTF(this.mData);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeUTF(this.mData);
     }
 
     /**
@@ -63,7 +63,7 @@ public class SyncString implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(ObjectInputStream in) throws IOException {
+    public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readUTF();
     }
 

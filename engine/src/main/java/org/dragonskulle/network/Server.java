@@ -148,6 +148,9 @@ public class Server {
         // byte[] message;
         mLogger.info("EXECB - " + messageType);
         switch (messageType) {
+            case NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST:
+                handleClientRequest(payload);
+                break;
                 // TODO: here implement a generic way to pass client->server commands
                 /*case (byte) 22:
                 message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
@@ -160,6 +163,38 @@ public class Server {
                 // message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
                 //                sendBytesToClient.send(message);
                 break;
+        }
+    }
+
+    private void handleClientRequest(byte[] payload) {
+        try (ByteArrayInputStream bytes = new ByteArrayInputStream(payload)) {
+            try (DataInputStream stream = new DataInputStream(bytes)) {
+                int objectID = stream.readInt();
+
+                Reference<NetworkObject> networkObject = getNetworkObject(objectID);
+
+                // TODO: Authenticate here whether this particular client is authorized to invoke
+                // requests on this object
+
+                if (networkObject == null) {
+                    mLogger.info("Client sent request with invalid object ID! " + objectID);
+                    return;
+                }
+
+                NetworkObject obj = networkObject.get();
+
+                // Normal to happen if object gets destroyed after client sent their request
+                if (obj == null) {
+                    mLogger.fine("Client made a request on already destroyed object! " + objectID);
+                }
+
+                int requestID = stream.readInt();
+
+                if (!obj.handleClientRequest(requestID, stream))
+                    mLogger.warning("Client passed invalid request! " + requestID);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

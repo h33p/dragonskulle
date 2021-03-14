@@ -1,9 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -21,10 +21,10 @@ public class SyncVector3 implements ISyncVar, Serializable {
      * @throws IOException thrown if couldn't write to stream
      */
     @Override
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeFloat(mData.x);
-        oos.writeFloat(mData.y);
-        oos.writeFloat(mData.z);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeFloat(mData.x);
+        out.writeFloat(mData.y);
+        out.writeFloat(mData.z);
     }
 
     /**
@@ -33,7 +33,7 @@ public class SyncVector3 implements ISyncVar, Serializable {
      * @throws IOException thrown if couldn't read from stream
      */
     @Override
-    public void deserialize(ObjectInputStream stream) throws IOException {
+    public void deserialize(DataInputStream stream) throws IOException {
         mData.set(stream.readFloat(), stream.readFloat(), stream.readFloat());
     }
 

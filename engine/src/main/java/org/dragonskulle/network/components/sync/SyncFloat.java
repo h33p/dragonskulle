@@ -1,9 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -57,8 +57,8 @@ public class SyncFloat implements ISyncVar, Serializable {
      * @param oos The output stream
      * @throws IOException the io exception
      */
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeFloat(this.mData);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeFloat(this.mData);
     }
 
     /**
@@ -67,7 +67,7 @@ public class SyncFloat implements ISyncVar, Serializable {
      * @param in the input stream
      * @throws IOException the io exception
      */
-    public void deserialize(ObjectInputStream in) throws IOException {
+    public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readFloat();
     }
 

@@ -5,7 +5,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-import sun.misc.IOUtils;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * @author Oscar L

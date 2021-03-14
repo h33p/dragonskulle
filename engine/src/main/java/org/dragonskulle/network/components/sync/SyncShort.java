@@ -57,8 +57,8 @@ public class SyncShort implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(ObjectOutputStream oos) throws IOException {
-        oos.writeShort(this.mData);
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeShort(this.mData);
     }
 
     /**
@@ -68,7 +68,7 @@ public class SyncShort implements ISyncVar, Serializable {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readShort();
     }
 
