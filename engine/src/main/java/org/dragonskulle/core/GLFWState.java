@@ -6,12 +6,15 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.nio.IntBuffer;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
+import org.joml.Vector2i;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 
 /**
@@ -22,6 +25,9 @@ import org.lwjgl.system.NativeResource;
 @Accessors(prefix = "m")
 public class GLFWState implements NativeResource {
     private long mWindow;
+    /** Window size in screen coordinates */
+    @Getter private final Vector2i mWindowSize = new Vector2i();
+
     @Getter private Renderer mRenderer;
     private boolean mFramebufferResized = false;
 
@@ -60,6 +66,13 @@ public class GLFWState implements NativeResource {
         if (mFramebufferResized) {
             mFramebufferResized = false;
             mRenderer.onResize();
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.ints(0);
+            IntBuffer height = stack.ints(0);
+            glfwGetWindowSize(mWindow, width, height);
+            mWindowSize.set(width.get(0), height.get(0));
         }
 
         return !glfwWindowShouldClose(mWindow);

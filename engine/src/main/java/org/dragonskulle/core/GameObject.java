@@ -10,7 +10,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.HexTransform;
 import org.dragonskulle.components.Transform;
 import org.joml.Matrix4fc;
 
@@ -23,6 +26,7 @@ import org.joml.Matrix4fc;
  *     actions but each component that is added to the GameObject will be able to interact with
  *     itself in the world and other GameObjects.
  */
+@Accessors(prefix = "m")
 public class GameObject implements Serializable {
 
     private final Reference<GameObject> mReference = new Reference<>(this);
@@ -35,6 +39,8 @@ public class GameObject implements Serializable {
     private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
     private boolean mActive;
+    /** How deep the object is within the game object structure */
+    @Getter private int mDepth = 0;
 
     /**
      * A handler interface for building game objects
@@ -80,28 +86,46 @@ public class GameObject implements Serializable {
     }
 
     /**
+     * Create a clone of a GameObject, providing a new transform for the object as a HexTransform
+     *
+     * @param object GameObject to be copied
+     * @param transform HexTransform containing the new transform for the object
+     * @return The new instance of the GameObject
+     */
+    public static GameObject instantiate(GameObject object, HexTransform transform) {
+        GameObject instance = object.createClone();
+        Transform t = transform.getTransform();
+        t.setGameObject(instance);
+        instance.mTransform = t;
+        return instance;
+    }
+
+    /**
      * Find an instance of a GameObject with a given name in the currently active scene. This is
-     * very slow and should not be used in any update loops. Instead, you should get all references
-     * to necessary GameObject's in onAwake or onStart and save them for future use.
+     * very, very slow and should not be used in any update loops. Instead, you should get all
+     * references to necessary GameObjects in onAwake or onStart and save them for future use.
      *
      * @param name Name of the object to search for
      * @return A reference to the first GameObject found, or null if nothing is found
      */
     public static Reference<GameObject> FindObjectByName(String name) {
-        Scene activeScene = Engine.getInstance().getActiveScene();
+        List<Scene> activeScenes = Engine.getInstance().getActiveScenes();
 
-        for (GameObject root : activeScene.getRootObjects()) {
+        for (Scene s : activeScenes) {
+            for (GameObject root : s.getRootObjects()) {
 
-            ArrayList<GameObject> children = new ArrayList<>();
-            root.getAllChildren(children);
+                ArrayList<GameObject> children = new ArrayList<>();
+                root.getAllChildren(children);
 
-            for (GameObject obj : children) {
+                for (GameObject obj : children) {
 
-                if (obj.mName.equals(name)) {
-                    return obj.getReference();
+                    if (obj.mName.equals(name)) {
+                        return obj.getReference();
+                    }
                 }
             }
         }
+
         return null;
     }
 
@@ -337,6 +361,7 @@ public class GameObject implements Serializable {
             child.mRoot = mRoot;
         }
         child.mParent = this;
+        child.setDepth(mDepth + 1);
         mChildren.add(child);
     }
 
@@ -353,6 +378,7 @@ public class GameObject implements Serializable {
         for (GameObject child : children) {
             child.mRoot = root;
             child.mParent = this;
+            child.setDepth(this.mDepth + 1);
         }
         mChildren.addAll(children);
     }
@@ -453,6 +479,7 @@ public class GameObject implements Serializable {
         if (mParent != null) {
             mParent.removeChild(this);
             mParent = null;
+            setDepth(0);
         }
         mRoot = null;
     }
@@ -534,10 +561,19 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform
      *
-     * @return mTransform
+     * @return mTransform as a base Transform
      */
     public Transform getTransform() {
         return mTransform;
+    }
+
+    /**
+     * Getter for mTransform
+     *
+     * @return mTransform as a HexTransform
+     */
+    public HexTransform getHexTransform() {
+        return new HexTransform(mTransform);
     }
 
     /**
@@ -568,6 +604,15 @@ public class GameObject implements Serializable {
     }
 
     /**
+     * Getter for mName
+     *
+     * @return mName
+     */
+    public String getName() {
+        return mName;
+    }
+
+    /**
      * Getter for mRoot, used for testing
      *
      * @return mRoot
@@ -583,5 +628,16 @@ public class GameObject implements Serializable {
      */
     protected GameObject getParent() {
         return mParent;
+    }
+
+    /**
+     * Setter for mDepth
+     *
+     * <p>This method will recursively update mDepth for all mChildren
+     */
+    protected void setDepth(int newDepth) {
+        mDepth = newDepth;
+
+        for (GameObject child : mChildren) child.setDepth(mDepth + 1);
     }
 }
