@@ -245,6 +245,7 @@ public class App {
         audio.filename = "waves.wav";
         audio.channel = SoundType.BACKGROUND;
         audio.play();
+        
         //Run the game
         Engine.getInstance().start("Germany", new GameBindings());
     }
