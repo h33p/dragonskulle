@@ -3,6 +3,7 @@ package org.dragonskulle.game;
 
 import static org.dragonskulle.utils.Env.*;
 
+import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
@@ -238,11 +239,13 @@ public class App {
         // Load the main scene as the presentation scene
         Engine.getInstance().loadPresentationScene(mainScene);
 
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
         AudioSource audio = new AudioSource();
         audio.filename = "waves.wav";
         audio.channel = SoundType.BACKGROUND;
         audio.play();
-        // Run the game
+        //Run the game
         Engine.getInstance().start("Germany", new GameBindings());
     }
 }
