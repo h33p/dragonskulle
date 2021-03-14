@@ -1,12 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.HashMap;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
-import java.util.HashMap;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Renderable;
@@ -33,8 +31,9 @@ public class HexagonMap extends Component implements IOnStart {
     @Getter private GameObject[][] mGameObjectMap;
 
     /** Store a {@link Building} at the q and r coordinates. */
-    private HashMap<Integer, HashMap<Integer, Reference<Building>>> mBuildings = new HashMap<Integer, HashMap<Integer, Reference<Building>>>();
-    
+    private HashMap<Integer, HashMap<Integer, Reference<Building>>> mBuildings =
+            new HashMap<Integer, HashMap<Integer, Reference<Building>>>();
+
     /**
      * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
      * create the map.
@@ -51,97 +50,99 @@ public class HexagonMap extends Component implements IOnStart {
 
         this.mTiles = createTiles();
     }
-    
+
     /**
-     * Check if the specified q and r, used to access {@link #mTiles}, are legal. 
-     * 
+     * Check if the specified q and r, used to access {@link #mTiles}, are legal.
+     *
      * @param q The q coordinate.
      * @param r The r coordinate.
      * @return {@code true} if the coordinates are valid, otherwise {@code false}.
      */
     public boolean isValid(int q, int r) {
-    	if(q < 0 || q >= mSize || r < 0 || r >= mSize) {
-			//log.warning(String.format("The coordinates (q = %d, r = %d) are out of range.", q, r));
-			return false;
-		}
-    	return true;
+        if (q < 0 || q >= mSize || r < 0 || r >= mSize) {
+            // log.warning(String.format("The coordinates (q = %d, r = %d) are out of range.", q,
+            // r));
+            return false;
+        }
+        return true;
     }
-    
+
     /**
      * Get the {@link HexagonTile} at the specified position, or {@code null} if it doesn't exist.
-     * 
+     *
      * @param q The q coordinate.
      * @param r The r coordinate.
      * @return The HexagonTile, or {@code null}.
      */
     public HexagonTile getTile(int q, int r) {
-    	// Ensure the parameters are valid coordinates.
-    	if(isValid(q, r) == false) return null;
-    	
-    	return mTiles[r][q];
+        // Ensure the parameters are valid coordinates.
+        if (isValid(q, r) == false) return null;
+
+        return mTiles[r][q];
     }
-    
+
     /**
      * Get the building at the specified position, or {@code null} if the building does not exist.
-     * 
+     *
      * @param q The q coordinate.
      * @param r The r coordinate.
      * @return The building, or {@code null} if there is no building at that position.
      */
     public Building getBuilding(int q, int r) {
-    	// Ensure the parameters are valid coordinates.
-    	if(isValid(q, r) == false) return null;
-    	
-    	// Get the inner HashMap.
-		HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
-		if(qBuildings == null) {
-			// The inner HashMap does not exist, so no building can exist.
-			return null;
-		}
-		
-		// Try to get the building.
-		Reference<Building> buildingReference = qBuildings.get(r);
-		if(buildingReference == null) {
-			return null;
-		}
-    	return buildingReference.get();	
+        // Ensure the parameters are valid coordinates.
+        if (isValid(q, r) == false) return null;
+
+        // Get the inner HashMap.
+        HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
+        if (qBuildings == null) {
+            // The inner HashMap does not exist, so no building can exist.
+            return null;
+        }
+
+        // Try to get the building.
+        Reference<Building> buildingReference = qBuildings.get(r);
+        if (buildingReference == null) {
+            return null;
+        }
+        return buildingReference.get();
     }
-    
+
     /**
      * Store a {@link Reference reference} to the {@link Building} at the specified position.
-     * 
+     *
      * @param building The Building to be stored.
      * @param q The q coordinate.
      * @param r The r coordinate.
      */
     public void storeBuilding(Building building, int q, int r) {
-    	// Ensure the parameters are valid coordinates.
-    	if(isValid(q, r) == false) return;
-    	
-    	// Try to get the inner HashMap, using the q coordinate as the key.
-    	HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
-    	if(qBuildings == null) {
-    		// An inner HashMap does not exist, so create one.
-    		HashMap<Integer, Reference<Building>> innerMap = new HashMap<Integer, Reference<Building>>();
-    		mBuildings.put(q, innerMap);
-    		qBuildings = innerMap;
-    	}
-    	
-    	// Put a reference to the building in the inner map.
-    	qBuildings.put(r, new Reference<Building>(building));
+        // Ensure the parameters are valid coordinates.
+        if (isValid(q, r) == false) return;
+
+        // Try to get the inner HashMap, using the q coordinate as the key.
+        HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
+        if (qBuildings == null) {
+            // An inner HashMap does not exist, so create one.
+            HashMap<Integer, Reference<Building>> innerMap =
+                    new HashMap<Integer, Reference<Building>>();
+            mBuildings.put(q, innerMap);
+            qBuildings = innerMap;
+        }
+
+        // Put a reference to the building in the inner map.
+        qBuildings.put(r, new Reference<Building>(building));
     }
-    
+
     /**
-     * Stop storing the {@link Reference} to the Building at the specified position. 
-     * <p>
-     * Stores {@code null} at the position instead.
-     * 
+     * Stop storing the {@link Reference} to the Building at the specified position.
+     *
+     * <p>Stores {@code null} at the position instead.
+     *
      * @param q The q coordinate.
      * @param r The r coordinate.
      */
     public void removeBuilding(int q, int r) {
-    	// Simply set the reference to null.
-    	storeBuilding(null, q, r);
+        // Simply set the reference to null.
+        storeBuilding(null, q, r);
     }
 
     /**

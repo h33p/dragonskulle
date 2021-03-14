@@ -48,14 +48,14 @@ public abstract class Stat<T> {
 
     /**
      * Set the level. This will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
-     * 
+     *
      * @param level The level.
      */
     public void setLevel(int level) {
-    	mLevel = level;
-    	boundLevel();
+        mLevel = level;
+        boundLevel();
     }
-    
+
     /**
      * Get the value of the stat, at the current level.
      *
@@ -64,18 +64,20 @@ public abstract class Stat<T> {
     public T getValue() {
         return levelToValue();
     }
-    
+
     /**
      * Useful for mapping the level to between two doubles.
-     * 
+     *
      * @param valueMin The lowest possible value of the stat.
      * @param valueMax The highest possible value of the stat.
      * @param level The current level.
      * @param levelMin The lowest possible level.
      * @param levelMax The highest possible level.
-     * @return The value, between {@code valueMin} and {@code valueMax}, based on the specified {@code level}.
+     * @return The value, between {@code valueMin} and {@code valueMax}, based on the specified
+     *     {@code level}.
      */
-    protected double map(double valueMin, double valueMax, double level, double levelMin, double levelMax) {
-    	return valueMin + (((level - levelMin) * (valueMax - valueMin))/(levelMax - levelMin));
+    protected double map(
+            double valueMin, double valueMax, double level, double levelMin, double levelMax) {
+        return valueMin + (((level - levelMin) * (valueMax - valueMin)) / (levelMax - levelMin));
     }
 }
