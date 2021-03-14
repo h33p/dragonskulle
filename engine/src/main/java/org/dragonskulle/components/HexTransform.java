@@ -4,6 +4,9 @@ package org.dragonskulle.components;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
  * Represents an objects position in hex coordinates
  *
@@ -13,6 +16,7 @@ import org.joml.Vector3f;
  *     coordinates, which are converted into cartesian transformations and added to the underlying
  *     3d transform.
  */
+@Accessors(prefix = "m")
 public class HexTransform {
 
     // TODO: We need to decide upon a size for hexes, I've just chosen two randomly for now so that
@@ -32,7 +36,7 @@ public class HexTransform {
     public static final Matrix3f HEX_TO_WORLD =
             new Matrix3f((float) Math.sqrt(3), 0, 0, (float) Math.sqrt(3) / 2, 3f / 2f, 0, 0, 0, 0);
 
-    private final Transform mTransform;
+    @Getter private final Transform mTransform;
 
     /**
      * Convert a vector containing axial coordinates to their equivalent cartesian coordinates. The
@@ -149,14 +153,5 @@ public class HexTransform {
         }
 
         return rounded.set(rx, rz, 0);
-    }
-
-    /**
-     * Getter for mTransform
-     *
-     * @return mTransform
-     */
-    public Transform getTransform() {
-        return mTransform;
     }
 }
