@@ -12,7 +12,7 @@ public interface INetSerializable {
     /**
      * Serialize Sync Var.
      *
-     * @param oos the oos
+     * @param stream the output stream
      * @throws IOException the io exception
      */
     void serialize(DataOutputStream stream) throws IOException;
@@ -22,7 +22,6 @@ public interface INetSerializable {
      *
      * @param stream the stream
      * @throws IOException the io exception
-     * @throws ClassNotFoundException the class not found exception
      */
     void deserialize(DataInputStream stream) throws IOException;
 }

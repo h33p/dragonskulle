@@ -54,6 +54,7 @@ public class SyncShort implements ISyncVar, Serializable {
     /**
      * Serialize the SyncShort.
      *
+     * @param out The output stream
      * @throws IOException the io exception
      */
     @Override

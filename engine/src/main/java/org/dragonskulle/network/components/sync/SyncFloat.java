@@ -54,7 +54,7 @@ public class SyncFloat implements ISyncVar, Serializable {
     /**
      * Serialize bytes.
      *
-     * @param oos The output stream
+     * @param out The output stream
      * @throws IOException the io exception
      */
     public void serialize(DataOutputStream out) throws IOException {

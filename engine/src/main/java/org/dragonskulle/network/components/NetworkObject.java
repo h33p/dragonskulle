@@ -155,6 +155,11 @@ public class NetworkObject extends Component implements IOnAwake {
      * <p>The dataflow looks like so:
      *
      * <p>ClientRequest::invoke to Server to here to ClientRequest::handle
+     *
+     * @param requestID the request id
+     * @param stream the input stream
+     * @return true if executed successfully.
+     * @throws IOException the io exception
      */
     public boolean handleClientRequest(int requestID, DataInputStream stream) throws IOException {
         if (requestID < 0 || requestID >= mClientRequests.size()) return false;

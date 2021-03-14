@@ -12,6 +12,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.requests.AttackData;
 import org.junit.*;
 import org.lwjgl.system.NativeResource;
 
@@ -185,7 +186,7 @@ public class ServerTest {
             ctx.mServerInstance.startFixedUpdateDetachedFromGame();
             ctx.testMapClient();
             Capital cap = ctx.testCapitalSpawnDefaultClient().get();
-            cap.clientInvokeAttack(Capital.CORRECT_PASSWORD, 354);
+            cap.clientInvokeEvent(new AttackData(Capital.CORRECT_PASSWORD, 354));
             ctx.mServerInstance.processRequests();
             ctx.mNetworkClient.setProcessMessagesAutomatically(true);
             await().atMost(TIMEOUT, SECONDS).until(() -> cap.getClientToggled().get() == 354);

@@ -42,7 +42,11 @@ public abstract class NetworkableComponent extends Component {
     /** The Fields. */
     private Field[] mFields;
 
-    /** Init fields. */
+    /**
+     * Init fields. @param networkObject the network object
+     *
+     * @param outRequests the requests it can deal with
+     */
     public void initialize(NetworkObject networkObject, List<ClientRequest<?>> outRequests) {
 
         mNetworkObject = networkObject;
