@@ -68,14 +68,14 @@ class BoxPacker<T extends IBox> {
                 BoxNode<T> newRight;
 
                 if (remainingX < remainingY) {
-                    newLeft = new BoxNode<T>(node.mX, node.mY, node.mWidth, height);
+                    newLeft = new BoxNode<>(node.mX, node.mY, node.mWidth, height);
                     newRight =
-                            new BoxNode<T>(
+                            new BoxNode<>(
                                     node.mX, node.mY + height, node.mWidth, node.mHeight - height);
                 } else {
-                    newLeft = new BoxNode<T>(node.mX, node.mY, width, node.mHeight);
+                    newLeft = new BoxNode<>(node.mX, node.mY, width, node.mHeight);
                     newRight =
-                            new BoxNode<T>(
+                            new BoxNode<>(
                                     node.mX + width, node.mY, node.mWidth - width, node.mHeight);
                 }
 
