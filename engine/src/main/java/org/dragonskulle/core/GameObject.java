@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.HexTransform;
@@ -39,7 +38,7 @@ public class GameObject implements Serializable {
     @Getter private Transform mTransform = new Transform();
     @Getter private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
-    @Getter @Setter private boolean mEnabled;
+    @Getter private boolean mEnabled;
     /** How deep the object is within the game object structure */
     @Getter private int mDepth = 0;
 
@@ -566,6 +565,19 @@ public class GameObject implements Serializable {
      */
     public boolean isRootObject() {
         return mParent == null;
+    }
+
+    /**
+     * Setter for mEnabled. This value is recursively set for all children
+     *
+     * @param enabled New value for mEnabled
+     */
+    public void setEnabled(boolean enabled) {
+        mEnabled = enabled;
+
+        for (GameObject child : mChildren) {
+            child.setEnabled(enabled);
+        }
     }
 
     /**

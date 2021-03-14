@@ -98,6 +98,7 @@ public class Scene {
      */
     protected ArrayList<Component> getEnabledButNotStartedComponents() {
         return mComponents.stream()
+                .filter(component -> component.getGameObject().isEnabled())
                 .filter(Component::isEnabled)
                 .filter(component -> !component.isStarted())
                 .collect(Collectors.toCollection(ArrayList::new));
