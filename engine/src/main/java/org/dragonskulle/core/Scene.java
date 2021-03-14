@@ -3,6 +3,8 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 
 /**
@@ -11,12 +13,13 @@ import org.dragonskulle.components.Component;
  * @author Harry Stoltz
  *     <p>Represents a single scene in a game, storing a list of all GameObjects in that scene.
  */
+@Accessors(prefix = "m")
 public class Scene {
-    private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
+    @Getter private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
 
-    private final ArrayList<Component> mComponents = new ArrayList<>();
+    @Getter private final ArrayList<Component> mComponents = new ArrayList<>();
 
-    private final String mName;
+    @Getter private final String mName;
 
     /**
      * Constructor for a Scene
@@ -66,39 +69,13 @@ public class Scene {
     }
 
     /**
-     * Getter for mGameObjects
-     *
-     * @return mGameObjects
-     */
-    public ArrayList<GameObject> getRootObjects() {
-        return mGameObjects;
-    }
-
-    /**
-     * Getter for mName
-     *
-     * @return mName
-     */
-    public String getName() {
-        return mName;
-    }
-
-    /**
-     * Get a list of all components
-     *
-     * @return mComponents
-     */
-    protected ArrayList<Component> getComponents() {
-        return mComponents;
-    }
-
-    /**
      * Get a list of all enabled components in the scene
      *
      * @return A new ArrayList containing all of the enabled components
      */
     protected ArrayList<Component> getEnabledComponents() {
         return mComponents.stream()
+                .filter(component -> component.getGameObject().isEnabled())
                 .filter(Component::isEnabled)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
