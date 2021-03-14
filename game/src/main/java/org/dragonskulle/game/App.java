@@ -8,6 +8,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.audio.GameAudio;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
@@ -207,9 +208,9 @@ public class App {
                                 button.getTransform().translate(0f, 0.4f, 0f);
 
                                 Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
-
+                                GameAudio a = new GameAudio();
                                 UIButton newButton =
-                                        new UIButton(
+                                        new UIButton(a.audibleClick(
                                                 (uiButton, __) -> {
                                                     if (uiRef.isValid()) {
                                                         Renderable uiRend = uiRef.get();
@@ -224,8 +225,8 @@ public class App {
                                                         }
                                                         uiRend.setEnabled(!uiRend.isEnabled());
                                                     }
-                                                });
-
+                                                }));
+                               
                                 button.addComponent(newButton);
                             });
                 });
