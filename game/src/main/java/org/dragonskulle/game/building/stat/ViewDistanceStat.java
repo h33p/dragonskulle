@@ -5,6 +5,6 @@ public class ViewDistanceStat extends Stat<Integer> {
 
     @Override
     protected Integer levelToValue() {
-        return 1;
+        return 3;
     }
 }

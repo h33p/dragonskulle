@@ -22,10 +22,15 @@ import org.dragonskulle.game.map.HexagonTile;
 @Log
 public class Building extends Component {
 
+	/** Stores the attack strength of the building. */
     @Getter private AttackStat mAttack;
+    /** Stores the defence strength of the building. */
     @Getter private DefenceStat mDefence;
+    /** Stores how many tokens the building can generate in one go. */
     @Getter private TokenGenerationStat mTokenGeneration;
+    /** Stores the view range of the building. */
     @Getter private ViewDistanceStat mViewDistance;
+    /** Stores the attack range of the building. */
     @Getter private AttackDistanceStat mAttackDistance;
 
     /** The owner of the building. */
@@ -67,36 +72,34 @@ public class Building extends Component {
     }
 
     /**
-     * TODO: Currently not fully functional. Doesn't currently have impact on anything.
+     * Attack an opponent building.
+     * <p>
+     * There is a chance this will either fail or succeed, influenced by the attack stat of the attacking building and the defence stats of the opponent building.
      *
-     * @param opponent
-     * @return Whether the attack is successful.
+     * @param opponent The building to attack.
      */
-    public boolean attack(Building opponent) {
-        Random random = new Random();
+    public void attack(Building opponent) {
+       // TODO: Make attack success dependent on building stats.
+    	
+    	Random random = new Random();
         double successChance = random.nextDouble();
-
-        // double target = mAttack.getValue() - opponent.getDefence().getValue();
+        // Set a 50% chance of success.
         double target = 0.5;
 
         if (successChance >= target) {
-            // log.info(String.format("Successful attack: random number %f was greater or equal to
-            // target %f (target calculated using %f and %f).", successChance, target,
-            // mAttack.getValue(), opponent.getDefence().getValue()));
             log.info(
                     String.format(
                             "Successful attack: random number %f was greater or equal to target %f.",
                             successChance, target));
-            return true;
+
+            // Claim the opponent building.
+            opponent.setOwner(mOwner);
+            // TODO: Allow the Players to update their lists of buildings they own.
         } else {
-            // log.info(String.format("Failed attack: random number %f was not greater or equal to
-            // target %f (target calculated using %f and %f).", successChance, target,
-            // mAttack.getValue(), opponent.getDefence().getValue()));
             log.info(
                     String.format(
                             "Failed attack: random number %f was not greater or equal to target %f.",
                             successChance, target));
-            return false;
         }
     }
 
@@ -146,62 +149,62 @@ public class Building extends Component {
         // Get the current q and r coordinates.
         int qCentre = tile.getQ();
         int rCentre = tile.getR();
-
+        
         for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int s = -qOffset - rOffset;
-                if (s > radius || s < -radius) {
-                    // log.info(String.format("INVALID S: q = %d, r = %d, s = %d ", qOffset,
-                    // rOffset, s));
-                    continue;
-                }
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {            	
+            	// Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
 
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
                 // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) {
-                    // log.info(String.format("Current tile: q = %d, r = %d, s = %d ", qOffset,
-                    // rOffset, s));
-                    continue;
-                }
+                if (qOffset == 0 && rOffset == 0) continue;
 
-                // log.info(String.format("q = %d, r = %d, s = %d ", qOffset, rOffset, s));
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset, s));
 
                 // Attempt to get the desired tile, and check if it exists.
                 HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) {
-                    continue;
-                }
+                if (selectedTile == null) continue;
 
                 // Add the tile to the list.
                 tiles.add(selectedTile);
             }
         }
 
-        // log.info("Number of tiles in range: " + tiles.size());
-
+        log.info("Number of tiles in range: " + tiles.size());
+        
         return tiles;
     }
 
-    // TODO: Add ownership
+    /**
+     * Get an ArrayList of opponent {@link Building}s within the range defined by {@link #mAttackDistance}. 
+     * 
+     * @return An ArrayList of opponent Buildings that can be attacked.
+     */
     public ArrayList<Building> getAttackableBuildings() {
         ArrayList<Building> buildings = new ArrayList<Building>();
 
+        // Ensure the map and owner exist.
         HexagonMap map = mHexagonMap.get();
         TestPlayer owner = mOwner.get();
         if (map == null || owner == null) return buildings;
 
+        // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackTiles();
         for (HexagonTile tile : attackTiles) {
-            Building building = map.getBuilding(tile.getQ(), tile.getR());
-            if (building == null) {
-                continue;
-            }
+            // Get the building on an attackable tile, if it exists.
+        	Building building = map.getBuilding(tile.getQ(), tile.getR());
+        	if (building == null) continue;
 
+        	// Ensure the building is not owned by the owner of this building.
             Reference<TestPlayer> buildingOwner = building.getOwner();
+            // TODO Replace references to the player with a player ID.
             if (owner.equals(buildingOwner.get())) {
-                continue;
+                log.info("Building owned by same player.");
+            	continue;
             }
 
+            // Add the opponent building to the list of attackable buildings.
             buildings.add(building);
         }
 
@@ -228,6 +231,7 @@ public class Building extends Component {
         stats.add(mDefence);
         stats.add(mTokenGeneration);
         stats.add(mViewDistance);
+        stats.add(mAttackDistance);
 
         return stats;
     }
