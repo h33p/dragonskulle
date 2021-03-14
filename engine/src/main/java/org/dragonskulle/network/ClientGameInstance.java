@@ -9,7 +9,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.components.Capital.Capital;
 import org.dragonskulle.network.components.NetworkObject;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The type Client game instance.
@@ -29,9 +28,9 @@ public class ClientGameInstance {
      * If the instance is attached to a game scene then it will spawn objects directly onto the
      * scene.
      */
-    private Scene linkedScene;
+    private Scene mLinkedScene;
     /** This flag is for marking if the instance is linked to a game scene. */
-    private boolean isLinkedToScene = false;
+    private boolean mIsLinkedToScene = false;
 
     /**
      * Instantiates a new Client game instance, A callback is needed to send bytes to the server.
@@ -40,7 +39,7 @@ public class ClientGameInstance {
      * @param callback the callback
      */
     ClientGameInstance(NetworkClientSendBytesCallback callback) {
-        this.sendBytesCallback = callback;
+        this.mSendBytesCallback = callback;
     }
 
     /**
@@ -50,7 +49,7 @@ public class ClientGameInstance {
      * @param callback the callback
      */
     ClientGameInstance(NetworkClientSendBytesCallback callback, Scene mainScene) {
-        this.sendBytesCallback = callback;
+        this.mSendBytesCallback = callback;
         this.linkToScene(mainScene);
     }
 
@@ -61,8 +60,8 @@ public class ClientGameInstance {
      */
     public void linkToScene(Scene mainScene) {
         mLogger.info("LINKED TO SCENE");
-        this.isLinkedToScene = true;
-        this.linkedScene = mainScene;
+        this.mIsLinkedToScene = true;
+        this.mLinkedScene = mainScene;
     }
 
     /** The interface for sending bytes to the server in the form of a callback. */
@@ -81,7 +80,7 @@ public class ClientGameInstance {
     /**
      * The callback for sending bytes to the server, it is created on instantiation of the class.
      */
-    public NetworkClientSendBytesCallback sendBytesCallback;
+    public NetworkClientSendBytesCallback mSendBytesCallback;
 
     /**
      * An map of references to objects. If there is no game linked then it will only be stored on
@@ -112,33 +111,6 @@ public class ClientGameInstance {
         return mNetworkObjectReferences.get(networkObjectId);
     }
 
-    /**
-     * Spawns a new network object if a local owner doesn't exist. If it is linked to a scene it
-     * will also link the spawned object to the scene, and spawn it in the scene.
-     *
-     * @param networkObjectId the network object id to be spawned
-     * @return the reference to the new object
-     */
-    @NotNull
-    private Reference<NetworkObject> spawnNewNetworkObject(int networkObjectId) {
-        final NetworkObject nob = new NetworkObject(networkObjectId, false);
-        final GameObject go =
-                new GameObject(
-                        "networked_" + networkObjectId,
-                        (handle) -> {
-                            handle.addComponent(nob);
-                        });
-        Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
-        mLogger.info("adding a new root object to the scene");
-        mLogger.info("nob to be spawned is : " + nob.toString());
-        if (isLinkedToScene) {
-            this.linkedScene.addRootObject(go);
-        }
-        this.mNetworkObjectReferences.put(nob.getId(), ref);
-
-        return ref;
-    }
-
     private Reference<NetworkObject> spawnNewNetworkObject(int networkObjectId, int templateId) {
         final GameObject go = Templates.instantiate(templateId);
         final NetworkObject nob = new NetworkObject(networkObjectId, false);
@@ -146,8 +118,8 @@ public class ClientGameInstance {
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
         mLogger.info("adding a new root object to the scene");
         mLogger.info("nob to be spawned is : " + nob.toString());
-        if (isLinkedToScene) {
-            this.linkedScene.addRootObject(go);
+        if (mIsLinkedToScene) {
+            this.mLinkedScene.addRootObject(go);
         } else {
             // TODO: avoid this somehow
             nob.onAwake();

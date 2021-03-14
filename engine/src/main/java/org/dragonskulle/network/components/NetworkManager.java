@@ -7,10 +7,10 @@ import org.dragonskulle.network.FixedUpdate;
 
 /** @author Oscar L */
 public class NetworkManager extends Component implements IFixedUpdate {
-    FixedUpdate update;
+    private final FixedUpdate mUpdate;
 
     public NetworkManager(FixedUpdate serverUpdateCallback) {
-        update = serverUpdateCallback;
+        mUpdate = serverUpdateCallback;
     }
 
     @Override
@@ -18,6 +18,6 @@ public class NetworkManager extends Component implements IFixedUpdate {
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        update.call();
+        mUpdate.call();
     }
 }

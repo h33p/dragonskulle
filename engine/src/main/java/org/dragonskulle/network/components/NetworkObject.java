@@ -29,7 +29,7 @@ public class NetworkObject extends Component implements IOnAwake {
     /** true if the component is on the server. */
     @Getter private final boolean mIsServer;
     /** The id of the object. */
-    public final int networkObjectId;
+    public final int mNetworkObjectId;
 
     @Getter
     private final ArrayList<Reference<NetworkableComponent>> mNetworkableComponents =
@@ -38,7 +38,7 @@ public class NetworkObject extends Component implements IOnAwake {
     @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
 
     /** The network client ID that owns this */
-    private int ownerId;
+    private int mOwnerId;
 
     /**
      * Instantiates a new Network object.
@@ -47,7 +47,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * @param isServer true if the object is on the server
      */
     public NetworkObject(int id, boolean isServer) {
-        networkObjectId = id;
+        mNetworkObjectId = id;
         this.mIsServer = isServer;
     }
 
@@ -75,7 +75,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * @param id the id
      */
     public void setOwnerId(int id) {
-        this.ownerId = id;
+        this.mOwnerId = id;
     }
 
     /**
@@ -111,7 +111,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * @return the owner id
      */
     public int getOwnerId() {
-        return this.ownerId;
+        return this.mOwnerId;
     }
 
     @Override
@@ -119,12 +119,12 @@ public class NetworkObject extends Component implements IOnAwake {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NetworkObject that = (NetworkObject) o;
-        return Objects.equals(networkObjectId, that.networkObjectId);
+        return Objects.equals(mNetworkObjectId, that.mNetworkObjectId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(networkObjectId);
+        return Objects.hash(mNetworkObjectId);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class NetworkObject extends Component implements IOnAwake {
                 + "children="
                 + getNetworkableComponents()
                 + ", networkObjectId='"
-                + networkObjectId
+                + mNetworkObjectId
                 + '\''
                 + '}';
     }
@@ -144,7 +144,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * @return the id
      */
     public int getId() {
-        return this.networkObjectId;
+        return this.mNetworkObjectId;
     }
 
     /**
@@ -286,7 +286,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * @return the network object id
      */
     public int getNetworkObjectId() {
-        return networkObjectId;
+        return mNetworkObjectId;
     }
 
     /**

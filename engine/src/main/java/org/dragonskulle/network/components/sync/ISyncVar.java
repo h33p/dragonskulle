@@ -14,5 +14,5 @@ public interface ISyncVar extends INetSerializable {
      *
      * @param handleFieldChange the handle field change
      */
-    public void registerListener(ISyncVarUpdateHandler handleFieldChange);
+    void registerListener(ISyncVarUpdateHandler handleFieldChange);
 }

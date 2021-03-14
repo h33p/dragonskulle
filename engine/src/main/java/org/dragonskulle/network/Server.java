@@ -52,7 +52,7 @@ public class Server {
     public final HashMap<Integer, Reference<NetworkObject>> mNetworkObjects = new HashMap<>();
 
     /** true if linked to a game scene. */
-    public boolean linkedToScene = false;
+    public boolean mLinkedToScene = false;
 
     /** The scheduled requests to be processed. */
     private final ListenableQueue<Request> mRequests = new ListenableQueue<>(new LinkedList<>());
@@ -152,16 +152,10 @@ public class Server {
                 handleClientRequest(payload);
                 break;
                 // TODO: here implement a generic way to pass client->server commands
-                /*case (byte) 22:
-                message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
-                //                sendBytesToClient.send(message);
-                break;*/
             default:
                 mLogger.info(
                         "The server received a request from a client to do something "
                                 + messageType);
-                // message = NetworkMessage.build((byte) 20, "TOSPAWN".getBytes());
-                //                sendBytesToClient.send(message);
                 break;
         }
     }
@@ -249,7 +243,7 @@ public class Server {
      * @param scene the game scene
      */
     public void linkToScene(Scene scene) {
-        this.linkedToScene = true;
+        this.mLinkedToScene = true;
         this.mGame.setScene(scene);
     }
 
@@ -372,7 +366,7 @@ public class Server {
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
 
-        if (linkedToScene) {
+        if (mLinkedToScene) {
             this.mGame.spawnNetworkObjectOnScene(networkObject);
         } else {
             networkObject.onAwake();

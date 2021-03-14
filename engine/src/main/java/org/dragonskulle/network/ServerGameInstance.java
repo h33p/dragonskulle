@@ -12,7 +12,7 @@ public class ServerGameInstance {
             new byte[600]; // This is a placeholder to hold the map, in reality a clone of the
 
     /** The game scene that it is linked to. */
-    private Scene scene;
+    private Scene mScene;
 
     /** Instantiates a new Server game instance. */
     ServerGameInstance() {
@@ -44,7 +44,7 @@ public class ServerGameInstance {
      * @param networkObject the network object
      */
     public void spawnNetworkObjectOnScene(NetworkObject networkObject) {
-        this.scene.addRootObject(networkObject.getGameObject());
+        this.mScene.addRootObject(networkObject.getGameObject());
     }
 
     /**
@@ -53,6 +53,6 @@ public class ServerGameInstance {
      * @param scene the scene
      */
     public void setScene(Scene scene) {
-        this.scene = scene;
+        this.mScene = scene;
     }
 }

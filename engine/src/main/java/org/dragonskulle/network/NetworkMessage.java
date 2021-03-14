@@ -106,8 +106,7 @@ public class NetworkMessage {
      * @return the byte [ ]
      */
     public static byte[] getPayload(byte[] bytes, byte messageType, int offset, int payloadSize) {
-        byte[] payload = Arrays.copyOfRange(bytes, offset, offset + payloadSize);
-        return payload;
+        return Arrays.copyOfRange(bytes, offset, offset + payloadSize);
     }
 
     /**

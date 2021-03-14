@@ -148,11 +148,6 @@ public class NetworkClient {
                 mLogger.fine("Spawn a networked object");
                 spawnNetworkObject(payload);
                 break;
-            case NetworkConfig.Codes.MESSAGE_SPAWN_MAP:
-                mLogger.fine("Trying to spawn map, need to get the actual map");
-                this.mGame.spawnMap(payload);
-                mLogger.fine("Spawned map");
-                break;
             default:
                 mLogger.info(
                         "unsure of what to do with message as unknown type byte " + messageType);

@@ -44,7 +44,7 @@ public class ServerApp {
                         (go) ->
                                 go.addComponent(
                                         new NetworkManager(
-                                                serverInstance.server::fixedBroadcastUpdate)));
+                                                serverInstance.mServer::fixedBroadcastUpdate)));
         mainScene.addRootObject(networkManagerGO);
 
         issue35Workaround(mainScene);

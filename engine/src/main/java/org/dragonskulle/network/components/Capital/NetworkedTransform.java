@@ -11,8 +11,8 @@ import org.joml.Vector3f;
  *     forward and backwards
  */
 public class NetworkedTransform extends NetworkableComponent implements IFrameUpdate {
-    public SyncVector3 position = new SyncVector3(new Vector3f(0, 0, 0));
-    int shouldFlipDirection = 1;
+    public SyncVector3 mPosition = new SyncVector3(new Vector3f(0, 0, 0));
+    private int mShouldFlipDirection = 1;
 
     @Override
     protected void onDestroy() {}
@@ -20,16 +20,16 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
     @Override
     public void frameUpdate(float deltaTime) {
         if (getNetworkObject().isServer()) {
-            float oldX = position.get().x();
+            float oldX = mPosition.get().x();
             if (oldX > 0.5) {
-                shouldFlipDirection = -1;
+                mShouldFlipDirection = -1;
             } else if (oldX < -0.3) {
-                shouldFlipDirection = 1;
+                mShouldFlipDirection = 1;
             }
-            getGameObject().getTransform().translate(shouldFlipDirection * (deltaTime), 0, 0);
-            position.set(getGameObject().getTransform().getLocalPosition());
+            getGameObject().getTransform().translate(mShouldFlipDirection * (deltaTime), 0, 0);
+            mPosition.set(getGameObject().getTransform().getLocalPosition());
         } else {
-            getGameObject().getTransform().setPosition((Vector3f) position.get());
+            getGameObject().getTransform().setPosition((Vector3f) mPosition.get());
         }
     }
 
@@ -37,9 +37,9 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
     public String toString() {
         return "NetworkedTransform{"
                 + "position="
-                + position
+                + mPosition
                 + ", shouldFlipDirection="
-                + shouldFlipDirection
+                + mShouldFlipDirection
                 + '}';
     }
 }

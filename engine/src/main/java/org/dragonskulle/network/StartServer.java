@@ -10,7 +10,7 @@ public class StartServer {
     private static final Logger mLogger = Logger.getLogger(StartServer.class.getName());
 
     /** The Server. */
-    public Server server;
+    public Server mServer;
     /** The Port. */
     static final int PORT = 7000;
 
@@ -18,7 +18,7 @@ public class StartServer {
         attachShutDownHook();
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
-        server = new Server(PORT, serverListener, networkObjectCounter);
+        mServer = new Server(PORT, serverListener, networkObjectCounter);
     }
 
     public StartServer(
@@ -29,9 +29,9 @@ public class StartServer {
         /** The Server listener. */
         ServerListener serverListener = new ServerEars();
         if (autoProcessMessages) {
-            server = new Server(PORT, serverListener, autoProcessMessages, networkObjectCounter);
+            mServer = new Server(PORT, serverListener, autoProcessMessages, networkObjectCounter);
             if (startFixedUpdate) {
-                server.startFixedUpdateDetachedFromGame();
+                mServer.startFixedUpdateDetachedFromGame();
             }
         }
     }
@@ -48,7 +48,7 @@ public class StartServer {
                         new Thread(
                                 () -> {
                                     mLogger.fine("Shutting down server");
-                                    this.server.dispose();
+                                    this.mServer.dispose();
                                 }));
 
         mLogger.fine("Shut Down Hook Attached.");
@@ -56,12 +56,12 @@ public class StartServer {
 
     /** Disposes of the server instance. */
     public void dispose() {
-        server.dispose();
+        mServer.dispose();
     }
 
     /** Clears pending requests on the server instance. */
     public void clearPendingRequests() {
-        server.clearPendingRequests();
+        mServer.clearPendingRequests();
     }
 
     /**
@@ -70,6 +70,6 @@ public class StartServer {
      * @param scene the scene
      */
     public void linkToScene(Scene scene) {
-        this.server.linkToScene(scene);
+        this.mServer.linkToScene(scene);
     }
 }
