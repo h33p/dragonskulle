@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.HexTransform;
@@ -29,16 +30,16 @@ import org.joml.Matrix4fc;
 @Accessors(prefix = "m")
 public class GameObject implements Serializable {
 
-    private final Reference<GameObject> mReference = new Reference<>(this);
+    @Getter private final Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
     private final ArrayList<GameObject> mChildren = new ArrayList<>();
 
-    private GameObject mRoot;
-    private GameObject mParent;
-    private Transform mTransform = new Transform();
-    private final String mName;
+    @Getter private GameObject mRoot;
+    @Getter private GameObject mParent;
+    @Getter private Transform mTransform = new Transform();
+    @Getter private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
-    private boolean mActive;
+    @Getter @Setter private boolean mEnabled;
     /** How deep the object is within the game object structure */
     @Getter private int mDepth = 0;
 
@@ -132,7 +133,7 @@ public class GameObject implements Serializable {
     // TODO: GetComponentsIn(Parent/Children)
 
     /**
-     * Constructor for GameObject, defaults mActive to true
+     * Constructor for GameObject, defaults mEnabled to true
      *
      * @param name The name of the object
      */
@@ -144,13 +145,13 @@ public class GameObject implements Serializable {
      * Constructor for GameObject
      *
      * @param name The name of the object
-     * @param active Whether the object is active or not
+     * @param enabled Whether the object is enabled or not
      */
-    public GameObject(String name, boolean active) {
+    public GameObject(String name, boolean enabled) {
         mRoot = null;
         mParent = null;
         mName = name;
-        mActive = active;
+        mEnabled = enabled;
         mTransform.setGameObject(this);
     }
 
@@ -158,11 +159,11 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup
      *
      * @param name name of the object
-     * @param active controls whether the object is active by default
+     * @param enabled controls whether the object is enabled by default
      * @param handler handler callback that allows to do initial setup
      */
-    public GameObject(String name, boolean active, Transform transform, IBuildHandler handler) {
-        this(name, active, transform);
+    public GameObject(String name, boolean enabled, Transform transform, IBuildHandler handler) {
+        this(name, enabled, transform);
         handler.handleBuild(this);
     }
 
@@ -180,11 +181,11 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup
      *
      * @param name name of the object
-     * @param active controls whether the object is active by default
+     * @param enabled controls whether the object is enabled by default
      * @param handler handler callback that allows to do initial setup
      */
-    public GameObject(String name, boolean active, IBuildHandler handler) {
-        this(name, active);
+    public GameObject(String name, boolean enabled, IBuildHandler handler) {
+        this(name, enabled);
         handler.handleBuild(this);
     }
 
@@ -199,7 +200,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mActive to true
+     * Constructor for GameObject, defaults mEnabled to true
      *
      * @param name The name of the object
      * @param transform Transformation properties to apply
@@ -209,7 +210,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mActive to true
+     * Constructor for GameObject, defaults mEnabled to true
      *
      * @param name The name of the object
      * @param matrix Transformation matrix to use
@@ -222,14 +223,14 @@ public class GameObject implements Serializable {
      * Constructur for GameObject
      *
      * @param name The name of the object
-     * @param active Whether the object is active or not
+     * @param enabled Whether the object is enabled or not
      * @param transform Object transformation
      */
-    public GameObject(String name, boolean active, Transform transform) {
+    public GameObject(String name, boolean enabled, Transform transform) {
         mRoot = null;
         mParent = null;
         mName = name;
-        mActive = active;
+        mEnabled = enabled;
         mTransform = transform;
         mTransform.setGameObject(this);
     }
@@ -238,14 +239,14 @@ public class GameObject implements Serializable {
      * Constructur for GameObject
      *
      * @param name The name of the object
-     * @param active Whether the object is active or not
+     * @param enabled Whether the object is enabled or not
      * @param matrix Object transformation
      */
-    public GameObject(String name, boolean active, Matrix4fc matrix) {
+    public GameObject(String name, boolean enabled, Matrix4fc matrix) {
         mRoot = null;
         mParent = null;
         mName = name;
-        mActive = active;
+        mEnabled = enabled;
         mTransform.setGameObject(this);
         mTransform.setLocalMatrix(matrix);
     }
@@ -401,8 +402,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, boolean active, IBuildHandler handler) {
-        GameObject go = new GameObject(name, active);
+    public void buildChild(String name, boolean enabled, IBuildHandler handler) {
+        GameObject go = new GameObject(name, enabled);
         this.addChild(go);
         handler.handleBuild(go);
     }
@@ -426,8 +427,8 @@ public class GameObject implements Serializable {
      * @param handler handler callback to do initial setup
      */
     public void buildChild(
-            String name, boolean active, Transform transform, IBuildHandler handler) {
-        GameObject go = new GameObject(name, active, transform);
+            String name, boolean enabled, Transform transform, IBuildHandler handler) {
+        GameObject go = new GameObject(name, enabled, transform);
         this.addChild(go);
         handler.handleBuild(go);
     }
@@ -541,33 +542,6 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mActive
-     *
-     * @return mActive
-     */
-    public boolean isActive() {
-        return mActive;
-    }
-
-    /**
-     * Setter for mActive
-     *
-     * @param val New value for mActive
-     */
-    public void setActive(boolean val) {
-        mActive = val;
-    }
-
-    /**
-     * Getter for mTransform
-     *
-     * @return mTransform as a base Transform
-     */
-    public Transform getTransform() {
-        return mTransform;
-    }
-
-    /**
      * Getter for mTransform
      *
      * @return mTransform as a HexTransform
@@ -586,48 +560,12 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mReference
-     *
-     * @return mReference
-     */
-    public Reference<GameObject> getReference() {
-        return mReference;
-    }
-
-    /**
      * Check whether a GameObject is a root object
      *
      * @return true if it's a root, false otherwise
      */
     public boolean isRootObject() {
         return mParent == null;
-    }
-
-    /**
-     * Getter for mName
-     *
-     * @return mName
-     */
-    public String getName() {
-        return mName;
-    }
-
-    /**
-     * Getter for mRoot, used for testing
-     *
-     * @return mRoot
-     */
-    protected GameObject getRoot() {
-        return mRoot;
-    }
-
-    /**
-     * Getter for mParent, used for testing
-     *
-     * @return mParent
-     */
-    protected GameObject getParent() {
-        return mParent;
     }
 
     /**
