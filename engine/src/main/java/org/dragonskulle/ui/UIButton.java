@@ -1,10 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
+import org.dragonskulle.renderer.SampledTexture;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -41,6 +43,9 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private Reference<UIRenderable> mRenderable;
     private UIMaterial mMaterial;
 
+    private UIText mLabelTextComp;
+    @Getter private Reference<UIText> mLabelText;
+
     private IButtonEvent mOnClick;
     private IButtonEvent mOnHover;
     private IButtonEvent mOffHover;
@@ -54,6 +59,26 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     /**
      * Constructor for UIButton
      *
+     * @param label a text label to render inside the button
+     */
+    public UIButton(UIText label) {
+        mLabelTextComp = label;
+    }
+
+    /**
+     * Constructor for UIButton
+     *
+     * @param label a text label to render inside the button
+     * @param onClick callback to be called when the button is clicked
+     */
+    public UIButton(UIText label, IButtonEvent onClick) {
+        mLabelTextComp = label;
+        mOnClick = onClick;
+    }
+
+    /**
+     * Constructor for UIButton
+     *
      * @param onClick callback to be called when the button is clicked
      */
     public UIButton(IButtonEvent onClick) {
@@ -63,40 +88,45 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     /**
      * Constructor for UIButton
      *
+     * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
      * @param onHover callback to be called once the button is hovered by the cursor
      */
-    public UIButton(IButtonEvent onClick, IButtonEvent onHover) {
-        this(onClick);
+    public UIButton(UIText label, IButtonEvent onClick, IButtonEvent onHover) {
+        this(label, onClick);
         mOnHover = onHover;
     }
 
     /**
      * Constructor for UIButton
      *
+     * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
      * @param onHover callback to be called once the button is hovered by the cursor
      * @param offHover callback to be called once the button is no longer hovered by the cursor
      */
-    public UIButton(IButtonEvent onClick, IButtonEvent onHover, IButtonEvent offHover) {
-        this(onClick, onHover);
+    public UIButton(
+            UIText label, IButtonEvent onClick, IButtonEvent onHover, IButtonEvent offHover) {
+        this(label, onClick, onHover);
         mOffHover = offHover;
     }
 
     /**
      * Constructor for UIButton
      *
+     * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
      * @param onHover callback to be called once the button is hovered by the cursor
      * @param offHover callback to be called once the button is no longer hovered by the cursor
      * @param whileHover callback to be called every frame while the button is hovered
      */
     public UIButton(
+            UIText label,
             IButtonEvent onClick,
             IButtonEvent onHover,
             IButtonEvent offHover,
             IButtonEvent whileHover) {
-        this(onClick, onHover, offHover);
+        this(label, onClick, onHover, offHover);
         mWhileHover = whileHover;
     }
 
@@ -104,7 +134,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
         if (mRenderable == null || !mRenderable.isValid()) {
-            getGameObject().addComponent(new UIRenderable());
+            getGameObject()
+                    .addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
             mRenderable = getGameObject().getComponent(UIRenderable.class);
         }
 
@@ -113,6 +144,18 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         if (rend != null) {
             if (rend.getMaterial() instanceof UIMaterial)
                 mMaterial = (UIMaterial) rend.getMaterial();
+        }
+
+        if (mLabelTextComp != null) {
+            getGameObject()
+                    .buildChild(
+                            "label",
+                            new UITransform(true),
+                            (handle) -> {
+                                handle.getTransform(UITransform.class).setParentAnchor(0.05f);
+                                mLabelText = mLabelTextComp.getReference(UIText.class);
+                                handle.addComponent(mLabelTextComp);
+                            });
         }
     }
 

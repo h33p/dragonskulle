@@ -16,6 +16,7 @@ import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.*;
 import org.joml.Matrix4fc;
+import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -73,10 +74,29 @@ public class UIMaterial implements IMaterial, Serializable {
     /**
      * Constructor for UIMaterial
      *
+     * @param colour initial colour value for the object, with full alpha
+     * @param texture initial texture of the object
+     */
+    public UIMaterial(Vector3fc colour, SampledTexture texture) {
+        this(new Vector4f(colour, 1.f), texture);
+    }
+
+    /**
+     * Constructor for UIMaterial
+     *
      * @param colour initial colour value of the object
      */
     public UIMaterial(Vector4fc colour) {
         this.colour.set(colour);
+    }
+
+    /**
+     * Constructor for UIMaterial
+     *
+     * @param colour initial colour value for the object, with full alpha
+     */
+    public UIMaterial(Vector3fc colour) {
+        this(new Vector4f(colour, 1.f));
     }
 
     /**

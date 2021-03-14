@@ -82,6 +82,16 @@ public class ResourceManager {
         }
 
         /**
+         * Increases reference count, and returns a clone Resource instance
+         *
+         * @retrun a resource with reference to underlying resource.
+         */
+        public Resource<T> incRefCount() {
+            refcount += 1;
+            return new Resource<T>(this);
+        }
+
+        /**
          * Try reloading the underlying resource object
          *
          * @param loader loader to reload the resource with.

@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
-import static org.dragonskulle.utils.MathUtils.lerp;
-
 import java.nio.ByteBuffer;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +10,7 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -41,13 +40,6 @@ public class UIRenderable extends Renderable implements IOnAwake {
      * scale bounds.
      */
     @Getter @Setter private float mWidthHeightBlend = 0f;
-
-    /**
-     * Aspect ratio of the object.
-     *
-     * <p>This will be main texture.width / texture.height
-     */
-    @Getter private float mAspectRatio = 1.f;
 
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
@@ -89,15 +81,25 @@ public class UIRenderable extends Renderable implements IOnAwake {
     @Override
     public void onAwake() {
         SampledTexture[] texs = mMaterial.getFragmentTextures();
-        Texture tex = texs != null && texs.length > 0 ? texs[0].getTexture().get() : null;
+        Texture tex =
+                texs != null && texs.length > 0 && texs[0] != null && texs[0].getTexture() != null
+                        ? texs[0].getTexture().get()
+                        : null;
 
-        if (tex != null) mAspectRatio = (float) tex.getWidth() / (float) tex.getHeight();
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+
+        if (tex != null && uiTransform != null)
+            uiTransform.setTargetAspectRatio((float) tex.getWidth() / (float) tex.getHeight());
     }
 
     @Override
     public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
-        updateTmpMatrix();
-        mMaterial.writeVertexInstanceData(offset, buffer, mTmpMatrix);
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+        Matrix4fc mat =
+                uiTransform != null
+                        ? uiTransform.cornersToScreen()
+                        : getGameObject().getTransform().getWorldMatrix();
+        mMaterial.writeVertexInstanceData(offset, buffer, mat);
     }
 
     @Override
@@ -106,7 +108,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     public boolean cursorOver() {
-        updateTmpMatrix();
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+        mTmpMatrix.set(
+                uiTransform != null
+                        ? uiTransform.cornersToScreen()
+                        : getGameObject().getTransform().getWorldMatrix());
 
         Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
 
@@ -116,19 +122,9 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
         mTmpCursorPos.mulPosition(mTmpMatrix);
 
-        return mTmpCursorPos.x() >= -1.f
+        return mTmpCursorPos.x() >= 0.f
                 && mTmpCursorPos.x() <= 1.f
-                && mTmpCursorPos.y() >= -1.f
+                && mTmpCursorPos.y() >= 0.f
                 && mTmpCursorPos.y() <= 1.f;
-    }
-
-    private void updateTmpMatrix() {
-        mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
-
-        if (mMaintainAspect)
-            mTmpMatrix.scaleLocal(
-                    lerp(1f, mAspectRatio, mWidthHeightBlend),
-                    lerp(1f / mAspectRatio, 1.f, mWidthHeightBlend),
-                    1f);
     }
 }
