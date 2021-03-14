@@ -118,6 +118,7 @@ public class UITransform extends Transform {
 
     private Matrix4f mCornerMatrix = new Matrix4f();
     private Matrix4f mLocalCornersMatrix = new Matrix4f();
+    private Matrix4f mScreenCornerMatrix = new Matrix4f();
 
     public Matrix4fc cornersToWorld() {
 
@@ -145,7 +146,27 @@ public class UITransform extends Transform {
         return mCornerMatrix;
     }
 
+    public Matrix4fc cornersToScreen() {
+        mScreenCornerMatrix.set(cornersToWorld());
+
+        mScreenCornerMatrix.scaleLocal(1.f / mScreenAspectRatio, 1f, 1f);
+
+        return mScreenCornerMatrix;
+    }
+
     private Matrix4f mBoxMatrix = new Matrix4f();
+
+    private float mScreenAspectRatio = 1f;
+
+    /** Check whether screen aspect ratio changed. If so, dirty all transforms */
+    private void checkScrenChange() {
+        Camera main = Camera.getMainCamera();
+        float width = main == null ? 1f : main.getAspectRatio();
+
+        if (mScreenAspectRatio != width) setUpdateFlag();
+
+        mScreenAspectRatio = width;
+    }
 
     /**
      * Get the world matrix for this transform. If the transform is on a root object, mLocalMatrix
@@ -156,7 +177,9 @@ public class UITransform extends Transform {
      */
     @Override
     public Matrix4fc getWorldMatrix() {
-        mShouldUpdate = true;
+
+        checkScrenChange();
+
         if (mShouldUpdate) {
             mShouldUpdate = false;
             updateLocalCorners();

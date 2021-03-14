@@ -14,7 +14,7 @@ import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.Vertex;
 import org.dragonskulle.utils.MathUtils;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -217,22 +217,13 @@ public class UIText extends Renderable implements IOnAwake {
         mFont.free();
     }
 
-    private final Matrix4f mTmpMatrix = new Matrix4f();
-
     @Override
     public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
-        updateTmpMatrix();
-        mMaterial.writeVertexInstanceData(offset, buffer, mTmpMatrix);
-    }
-
-    private void updateTmpMatrix() {
-        UITransform tr = getGameObject().getTransform(UITransform.class);
-
-        if (tr != null) mTmpMatrix.set(tr.cornersToWorld());
-        else mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
-
-        Camera main = Camera.getMainCamera();
-
-        if (main != null) mTmpMatrix.scaleLocal(1.f / main.getAspectRatio(), 1f, 1f);
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+        Matrix4fc mat =
+                uiTransform != null
+                        ? uiTransform.cornersToScreen()
+                        : getGameObject().getTransform().getWorldMatrix();
+        mMaterial.writeVertexInstanceData(offset, buffer, mat);
     }
 }

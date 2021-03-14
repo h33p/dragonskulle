@@ -10,6 +10,7 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -40,11 +41,6 @@ public class UIRenderable extends Renderable implements IOnAwake {
      */
     @Getter @Setter private float mWidthHeightBlend = 0f;
 
-    /**
-     * Aspect ratio of the object.
-     *
-     * <p>This will be main texture.width / texture.height
-     */
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
     private final Vector3f mTmpCursorPos = new Vector3f();
@@ -98,8 +94,12 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Override
     public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
-        updateTmpMatrix();
-        mMaterial.writeVertexInstanceData(offset, buffer, mTmpMatrix);
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+        Matrix4fc mat =
+                uiTransform != null
+                        ? uiTransform.cornersToScreen()
+                        : getGameObject().getTransform().getWorldMatrix();
+        mMaterial.writeVertexInstanceData(offset, buffer, mat);
     }
 
     @Override
@@ -108,7 +108,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     public boolean cursorOver() {
-        updateTmpMatrix();
+        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+        mTmpMatrix.set(
+                uiTransform != null
+                        ? uiTransform.cornersToScreen()
+                        : getGameObject().getTransform().getWorldMatrix());
 
         Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
 
@@ -122,16 +126,5 @@ public class UIRenderable extends Renderable implements IOnAwake {
                 && mTmpCursorPos.x() <= 1.f
                 && mTmpCursorPos.y() >= 0.f
                 && mTmpCursorPos.y() <= 1.f;
-    }
-
-    private void updateTmpMatrix() {
-        UITransform tr = getGameObject().getTransform(UITransform.class);
-
-        if (tr != null) mTmpMatrix.set(tr.cornersToWorld());
-        else mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
-
-        Camera main = Camera.getMainCamera();
-
-        if (main != null) mTmpMatrix.scaleLocal(1.f / main.getAspectRatio(), 1f, 1f);
     }
 }
