@@ -6,6 +6,10 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 /**
  * Abstract class for a Component
  *
@@ -14,15 +18,16 @@ import org.dragonskulle.core.Reference;
  *     componet interfaces. The destroy method should be overriden to handle the cleanup of any
  *     user-defined variables on a component
  */
+@Accessors(prefix = "m")
 public abstract class Component implements Serializable {
 
-    private final Reference<Component> mReference = new Reference<>(this);
+    @Getter private final Reference<Component> mReference = new Reference<>(this);
 
-    protected GameObject mGameObject;
+    @Getter @Setter protected GameObject mGameObject;
 
-    private boolean mAwake = false;
-    private boolean mEnabled = true;
-    private boolean mStarted = false;
+    @Getter @Setter private boolean mAwake = false;
+    @Getter @Setter private boolean mEnabled = true;
+    @Getter @Setter private boolean mStarted = false;
 
     /**
      * Set the destroy flag to true. The component won't actually be destroyed until the end of the
@@ -43,87 +48,6 @@ public abstract class Component implements Serializable {
 
     /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     protected abstract void onDestroy();
-
-    /**
-     * Getter for mGameObject
-     *
-     * @return mGameObject
-     */
-    public final GameObject getGameObject() {
-        return mGameObject;
-    }
-
-    /**
-     * Setter for mGameObject
-     *
-     * @param object New value of mGameObject
-     */
-    public final void setGameObject(GameObject object) {
-        mGameObject = object;
-    }
-
-    /**
-     * Getter for mAwake
-     *
-     * @return mAwake
-     */
-    public final boolean isAwake() {
-        return mAwake;
-    }
-
-    /**
-     * Setter for mAwake
-     *
-     * @param val New value of mAwake
-     */
-    public final void setAwake(boolean val) {
-        mAwake = val;
-    }
-
-    /**
-     * Getter for mStarted
-     *
-     * @return mStarted
-     */
-    public final boolean isStarted() {
-        return mStarted;
-    }
-
-    /**
-     * Setter for mStarted
-     *
-     * @param val New value of mStarted
-     */
-    public final void setStarted(boolean val) {
-        mStarted = val;
-    }
-
-    /**
-     * Getter for mEnabled
-     *
-     * @return mEnabled
-     */
-    public final boolean isEnabled() {
-        return mEnabled;
-    }
-
-    /**
-     * Setter for mEnabled
-     *
-     * @param value New value of mEnabled
-     */
-    public final void setEnabled(boolean value) {
-        mEnabled = value;
-    }
-
-    /**
-     * Getter for mReference
-     *
-     * @return mReference
-     */
-    public final Reference<Component> getReference() {
-        return mReference;
-    }
 
     /**
      * Getter for mReference

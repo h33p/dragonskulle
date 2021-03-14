@@ -113,7 +113,7 @@ public class GameObject implements Serializable {
         List<Scene> activeScenes = Engine.getInstance().getActiveScenes();
 
         for (Scene s : activeScenes) {
-            for (GameObject root : s.getRootObjects()) {
+            for (GameObject root : s.getGameObjects()) {
 
                 ArrayList<GameObject> children = new ArrayList<>();
                 root.getAllChildren(children);
