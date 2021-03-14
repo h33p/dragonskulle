@@ -203,7 +203,7 @@ public class UIText extends Renderable implements IOnAwake {
 
         mTargetAspectRatio = aspect;
 
-        return new Mesh(vertices.toArray(Vertex[]::new), indicesArray);
+        return new Mesh(vertices.stream().toArray(Vertex[]::new), indicesArray);
     }
 
     @Override

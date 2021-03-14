@@ -183,8 +183,9 @@ public class App {
                                         new UIRenderable(
                                                 new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
                                                 new SampledTexture("test_cc0_texture.jpg")));
-                                square2.getTransform(UITransform.class).translate(0f, -0.3f);
-                                square2.getTransform(UITransform.class).setParentAnchor(0.3f);
+                                // square2.getTransform(UITransform.class).translate(0f, -0.3f);
+                                square2.getTransform(UITransform.class)
+                                        .setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
                                 square2.getTransform(UITransform.class).setTargetAspectRatio(1f);
                                 square2.getTransform(UITransform.class).setMaintainAspect(true);
                                 UIButton uiButton =
@@ -211,13 +212,11 @@ public class App {
                             (button) -> {
                                 button.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                button.getTransform(UITransform.class).translate(0f, 0.6f);
                                 button.getTransform(UITransform.class)
-                                        .setParentAnchor(0.2f, 0.f, 0.8f, 0.f);
+                                        .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
                                 button.getTransform(UITransform.class).setMargin(0f, 0f, 0f, 0.2f);
                                 button.getTransform(UITransform.class).setMaintainAspect(true);
                                 button.getTransform(UITransform.class).setTargetAspectRatio(2f);
-                                button.getTransform(UITransform.class).translate(0f, 0.4f);
 
                                 UIButton newButton =
                                         new UIButton(
