@@ -7,7 +7,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.AttackData;
 import org.dragonskulle.network.components.requests.ClientRequest;
-import org.dragonskulle.network.components.requests.IWantToAttack;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncString;
@@ -15,7 +14,7 @@ import org.dragonskulle.network.components.sync.SyncString;
 /** @author Oscar L The Capital Component. */
 @Accessors(prefix = "m")
 @Log
-public class Capital extends NetworkableComponent implements IWantToAttack {
+public class Capital extends NetworkableComponent implements AttackData.IEvent {
 
     /** A syncable field. */
     @Getter public SyncBool mSyncMe = new SyncBool(false);
