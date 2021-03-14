@@ -1,14 +1,16 @@
 package org.dragonskulle.game.audio;
 
 import org.dragonskulle.audio.AudioSource;
+import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.ui.UIButton.IButtonEvent;
 
 public class GameAudio {
 	
 	AudioSource audio;
-	public GameAudio() {
+	public GameAudio(String filename, SoundType channel) {
 		audio = new AudioSource();
-		audio.filename = "button-10.wav";
+		audio.filename = filename;
+		audio.channel = channel;
 	}
 	
 	public IButtonEvent audibleClick(IButtonEvent onClick) {

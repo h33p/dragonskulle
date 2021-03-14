@@ -3,6 +3,8 @@ package org.dragonskulle.game;
 
 import static org.dragonskulle.utils.Env.*;
 
+import org.dragonskulle.audio.AudioSource;
+import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -208,7 +210,7 @@ public class App {
                                 button.getTransform().translate(0f, 0.4f, 0f);
 
                                 Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
-                                GameAudio a = new GameAudio();
+                                GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);
                                 UIButton newButton =
                                         new UIButton(a.audibleClick(
                                                 (uiButton, __) -> {
@@ -236,6 +238,10 @@ public class App {
         // Load the main scene as the presentation scene
         Engine.getInstance().loadPresentationScene(mainScene);
 
+        AudioSource audio = new AudioSource();
+        audio.filename = "waves.wav";
+        audio.channel = SoundType.BACKGROUND;
+        audio.play();
         // Run the game
         Engine.getInstance().start("Germany", new GameBindings());
     }
