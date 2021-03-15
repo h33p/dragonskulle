@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -17,7 +18,12 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
+import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.renderer.Font;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITransform;
+import org.joml.Vector3f;
 
 /**
  * The type Server.
@@ -63,7 +69,7 @@ public class Server {
     private final Timer mFixedUpdate = new Timer();
 
     /**
-     * Instantiates a new Server.
+     * Instantiates a new Server. Scene linking is required once the scene is created.
      *
      * @param port the port
      * @param listener the listener
@@ -96,7 +102,7 @@ public class Server {
     }
 
     /**
-     * Instantiates a new Server in debug mode
+     * Instantiates a new Server in debug mode. Scene linking is required once the scene is created.
      *
      * @param port the port
      * @param listener the listener
@@ -133,6 +139,81 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Instantiates a new Server. Scene linking is not needed if constructed in this way
+     *
+     * @param port the port
+     * @param listener the listener
+     * @param autoProcessUpdate sets debug mode
+     * @param mNetworkObjectCounter the networkCounter from its parent, this is so id's are globally
+     *     in sync
+     * @param mainScene the linked scene
+     */
+    public Server(
+            int port,
+            ServerListener listener,
+            boolean autoProcessUpdate,
+            AtomicInteger mNetworkObjectCounter,
+            Scene mainScene) {
+        this.mNetworkObjectCounter = mNetworkObjectCounter;
+        this.mAutoProcessMessages = autoProcessUpdate;
+        mServerListener = listener;
+        try {
+            ServerSocket server_sock =
+                    new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
+            mSockets.initServer(server_sock);
+            if (this.mPort == 0) {
+                this.mPort = mSockets.getServerPort();
+            } else {
+                this.mPort = port;
+            }
+            this.createGame();
+            this.linkToScene(mainScene);
+            mServerRunner = new ServerRunner();
+            mServerThread = new Thread(this.mServerRunner);
+            mServerThread.setDaemon(true);
+            mServerThread.setName("Server");
+            mLogger.fine("[S] Starting server");
+            mServerThread.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Starts a server game in the current scene.
+     *
+     * @param mainScene the main scene
+     */
+    public static void startServerGame(Scene mainScene) {
+        GameObject mLoadingScreen =
+                new GameObject(
+                        "loading_screen",
+                        new UITransform(false),
+                        (self) -> {
+                            self.addComponent(
+                                    new UIText(
+                                            new Vector3f(1f, 1f, 0.05f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Loading"));
+                        });
+        mainScene.addRootObject(mLoadingScreen);
+        LogManager.getLogManager().reset();
+        final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
+        StartServer serverInstance = new StartServer(mNetworkObjectCounter, true, true, mainScene);
+        GameObject networkManagerGO =
+                new GameObject(
+                        "server_network_manager",
+                        (go) ->
+                                go.addComponent(
+                                        new NetworkManager(
+                                                serverInstance.mServer::fixedBroadcastUpdate)));
+
+        mLoadingScreen.destroy();
+        mainScene.addRootObject(networkManagerGO);
+        System.out.println("fully loaded");
     }
 
     /**

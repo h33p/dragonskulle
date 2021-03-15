@@ -6,12 +6,20 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
+import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.renderer.Font;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITransform;
+import org.joml.Vector3f;
 
 /**
  * @author Oscar L
@@ -128,6 +136,46 @@ public class NetworkClient {
             mOpen = false;
             exception.printStackTrace();
         }
+    }
+
+    /**
+     * Starts a client game in the game scene, this is started from the menu.
+     *
+     * @param mainScene the main scene
+     * @param ip the ip of the server
+     * @param port the port of the server
+     */
+    public static void startClientGame(Scene mainScene, String ip, int port) {
+        GameObject mLoadingScreen =
+                new GameObject(
+                        "loading_screen",
+                        new UITransform(false),
+                        (self) -> {
+                            self.addComponent(
+                                    new UIText(
+                                            new Vector3f(1f, 1f, 0.05f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Loading"));
+                        });
+        mainScene.addRootObject(mLoadingScreen);
+        LogManager.getLogManager().reset();
+        final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
+
+        ClientListener clientListener = new ClientEars();
+        NetworkClient clientInstance =
+                new NetworkClient(ip, port, clientListener, false, mainScene);
+        GameObject networkManagerGO =
+                new GameObject(
+                        "client_network_manager",
+                        (go) ->
+                                go.addComponent(
+                                        new ClientNetworkManager(
+                                                clientInstance::processRequests,
+                                                clientInstance::sendBytes)));
+
+        mLoadingScreen.destroy();
+        mainScene.addRootObject(networkManagerGO);
+        System.out.println("fully loaded");
     }
 
     /**

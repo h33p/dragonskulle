@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.dragonskulle.components.Camera;
-import org.dragonskulle.components.Renderable;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -17,8 +16,6 @@ import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.components.ClientNetworkManager;
-import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.UnlitMaterial;
 
 /** @author Oscar L */
 public class ClientApp {
@@ -65,7 +62,6 @@ public class ClientApp {
                                                 clientInstance::sendBytes)));
         mainScene.addRootObject(networkManagerGO);
 
-        issue35Workaround(mainScene);
         Engine.getInstance().loadPresentationScene(mainScene);
         Engine.getInstance().start("Client", new GameBindings());
     }
@@ -77,17 +73,5 @@ public class ClientApp {
             handler.setLevel(targetLevel);
         }
         System.out.println("level set: " + targetLevel.getName());
-    }
-
-    public static void issue35Workaround(Scene mainScene) {
-        // <<Issue #35 Workaround
-        // Create a cube
-        GameObject cube = new GameObject("cube");
-        cube.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-        cube.getTransform().translate(1000, 1000, 1000);
-
-        // Aaand, spawn it!
-        mainScene.addRootObject(cube);
-        // Issue #35 Workaround>>
     }
 }

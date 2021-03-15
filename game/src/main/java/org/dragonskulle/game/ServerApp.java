@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import static org.dragonskulle.game.ClientApp.issue35Workaround;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogManager;
 import org.dragonskulle.components.*;
@@ -38,6 +36,7 @@ public class ServerApp {
         mainScene.addRootObject(camera);
 
         // attaching server fixed update to game
+
         GameObject networkManagerGO =
                 new GameObject(
                         "server_network_manager",
@@ -46,8 +45,6 @@ public class ServerApp {
                                         new NetworkManager(
                                                 serverInstance.mServer::fixedBroadcastUpdate)));
         mainScene.addRootObject(networkManagerGO);
-
-        issue35Workaround(mainScene);
 
         serverInstance.linkToScene(mainScene);
         Engine.getInstance().loadPresentationScene(mainScene);
