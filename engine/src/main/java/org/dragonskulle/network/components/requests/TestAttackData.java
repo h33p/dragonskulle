@@ -6,21 +6,21 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
-public final class AttackData implements INetSerializable {
+public final class TestAttackData implements INetSerializable {
     public interface IEvent {
         /** Server-side attack handler. Can also be a lambda */
-        void handleEvent(AttackData data);
+        void handleEvent(TestAttackData data);
 
         /** Invoke a server event */
-        void clientInvokeEvent(AttackData data);
+        void clientInvokeEvent(TestAttackData data);
     }
 
     public int mPassword;
     public int mToBuilding;
 
-    public AttackData() {}
+    public TestAttackData() {}
 
-    public AttackData(int password, int toBuilding) {
+    public TestAttackData(int password, int toBuilding) {
         mPassword = password;
         mToBuilding = toBuilding;
     }
