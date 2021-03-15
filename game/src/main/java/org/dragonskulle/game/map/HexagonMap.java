@@ -92,10 +92,16 @@ public class HexagonMap extends Component implements IOnStart {
      *
      * @param q The q coordinate.
      * @param r The r coordinate.
+     * @return {@code true} if tile was valid, {@code false} otherwise.
      */
-    public void removeBuilding(int q, int r) {
-        // Simply set the reference to null.
-        storeBuilding(null, q, r);
+    public boolean removeBuilding(int q, int r) {
+        HexagonTile tile = getTile(q, r);
+
+        if (tile == null) return false;
+
+        tile.setBuilding(null);
+
+        return true;
     }
 
     @Override
