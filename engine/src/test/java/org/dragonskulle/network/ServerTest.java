@@ -186,7 +186,7 @@ public class ServerTest {
             ctx.mServerInstance.startFixedUpdateDetachedFromGame();
             ctx.testMapClient();
             Capital cap = ctx.testCapitalSpawnDefaultClient().get();
-            cap.clientInvokeEvent(new TestAttackData(Capital.CORRECT_PASSWORD, 354));
+            cap.mPasswordRequest.invoke(new TestAttackData(Capital.CORRECT_PASSWORD, 354));
             ctx.mServerInstance.processRequests();
             ctx.mNetworkClient.setProcessMessagesAutomatically(true);
             await().atMost(TIMEOUT, SECONDS).until(() -> cap.getClientToggled().get() == 354);

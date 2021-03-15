@@ -7,22 +7,6 @@ import java.io.IOException;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 public final class TestAttackData implements INetSerializable {
-    public interface IEvent {
-        /**
-         * Server-side attack handler. Can also be a lambda
-         *
-         * @param data the attack event data
-         */
-        void handleEvent(TestAttackData data);
-
-        /**
-         * Invoke a server event
-         *
-         * @param data the attack event data
-         */
-        void clientInvokeEvent(TestAttackData data);
-    }
-
     public int mPassword;
     public int mToBuilding;
 
