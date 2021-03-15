@@ -7,7 +7,13 @@ import java.io.IOException;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 public final class AttackData implements INetSerializable {
-    public interface IEvent extends INeedToTalkToTheServer<AttackData> {}
+    public interface IEvent {
+        /** Server-side attack handler. Can also be a lambda */
+        void handleEvent(AttackData data);
+
+        /** Invoke a server event */
+        void clientInvokeEvent(AttackData data);
+    }
 
     public int mPassword;
     public int mToBuilding;
