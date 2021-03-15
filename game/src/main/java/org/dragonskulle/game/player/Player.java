@@ -68,6 +68,8 @@ public class Player extends NetworkableComponent implements SellData.IEvent, Att
      * owned buildings to check if need to update tokens
      */
     public void updateTokens(float time) { // TODO move this to server once server integrated.
+    	
+    	if (getNetworkObject() != null && getNetworkObject().isServer()) {
         mLastTokenUpdate += time;
         // Checks to see how long its been since lastTokenUpdate
         if (mLastTokenUpdate > UPDATE_TIME) {
@@ -81,10 +83,8 @@ public class Player extends NetworkableComponent implements SellData.IEvent, Att
             
             mTokens.set(mTokens.get() + TOKEN_RATE);
             mLastTokenUpdate = 0;
-        }
+        }}
     }
-
-
 
     /** We need to initialize requests here, since java does not like to serialize lambdas */
     @Override
