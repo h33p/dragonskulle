@@ -23,7 +23,7 @@ import org.dragonskulle.network.components.requests.ClientRequest;
  */
 @Accessors(prefix = "m")
 @Log
-public class Player extends NetworkableComponent implements SellData.IEvent, AttackData.IEvent {
+public class Player extends NetworkableComponent{
 
     private List<Reference<Building>> mOwnedBuildings;  //Stored in HexagonMap - Will be synced there.
     @Getter
@@ -98,14 +98,13 @@ public class Player extends NetworkableComponent implements SellData.IEvent, Att
 
 
     // Selling of buildings is handled below
-    private transient ClientRequest<SellData> mClientSellRequest;
+    public transient ClientRequest<SellData> mClientSellRequest;
 
     /**
      * How this component will react to an sell event.
      *
      * @param data sell event being executed on the server.
      */
-    @Override
     public void handleEvent(SellData data) {
         // TODO implement
         // get building
@@ -115,43 +114,21 @@ public class Player extends NetworkableComponent implements SellData.IEvent, Att
         // reimburse player with tokens
     }
 
-    /** This is how the client will invoke the sell event. */
-    @Override
-    public void clientInvokeEvent(SellData data) {
-        if (getNetworkObject().isServer()) {
-            log.warning("Client invoked sell called on server! This is wrong!");
-        } else {
-            mClientSellRequest.invoke(data);
-        }
-    }
-
-
 
     // attacking of buildings is handled below
-    private transient ClientRequest<AttackData> mClientAttackRequest;
+    public transient ClientRequest<AttackData> mClientAttackRequest;
 
     /**
      * How this component will react to an attack event.
      *
      * @param data attack event being executed on the server.
      */
-    @Override
     public void handleEvent(AttackData data) {
         // TODO implement
         // get building to be attacked
         // get building to that is doing the attacking
         // verify the sender owns the building to be attacked from and it can see the building
         // attack the building
-    }
-
-    /** This is how the client will invoke the attack event. */
-    @Override
-    public void clientInvokeEvent(AttackData data) {
-        if (getNetworkObject().isServer()) {
-            log.warning("Client invoked attack called on server! This is wrong!");
-        } else {
-            mClientAttackRequest.invoke(data);
-        }
     }
 
 }

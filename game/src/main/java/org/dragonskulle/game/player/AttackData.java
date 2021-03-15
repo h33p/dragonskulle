@@ -33,9 +33,6 @@ public class AttackData implements INetSerializable {
         this.mAttacking = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
     }
 
-    public interface IEvent extends INeedToTalkToTheServer<AttackData> {
-    }
-
     public AttackData() {
     }
 

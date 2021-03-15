@@ -12,8 +12,6 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 /** @author Oscar L */
 public final class SellData implements INetSerializable {
 
-    public interface IEvent extends INeedToTalkToTheServer<SellData> {}
-
     private HexagonTile tile;
 
     @Override
