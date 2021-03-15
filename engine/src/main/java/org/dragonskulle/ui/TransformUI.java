@@ -20,7 +20,7 @@ import org.joml.Vector4fc;
  *     ratio correction.
  */
 @Accessors(prefix = "m")
-public class UITransform extends Transform {
+public class TransformUI extends Transform {
     /** Maintain aspect ratio of the UI element */
     @Getter @Setter private boolean mMaintainAspect;
     /** Target aspect ratio of the element */
@@ -49,21 +49,20 @@ public class UITransform extends Transform {
     // TODO: Actually somehow implement this
     @Getter @Setter private boolean mClipChildren = false;
 
-    public UITransform(boolean maintainAspect) {
+    public TransformUI(boolean maintainAspect) {
         super();
         mMaintainAspect = maintainAspect;
     }
 
-    public UITransform() {
+    public TransformUI() {
         this(false);
     }
 
-    public UITransform(float width, float height, boolean scaleToScreen) {
+    public TransformUI(float width, float height, boolean scaleToScreen) {
         this(scaleToScreen);
-        mLocalMatrix.scaleLocal(width, height, 1f);
     }
 
-    public UITransform(float width, float height) {
+    public TransformUI(float width, float height) {
         this(width, height, false);
     }
 
@@ -77,8 +76,8 @@ public class UITransform extends Transform {
         Vector4f off = new Vector4f(0f);
 
         // If we have a proper UI transform get the parent scaled corners
-        if (parentGen != null && parentGen instanceof UITransform) {
-            UITransform parent = (UITransform) parentGen;
+        if (parentGen != null && parentGen instanceof TransformUI) {
+            TransformUI parent = (TransformUI) parentGen;
             mScaledLocalCorners.set(parent.getScaledLocalCorners());
         } else {
             // Otherwise just use regular screen bounds
@@ -121,8 +120,7 @@ public class UITransform extends Transform {
     private Matrix4f mScreenCornerMatrix = new Matrix4f();
 
     public Matrix4fc cornersToWorld() {
-
-        mCornerMatrix.identity().set(getWorldMatrix());
+        mCornerMatrix.identity().set(getMatrixForChildren());
 
         float scaleX = mScaledLocalCorners.z() - mScaledLocalCorners.x();
         float scaleY = mScaledLocalCorners.w() - mScaledLocalCorners.y();
@@ -146,14 +144,6 @@ public class UITransform extends Transform {
         return mCornerMatrix;
     }
 
-    public Matrix4fc cornersToScreen() {
-        mScreenCornerMatrix.set(cornersToWorld());
-
-        mScreenCornerMatrix.scaleLocal(1.f / mScreenAspectRatio, 1f, 1f);
-
-        return mScreenCornerMatrix;
-    }
-
     private Matrix4f mBoxMatrix = new Matrix4f();
 
     private float mScreenAspectRatio = 1f;
@@ -168,6 +158,18 @@ public class UITransform extends Transform {
         mScreenAspectRatio = width;
     }
 
+    @Override
+    protected void onDestroy() {}
+
+    @Override
+    public Matrix4fc getWorldMatrix() {
+        mScreenCornerMatrix.set(cornersToWorld());
+
+        mScreenCornerMatrix.scaleLocal(1.f / mScreenAspectRatio, 1f, 1f);
+
+        return mScreenCornerMatrix;
+    }
+
     /**
      * Get the world matrix for this transform. If the transform is on a root object, mLocalMatrix
      * is used as the worldMatrix. If it isn't a root object and mShouldUpdate is true, recursively
@@ -176,8 +178,7 @@ public class UITransform extends Transform {
      * @return constant mWorldMatrix
      */
     @Override
-    public Matrix4fc getWorldMatrix() {
-
+    public Matrix4fc getMatrixForChildren() {
         checkScrenChange();
 
         if (mShouldUpdate) {
@@ -191,16 +192,14 @@ public class UITransform extends Transform {
                     .rotateZ(mRotation)
                     .scaleLocal(mScale.x(), mScale.y(), 1f);
 
-            mWorldMatrix.set(mBoxMatrix);
-
             Transform parentTransform = getGameObject().getParentTransform();
 
             if (parentTransform != null) {
-                parentTransform.getWorldMatrix().mul(mBoxMatrix, mWorldMatrix);
+                parentTransform.getMatrixForChildren().mul(mBoxMatrix, mBoxMatrix);
             }
         }
 
-        return mWorldMatrix;
+        return mBoxMatrix;
     }
 
     public Vector4fc getLocalCorners() {

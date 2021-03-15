@@ -150,9 +150,9 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
             getGameObject()
                     .buildChild(
                             "label",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (handle) -> {
-                                handle.getTransform(UITransform.class).setParentAnchor(0.05f);
+                                handle.getTransform(TransformUI.class).setParentAnchor(0.05f);
                                 mLabelText = mLabelTextComp.getReference(UIText.class);
                                 handle.addComponent(mLabelTextComp);
                             });

@@ -2,6 +2,7 @@
 package org.dragonskulle.network.components.Capital;
 
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
@@ -26,10 +27,12 @@ public class NetworkedTransform extends NetworkableComponent implements IFrameUp
             } else if (oldX < -0.3) {
                 mShouldFlipDirection = 1;
             }
-            getGameObject().getTransform().translate(mShouldFlipDirection * (deltaTime), 0, 0);
-            mPosition.set(getGameObject().getTransform().getLocalPosition());
+            getGameObject()
+                    .getTransform(Transform3D.class)
+                    .translate(mShouldFlipDirection * (deltaTime), 0, 0);
+            mPosition.set(getGameObject().getTransform(Transform3D.class).getLocalPosition());
         } else {
-            getGameObject().getTransform().setPosition((Vector3f) mPosition.get());
+            getGameObject().getTransform(Transform3D.class).setPosition((Vector3f) mPosition.get());
         }
     }
 
