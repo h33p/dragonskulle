@@ -3,7 +3,7 @@ package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.Transform;
+import org.dragonskulle.components.Transform3D;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -121,12 +121,12 @@ public class GameObjectTest {
     /** Test whether updating a parent synchronizes its subchildren */
     @Test
     public void indirectTransformsSynchronized() {
-        GameObject subchild = new GameObject("subchild", new Transform(0f, 0f, 2f));
+        GameObject subchild = new GameObject("subchild", new Transform3D(0f, 0f, 2f));
 
         GameObject root =
                 new GameObject(
                         "parent",
-                        new Transform(0f, 0f, -1f),
+                        new Transform3D(0f, 0f, -1f),
                         (go) -> {
                             // Rather than adding a child directly, build another child,
                             // and add it there
@@ -140,11 +140,11 @@ public class GameObjectTest {
         // We initially start with world space Z coordinate being 2 - 1 = 1
         Assert.assertTrue(1f == subchild.getTransform().getPosition().z);
 
-        root.getTransform().translate(0f, 0f, 1f);
+        root.getTransform(Transform3D.class).translate(0f, 0f, 1f);
 
         Assert.assertTrue(2f == subchild.getTransform().getPosition().z);
 
-        root.getTransform().translate(0f, 0f, -1f);
+        root.getTransform(Transform3D.class).translate(0f, 0f, -1f);
 
         Assert.assertTrue(1f == subchild.getTransform().getPosition().z);
     }

@@ -24,7 +24,7 @@ public class ServerApp {
         Scene mainScene = new Scene("mainScene");
 
         GameObject camera = new GameObject("mainCamera");
-        Transform tr = camera.getTransform();
+        Transform3D tr = (Transform3D) camera.getTransform();
         // Set where it's at
         tr.setPosition(0f, 0f, 1f);
         tr.rotateDeg(30f, 0f, 0f);

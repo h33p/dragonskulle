@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.dragonskulle.components.Camera;
-import org.dragonskulle.components.Transform;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Scene;
@@ -40,7 +40,7 @@ public class ClientApp {
         System.out.println("Created client instance");
 
         GameObject camera = new GameObject("mainCamera");
-        Transform tr = camera.getTransform();
+        Transform3D tr = (Transform3D) camera.getTransform();
         // Set where it's at
         tr.setPosition(0f, 0f, 1f);
         tr.rotateDeg(30f, 0f, 0f);

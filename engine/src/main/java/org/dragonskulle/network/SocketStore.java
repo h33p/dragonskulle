@@ -24,7 +24,7 @@ public class SocketStore {
     /** The Store for all the sockets. */
     private final ArrayList<Socket> mStore;
     /** The timeout for accepting a client. */
-    private static final int SO_TIMEOUT = 3000;
+    private static final int SO_TIMEOUT = 400;
 
     /** Instantiates a new Socket store. */
     public SocketStore() {
