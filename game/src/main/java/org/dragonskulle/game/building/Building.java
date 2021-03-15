@@ -21,7 +21,7 @@ import org.dragonskulle.game.map.HexagonTile;
 /**
  * A Building component.
  *
- * @author Craig
+ * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
 @Log
@@ -120,7 +120,7 @@ public class Building extends Component {
      * @return All the HexagonTiles within the building's view range, excluding the Building's
      *     HexagonTile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getViewTiles() {
+    public ArrayList<HexagonTile> getViewableTiles() {
         // Get the current view distance.
         int distance = mViewDistance.getValue();
         // Get the tiles within the view distance.
@@ -134,7 +134,7 @@ public class Building extends Component {
      * @return All the HexagonTiles within the building's attack range, excluding the Building's
      *     HexagonTile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getAttackTiles() {
+    public ArrayList<HexagonTile> getAttackableTiles() {
         // Get the current view distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the view distance.
@@ -202,7 +202,7 @@ public class Building extends Component {
         if (map == null || owner == null) return buildings;
 
         // Get all the tiles in attackable distance.
-        ArrayList<HexagonTile> attackTiles = getAttackTiles();
+        ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         for (HexagonTile tile : attackTiles) {
             // Get the building on an attackable tile, if it exists.
             Building building = map.getBuilding(tile.getQ(), tile.getR());
