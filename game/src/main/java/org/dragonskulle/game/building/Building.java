@@ -2,6 +2,7 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,10 +18,14 @@ import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.requests.AttackData;
+import org.dragonskulle.network.components.requests.ClientRequest;
 
 @Accessors(prefix = "m")
 @Log
-public class Building extends Component {
+public class Building extends NetworkableComponent implements AttackData.IEvent {
 
 	/** Stores the attack strength of the building. */
     @Getter private AttackStat mAttack;
@@ -229,4 +234,39 @@ public class Building extends Component {
 
     @Override
     protected void onDestroy() {}
+
+    
+    
+    
+    
+    // Networking stuff:    
+    
+    /**
+     * Creates the link between the request type @code{new AttackRequest()} and what to do when
+     * invoked @code{this::handleEvent}
+     */
+    private transient ClientRequest<AttackData> mAttackRequest;
+    
+    @Override
+    protected void onNetworkInitialize() {
+    	mAttackRequest = new ClientRequest<AttackData>(new AttackData(), this::handleEvent);
+    }    
+    
+	@Override
+	public void handleEvent(AttackData data) {
+		System.out.println("HANDLE EVENT");
+	}
+
+	@Override
+	public void initialize(NetworkObject networkObject, List<ClientRequest<?>> outRequests) {
+		// TODO Auto-generated method stub
+		super.initialize(networkObject, outRequests);
+	}
+	
+	@Override
+	public void clientInvokeEvent(AttackData data) {
+		// TODO Auto-generated method stub
+		
+	}
+    
 }
