@@ -54,6 +54,9 @@ public class Player {
 		return ownedBuildings.size();
 	}
 	
+	public void removeBuilding(Building building) {
+		ownedBuildings.remove(building);
+	}
 	
 	public Reference<HexagonMap> getHexMap() {
 		return mapComponent;
