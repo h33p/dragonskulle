@@ -228,7 +228,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     	boolean validPlace = true;
     	while (validPlace && index < mPlayer.get().numberOfBuildings()) {
 			Building buildingToCheck = mPlayer.get().getBuilding(index);
-			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getmQ())) <= 1)){
+			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getQ())) <= 1)){
 				return false;
 			}
 			index++;
