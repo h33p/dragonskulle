@@ -37,21 +37,13 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
 		
 	/**
 	 * A Constructor for an AI Player 
-	 * @param lowerBound the lower bound in time for how often you want the AI player to play
-	 * @param upperBound the upper bound in time for how often you want the AI player to play
-	 * @param map the map being used for this game
-	 * @param capital the capital used by the player
-	 * 
-	 * <p> So if you set the lowerBound to 2 and upperBound the AI Player will have a go every 2 - 5 seconds (Depending on the random number picked) <\p>
 	 */
 	public AiPlayer() {}
 	
 	@Override
 	public void onStart() {
 		timeSinceStart = 0;
-		
 		createNewRandomTime();
-		
 	}
 	
 	/**
@@ -207,11 +199,9 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     		
     		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
     			   			
-<<<<<<< HEAD
+
     			if (player.get().getHexMap().get(hexTile.getR(), hexTile.getQ()) != null) {
-=======
-    			if (player.get().getHexMap().get(hexTile.getMR(), hexTile.getMQ()) != null) {
->>>>>>> d9854359ffb38f4832f42c98b15b4395d1b906bf
+
     				; //Ignore cos theres already a building there
     			}
     			else if (!checkCloseBuildings(hexTile)) {  
