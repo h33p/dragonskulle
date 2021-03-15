@@ -157,7 +157,7 @@ public class App {
                             (button) -> {
                                 button.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                
+
                                 /*
                                 button.getTransform().scale(0.8f, 0.8f, 1f);
                                 button.getTransform().translate(0f, 0.4f, 0f);
