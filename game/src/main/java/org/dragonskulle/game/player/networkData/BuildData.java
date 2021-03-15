@@ -1,4 +1,4 @@
-package org.dragonskulle.game.player;
+package org.dragonskulle.game.player.networkData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

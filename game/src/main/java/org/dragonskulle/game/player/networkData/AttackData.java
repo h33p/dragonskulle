@@ -1,4 +1,4 @@
-package org.dragonskulle.game.player;
+package org.dragonskulle.game.player.networkData;
 
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;

@@ -9,6 +9,10 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
+import org.dragonskulle.game.player.networkData.AttackData;
+import org.dragonskulle.game.player.networkData.BuildData;
+import org.dragonskulle.game.player.networkData.SellData;
+import org.dragonskulle.game.player.networkData.StatData;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 import lombok.Getter;

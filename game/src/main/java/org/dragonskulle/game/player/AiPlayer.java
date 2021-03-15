@@ -15,6 +15,10 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.networkData.AttackData;
+import org.dragonskulle.game.player.networkData.BuildData;
+import org.dragonskulle.game.player.networkData.SellData;
+import org.dragonskulle.game.player.networkData.StatData;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
