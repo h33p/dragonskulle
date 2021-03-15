@@ -29,6 +29,9 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Renderable;
+import org.dragonskulle.renderer.DrawCallState.DrawData;
+import org.dragonskulle.renderer.DrawCallState.NonInstancedDraw;
+import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -80,6 +83,11 @@ public class Renderer implements NativeResource {
     private long mDepthImageView;
 
     private int mFrameCounter = 0;
+
+    private VulkanMeshBuffer mCurrentMeshBuffer;
+    private Map<Integer, VulkanMeshBuffer> mDiscardedMeshBuffers = new HashMap<>();
+    private Map<Integer, Map<DrawCallState.HashKey, DrawCallState>> mDrawInstances =
+            new TreeMap<>();
 
     private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
             Arrays.asList("VK_LAYER_KHRONOS_validation");
@@ -163,10 +171,6 @@ public class Renderer implements NativeResource {
         }
     }
 
-    private VulkanMeshBuffer mCurrentMeshBuffer;
-    private Map<Integer, VulkanMeshBuffer> mDiscardedMeshBuffers = new HashMap<>();
-    private Map<DrawCallState.HashKey, DrawCallState> mDrawInstances = new HashMap<>();
-
     /**
      * Create a renderer
      *
@@ -209,6 +213,8 @@ public class Renderer implements NativeResource {
      */
     public void render(Camera camera, List<Renderable> objects) {
         if (mImageContexts == null) recreateSwapchain();
+
+        if (mImageContexts == null) return;
 
         camera.updateAspectRatio(mExtent.width(), mExtent.height());
 
@@ -370,7 +376,8 @@ public class Renderer implements NativeResource {
 
         mImageContexts = null;
 
-        for (DrawCallState state : mDrawInstances.values()) state.free();
+        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
+            for (DrawCallState state : stateMap.values()) state.free();
         mDrawInstances.clear();
 
         for (VulkanMeshBuffer meshBuffer : mDiscardedMeshBuffers.values()) meshBuffer.free();
@@ -1068,28 +1075,65 @@ public class Renderer implements NativeResource {
 
     /// Record command buffer to temporary object
 
+    private TreeMap<Integer, List<DrawCallState>> mToPresort = new TreeMap<>();
+    private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
+
     void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables) {
-        for (DrawCallState state : mDrawInstances.values()) state.startDrawData(mCurrentMeshBuffer);
+
+        mToPresort.clear();
+
+        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
+            for (DrawCallState state : stateMap.values()) state.startDrawData(mCurrentMeshBuffer);
 
         DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
 
         for (Renderable renderable : renderables) {
+
+            if (renderable.getMesh() == null) continue;
+
             tmpKey.setRenderable(renderable);
-            DrawCallState state = mDrawInstances.get(tmpKey);
+
+            ShaderSet shaderSet = renderable.getMaterial().getShaderSet();
+            Integer renderOrder = shaderSet.mRenderOrder;
+
+            Map<DrawCallState.HashKey, DrawCallState> stateMap = mDrawInstances.get(renderOrder);
+
+            if (stateMap == null) {
+                stateMap = new HashMap<>();
+                mDrawInstances.put(renderOrder, stateMap);
+            }
+
+            DrawCallState state = stateMap.get(tmpKey);
             if (state == null) {
                 // We don't want to put the temp key in, becuase it changes values
                 DrawCallState.HashKey newKey = new DrawCallState.HashKey(renderable);
                 state = new DrawCallState(this, mImageContexts.length, newKey);
                 state.startDrawData(mCurrentMeshBuffer);
-                mDrawInstances.put(newKey, state);
+                stateMap.put(newKey, state);
             }
             state.addObject(renderable);
         }
 
         int instanceBufferSize = 0;
 
-        for (DrawCallState state : mDrawInstances.values())
-            instanceBufferSize = state.setInstanceBufferOffset(instanceBufferSize);
+        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (DrawCallState state : stateMap.values()) {
+                instanceBufferSize = state.setInstanceBufferOffset(instanceBufferSize);
+
+                ShaderSet shaderSet = state.getShaderSet();
+
+                if (shaderSet.isPreSort()) {
+                    Integer renderOrder = shaderSet.mRenderOrder;
+
+                    List<DrawCallState> sortState = mToPresort.get(renderOrder);
+                    if (sortState == null) {
+                        sortState = new ArrayList<>();
+                        mToPresort.put(renderOrder, sortState);
+                    }
+                    sortState.add(state);
+                }
+            }
+        }
 
         // TODO: Resize instance buffer
         if (instanceBufferSize > INSTANCE_BUFFER_SIZE * 1024 * 1024)
@@ -1106,9 +1150,11 @@ public class Renderer implements NativeResource {
 
             ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
 
-            for (DrawCallState state : mDrawInstances.values()) {
-                state.updateInstanceBuffer(byteBuffer);
-                state.endDrawData(ctx.imageIndex);
+            for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                for (DrawCallState state : stateMap.values()) {
+                    state.updateInstanceBuffer(byteBuffer);
+                    state.endDrawData(ctx.imageIndex);
+                }
             }
 
             vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
@@ -1119,6 +1165,31 @@ public class Renderer implements NativeResource {
 
         mVertexConstants.proj = camera.getProj();
         mVertexConstants.view = camera.getView();
+
+        mPreSorted.clear();
+        Vector3f camPosition = camera.getGameObject().getTransform().getPosition();
+        Vector3f tmpVec = new Vector3f();
+
+        // Presort objects that need to be rendered in a sorted manner
+        for (Integer key : mToPresort.keySet()) {
+            List<DrawCallState> states = mToPresort.get(key);
+            TreeMap<Float, List<NonInstancedDraw>> output = new TreeMap<>();
+            for (DrawCallState state : states) {
+                for (DrawData drawData : state.getDrawData()) {
+                    int objID = 0;
+                    for (Renderable obj : drawData.mObjects) {
+                        Float dist = obj.getDepth(camPosition, tmpVec);
+                        List<NonInstancedDraw> equalList = output.get(dist);
+                        if (equalList == null) {
+                            equalList = new ArrayList<>();
+                            output.put(dist, equalList);
+                        }
+                        equalList.add(new NonInstancedDraw(state, drawData, objID++));
+                    }
+                }
+            }
+            mPreSorted.put(key, output);
+        }
 
         try (MemoryStack stack = stackPush()) {
             // Record the command buffers
@@ -1159,55 +1230,118 @@ public class Renderer implements NativeResource {
             LongBuffer vertexBuffers =
                     stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.instanceBuffer.buffer);
 
-            for (DrawCallState callState : mDrawInstances.values()) {
-                VulkanPipeline pipeline = callState.getPipeline();
-                VulkanMeshBuffer.MeshDescriptor meshDescriptor = callState.getMeshDescriptor();
+            // Render regular objects in an instanced manner
+            for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                for (DrawCallState callState : stateMap.values()) {
 
-                vkCmdBindPipeline(
-                        ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
+                    Collection<DrawData> drawDataCollection = callState.getDrawData();
 
-                vkCmdPushConstants(
-                        ctx.commandBuffer,
-                        pipeline.layout,
-                        VK_SHADER_STAGE_VERTEX_BIT,
-                        0,
-                        pConstants);
+                    if (drawDataCollection.isEmpty() || callState.getShaderSet().isPreSort())
+                        continue;
 
-                for (DrawCallState.DrawData drawData : callState.getDrawData()) {
-                    try (MemoryStack innerStack = stackPush()) {
+                    VulkanPipeline pipeline = callState.getPipeline();
+                    VulkanMeshBuffer.MeshDescriptor meshDescriptor = callState.getMeshDescriptor();
 
-                        LongBuffer offsets =
-                                innerStack.longs(
-                                        meshDescriptor.getVertexOffset(),
-                                        drawData.getInstanceBufferOffset());
-                        vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
-                        vkCmdBindIndexBuffer(
-                                ctx.commandBuffer,
-                                mCurrentMeshBuffer.getIndexBuffer(),
-                                meshDescriptor.getIndexOffset(),
-                                VK_INDEX_TYPE_UINT32);
+                    vkCmdBindPipeline(
+                            ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
 
-                        long[] descriptorSets = drawData.getDescriptorSets();
+                    vkCmdPushConstants(
+                            ctx.commandBuffer,
+                            pipeline.layout,
+                            VK_SHADER_STAGE_VERTEX_BIT,
+                            0,
+                            pConstants);
 
-                        if (descriptorSets != null && descriptorSets.length > 0) {
-                            LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
+                    for (DrawCallState.DrawData drawData : drawDataCollection) {
+                        try (MemoryStack innerStack = stackPush()) {
 
-                            vkCmdBindDescriptorSets(
+                            LongBuffer offsets =
+                                    innerStack.longs(
+                                            meshDescriptor.getVertexOffset(),
+                                            drawData.getInstanceBufferOffset());
+                            vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindIndexBuffer(
+                                    ctx.commandBuffer,
+                                    mCurrentMeshBuffer.getIndexBuffer(),
+                                    meshDescriptor.getIndexOffset(),
+                                    VK_INDEX_TYPE_UINT32);
+
+                            long[] descriptorSets = drawData.getDescriptorSets();
+
+                            if (descriptorSets != null && descriptorSets.length > 0) {
+                                LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
+
+                                vkCmdBindDescriptorSets(
+                                        ctx.commandBuffer,
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        pipeline.layout,
+                                        0,
+                                        pDescriptorSets,
+                                        null);
+                            }
+
+                            vkCmdDrawIndexed(
+                                    ctx.commandBuffer,
+                                    meshDescriptor.getIndexCount(),
+                                    drawData.getObjects().size(),
+                                    0,
+                                    0,
+                                    0);
+                        }
+                    }
+                }
+            }
+
+            // Render sorted objects one by one. Sadly, we can not batch them.
+            for (TreeMap<Float, List<NonInstancedDraw>> renderOrderGroup : mPreSorted.values()) {
+                for (List<NonInstancedDraw> objects : renderOrderGroup.descendingMap().values()) {
+                    for (NonInstancedDraw object : objects) {
+                        try (MemoryStack innerStack = stackPush()) {
+
+                            VulkanPipeline pipeline = object.getState().getPipeline();
+                            VulkanMeshBuffer.MeshDescriptor meshDescriptor =
+                                    object.getState().getMeshDescriptor();
+
+                            vkCmdBindPipeline(
                                     ctx.commandBuffer,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    pipeline.layout,
-                                    0,
-                                    pDescriptorSets,
-                                    null);
-                        }
+                                    pipeline.pipeline);
 
-                        vkCmdDrawIndexed(
-                                ctx.commandBuffer,
-                                meshDescriptor.getIndexCount(),
-                                drawData.getObjects().size(),
-                                0,
-                                0,
-                                0);
+                            vkCmdPushConstants(
+                                    ctx.commandBuffer,
+                                    pipeline.layout,
+                                    VK_SHADER_STAGE_VERTEX_BIT,
+                                    0,
+                                    pConstants);
+
+                            LongBuffer offsets =
+                                    innerStack.longs(
+                                            meshDescriptor.getVertexOffset(),
+                                            object.getInstanceBufferOffset());
+                            vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindIndexBuffer(
+                                    ctx.commandBuffer,
+                                    mCurrentMeshBuffer.getIndexBuffer(),
+                                    meshDescriptor.getIndexOffset(),
+                                    VK_INDEX_TYPE_UINT32);
+
+                            long[] descriptorSets = object.getData().getDescriptorSets();
+
+                            if (descriptorSets != null && descriptorSets.length > 0) {
+                                LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
+
+                                vkCmdBindDescriptorSets(
+                                        ctx.commandBuffer,
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        pipeline.layout,
+                                        0,
+                                        pDescriptorSets,
+                                        null);
+                            }
+
+                            vkCmdDrawIndexed(
+                                    ctx.commandBuffer, meshDescriptor.getIndexCount(), 1, 0, 0, 0);
+                        }
                     }
                 }
             }
