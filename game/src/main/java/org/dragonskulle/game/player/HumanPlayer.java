@@ -13,7 +13,6 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UITransform;
 import org.joml.Vector2d;
 import org.joml.Vector4f;
 
