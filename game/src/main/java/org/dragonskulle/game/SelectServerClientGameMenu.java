@@ -23,9 +23,9 @@ public class SelectServerClientGameMenu {
 
         Transform tr = camera.getTransform();
         // Set where it's at
-        tr.setPosition(0f, 0f, 1f);
-        tr.rotateDeg(30f, 0f, 0f);
-        tr.translateLocal(0f, -8f, 0f);
+        ((Transform3D) tr).setPosition(0f, 0f, 1f);
+        ((Transform3D) tr).rotateDeg(30f, 0f, 0f);
+        ((Transform3D) tr).translateLocal(0f, -8f, 0f);
         // Make sure it's an actual camera
         camera.addComponent(new Camera());
 
@@ -36,36 +36,36 @@ public class SelectServerClientGameMenu {
         GameObject menu_ui =
                 new GameObject(
                         "ui",
-                        new UITransform(false),
+                        new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.2f)));
-                            root.getTransform().scale(0.95f, 0.95f, 1f);
+                            ((Transform3D) root.getTransform()).scale(0.95f, 0.95f, 1f);
                         });
 
         menu_ui.buildChild(
                 "root_menu_outer_square",
-                new UITransform(true),
+                new TransformUI(true),
                 (square) -> {
                     square.addComponent(
                             new UIRenderable(
                                     new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
                                     new SampledTexture("test_cc0_texture.jpg")));
                     // square2.getTransform(UITransform.class).translate(0f, -0.3f);
-                    square.getTransform(UITransform.class).setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
-                    square.getTransform(UITransform.class).setTargetAspectRatio(1f);
-                    square.getTransform(UITransform.class).setMaintainAspect(true);
+                    square.getTransform(TransformUI.class).setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
+                    square.getTransform(TransformUI.class).setTargetAspectRatio(1f);
+                    square.getTransform(TransformUI.class).setMaintainAspect(true);
 
                     square.buildChild(
                             "server_connect_button",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (self) -> {
                                 self.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                self.getTransform(UITransform.class)
+                                self.getTransform(TransformUI.class)
                                         .setParentAnchor(0.15f, 1f, 0.8f, 1f);
-                                self.getTransform(UITransform.class).setMargin(0f, 0f, 0f, 0.2f);
-                                self.getTransform(UITransform.class).setMaintainAspect(true);
-                                self.getTransform(UITransform.class).setTargetAspectRatio(2f);
+                                self.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
+                                self.getTransform(TransformUI.class).setMaintainAspect(true);
+                                self.getTransform(TransformUI.class).setTargetAspectRatio(2f);
 
                                 UIButton newButton =
                                         new UIButton(
@@ -83,15 +83,15 @@ public class SelectServerClientGameMenu {
 
                     square.buildChild(
                             "client_connect_button",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (self) -> {
                                 self.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                self.getTransform(UITransform.class)
+                                self.getTransform(TransformUI.class)
                                         .setParentAnchor(0.15f, 1.25f, 0.8f, 1.25f);
-                                self.getTransform(UITransform.class).setMargin(0f, 0f, 0f, 0.2f);
-                                self.getTransform(UITransform.class).setMaintainAspect(true);
-                                self.getTransform(UITransform.class).setTargetAspectRatio(2f);
+                                self.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
+                                self.getTransform(TransformUI.class).setMaintainAspect(true);
+                                self.getTransform(TransformUI.class).setTargetAspectRatio(2f);
 
                                 UIButton newButton =
                                         new UIButton(
