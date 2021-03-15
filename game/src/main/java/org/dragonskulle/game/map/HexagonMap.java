@@ -6,7 +6,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.core.GameObject;
 
 /**
  * @author Leela Muppala
@@ -21,10 +20,7 @@ public class HexagonMap extends Component implements IOnStart {
     @Getter private final int mSize;
 
     /** The map that is created which is made of a 2d array of HexagonTiles. */
-    @Getter private HexagonTileStore mTiles;
-
-    /** A similar map to that of mMap made of a 2d array of HexagonTile gameObjects. */
-    @Getter private GameObject[][] mGameObjectMap;
+    private HexagonTileStore mTiles;
 
     /**
      * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
@@ -43,6 +39,13 @@ public class HexagonMap extends Component implements IOnStart {
         mTiles = new HexagonTileStore(mSize);
     }
 
+    /**
+     * Retrieve a hexagon tile at given coordinates
+     *
+     * @param q q coordinate of the tile
+     * @param r r coordinate of the tile
+     * @return hexagon tile at the coordinates, if it exists. {@code null} otherwise
+     */
     public HexagonTile getTile(int q, int r) {
         return mTiles.getTile(q, r);
     }
@@ -53,8 +56,6 @@ public class HexagonMap extends Component implements IOnStart {
     /** Spawns each HexagonTile as a GameObject */
     @Override
     public void onStart() {
-        mGameObjectMap = new GameObject[mSize][mSize];
-
         mTiles.getAllTiles()
                 .forEach(
                         tile -> {
