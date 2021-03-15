@@ -1,4 +1,4 @@
-package org.dragonskulle.game.components;
+package org.dragonskulle.game.player;
 
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
@@ -41,11 +41,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 	 * @param map the map being used for this game
 	 * @param capital the capital used by the player
 	 */
-	public HumanPlayer() {//Reference<HexagonMap> map, Building capital) {
-		
-		//super(map, capital);
-		
-	}
+	public HumanPlayer() {}
 	
 	@Override
 	public void onStart() {

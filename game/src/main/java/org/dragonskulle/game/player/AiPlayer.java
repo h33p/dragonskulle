@@ -1,4 +1,4 @@
-package org.dragonskulle.game.components;
+package org.dragonskulle.game.player;
 
 // TODO  UPDATE PLAYER STUFF!!!!!!!!!!
 

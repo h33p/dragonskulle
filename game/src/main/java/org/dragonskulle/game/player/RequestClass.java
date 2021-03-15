@@ -1,4 +1,4 @@
-package org.dragonskulle.game.components;
+package org.dragonskulle.game.player;
 
 /**
  * Creates a class which contains the request to be sent
