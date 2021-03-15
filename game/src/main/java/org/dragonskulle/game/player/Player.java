@@ -147,5 +147,21 @@ public class Player extends NetworkableComponent{
     	// Take tokens off
 
     }
+    
+    // Upgrading Stats is handled below
+    public transient ClientRequest<StatData> mClientStatRequest;
+
+    /**
+     * How this component will react to an upgrade event.
+     *
+     * @param data attack event being executed on the server.
+     */
+    public void handleEvent(StatData data) {
+        // TODO implement
+        // Get Building
+    	// Get Stat
+    	// Upgrade
+
+    }
 
 }

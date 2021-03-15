@@ -144,7 +144,7 @@ public class AiPlayer extends Component
                                             mRandom.nextInt(mPlayer.get().numberOfBuildings()));
                     ArrayList<Stat<?>> statsArray = building.get().getStats();
                     Stat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
-                    triggerEvent(); // TODO Send data to this which will then package & send to
+                    mPlayer.get().clientInvokeEvent(new StatData(building.get(), statToUpgrade)); // TODO Send data to this which will then package & send to
                     // server
                     return;
 
