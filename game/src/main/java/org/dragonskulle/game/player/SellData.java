@@ -12,23 +12,23 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 /** @author Oscar L */
 public final class SellData implements INetSerializable {
 
-    private HexagonTile tile;
+    private HexagonTile mTile;
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(tile.getQ());
-        stream.writeInt(tile.getR());
-        stream.writeInt(tile.getS());
+        stream.writeInt(mTile.getQ());
+        stream.writeInt(mTile.getR());
+        stream.writeInt(mTile.getS());
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
-        this.tile = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
+        this.mTile = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
     }
 
     public SellData() {}
 
     public SellData(Building toSell) {
-        tile = toSell.getTile().get();
+        mTile = toSell.getTile().get();
     }
 }
