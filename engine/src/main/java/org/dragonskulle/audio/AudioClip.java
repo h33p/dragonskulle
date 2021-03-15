@@ -49,7 +49,8 @@ public class AudioClip {
 
             AudioInputStream startingStream =
                     AudioSystem.getAudioInputStream(
-                            new File("engine/src/main/resources/audio/Silent.wav").getAbsoluteFile());
+                            new File("engine/src/main/resources/audio/Silent.wav")
+                                    .getAbsoluteFile());
             mClip.open(startingStream);
 
         } catch (UnsupportedAudioFileException | IOException e) {

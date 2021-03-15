@@ -3,15 +3,11 @@ package org.dragonskulle.game;
 
 import static org.dragonskulle.utils.Env.*;
 
-import org.dragonskulle.audio.AudioManager;
-import org.dragonskulle.audio.AudioSource;
-import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.audio.GameAudio;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
@@ -211,9 +207,10 @@ public class App {
                                 button.getTransform().translate(0f, 0.4f, 0f);
 
                                 Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
-                                //GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);  	//Audio Tutorial
+                                // GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);
+                                //	//Audio Tutorial
                                 UIButton newButton =
-                                        new UIButton(//a.audibleClick(   Audio Tutorial
+                                        new UIButton( // a.audibleClick(   Audio Tutorial
                                                 (uiButton, __) -> {
                                                     if (uiRef.isValid()) {
                                                         Renderable uiRend = uiRef.get();
@@ -229,7 +226,7 @@ public class App {
                                                         uiRend.setEnabled(!uiRend.isEnabled());
                                                     }
                                                 });
-                               
+
                                 button.addComponent(newButton);
                             });
                 });
@@ -239,7 +236,7 @@ public class App {
         // Load the main scene as the presentation scene
         Engine.getInstance().loadPresentationScene(mainScene);
 
-        //Audio Tutorial
+        // Audio Tutorial
         /*
         AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
         AudioManager.getInstance().setVolume(SoundType.SFX, 100);
@@ -248,8 +245,8 @@ public class App {
         audio.channel = SoundType.BACKGROUND;
         audio.play();
         */
-        
-        //Run the game
+
+        // Run the game
         Engine.getInstance().start("Germany", new GameBindings());
     }
 }
