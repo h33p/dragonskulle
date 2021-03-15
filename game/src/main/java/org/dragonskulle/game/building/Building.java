@@ -42,7 +42,7 @@ public class Building extends Component {
     /** The owner of the building. */
     @Getter @Setter private Reference<Player> mOwner = new Reference<>(null);
     /** The HexagonTile the building is on. */
-    private Reference<HexagonTile> mTile = new Reference<HexagonTile>(null);
+    @Getter private Reference<HexagonTile> mTile = new Reference<HexagonTile>(null);
     /** The HexagonMap being used. */
     private Reference<HexagonMap> mHexagonMap = new Reference<HexagonMap>(null);
 

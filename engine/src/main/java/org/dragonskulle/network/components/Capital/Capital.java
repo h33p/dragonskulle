@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.requests.AttackData;
+import org.dragonskulle.network.components.requests.TestAttackData;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -14,7 +14,7 @@ import org.dragonskulle.network.components.sync.SyncString;
 /** @author Oscar L The Capital Component. */
 @Accessors(prefix = "m")
 @Log
-public class Capital extends NetworkableComponent implements AttackData.IEvent {
+public class Capital extends NetworkableComponent implements TestAttackData.IEvent {
 
     /** A syncable field. */
     @Getter public SyncBool mSyncMe = new SyncBool(false);
@@ -27,7 +27,7 @@ public class Capital extends NetworkableComponent implements AttackData.IEvent {
      * Creates the link between the request type @code{new AttackRequest()} and what to do when
      * invoked @code{this::handleEvent}
      */
-    private transient ClientRequest<AttackData> mPasswordRequest;
+    private transient ClientRequest<TestAttackData> mPasswordRequest;
 
     public static final int CORRECT_PASSWORD = 4242;
     /** Used for testing */
@@ -37,7 +37,7 @@ public class Capital extends NetworkableComponent implements AttackData.IEvent {
     /** We need to initialize requests here, since java does not like to serialize lambdas */
     @Override
     protected void onNetworkInitialize() {
-        mPasswordRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
+        mPasswordRequest = new ClientRequest<>(new TestAttackData(), this::handleEvent);
     }
 
     /**
@@ -46,7 +46,7 @@ public class Capital extends NetworkableComponent implements AttackData.IEvent {
      * @param data attack event being executed on the server.
      */
     @Override
-    public void handleEvent(AttackData data) {
+    public void handleEvent(TestAttackData data) {
         if (data.mPassword == CORRECT_PASSWORD) {
             mClientToggled.set(data.mToBuilding);
         }
@@ -60,7 +60,7 @@ public class Capital extends NetworkableComponent implements AttackData.IEvent {
      *     toBuilding, a building to "attack"
      */
     @Override
-    public void clientInvokeEvent(AttackData data) {
+    public void clientInvokeEvent(TestAttackData data) {
         if (getNetworkObject().isServer()) {
             log.warning("Client invoke attack called on server! This is wrong!");
         } else {

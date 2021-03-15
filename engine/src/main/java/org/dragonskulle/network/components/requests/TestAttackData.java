@@ -6,15 +6,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
-public final class AttackData implements INetSerializable {
-    public interface IEvent extends INeedToTalkToTheServer<AttackData> {}
+public final class TestAttackData implements INetSerializable {
+    public interface IEvent extends INeedToTalkToTheServer<TestAttackData> {}
 
     public int mPassword;
     public int mToBuilding;
 
-    public AttackData() {}
+    public TestAttackData() {}
 
-    public AttackData(int password, int toBuilding) {
+    public TestAttackData(int password, int toBuilding) {
         mPassword = password;
         mToBuilding = toBuilding;
     }

@@ -30,7 +30,7 @@ public class HexagonTile {
      * @param r The second coordinate.
      * @param s The third coordinate.
      */
-    HexagonTile(int q, int r, int s) {
+    public HexagonTile(int q, int r, int s) {
         this.mQ = q;
         this.mR = r;
         this.mS = s;
