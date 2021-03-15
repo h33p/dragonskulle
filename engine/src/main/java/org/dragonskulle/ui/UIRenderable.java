@@ -10,7 +10,6 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -94,12 +93,8 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Override
     public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
-        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
-        Matrix4fc mat =
-                uiTransform != null
-                        ? uiTransform.cornersToScreen()
-                        : getGameObject().getTransform().getWorldMatrix();
-        mMaterial.writeVertexInstanceData(offset, buffer, mat);
+        mMaterial.writeVertexInstanceData(
+                offset, buffer, getGameObject().getTransform().getWorldMatrix());
     }
 
     @Override
@@ -108,11 +103,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     public boolean cursorOver() {
-        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
-        mTmpMatrix.set(
-                uiTransform != null
-                        ? uiTransform.cornersToScreen()
-                        : getGameObject().getTransform().getWorldMatrix());
+        mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
         Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
 

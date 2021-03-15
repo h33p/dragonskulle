@@ -14,6 +14,7 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.UnlitMaterial;
 import org.dragonskulle.ui.*;
+import org.joml.Math;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
@@ -34,7 +35,7 @@ public class App {
         new Vector3f(1.f, 0.f, 1.f),
     };
 
-    private static final float SHIFT_FACTOR = (float) Math.pow(2.0, 1.0 / (float) INSTANCE_COUNT);
+    private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     /** Entrypoint of the program. Creates and runs one app instance */
     public static void main(String[] args) {
@@ -44,7 +45,7 @@ public class App {
         // The game needs a camera!
         GameObject camera = new GameObject("mainCamera");
 
-        Transform tr = camera.getTransform();
+        Transform3D tr = (Transform3D) camera.getTransform();
         // Set where it's at
         tr.setPosition(0f, 0f, 1f);
         tr.rotateDeg(30f, 0f, 0f);
@@ -63,26 +64,34 @@ public class App {
         Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
         UnlitMaterial hexMaterial = hexRenderer.get().getMaterial(UnlitMaterial.class);
 
-        // Add spin and wobble components
-        hexagon.addComponent(new Spinner());
-        Reference<Spinner> hexSpinner = hexagon.getComponent(Spinner.class);
+        // Add wobble components
         hexagon.addComponent(new Wobbler());
+        Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
+
+        GameObject hexRoot = new GameObject("hexRoot");
+        hexRoot.addComponent(new Spinner(30, 10, 0.1f));
 
         // Create instances, change up some parameters
-        for (int i = 0; i < INSTANCE_COUNT; i++) {
-            hexMaterial.colour.set(COLOURS[i % COLOURS.length]);
-            hexSpinner.get().spinSpeed *= SHIFT_FACTOR;
-            hexSpinner.get().sineAmplitude *= SHIFT_FACTOR;
-
-            // Actually create an instance
-            mainScene.addRootObject(GameObject.instantiate(hexagon));
+        for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
+            for (int r = -INSTANCE_COUNT_ROOT / 2; r <= INSTANCE_COUNT_ROOT / 2; r++) {
+                int idx = q * r % COLOURS.length;
+                if (idx < 0) idx += COLOURS.length;
+                hexWobbler
+                        .get()
+                        .setPhaseShift((Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) * 0.1f);
+                hexMaterial.colour.set(COLOURS[idx]);
+                hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
+            }
         }
+
+        mainScene.addRootObject(hexRoot);
 
         // Create a cube. This syntax is slightly different
         // This here, will allow you to "build" the cube in one go
         GameObject cube =
                 new GameObject(
                         "cube",
+                        new Transform3D(0f, 0f, 1.5f),
                         (go) -> {
                             go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
                             // You spin me right round...
@@ -91,70 +100,6 @@ public class App {
 
         // Aaand, spawn it!
         mainScene.addRootObject(cube);
-
-        // Create a monstrocity
-        //
-        // This demonstrates use of nested game objects. It's extremely powerful to compose objects
-        // like so, and the lambda syntax is rather intuitive to build this hierarchy tree with.
-        GameObject monstrocity =
-                new GameObject(
-                        "monstrocity",
-                        (inMonstrocity) -> {
-                            inMonstrocity.getTransform().setPosition(3.f, 3.f, 0.f);
-                            inMonstrocity.addComponent(
-                                    new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            inMonstrocity.addComponent(new Spinner(360.f, 1000.f, 0.1f));
-
-                            // Add a "arm" on the left side
-                            inMonstrocity.buildChild(
-                                    "leftSide",
-                                    (side) -> {
-                                        side.getTransform().setPosition(-1.5f, 0.f, 1.5f);
-                                        side.addComponent(
-                                                new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                                        side.addComponent(new Spinner(-180.f, 100.f, 1.f));
-
-                                        // assume this is a hand
-                                        side.buildChild(
-                                                "leftHand",
-                                                (tip) -> {
-                                                    tip.getTransform().setPosition(0.f, 0.f, 0.5f);
-                                                    tip.getTransform().scale(0.5f, 0.5f, 3.f);
-                                                    tip.addComponent(
-                                                            new Renderable(
-                                                                    Mesh.CUBE,
-                                                                    new UnlitMaterial()));
-                                                    tip.addComponent(
-                                                            new Spinner(360.f, 100.f, .1f));
-                                                });
-                                    });
-
-                            // Do the same thing on the other side
-                            inMonstrocity.buildChild(
-                                    "rightSide",
-                                    (side) -> {
-                                        side.getTransform().setPosition(1.5f, 0.f, 1.5f);
-                                        side.addComponent(
-                                                new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                                        side.addComponent(new Spinner(180.f, 100.f, 1.f));
-
-                                        // assume this is a hand
-                                        side.buildChild(
-                                                "rightHand",
-                                                (tip) -> {
-                                                    tip.getTransform().setPosition(0.f, 0.f, 0.5f);
-                                                    tip.getTransform().scale(0.5f, 0.5f, 3.f);
-                                                    tip.addComponent(
-                                                            new Renderable(
-                                                                    Mesh.CUBE,
-                                                                    new UnlitMaterial()));
-                                                    tip.addComponent(
-                                                            new Spinner(-360.f, 100.f, .1f));
-                                                });
-                                    });
-                        });
-
-        mainScene.addRootObject(monstrocity);
 
         // UI Example:
         GameObject ui =
@@ -217,6 +162,7 @@ public class App {
                                 button.getTransform(UITransform.class).setMargin(0f, 0f, 0f, 0.2f);
                                 button.getTransform(UITransform.class).setMaintainAspect(true);
                                 button.getTransform(UITransform.class).setTargetAspectRatio(2f);
+                                // button.getTransform(UITransform.class).translate();
 
                                 UIButton newButton =
                                         new UIButton(

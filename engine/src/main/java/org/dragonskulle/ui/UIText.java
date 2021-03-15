@@ -219,11 +219,7 @@ public class UIText extends Renderable implements IOnAwake {
 
     @Override
     public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
-        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
-        Matrix4fc mat =
-                uiTransform != null
-                        ? uiTransform.cornersToScreen()
-                        : getGameObject().getTransform().getWorldMatrix();
+        Matrix4fc mat = getGameObject().getTransform().getWorldMatrix();
         mMaterial.writeVertexInstanceData(offset, buffer, mat);
     }
 }

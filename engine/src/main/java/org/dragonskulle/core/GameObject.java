@@ -13,9 +13,8 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.HexTransform;
 import org.dragonskulle.components.Transform;
-import org.joml.Matrix4fc;
+import org.dragonskulle.components.Transform3D;
 
 /**
  * GameObject class
@@ -35,7 +34,7 @@ public class GameObject implements Serializable {
 
     @Getter private GameObject mRoot;
     @Getter private GameObject mParent;
-    @Getter private Transform mTransform = new Transform();
+    @Getter private Transform mTransform = new Transform3D();
     @Getter private final String mName;
     // TODO: Make some sort of Tag class or enum and add here
     @Getter private boolean mEnabled;
@@ -82,21 +81,6 @@ public class GameObject implements Serializable {
         GameObject instance = object.createClone();
         transform.setGameObject(instance);
         instance.mTransform = transform;
-        return instance;
-    }
-
-    /**
-     * Create a clone of a GameObject, providing a new transform for the object as a HexTransform
-     *
-     * @param object GameObject to be copied
-     * @param transform HexTransform containing the new transform for the object
-     * @return The new instance of the GameObject
-     */
-    public static GameObject instantiate(GameObject object, HexTransform transform) {
-        GameObject instance = object.createClone();
-        Transform t = transform.getTransform();
-        t.setGameObject(instance);
-        instance.mTransform = t;
         return instance;
     }
 
@@ -209,16 +193,6 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mEnabled to true
-     *
-     * @param name The name of the object
-     * @param matrix Transformation matrix to use
-     */
-    public GameObject(String name, Matrix4fc matrix) {
-        this(name, true, matrix);
-    }
-
-    /**
      * Constructur for GameObject
      *
      * @param name The name of the object
@@ -232,22 +206,6 @@ public class GameObject implements Serializable {
         mEnabled = enabled;
         mTransform = transform;
         mTransform.setGameObject(this);
-    }
-
-    /**
-     * Constructur for GameObject
-     *
-     * @param name The name of the object
-     * @param enabled Whether the object is enabled or not
-     * @param matrix Object transformation
-     */
-    public GameObject(String name, boolean enabled, Matrix4fc matrix) {
-        mRoot = null;
-        mParent = null;
-        mName = name;
-        mEnabled = enabled;
-        mTransform.setGameObject(this);
-        mTransform.setLocalMatrix(matrix);
     }
 
     /**
@@ -547,15 +505,6 @@ public class GameObject implements Serializable {
      */
     public <T extends Transform> T getTransform(Class<T> type) {
         return type.isInstance(mTransform) ? type.cast(mTransform) : null;
-    }
-
-    /**
-     * Getter for mTransform
-     *
-     * @return mTransform as a HexTransform
-     */
-    public HexTransform getHexTransform() {
-        return new HexTransform(mTransform);
     }
 
     /**
