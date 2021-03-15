@@ -21,8 +21,8 @@ import org.dragonskulle.exceptions.DecodingException;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.Font;
+import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
-import org.dragonskulle.ui.UITransform;
 import org.joml.Vector3f;
 
 /**
@@ -191,7 +191,7 @@ public class Server {
         GameObject mLoadingScreen =
                 new GameObject(
                         "loading_screen",
-                        new UITransform(false),
+                        new TransformUI(false),
                         (self) -> {
                             self.addComponent(
                                     new UIText(
