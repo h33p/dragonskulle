@@ -6,12 +6,14 @@ package org.dragonskulle.game.player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 
 /**
@@ -21,7 +23,7 @@ import org.dragonskulle.game.map.HexagonTile;
  */
 public class AiPlayer extends Component
         implements IFixedUpdate,
-                IOnStart { // TODO remove extends -- Work out whats happening with player
+        IOnStart { // TODO remove extends -- Work out whats happening with player
 
     protected float mTimeSinceStart;
     protected int mLowerBoundTime = 5;
@@ -39,8 +41,11 @@ public class AiPlayer extends Component
     protected float mAttackBuilding = (float) 0.7;
     protected float mSellBuilding = (float) 0.1;
 
-    /** A Constructor for an AI Player */
-    public AiPlayer() {}
+    /**
+     * A Constructor for an AI Player
+     */
+    public AiPlayer() {
+    }
 
     @Override
     public void onStart() {
@@ -68,7 +73,9 @@ public class AiPlayer extends Component
         return false;
     }
 
-    /** This will set how long the AI player has to wait until they can play */
+    /**
+     * This will set how long the AI player has to wait until they can play
+     */
     protected void createNewRandomTime() {
         do {
 
@@ -77,7 +84,8 @@ public class AiPlayer extends Component
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -203,8 +211,10 @@ public class AiPlayer extends Component
             for (HexagonTile hexTile : hexTilesWhichCanBeSeen) {
 
                 if (mPlayer.get().getMapComponent().get().getTile(hexTile.getR(), hexTile.getQ())
-                        != null) {; // Ignore cos theres already a building there
-                } else if (!checkCloseBuildings(hexTile)) {; // IGNORE TILE IT'S WITHIN 1 HEX
+                        != null) {
+                    ; // Ignore cos theres already a building there
+                } else if (!checkCloseBuildings(hexTile)) {
+                    ; // IGNORE TILE IT'S WITHIN 1 HEX
                 }
 
                 // Can add extra checks here.
@@ -223,18 +233,53 @@ public class AiPlayer extends Component
      * @return {@code true} if that hextile is valid to build in or {@code false} if it's not valid
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
-        int r_value = hexTile.getR();
-        int q_value = hexTile.getQ();
-        int index = 0;
-        boolean validPlace = true;
-        while (validPlace && index < mPlayer.get().numberOfBuildings()) {
-            Building buildingToCheck = mPlayer.get().getBuilding(index);
-            if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getR())) <= 1)
-                    && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getQ())) <= 1)) {
+        ArrayList<HexagonTile> hexTiles = getTilesInRadius(1, hexTile);
+
+        for (HexagonTile tile : hexTiles) {
+            if (mPlayer.get().getMapComponent().get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return false;
             }
-            index++;
         }
+
         return true;
+    }
+
+
+    private ArrayList<HexagonTile> getTilesInRadius(int radius, HexagonTile tile) {  //TODO Repeated code from building need to move in more sensible place
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+
+        // Attempt to get the current HexagonTile and HexagonMap.
+        HexagonMap map = mPlayer.get().getMapComponent().get();
+        if (tile == null || map == null) return tiles;
+
+        // Get the current q and r coordinates.
+        int qCentre = tile.getQ();
+        int rCentre = tile.getR();
+
+        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
+
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
+                // Do not include the building's HexagonTile.
+                if (qOffset == 0 && rOffset == 0) continue;
+
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
+                // s));
+
+                // Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
+                if (selectedTile == null) continue;
+
+                // Add the tile to the list.
+                tiles.add(selectedTile);
+            }
+        }
+
+        //log.info("Number of tiles in range: " + tiles.size());
+
+        return tiles;
     }
 }
