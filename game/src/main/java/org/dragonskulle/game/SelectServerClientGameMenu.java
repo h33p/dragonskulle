@@ -49,7 +49,7 @@ public class SelectServerClientGameMenu {
                     square.addComponent(
                             new UIRenderable(
                                     new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
-                                    new SampledTexture("NotDragonSkulle.png")));
+                                    new SampledTexture("test_cc0_texture.jpg")));
                     // square2.getTransform(UITransform.class).translate(0f, -0.3f);
                     square.getTransform(UITransform.class).setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
                     square.getTransform(UITransform.class).setTargetAspectRatio(1f);
