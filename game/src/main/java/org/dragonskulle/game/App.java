@@ -15,7 +15,6 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.UnlitMaterial;
 import org.dragonskulle.ui.*;
 import org.joml.Math;
-import org.joml.Vector3f;
 
 public class App {
 
@@ -57,8 +56,8 @@ public class App {
                                                 (camera) -> {
                                                     ScrollTranslate scroll =
                                                             new ScrollTranslate(keyboardMovement);
-                                                    scroll.startPos = new Vector3f(0f, -5f, 0f);
-                                                    scroll.endPos = new Vector3f(0f, -100f, 0f);
+                                                    scroll.getStartPos().set(0f, -5f, 0f);
+                                                    scroll.getEndPos().set(0f, -100f, 0f);
                                                     camera.addComponent(scroll);
 
                                                     // Make sure it's an actual camera

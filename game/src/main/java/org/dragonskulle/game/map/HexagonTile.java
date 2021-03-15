@@ -21,6 +21,7 @@ import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 @Log
 @Accessors(prefix = "m")
 public class HexagonTile {
+    /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
             new GameObject(
                     "land",
@@ -42,6 +43,12 @@ public class HexagonTile {
 
     @Getter private final int mS;
 
+    /**
+     * Associated game object.
+     *
+     * <p>This is specifically package-only, since the game does not need to know about underlying
+     * tile objects.
+     */
     @Getter(AccessLevel.PACKAGE)
     private final GameObject mGameObject;
 
