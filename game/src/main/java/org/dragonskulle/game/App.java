@@ -41,6 +41,7 @@ public class App {
     public static void main(String[] args) {
         // Create a scene
         Scene mainScene = new Scene("mainScene");
+        Scene mainMenu = new Scene("mainMenu");
 
         // The game needs a camera!
         GameObject camera = new GameObject("mainCamera");
@@ -55,6 +56,7 @@ public class App {
 
         // And it needs to be in the game
         mainScene.addRootObject(camera);
+        mainMenu.addRootObject(GameObject.instantiate(camera));
 
         // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");
@@ -69,7 +71,7 @@ public class App {
         Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
 
         GameObject hexRoot = new GameObject("hexRoot");
-        hexRoot.addComponent(new Spinner(30, 10, 0.1f));
+        hexRoot.addComponent(new Spinner(10, 10, 0.1f));
 
         // Create instances, change up some parameters
         for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
@@ -95,98 +97,167 @@ public class App {
                         (go) -> {
                             go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
                             // You spin me right round...
-                            go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
+                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
                         });
 
         // Aaand, spawn it!
         mainScene.addRootObject(cube);
 
-        // UI Example:
-        GameObject ui =
+        // Main UI
+        GameObject mainUI =
                 new GameObject(
-                        "ui",
+                        "mainUI",
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0.01f);
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        ui.buildChild(
-                "square",
-                new TransformUI(true),
-                (square) -> {
-                    square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.5f)));
+        GameObject joinUI =
+                new GameObject(
+                        "joinUI",
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
 
-                    square.getTransform(TransformUI.class)
-                            .setParentAnchor(0.01f, 0.1f, 0.49f, 0.98f);
+        mainUI.buildChild(
+                "bg",
+                new TransformUI(false),
+                (bg) -> {
+                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
 
-                    square.buildChild(
-                            "square2",
-                            new TransformUI(true),
-                            (square2) -> {
-                                square2.addComponent(
-                                        new UIRenderable(
-                                                new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
-                                                new SampledTexture("test_cc0_texture.jpg")));
-                                // square2.getTransform(TransformUI.class).translate(0f, -0.3f);
-                                square2.getTransform(TransformUI.class)
-                                        .setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
-                                square2.getTransform(TransformUI.class).setTargetAspectRatio(1f);
-                                square2.getTransform(TransformUI.class).setMaintainAspect(true);
-                                UIButton uiButton =
-                                        new UIButton(
-                                                null,
-                                                (button, __) -> {
-                                                    button.getGameObject()
-                                                            .getTransform(TransformUI.class)
-                                                            .rotateDeg(15f);
-                                                },
-                                                null,
-                                                null,
-                                                (button, deltaTime) -> {
-                                                    button.getGameObject()
-                                                            .getTransform(TransformUI.class)
-                                                            .rotateDeg(-60f * deltaTime);
-                                                });
-                                square2.addComponent(uiButton);
-                            });
+                    bg.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0f, 0.5f, 1.f);
 
-                    square.buildChild(
-                            "button1",
+                    bg.buildChild(
+                            "joinButton",
                             new TransformUI(true),
                             (button) -> {
-                                button.addComponent(
-                                        new UIRenderable(new SampledTexture("ui/wide_button.png")));
                                 button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
-                                button.getTransform(TransformUI.class).setMaintainAspect(true);
-                                button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
+                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
 
                                 UIButton newButton =
                                         new UIButton(
                                                 new UIText(
-                                                        new Vector3f(1f, 0.5f, 0.05f),
+                                                        new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Click me!"),
+                                                        "Join Game"),
                                                 (uiButton, __) -> {
-                                                    uiButton.getLabelText()
-                                                            .get()
-                                                            .setText(
-                                                                    uiButton.getLabelText()
-                                                                                    .get()
-                                                                                    .getText()
-                                                                            + "a");
+                                                    mainUI.setEnabled(false);
+                                                    joinUI.setEnabled(true);
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+
+                    bg.buildChild(
+                            "hostButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Host Game"),
+                                                (uiButton, __) -> {
+                                                    // TODO: Host Game Menu
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+
+                    bg.buildChild(
+                            "settingsButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Settings"),
+                                                (uiButton, __) -> {
+                                                    // TODO: Settings Menu
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+
+                    bg.buildChild(
+                            "quitButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Quit"),
+                                                (uiButton, __) -> Engine.getInstance().stop());
+
+                                button.addComponent(newButton);
+                            });
+                });
+
+        joinUI.buildChild(
+                "bg",
+                new TransformUI(false),
+                (bg) -> {
+                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
+
+                    bg.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0f, 0.5f, 1.f);
+
+                    bg.buildChild(
+                            "cancelButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Cancel"),
+                                                (uiButton, __) -> {
+                                                    joinUI.setEnabled(false);
+                                                    mainUI.setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
                             });
                 });
 
-        mainScene.addRootObject(ui);
+        joinUI.setEnabled(false);
 
+        mainMenu.addRootObject(GameObject.instantiate(hexRoot));
+        mainMenu.addRootObject(GameObject.instantiate(cube));
+
+        mainMenu.addRootObject(joinUI);
+        mainMenu.addRootObject(mainUI);
         // Load the main scene as the presentation scene
-        Engine.getInstance().loadPresentationScene(mainScene);
+        Engine.getInstance().deactivateScene(mainScene);
+
+        Engine.getInstance().loadPresentationScene(mainMenu);
 
         // Run the game
         Engine.getInstance().start("Germany", new GameBindings());
