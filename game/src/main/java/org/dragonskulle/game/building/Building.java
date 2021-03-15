@@ -17,6 +17,7 @@ import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.Player;
 
 /**
  * A Building component.
@@ -39,7 +40,7 @@ public class Building extends Component {
     @Getter private AttackDistanceStat mAttackDistance;
 
     /** The owner of the building. */
-    @Getter @Setter private Reference<TestPlayer> mOwner = new Reference<TestPlayer>(null);
+    @Getter @Setter private Reference<Player> mOwner = new Reference<>(null);
     /** The HexagonTile the building is on. */
     private Reference<HexagonTile> mTile = new Reference<HexagonTile>(null);
     /** The HexagonMap being used. */
@@ -198,7 +199,7 @@ public class Building extends Component {
 
         // Ensure the map and owner exist.
         HexagonMap map = mHexagonMap.get();
-        TestPlayer owner = mOwner.get();
+        Player owner = mOwner.get();
         if (map == null || owner == null) return buildings;
 
         // Get all the tiles in attackable distance.
@@ -209,7 +210,7 @@ public class Building extends Component {
             if (building == null) continue;
 
             // Ensure the building is not owned by the owner of this building.
-            Reference<TestPlayer> buildingOwner = building.getOwner();
+            Reference<Player> buildingOwner = building.getOwner();
             // TODO Replace references to the player with a player ID.
             if (owner.equals(buildingOwner.get())) {
                 log.info("Building owned by same player.");

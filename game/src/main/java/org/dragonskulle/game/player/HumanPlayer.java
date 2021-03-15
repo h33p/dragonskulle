@@ -5,6 +5,7 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -35,7 +36,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
 
     private HexagonTile mHexChosen;
-    private IAmNotABuilding mBuildingChosen;
+    private Building mBuildingChosen;
 
     /**
      * The constructor for the human player
@@ -108,7 +109,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
         mChooseAttack = getGameObject().buildChild("attack screen", new TransformUI(), (go) -> {
             go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
-            for (IAmNotABuilding building : mBuildingChosen.attackableBuildings()) {
+            for (Building building : mBuildingChosen.getAttackableBuildings()) {
                 go.buildChild("Attack building", new TransformUI(true), (box) -> {
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(new UIButton((handle, __) -> {
@@ -175,7 +176,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
 
             if (mHexChosen != null) {
-                IAmNotABuilding buildingOnTile = HexagonMap.getBuilding(mHexChosen.getMR(), mHexChosen.getMQ());
+                Building buildingOnTile = HexagonMap.getBuilding(mHexChosen.getR(), mHexChosen.getQ());
                 if (buildingOnTile == null) {
                     // TODO Check if it can place a building there
 
@@ -194,9 +195,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     }
 
-    private boolean hasPlayerGotBuilding(IAmNotABuilding buildingToCheck) {
+    private boolean hasPlayerGotBuilding(Building buildingToCheck) {
         for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
-            IAmNotABuilding building = mPlayer.get().getBuilding(i);
+            Building building = mPlayer.get().getBuilding(i);
 
             if (building == buildingToCheck) {
                 return true;
