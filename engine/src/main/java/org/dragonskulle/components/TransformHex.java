@@ -12,10 +12,8 @@ import org.joml.Vector3fc;
  * Represents an objects position in hex coordinates
  *
  * @author Harry Stoltz
- *     <p>This class acts as a wrapper for Transform, and converts the 3d cartesian position,
- *     rotation, etc into hex coordinates. Also allows for transformations to be done in hex
- *     coordinates, which are converted into cartesian transformations and added to the underlying
- *     3d transform.
+ *     <p>This extends Transform, and provides transformations to be done in hex (axial)
+ *     coordinates.
  */
 @Accessors(prefix = "m")
 public class TransformHex extends Transform {

@@ -162,7 +162,6 @@ public class App {
                                 button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
                                 button.getTransform(TransformUI.class).setMaintainAspect(true);
                                 button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
-                                // button.getTransform(TransformUI.class).translate();
 
                                 UIButton newButton =
                                         new UIButton(
