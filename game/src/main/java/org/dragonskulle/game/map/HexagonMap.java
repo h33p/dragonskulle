@@ -31,8 +31,8 @@ public class HexagonMap extends Component implements IOnStart {
     @Getter private GameObject[][] mGameObjectMap;
 
     /** Store a {@link Building} at the q and r coordinates. */
-    private HashMap<Integer, HashMap<Integer, Reference<Building>>> mBuildings =
-            new HashMap<Integer, HashMap<Integer, Reference<Building>>>();
+    private HashMap<Integer, HashMap<Integer, Building>> mBuildings =
+            new HashMap<Integer, HashMap<Integer, Building>>();
 
     /**
      * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
@@ -93,18 +93,15 @@ public class HexagonMap extends Component implements IOnStart {
         if (isValid(q, r) == false) return null;
 
         // Get the inner HashMap.
-        HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
+        HashMap<Integer, Building> qBuildings = mBuildings.get(q);
         if (qBuildings == null) {
             // The inner HashMap does not exist, so no building can exist.
             return null;
         }
 
         // Try to get the building.
-        Reference<Building> buildingReference = qBuildings.get(r);
-        if (buildingReference == null) {
-            return null;
-        }
-        return buildingReference.get();
+        Building buildingReference = qBuildings.get(r);
+        return buildingReference;
     }
 
     /**
@@ -119,17 +116,17 @@ public class HexagonMap extends Component implements IOnStart {
         if (isValid(q, r) == false) return;
 
         // Try to get the inner HashMap, using the q coordinate as the key.
-        HashMap<Integer, Reference<Building>> qBuildings = mBuildings.get(q);
+        HashMap<Integer, Building> qBuildings = mBuildings.get(q);
         if (qBuildings == null) {
             // An inner HashMap does not exist, so create one.
-            HashMap<Integer, Reference<Building>> innerMap =
-                    new HashMap<Integer, Reference<Building>>();
+            HashMap<Integer, Building> innerMap =
+                    new HashMap<Integer, Building>();
             mBuildings.put(q, innerMap);
             qBuildings = innerMap;
         }
 
         // Put a reference to the building in the inner map.
-        qBuildings.put(r, new Reference<Building>(building));
+        qBuildings.put(r, building);
     }
 
     /**
