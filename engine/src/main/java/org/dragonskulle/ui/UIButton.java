@@ -165,7 +165,6 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     @Override
     public void frameUpdate(float deltaTime) {
         if (mRenderable != null && UIManager.getInstance().getHoveredObject() == mRenderable) {
-
             boolean mouseDown = UI_PRESS.isActivated();
 
             // Call mOnClick if we pressed this button
@@ -186,7 +185,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
                 mLastMouseDown = false;
             } else {
                 curTimer += deltaTime;
-                if (curTimer > 2f * mTransitionTime) curTimer = 2f * mTransitionTime;
+                if (mouseDown && curTimer > 2f * mTransitionTime) curTimer = 2f * mTransitionTime;
+                else if (curTimer > mTransitionTime) curTimer = mTransitionTime;
             }
 
             if (!mLastHovered && mOnHover != null) mOnHover.eventHandler(this, deltaTime);

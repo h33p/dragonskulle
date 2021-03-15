@@ -4,11 +4,13 @@ package org.dragonskulle.game.map;
 import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Renderable;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.renderer.*;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
@@ -51,6 +53,9 @@ public class HexagonTile {
      */
     @Getter(AccessLevel.PACKAGE)
     private final GameObject mGameObject;
+
+    /** Building that is on the tile */
+    @Getter @Setter private Building mBuilding;
 
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to

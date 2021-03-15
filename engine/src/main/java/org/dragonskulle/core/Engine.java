@@ -74,6 +74,20 @@ public class Engine {
     }
 
     /**
+     * Load a scene, choosing whether or not it should be active from the next frame or not
+     *
+     * @param scene Scene to load
+     * @param active Whether the scene will be active
+     */
+    public void loadScene(Scene scene, boolean active) {
+        if (active) {
+            mScenesToActivate.add(scene);
+        } else {
+            mScenesToDeactivate.add(scene);
+        }
+    }
+
+    /**
      * If scene is already loaded, it will be activated from the next frame. If it isn't loaded, it
      * will be loaded and started on the next frame
      *
@@ -81,6 +95,19 @@ public class Engine {
      */
     public void activateScene(Scene scene) {
         mScenesToActivate.add(scene);
+    }
+
+    /**
+     * Activate an already loaded scene, with a given name
+     *
+     * @param name Name of the scene to activate
+     */
+    public void activateScene(String name) {
+        for (Scene s : mInactiveScenes) {
+            if (s.getName().equals(name)) {
+                mScenesToActivate.add(s);
+            }
+        }
     }
 
     /**
@@ -93,6 +120,18 @@ public class Engine {
         mScenesToDeactivate.add(scene);
     }
 
+    /**
+     * Deactivate an already loaded scene, with a given name
+     *
+     * @param name Name of the scene to activate
+     */
+    public void deactivateScene(String name) {
+        for (Scene s : mActiveScenes) {
+            if (s.getName().equals(name)) {
+                mScenesToDeactivate.add(s);
+            }
+        }
+    }
     /**
      * Completely unload a scene from the engine. This will remove the scene regardless of whether
      * it is active, inactive or the presentation scene. No references to the scene will be kept in
