@@ -318,6 +318,7 @@ public class GameObject implements Serializable {
         } else {
             child.mRoot = mRoot;
         }
+        child.setEnabled(mEnabled);
         child.mParent = this;
         child.setDepth(mDepth + 1);
         mChildren.add(child);
@@ -336,6 +337,7 @@ public class GameObject implements Serializable {
         for (GameObject child : children) {
             child.mRoot = root;
             child.mParent = this;
+            child.setEnabled(mEnabled);
             child.setDepth(this.mDepth + 1);
         }
         mChildren.addAll(children);
@@ -348,8 +350,9 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public Reference<GameObject> buildChild(String name, IBuildHandler handler) {
-        return buildChild(name, true, handler);
+    public void buildChild(String name, IBuildHandler handler) {
+        buildChild(name, mEnabled, handler);
+
     }
 
     /**
@@ -373,9 +376,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public Reference<GameObject> buildChild(
-            String name, Transform transform, IBuildHandler handler) {
-        return buildChild(name, true, transform, handler);
+    public void buildChild(String name, Transform transform, IBuildHandler handler) {
+        buildChild(name, mEnabled, transform, handler);
     }
 
     /**

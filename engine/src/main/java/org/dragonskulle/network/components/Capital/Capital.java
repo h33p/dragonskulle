@@ -14,7 +14,7 @@ import org.dragonskulle.network.components.sync.SyncString;
 /** @author Oscar L The Capital Component. */
 @Accessors(prefix = "m")
 @Log
-public class Capital extends NetworkableComponent implements TestAttackData.IEvent {
+public class Capital extends NetworkableComponent {
 
     /** A syncable field. */
     @Getter public SyncBool mSyncMe = new SyncBool(false);
@@ -27,7 +27,8 @@ public class Capital extends NetworkableComponent implements TestAttackData.IEve
      * Creates the link between the request type @code{new AttackRequest()} and what to do when
      * invoked @code{this::handleEvent}
      */
-    private transient ClientRequest<TestAttackData> mPasswordRequest;
+
+    public transient ClientRequest<TestAttackData> mPasswordRequest;
 
     public static final int CORRECT_PASSWORD = 4242;
     /** Used for testing */
@@ -39,35 +40,17 @@ public class Capital extends NetworkableComponent implements TestAttackData.IEve
     protected void onNetworkInitialize() {
         mPasswordRequest = new ClientRequest<>(new TestAttackData(), this::handleEvent);
     }
-
     /**
      * How this component will react to an attack event.
      *
      * @param data attack event being executed on the server.
      */
-    @Override
+
     public void handleEvent(TestAttackData data) {
         if (data.mPassword == CORRECT_PASSWORD) {
             mClientToggled.set(data.mToBuilding);
         }
     }
-
-    /**
-     * This is how the client will invoke the attack event.
-     *
-     * @param data this is the attack interface, containing a password value that will be checked on
-     *     server use {@code CORRECT_PASSWORD} to pass the check. This is purely for testing and
-     *     toBuilding, a building to "attack"
-     */
-    @Override
-    public void clientInvokeEvent(TestAttackData data) {
-        if (getNetworkObject().isServer()) {
-            log.warning("Client invoke attack called on server! This is wrong!");
-        } else {
-            mPasswordRequest.invoke(data);
-        }
-    }
-
     // The following functions are helpers to toggle the sync values
 
     /**
