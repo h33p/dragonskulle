@@ -47,7 +47,7 @@ public class Engine {
 
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
     private final HashSet<Scene> mActiveScenes = new HashSet<>();
-    private Scene mPresentationScene = null;
+    @Getter private Scene mPresentationScene = null;
 
     /** Engine's GLFW window state */
     @Getter private GLFWState mGLFWState = null;
@@ -359,15 +359,6 @@ public class Engine {
      */
     public ArrayList<Scene> getActiveScenes() {
         return new ArrayList<>(mActiveScenes);
-    }
-
-    /**
-     * Getter for mPresentationScene
-     *
-     * @return mPresentationScene
-     */
-    public Scene getPresentationScene() {
-        return mPresentationScene;
     }
 
     /**

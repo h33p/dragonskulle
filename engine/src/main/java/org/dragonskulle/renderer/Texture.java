@@ -3,6 +3,7 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -17,11 +18,11 @@ import org.lwjgl.system.NativeResource;
 @Accessors(prefix = "m")
 @Getter
 public class Texture implements NativeResource {
-    private int mWidth;
-    private int mHeight;
-    private int mChannels;
-    private ByteBuffer mBuffer;
-    private String mName;
+    protected int mWidth;
+    protected int mHeight;
+    protected int mChannels;
+    protected ByteBuffer mBuffer;
+    protected String mName;
 
     public static Resource<Texture> getResource(String inName) {
         String name = String.format("textures/%s", inName);
@@ -40,16 +41,17 @@ public class Texture implements NativeResource {
                         ret.mBuffer = stbi_load_from_memory(buf, pX, pY, pC, STBI_rgb_alpha);
                         ret.mWidth = pX.get(0);
                         ret.mHeight = pY.get(0);
-                        ret.mChannels = pC.get(0);
+                        ret.mChannels = STBI_rgb_alpha;
                         ret.mName = inName;
                     }
+                    MemoryUtil.memFree(buf);
                     return ret;
                 },
                 name);
     }
 
     @Override
-    public final void free() {
+    public void free() {
         if (mBuffer != null) {
             stbi_image_free(mBuffer);
             mBuffer = null;

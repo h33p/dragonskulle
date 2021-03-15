@@ -2,7 +2,7 @@
 package org.dragonskulle.renderer;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.*;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -80,9 +80,9 @@ public class Mesh implements Serializable {
     };
 
     private static final Vertex[] QUAD_VERTICES = {
-        new Vertex(new Vector3f(-1.f, -1.f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
-        new Vertex(new Vector3f(-1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
-        new Vertex(new Vector3f(1.f, -1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
+        new Vertex(new Vector3f(0f, 0f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
+        new Vertex(new Vector3f(0f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
+        new Vertex(new Vector3f(1.f, 0f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
         new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 1f)),
     };
 
@@ -103,6 +103,62 @@ public class Mesh implements Serializable {
     public Mesh(Vertex[] vertices, int[] indices) {
         mVertices = vertices;
         mIndices = indices;
+    }
+
+    public static void addQuadToList(
+            List<Vertex> vertices,
+            List<Integer> indices,
+            Vector2fc startCoords,
+            Vector2fc endCoords,
+            Vector2fc startUV,
+            Vector2fc endUV) {
+        int start = vertices.size();
+
+        indices.add(start);
+        indices.add(start + 1);
+        indices.add(start + 2);
+        indices.add(start + 1);
+        indices.add(start + 3);
+        indices.add(start + 2);
+
+        vertices.add(
+                new Vertex(
+                        new Vector3f(startCoords.x(), startCoords.y(), 0.f),
+                        new Vector3f(1f),
+                        new Vector2f(startUV)));
+        vertices.add(
+                new Vertex(
+                        new Vector3f(startCoords.x(), endCoords.y(), 0.f),
+                        new Vector3f(1f),
+                        new Vector2f(startUV.x(), endUV.y())));
+        vertices.add(
+                new Vertex(
+                        new Vector3f(endCoords.x(), startCoords.y(), 0.f),
+                        new Vector3f(1f),
+                        new Vector2f(endUV.x(), startUV.y())));
+        vertices.add(
+                new Vertex(
+                        new Vector3f(endCoords.x(), endCoords.y(), 0.f),
+                        new Vector3f(1f),
+                        new Vector2f(endUV)));
+    }
+
+    public static Mesh buildQuad(
+            Vector2fc startCoords, Vector2fc endCoords, Vector2fc startUV, Vector2fc endUV) {
+        final Vertex[] vertices = {
+            new Vertex(
+                    new Vector3f(startCoords.x(), startCoords.y(), 0.f), new Vector3f(1f), startUV),
+            new Vertex(
+                    new Vector3f(startCoords.x(), endCoords.y(), 0.f),
+                    new Vector3f(1f),
+                    new Vector2f(startUV.x(), endUV.y())),
+            new Vertex(
+                    new Vector3f(endCoords.x(), startCoords.y(), 0.f),
+                    new Vector3f(1f),
+                    new Vector2f(endUV.x(), startUV.y())),
+            new Vertex(new Vector3f(endCoords.x(), endCoords.y(), 0.f), new Vector3f(1f), endUV),
+        };
+        return new Mesh(vertices, QUAD_INDICES);
     }
 
     // TODO: mesh optimization methods, and other utilities

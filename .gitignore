@@ -12,3 +12,5 @@ bin/
 javadocs/
 target/*
 thunderclap.wav
+*.bin
+
