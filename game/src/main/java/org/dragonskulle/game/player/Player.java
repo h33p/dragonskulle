@@ -91,6 +91,7 @@ public class Player extends NetworkableComponent{
     protected void onNetworkInitialize() {
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
     }
 
     @Override
@@ -129,6 +130,22 @@ public class Player extends NetworkableComponent{
         // get building to that is doing the attacking
         // verify the sender owns the building to be attacked from and it can see the building
         // attack the building
+    }
+    
+    // Building is handled below
+    public transient ClientRequest<BuildData> mClientBuildRequest;
+
+    /**
+     * How this component will react to a Build event.
+     *
+     * @param data attack event being executed on the server.
+     */
+    public void handleEvent(BuildData data) {
+        // TODO implement
+        // get Hexagon to build on
+        // Add to the HexagonMap
+    	// Take tokens off
+
     }
 
 }
