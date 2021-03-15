@@ -36,6 +36,28 @@ public class StartServer {
         }
     }
 
+    public StartServer(
+            AtomicInteger networkObjectCounter,
+            boolean autoProcessMessages,
+            boolean startFixedUpdate,
+            Scene mainScene) {
+        attachShutDownHook();
+        /** The Server listener. */
+        ServerListener serverListener = new ServerEars();
+        if (autoProcessMessages) {
+            mServer =
+                    new Server(
+                            PORT,
+                            serverListener,
+                            autoProcessMessages,
+                            networkObjectCounter,
+                            mainScene);
+            if (startFixedUpdate) {
+                mServer.startFixedUpdateDetachedFromGame();
+            }
+        }
+    }
+
     public static void main(String[] args) {
         AtomicInteger networkObjectCounter = new AtomicInteger(0);
         StartServer ss = new StartServer(networkObjectCounter);
