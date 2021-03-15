@@ -13,6 +13,9 @@ import org.joml.*;
  */
 @Accessors(prefix = "m")
 public class Camera extends Component implements ILateFrameUpdate {
+    /** Define which way is up */
+    private static final Vector3f UP_DIR = new Vector3f(0f, 0f, 1f);
+
     /** Option whether camera is in perspective (3D), or orthographic (2D) mode */
     public static enum Projection {
         ORTHOGRAPHIC,
@@ -45,8 +48,9 @@ public class Camera extends Component implements ILateFrameUpdate {
     /** Current screen aspect ratio */
     private float mAspectRatio = 1.f;
 
-    private Vector3f mTmpTranslation = new Vector3f();
     private Matrix4f mToView = new Matrix4f();
+    private final Vector3f mTmpPos = new Vector3f();
+    private final Vector3f mTmpDir = new Vector3f();
 
     private static Reference<Camera> sMainCamera = null;
 
@@ -81,7 +85,7 @@ public class Camera extends Component implements ILateFrameUpdate {
                 break;
         }
 
-        mProj.scale(1.f, -1.f, 1.f).lookAt(0.f, 0.f, 0.f, 0.f, nearPlane, 0f, 0.f, 0.f, 1.f);
+        mProj.m11(-mProj.m11());
 
         return mProj;
     }
@@ -103,8 +107,11 @@ public class Camera extends Component implements ILateFrameUpdate {
      */
     public Matrix4fc getView() {
         Matrix4fc worldMatrix = getGameObject().getTransform().getWorldMatrix();
-        return mToView.set(worldMatrix)
-                .setTranslation(worldMatrix.getTranslation(mTmpTranslation).mul(-1.f));
+
+        Vector3f pos = worldMatrix.getTranslation(mTmpPos);
+        Vector3f dir = worldMatrix.transformDirection(0, 1, 0, mTmpDir.zero());
+
+        return mToView.identity().lookAt(pos, dir.add(pos), UP_DIR);
     }
 
     @Override

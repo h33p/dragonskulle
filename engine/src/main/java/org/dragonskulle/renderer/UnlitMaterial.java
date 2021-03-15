@@ -42,6 +42,18 @@ public class UnlitMaterial implements IMaterial, Serializable {
     /** Colour of the surface. It will multiply the texture's colour */
     public Vector3f colour = new Vector3f(1.f);
 
+    /** Constructor for UnlitMaterial */
+    public UnlitMaterial() {}
+
+    /**
+     * Constructor for UnlitMaterial
+     *
+     * @param texture initial texture of the object
+     */
+    public UnlitMaterial(SampledTexture texture) {
+        mFragmentTextures[0] = texture;
+    }
+
     public ShaderSet getShaderSet() {
         return sShaderSet;
     }
