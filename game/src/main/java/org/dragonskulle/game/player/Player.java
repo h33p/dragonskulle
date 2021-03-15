@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
 
 import lombok.Getter;
@@ -17,7 +18,7 @@ import lombok.Getter;
 @Accessors(prefix = "m")
 public class Player {
 
-    private List<IAmNotABuilding> mOwnedBuildings;
+    private List<Building> mOwnedBuildings;
     @Getter
     private Reference<HexagonMap> mMapComponent;
     private final int UNIQUE_ID;
@@ -36,19 +37,19 @@ public class Player {
      * @param map     the map being used for this game
      * @param capital the capital used by the player
      */
-    public Player(Reference<HexagonMap> map, IAmNotABuilding capital) {        //TODO DO we need?
+    public Player(Reference<HexagonMap> map, Building capital) {        //TODO DO we need?
         UNIQUE_ID = 5;            //TODO need to make this static so unique for each player
         mMapComponent = map;
-        mOwnedBuildings = new ArrayList<IAmNotABuilding>();
+        mOwnedBuildings = new ArrayList<Building>();
         mOwnedBuildings.add(capital);
         updateTokens(UPDATE_TIME + 1);
     }
 
-    public void addBuilding(IAmNotABuilding building) {
+    public void addBuilding(Building building) {
         mOwnedBuildings.add(building);
     }
 
-    public IAmNotABuilding getBuilding(int index) {
+    public Building getBuilding(int index) {
         return mOwnedBuildings.get(index);
     }
 
@@ -67,7 +68,7 @@ public class Player {
         if (mLastTokenUpdate > UPDATE_TIME) {
 
             //Add tokens for each building
-            for (IAmNotABuilding building : mOwnedBuildings) {
+            for (Building building : mOwnedBuildings) {
                 mTokens += building.getToken();
 
             }
