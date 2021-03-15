@@ -20,7 +20,7 @@ import org.joml.Vector4fc;
  *     ratio correction.
  */
 @Accessors(prefix = "m")
-public class UITransform extends Transform {
+public class TransformUI extends Transform {
     /** Maintain aspect ratio of the UI element */
     @Getter @Setter private boolean mMaintainAspect;
     /** Target aspect ratio of the element */
@@ -49,20 +49,20 @@ public class UITransform extends Transform {
     // TODO: Actually somehow implement this
     @Getter @Setter private boolean mClipChildren = false;
 
-    public UITransform(boolean maintainAspect) {
+    public TransformUI(boolean maintainAspect) {
         super();
         mMaintainAspect = maintainAspect;
     }
 
-    public UITransform() {
+    public TransformUI() {
         this(false);
     }
 
-    public UITransform(float width, float height, boolean scaleToScreen) {
+    public TransformUI(float width, float height, boolean scaleToScreen) {
         this(scaleToScreen);
     }
 
-    public UITransform(float width, float height) {
+    public TransformUI(float width, float height) {
         this(width, height, false);
     }
 
@@ -76,8 +76,8 @@ public class UITransform extends Transform {
         Vector4f off = new Vector4f(0f);
 
         // If we have a proper UI transform get the parent scaled corners
-        if (parentGen != null && parentGen instanceof UITransform) {
-            UITransform parent = (UITransform) parentGen;
+        if (parentGen != null && parentGen instanceof TransformUI) {
+            TransformUI parent = (TransformUI) parentGen;
             mScaledLocalCorners.set(parent.getScaledLocalCorners());
         } else {
             // Otherwise just use regular screen bounds

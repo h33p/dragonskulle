@@ -21,7 +21,7 @@ import org.joml.Vector4f;
 
 public class App {
 
-    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 5);
+    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
 
     private static final Vector3fc[] COLOURS = {
         new Vector3f(1.f, 0.f, 0.f),
@@ -105,47 +105,47 @@ public class App {
         GameObject ui =
                 new GameObject(
                         "ui",
-                        new UITransform(false),
+                        new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(UITransform.class).setParentAnchor(0.01f);
+                            root.getTransform(TransformUI.class).setParentAnchor(0.01f);
                         });
 
         ui.buildChild(
                 "square",
-                new UITransform(true),
+                new TransformUI(true),
                 (square) -> {
                     square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.5f)));
 
-                    square.getTransform(UITransform.class)
+                    square.getTransform(TransformUI.class)
                             .setParentAnchor(0.01f, 0.1f, 0.49f, 0.98f);
 
                     square.buildChild(
                             "square2",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (square2) -> {
                                 square2.addComponent(
                                         new UIRenderable(
                                                 new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
                                                 new SampledTexture("test_cc0_texture.jpg")));
-                                // square2.getTransform(UITransform.class).translate(0f, -0.3f);
-                                square2.getTransform(UITransform.class)
+                                // square2.getTransform(TransformUI.class).translate(0f, -0.3f);
+                                square2.getTransform(TransformUI.class)
                                         .setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
-                                square2.getTransform(UITransform.class).setTargetAspectRatio(1f);
-                                square2.getTransform(UITransform.class).setMaintainAspect(true);
+                                square2.getTransform(TransformUI.class).setTargetAspectRatio(1f);
+                                square2.getTransform(TransformUI.class).setMaintainAspect(true);
                                 UIButton uiButton =
                                         new UIButton(
                                                 null,
                                                 (button, __) -> {
                                                     button.getGameObject()
-                                                            .getTransform(UITransform.class)
+                                                            .getTransform(TransformUI.class)
                                                             .rotateDeg(15f);
                                                 },
                                                 null,
                                                 null,
                                                 (button, deltaTime) -> {
                                                     button.getGameObject()
-                                                            .getTransform(UITransform.class)
+                                                            .getTransform(TransformUI.class)
                                                             .rotateDeg(-60f * deltaTime);
                                                 });
                                 square2.addComponent(uiButton);
@@ -153,16 +153,16 @@ public class App {
 
                     square.buildChild(
                             "button1",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (button) -> {
                                 button.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                button.getTransform(UITransform.class)
+                                button.getTransform(TransformUI.class)
                                         .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
-                                button.getTransform(UITransform.class).setMargin(0f, 0f, 0f, 0.2f);
-                                button.getTransform(UITransform.class).setMaintainAspect(true);
-                                button.getTransform(UITransform.class).setTargetAspectRatio(2f);
-                                // button.getTransform(UITransform.class).translate();
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
+                                button.getTransform(TransformUI.class).setMaintainAspect(true);
+                                button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
+                                // button.getTransform(TransformUI.class).translate();
 
                                 UIButton newButton =
                                         new UIButton(

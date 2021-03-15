@@ -85,7 +85,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
                         ? texs[0].getTexture().get()
                         : null;
 
-        UITransform uiTransform = getGameObject().getTransform(UITransform.class);
+        TransformUI uiTransform = getGameObject().getTransform(TransformUI.class);
 
         if (tex != null && uiTransform != null)
             uiTransform.setTargetAspectRatio((float) tex.getWidth() / (float) tex.getHeight());

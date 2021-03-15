@@ -130,7 +130,7 @@ public class UIText extends Renderable implements IOnAwake {
         // should be removed from mesh buffer
         mMesh = buildMesh();
 
-        UITransform transform = getGameObject().getTransform(UITransform.class);
+        TransformUI transform = getGameObject().getTransform(TransformUI.class);
         if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
     }
 
