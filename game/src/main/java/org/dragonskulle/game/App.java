@@ -211,9 +211,9 @@ public class App {
                                 button.getTransform().translate(0f, 0.4f, 0f);
 
                                 Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
-                                GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);
+                                //GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);  	//Audio Tutorial
                                 UIButton newButton =
-                                        new UIButton(a.audibleClick(
+                                        new UIButton(//a.audibleClick(   Audio Tutorial
                                                 (uiButton, __) -> {
                                                     if (uiRef.isValid()) {
                                                         Renderable uiRend = uiRef.get();
@@ -228,7 +228,7 @@ public class App {
                                                         }
                                                         uiRend.setEnabled(!uiRend.isEnabled());
                                                     }
-                                                }));
+                                                });
                                
                                 button.addComponent(newButton);
                             });
@@ -239,12 +239,15 @@ public class App {
         // Load the main scene as the presentation scene
         Engine.getInstance().loadPresentationScene(mainScene);
 
+        //Audio Tutorial
+        /*
         AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
         AudioManager.getInstance().setVolume(SoundType.SFX, 100);
         AudioSource audio = new AudioSource();
         audio.filename = "waves.wav";
         audio.channel = SoundType.BACKGROUND;
         audio.play();
+        */
         
         //Run the game
         Engine.getInstance().start("Germany", new GameBindings());
