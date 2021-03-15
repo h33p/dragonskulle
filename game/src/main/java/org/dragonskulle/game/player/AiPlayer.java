@@ -10,7 +10,6 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 
 /**
@@ -19,21 +18,21 @@ import org.dragonskulle.game.map.HexagonTile;
  */
 public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //TODO remove extends -- Work out whats happening with player
     
-	protected float timeSinceStart;
-	protected int lowerBoundTime = 5;
-	protected int upperBoundTime = 10;
-	protected int timeToWait;
+	protected float mTimeSinceStart;
+	protected int mLowerBoundTime = 5;
+	protected int mUpperBoundTime = 10;
+	protected int mTimeToWait;
 	
-	protected Reference<Player> player;
+	protected Reference<Player> mPlayer;
 	
-	protected Random random = new Random();
+	protected Random mRandom = new Random();
 	
-	protected float tileProbability = (float)0.5;
-	protected float buildingProabilty = 1 - tileProbability;
+	protected float mTileProbability = (float)0.5;
+	protected float mBuildingProbability = 1 - mTileProbability;
 	
-	protected float upgradeBuilding = (float) 0.2;  // These three probabilities summed must == 1
-	protected float attackBuilding = (float) 0.7;
-	protected float sellBuilding = (float) 0.1;
+	protected float mUpgradeBuilding = (float) 0.2;  // These three probabilities summed must == 1
+	protected float mAttackBuilding = (float) 0.7;
+	protected float mSellBuilding = (float) 0.1;
 		
 	/**
 	 * A Constructor for an AI Player 
@@ -42,7 +41,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
 	
 	@Override
 	public void onStart() {
-		timeSinceStart = 0;
+		mTimeSinceStart = 0;
 		createNewRandomTime();
 	}
 	
@@ -52,11 +51,11 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
 	 * @return A boolean to say whether the AI player can play
 	 */
 	protected boolean playGame(float deltaTime) {
-		timeSinceStart += deltaTime;
+		mTimeSinceStart += deltaTime;
 		
 		//Checks to see how long since last time AI player played and if longer than how long they have to wait
-		if (timeSinceStart >= timeToWait) {
-			timeSinceStart = 0;
+		if (mTimeSinceStart >= mTimeToWait) {
+			mTimeSinceStart = 0;
 			createNewRandomTime();  //Creates new Random Number
 			return true;
 		}
@@ -70,8 +69,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
 	protected void createNewRandomTime() {
 		do {
 			
-			timeToWait = random.nextInt(upperBoundTime+1);
-		} while (timeToWait < lowerBoundTime);
+			mTimeToWait = mRandom.nextInt(mUpperBoundTime +1);
+		} while (mTimeToWait < mLowerBoundTime);
 	}
 	
 	@Override
@@ -96,11 +95,11 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     	
     	//TODO Need to know how we are interacting with triggerEvent().  Cos here you can choose exact command to do (Much Much easier)
     	
-    	if (player.get().numberOfBuildings() == 1) {  //TODO Refactor it so it's only done once
+    	if (mPlayer.get().numberOfBuildings() == 1) {  //TODO Refactor it so it's only done once
     		
     		List<HexagonTile> tilesToUse = hexTilesToExpand();
     		if (tilesToUse.size() != 0) {
-    			int randomIndex = random.nextInt(tilesToUse.size());
+    			int randomIndex = mRandom.nextInt(tilesToUse.size());
     			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
     			//now have Hexagon tile to expand to
     			triggerEvent(); //TODO Send data to this which will then package & send to server
@@ -113,12 +112,12 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     		
     	}
     	else {
-    		float randomNumber = random.nextFloat();
+    		float randomNumber = mRandom.nextFloat();
     		
-    		if (randomNumber <= tileProbability) {
+    		if (randomNumber <= mTileProbability) {
     			List<HexagonTile> tilesToUse = hexTilesToExpand();
         		if (tilesToUse.size() != 0) {
-        			int randomIndex = random.nextInt(tilesToUse.size());
+        			int randomIndex = mRandom.nextInt(tilesToUse.size());
         			HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
         			//now have Hexagon tile to expand to 
         			triggerEvent();  //TODO Send data to this which will then package & send to server
@@ -129,22 +128,22 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
         		}
     		}
     		else {
-    			randomNumber = random.nextFloat();
+    			randomNumber = mRandom.nextFloat();
     			
     			
-    			if (randomNumber <= upgradeBuilding) {
+    			if (randomNumber <= mUpgradeBuilding) {
     				
-    				IAmNotABuilding building = player.get().getBuilding(random.nextInt(player.get().numberOfBuildings()));
+    				IAmNotABuilding building = mPlayer.get().getBuilding(mRandom.nextInt(mPlayer.get().numberOfBuildings()));
     				List<Stat> statsArray = building.getStats();
-    				Stat statToUpgrade = statsArray.get(random.nextInt(statsArray.size()));
+    				Stat statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
     				triggerEvent();  //TODO Send data to this which will then package & send to server
         			return;
     				
     			}
-    			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
+    			else if (randomNumber > mUpgradeBuilding && randomNumber <= mAttackBuilding + mUpgradeBuilding){
     				ArrayList<IAmNotABuilding[]> buildingsToAttack = new ArrayList<IAmNotABuilding[]>();
-    				for (int i = 0; i < player.get().numberOfBuildings(); i++) {
-    					IAmNotABuilding building = player.get().getBuilding(i);
+    				for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
+    					IAmNotABuilding building = mPlayer.get().getBuilding(i);
     					
     					List<IAmNotABuilding> attackableBuildings = building.attackableBuildings();
     					for (IAmNotABuilding buildingWhichCouldBeAttacked : attackableBuildings) {
@@ -155,7 +154,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     				}
     				
     				if (buildingsToAttack.size() != 0) {
-    					IAmNotABuilding[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
+    					IAmNotABuilding[] buildingToAttack = buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
     					//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
     					triggerEvent();  //TODO Send data to this which will then package & send to server
     	    			return;
@@ -168,8 +167,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     			}
     			else {
     				
-    				if (player.get().numberOfBuildings() > 1) {
-    					IAmNotABuilding buildingToSell = player.getBuilding(random.nextInt(player.get().numberOfBuildings()));
+    				if (mPlayer.get().numberOfBuildings() > 1) {
+    					IAmNotABuilding buildingToSell = mPlayer.getBuilding(mRandom.nextInt(mPlayer.get().numberOfBuildings()));
     					//Now have building to sell
     					triggerEvent();  //TODO Send data to this which will then package & send to server
     	    			return;
@@ -190,8 +189,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
      */
     private List<HexagonTile> hexTilesToExpand(){
     	List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
-    	for (int i = 0; i < player.get().numberOfBuildings(); i++) {
-    		IAmNotABuilding building = player.get().getBuilding(i);
+    	for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
+    		IAmNotABuilding building = mPlayer.get().getBuilding(i);
     		List<HexagonTile> hexTilesWhichCanBeSeen = building.getHexTiles();
     		
     		int r_pos = building.getR();
@@ -200,7 +199,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
     			   			
 
-    			if (player.get().getHexMap().get(hexTile.getR(), hexTile.getQ()) != null) {
+    			if (mPlayer.get().getHexMap().get(hexTile.getR(), hexTile.getQ()) != null) {
 
     				; //Ignore cos theres already a building there
     			}
@@ -228,8 +227,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
 		int q_value = hexTile.getMQ();
     	int index = 0;
     	boolean validPlace = true;
-    	while (validPlace && index < player.get().numberOfBuildings()) { 
-			IAmNotABuilding buildingToCheck = player.get().getBuilding(index);
+    	while (validPlace && index < mPlayer.get().numberOfBuildings()) {
+			IAmNotABuilding buildingToCheck = mPlayer.get().getBuilding(index);
 			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getmQ())) <= 1)){
 				return false;
 			}

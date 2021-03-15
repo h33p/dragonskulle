@@ -25,24 +25,22 @@ import org.joml.Vector4f;
  */
 public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
-    private Screen screenOn = Screen.MAP_SCREEN;
-    private Reference<GameObject> mapScreen;
-    private Reference<GameObject> placeScreen;
-    private Reference<GameObject> buildingScreen;
-    private Reference<GameObject> chooseAttack;
-    private Reference<GameObject> showStat;
+    private Screen mScreenOn = Screen.MAP_SCREEN;
+    private Reference<GameObject> mMapScreen;
+    private Reference<GameObject> mPlaceScreen;
+    private Reference<GameObject> mBuildingScreen;
+    private Reference<GameObject> mChooseAttack;
+    private Reference<GameObject> mShowStat;
 
-    private Reference<Player> player;
+    private Reference<Player> mPlayer;
 
 
-    private HexagonTile hexChosen;
-    private IAmNotABuilding buildingChosen;
+    private HexagonTile mHexChosen;
+    private IAmNotABuilding mBuildingChosen;
 
     /**
      * The constructor for the human player
      *
-     * @param map     the map being used for this game
-     * @param capital the capital used by the player
      */
     public HumanPlayer() {
     }
@@ -51,72 +49,72 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     public void onStart() {
         // TODO Auto-generated method stub
 
-        mapScreen = getGameObject().buildChild("map screen", new UITransform(), (go) -> {
+        mMapScreen = getGameObject().buildChild("map screen", new TransformUI(), (go) -> {
             go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
             //TODO How to click hex
 
         });  //This will draw a rectangle to the screen.  Need way to change screen
 
-        placeScreen = getGameObject().buildChild("place screen", new UITransform(), (go) -> {
+        mPlaceScreen = getGameObject().buildChild("place screen", new TransformUI(), (go) -> {
             go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-            go.buildChild("confirm box", new UITransform(true), (box) -> {
+            go.buildChild("confirm box", new TransformUI(true), (box) -> {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
                     //TODO When clicked send to server (via calling Player) to try & build thing and then turn back to mapScreen
 
-                    screenOn = Screen.MAP_SCREEN;
+                    mScreenOn = Screen.MAP_SCREEN;
                 }));
             });
-            go.buildChild("Go Back", new UITransform(true), (box) -> {
+            go.buildChild("Go Back", new TransformUI(true), (box) -> {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
 
-                    screenOn = Screen.MAP_SCREEN;
+                    mScreenOn = Screen.MAP_SCREEN;
                 }));
             });
         });
 
-        buildingScreen = getGameObject().buildChild("building options", new UITransform(), (go) -> {
+        mBuildingScreen = getGameObject().buildChild("building options", new TransformUI(), (go) -> {
             go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-            go.buildChild("Upgrade Button", new UITransform(true), (box) -> {
+            go.buildChild("Upgrade Button", new TransformUI(true), (box) -> {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));  //Make way to Go back
                 box.addComponent(new UIButton((handle, __) -> {
                     //TODO When clicked need to show options to upgrade building stats
-                    screenOn = Screen.STAT_SCREEN;
+                    mScreenOn = Screen.STAT_SCREEN;
                 }));
             });
-            go.buildChild("Attack building", new UITransform(true), (box) -> {
+            go.buildChild("Attack building", new TransformUI(true), (box) -> {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
                     //TODO When clicked need to show buildings which can be attacked -- get off building
-                    screenOn = Screen.ATTACK_SCREEN;
+                    mScreenOn = Screen.ATTACK_SCREEN;
                 }));
             });
-            go.buildChild("Sell building", new UITransform(true), (box) -> {
+            go.buildChild("Sell building", new TransformUI(true), (box) -> {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
                     //TODO When clicked need to sell building
-                    screenOn = Screen.MAP_SCREEN;
+                    mScreenOn = Screen.MAP_SCREEN;
                 }));
             });
-            go.buildChild("Go Back", new UITransform(true), (box) -> {
+            go.buildChild("Go Back", new TransformUI(true), (box) -> {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
 
-                    screenOn = Screen.MAP_SCREEN;
+                    mScreenOn = Screen.MAP_SCREEN;
                 }));
             });
         });
 
-        chooseAttack = getGameObject().buildChild("attack screen", new TransformUI(), (go) -> {
+        mChooseAttack = getGameObject().buildChild("attack screen", new TransformUI(), (go) -> {
             go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
-            for (IAmNotABuilding building : buildingChosen.attackableBuildings()) {
+            for (IAmNotABuilding building : mBuildingChosen.attackableBuildings()) {
                 go.buildChild("Attack building", new TransformUI(true), (box) -> {
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(new UIButton((handle, __) -> {
                         //TODO When clicked need to attack building
-                        screenOn = Screen.MAP_SCREEN;
+                        mScreenOn = Screen.MAP_SCREEN;
                     }));
                 });
             }
@@ -125,12 +123,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
 
-                    screenOn = Screen.MAP_SCREEN;
+                    mScreenOn = Screen.MAP_SCREEN;
                 }));
             });
         });
 
-        showStat = getGameObject().buildChild("Stat screen", new TransformUI(), (go) -> {
+        mShowStat = getGameObject().buildChild("Stat screen", new TransformUI(), (go) -> {
             go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
             ;    //TODO will add stuff for Stats AFTER prototype
@@ -139,7 +137,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                 box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                 box.addComponent(new UIButton((handle, __) -> {
 
-                    screenOn = Screen.MAP_SCREEN;
+                    mScreenOn = Screen.MAP_SCREEN;
                 }));
             });
         });
@@ -156,12 +154,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     public void frameUpdate(float deltaTime) {
         //updateTokens(deltaTime);  TODO Move to server
 
-        mapScreen.get().setEnabled(screenOn == Screen.MAP_SCREEN);
-        placeScreen.get().setEnabled(screenOn == Screen.TILE_SCREEN);
-        buildingScreen.get().setEnabled(screenOn == Screen.BUILDING_SCREEN);
-        chooseAttack.get().setEnabled(screenOn == Screen.ATTACK_SCREEN);
-        showStat.get().setEnabled(screenOn == Screen.STAT_SCREEN);
-        if (screenOn == Screen.MAP_SCREEN) {
+        mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
+        mPlaceScreen.get().setEnabled(mScreenOn == Screen.TILE_SCREEN);
+        mBuildingScreen.get().setEnabled(mScreenOn == Screen.BUILDING_SCREEN);
+        mChooseAttack.get().setEnabled(mScreenOn == Screen.ATTACK_SCREEN);
+        mShowStat.get().setEnabled(mScreenOn == Screen.STAT_SCREEN);
+        if (mScreenOn == Screen.MAP_SCREEN) {
             mapScreen();
         }
     }
@@ -174,17 +172,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
             Vector2d cursorPosition = GameActions.getCursor().getPosition();
             //TODO Check which tile has been selected Auri has said he will convert from screen to local.
 
-            hexChosen = null;  //TODO Work out which one chosen
+            mHexChosen = null;  //TODO Work out which one chosen
 
 
-            if (hexChosen != null) {
-                IAmNotABuilding buildingOnTile = HexagonMap.getBuilding(hexChosen.getMR(), hexChosen.getMQ());
+            if (mHexChosen != null) {
+                IAmNotABuilding buildingOnTile = HexagonMap.getBuilding(mHexChosen.getMR(), mHexChosen.getMQ());
                 if (buildingOnTile == null) {
                     // TODO Check if it can place a building there
 
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
-                    buildingChosen = buildingOnTile;
-                    screenOn = Screen.BUILDING_SCREEN;
+                    mBuildingChosen = buildingOnTile;
+                    mScreenOn = Screen.BUILDING_SCREEN;
                 } else {
                     return;
                 }
@@ -198,16 +196,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     }
 
     private boolean hasPlayerGotBuilding(IAmNotABuilding buildingToCheck) {
-        for (int i = 0; i < player.get().numberOfBuildings(); i++) {
-            IAmNotABuilding building = player.get().getBuilding(i);
+        for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
+            IAmNotABuilding building = mPlayer.get().getBuilding(i);
 
             if (building == buildingToCheck) {
                 return true;
             }
         }
         return false;
-
     }
-
-
 }
