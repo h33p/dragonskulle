@@ -3,6 +3,7 @@ package org.dragonskulle.game.map;
 
 import java.util.Arrays;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
 /**
@@ -10,6 +11,7 @@ import lombok.extern.java.Log;
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
  *     coordinates of each tile.
  */
+@Accessors(prefix = "m")
 @Log
 public class HexagonTile {
 
