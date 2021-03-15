@@ -127,7 +127,7 @@ public class AiPlayer extends Component
                     int randomIndex = mRandom.nextInt(tilesToUse.size());
                     HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
                     // now have Hexagon tile to expand to
-                    triggerEvent(); // TODO Send data to this which will then package & send to
+                    mPlayer.get().clientInvokeEvent(new BuildData(tileToExpandTo)); // TODO Send data to this which will then package & send to
                     // server
                     return;
                 } else {
