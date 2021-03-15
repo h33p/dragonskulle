@@ -276,11 +276,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
             mHexChosen = null; // TODO Work out which one chosen
 
             if (mHexChosen != null) {
-                Building buildingOnTile =
-                        mPlayer.get()
+                Reference<Building> buildingOnTile =
+                        new Reference<Building>(mPlayer.get()
                                 .getMapComponent()
                                 .get()
-                                .getBuilding(mHexChosen.getQ(), mHexChosen.getR());
+                                .getBuilding(mHexChosen.getQ(), mHexChosen.getR()));
                 if (buildingOnTile == null) {
                     // TODO Check if it can place a building there
 
@@ -298,9 +298,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
         }
     }
 
-    private boolean hasPlayerGotBuilding(Building buildingToCheck) {
+    private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
         for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
-            Building building = mPlayer.get().getBuilding(i);
+            Reference<Building> building = mPlayer.get().getBuilding(i);
 
             if (building == buildingToCheck) {
                 return true;

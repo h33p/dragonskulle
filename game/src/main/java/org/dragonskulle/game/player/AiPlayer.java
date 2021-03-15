@@ -138,21 +138,23 @@ public class AiPlayer extends Component
 
                 if (randomNumber <= mUpgradeBuilding) {
 
-                    Building building =
+                    Reference<Building> building =
                             mPlayer.get()
                                     .getBuilding(
                                             mRandom.nextInt(mPlayer.get().numberOfBuildings()));
-                    ArrayList<Stat<?>> statsArray = building.getStats();
-                    Stat statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
+                    ArrayList<Stat<?>> statsArray = building.get().getStats();
+                    Stat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
                     triggerEvent(); // TODO Send data to this which will then package & send to
                     // server
                     return;
 
                 } else if (randomNumber > mUpgradeBuilding
                         && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
+                	
                     ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
+                    
                     for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
-                        Building building = mPlayer.get().getBuilding(i);
+                        Building building = mPlayer.get().getBuilding(i).get();
 
                         List<Building> attackableBuildings = building.getAttackableBuildings();
                         for (Building buildingWhichCouldBeAttacked : attackableBuildings) {
@@ -184,7 +186,7 @@ public class AiPlayer extends Component
                         Building buildingToSell =
                                 mPlayer.get()
                                         .getBuilding(
-                                                mRandom.nextInt(mPlayer.get().numberOfBuildings()));
+                                                mRandom.nextInt(mPlayer.get().numberOfBuildings())).get();
                         // Now have building to sell
                         mPlayer.get()
                                 .clientInvokeEvent(
@@ -209,7 +211,7 @@ public class AiPlayer extends Component
     private List<HexagonTile> hexTilesToExpand() {
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
         for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
-            Building building = mPlayer.get().getBuilding(i);
+            Building building = mPlayer.get().getBuilding(i).get();
             List<HexagonTile> hexTilesWhichCanBeSeen = building.getViewableTiles();
 
             for (HexagonTile hexTile : hexTilesWhichCanBeSeen) {

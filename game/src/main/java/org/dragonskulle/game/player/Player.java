@@ -67,7 +67,7 @@ public class Player extends NetworkableComponent implements SellData.IEvent, Att
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
      * owned buildings to check if need to update tokens
      */
-    public void updateTokens(float time) { // TODO move this to server once server integrated.
+    public void updateTokens(float time) { 
     	
     	if (getNetworkObject() != null && getNetworkObject().isServer()) {
         mLastTokenUpdate += time;
