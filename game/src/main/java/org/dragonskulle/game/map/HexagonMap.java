@@ -67,7 +67,7 @@ public class HexagonMap extends Component implements IOnStart {
     }
 
     /**
-     * Store a {@link Reference reference} to the {@link Building} at the specified position.
+     * Store a reference to the {@link Building} at the specified position.
      *
      * @param building The Building to be stored.
      * @param q The q coordinate.
@@ -86,7 +86,7 @@ public class HexagonMap extends Component implements IOnStart {
     }
 
     /**
-     * Stop storing the {@link Reference} to the Building at the specified position.
+     * Stop storing the reference to the Building at the specified position.
      *
      * <p>Stores {@code null} at the position instead.
      *
