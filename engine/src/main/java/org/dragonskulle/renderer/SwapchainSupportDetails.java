@@ -20,7 +20,7 @@ class SwapchainSupportDetails {
     public static final Logger LOGGER = Logger.getLogger("render");
 
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_FIFO_KHR);
-    
+
     public SwapchainSupportDetails(VkPhysicalDevice device, long surface) {
         capabilities = VkSurfaceCapabilitiesKHR.create();
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, capabilities);
