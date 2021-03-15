@@ -164,10 +164,14 @@ public class AiPlayer extends Component
 
                     if (buildingsToAttack.size() != 0) {
                         Building[] buildingToAttack =
-                                buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
+                                buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size())); //getting a random building to {attackFrom, and attackTo}
                         // Chosen building to attack in form [buildingToAttackFrom,
                         // buildingToAttack]
-                        triggerEvent(); // TODO Send data to this which will then package & send to
+                        mPlayer.get()
+                                .clientInvokeEvent(
+                                        new AttackData(
+                                                buildingToAttack[0], buildingToAttack[1]));
+                        // TODO Send data to this which will then package & send to
                         // server
                         return;
                     } else {

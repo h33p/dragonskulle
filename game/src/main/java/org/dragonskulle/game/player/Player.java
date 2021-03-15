@@ -19,7 +19,7 @@ import org.dragonskulle.network.components.requests.ClientRequest;
  */
 @Accessors(prefix = "m")
 @Log
-public class Player extends NetworkableComponent implements SellData.IEvent {
+public class Player extends NetworkableComponent implements SellData.IEvent, AttackData.IEvent {
 
     private List<Building> mOwnedBuildings;
     @Getter private Reference<HexagonMap> mMapComponent;
@@ -75,6 +75,18 @@ public class Player extends NetworkableComponent implements SellData.IEvent {
         }
     }
 
+
+    /** We need to initialize requests here, since java does not like to serialize lambdas */
+    @Override
+    protected void onNetworkInitialize() {
+        mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
+        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
+    }
+
+    @Override
+    protected void onDestroy() {}
+
+
     // Selling of buildings is handled below
     private transient ClientRequest<SellData> mClientSellRequest;
 
@@ -103,12 +115,33 @@ public class Player extends NetworkableComponent implements SellData.IEvent {
         }
     }
 
-    @Override
-    protected void onDestroy() {}
 
-    /** We need to initialize requests here, since java does not like to serialize lambdas */
+
+    // attacking of buildings is handled below
+    private transient ClientRequest<AttackData> mClientAttackRequest;
+
+    /**
+     * How this component will react to an attack event.
+     *
+     * @param data attack event being executed on the server.
+     */
     @Override
-    protected void onNetworkInitialize() {
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
+    public void handleEvent(AttackData data) {
+        // TODO implement
+        // get building to be attacked
+        // get building to that is doing the attacking
+        // verify the sender owns the building to be attacked from and it can see the building
+        // attack the building
     }
+
+    /** This is how the client will invoke the attack event. */
+    @Override
+    public void clientInvokeEvent(AttackData data) {
+        if (getNetworkObject().isServer()) {
+            log.warning("Client invoked attack called on server! This is wrong!");
+        } else {
+            mClientAttackRequest.invoke(data);
+        }
+    }
+
 }
