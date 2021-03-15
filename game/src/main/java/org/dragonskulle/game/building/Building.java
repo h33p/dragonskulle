@@ -2,7 +2,6 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,16 +17,17 @@ import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.requests.AttackData;
-import org.dragonskulle.network.components.requests.ClientRequest;
 
+/**
+ * A Building component.
+ *
+ * @author Craig
+ */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements AttackData.IEvent {
+public class Building extends Component {
 
-	/** Stores the attack strength of the building. */
+    /** Stores the attack strength of the building. */
     @Getter private AttackStat mAttack;
     /** Stores the defence strength of the building. */
     @Getter private DefenceStat mDefence;
@@ -53,6 +53,10 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
      * @param hexagonTile The HexagonTile the building is on.
      */
     public Building(Reference<HexagonMap> hexagonMap, Reference<HexagonTile> hexagonTile) {
+
+        // TODO Clean up.
+        // Move contents out of constructor.
+
         mTile = hexagonTile;
         mHexagonMap = hexagonMap;
 
@@ -78,15 +82,16 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
 
     /**
      * Attack an opponent building.
-     * <p>
-     * There is a chance this will either fail or succeed, influenced by the attack stat of the attacking building and the defence stats of the opponent building.
+     *
+     * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
+     * attacking building and the defence stats of the opponent building.
      *
      * @param opponent The building to attack.
      */
     public void attack(Building opponent) {
-       // TODO: Make attack success dependent on building stats.
-    	
-    	Random random = new Random();
+        // TODO: Make attack success dependent on building stats.
+
+        Random random = new Random();
         double successChance = random.nextDouble();
         // Set a 50% chance of success.
         double target = 0.5;
@@ -154,10 +159,10 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
         // Get the current q and r coordinates.
         int qCentre = tile.getQ();
         int rCentre = tile.getR();
-        
+
         for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {            	
-            	// Only get tiles whose s coordinates are within the desired range.
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
                 int sOffset = -qOffset - rOffset;
 
                 // Do not include tiles outside of the radius.
@@ -165,7 +170,8 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
                 // Do not include the building's HexagonTile.
                 if (qOffset == 0 && rOffset == 0) continue;
 
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset, s));
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
+                // s));
 
                 // Attempt to get the desired tile, and check if it exists.
                 HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
@@ -177,13 +183,14 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
         }
 
         log.info("Number of tiles in range: " + tiles.size());
-        
+
         return tiles;
     }
 
     /**
-     * Get an ArrayList of opponent {@link Building}s within the range defined by {@link #mAttackDistance}. 
-     * 
+     * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
+     * #mAttackDistance}.
+     *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
     public ArrayList<Building> getAttackableBuildings() {
@@ -198,15 +205,15 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
         ArrayList<HexagonTile> attackTiles = getAttackTiles();
         for (HexagonTile tile : attackTiles) {
             // Get the building on an attackable tile, if it exists.
-        	Building building = map.getBuilding(tile.getQ(), tile.getR());
-        	if (building == null) continue;
+            Building building = map.getBuilding(tile.getQ(), tile.getR());
+            if (building == null) continue;
 
-        	// Ensure the building is not owned by the owner of this building.
+            // Ensure the building is not owned by the owner of this building.
             Reference<TestPlayer> buildingOwner = building.getOwner();
             // TODO Replace references to the player with a player ID.
             if (owner.equals(buildingOwner.get())) {
                 log.info("Building owned by same player.");
-            	continue;
+                continue;
             }
 
             // Add the opponent building to the list of attackable buildings.
@@ -234,39 +241,4 @@ public class Building extends NetworkableComponent implements AttackData.IEvent 
 
     @Override
     protected void onDestroy() {}
-
-    
-    
-    
-    
-    // Networking stuff:    
-    
-    /**
-     * Creates the link between the request type @code{new AttackRequest()} and what to do when
-     * invoked @code{this::handleEvent}
-     */
-    private transient ClientRequest<AttackData> mAttackRequest;
-    
-    @Override
-    protected void onNetworkInitialize() {
-    	mAttackRequest = new ClientRequest<AttackData>(new AttackData(), this::handleEvent);
-    }    
-    
-	@Override
-	public void handleEvent(AttackData data) {
-		System.out.println("HANDLE EVENT");
-	}
-
-	@Override
-	public void initialize(NetworkObject networkObject, List<ClientRequest<?>> outRequests) {
-		// TODO Auto-generated method stub
-		super.initialize(networkObject, outRequests);
-	}
-	
-	@Override
-	public void clientInvokeEvent(AttackData data) {
-		// TODO Auto-generated method stub
-		
-	}
-    
 }
