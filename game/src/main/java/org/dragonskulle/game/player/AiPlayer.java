@@ -6,7 +6,6 @@ package org.dragonskulle.game.player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -27,7 +26,7 @@ import org.dragonskulle.game.player.networkData.StatData;
  */
 public class AiPlayer extends Component
         implements IFixedUpdate,
-        IOnStart { // TODO remove extends -- Work out whats happening with player
+                IOnStart { // TODO remove extends -- Work out whats happening with player
 
     protected float mTimeSinceStart;
     protected int mLowerBoundTime = 5;
@@ -45,11 +44,8 @@ public class AiPlayer extends Component
     protected float mAttackBuilding = (float) 0.7;
     protected float mSellBuilding = (float) 0.1;
 
-    /**
-     * A Constructor for an AI Player
-     */
-    public AiPlayer() {
-    }
+    /** A Constructor for an AI Player */
+    public AiPlayer() {}
 
     @Override
     public void onStart() {
@@ -77,9 +73,7 @@ public class AiPlayer extends Component
         return false;
     }
 
-    /**
-     * This will set how long the AI player has to wait until they can play
-     */
+    /** This will set how long the AI player has to wait until they can play */
     protected void createNewRandomTime() {
         do {
 
@@ -88,8 +82,7 @@ public class AiPlayer extends Component
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -131,7 +124,11 @@ public class AiPlayer extends Component
                     int randomIndex = mRandom.nextInt(tilesToUse.size());
                     HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
                     // now have Hexagon tile to expand to
-                    mPlayer.get().clientInvokeEvent(new BuildData(tileToExpandTo)); // TODO Send data to this which will then package & send to
+                    mPlayer.get()
+                            .clientInvokeEvent(
+                                    new BuildData(
+                                            tileToExpandTo)); // TODO Send data to this which will
+                    // then package & send to
                     // server
                     return;
                 } else {
@@ -148,15 +145,20 @@ public class AiPlayer extends Component
                                             mRandom.nextInt(mPlayer.get().numberOfBuildings()));
                     ArrayList<Stat<?>> statsArray = building.get().getStats();
                     Stat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
-                    mPlayer.get().clientInvokeEvent(new StatData(building.get(), statToUpgrade)); // TODO Send data to this which will then package & send to
+                    mPlayer.get()
+                            .clientInvokeEvent(
+                                    new StatData(
+                                            building.get(),
+                                            statToUpgrade)); // TODO Send data to this which will
+                    // then package & send to
                     // server
                     return;
 
                 } else if (randomNumber > mUpgradeBuilding
                         && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
-                	
+
                     ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
-                    
+
                     for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
                         Building building = mPlayer.get().getBuilding(i).get();
 
@@ -170,13 +172,16 @@ public class AiPlayer extends Component
 
                     if (buildingsToAttack.size() != 0) {
                         Building[] buildingToAttack =
-                                buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size())); //getting a random building to {attackFrom, and attackTo}
+                                buildingsToAttack.get(
+                                        mRandom.nextInt(
+                                                buildingsToAttack
+                                                        .size())); // getting a random building to
+                        // {attackFrom, and attackTo}
                         // Chosen building to attack in form [buildingToAttackFrom,
                         // buildingToAttack]
                         mPlayer.get()
                                 .clientInvokeEvent(
-                                        new AttackData(
-                                                buildingToAttack[0], buildingToAttack[1]));
+                                        new AttackData(buildingToAttack[0], buildingToAttack[1]));
                         // TODO Send data to this which will then package & send to
                         // server
                         return;
@@ -190,7 +195,8 @@ public class AiPlayer extends Component
                         Building buildingToSell =
                                 mPlayer.get()
                                         .getBuilding(
-                                                mRandom.nextInt(mPlayer.get().numberOfBuildings())).get();
+                                                mRandom.nextInt(mPlayer.get().numberOfBuildings()))
+                                        .get();
                         // Now have building to sell
                         mPlayer.get()
                                 .clientInvokeEvent(
@@ -221,10 +227,8 @@ public class AiPlayer extends Component
             for (HexagonTile hexTile : hexTilesWhichCanBeSeen) {
 
                 if (mPlayer.get().getMapComponent().get().getTile(hexTile.getR(), hexTile.getQ())
-                        != null) {
-                    ; // Ignore cos theres already a building there
-                } else if (!checkCloseBuildings(hexTile)) {
-                    ; // IGNORE TILE IT'S WITHIN 1 HEX
+                        != null) {; // Ignore cos theres already a building there
+                } else if (!checkCloseBuildings(hexTile)) {; // IGNORE TILE IT'S WITHIN 1 HEX
                 }
 
                 // Can add extra checks here.
@@ -246,7 +250,8 @@ public class AiPlayer extends Component
         ArrayList<HexagonTile> hexTiles = getTilesInRadius(1, hexTile);
 
         for (HexagonTile tile : hexTiles) {
-            if (mPlayer.get().getMapComponent().get().getBuilding(tile.getQ(), tile.getR()) != null) {
+            if (mPlayer.get().getMapComponent().get().getBuilding(tile.getQ(), tile.getR())
+                    != null) {
                 return false;
             }
         }
@@ -254,8 +259,10 @@ public class AiPlayer extends Component
         return true;
     }
 
-
-    private ArrayList<HexagonTile> getTilesInRadius(int radius, HexagonTile tile) {  //TODO Repeated code from building need to move in more sensible place
+    private ArrayList<HexagonTile> getTilesInRadius(
+            int radius,
+            HexagonTile
+                    tile) { // TODO Repeated code from building need to move in more sensible place
         ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
 
         // Attempt to get the current HexagonTile and HexagonMap.
@@ -288,7 +295,7 @@ public class AiPlayer extends Component
             }
         }
 
-        //log.info("Number of tiles in range: " + tiles.size());
+        // log.info("Number of tiles in range: " + tiles.size());
 
         return tiles;
     }

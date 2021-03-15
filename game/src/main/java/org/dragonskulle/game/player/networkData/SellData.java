@@ -6,7 +6,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.network.components.requests.INeedToTalkToTheServer;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /** @author Oscar L */

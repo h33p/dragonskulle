@@ -352,7 +352,6 @@ public class GameObject implements Serializable {
      */
     public void buildChild(String name, IBuildHandler handler) {
         buildChild(name, mEnabled, handler);
-
     }
 
     /**

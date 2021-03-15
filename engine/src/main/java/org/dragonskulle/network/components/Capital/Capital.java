@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.requests.TestAttackData;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.TestAttackData;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncString;
@@ -27,7 +27,6 @@ public class Capital extends NetworkableComponent {
      * Creates the link between the request type @code{new AttackRequest()} and what to do when
      * invoked @code{this::handleEvent}
      */
-
     public transient ClientRequest<TestAttackData> mPasswordRequest;
 
     public static final int CORRECT_PASSWORD = 4242;
@@ -45,7 +44,6 @@ public class Capital extends NetworkableComponent {
      *
      * @param data attack event being executed on the server.
      */
-
     public void handleEvent(TestAttackData data) {
         if (data.mPassword == CORRECT_PASSWORD) {
             mClientToggled.set(data.mToBuilding);

@@ -1,17 +1,14 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.networkData;
-
-import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.network.components.requests.INeedToTalkToTheServer;
-import org.dragonskulle.network.components.sync.INetSerializable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.network.components.sync.INetSerializable;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 public class AttackData implements INetSerializable {
     private HexagonTile mAttackingFrom;
     private HexagonTile mAttacking;
@@ -33,8 +30,7 @@ public class AttackData implements INetSerializable {
         this.mAttacking = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
     }
 
-    public AttackData() {
-    }
+    public AttackData() {}
 
     public AttackData(Building attackingFrom, Building attacking) {
         this.mAttackingFrom = attackingFrom.getTile().get();
