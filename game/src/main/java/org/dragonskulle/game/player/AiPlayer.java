@@ -142,28 +142,28 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     			
     			if (randomNumber <= upgradeBuilding) {
     				
-    				Building building = player.getBuilding(random.nextInt(player.get().numberOfBuildings()));
-    				Stat[] statsArray = building.getStats();
-    				Stat statToUpgrade = statsArray[random.nextInt(statsArray.length)];
+    				IAmNotABuilding building = player.get().getBuilding(random.nextInt(player.get().numberOfBuildings()));
+    				List<Stat> statsArray = building.getStats();
+    				Stat statToUpgrade = statsArray.get(random.nextInt(statsArray.size()));
     				triggerEvent();  //TODO Send data to this which will then package & send to server
         			return;
     				
     			}
     			else if (randomNumber > upgradeBuilding && randomNumber <= attackBuilding + upgradeBuilding){
-    				ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
+    				ArrayList<IAmNotABuilding[]> buildingsToAttack = new ArrayList<IAmNotABuilding[]>();
     				for (int i = 0; i < player.get().numberOfBuildings(); i++) {
-    					Building building = player.get().getBuilding(i);
+    					IAmNotABuilding building = player.get().getBuilding(i);
     					
-    					List<Building> attackableBuildings = building.attackableBuildings();
-    					for (Building buildingWhichCouldBeAttacked : attackableBuildings) {
-    						Building[] listToAdd = {building, buildingWhichCouldBeAttacked};
+    					List<IAmNotABuilding> attackableBuildings = building.attackableBuildings();
+    					for (IAmNotABuilding buildingWhichCouldBeAttacked : attackableBuildings) {
+    						IAmNotABuilding[] listToAdd = {building, buildingWhichCouldBeAttacked};
     					
     						buildingsToAttack.add(listToAdd);
     					}
     				}
     				
     				if (buildingsToAttack.size() != 0) {
-    					Building[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
+    					IAmNotABuilding[] buildingToAttack = buildingsToAttack.get(random.nextInt(buildingsToAttack.size()));
     					//Chosen building to attack in form [buildingToAttackFrom, buildingToAttack]
     					triggerEvent();  //TODO Send data to this which will then package & send to server
     	    			return;
@@ -177,7 +177,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     			else {
     				
     				if (player.get().numberOfBuildings() > 1) {
-    					Building buildingToSell = player.getBuilding(random.nextInt(player.numberOfBuildings()));	
+    					IAmNotABuilding buildingToSell = player.getBuilding(random.nextInt(player.get().numberOfBuildings()));
     					//Now have building to sell
     					triggerEvent();  //TODO Send data to this which will then package & send to server
     	    			return;
@@ -199,7 +199,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     private List<HexagonTile> hexTilesToExpand(){
     	List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
     	for (int i = 0; i < player.get().numberOfBuildings(); i++) {
-    		Building building = player.get().getBuilding(i);
+    		IAmNotABuilding building = player.get().getBuilding(i);
     		List<HexagonTile> hexTilesWhichCanBeSeen = building.getHexTiles();
     		
     		int r_pos = building.getR();
@@ -207,7 +207,11 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
     		
     		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
     			   			
+<<<<<<< HEAD
     			if (player.get().getHexMap().get(hexTile.getR(), hexTile.getQ()) != null) {
+=======
+    			if (player.get().getHexMap().get(hexTile.getMR(), hexTile.getMQ()) != null) {
+>>>>>>> d9854359ffb38f4832f42c98b15b4395d1b906bf
     				; //Ignore cos theres already a building there
     			}
     			else if (!checkCloseBuildings(hexTile)) {  
@@ -230,13 +234,13 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //T
      * @return {@code true} if that hextile is valid to build in or {@code false} if it's not valid 
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
-    	int r_value = hexTile.getmR();
-		int q_value = hexTile.getmQ();
+    	int r_value = hexTile.getMR();
+		int q_value = hexTile.getMQ();
     	int index = 0;
     	boolean validPlace = true;
     	while (validPlace && index < player.get().numberOfBuildings()) { 
-			Builidng buildingToCheck = player.get().getBuilding(index);
-			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getmR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getmQ())) <= 1)){
+			IAmNotABuilding buildingToCheck = player.get().getBuilding(index);
+			if ((Math.abs(Math.abs(r_value) - Math.abs(buildingToCheck.getR())) <= 1) && (Math.abs(Math.abs(q_value) - Math.abs(buildingToCheck.getmQ())) <= 1)){
 				return false;
 			}
 			index++;
