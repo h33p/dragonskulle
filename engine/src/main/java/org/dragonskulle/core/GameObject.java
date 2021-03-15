@@ -318,7 +318,7 @@ public class GameObject implements Serializable {
         } else {
             child.mRoot = mRoot;
         }
-        child.mEnabled = mEnabled;
+        child.setEnabled(mEnabled);
         child.mParent = this;
         child.setDepth(mDepth + 1);
         mChildren.add(child);
@@ -337,7 +337,7 @@ public class GameObject implements Serializable {
         for (GameObject child : children) {
             child.mRoot = root;
             child.mParent = this;
-            child.mEnabled = mEnabled;
+            child.setEnabled(mEnabled);
             child.setDepth(this.mDepth + 1);
         }
         mChildren.addAll(children);
