@@ -35,7 +35,7 @@ public class TextureMapping implements Serializable {
     }
 
     public TextureMapping() {
-        this(TextureFiltering.LINEAR, TextureWrapping.REPEAT);
+        this(TextureFiltering.LINEAR, TextureWrapping.CLAMP);
     }
 
     public static enum TextureFiltering {

@@ -4,7 +4,7 @@ package org.dragonskulle.game;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.Transform;
+import org.dragonskulle.components.Transform3D;
 
 /**
  * Simple spinning objects!
@@ -18,7 +18,7 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
     public float sineSpeed = 50.f;
     public float sineAmplitude = .5f;
 
-    private Transform mTransform;
+    private Transform3D mTransform;
     private float mTotalTime = 0.f;
 
     public Spinner() {}
@@ -31,7 +31,7 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void onAwake() {
-        mTransform = getGameObject().getTransform();
+        mTransform = (Transform3D) getGameObject().getTransform();
     }
 
     @Override

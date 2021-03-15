@@ -10,17 +10,19 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.components.HumanPlayer;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.UnlitMaterial;
 import org.dragonskulle.ui.*;
+import org.joml.Math;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
 
 public class App {
 
-    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 5);
+    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
 
     private static final Vector3fc[] COLOURS = {
         new Vector3f(1.f, 0.f, 0.f),
@@ -34,17 +36,17 @@ public class App {
         new Vector3f(1.f, 0.f, 1.f),
     };
 
-    private static final float SHIFT_FACTOR = (float) Math.pow(2.0, 1.0 / (float) INSTANCE_COUNT);
+    private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     /** Entrypoint of the program. Creates and runs one app instance */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // Create a scene
         Scene mainScene = new Scene("mainScene");
 
         // The game needs a camera!
         GameObject camera = new GameObject("mainCamera");
 
-        Transform tr = camera.getTransform();
+        Transform3D tr = (Transform3D) camera.getTransform();
         // Set where it's at
         tr.setPosition(0f, 0f, 1f);
         tr.rotateDeg(30f, 0f, 0f);
@@ -63,26 +65,34 @@ public class App {
         Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
         UnlitMaterial hexMaterial = hexRenderer.get().getMaterial(UnlitMaterial.class);
 
-        // Add spin and wobble components
-        hexagon.addComponent(new Spinner());
-        Reference<Spinner> hexSpinner = hexagon.getComponent(Spinner.class);
+        // Add wobble components
         hexagon.addComponent(new Wobbler());
+        Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
+
+        GameObject hexRoot = new GameObject("hexRoot");
+        hexRoot.addComponent(new Spinner(30, 10, 0.1f));
 
         // Create instances, change up some parameters
-        for (int i = 0; i < INSTANCE_COUNT; i++) {
-            hexMaterial.colour.set(COLOURS[i % COLOURS.length]);
-            hexSpinner.get().spinSpeed *= SHIFT_FACTOR;
-            hexSpinner.get().sineAmplitude *= SHIFT_FACTOR;
-
-            // Actually create an instance
-            mainScene.addRootObject(GameObject.instantiate(hexagon));
+        for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
+            for (int r = -INSTANCE_COUNT_ROOT / 2; r <= INSTANCE_COUNT_ROOT / 2; r++) {
+                int idx = q * r % COLOURS.length;
+                if (idx < 0) idx += COLOURS.length;
+                hexWobbler
+                        .get()
+                        .setPhaseShift((Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) * 0.1f);
+                hexMaterial.colour.set(COLOURS[idx]);
+                hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
+            }
         }
+
+        mainScene.addRootObject(hexRoot);
 
         // Create a cube. This syntax is slightly different
         // This here, will allow you to "build" the cube in one go
         GameObject cube =
                 new GameObject(
                         "cube",
+                        new Transform3D(0f, 0f, 1.5f),
                         (go) -> {
                             go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
                             // You spin me right round...
@@ -92,75 +102,11 @@ public class App {
         // Aaand, spawn it!
         mainScene.addRootObject(cube);
 
-        // Create a monstrocity
-        //
-        // This demonstrates use of nested game objects. It's extremely powerful to compose objects
-        // like so, and the lambda syntax is rather intuitive to build this hierarchy tree with.
-        GameObject monstrocity =
-                new GameObject(
-                        "monstrocity",
-                        (inMonstrocity) -> {
-                            inMonstrocity.getTransform().setPosition(3.f, 3.f, 0.f);
-                            inMonstrocity.addComponent(
-                                    new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            inMonstrocity.addComponent(new Spinner(360.f, 1000.f, 0.1f));
-
-                            // Add a "arm" on the left side
-                            inMonstrocity.buildChild(
-                                    "leftSide",
-                                    (side) -> {
-                                        side.getTransform().setPosition(-1.5f, 0.f, 1.5f);
-                                        side.addComponent(
-                                                new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                                        side.addComponent(new Spinner(-180.f, 100.f, 1.f));
-
-                                        // assume this is a hand
-                                        side.buildChild(
-                                                "leftHand",
-                                                (tip) -> {
-                                                    tip.getTransform().setPosition(0.f, 0.f, 0.5f);
-                                                    tip.getTransform().scale(0.5f, 0.5f, 3.f);
-                                                    tip.addComponent(
-                                                            new Renderable(
-                                                                    Mesh.CUBE,
-                                                                    new UnlitMaterial()));
-                                                    tip.addComponent(
-                                                            new Spinner(360.f, 100.f, .1f));
-                                                });
-                                    });
-
-                            // Do the same thing on the other side
-                            inMonstrocity.buildChild(
-                                    "rightSide",
-                                    (side) -> {
-                                        side.getTransform().setPosition(1.5f, 0.f, 1.5f);
-                                        side.addComponent(
-                                                new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                                        side.addComponent(new Spinner(180.f, 100.f, 1.f));
-
-                                        // assume this is a hand
-                                        side.buildChild(
-                                                "rightHand",
-                                                (tip) -> {
-                                                    tip.getTransform().setPosition(0.f, 0.f, 0.5f);
-                                                    tip.getTransform().scale(0.5f, 0.5f, 3.f);
-                                                    tip.addComponent(
-                                                            new Renderable(
-                                                                    Mesh.CUBE,
-                                                                    new UnlitMaterial()));
-                                                    tip.addComponent(
-                                                            new Spinner(-360.f, 100.f, .1f));
-                                                });
-                                    });
-                        });
-
-        mainScene.addRootObject(monstrocity);
-
         // UI Example:
         GameObject uiPlayer =
                 new GameObject(
                         "ui",
-                        new UITransform(false),
+                        new TransformUI(false),
                         (root) -> {
                             root.addComponent(new HumanPlayer());
                             root.getTransform().scale(0.95f, 0.95f, 1f);
@@ -168,63 +114,70 @@ public class App {
 
         /*ui.buildChild(
                 "square",
-                new UITransform(true),
+                new TransformUI(true),
                 (square) -> {
-                    square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 1f)));
+                    square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.5f)));
+
+                    square.getTransform(TransformUI.class)
+                            .setParentAnchor(0.01f, 0.1f, 0.49f, 0.98f);
+
                     square.buildChild(
                             "square2",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (square2) -> {
                                 square2.addComponent(
                                         new UIRenderable(
-                                                new Vector4f(0.6f, 0.6f, 0.6f, 1f),
+                                                new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
                                                 new SampledTexture("test_cc0_texture.jpg")));
-                                square2.getTransform().scale(0.3f, 0.3f, 0.3f);
-                                square2.getTransform().translate(0f, -1.8f, 0f);
+                                // square2.getTransform(TransformUI.class).translate(0f, -0.3f);
+                                square2.getTransform(TransformUI.class)
+                                        .setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
+                                square2.getTransform(TransformUI.class).setTargetAspectRatio(1f);
+                                square2.getTransform(TransformUI.class).setMaintainAspect(true);
                                 UIButton uiButton =
                                         new UIButton(
+                                                null,
                                                 (button, __) -> {
                                                     button.getGameObject()
-                                                            .getTransform()
-                                                            .rotateDeg(0f, 0f, 15f);
+                                                            .getTransform(TransformUI.class)
+                                                            .rotateDeg(15f);
                                                 },
                                                 null,
                                                 null,
                                                 (button, deltaTime) -> {
                                                     button.getGameObject()
-                                                            .getTransform()
-                                                            .rotateDeg(0f, 0f, -60f * deltaTime);
+                                                            .getTransform(TransformUI.class)
+                                                            .rotateDeg(-60f * deltaTime);
                                                 });
                                 square2.addComponent(uiButton);
                             });
 
                     square.buildChild(
                             "button1",
-                            new UITransform(true),
+                            new TransformUI(true),
                             (button) -> {
                                 button.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                button.getTransform().scale(0.8f, 0.8f, 1f);
-                                button.getTransform().translate(0f, 0.4f, 0f);
-
-                                Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
+                                button.getTransform(TransformUI.class).setMaintainAspect(true);
+                                button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
 
                                 UIButton newButton =
                                         new UIButton(
+                                                new UIText(
+                                                        new Vector3f(1f, 0.5f, 0.05f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Click me!"),
                                                 (uiButton, __) -> {
-                                                    if (uiRef.isValid()) {
-                                                        Renderable uiRend = uiRef.get();
-                                                        Transform uiTransform =
-                                                                uiRend.getGameObject()
-                                                                        .getTransform();
-                                                        if (uiRend.isEnabled()) {
-                                                            uiTransform.scale(0.1f, 0.1f, 1f);
-                                                        } else {
-                                                            uiTransform.setPosition(0f, 0f, 0f);
-                                                            uiTransform.scale(10f, 10f, 1f);
-                                                        }
-                                                        uiRend.setEnabled(!uiRend.isEnabled());
-                                                    }
+                                                    uiButton.getLabelText()
+                                                            .get()
+                                                            .setText(
+                                                                    uiButton.getLabelText()
+                                                                                    .get()
+                                                                                    .getText()
+                                                                            + "a");
                                                 });
 
                                 button.addComponent(newButton);
@@ -233,7 +186,10 @@ public class App {
 */
         mainScene.addRootObject(uiPlayer);
 
+        // Load the main scene as the presentation scene
+        Engine.getInstance().loadPresentationScene(mainScene);
+
         // Run the game
-        Engine.getInstance().start("Germany", new GameBindings(), mainScene);
+        Engine.getInstance().start("Germany", new GameBindings());
     }
 }
