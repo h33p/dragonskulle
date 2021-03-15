@@ -8,6 +8,7 @@ import java.util.Random;
 
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -16,11 +17,11 @@ import org.dragonskulle.game.map.HexagonTile;
  * This base class will allow AI players to be created and used throughout the game.
  * @author Oscar L, Nathaniel Lowis
  */
-public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove extends -- Work out whats happening with player
+public class AiPlayer extends Component implements IFixedUpdate, IOnStart {  //TODO remove extends -- Work out whats happening with player
     
 	protected float timeSinceStart;
-	protected int lowerBoundTime;
-	protected int upperBoundTime;
+	protected int lowerBoundTime = 5;
+	protected int upperBoundTime = 10;
 	protected int timeToWait;
 	
 	protected Reference<Player> player;
@@ -43,15 +44,13 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
 	 * 
 	 * <p> So if you set the lowerBound to 2 and upperBound the AI Player will have a go every 2 - 5 seconds (Depending on the random number picked) <\p>
 	 */
-	public AiPlayer(int lowerBound, int upperBound, Reference<HexagonMap> map, Building capital) {		//TODO remove and replace with onStart
-		
-		super(map, capital);
-		lowerBoundTime = lowerBound;
-		upperBoundTime = upperBound;
+	public AiPlayer() {}
+	
+	@Override
+	public void onStart() {
 		timeSinceStart = 0;
 		
 		createNewRandomTime();
-		
 		
 	}
 	
@@ -208,7 +207,7 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
     		
     		for (HexagonTile hexTile: hexTilesWhichCanBeSeen) {
     			   			
-    			if (player.get().getHexMap().get(hexTile.getmR(), hexTile.getmQ()) != null) {
+    			if (player.get().getHexMap().get(hexTile.getR(), hexTile.getQ()) != null) {
     				; //Ignore cos theres already a building there
     			}
     			else if (!checkCloseBuildings(hexTile)) {  
@@ -244,4 +243,5 @@ public class AiPlayer extends Component implements IFixedUpdate {  //TODO remove
 		}
     	return true;
     }
+
 }
