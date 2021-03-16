@@ -327,21 +327,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
             mHexChosen = null; // TODO Work out which one chosen
 
             if (mHexChosen != null) {
-                Reference<Building> buildingOnTile = new Reference<Building>(
-                        mPlayer.get()
-                                .getMapComponent()
-                                .get()
-                                .getBuilding(mHexChosen.get().getQ(), mHexChosen.get().getR()));
+                Reference<Building> buildingOnTile =
+                        new Reference<Building>(
+                                mPlayer.get()
+                                        .getMapComponent()
+                                        .get()
+                                        .getBuilding(
+                                                mHexChosen.get().getQ(), mHexChosen.get().getR()));
                 if (buildingOnTile.get() == null) {
-                	
-                	//Checks if cannot build here
+
+                    // Checks if cannot build here
                     if (mPlayer.get()
                             .buildingWithinRadius(
                                     mPlayer.get().getTilesInRadius(1, mHexChosen.get()))) {
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
-                    //If you can build
+                        // If you can build
                     } else {
                         mScreenOn = Screen.TILE_SCREEN;
                     }
