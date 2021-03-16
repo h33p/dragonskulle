@@ -19,7 +19,7 @@ public class AttackStat extends Stat<Double> implements DoubleMap {
     protected Double getValueFromLevel() {
         return mapLevel();
     }
-    
+
     @Override
-	protected void onDestroy() {}
+    protected void onDestroy() {}
 }

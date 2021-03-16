@@ -8,6 +8,6 @@ public class AttackDistanceStat extends Stat<Integer> {
         return 2;
     }
 
-	@Override
-	protected void onDestroy() {}
+    @Override
+    protected void onDestroy() {}
 }

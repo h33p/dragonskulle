@@ -119,8 +119,7 @@ public class HexagonMap extends Component implements IOnStart {
         HashMap<Integer, Building> qBuildings = mBuildings.get(q);
         if (qBuildings == null) {
             // An inner HashMap does not exist, so create one.
-            HashMap<Integer, Building> innerMap =
-                    new HashMap<Integer, Building>();
+            HashMap<Integer, Building> innerMap = new HashMap<Integer, Building>();
             mBuildings.put(q, innerMap);
             qBuildings = innerMap;
         }

@@ -7,7 +7,7 @@ public class TokenGenerationStat extends Stat<Integer> {
     protected Integer getValueFromLevel() {
         return mLevel.get();
     }
-    
+
     @Override
-	protected void onDestroy() {}
+    protected void onDestroy() {}
 }
