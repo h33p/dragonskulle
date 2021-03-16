@@ -57,6 +57,6 @@ public class ClientEars implements ClientListener {
 
     @Override
     public void error(String s) {
-        System.out.println("[Client] ERROR: " + s);
+        mLogger.fine("[Client] ERROR: " + s);
     }
 }

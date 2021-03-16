@@ -249,7 +249,12 @@ public class NetworkClient {
                 mOpen = false;
                 closeAllConnections();
                 mClientListener.disconnected();
-                this.getNetworkableObjects().forEach((__, e) -> e.get().getGameObject().destroy());
+                this.getNetworkableObjects().forEach((__, e) -> {
+                    NetworkObject obj = e.get();
+                    if (obj != null) {
+                        obj.getGameObject().destroy();
+                    }
+                });
             }
             Engine.getInstance().loadPresentationScene("mainMenu");
             mProcessScheduler.cancel();
@@ -355,6 +360,7 @@ public class NetworkClient {
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
      */
+    @SuppressWarnings("")
     private class ClientRunner implements Runnable {
         final AtomicBoolean didTryDispose = new AtomicBoolean(false);
 
@@ -362,13 +368,17 @@ public class NetworkClient {
         public void run() {
             byte[] bArray;
             byte[] terminateBytes =
-                    new byte[NetworkConfig.TERMINATE_BYTES_LENGTH]; // max flatbuffer size
+                    new byte[NetworkConfig.TERMINATE_BYTES_LENGTH];
             if (mAutoProcessMessages) {
                 setProcessMessagesAutomatically(true);
             }
-            while (mOpen && !Thread.currentThread().isInterrupted()) {
+            while (mOpen) {
                 try {
-                    System.out.println("I am open");
+                    if (Thread.interrupted()) {
+                        if (!didTryDispose.get()) {
+                            dispose();
+                        }
+                    }
                     bArray = NetworkMessage.readMessageFromStream(mBIn);
                     if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
@@ -388,11 +398,9 @@ public class NetworkClient {
                     if (!didTryDispose.get()) {
                         dispose();
                     }
-                    System.out.println("Exception disposing client runner : " + ignore.getMessage());
                     break;
                 }
             }
-            System.out.println("I am not open");
         }
     }
 
