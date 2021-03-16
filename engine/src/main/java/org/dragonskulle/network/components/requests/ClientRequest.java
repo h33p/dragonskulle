@@ -24,6 +24,12 @@ public class ClientRequest<T extends INetSerializable> {
     private NetworkObject mNetworkObject;
     private int mRequestId;
 
+    /**
+     * Defined how an event it to be handled on the server.
+     *
+     * @param defaultValue the template of the event e.g {@code TestAttackData}
+     * @param handler the handler for the event
+     */
     public ClientRequest(T defaultValue, IRequestHandler<T> handler) {
         mTmpData = defaultValue;
         mHandler = handler;
@@ -36,19 +42,26 @@ public class ClientRequest<T extends INetSerializable> {
 
     public void invoke(T data) {
         try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            try (DataOutputStream oos = new DataOutputStream(bos)) {
-                oos.writeInt(mNetworkObject.getId());
-                oos.writeInt(mRequestId);
-                data.serialize(oos);
-                oos.flush();
+            if (mNetworkObject.isServer()) {
+                log.warning(
+                        "Client invoked "
+                                + data.getClass().getName()
+                                + "event called on server! This is wrong!");
+            } else {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                try (DataOutputStream oos = new DataOutputStream(bos)) {
+                    oos.writeInt(mNetworkObject.getId());
+                    oos.writeInt(mRequestId);
+                    data.serialize(oos);
+                    oos.flush();
+                }
+                bos.close();
+                final ClientGameInstance.NetworkClientSendBytesCallback networkManager =
+                        ClientNetworkManager.getSendToServer();
+                networkManager.send(
+                        NetworkMessage.build(
+                                NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST, bos.toByteArray()));
             }
-            bos.close();
-            final ClientGameInstance.NetworkClientSendBytesCallback networkManager =
-                    ClientNetworkManager.getSendToServer();
-            networkManager.send(
-                    NetworkMessage.build(
-                            NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST, bos.toByteArray()));
         } catch (IOException e) {
             e.printStackTrace();
         }
