@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+
+import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.stat.AttackDistanceStat;
 import org.dragonskulle.game.building.stat.AttackStat;
@@ -17,6 +20,8 @@ import org.dragonskulle.game.building.stat.ViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
  * A Building component.
@@ -25,7 +30,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent {
+public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** Stores the attack strength of the building. */
     @Getter private AttackStat mAttack;
@@ -37,13 +42,16 @@ public class Building extends NetworkableComponent {
     @Getter private ViewDistanceStat mViewDistance;
     /** Stores the attack range of the building. */
     @Getter private AttackDistanceStat mAttackDistance;
-
-    /** The owner of the building. */
-    @Getter @Setter private Reference<TestPlayer> mOwner = new Reference<TestPlayer>(null);
+    
+    /** ID of the owner of the building. */
+    private SyncInt mOwnerID = new SyncInt(-1);
+    /** Whether the building is a capital. */
+    private SyncBool mIsCapital = new SyncBool(false);
+    
     /** The HexagonTile the building is on. */
-    private Reference<HexagonTile> mTile = new Reference<HexagonTile>(null);
+    private Reference<HexagonTile> mTileReference = new Reference<HexagonTile>(null);
     /** The HexagonMap being used. */
-    private Reference<HexagonMap> mHexagonMap = new Reference<HexagonMap>(null);
+    private Reference<HexagonMap> mMapReference = new Reference<HexagonMap>(null);
 
     /**
      * Create a new {@link Building}. Adds the Building to the {@link HexagonMap} at the specified
@@ -52,34 +60,42 @@ public class Building extends NetworkableComponent {
      * @param hexagonMap The HexagonMap being used.
      * @param hexagonTile The HexagonTile the building is on.
      */
-    public Building(Reference<HexagonMap> hexagonMap, Reference<HexagonTile> hexagonTile) {
+    public Building(HexagonTile hexagonTile) {
 
         // TODO Clean up.
         // Move contents out of constructor.
 
-        mTile = hexagonTile;
-        mHexagonMap = hexagonMap;
+    	mTileReference = new Reference<HexagonTile>(hexagonTile);
+    }
 
-        mAttack = new AttackStat();
+    @Override
+    public void onAwake() {
+    	mAttack = new AttackStat();
         mDefence = new DefenceStat();
         mTokenGeneration = new TokenGenerationStat();
         mViewDistance = new ViewDistanceStat();
         mAttackDistance = new AttackDistanceStat();
-
+        
+        // For debugging, set all stat levels to 5.
+        // TODO: Remove.
         mAttack.setLevel(5);
         mDefence.setLevel(5);
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
-
-        // Move out of constructor:
-        HexagonMap map = hexagonMap.get();
-        HexagonTile tile = mTile.get();
-        if (map != null && tile != null) {
-            map.storeBuilding(this, tile.getQ(), tile.getR());
-        }
     }
-
+    
+    @Override
+	public void onStart() {
+    	mMapReference = Scene.getActiveScene().getSingleton(HexagonMap.class).getReference(HexagonMap.class);
+    	
+        HexagonMap map = mMapReference.get();
+        HexagonTile tile = mTileReference.get();
+        if(map == null) return;
+        
+        map.storeBuilding(this, tile.getQ(), tile.getR());
+	}
+    
     /**
      * Attack an opponent building.
      *
@@ -103,7 +119,7 @@ public class Building extends NetworkableComponent {
                             successChance, target));
 
             // Claim the opponent building.
-            opponent.setOwner(mOwner);
+            //opponent.setOwner(mOwner);
             // TODO: Allow the Players to update their lists of buildings they own.
         } else {
             log.info(
@@ -152,8 +168,8 @@ public class Building extends NetworkableComponent {
         ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
 
         // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonTile tile = mTile.get();
-        HexagonMap map = mHexagonMap.get();
+        HexagonTile tile = mTileReference.get();
+        HexagonMap map = mMapReference.get();
         if (tile == null || map == null) return tiles;
 
         // Get the current q and r coordinates.
@@ -197,9 +213,8 @@ public class Building extends NetworkableComponent {
         ArrayList<Building> buildings = new ArrayList<Building>();
 
         // Ensure the map and owner exist.
-        HexagonMap map = mHexagonMap.get();
-        TestPlayer owner = mOwner.get();
-        if (map == null || owner == null) return buildings;
+        HexagonMap map = mMapReference.get();
+        if (map == null) return buildings;
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
@@ -209,9 +224,7 @@ public class Building extends NetworkableComponent {
             if (building == null) continue;
 
             // Ensure the building is not owned by the owner of this building.
-            Reference<TestPlayer> buildingOwner = building.getOwner();
-            // TODO Replace references to the player with a player ID.
-            if (owner.equals(buildingOwner.get())) {
+            if (getOwnerID() == building.getOwnerID()) {
                 log.info("Building owned by same player.");
                 continue;
             }
@@ -239,6 +252,51 @@ public class Building extends NetworkableComponent {
         return stats;
     }
 
+    /**
+     * Store the owner's ID.
+     * 
+     * @param id
+     */
+    public void setOwnerID(int id){
+    	mOwnerID.set(id);
+    }
+    
+    /**
+     * Get the ID of the owner of the building.
+     */
+    public int getOwnerID(){
+    	return mOwnerID.get();
+    }
+    
+    /**
+     * Set the owner of the building.
+     * 
+     * @param player The owner.
+     */
+    public void setOwner(TestPlayer player) {
+    	setOwnerID(player.getID());
+    }
+    
+    /**
+     * Get whether the building is a capital.
+     * 
+     * @return Whether the building is a capital.
+     */
+    public boolean isCapital() {
+    	return mIsCapital.get();
+    }
+    
+    /**
+     * Set the building to be a capital.
+     * <p>
+     * By default, buildings are not capitals.
+     * 
+     * @param isCapital Whether the building should be capital.
+     */
+    public void setCapital(boolean isCapital) {
+    	mIsCapital.set(isCapital);
+    }
+    
     @Override
     protected void onDestroy() {}
 }
