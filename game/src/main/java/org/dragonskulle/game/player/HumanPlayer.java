@@ -150,13 +150,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // attacked -- get off building
 
                                                                     mBuildingChosen =
-                                                                            new Reference(mPlayer.get()
+                                                                            new Reference<Building>(mPlayer.get()
                                                                                     .getMapComponent()
                                                                                     .get()
                                                                                     .getBuilding(
-                                                                                            mHexChosen
+                                                                                            mHexChosen.get()
                                                                                                     .getQ(),
-                                                                                            mHexChosen
+                                                                                            mHexChosen.get()
                                                                                                     .getR()));
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;

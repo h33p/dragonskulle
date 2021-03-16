@@ -133,8 +133,14 @@ public class Player extends NetworkableComponent {
     		return;
     	}
     	
-    	Building attackingFrom = data.getAttackingFrom();
-    	Building defender = data.getAttacking();
+    	HexagonTile attackerTile = data.getAttackingFrom();
+    	HexagonTile defenderTile = data.getAttacking();
+    	
+    	//Create 2 dummy Buildings to use for checks.
+    	Building attackingFrom = new Building(mMapComponent, new Reference<HexagonTile>(attackerTile));
+    	Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
+    	
+    	
     	Reference<Building> attacker = checkBuildingYours(attackingFrom);
     	
     	if (attacker == null) {
@@ -163,7 +169,7 @@ public class Player extends NetworkableComponent {
     
     private Reference<Building> checkBuildingYours(Building buildingToCheck) {
     	for (Reference<Building> building : mOwnedBuildings) {
-    		if (building.get().getTile().getR() == buildingToCheck.getTile().getR() &&  building.get().getTile().getQ() == buildingToCheck.getTile().getQ()) {
+    		if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR() &&  building.get().getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
     			return building;
     		}
     	}
@@ -173,7 +179,7 @@ public class Player extends NetworkableComponent {
     
     private Building checkAttackable(Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
     	for (Building building : buildingsToCheck) {
-    		if (building.getTile().getR() == buildingToCheck.getTile().getR() &&  building.getTile().getQ() == buildingToCheck.getTile().getQ()) {
+    		if (building.getTile().get().getR() == buildingToCheck.getTile().get().getR() &&  building.getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
     			return building;
     		}
     	}
