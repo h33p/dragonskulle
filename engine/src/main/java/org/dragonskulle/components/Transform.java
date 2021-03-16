@@ -3,6 +3,7 @@ package org.dragonskulle.components;
 
 import org.dragonskulle.core.GameObject;
 import org.joml.AxisAngle4f;
+import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -20,7 +21,11 @@ import org.joml.Vector3f;
 public abstract class Transform extends Component {
     protected static final float DEG_TO_RAD = (float) Math.PI / 180.f;
 
+    protected final Matrix4f mInvMatrix = new Matrix4f();
+
     protected boolean mShouldUpdate = true;
+
+    protected boolean mHasInv = false;
 
     /**
      * Get the world matrix for this transform. If mShouldUpdate is true, it will then recursively
@@ -39,6 +44,14 @@ public abstract class Transform extends Component {
      */
     public Matrix4fc getMatrixForChildren() {
         return getWorldMatrix();
+    }
+
+    public Matrix4fc getInvWorldMatrix() {
+        if (mShouldUpdate || !mHasInv) {
+            mInvMatrix.set(getWorldMatrix()).invert();
+            mHasInv = true;
+        }
+        return mInvMatrix;
     }
 
     /** Set mShouldUpdate to true in all children transforms */
