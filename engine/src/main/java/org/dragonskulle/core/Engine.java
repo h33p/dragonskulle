@@ -363,9 +363,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Destroy all game objects and components in all scenes. Used for cleanup
-     */
+    /** Destroy all game objects and components in all scenes. Used for cleanup */
     private void destroyAllObjects() {
         for (Scene s : mActiveScenes) {
             for (GameObject r : s.getGameObjects()) {
