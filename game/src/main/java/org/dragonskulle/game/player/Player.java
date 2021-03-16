@@ -9,6 +9,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
+import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
@@ -144,7 +145,31 @@ public class Player extends NetworkableComponent {
         // get Hexagon to build on
         // Add to the HexagonMap
         // Take tokens off
-
+    	
+    	// TODO: Move to Building.
+    	int COST = 5;
+    	
+    	if(mTokens.get() < COST) {
+    		return;
+    	}
+    	
+    	// Remove the tokens.
+    	mTokens.set(mTokens.get() - COST);
+    	
+    	// Contains the coordinates:
+    	HexagonTile tileCoordinates = data.getHexTile();    	
+    	
+    	HexagonMap map = mMapComponent.get();
+    	HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
+    	
+    	// TODO: Check building is in legal position.
+    	/////////////////////////////////////////////////////////
+    	
+    	// Create a new building.
+    	Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
+    	// Store the building.
+    	map.storeBuilding(building, tile.getQ(), tile.getR());
+    	
     }
 
     // Upgrading Stats is handled below

@@ -7,10 +7,14 @@ import java.io.IOException;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /** @author Dragonskulle */
+@Accessors(prefix = "m")
 public class BuildData implements INetSerializable {
 
-    private HexagonTile mHexTile;
+    @Getter private HexagonTile mHexTile;
 
     public BuildData() {}
 
