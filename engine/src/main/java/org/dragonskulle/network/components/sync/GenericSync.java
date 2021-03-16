@@ -54,7 +54,6 @@ public abstract class GenericSync<T extends Serializable> implements ISyncVar, S
     /**
      * Serialize byte [ ].
      *
-     * @return the byte [ ]
      * @throws IOException the io exception
      */
     @Override
@@ -70,7 +69,6 @@ public abstract class GenericSync<T extends Serializable> implements ISyncVar, S
      *
      * @param in The input stream
      * @throws IOException the io exception
-     * @throws ClassNotFoundException the class not found exception
      */
     @SuppressWarnings("unchecked")
     @Override

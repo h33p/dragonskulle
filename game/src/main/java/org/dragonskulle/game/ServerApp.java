@@ -36,6 +36,7 @@ public class ServerApp {
         mainScene.addRootObject(camera);
 
         // attaching server fixed update to game
+
         GameObject networkManagerGO =
                 new GameObject(
                         "server_network_manager",
