@@ -13,7 +13,6 @@ import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.Server;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.UnlitMaterial;
 import org.dragonskulle.ui.*;
 import org.joml.Math;
@@ -78,7 +77,7 @@ public class App {
             }
         }
 
-        //mainScene.addRootObject(hexRoot);
+        // mainScene.addRootObject(hexRoot);
 
         // Create a cube. This syntax is slightly different
         // This here, will allow you to "build" the cube in one go
@@ -91,7 +90,6 @@ public class App {
                             // You spin me right round...
                             go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
                         });
-
 
         mainMenu.addRootObject(cube);
         mainMenu.addRootObject(hexRoot);
@@ -129,8 +127,7 @@ public class App {
                 (bg) -> {
                     bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
 
-                    bg.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0f, 0.5f, 1.f);
+                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
 
                     bg.buildChild(
                             "joinButton",
@@ -223,8 +220,7 @@ public class App {
                 (bg) -> {
                     bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
 
-                    bg.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0f, 0.5f, 1.f);
+                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
 
                     bg.buildChild(
                             "joinButton",
@@ -279,8 +275,7 @@ public class App {
                 (bg) -> {
                     bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
 
-                    bg.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0f, 0.5f, 1.f);
+                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
 
                     bg.buildChild(
                             "joinButton",
@@ -337,7 +332,6 @@ public class App {
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
-
 
         return mainMenu;
     }
