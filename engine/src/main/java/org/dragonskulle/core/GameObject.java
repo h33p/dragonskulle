@@ -375,8 +375,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, Transform transform, IBuildHandler handler) {
-        buildChild(name, mEnabled, transform, handler);
+    public Reference<GameObject> buildChild(String name, Transform transform, IBuildHandler handler) {
+        return buildChild(name, mEnabled, transform, handler);
     }
 
     /**
