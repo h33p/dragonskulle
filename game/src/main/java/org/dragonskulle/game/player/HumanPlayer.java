@@ -220,7 +220,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                             new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
                                     for (Building building :
-                                            mBuildingChosen.getAttackableBuildings()) {
+                                            mBuildingChosen.get().getAttackableBuildings()) {
                                         go.buildChild(
                                                 "Attack building",
                                                 new TransformUI(true),
@@ -327,20 +327,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
             mHexChosen = null; // TODO Work out which one chosen
 
             if (mHexChosen != null) {
-                Reference<Building> buildingOnTile =
+                Reference<Building> buildingOnTile = new Reference<Building>(
                         mPlayer.get()
                                 .getMapComponent()
                                 .get()
-                                .getBuilding(mHexChosen.get().getQ(), mHexChosen.get().getR());
-                if (buildingOnTile == null) {
+                                .getBuilding(mHexChosen.get().getQ(), mHexChosen.get().getR()));
+                if (buildingOnTile.get() == null) {
+                	
+                	//Checks if cannot build here
                     if (mPlayer.get()
                             .buildingWithinRadius(
                                     mPlayer.get().getTilesInRadius(1, mHexChosen.get()))) {
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
+                    //If you can build
                     } else {
-                        mBuildingChosen = buildingOnTile;
+                        mScreenOn = Screen.TILE_SCREEN;
                     }
 
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
@@ -350,8 +353,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                     return;
                 }
             }
-            // Check to see whether the user has pressed a tile.  And then send that to server
-
         }
     }
 
