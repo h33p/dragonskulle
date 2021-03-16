@@ -15,13 +15,13 @@ public class AttackData implements INetSerializable {
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mAttackingFrom.getTile().get().getQ());
-        stream.writeInt(mAttackingFrom.getTile().get().getR());
-        stream.writeInt(mAttackingFrom.getTile().get().getS());
+        stream.writeInt(mAttackingFrom.getQ());
+        stream.writeInt(mAttackingFrom.getR());
+        stream.writeInt(mAttackingFrom.getS());
 
-        stream.writeInt(mAttacking.getTile().get().getQ());
-        stream.writeInt(mAttacking.getTile().get().getR());
-        stream.writeInt(mAttacking.getTile().get().getS());
+        stream.writeInt(mAttacking.getQ());
+        stream.writeInt(mAttacking.getR());
+        stream.writeInt(mAttacking.getS());
     }
 
     @Override
