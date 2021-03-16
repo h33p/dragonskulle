@@ -15,7 +15,7 @@ public class AttackData implements INetSerializable {
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mAttackingFrom.getQ());
+        stream.writeInt(mAttackingFrom.getTile().getQ());
         stream.writeInt(mAttackingFrom.getR());
         stream.writeInt(mAttackingFrom.getS());
 
