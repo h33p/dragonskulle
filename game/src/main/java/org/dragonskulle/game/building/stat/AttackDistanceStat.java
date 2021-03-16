@@ -4,7 +4,10 @@ package org.dragonskulle.game.building.stat;
 public class AttackDistanceStat extends Stat<Integer> {
 
     @Override
-    protected Integer levelToValue() {
+    protected Integer getValueFromLevel() {
         return 2;
     }
+
+	@Override
+	protected void onDestroy() {}
 }

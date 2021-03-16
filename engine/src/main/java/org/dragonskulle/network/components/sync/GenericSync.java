@@ -10,7 +10,7 @@ import java.util.Objects;
  *     optimised @link{ISyncVar} or extend this class.
  * @param <T> the type parameter
  */
-abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {
+public abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {
 
     /** The Data. */
     private T mData;

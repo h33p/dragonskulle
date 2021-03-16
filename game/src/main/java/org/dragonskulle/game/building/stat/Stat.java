@@ -1,11 +1,17 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building.stat;
 
+import java.io.Serializable;
+
+import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.sync.GenericSync;
+import org.dragonskulle.network.components.sync.SyncInt;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 @Accessors(prefix = "m")
-public abstract class Stat<T> {
+public abstract class Stat<T extends Serializable> extends NetworkableComponent {
 
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 0;
@@ -16,68 +22,76 @@ public abstract class Stat<T> {
      * The current level of the stat. This will always be between {@link #LEVEL_MIN} and {@link
      * #LEVEL_MAX}, inclusive.
      */
-    @Getter protected int mLevel = LEVEL_MIN;
-
+    @Getter protected SyncInt mLevel = new SyncInt(LEVEL_MIN);
+    
     /**
-     * Calculate the value from {@link #mLevel}.
-     *
-     * @return The value, of type {@code T}, of the stat at the current {@link #mLevel}.
+     * The value of the stat at the current level.
      */
-    protected abstract T levelToValue();
+    private SyncObject mValue = new SyncObject(getValueFromLevel());
+    
+    /** Used to sync the value of data type T. */
+    private class SyncObject extends GenericSync<T> {
 
-    /** Bound the level between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}. */
-    protected void boundLevel() {
-        if (mLevel < LEVEL_MIN) {
-            mLevel = LEVEL_MIN;
-        } else if (mLevel > LEVEL_MAX) {
-            mLevel = LEVEL_MAX;
-        }
+		public SyncObject(T data) {
+			super(data);
+		}
+    	
     }
-
-    /** Increase the level of the stat. */
-    public void increaseLevel() {
-        mLevel++;
-        boundLevel();
-    }
-
-    /** Decrease the level of the stat. */
-    public void decreaseLevel() {
-        mLevel--;
-        boundLevel();
-    }
-
+    
     /**
-     * Set the level. This will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     * Set the level, and calculate and the new value.
+     * <p>
+     * The level will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
      *
      * @param level The level.
      */
     public void setLevel(int level) {
-        mLevel = level;
-        boundLevel();
+        level = getBoundedLevel(level);
+    	mLevel.set(level);
+    	mValue.set(getValueFromLevel());
+    }
+    
+    /** Increase the level of the stat and calculate the new value. */
+    public void increaseLevel() {
+        int level = mLevel.get() + 1;
+        setLevel(level);
     }
 
+    /** Decrease the level of the stat and calculate the new value. */
+    public void decreaseLevel() {
+    	int level = mLevel.get() - 1;
+    	setLevel(level);
+    }
+    
     /**
-     * Get the value of the stat, at the current level.
+     * Bound the input level value between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     * 
+     * @param level The level value.
+     * @return The level, bounded between the minimum and maximum possible levels.
+     */
+    private int getBoundedLevel(int level) {
+        if (mLevel.get() < LEVEL_MIN) {
+            return LEVEL_MIN;
+        } else if (mLevel.get() > LEVEL_MAX) {
+        	return LEVEL_MAX;
+        }
+        return level;
+    }
+    
+    /**
+     * Calculate the value of the stat from {@link #mLevel}.
      *
+     * @return The value, of type {@code T}, of the stat at the current {@link #mLevel}.
+     */
+    protected abstract T getValueFromLevel();
+    
+    /**
+     * Get the value stored in {@link #mValue}.
+     * 
      * @return The value of the stat.
      */
     public T getValue() {
-        return levelToValue();
+    	return mValue.get();
     }
-
-    /**
-     * Useful for mapping the level to between two doubles.
-     *
-     * @param valueMin The lowest possible value of the stat.
-     * @param valueMax The highest possible value of the stat.
-     * @param level The current level.
-     * @param levelMin The lowest possible level.
-     * @param levelMax The highest possible level.
-     * @return The value, between {@code valueMin} and {@code valueMax}, based on the specified
-     *     {@code level}.
-     */
-    protected double map(
-            double valueMin, double valueMax, double level, double levelMin, double levelMax) {
-        return valueMin + (((level - levelMin) * (valueMax - valueMin)) / (levelMax - levelMin));
-    }
+    
 }

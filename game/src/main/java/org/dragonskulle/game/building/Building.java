@@ -17,6 +17,7 @@ import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.network.components.NetworkableComponent;
 
 /**
  * A Building component.
@@ -25,7 +26,7 @@ import org.dragonskulle.game.map.HexagonTile;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends Component {
+public class Building extends NetworkableComponent {
 
     /** Stores the attack strength of the building. */
     @Getter private AttackStat mAttack;
