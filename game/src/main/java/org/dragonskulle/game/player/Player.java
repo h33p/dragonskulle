@@ -29,12 +29,15 @@ import org.dragonskulle.network.components.sync.SyncInt;
 @Log
 public class Player extends NetworkableComponent implements IOnStart {
 
+	// List of Buildings -- stored & synced in HexagonMap
     private List<Reference<Building>>
-            mOwnedBuildings; // Stored in HexagonMap - Will be synced there.
+            mOwnedBuildings; 
+    // The map component
     @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
+    
+    
     private final int UNIQUE_ID;
-    private static int mNextID;
-
+    private static int mNextID; 
     @Getter private SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
@@ -93,7 +96,9 @@ public class Player extends NetworkableComponent implements IOnStart {
      */
     public void updateTokens(float time) {
 
+    	// Checks if server
         if (getNetworkObject() != null && getNetworkObject().isServer()) {
+        	
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
             if (mLastTokenUpdate > UPDATE_TIME) {
@@ -113,6 +118,7 @@ public class Player extends NetworkableComponent implements IOnStart {
     /** We need to initialize requests here, since java does not like to serialize lambdas */
     @Override
     protected void onNetworkInitialize() {
+    	
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
         mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
@@ -151,10 +157,12 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
 
+        // Checks if there is enough tokens for this
         if (mTokens.get() < COST) {
             return;
         }
 
+        // Get the hexagon tiles
         HexagonTile attackerTile = data.getAttackingFrom();
         HexagonTile defenderTile = data.getAttacking();
 
@@ -163,26 +171,27 @@ public class Player extends NetworkableComponent implements IOnStart {
                 new Building(mMapComponent, new Reference<HexagonTile>(attackerTile));
         Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
 
+        // Checks to see if building is yours and if so get proper one
         Reference<Building> attacker = checkBuildingYours(attackingFrom);
 
         if (attacker == null) {
             return;
         }
 
+        // Get the proper version of the defending building
         ArrayList<Building> attackableBuildings = attacker.get().getAttackableBuildings();
-
         Building defending = checkAttackable(defender, attackableBuildings);
 
         if (defending == null) {
             return;
         }
-
+        // Checks building is correct 
         Reference<Building> isYours = checkBuildingYours(defending);
-
         if (isYours != null) {
             return;
         }
 
+        // ATTACK!!! (Sorry...)
         attacker.get().attack(defending);
         mTokens.set(mTokens.get() - COST);
 
@@ -196,7 +205,10 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @return true of the player owns it, false if not
      */
     private Reference<Building> checkBuildingYours(Building buildingToCheck) {
+    	
+    	// Checks the building is yours
         for (Reference<Building> building : mOwnedBuildings) {
+        	
             if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
                     && building.get().getTile().get().getQ()
                             == buildingToCheck.getTile().get().getQ()) {
@@ -216,6 +228,8 @@ public class Player extends NetworkableComponent implements IOnStart {
      */
     private Building checkAttackable(
             Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
+    	
+    	// Checks building is yours
         for (Building building : buildingsToCheck) {
             if (building.getTile().get().getR() == buildingToCheck.getTile().get().getR()
                     && building.getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
