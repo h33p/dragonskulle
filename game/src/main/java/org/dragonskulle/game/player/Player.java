@@ -223,7 +223,7 @@ public class Player extends NetworkableComponent {
     	
     }
     
-    private boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
+    public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
     	for (HexagonTile tile : tiles) {
     		if (mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
     			return true;

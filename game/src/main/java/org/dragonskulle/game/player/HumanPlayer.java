@@ -36,8 +36,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     private Reference<Player> mPlayer;
 
-    private HexagonTile mHexChosen;
-    private Building mBuildingChosen;
+    private Reference<HexagonTile> mHexChosen;
+    private Reference<Building> mBuildingChosen;
 
     /** The constructor for the human player */
     public HumanPlayer() {}
@@ -82,7 +82,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                             .mClientBuildRequest
                                                                             .invoke(
                                                                                     new BuildData(
-                                                                                            mHexChosen));
+                                                                                            mHexChosen.get()));
 
                                                                     mHexChosen = null;
                                                                     mBuildingChosen = null;
@@ -150,14 +150,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // attacked -- get off building
 
                                                                     mBuildingChosen =
-                                                                            mPlayer.get()
+                                                                            new Reference(mPlayer.get()
                                                                                     .getMapComponent()
                                                                                     .get()
                                                                                     .getBuilding(
                                                                                             mHexChosen
                                                                                                     .getQ(),
                                                                                             mHexChosen
-                                                                                                    .getR());
+                                                                                                    .getR()));
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;
                                                                 }));
@@ -180,7 +180,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                             .mClientSellRequest
                                                                             .invoke(
                                                                                     new SellData(
-                                                                                            mBuildingChosen)); // Send Data
+                                                                                            mBuildingChosen.get())); // Send Data
 
                                                                     mBuildingChosen = null;
                                                                     mHexChosen = null;
@@ -234,7 +234,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                                 .mClientAttackRequest
                                                                                 .invoke(
                                                                                         new AttackData(
-                                                                                                mBuildingChosen,
+                                                                                                mBuildingChosen.get(),
                                                                                                 building)); // TODO Send data to this which
 
                                                                         mHexChosen = null;
@@ -322,24 +322,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
             if (mHexChosen != null) {
                 Reference<Building> buildingOnTile =
-                        new Reference<Building>(
-                                mPlayer.get()
+                                                    mPlayer.get()
                                         .getMapComponent()
                                         .get()
-                                        .getBuilding(mHexChosen.getQ(), mHexChosen.getR()));
+                                        .getBuilding(mHexChosen.get().getQ(), mHexChosen.get().getR());
                 if (buildingOnTile == null) {
-                    // TODO Check if it can place a building there
+                	if (mPlayer.get().buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen.get()))) {
+                		mHexChosen = null;
+                		mBuildingChosen = null;
+                		return;
+                	}
+                	else {
+                		mBuildingChosen = buildingOnTile;
+                	}
 
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
-                    mBuildingChosen = buildingOnTile.get();
+                    mBuildingChosen = buildingOnTile;
                     mScreenOn = Screen.BUILDING_SCREEN;
                 } else {
                     return;
                 }
             }
             // Check to see whether the user has pressed a tile.  And then send that to server
-
-            // TODO CLIENT SIDE
 
         }
     }
