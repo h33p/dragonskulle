@@ -15,8 +15,12 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.*;
+import org.dragonskulle.ui.UIManager;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -41,6 +45,7 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
 
     private boolean mLastPressed = false;
     private int mClickCounter = 0;
+    int mRange = 0;
 
     public static enum HighlightType {
         IGNORE(-2),
@@ -128,6 +133,7 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
 
     @Override
     public void onStart() {
+
         mMapReference =
                 Engine.getInstance().getCurrentScene().getGameObjects().stream()
                         .map(go -> go.getComponent(HexagonMap.class))
@@ -141,8 +147,30 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
     @Override
     public void frameUpdate(float deltaTime) {
         boolean pressed = GameActions.ACTION_1.isActivated();
+
+        Camera mainCam = Camera.getMainCamera();
+
+        if (pressed && mainCam != null) {
+            Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+
+            Vector3f pos =
+                    mainCam.screenToPlane(
+                            mMapReference.get().getGameObject().getTransform(),
+                            screenPos.x(),
+                            screenPos.y(),
+                            new Vector3f());
+
+            TransformHex.cartesianToAxial(pos);
+            TransformHex.roundAxial(pos);
+
+            selectTile(mMapReference.get().getTile((int) pos.x, (int) pos.y), HighlightType.PLAIN);
+        }
+
         if (pressed && !mLastPressed) {
             mClickCounter++;
+
+            if (mClickCounter % 50 > 25) mRange--;
+            else mRange++;
 
             switch (mClickCounter) {
                 case 1:
@@ -157,7 +185,7 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
                 default:
                     selectTiles(
                             (tile) -> {
-                                if (tile.length() < mClickCounter)
+                                if (tile.length() < mRange)
                                     return HighlightType.values()[mClickCounter % 5];
                                 return HighlightType.NONE;
                             });

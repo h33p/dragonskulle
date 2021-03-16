@@ -95,7 +95,7 @@ public class App {
                             go.getComponent(Renderable.class)
                                     .get()
                                     .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(0.7f);
+                                    .setAlpha(1f);
                             // You spin me right round...
                             go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
                         });

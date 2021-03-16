@@ -44,7 +44,6 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, Serializable
         public UnlitShaderSet enableAlpha() {
             // TODO: add order independent transparency
             mRenderOrder = ShaderSet.RenderOrder.TRANSPARENT.getValue();
-            mDepthTest = false;
             mAlphaBlend = true;
             mPreSort = true;
             return this;

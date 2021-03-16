@@ -69,7 +69,7 @@ public class Camera extends Component implements ILateFrameUpdate {
      *
      * <p>This method will update the camera's projection matrix and return it back
      */
-    public Matrix4f getProj() {
+    public Matrix4fc getProj() {
         switch (projection) {
             case PERSPECTIVE:
                 mProj.setPerspective(fov, mAspectRatio, nearPlane, farPlane, true);
@@ -89,6 +89,69 @@ public class Camera extends Component implements ILateFrameUpdate {
         mProj.m11(-mProj.m11());
 
         return mProj;
+    }
+
+    Matrix4f mInvProj = new Matrix4f();
+    Vector4f mNear = new Vector4f(0, 0, -1, 1);
+    Vector4f mFar = new Vector4f(0, 0, 1, 1);
+
+    /**
+     * Project normalized screen coordinates to world direction vector
+     *
+     * <p>See <a
+     * href="https://stackoverflow.com/questions/7692988/opengl-math-projecting-screen-space-to-world-space-coords">here</a>
+     *
+     * @param x x screen coordinate, in [-1; 1] range
+     * @param y y screen coordinate, in [-1; 1] range
+     * @param dest destination vector to project to
+     * @return dest
+     */
+    public Vector3f screenToWorldDir(float x, float y, Vector3f dest) {
+        mInvProj = getProj().mul(getView(), mInvProj).invert();
+
+        mNear.x = mFar.x = x;
+        mNear.y = mFar.y = y;
+        mNear.z = -1;
+        mNear.w = mFar.z = mFar.w = 1;
+
+        mNear.mul(mInvProj);
+        mFar.mul(mInvProj);
+
+        mNear.div(mNear.w);
+        mFar.div(mFar.w);
+
+        dest.set(mFar.x - mNear.x, mFar.y - mNear.y, mFar.z - mNear.z);
+
+        return dest.div(dest.length());
+    }
+
+    /**
+     * Project normalized screen coordinates to a plane defined by a transform
+     *
+     * <p>This method will take screen coordinates, and create a local vector within transform,
+     * where the camera ray intersects the Z plane defined by it.
+     *
+     * <p>It accounts for any scaling, transformation, and rotation that the transform may have.
+     *
+     * @param transform target transform to project to
+     * @param x x screen coordinate in [-1; 1] range
+     * @param y y screen coordinate in [-1; 1] range
+     * @param dest destination vector to project to
+     * @return dest
+     */
+    public Vector3f screenToPlane(Transform transform, float x, float y, Vector3f dest) {
+        screenToWorldDir(x, y, dest);
+
+        getGameObject().getTransform().getWorldMatrix().getTranslation(mTmpPos);
+        dest.add(mTmpPos);
+
+        transform.getInvWorldMatrix().transformPosition(dest);
+        transform.getInvWorldMatrix().transformPosition(mTmpPos);
+
+        float heightDiff = mTmpPos.z() - dest.z();
+        float moveBy = mTmpPos.z() / heightDiff;
+
+        return dest.sub(mTmpPos).mul(moveBy).add(mTmpPos);
     }
 
     /**
