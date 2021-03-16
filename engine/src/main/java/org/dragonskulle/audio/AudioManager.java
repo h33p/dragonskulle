@@ -56,9 +56,12 @@ public class AudioManager {
 
         try {
 
+            String filePath = "engine/src/main/resources/audio/";
+
             // Creates the audio file
             AudioInputStream audio =
-                    AudioSystem.getAudioInputStream(new File(fileName).getAbsoluteFile());
+                    AudioSystem.getAudioInputStream(
+                            new File(filePath + fileName).getAbsoluteFile());
 
             // Plays the file on the right channel
             if (mMixer != null && channel == SoundType.BACKGROUND) {
