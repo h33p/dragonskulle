@@ -226,6 +226,9 @@ public class NetworkClient {
                 mOpen = false;
                 closeAllConnections();
                 mClientListener.disconnected();
+                mLogger.warning(
+                        "Clearing networkable game objects as server disconnect. Should revert to main menu. (TODO)");
+                this.getNetworkableObjects().forEach((__, e) -> e.get().getGameObject().destroy());
             }
             mProcessScheduler.cancel();
             mSocket = null;
