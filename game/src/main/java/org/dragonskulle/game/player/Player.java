@@ -125,66 +125,69 @@ public class Player extends NetworkableComponent {
      * @param data attack event being executed on the server.
      */
     public void handleEvent(AttackData data) {
-        
-    	
-    	int COST = 5;  //	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
-    	
-    	if (mTokens.get() < COST) {
-    		return;
-    	}
-    	
-    	HexagonTile attackerTile = data.getAttackingFrom();
-    	HexagonTile defenderTile = data.getAttacking();
-    	
-    	//Create 2 dummy Buildings to use for checks.
-    	Building attackingFrom = new Building(mMapComponent, new Reference<HexagonTile>(attackerTile));
-    	Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
-    	
-    	
-    	Reference<Building> attacker = checkBuildingYours(attackingFrom);
-    	
-    	if (attacker == null) {
-    		return;
-    	}
-    	
-    	ArrayList<Building> attackableBuildings = attacker.get().getAttackableBuildings();
-    	
-    	Building defending = checkAttackable(defender, attackableBuildings);
-    	
-    	if (defending == null) {
-    		return;
-    	}
-    	
-    	Reference<Building> isYours = checkBuildingYours(defending);
-    	
-    	if (isYours != null) {
-    		return;
-    	}
-    	
-    	attacker.get().attack(defending);
-    	mTokens.set(mTokens.get() - COST);
-    		
-    	return;
+
+        int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
+
+        if (mTokens.get() < COST) {
+            return;
+        }
+
+        HexagonTile attackerTile = data.getAttackingFrom();
+        HexagonTile defenderTile = data.getAttacking();
+
+        // Create 2 dummy Buildings to use for checks.
+        Building attackingFrom =
+                new Building(mMapComponent, new Reference<HexagonTile>(attackerTile));
+        Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
+
+        Reference<Building> attacker = checkBuildingYours(attackingFrom);
+
+        if (attacker == null) {
+            return;
+        }
+
+        ArrayList<Building> attackableBuildings = attacker.get().getAttackableBuildings();
+
+        Building defending = checkAttackable(defender, attackableBuildings);
+
+        if (defending == null) {
+            return;
+        }
+
+        Reference<Building> isYours = checkBuildingYours(defending);
+
+        if (isYours != null) {
+            return;
+        }
+
+        attacker.get().attack(defending);
+        mTokens.set(mTokens.get() - COST);
+
+        return;
     }
-    
+
     private Reference<Building> checkBuildingYours(Building buildingToCheck) {
-    	for (Reference<Building> building : mOwnedBuildings) {
-    		if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR() &&  building.get().getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
-    			return building;
-    		}
-    	}
-    	
-    	return null;
+        for (Reference<Building> building : mOwnedBuildings) {
+            if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
+                    && building.get().getTile().get().getQ()
+                            == buildingToCheck.getTile().get().getQ()) {
+                return building;
+            }
+        }
+
+        return null;
     }
-    
-    private Building checkAttackable(Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
-    	for (Building building : buildingsToCheck) {
-    		if (building.getTile().get().getR() == buildingToCheck.getTile().get().getR() &&  building.getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
-    			return building;
-    		}
-    	}
-    	
-    	return null;
+
+    private Building checkAttackable(
+            Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
+        for (Building building : buildingsToCheck) {
+            if (building.getTile().get().getR() == buildingToCheck.getTile().get().getR()
+                    && building.getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
+                return building;
+            }
+        }
+
+        return null;
     }
 
     // Building is handled below
@@ -200,42 +203,41 @@ public class Player extends NetworkableComponent {
         // get Hexagon to build on
         // Add to the HexagonMap
         // Take tokens off
-    	
-    	// TODO: Move to Building.
-    	int COST = 5;
-    	
-    	if(mTokens.get() < COST) {
-    		return;
-    	}
-    	
-    	// Remove the tokens.
-    	mTokens.set(mTokens.get() - COST);
-    	
-    	// Contains the coordinates:
-    	HexagonTile tileCoordinates = data.getHexTile();    	
-    	
-    	HexagonMap map = mMapComponent.get();
-    	HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
-    	
-    	if (buildingWithinRadius(getTilesInRadius(1, tile))) {
-    		return;
-    	}
-    	
-    	// Create a new building.
-    	Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
-    	
-    	// Store the building.
-    	map.storeBuilding(building, tile.getQ(), tile.getR());
-    	
+
+        // TODO: Move to Building.
+        int COST = 5;
+
+        if (mTokens.get() < COST) {
+            return;
+        }
+
+        // Remove the tokens.
+        mTokens.set(mTokens.get() - COST);
+
+        // Contains the coordinates:
+        HexagonTile tileCoordinates = data.getHexTile();
+
+        HexagonMap map = mMapComponent.get();
+        HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
+
+        if (buildingWithinRadius(getTilesInRadius(1, tile))) {
+            return;
+        }
+
+        // Create a new building.
+        Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
+
+        // Store the building.
+        map.storeBuilding(building, tile.getQ(), tile.getR());
     }
-    
+
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
-    	for (HexagonTile tile : tiles) {
-    		if (mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
-    			return true;
-    		}
-    	}
-    	return false;
+        for (HexagonTile tile : tiles) {
+            if (mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Upgrading Stats is handled below
@@ -253,7 +255,7 @@ public class Player extends NetworkableComponent {
         // Upgrade
 
     }
-    
+
     public ArrayList<HexagonTile> getTilesInRadius(
             int radius,
             HexagonTile

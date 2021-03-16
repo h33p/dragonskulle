@@ -4,12 +4,11 @@ package org.dragonskulle.game.player.networkData;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
-
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 /** @author Oscar L */
 @Accessors(prefix = "m")

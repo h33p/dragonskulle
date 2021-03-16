@@ -82,7 +82,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                             .mClientBuildRequest
                                                                             .invoke(
                                                                                     new BuildData(
-                                                                                            mHexChosen.get()));
+                                                                                            mHexChosen
+                                                                                                    .get()));
 
                                                                     mHexChosen = null;
                                                                     mBuildingChosen = null;
@@ -150,14 +151,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // attacked -- get off building
 
                                                                     mBuildingChosen =
-                                                                            new Reference<Building>(mPlayer.get()
-                                                                                    .getMapComponent()
-                                                                                    .get()
-                                                                                    .getBuilding(
-                                                                                            mHexChosen.get()
-                                                                                                    .getQ(),
-                                                                                            mHexChosen.get()
-                                                                                                    .getR()));
+                                                                            new Reference<Building>(
+                                                                                    mPlayer.get()
+                                                                                            .getMapComponent()
+                                                                                            .get()
+                                                                                            .getBuilding(
+                                                                                                    mHexChosen
+                                                                                                            .get()
+                                                                                                            .getQ(),
+                                                                                                    mHexChosen
+                                                                                                            .get()
+                                                                                                            .getR()));
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;
                                                                 }));
@@ -180,7 +184,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                             .mClientSellRequest
                                                                             .invoke(
                                                                                     new SellData(
-                                                                                            mBuildingChosen.get())); // Send Data
+                                                                                            mBuildingChosen
+                                                                                                    .get())); // Send Data
 
                                                                     mBuildingChosen = null;
                                                                     mHexChosen = null;
@@ -234,7 +239,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                                 .mClientAttackRequest
                                                                                 .invoke(
                                                                                         new AttackData(
-                                                                                                mBuildingChosen.get(),
+                                                                                                mBuildingChosen
+                                                                                                        .get(),
                                                                                                 building)); // TODO Send data to this which
 
                                                                         mHexChosen = null;
@@ -322,19 +328,20 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
             if (mHexChosen != null) {
                 Reference<Building> buildingOnTile =
-                                                    mPlayer.get()
-                                        .getMapComponent()
-                                        .get()
-                                        .getBuilding(mHexChosen.get().getQ(), mHexChosen.get().getR());
+                        mPlayer.get()
+                                .getMapComponent()
+                                .get()
+                                .getBuilding(mHexChosen.get().getQ(), mHexChosen.get().getR());
                 if (buildingOnTile == null) {
-                	if (mPlayer.get().buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen.get()))) {
-                		mHexChosen = null;
-                		mBuildingChosen = null;
-                		return;
-                	}
-                	else {
-                		mBuildingChosen = buildingOnTile;
-                	}
+                    if (mPlayer.get()
+                            .buildingWithinRadius(
+                                    mPlayer.get().getTilesInRadius(1, mHexChosen.get()))) {
+                        mHexChosen = null;
+                        mBuildingChosen = null;
+                        return;
+                    } else {
+                        mBuildingChosen = buildingOnTile;
+                    }
 
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
                     mBuildingChosen = buildingOnTile;

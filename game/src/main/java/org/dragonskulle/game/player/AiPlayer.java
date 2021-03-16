@@ -12,7 +12,6 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
-import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
@@ -121,11 +120,7 @@ public class AiPlayer extends Component
                     int randomIndex = mRandom.nextInt(tilesToUse.size());
                     HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
                     // now have Hexagon tile to expand to
-                    mPlayer.get()
-                            .mClientBuildRequest
-                            .invoke(
-                                    new BuildData(
-                                            tileToExpandTo));
+                    mPlayer.get().mClientBuildRequest.invoke(new BuildData(tileToExpandTo));
                     return;
                 } else {
                     return; // end
@@ -256,5 +251,4 @@ public class AiPlayer extends Component
 
         return true;
     }
-
 }
