@@ -2,8 +2,11 @@
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 
@@ -20,6 +23,13 @@ public class Scene {
     @Getter private final ArrayList<Component> mComponents = new ArrayList<>();
 
     @Getter private final String mName;
+
+    private final HashMap<Class<?>, Reference<Component>> mSingletons = new HashMap<>();
+
+    @Accessors(prefix = "s")
+    @Getter
+    @Setter(AccessLevel.PACKAGE)
+    private static Scene sActiveScene = null;
 
     /**
      * Constructor for a Scene
@@ -48,6 +58,50 @@ public class Scene {
         if (mGameObjects.remove(object)) {
             object.destroy();
         }
+    }
+
+    /**
+     * Register a singleton
+     *
+     * <p>Allows to register a singleton for the scene. Singletons are meant for components that
+     * should have only one, or only one main instance of them in the scene.
+     *
+     * @param comp component to register as a singleton
+     * @return {@code true} if registration was successful, {@code false} if there already is a
+     *     singleton.
+     */
+    public boolean registerSingleton(Component comp) {
+        Class<?> type = comp.getClass();
+        Reference<Component> current = mSingletons.get(type);
+
+        if (current != null && current.isValid()) return false;
+
+        current = comp.getReference();
+        mSingletons.put(type, current);
+        return true;
+    }
+
+    /**
+     * Retrieves a singleton for type if there is any
+     *
+     * @param type type to retrieve the reference to
+     * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Component> T getSingleton(Class<T> type) {
+        Reference<Component> current = mSingletons.get(type);
+        if (current == null || !current.isValid()) return null;
+        return (T) current.get();
+    }
+
+    /**
+     * Unregisters a singleton
+     *
+     * @param type type to unregister
+     * @return component reference if there was a singleton
+     */
+    public Reference<Component> unregisterSingleton(Class<?> type) {
+        return mSingletons.remove(type);
     }
 
     /** Iterates through all GameObjects in the scene and collects their components */

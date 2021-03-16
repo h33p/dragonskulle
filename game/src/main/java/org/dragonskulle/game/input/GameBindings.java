@@ -27,6 +27,10 @@ public class GameBindings extends Bindings {
         addBinding(GLFW.GLFW_KEY_RIGHT, GameActions.RIGHT);
         addBinding(GLFW.GLFW_KEY_D, GameActions.RIGHT);
 
+        addBinding(GLFW.GLFW_KEY_Q, GameActions.ROTATE_LEFT);
+
+        addBinding(GLFW.GLFW_KEY_E, GameActions.ROTATE_RIGHT);
+
         addBinding(
                 GLFW.GLFW_MOUSE_BUTTON_LEFT,
                 GameActions.ACTION_1,

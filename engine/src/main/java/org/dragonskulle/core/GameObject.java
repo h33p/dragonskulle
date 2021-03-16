@@ -36,7 +36,6 @@ public class GameObject implements Serializable {
     @Getter private GameObject mParent;
     @Getter private Transform mTransform = new Transform3D();
     @Getter private final String mName;
-    // TODO: Make some sort of Tag class or enum and add here
     @Getter private boolean mEnabled;
     /** How deep the object is within the game object structure */
     @Getter private int mDepth = 0;
@@ -112,8 +111,6 @@ public class GameObject implements Serializable {
 
         return null;
     }
-
-    // TODO: GetComponentsIn(Parent/Children)
 
     /**
      * Constructor for GameObject, defaults mEnabled to true
@@ -318,6 +315,7 @@ public class GameObject implements Serializable {
         } else {
             child.mRoot = mRoot;
         }
+        child.setEnabled(mEnabled);
         child.mParent = this;
         child.setDepth(mDepth + 1);
         mChildren.add(child);
@@ -336,6 +334,7 @@ public class GameObject implements Serializable {
         for (GameObject child : children) {
             child.mRoot = root;
             child.mParent = this;
+            child.setEnabled(mEnabled);
             child.setDepth(this.mDepth + 1);
         }
         mChildren.addAll(children);
@@ -349,7 +348,7 @@ public class GameObject implements Serializable {
      * @param handler handler callback to do initial setup
      */
     public void buildChild(String name, IBuildHandler handler) {
-        buildChild(name, true, handler);
+        buildChild(name, mEnabled, handler);
     }
 
     /**
@@ -373,7 +372,7 @@ public class GameObject implements Serializable {
      * @param handler handler callback to do initial setup
      */
     public void buildChild(String name, Transform transform, IBuildHandler handler) {
-        buildChild(name, true, transform, handler);
+        buildChild(name, mEnabled, transform, handler);
     }
 
     /**

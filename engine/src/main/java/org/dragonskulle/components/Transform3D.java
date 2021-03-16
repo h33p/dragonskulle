@@ -140,7 +140,7 @@ public class Transform3D extends Transform {
      * @param z Translation in Z-axis
      */
     public void translate(float x, float y, float z) {
-        mLocalMatrix.translate(x, y, z);
+        mLocalMatrix.translateLocal(x, y, z);
         setUpdateFlag();
     }
 
@@ -152,7 +152,7 @@ public class Transform3D extends Transform {
      * @param z Translation in Z-axis
      */
     public void translateLocal(float x, float y, float z) {
-        mLocalMatrix.translateLocal(x, y, z);
+        mLocalMatrix.translate(x, y, z);
         setUpdateFlag();
     }
 
