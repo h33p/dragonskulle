@@ -28,8 +28,7 @@ import org.dragonskulle.ui.UIManager;
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
-    // TODO: Choose a number of updates per second that we want to have
-    private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
+    private static final int UPDATES_PER_SECOND = 32; // Target number of fixed updates per second
     private static final float UPDATE_TIME = 1 / (float) UPDATES_PER_SECOND;
 
     private static final int WINDOW_WIDTH = 1600;
