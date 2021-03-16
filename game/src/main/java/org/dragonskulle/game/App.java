@@ -9,6 +9,8 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.Server;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
@@ -86,7 +88,7 @@ public class App {
             }
         }
 
-        mainScene.addRootObject(hexRoot);
+        //mainScene.addRootObject(hexRoot);
 
         // Create a cube. This syntax is slightly different
         // This here, will allow you to "build" the cube in one go
@@ -101,7 +103,7 @@ public class App {
                         });
 
         // Aaand, spawn it!
-        mainScene.addRootObject(cube);
+        //mainScene.addRootObject(cube);
 
         // Main UI
         GameObject mainUI =
@@ -116,6 +118,15 @@ public class App {
         GameObject joinUI =
                 new GameObject(
                         "joinUI",
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
+
+        GameObject hostUI =
+                new GameObject(
+                        "hostUI",
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
@@ -168,7 +179,8 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host Game"),
                                                 (uiButton, __) -> {
-                                                    // TODO: Host Game Menu
+                                                    mainUI.setEnabled(false);
+                                                    hostUI.setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
@@ -225,6 +237,30 @@ public class App {
                             .setParentAnchor(0f, 0f, 0.5f, 1.f);
 
                     bg.buildChild(
+                            "joinButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Join (Temporary)"),
+                                                (uiButton, __) -> {
+                                                    NetworkClient.startClientGame(
+                                                            mainScene, "127.0.0.1", 7000);
+                                                    Engine.getInstance()
+                                                            .loadPresentationScene(mainScene);
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+
+                    bg.buildChild(
                             "cancelButton",
                             new TransformUI(true),
                             (button) -> {
@@ -247,11 +283,68 @@ public class App {
                             });
                 });
 
+        hostUI.buildChild(
+                "bg",
+                new TransformUI(false),
+                (bg) -> {
+                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
+
+                    bg.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0f, 0.5f, 1.f);
+
+                    bg.buildChild(
+                            "joinButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Host (Temporary)"),
+                                                (uiButton, __) -> {
+                                                    Server.startServerGame(mainScene);
+                                                    Engine.getInstance()
+                                                            .loadPresentationScene(mainScene);
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+
+                    bg.buildChild(
+                            "cancelButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Cancel"),
+                                                (uiButton, __) -> {
+                                                    hostUI.setEnabled(false);
+                                                    mainUI.setEnabled(true);
+                                                });
+
+                                button.addComponent(newButton);
+                            });
+                });
+
         joinUI.setEnabled(false);
+        hostUI.setEnabled(false);
 
         mainMenu.addRootObject(GameObject.instantiate(hexRoot));
         mainMenu.addRootObject(GameObject.instantiate(cube));
 
+        mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
         // Load the main scene as the presentation scene
