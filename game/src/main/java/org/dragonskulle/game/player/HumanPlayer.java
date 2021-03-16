@@ -9,6 +9,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.networkData.BuildData;
+import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
@@ -42,9 +44,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     @Override
     public void onStart() {
         // TODO Auto-generated method stub
+    	
+    	
 
         mMapScreen =
-                getGameObject()
+                getGameObject()  // Should work its lombok.
                         .buildChild(
                                 "map screen",
                                 new TransformUI(),
@@ -75,11 +79,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                 box.addComponent(
                                                         new UIButton(
                                                                 (handle, __) -> {
-                                                                    // TODO When clicked send to
-                                                                    // server (via calling Player)
-                                                                    // to try & build thing and then
-                                                                    // turn back to mapScreen
+                                                                                                                                    	
+                                                                	mPlayer.get().clientInvokeEvent(new BuildData(mHexChosen));
 
+                                                                	mHexChosen = null;
+                                                                	mBuildingChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
@@ -94,6 +98,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                 box.addComponent(
                                                         new UIButton(
                                                                 (handle, __) -> {
+                                                                	mHexChosen = null;
+                                                                	mBuildingChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
@@ -120,7 +126,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                 (handle, __) -> {
                                                                     // TODO When clicked need to
                                                                     // show options to upgrade
-                                                                    // building stats
+                                                                    // building stats.  Will leave until after prototype
+                                                                	
                                                                     mScreenOn = Screen.STAT_SCREEN;
                                                                 }));
                                             });
@@ -138,6 +145,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // TODO When clicked need to
                                                                     // show buildings which can be
                                                                     // attacked -- get off building
+                                                                	
+                                                                	mBuildingChosen = mPlayer.get().getBuilding(mHexTile.getQ(), mHexTile.getR());
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;
                                                                 }));
@@ -155,6 +164,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                 (handle, __) -> {
                                                                     // TODO When clicked need to
                                                                     // sell building
+                                                                	
+                                                                	mPlayer.get()
+                                                                    .clientInvokeEvent(
+                                                                            new SellData(
+                                                                                    mBuildingChosen)); // Send Data
+                                                                	
+                                                                	mBuildingChosen = null;
+                                                                	mHexTileChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
@@ -169,6 +186,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                 box.addComponent(
                                                         new UIButton(
                                                                 (handle, __) -> {
+                                                                	
+                                                                	mHexChosen = null;
+                                                                	mBuildingChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
@@ -198,6 +218,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     (handle, __) -> {
                                                                         // TODO When clicked need to
                                                                         // attack building
+                                                                    	
+                                                                    	mPlayer.get()
+                                                                        .clientInvokeEvent(
+                                                                                new AttackData(
+                                                                                        mBuildingChosen, building)); // TODO Send data to this which
+                                                                    	
+                                                                    	mHexChosen = null;
+                                                                    	mBuildingChosen = null;
                                                                         mScreenOn =
                                                                                 Screen.MAP_SCREEN;
                                                                     }));
@@ -215,6 +243,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                 box.addComponent(
                                                         new UIButton(
                                                                 (handle, __) -> {
+                                                                	mHexChosen = null;
+                                                                	mBuildingChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
@@ -242,6 +272,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                 box.addComponent(
                                                         new UIButton(
                                                                 (handle, __) -> {
+                                                                	
+                                                                	mHexChosen = null;
+                                                                	mBuildingChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
