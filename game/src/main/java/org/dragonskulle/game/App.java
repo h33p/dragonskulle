@@ -11,8 +11,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
-import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.network.NetworkClient;
@@ -142,8 +140,6 @@ public class App {
         camera.addComponent(new Camera());
         mainMenu.addRootObject(camera);
 
-        
-        
         // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");
 

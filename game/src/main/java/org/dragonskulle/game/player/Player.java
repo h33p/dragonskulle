@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -29,15 +28,13 @@ import org.dragonskulle.network.components.sync.SyncInt;
 @Log
 public class Player extends NetworkableComponent implements IOnStart {
 
-	// List of Buildings -- stored & synced in HexagonMap
-    private List<Reference<Building>>
-            mOwnedBuildings; 
+    // List of Buildings -- stored & synced in HexagonMap
+    private List<Reference<Building>> mOwnedBuildings;
     // The map component
     @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
-    
-    
+
     private final int UNIQUE_ID;
-    private static int mNextID; 
+    private static int mNextID;
     @Getter private SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
@@ -49,19 +46,18 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @param map the map being used for this game
      * @param capital the capital used by the player
      */
-    public Player() { 
+    public Player() {
         UNIQUE_ID = 5; // TODO need to make this static so unique for each player
     }
 
-    
-	@Override
-	public void onStart() {
-		
-		/*mMapComponent = getGameObject.getComponent();
+    @Override
+    public void onStart() {
+
+        /*mMapComponent = getGameObject.getComponent();
         mOwnedBuildings = new ArrayList<Reference<Building>>();
         mOwnedBuildings.add(capital);
         updateTokens(UPDATE_TIME + 1);*/
-	}
+    }
     /**
      * Add a building to the ones the player owns
      *
@@ -96,9 +92,9 @@ public class Player extends NetworkableComponent implements IOnStart {
      */
     public void updateTokens(float time) {
 
-    	// Checks if server
+        // Checks if server
         if (getNetworkObject() != null && getNetworkObject().isServer()) {
-        	
+
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
             if (mLastTokenUpdate > UPDATE_TIME) {
@@ -118,7 +114,7 @@ public class Player extends NetworkableComponent implements IOnStart {
     /** We need to initialize requests here, since java does not like to serialize lambdas */
     @Override
     protected void onNetworkInitialize() {
-    	
+
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
         mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
@@ -185,7 +181,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         if (defending == null) {
             return;
         }
-        // Checks building is correct 
+        // Checks building is correct
         Reference<Building> isYours = checkBuildingYours(defending);
         if (isYours != null) {
             return;
@@ -205,10 +201,10 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @return true of the player owns it, false if not
      */
     private Reference<Building> checkBuildingYours(Building buildingToCheck) {
-    	
-    	// Checks the building is yours
+
+        // Checks the building is yours
         for (Reference<Building> building : mOwnedBuildings) {
-        	
+
             if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
                     && building.get().getTile().get().getQ()
                             == buildingToCheck.getTile().get().getQ()) {
@@ -228,8 +224,8 @@ public class Player extends NetworkableComponent implements IOnStart {
      */
     private Building checkAttackable(
             Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
-    	
-    	// Checks building is yours
+
+        // Checks building is yours
         for (Building building : buildingsToCheck) {
             if (building.getTile().get().getR() == buildingToCheck.getTile().get().getR()
                     && building.getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {

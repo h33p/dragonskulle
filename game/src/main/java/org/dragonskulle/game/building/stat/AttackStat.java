@@ -21,7 +21,5 @@ public class AttackStat extends Stat<Double> {
     }
 
     @Override
-    protected void onDestroy() {
-
-    }
+    protected void onDestroy() {}
 }

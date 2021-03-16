@@ -27,19 +27,19 @@ import org.joml.Vector4f;
  */
 public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
-	// All screens to be used
+    // All screens to be used
     private Screen mScreenOn = Screen.MAP_SCREEN;
     private Reference<GameObject> mMapScreen;
     private Reference<GameObject> mPlaceScreen;
     private Reference<GameObject> mBuildingScreen;
     private Reference<GameObject> mChooseAttack;
     private Reference<GameObject> mShowStat;
-    
+
     // Data which is needed on different screens
     private Reference<HexagonTile> mHexChosen;
     private Reference<Building> mBuildingChosen = new Reference<Building>(null);
 
-    // The player 
+    // The player
     private Reference<Player> mPlayer;
 
     /** The constructor for the human player */
@@ -47,14 +47,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     @Override
     public void onStart() {
-        
-    	//Get the player
-    	mPlayer = getGameObject().getComponent(Player.class);
-    	
-    	// Get the screen for map
+
+        // Get the player
+        mPlayer = getGameObject().getComponent(Player.class);
+
+        // Get the screen for map
         mMapScreen =
-        		// Creates a blank screen
-                getGameObject() 
+                // Creates a blank screen
+                getGameObject()
                         .buildChild(
                                 "map screen",
                                 new TransformUI(),
@@ -85,7 +85,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                 new SampledTexture(
                                                                         "ui/wide_button.png")));
                                                 box.addComponent(
-                                                		// When clicked send the data to the server
+                                                        // When clicked send the data to the server
                                                         new UIButton(
                                                                 (handle, __) -> {
                                                                     mPlayer.get()
@@ -121,7 +121,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
         // Screen to choose what to do for a building
         mBuildingScreen =
-        		
                 getGameObject()
                         .buildChild(
                                 "building options",
@@ -161,8 +160,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                 box.addComponent(
                                                         new UIButton(
                                                                 (handle, __) -> {
-                                                                    
-                                                                	// Gets the building to attack from and stored
+
+                                                                    // Gets the building to attack
+                                                                    // from and stored
                                                                     mBuildingChosen =
                                                                             new Reference<Building>(
                                                                                     mPlayer.get()
@@ -206,7 +206,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
-                                    
+
                                     // Go Back
                                     go.buildChild(
                                             "Go Back",
@@ -266,7 +266,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     @Override
     public void frameUpdate(float deltaTime) {
-    	// Update token
+        // Update token
         mPlayer.get().updateTokens(deltaTime);
 
         // Choose which screen to show
@@ -282,8 +282,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
-    	
-    	// Checks that its clicking somehting 
+
+        // Checks that its clicking somehting
         if (GameActions.LEFT_CLICK.isActivated()
                 && UIManager.getInstance().getHoveredObject() == null) {
             Vector2d cursorPosition = GameActions.getCursor().getPosition();
@@ -294,8 +294,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
             // When chosen a hexagon
             if (mHexChosen != null) {
-            	
-            	// Gets reference to building
+
+                // Gets reference to building
                 Reference<Building> buildingOnTile =
                         new Reference<Building>(
                                 mPlayer.get()
@@ -303,7 +303,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                         .get()
                                         .getBuilding(
                                                 mHexChosen.get().getQ(), mHexChosen.get().getR()));
-                
+
                 // If there is a building there
                 if (buildingOnTile.get() == null) {
 
@@ -318,7 +318,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                     } else {
                         mScreenOn = Screen.TILE_SCREEN;
                     }
-                // Checks if the player owns the building
+                    // Checks if the player owns the building
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
                     mBuildingChosen = buildingOnTile;
                     mScreenOn = Screen.BUILDING_SCREEN;
@@ -336,8 +336,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
      * @return true if the player owns the building, false if not
      */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
-    	
-    	// Goes through all buildings and check that the two buildings are equal
+
+        // Goes through all buildings and check that the two buildings are equal
         for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
             Reference<Building> building = mPlayer.get().getBuilding(i);
 
@@ -350,46 +350,47 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     /**
      * This is a function which outputs what the user should see on a map
+     *
      * @param go The game object
      */
     private void attack(GameObject go) {
 
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
-        // If its equal to null ignore 
-        if (mBuildingChosen.get() == null) {
-        	;
+        // If its equal to null ignore
+        if (mBuildingChosen.get() == null) {;
+        } else {
+            // For each Building add a button for it
+            for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
+
+                go.buildChild(
+                        "Attack building",
+                        new TransformUI(true),
+                        (box) -> {
+                            box.addComponent(
+                                    new UIRenderable(new SampledTexture("ui/wide_button.png")));
+                            box.addComponent(
+                                    new UIButton(
+                                            (handle, __) -> {
+
+                                                // Send attack to server
+                                                mPlayer.get()
+                                                        .mClientAttackRequest
+                                                        .invoke(
+                                                                new AttackData(
+                                                                        mBuildingChosen.get(),
+                                                                        building)); // TODO Send
+                                                // data to
+                                                // this which
+
+                                                mHexChosen = null;
+                                                mBuildingChosen = null;
+                                                mScreenOn = Screen.MAP_SCREEN;
+                                            }));
+                        });
+            }
         }
-        else {
-        	// For each Building add a button for it
-        for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
-        	
-            go.buildChild(
-                    "Attack building",
-                    new TransformUI(true),
-                    (box) -> {
-                        box.addComponent(
-                                new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                        box.addComponent(
-                                new UIButton(
-                                        (handle, __) -> {
 
-                                        	// Send attack to server
-                                        	mPlayer.get()
-                                                    .mClientAttackRequest
-                                                    .invoke(
-                                                            new AttackData(
-                                                                    mBuildingChosen.get(),
-                                                                    building)); // TODO Send data to
-                                            // this which
-
-                                            mHexChosen = null;
-                                            mBuildingChosen = null;
-                                            mScreenOn = Screen.MAP_SCREEN;
-                                        }));
-                    });
-        }}
-        
         // Back Button
         go.buildChild(
                 "Go Back",

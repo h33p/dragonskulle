@@ -9,6 +9,5 @@ public class ViewDistanceStat extends Stat<Integer> {
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 }
