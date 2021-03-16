@@ -258,13 +258,17 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /**
      * Store the owner's ID.
      *
-     * @param id
+     * @param id The ID of the owner.
      */
     public void setOwnerID(int id) {
         mOwnerID.set(id);
     }
 
-    /** Get the ID of the owner of the building. */
+    /**
+     * Get the ID of the owner of the building.
+     *
+     * @return The ID of the owner.
+     */
     public int getOwnerID() {
         return mOwnerID.get();
     }

@@ -76,7 +76,7 @@ public abstract class Stat<T extends Serializable> extends NetworkableComponent 
     protected abstract T getValueFromLevel();
 
     /**
-     * Get the value stored in {@link #mValue}.
+     * Get the value from the {@link #mLevel}.
      *
      * @return The value of the stat.
      */
