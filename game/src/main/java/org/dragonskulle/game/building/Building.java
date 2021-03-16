@@ -68,6 +68,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onAwake() {
+        // Create the Stats.
         mAttack = new AttackStat();
         mDefence = new DefenceStat();
         mTokenGeneration = new TokenGenerationStat();
@@ -85,6 +86,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
+        // Get a reference to the map.
         mMapReference =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
@@ -92,7 +94,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         HexagonMap map = mMapReference.get();
         HexagonTile tile = mTileReference.get();
-        if (map == null) return;
+        if (map == null || tile == null) return;
 
         map.storeBuilding(this, tile.getQ(), tile.getR());
     }
@@ -199,7 +201,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             }
         }
 
-        log.info("Number of tiles in range: " + tiles.size());
+        // log.info("Number of tiles in range: " + tiles.size());
 
         return tiles;
     }

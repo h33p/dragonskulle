@@ -7,6 +7,14 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncInt;
 
+/**
+ * Stores a level and calculates the stat's value from this.
+ *
+ * <p>This level value is synchronised with the server.
+ *
+ * @author Craig Wilbourne
+ * @param <T> The datatype of the stat value.
+ */
 @Accessors(prefix = "m")
 public abstract class Stat<T extends Serializable> extends NetworkableComponent {
 
