@@ -160,8 +160,6 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
 
     @Override
     public void onStart() {
-
-        // This is a really bad idea,
         mMapReference =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
