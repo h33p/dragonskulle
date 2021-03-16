@@ -1,20 +1,15 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building.stat;
 
-import com.google.common.io.Resources;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.network.components.sync.SyncInt;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.File;
-import java.io.IOException;
+import java.io.Serializable;
 
 @Accessors(prefix = "m")
-public abstract class Stat<T> extends NetworkableComponent {
+public abstract class Stat<T extends Serializable> extends NetworkableComponent {
 
     /**
      * The lowest level possible.
