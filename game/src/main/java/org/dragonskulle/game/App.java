@@ -195,11 +195,11 @@ public class App {
                             t.setParentAnchor(0.4f, 0.05f, 0.8f, 0.05f);
                             t.setMargin(0f, 0f, 0f, 0.2f);
 
-                            title.addComponent(new UIText(
-                                    new Vector3f(1f, 1f, 1f),
-                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                    "Hex Wars"));
-
+                            title.addComponent(
+                                    new UIText(
+                                            new Vector3f(1f, 1f, 1f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Hex Wars"));
                         });
 
         mainMenu.addRootObject(gameTitle);
@@ -351,6 +351,8 @@ public class App {
                                                             mainScene, "127.0.0.1", 7000);
                                                     Engine.getInstance()
                                                             .loadPresentationScene(mainScene);
+                                                    joinUI.setEnabled(false);
+                                                    mainUI.setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
@@ -405,6 +407,8 @@ public class App {
                                                     Server.startServerGame(mainScene);
                                                     Engine.getInstance()
                                                             .loadPresentationScene(mainScene);
+                                                    hostUI.setEnabled(false);
+                                                    mainUI.setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
