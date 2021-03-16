@@ -11,6 +11,7 @@ import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
+import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
@@ -65,6 +66,8 @@ public class App {
                                                     Camera cam = new Camera();
                                                     cam.farPlane = 200;
                                                     camera.addComponent(cam);
+
+                                                    camera.addComponent(new MapEffects());
                                                 });
                                     });
                         });

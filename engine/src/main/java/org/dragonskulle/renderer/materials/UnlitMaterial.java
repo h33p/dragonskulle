@@ -61,7 +61,9 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, Serializable
     };
 
     /** Colour of the surface. It will multiply the texture's colour */
-    @Getter public Vector4f mColour = new Vector4f(1.f);
+    @Getter private final Vector4f mColour = new Vector4f(1.f);
+
+    private int mRefCount = 0;
 
     /** Constructor for UnlitMaterial */
     public UnlitMaterial() {}
@@ -73,6 +75,26 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, Serializable
      */
     public UnlitMaterial(SampledTexture texture) {
         mFragmentTextures[0] = texture;
+    }
+
+    /**
+     * Constructor for UnlitMaterial
+     *
+     * @param texture initial texture of the object
+     * @param colour colour of the material
+     */
+    public UnlitMaterial(SampledTexture texture, Vector4f colour) {
+        mFragmentTextures[0] = texture;
+        mColour.set(colour);
+    }
+
+    /**
+     * Constructor for UnlitMaterial
+     *
+     * @param colour colour of the material
+     */
+    public UnlitMaterial(Vector4f colour) {
+        mColour.set(colour);
     }
 
     public ShaderSet getShaderSet() {
@@ -89,7 +111,12 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, Serializable
         return mFragmentTextures;
     }
 
+    public UnlitMaterial incRefCount() {
+        mRefCount++;
+        return this;
+    }
+
     public void free() {
-        for (SampledTexture tex : mFragmentTextures) tex.free();
+        if (--mRefCount < 0) for (SampledTexture tex : mFragmentTextures) tex.free();
     }
 }

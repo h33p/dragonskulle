@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -49,6 +50,15 @@ public class HexagonMap extends Component implements IOnStart {
      */
     public HexagonTile getTile(int q, int r) {
         return mTiles.getTile(q, r);
+    }
+
+    /**
+     * Get a stream of all hexagon tiles
+     *
+     * @return stream of all non-null hexagon tiles in the map
+     */
+    public Stream<HexagonTile> getAllTiles() {
+        return mTiles.getAllTiles();
     }
 
     /**
