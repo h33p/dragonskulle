@@ -44,6 +44,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
     @Override
     public void onStart() {
+    	mPlayer = getGameObject().getComponent(Player.class);
         mTimeSinceStart = 0;
         createNewRandomTime();
     }
