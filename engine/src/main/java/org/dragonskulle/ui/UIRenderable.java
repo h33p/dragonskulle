@@ -9,6 +9,7 @@ import org.dragonskulle.components.*;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
+import org.dragonskulle.renderer.components.*;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
