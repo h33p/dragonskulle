@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Transform;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.components.Camera;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -81,7 +82,7 @@ public class TransformUI extends Transform {
             mScaledLocalCorners.set(parent.getScaledLocalCorners());
         } else {
             // Otherwise just use regular screen bounds
-            Camera main = Camera.getMainCamera();
+            Camera main = Scene.getActiveScene().getSingleton(Camera.class);
             float width = main == null ? 1f : main.getAspectRatio();
             mScaledLocalCorners.set(-width, -1f, width, 1f);
             off.set(-width, -1f, -width, -1f);
@@ -150,7 +151,7 @@ public class TransformUI extends Transform {
 
     /** Check whether screen aspect ratio changed. If so, dirty all transforms */
     private void checkScrenChange() {
-        Camera main = Camera.getMainCamera();
+        Camera main = Scene.getActiveScene().getSingleton(Camera.class);
         float width = main == null ? 1f : main.getAspectRatio();
 
         if (mScreenAspectRatio != width) setUpdateFlag();

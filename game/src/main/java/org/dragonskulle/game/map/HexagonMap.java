@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 
 /**
@@ -16,7 +18,7 @@ import org.dragonskulle.game.building.Building;
  */
 @Accessors(prefix = "m")
 @Log
-public class HexagonMap extends Component implements IOnStart {
+public class HexagonMap extends Component implements IOnStart, IOnAwake {
 
     /** The size that is used to create the map. */
     @Getter private final int mSize;
@@ -116,6 +118,11 @@ public class HexagonMap extends Component implements IOnStart {
 
     @Override
     public void onDestroy() {}
+
+    @Override
+    public void onAwake() {
+        Scene.getActiveScene().registerSingleton(this);
+    }
 
     /** Spawns each HexagonTile as a GameObject */
     @Override

@@ -4,7 +4,7 @@ package org.dragonskulle.renderer.components;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
-import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.joml.*;
 
 /**
@@ -13,7 +13,7 @@ import org.joml.*;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class Camera extends Component implements ILateFrameUpdate {
+public class Camera extends Component implements IFrameUpdate {
     /** Define which way is up */
     private static final Vector3f UP_DIR = new Vector3f(0f, 0f, 1f);
 
@@ -52,17 +52,6 @@ public class Camera extends Component implements ILateFrameUpdate {
     private Matrix4f mToView = new Matrix4f();
     private final Vector3f mTmpPos = new Vector3f();
     private final Vector3f mTmpDir = new Vector3f();
-
-    private static Reference<Camera> sMainCamera = null;
-
-    /**
-     * Access the main camera
-     *
-     * @return current main camera. Should not be stored for long duration.
-     */
-    public static Camera getMainCamera() {
-        return sMainCamera == null ? null : sMainCamera.get();
-    }
 
     /**
      * Get the current projection matrix
@@ -179,12 +168,10 @@ public class Camera extends Component implements ILateFrameUpdate {
     }
 
     @Override
-    public void lateFrameUpdate(float deltaTime) {
-        if (sMainCamera == null) sMainCamera = getReference(Camera.class);
+    public void frameUpdate(float deltaTime) {
+        Scene.getActiveScene().registerSingleton(this);
     }
 
     @Override
-    public void onDestroy() {
-        if (getMainCamera() == this) sMainCamera = null;
-    }
+    public void onDestroy() {}
 }

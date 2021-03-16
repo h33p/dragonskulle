@@ -9,9 +9,9 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
-import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
@@ -32,21 +32,7 @@ import org.joml.Vector4f;
 @Log
 public class MapEffects extends Component implements IOnStart, IFrameUpdate {
 
-    public static final UnlitMaterial VALID_MATERIAL =
-            new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(0f, 1f, 0.2f, 0.5f));
-    public static final UnlitMaterial INVALID_MATERIAL =
-            new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(1f, 0.08f, 0f, 0.5f));
-    public static final UnlitMaterial PLAIN_MATERIAL =
-            new UnlitMaterial(
-                    new SampledTexture("white.bmp"), new Vector4f(0.7f, 0.94f, 0.98f, 0.5f));
-
-    private HashMap<HexagonTile, GameObject> mSelectedTiles = new HashMap<>();
-    private Reference<HexagonMap> mMapReference = null;
-
-    private boolean mLastPressed = false;
-    private int mClickCounter = 0;
-    int mRange = 0;
-
+    /** Describes tile selection option */
     public static enum HighlightType {
         IGNORE(-2),
         NONE(-1),
@@ -63,9 +49,25 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
         }
     }
 
+    /** A simple tile highlight selection interface */
     public static interface IHighlightSelector {
         public HighlightType handleTile(HexagonTile tile);
     }
+
+    public static final UnlitMaterial VALID_MATERIAL =
+            new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(0f, 1f, 0.2f, 0.5f));
+    public static final UnlitMaterial INVALID_MATERIAL =
+            new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(1f, 0.08f, 0f, 0.5f));
+    public static final UnlitMaterial PLAIN_MATERIAL =
+            new UnlitMaterial(
+                    new SampledTexture("white.bmp"), new Vector4f(0.7f, 0.94f, 0.98f, 0.5f));
+
+    private HashMap<HexagonTile, GameObject> mSelectedTiles = new HashMap<>();
+    private Reference<HexagonMap> mMapReference = null;
+
+    private boolean mLastPressed = false;
+    private int mClickCounter = 0;
+    int mRange = 0;
 
     /**
      * Select a single tile, overriding previous selection
@@ -113,20 +115,45 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
         mMapReference.get().getGameObject().addChild(effectObject);
     }
 
-    /** Select multiple tiles by selector handler */
+    /**
+     * Select multiple tiles by selector handler
+     *
+     * <p>This will iterate through all tiles on the map, and call the selector handler to see if
+     * any selection should take place
+     *
+     * @param selector selector that handles tile selection
+     */
     public void selectTiles(IHighlightSelector selector) {
         mMapReference.get().getAllTiles().forEach(t -> selectTile(t, selector.handleTile(t)));
     }
 
+    /**
+     * Deselect a tile
+     *
+     * <p>This method will remove an active selection from the tile.
+     *
+     * @param tile tile to deselect
+     */
     public void deselectTile(HexagonTile tile) {
         selectTile(tile, HighlightType.NONE);
     }
 
+    /**
+     * Deselect all tiles
+     *
+     * <p>This will clear any selection that currently takes place
+     */
     public void deselectAllTiles() {
         for (GameObject go : mSelectedTiles.values()) go.destroy();
         mSelectedTiles.clear();
     }
 
+    /**
+     * Check whether tile is selected
+     *
+     * @param tile tile to check
+     * @return {@code true} if the tile is currently selected, {@code false} otherwise.
+     */
     public boolean isTileSelected(HexagonTile tile) {
         return mSelectedTiles.get(tile) != null;
     }
@@ -134,13 +161,11 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
     @Override
     public void onStart() {
 
+        // This is a really bad idea,
         mMapReference =
-                Engine.getInstance().getCurrentScene().getGameObjects().stream()
-                        .map(go -> go.getComponent(HexagonMap.class))
-                        .filter(r -> r != null)
-                        .filter(Reference::isValid)
-                        .findFirst()
-                        .orElse(null);
+                Scene.getActiveScene()
+                        .getSingleton(HexagonMap.class)
+                        .getReference(HexagonMap.class);
         System.out.println(mMapReference);
     }
 
@@ -148,11 +173,13 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
     public void frameUpdate(float deltaTime) {
         boolean pressed = GameActions.ACTION_1.isActivated();
 
-        Camera mainCam = Camera.getMainCamera();
+        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 
         if (pressed && mainCam != null) {
+            // Retrieve scaled screen coordinates
             Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
 
+            // Convert those coordinates to local coordinates within the map
             Vector3f pos =
                     mainCam.screenToPlane(
                             mMapReference.get().getGameObject().getTransform(),
@@ -160,9 +187,12 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
                             screenPos.y(),
                             new Vector3f());
 
+            // Convert those coordinates to axial
             TransformHex.cartesianToAxial(pos);
+            // And round them
             TransformHex.roundAxial(pos);
 
+            // And then select the tile
             selectTile(mMapReference.get().getTile((int) pos.x, (int) pos.y), HighlightType.PLAIN);
         }
 
@@ -183,6 +213,7 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
                     selectTile(mMapReference.get().getTile(1, 1), HighlightType.VALID);
                     break;
                 default:
+                    // Apply selection to all tiles that are within mRange from origin
                     selectTiles(
                             (tile) -> {
                                 if (tile.length() < mRange)

@@ -48,7 +48,6 @@ public class Engine {
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
     private final HashSet<Scene> mActiveScenes = new HashSet<>();
     @Getter private Scene mPresentationScene = null;
-    @Getter private Scene mCurrentScene = null;
 
     /** Engine's GLFW window state */
     @Getter private GLFWState mGLFWState = null;
@@ -237,7 +236,7 @@ public class Engine {
     /** Iterate through a list of components that aren't awake and wake them */
     private void wakeComponents() {
         for (Scene s : mActiveScenes) {
-            mCurrentScene = s;
+            Scene.setActiveScene(s);
             for (Component component : s.getNotAwakeComponents()) {
                 if (component instanceof IOnAwake) {
                     ((IOnAwake) component).onAwake();
@@ -245,7 +244,7 @@ public class Engine {
                 component.setAwake(true);
             }
         }
-        mCurrentScene = null;
+        Scene.setActiveScene(null);
     }
 
     /**
@@ -253,7 +252,7 @@ public class Engine {
      */
     private void startEnabledComponents() {
         for (Scene s : mActiveScenes) {
-            mCurrentScene = s;
+            Scene.setActiveScene(s);
             for (Component component : s.getEnabledButNotStartedComponents()) {
                 if (component instanceof IOnStart) {
                     ((IOnStart) component).onStart();
@@ -261,7 +260,7 @@ public class Engine {
                 component.setStarted(true);
             }
         }
-        mCurrentScene = null;
+        Scene.setActiveScene(null);
     }
 
     /**
@@ -271,24 +270,26 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(float deltaTime) {
+        Scene.setActiveScene(mPresentationScene);
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
             }
         }
+        Scene.setActiveScene(null);
     }
 
     /** Do all Fixed Updates on components that implement it */
     private void fixedUpdate() {
         for (Scene s : mActiveScenes) {
-            mCurrentScene = s;
+            Scene.setActiveScene(s);
             for (Component component : s.getEnabledComponents()) {
                 if (component instanceof IFixedUpdate) {
                     ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
                 }
             }
         }
-        mCurrentScene = null;
+        Scene.setActiveScene(null);
     }
 
     /**
@@ -327,7 +328,7 @@ public class Engine {
             }
         }
 
-        Camera mainCamera = Camera.getMainCamera();
+        Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
         if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
     }
@@ -379,10 +380,10 @@ public class Engine {
     /** Update the component lists in every active scene */
     private void updateScenesComponentsList() {
         for (Scene s : mActiveScenes) {
-            mCurrentScene = s;
+            Scene.setActiveScene(s);
             s.updateComponentsList();
         }
-        mCurrentScene = null;
+        Scene.setActiveScene(null);
     }
 
     /** Cleans up all resources used by the engine on shutdown */
