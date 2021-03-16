@@ -39,28 +39,18 @@ public class App {
 
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
-    /** Entrypoint of the program. Creates and runs one app instance */
-    public static void main(String[] args) {
-        // Create a scene
-        Scene mainScene = new Scene("mainScene");
+    private static Scene createMainMenu(Scene mainScene) {
         Scene mainMenu = new Scene("mainMenu");
 
-        // The game needs a camera!
         GameObject camera = new GameObject("mainCamera");
-
         Transform3D tr = (Transform3D) camera.getTransform();
         // Set where it's at
         tr.setPosition(0f, 0f, 1f);
         tr.rotateDeg(30f, 0f, 0f);
         tr.translateLocal(0f, -8f, 0f);
-        // Make sure it's an actual camera
         camera.addComponent(new Camera());
+        mainMenu.addRootObject(camera);
 
-        // And it needs to be in the game
-        mainScene.addRootObject(camera);
-        mainMenu.addRootObject(GameObject.instantiate(camera));
-
-        // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");
 
         // Add a renderable to it
@@ -102,10 +92,10 @@ public class App {
                             go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
                         });
 
-        // Aaand, spawn it!
-        //mainScene.addRootObject(cube);
 
-        // Main UI
+        mainMenu.addRootObject(cube);
+        mainMenu.addRootObject(hexRoot);
+
         GameObject mainUI =
                 new GameObject(
                         "mainUI",
@@ -347,9 +337,35 @@ public class App {
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
-        // Load the main scene as the presentation scene
-        Engine.getInstance().deactivateScene(mainScene);
 
+
+        return mainMenu;
+    }
+
+    /** Entrypoint of the program. Creates and runs one app instance */
+    public static void main(String[] args) {
+        // Create a scene
+        Scene mainScene = new Scene("mainScene");
+
+        GameObject camera = new GameObject("mainCamera");
+        Transform3D tr = (Transform3D) camera.getTransform();
+        // Set where it's at
+        tr.setPosition(0f, 0f, 1f);
+        tr.rotateDeg(30f, 0f, 0f);
+        tr.translateLocal(0f, -8f, 0f);
+        // Make sure it's an actual camera
+        camera.addComponent(new Camera());
+
+        // And it needs to be in the game
+        mainScene.addRootObject(camera);
+
+        // Create the main menu
+        Scene mainMenu = createMainMenu(mainScene);
+
+        // Load the mainScene as an inactive scene
+        Engine.getInstance().loadScene(mainScene, false);
+
+        // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
 
         // Run the game
