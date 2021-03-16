@@ -92,6 +92,7 @@ public class Player extends NetworkableComponent {
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
         mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
     }
 
     @Override
