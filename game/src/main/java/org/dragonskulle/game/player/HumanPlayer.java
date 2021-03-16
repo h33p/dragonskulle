@@ -4,8 +4,10 @@ package org.dragonskulle.game.player;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.HexagonTile;
@@ -13,11 +15,14 @@ import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2d;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -284,14 +289,33 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     private void mapScreen() {
 
         // Checks that its clicking somehting
+    	Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
         if (GameActions.LEFT_CLICK.isActivated()
-                && UIManager.getInstance().getHoveredObject() == null) {
-            Vector2d cursorPosition = GameActions.getCursor().getPosition();
-            // TODO Check which tile has been selected Auri has said he will convert from screen to
-            // local.
+                && UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
 
-            mHexChosen = null; // TODO Work out which one chosen
+            
 
+           
+                // Retrieve scaled screen coordinates
+                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+
+                // Convert those coordinates to local coordinates within the map
+                Vector3f pos =
+                        mainCam.screenToPlane(
+                                mPlayer.get().getMapComponent().get().getGameObject().getTransform(),
+                                screenPos.x(),
+                                screenPos.y(),
+                                new Vector3f());
+
+                // Convert those coordinates to axial
+                TransformHex.cartesianToAxial(pos);
+                // And round them
+                TransformHex.roundAxial(pos);
+
+                // And then select the tile
+                mHexChosen = mPlayer.get().getMapComponent().get().getTile((int) pos.x, (int) pos.y);
+                
+            
             // When chosen a hexagon
             if (mHexChosen != null) {
 
