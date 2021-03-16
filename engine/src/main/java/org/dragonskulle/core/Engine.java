@@ -194,10 +194,12 @@ public class Engine {
             // TODO: Process inputs here before any updates are performed
             mIsRunning = mGLFWState.processEvents();
 
+            Scene.setActiveScene(mPresentationScene);
             UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
+            Scene.setActiveScene(null);
 
             while (cumulativeTime > UPDATE_TIME) {
                 cumulativeTime -= UPDATE_TIME;
@@ -205,12 +207,14 @@ public class Engine {
                 fixedUpdate();
             }
 
+            Scene.setActiveScene(mPresentationScene);
             // Call LateFrameUpdate on the presentation scene
             lateFrameUpdate(deltaTime);
 
             renderFrame();
             instancedDrawCalls += mGLFWState.getRenderer().getInstancedCalls();
             slowDrawCalls += mGLFWState.getRenderer().getSlowCalls();
+            Scene.setActiveScene(null);
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
@@ -270,13 +274,11 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(float deltaTime) {
-        Scene.setActiveScene(mPresentationScene);
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
             }
         }
-        Scene.setActiveScene(null);
     }
 
     /** Do all Fixed Updates on components that implement it */
