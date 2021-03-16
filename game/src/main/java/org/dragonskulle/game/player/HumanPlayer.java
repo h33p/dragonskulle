@@ -9,6 +9,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.renderer.SampledTexture;
@@ -146,7 +147,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // show buildings which can be
                                                                     // attacked -- get off building
                                                                 	
-                                                                	mBuildingChosen = mPlayer.get().getBuilding(mHexTile.getQ(), mHexTile.getR());
+                                                                	mBuildingChosen = mPlayer.get().getBuilding(mHexChosen.getQ(), mHexChosen.getR());
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;
                                                                 }));
@@ -171,7 +172,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                                     mBuildingChosen)); // Send Data
                                                                 	
                                                                 	mBuildingChosen = null;
-                                                                	mHexTileChosen = null;
+                                                                	mHexChosen = null;
                                                                     mScreenOn = Screen.MAP_SCREEN;
                                                                 }));
                                             });
@@ -319,7 +320,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                     // TODO Check if it can place a building there
 
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
-                    mBuildingChosen = buildingOnTile;
+                    mBuildingChosen = buildingOnTile.get();
                     mScreenOn = Screen.BUILDING_SCREEN;
                 } else {
                     return;
