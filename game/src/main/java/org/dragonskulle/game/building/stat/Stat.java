@@ -22,17 +22,6 @@ public abstract class Stat<T extends Serializable> extends NetworkableComponent 
      */
     @Getter protected SyncInt mLevel = new SyncInt(LEVEL_MIN);
 
-    /** The value of the stat at the current level. */
-    private SyncObject mValue = new SyncObject(getValueFromLevel());
-
-    /** Used to sync the value of data type T. */
-    private class SyncObject extends GenericSync<T> {
-
-        public SyncObject(T data) {
-            super(data);
-        }
-    }
-
     /**
      * Set the level, and calculate and the new value.
      *
@@ -43,7 +32,6 @@ public abstract class Stat<T extends Serializable> extends NetworkableComponent 
     public void setLevel(int level) {
         level = getBoundedLevel(level);
         mLevel.set(level);
-        mValue.set(getValueFromLevel());
     }
 
     /** Increase the level of the stat and calculate the new value. */
@@ -86,6 +74,6 @@ public abstract class Stat<T extends Serializable> extends NetworkableComponent 
      * @return The value of the stat.
      */
     public T getValue() {
-        return mValue.get();
+        return getValueFromLevel();
     }
 }
