@@ -6,15 +6,15 @@ import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.audio.AudioManager;
-import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.Renderable;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.ui.UIManager;
 
 /**
@@ -28,8 +28,7 @@ import org.dragonskulle.ui.UIManager;
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
-    // TODO: Choose a number of updates per second that we want to have
-    private static final int UPDATES_PER_SECOND = 30; // Target number of fixed updates per second
+    private static final int UPDATES_PER_SECOND = 32; // Target number of fixed updates per second
     private static final float UPDATE_TIME = 1 / (float) UPDATES_PER_SECOND;
 
     private static final int WINDOW_WIDTH = 1600;
@@ -167,6 +166,9 @@ public class Engine {
         float secondTimer = 0;
         float cumulativeTime = 0;
 
+        int instancedDrawCalls = 0;
+        int slowDrawCalls = 0;
+
         while (mIsRunning) {
             // Calculate time for last frame
             float mCurTime = Time.getTimeInSeconds();
@@ -188,13 +190,14 @@ public class Engine {
             // Start all enabled components (Called on all active scenes)
             startEnabledComponents();
 
-            // TODO: Process inputs here before any updates are performed
             mIsRunning = mGLFWState.processEvents();
 
+            Scene.setActiveScene(mPresentationScene);
             UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
+            Scene.setActiveScene(null);
 
             while (cumulativeTime > UPDATE_TIME) {
                 cumulativeTime -= UPDATE_TIME;
@@ -202,21 +205,29 @@ public class Engine {
                 fixedUpdate();
             }
 
+            Scene.setActiveScene(mPresentationScene);
             // Call LateFrameUpdate on the presentation scene
             lateFrameUpdate(deltaTime);
 
             renderFrame();
+            instancedDrawCalls += mGLFWState.getRenderer().getInstancedCalls();
+            slowDrawCalls += mGLFWState.getRenderer().getSlowCalls();
+            Scene.setActiveScene(null);
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
 
             frames++;
-            if (secondTimer > 1.0) {
+            if (secondTimer >= 1.0) {
                 // One second has elapsed so frames contains the FPS
 
                 // Have no use for this currently besides printing it to console
                 System.out.println("FPS:" + frames);
-                secondTimer = 0;
+                System.out.println("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
+                System.out.println("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
+                instancedDrawCalls = 0;
+                slowDrawCalls = 0;
+                secondTimer -= 1.0;
                 frames = 0;
             }
         }
@@ -227,6 +238,7 @@ public class Engine {
     /** Iterate through a list of components that aren't awake and wake them */
     private void wakeComponents() {
         for (Scene s : mActiveScenes) {
+            Scene.setActiveScene(s);
             for (Component component : s.getNotAwakeComponents()) {
                 if (component instanceof IOnAwake) {
                     ((IOnAwake) component).onAwake();
@@ -234,6 +246,7 @@ public class Engine {
                 component.setAwake(true);
             }
         }
+        Scene.setActiveScene(null);
     }
 
     /**
@@ -241,6 +254,7 @@ public class Engine {
      */
     private void startEnabledComponents() {
         for (Scene s : mActiveScenes) {
+            Scene.setActiveScene(s);
             for (Component component : s.getEnabledButNotStartedComponents()) {
                 if (component instanceof IOnStart) {
                     ((IOnStart) component).onStart();
@@ -248,6 +262,7 @@ public class Engine {
                 component.setStarted(true);
             }
         }
+        Scene.setActiveScene(null);
     }
 
     /**
@@ -267,12 +282,14 @@ public class Engine {
     /** Do all Fixed Updates on components that implement it */
     private void fixedUpdate() {
         for (Scene s : mActiveScenes) {
+            Scene.setActiveScene(s);
             for (Component component : s.getEnabledComponents()) {
                 if (component instanceof IFixedUpdate) {
                     ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
                 }
             }
         }
+        Scene.setActiveScene(null);
     }
 
     /**
@@ -311,7 +328,7 @@ public class Engine {
             }
         }
 
-        Camera mainCamera = Camera.getMainCamera();
+        Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
         if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
     }
@@ -385,8 +402,10 @@ public class Engine {
     /** Update the component lists in every active scene */
     private void updateScenesComponentsList() {
         for (Scene s : mActiveScenes) {
+            Scene.setActiveScene(s);
             s.updateComponentsList();
         }
+        Scene.setActiveScene(null);
     }
 
     /** Cleans up all resources used by the engine on shutdown */
@@ -404,7 +423,9 @@ public class Engine {
      *
      * @param component Component to be destroyed at the end of the current frame
      */
-    public void addDestroyedComponent(Component component) {}
+    public void addDestroyedComponent(Component component) {
+        mDestroyedComponents.add(component);
+    }
 
     /**
      * Getter for mInactiveScenes

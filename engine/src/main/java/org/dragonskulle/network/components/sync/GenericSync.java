@@ -10,7 +10,7 @@ import java.util.Objects;
  *     optimised @link{ISyncVar} or extend this class.
  * @param <T> the type parameter
  */
-abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {
+public abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {
 
     /** The Data. */
     private T mData;
@@ -54,7 +54,6 @@ abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializ
     /**
      * Serialize byte [ ].
      *
-     * @return the byte [ ]
      * @throws IOException the io exception
      */
     @Override
@@ -70,7 +69,6 @@ abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializ
      *
      * @param in The input stream
      * @throws IOException the io exception
-     * @throws ClassNotFoundException the class not found exception
      */
     @SuppressWarnings("unchecked")
     @Override

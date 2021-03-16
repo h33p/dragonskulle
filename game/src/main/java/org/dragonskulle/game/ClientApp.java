@@ -6,7 +6,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -15,6 +14,7 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.renderer.components.Camera;
 
 /** @author Oscar L */
 public class ClientApp {

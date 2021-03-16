@@ -9,6 +9,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.*;
+import org.dragonskulle.renderer.components.*;
 
 /** @author Oscar L */
 public class ServerApp {
