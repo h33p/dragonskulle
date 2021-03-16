@@ -109,7 +109,7 @@ public class AiPlayer extends Component
                 int randomIndex = mRandom.nextInt(tilesToUse.size());
                 HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
                 // now have Hexagon tile to expand to
-                mPlayer.get().clientInvokeEvent(new BuildData(tileToExpandTo));
+                mPlayer.get().mClientBuildRequest.invoke(new BuildData(tileToExpandTo));
                 return;
             } else {
                 return; // end
@@ -124,10 +124,7 @@ public class AiPlayer extends Component
                     int randomIndex = mRandom.nextInt(tilesToUse.size());
                     HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
                     // now have Hexagon tile to expand to
-                    mPlayer.get()
-                            .clientInvokeEvent(
-                                    new BuildData(
-                                            tileToExpandTo)); // TODO Send data to this which will
+                    mPlayer.get().mClientBuildRequest.invoke(new BuildData(tileToExpandTo)); // TODO Send data to this which will
                     // then package & send to
                     // server
                     return;
@@ -146,7 +143,7 @@ public class AiPlayer extends Component
                     ArrayList<Stat<?>> statsArray = building.get().getStats();
                     Stat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
                     mPlayer.get()
-                            .clientInvokeEvent(
+                            .mClientStatRequest.invoke(
                                     new StatData(
                                             building.get(),
                                             statToUpgrade)); // TODO Send data to this which will
@@ -180,7 +177,7 @@ public class AiPlayer extends Component
                         // Chosen building to attack in form [buildingToAttackFrom,
                         // buildingToAttack]
                         mPlayer.get()
-                                .clientInvokeEvent(
+                                .mClientAttackRequest.invoke(
                                         new AttackData(buildingToAttack[0], buildingToAttack[1]));
                         // TODO Send data to this which will then package & send to
                         // server
@@ -199,7 +196,7 @@ public class AiPlayer extends Component
                                         .get();
                         // Now have building to sell
                         mPlayer.get()
-                                .clientInvokeEvent(
+                                .mClientSellRequest.invoke(
                                         new SellData(
                                                 buildingToSell)); // TODO Send data to this which
                         // will then package & send to

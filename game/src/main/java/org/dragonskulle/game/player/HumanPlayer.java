@@ -81,7 +81,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                         new UIButton(
                                                                 (handle, __) -> {
                                                                                                                                     	
-                                                                	mPlayer.get().clientInvokeEvent(new BuildData(mHexChosen));
+                                                                	mPlayer.get().mClientBuildRequest.invoke(new BuildData(mHexChosen));
 
                                                                 	mHexChosen = null;
                                                                 	mBuildingChosen = null;
@@ -147,7 +147,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // show buildings which can be
                                                                     // attacked -- get off building
                                                                 	
-                                                                	mBuildingChosen = mPlayer.get().getBuilding(mHexChosen.getQ(), mHexChosen.getR());
+                                                                	mBuildingChosen = mPlayer.get().getMapComponent().get().getBuilding(mHexChosen.getQ(), mHexChosen.getR());
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;
                                                                 }));
@@ -167,7 +167,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                     // sell building
                                                                 	
                                                                 	mPlayer.get()
-                                                                    .clientInvokeEvent(
+                                                                	.mClientSellRequest.invoke(
                                                                             new SellData(
                                                                                     mBuildingChosen)); // Send Data
                                                                 	
@@ -221,7 +221,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                         // attack building
                                                                     	
                                                                     	mPlayer.get()
-                                                                        .clientInvokeEvent(
+                                                                    	.mClientAttackRequest.invoke(
                                                                                 new AttackData(
                                                                                         mBuildingChosen, building)); // TODO Send data to this which
                                                                     	
