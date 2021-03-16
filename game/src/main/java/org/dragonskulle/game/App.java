@@ -3,7 +3,6 @@ package org.dragonskulle.game;
 
 import static org.dragonskulle.utils.Env.*;
 
-import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -442,7 +441,7 @@ public class App {
 
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
-        
+
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
