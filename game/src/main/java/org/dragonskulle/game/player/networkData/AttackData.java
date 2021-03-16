@@ -8,10 +8,14 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /** @author Oscar L */
+@Accessors(prefix = "m")
 public class AttackData implements INetSerializable {
-    private HexagonTile mAttackingFrom;
-    private HexagonTile mAttacking;
+    @Getter private HexagonTile mAttackingFrom;
+    @Getter private HexagonTile mAttacking;
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {

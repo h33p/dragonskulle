@@ -125,11 +125,60 @@ public class Player extends NetworkableComponent {
      * @param data attack event being executed on the server.
      */
     public void handleEvent(AttackData data) {
-        // TODO implement
-        // get building to be attacked
-        // get building to that is doing the attacking
-        // verify the sender owns the building to be attacked from and it can see the building
-        // attack the building
+        
+    	
+    	int COST = 5;  //	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
+    	
+    	if (mTokens.get() < COST) {
+    		return;
+    	}
+    	
+    	Building attackingFrom = data.getAttackingFrom();
+    	Building defender = data.getAttacking();
+    	Reference<Building> attacker = checkBuildingYours(attackingFrom);
+    	
+    	if (attacker == null) {
+    		return;
+    	}
+    	
+    	ArrayList<Building> attackableBuildings = attacker.get().getAttackableBuildings();
+    	
+    	Building defending = checkAttackable(defender, attackableBuildings);
+    	
+    	if (defending == null) {
+    		return;
+    	}
+    	
+    	Reference<Building> isYours = checkBuildingYours(defending);
+    	
+    	if (isYours != null) {
+    		return;
+    	}
+    	
+    	attacker.get().attack(defending);
+    	mTokens.set(mTokens.get() - COST);
+    		
+    	return;
+    }
+    
+    private Reference<Building> checkBuildingYours(Building buildingToCheck) {
+    	for (Reference<Building> building : mOwnedBuildings) {
+    		if (building.get().getTile().getR() == buildingToCheck.getTile().getR() &&  building.get().getTile().getQ() == buildingToCheck.getTile().getQ()) {
+    			return building;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    private Building checkAttackable(Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
+    	for (Building building : buildingsToCheck) {
+    		if (building.getTile().getR() == buildingToCheck.getTile().getR() &&  building.getTile().getQ() == buildingToCheck.getTile().getQ()) {
+    			return building;
+    		}
+    	}
+    	
+    	return null;
     }
 
     // Building is handled below
