@@ -20,7 +20,6 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
-import org.joml.Vector2d;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -41,7 +40,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     private Reference<GameObject> mShowStat;
 
     // Data which is needed on different screens
-    private Reference<HexagonTile> mHexChosen;
+    private HexagonTile mHexChosen;
     private Reference<Building> mBuildingChosen = new Reference<Building>(null);
 
     // The player
@@ -98,7 +97,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                             .invoke(
                                                                                     new BuildData(
                                                                                             mHexChosen
-                                                                                                    .get()));
+                                                                                                    ));
 
                                                                     mHexChosen = null;
                                                                     mBuildingChosen = null;
@@ -175,10 +174,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                                                                             .get()
                                                                                             .getBuilding(
                                                                                                     mHexChosen
-                                                                                                            .get()
-                                                                                                            .getQ(),
+                                                                                                                                                                                                                       .getQ(),
                                                                                                     mHexChosen
-                                                                                                            .get()
+                                                                                                            
                                                                                                             .getR()));
                                                                     mScreenOn =
                                                                             Screen.ATTACK_SCREEN;
@@ -289,33 +287,30 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     private void mapScreen() {
 
         // Checks that its clicking somehting
-    	Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
+        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
         if (GameActions.LEFT_CLICK.isActivated()
-                && UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
+                && UIManager.getInstance().getHoveredObject() == null
+                && mainCam != null) {
 
-            
+            // Retrieve scaled screen coordinates
+            Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
 
-           
-                // Retrieve scaled screen coordinates
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+            // Convert those coordinates to local coordinates within the map
+            Vector3f pos =
+                    mainCam.screenToPlane(
+                            mPlayer.get().getMapComponent().get().getGameObject().getTransform(),
+                            screenPos.x(),
+                            screenPos.y(),
+                            new Vector3f());
 
-                // Convert those coordinates to local coordinates within the map
-                Vector3f pos =
-                        mainCam.screenToPlane(
-                                mPlayer.get().getMapComponent().get().getGameObject().getTransform(),
-                                screenPos.x(),
-                                screenPos.y(),
-                                new Vector3f());
+            // Convert those coordinates to axial
+            TransformHex.cartesianToAxial(pos);
+            // And round them
+            TransformHex.roundAxial(pos);
 
-                // Convert those coordinates to axial
-                TransformHex.cartesianToAxial(pos);
-                // And round them
-                TransformHex.roundAxial(pos);
+            // And then select the tile
+            mHexChosen = mPlayer.get().getMapComponent().get().getTile((int) pos.x, (int) pos.y);
 
-                // And then select the tile
-                mHexChosen = mPlayer.get().getMapComponent().get().getTile((int) pos.x, (int) pos.y);
-                
-            
             // When chosen a hexagon
             if (mHexChosen != null) {
 
@@ -326,7 +321,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                         .getMapComponent()
                                         .get()
                                         .getBuilding(
-                                                mHexChosen.get().getQ(), mHexChosen.get().getR()));
+                                                mHexChosen.getQ(), mHexChosen.getR()));
 
                 // If there is a building there
                 if (buildingOnTile.get() == null) {
@@ -334,7 +329,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                     // Checks if cannot build here
                     if (mPlayer.get()
                             .buildingWithinRadius(
-                                    mPlayer.get().getTilesInRadius(1, mHexChosen.get()))) {
+                                    mPlayer.get().getTilesInRadius(1, mHexChosen))) {
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
