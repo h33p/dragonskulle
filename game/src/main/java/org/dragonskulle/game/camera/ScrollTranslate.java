@@ -70,7 +70,7 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
     public void frameUpdate(float deltaTime) {
 
         if (mTransform != null) {
-            float direction = (float) GameActions.getScroll().getAmount();
+            float direction = (float) -GameActions.getScroll().getAmount();
             mTargetLerpTime +=
                     direction
                             * MathUtils.lerp(

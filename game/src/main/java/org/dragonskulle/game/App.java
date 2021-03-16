@@ -13,16 +13,16 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.Server;
+import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
-import org.dragonskulle.network.NetworkClient;
-import org.dragonskulle.network.Server;
-import org.dragonskulle.renderer.Font;
 import org.dragonskulle.ui.*;
-import org.joml.Math;
 import org.joml.*;
+import org.joml.Math;
 
 public class App {
 
