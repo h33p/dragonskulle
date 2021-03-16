@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.renderer;
+package org.dragonskulle.renderer.materials;
 
 import java.nio.ByteBuffer;
+import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.renderer.ShaderSet;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.NativeResource;
 

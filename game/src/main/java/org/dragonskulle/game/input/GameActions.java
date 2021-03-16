@@ -20,6 +20,9 @@ public class GameActions extends Actions {
     public static final Action LEFT = new Action("LEFT");
     public static final Action RIGHT = new Action("RIGHT");
 
+    public static final Action ROTATE_LEFT = new Action("ROTATE_LEFT");
+    public static final Action ROTATE_RIGHT = new Action("ROTATE_RIGHT");
+
     public static final Action ZOOM_IN = new Action("ZOOM_IN");
     public static final Action ZOOM_OUT = new Action("ZOOM_OUT");
 
