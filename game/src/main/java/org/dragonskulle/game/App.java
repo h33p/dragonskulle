@@ -40,7 +40,7 @@ public class App {
         new Vector4f(0.f, 1.f, 1.f, 1f),
         new Vector4f(1.f, 0.f, 1.f, 1f),
     };
-
+    
     private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
@@ -90,40 +90,7 @@ public class App {
 
         mainScene.addRootObject(hexagonMap);
 
-        // Create a cube. This syntax is slightly different
-        // This here, will allow you to "build" the cube in one go
-        GameObject cube =
-                new GameObject(
-                        "cube",
-                        new Transform3D(0f, -4f, 1.5f),
-                        (go) -> {
-                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            go.getComponent(Renderable.class)
-                                    .get()
-                                    .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(1f);
-                            // You spin me right round...
-                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-                        });
-
-        mainScene.addRootObject(cube);
-
-        cube =
-                new GameObject(
-                        "cube",
-                        new Transform3D(0f, -2f, 1.5f),
-                        (go) -> {
-                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            go.getComponent(Renderable.class)
-                                    .get()
-                                    .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(0.7f);
-                            // You spin me right round...
-                            go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
-                        });
-
-        // Aaand, spawn it!
-        mainScene.addRootObject(cube);
+        
 
         return mainScene;
     }

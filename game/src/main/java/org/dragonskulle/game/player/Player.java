@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -53,10 +54,12 @@ public class Player extends NetworkableComponent implements IOnStart {
     @Override
     public void onStart() {
 
-        /*mMapComponent = getGameObject.getComponent();
+        mMapComponent = Scene.getActiveScene()
+                .getSingleton(HexagonMap.class)
+                .getReference(HexagonMap.class);
         mOwnedBuildings = new ArrayList<Reference<Building>>();
-        mOwnedBuildings.add(capital);
-        updateTokens(UPDATE_TIME + 1);*/
+        //mOwnedBuildings.add(capital);
+        updateTokens(UPDATE_TIME + 1);
     }
     /**
      * Add a building to the ones the player owns
