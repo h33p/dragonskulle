@@ -211,14 +211,25 @@ public class Player extends NetworkableComponent {
     	HexagonMap map = mMapComponent.get();
     	HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
     	
-    	// TODO: Check building is in legal position.
-    	/////////////////////////////////////////////////////////
+    	if (buildingWithinRadius(getTilesInRadius(1, tile))) {
+    		return;
+    	}
     	
     	// Create a new building.
     	Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
+    	
     	// Store the building.
     	map.storeBuilding(building, tile.getQ(), tile.getR());
     	
+    }
+    
+    private boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
+    	for (HexagonTile tile : tiles) {
+    		if (mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 
     // Upgrading Stats is handled below
@@ -235,5 +246,46 @@ public class Player extends NetworkableComponent {
         // Get Stat
         // Upgrade
 
+    }
+    
+    public ArrayList<HexagonTile> getTilesInRadius(
+            int radius,
+            HexagonTile
+                    tile) { // TODO Repeated code from building need to move in more sensible place
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+
+        // Attempt to get the current HexagonTile and HexagonMap.
+        HexagonMap map = mMapComponent.get();
+        if (tile == null || map == null) return tiles;
+
+        // Get the current q and r coordinates.
+        int qCentre = tile.getQ();
+        int rCentre = tile.getR();
+
+        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
+
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
+                // Do not include the building's HexagonTile.
+                if (qOffset == 0 && rOffset == 0) continue;
+
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
+                // s));
+
+                // Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
+                if (selectedTile == null) continue;
+
+                // Add the tile to the list.
+                tiles.add(selectedTile);
+            }
+        }
+
+        // log.info("Number of tiles in range: " + tiles.size());
+
+        return tiles;
     }
 }

@@ -99,9 +99,6 @@ public class AiPlayer extends Component
      */
     private void simulateInput() {
 
-        // TODO Need to know how we are interacting with triggerEvent().  Cos here you can choose
-        // exact command to do (Much Much easier)
-
         if (mPlayer.get().numberOfBuildings() == 1) { // TODO Refactor it so it's only done once
 
             List<HexagonTile> tilesToUse = hexTilesToExpand();
@@ -128,9 +125,7 @@ public class AiPlayer extends Component
                             .mClientBuildRequest
                             .invoke(
                                     new BuildData(
-                                            tileToExpandTo)); // TODO Send data to this which will
-                    // then package & send to
-                    // server
+                                            tileToExpandTo));
                     return;
                 } else {
                     return; // end
@@ -250,7 +245,7 @@ public class AiPlayer extends Component
      * @return {@code true} if that hextile is valid to build in or {@code false} if it's not valid
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
-        ArrayList<HexagonTile> hexTiles = getTilesInRadius(1, hexTile);
+        ArrayList<HexagonTile> hexTiles = mPlayer.get().getTilesInRadius(1, hexTile);
 
         for (HexagonTile tile : hexTiles) {
             if (mPlayer.get().getMapComponent().get().getBuilding(tile.getQ(), tile.getR())
@@ -262,44 +257,4 @@ public class AiPlayer extends Component
         return true;
     }
 
-    private ArrayList<HexagonTile> getTilesInRadius(
-            int radius,
-            HexagonTile
-                    tile) { // TODO Repeated code from building need to move in more sensible place
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonMap map = mPlayer.get().getMapComponent().get();
-        if (tile == null || map == null) return tiles;
-
-        // Get the current q and r coordinates.
-        int qCentre = tile.getQ();
-        int rCentre = tile.getR();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
-        }
-
-        // log.info("Number of tiles in range: " + tiles.size());
-
-        return tiles;
-    }
 }
