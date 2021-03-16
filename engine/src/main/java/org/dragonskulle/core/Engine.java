@@ -151,6 +151,28 @@ public class Engine {
         mNewPresentationScene = scene;
     }
 
+    /**
+     * Load the first active or inactive scene found as the presentation scene. This might not give
+     * the expected results if there are multiple scenes with the same name. It is also not the
+     * most efficient, so if possible maintain a reference to scenes and load them directly
+     *
+     * @param name Name of the scene to set as the presentation scene
+     */
+    public void loadPresentationScene(String name) {
+        for (Scene s : mActiveScenes) {
+            if (s.getName().equals(name)) {
+                loadPresentationScene(s);
+                return;
+            }
+        }
+        for (Scene s : mInactiveScenes) {
+            if (s.getName().equals(name)) {
+                loadPresentationScene(s);
+                return;
+            }
+        }
+    }
+
     /** Stops the engine when the current frame has finished */
     public void stop() {
         mIsRunning = false;
