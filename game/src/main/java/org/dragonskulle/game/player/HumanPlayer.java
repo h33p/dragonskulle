@@ -23,7 +23,7 @@ import org.joml.Vector4f;
 /**
  * This class will allow a user to interact with game.
  *
- * @author Harry Stoltz, Oscar Lindenbaum and Nathaniel Lowis
+ * @author DragonSkulle
  */
 public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
@@ -304,7 +304,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     @Override
     public void frameUpdate(float deltaTime) {
-        // updateTokens(deltaTime);  TODO Move to server
+        mPlayer.get().updateTokens(deltaTime);  
 
         mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
         mPlaceScreen.get().setEnabled(mScreenOn == Screen.TILE_SCREEN);
@@ -358,6 +358,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
         }
     }
 
+    /**
+     * A Method to check if the player owns that building or not
+     * @param buildingToCheck The building to check
+     * @return true if the player owns the building, false if not
+     */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
         for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
             Reference<Building> building = mPlayer.get().getBuilding(i);

@@ -8,6 +8,11 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
+/**
+ * The Class which holds the data to be sent for upgrading stats
+ * @author low101043
+ *
+ */
 public class StatData implements INetSerializable {
 
     private Building mBuilding;
@@ -15,6 +20,11 @@ public class StatData implements INetSerializable {
 
     public StatData() {}
 
+    /**
+     * The Constructor
+     * @param building The building to upgrade
+     * @param stat The stat to upgrade
+     */
     public StatData(Building building, Stat<?> stat) {
         mBuilding = building;
         mStat = stat;

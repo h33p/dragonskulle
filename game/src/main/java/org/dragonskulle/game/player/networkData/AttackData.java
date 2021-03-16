@@ -10,7 +10,11 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
-/** @author Oscar L */
+/**
+ * The Class which will contain all the data to be sent for attacking
+ * @author DragonSkulle
+ *
+ */
 @Accessors(prefix = "m")
 public class AttackData implements INetSerializable {
     @Getter private HexagonTile mAttackingFrom;
@@ -35,6 +39,11 @@ public class AttackData implements INetSerializable {
 
     public AttackData() {}
 
+    /**
+     * Constructor
+     * @param attackingFrom The attacker building 
+     * @param attacking The defending building
+     */
     public AttackData(Building attackingFrom, Building attacking) {
         this.mAttackingFrom = attackingFrom.getTile().get();
         this.mAttacking = attacking.getTile().get();

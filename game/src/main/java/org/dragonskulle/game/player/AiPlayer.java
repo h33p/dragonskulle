@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-// TODO  UPDATE PLAYER STUFF!!!!!!!!!!
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -21,11 +19,11 @@ import org.dragonskulle.game.player.networkData.StatData;
 /**
  * This base class will allow AI players to be created and used throughout the game.
  *
- * @author Oscar L, Nathaniel Lowis
+ * @author DragonSkulle
  */
 public class AiPlayer extends Component
         implements IFixedUpdate,
-                IOnStart { // TODO remove extends -- Work out whats happening with player
+                IOnStart { 
 
     protected float mTimeSinceStart;
     protected int mLowerBoundTime = 5;
@@ -86,7 +84,7 @@ public class AiPlayer extends Component
     @Override
     public void fixedUpdate(float deltaTime) {
 
-        // updateTokens(deltaTime);
+        mPlayer.get().updateTokens(deltaTime);
         if (playGame(deltaTime)) {
             simulateInput();
         }

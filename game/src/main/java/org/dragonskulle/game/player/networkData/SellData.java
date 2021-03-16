@@ -8,7 +8,11 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
-/** @author Oscar L */
+/**
+ * The Class which holds the data so buildings can be sold
+ * @author DragonSkulle
+ *
+ */
 public final class SellData implements INetSerializable {
 
     private HexagonTile mTile;
@@ -27,6 +31,10 @@ public final class SellData implements INetSerializable {
 
     public SellData() {}
 
+    /**
+     * The Constructor
+     * @param toSell The building to sell
+     */
     public SellData(Building toSell) {
         mTile = toSell.getTile().get();
     }

@@ -19,9 +19,9 @@ import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
- * Abstract Player class, Both AIPlayer and HumanPlayer will extend this
+ * This is the class which contains all the needed data to play a game
  *
- * @author Harry Stoltz, Oscar Lindenbaum and Nathaniel Lowis
+ * @author DragonSkulle
  */
 @Accessors(prefix = "m")
 @Log
@@ -52,21 +52,34 @@ public class Player extends NetworkableComponent {
         updateTokens(UPDATE_TIME + 1);
     }
 
+    /**
+     * Add a building to the ones the player owns
+     * @param building
+     */
     public void addBuilding(Reference<Building> building) {
         mOwnedBuildings.add(building);
     }
 
+    /**
+     * Get a reference to the building at this index
+     * @param index The index to get data from
+     * @return The building
+     */
     public Reference<Building> getBuilding(int index) {
         return mOwnedBuildings.get(index);
     }
 
+    /**
+     * The number of buildings the player has
+     * @return The number of buildings
+     */
     public int numberOfBuildings() {
         return mOwnedBuildings.size();
     }
 
     /**
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
-     * owned buildings to check if need to update tokens
+     * owned buildings to check if need to update tokens.  Should only be ran on the server
      */
     public void updateTokens(float time) {
 
@@ -166,6 +179,11 @@ public class Player extends NetworkableComponent {
         return;
     }
 
+    /**
+     * Checks if the building coordinates correspond to a building a player owns
+     * @param buildingToCheck The building to check
+     * @return true of the player owns it, false if not
+     */
     private Reference<Building> checkBuildingYours(Building buildingToCheck) {
         for (Reference<Building> building : mOwnedBuildings) {
             if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
@@ -177,7 +195,13 @@ public class Player extends NetworkableComponent {
 
         return null;
     }
-
+    
+    /**
+     * Checks if the building coordinates corresponds to a building coordinates in the list
+     * @param buildingToCheck The building to check is in the list
+     * @param buildingsToCheck The list
+     * @return true if in the list false if not
+     */
     private Building checkAttackable(
             Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
         for (Building building : buildingsToCheck) {
@@ -256,6 +280,12 @@ public class Player extends NetworkableComponent {
 
     }
 
+    /**
+     * This will return all hex tiles within a radius except the one in the tile
+     * @param radius The radius to check
+     * @param tile the tile to check
+     * @return A list of tiles 
+     */
     public ArrayList<HexagonTile> getTilesInRadius(
             int radius,
             HexagonTile
