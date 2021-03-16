@@ -8,8 +8,8 @@ package org.dragonskulle.game.building;
  */
 public class TestPlayer {
 
-	public int getID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    public int getID() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }

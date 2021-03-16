@@ -4,13 +4,12 @@ package org.dragonskulle.game.building;
 import java.util.ArrayList;
 import java.util.Random;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.stat.AttackDistanceStat;
 import org.dragonskulle.game.building.stat.AttackStat;
 import org.dragonskulle.game.building.stat.DefenceStat;
@@ -42,12 +41,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private ViewDistanceStat mViewDistance;
     /** Stores the attack range of the building. */
     @Getter private AttackDistanceStat mAttackDistance;
-    
+
     /** ID of the owner of the building. */
     private SyncInt mOwnerID = new SyncInt(-1);
     /** Whether the building is a capital. */
     private SyncBool mIsCapital = new SyncBool(false);
-    
+
     /** The HexagonTile the building is on. */
     private Reference<HexagonTile> mTileReference = new Reference<HexagonTile>(null);
     /** The HexagonMap being used. */
@@ -57,7 +56,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * Create a new {@link Building}. Adds the Building to the {@link HexagonMap} at the specified
      * {@link HexagonTile}.
      *
-     * @param hexagonMap The HexagonMap being used.
      * @param hexagonTile The HexagonTile the building is on.
      */
     public Building(HexagonTile hexagonTile) {
@@ -65,17 +63,17 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         // TODO Clean up.
         // Move contents out of constructor.
 
-    	mTileReference = new Reference<HexagonTile>(hexagonTile);
+        mTileReference = new Reference<HexagonTile>(hexagonTile);
     }
 
     @Override
     public void onAwake() {
-    	mAttack = new AttackStat();
+        mAttack = new AttackStat();
         mDefence = new DefenceStat();
         mTokenGeneration = new TokenGenerationStat();
         mViewDistance = new ViewDistanceStat();
         mAttackDistance = new AttackDistanceStat();
-        
+
         // For debugging, set all stat levels to 5.
         // TODO: Remove.
         mAttack.setLevel(5);
@@ -84,18 +82,21 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
     }
-    
+
     @Override
-	public void onStart() {
-    	mMapReference = Scene.getActiveScene().getSingleton(HexagonMap.class).getReference(HexagonMap.class);
-    	
+    public void onStart() {
+        mMapReference =
+                Scene.getActiveScene()
+                        .getSingleton(HexagonMap.class)
+                        .getReference(HexagonMap.class);
+
         HexagonMap map = mMapReference.get();
         HexagonTile tile = mTileReference.get();
-        if(map == null) return;
-        
+        if (map == null) return;
+
         map.storeBuilding(this, tile.getQ(), tile.getR());
-	}
-    
+    }
+
     /**
      * Attack an opponent building.
      *
@@ -105,7 +106,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @param opponent The building to attack.
      */
     public void attack(Building opponent) {
-        // TODO: Make attack success dependent on building stats.
+        // TODO: Add Lelaa's code here.
 
         Random random = new Random();
         double successChance = random.nextDouble();
@@ -119,7 +120,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                             successChance, target));
 
             // Claim the opponent building.
-            //opponent.setOwner(mOwner);
+            // opponent.setOwner(mOwner);
             // TODO: Allow the Players to update their lists of buildings they own.
         } else {
             log.info(
@@ -254,49 +255,47 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /**
      * Store the owner's ID.
-     * 
+     *
      * @param id
      */
-    public void setOwnerID(int id){
-    	mOwnerID.set(id);
+    public void setOwnerID(int id) {
+        mOwnerID.set(id);
     }
-    
-    /**
-     * Get the ID of the owner of the building.
-     */
-    public int getOwnerID(){
-    	return mOwnerID.get();
+
+    /** Get the ID of the owner of the building. */
+    public int getOwnerID() {
+        return mOwnerID.get();
     }
-    
+
     /**
      * Set the owner of the building.
-     * 
+     *
      * @param player The owner.
      */
     public void setOwner(TestPlayer player) {
-    	setOwnerID(player.getID());
+        setOwnerID(player.getID());
     }
-    
+
     /**
      * Get whether the building is a capital.
-     * 
+     *
      * @return Whether the building is a capital.
      */
     public boolean isCapital() {
-    	return mIsCapital.get();
+        return mIsCapital.get();
     }
-    
+
     /**
      * Set the building to be a capital.
-     * <p>
-     * By default, buildings are not capitals.
-     * 
+     *
+     * <p>By default, buildings are not capitals.
+     *
      * @param isCapital Whether the building should be capital.
      */
     public void setCapital(boolean isCapital) {
-    	mIsCapital.set(isCapital);
+        mIsCapital.set(isCapital);
     }
-    
+
     @Override
     protected void onDestroy() {}
 }

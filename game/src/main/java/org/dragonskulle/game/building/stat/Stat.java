@@ -5,7 +5,6 @@ import java.io.Serializable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.sync.GenericSync;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 @Accessors(prefix = "m")
