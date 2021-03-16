@@ -11,8 +11,8 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
  * The Class which holds the data for building a building
- * @author DragonSkulle
  *
+ * @author DragonSkulle
  */
 @Accessors(prefix = "m")
 public class BuildData implements INetSerializable {
@@ -23,6 +23,7 @@ public class BuildData implements INetSerializable {
 
     /**
      * The constructor
+     *
      * @param hexTileToAdd The {@code HexagonTile} to build on
      */
     public BuildData(HexagonTile hexTileToAdd) {

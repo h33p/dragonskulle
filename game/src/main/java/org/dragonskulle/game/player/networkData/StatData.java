@@ -10,8 +10,8 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
  * The Class which holds the data to be sent for upgrading stats
- * @author low101043
  *
+ * @author low101043
  */
 public class StatData implements INetSerializable {
 
@@ -22,6 +22,7 @@ public class StatData implements INetSerializable {
 
     /**
      * The Constructor
+     *
      * @param building The building to upgrade
      * @param stat The stat to upgrade
      */

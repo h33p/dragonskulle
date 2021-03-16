@@ -6,6 +6,8 @@ import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
@@ -25,7 +27,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
  */
 @Accessors(prefix = "m")
 @Log
-public class Player extends NetworkableComponent {
+public class Player extends NetworkableComponent implements IOnStart {
 
     private List<Reference<Building>>
             mOwnedBuildings; // Stored in HexagonMap - Will be synced there.
@@ -44,16 +46,23 @@ public class Player extends NetworkableComponent {
      * @param map the map being used for this game
      * @param capital the capital used by the player
      */
-    public Player(Reference<HexagonMap> map, Reference<Building> capital) { // TODO DO we need?
+    public Player() { 
         UNIQUE_ID = 5; // TODO need to make this static so unique for each player
-        mMapComponent = map;
-        mOwnedBuildings = new ArrayList<Reference<Building>>();
-        mOwnedBuildings.add(capital);
-        updateTokens(UPDATE_TIME + 1);
+        
     }
 
+    
+	@Override
+	public void onStart() {
+		
+		/*mMapComponent = getGameObject.getComponent();
+        mOwnedBuildings = new ArrayList<Reference<Building>>();
+        mOwnedBuildings.add(capital);
+        updateTokens(UPDATE_TIME + 1);*/
+	}
     /**
      * Add a building to the ones the player owns
+     *
      * @param building
      */
     public void addBuilding(Reference<Building> building) {
@@ -62,6 +71,7 @@ public class Player extends NetworkableComponent {
 
     /**
      * Get a reference to the building at this index
+     *
      * @param index The index to get data from
      * @return The building
      */
@@ -71,6 +81,7 @@ public class Player extends NetworkableComponent {
 
     /**
      * The number of buildings the player has
+     *
      * @return The number of buildings
      */
     public int numberOfBuildings() {
@@ -79,7 +90,7 @@ public class Player extends NetworkableComponent {
 
     /**
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
-     * owned buildings to check if need to update tokens.  Should only be ran on the server
+     * owned buildings to check if need to update tokens. Should only be ran on the server
      */
     public void updateTokens(float time) {
 
@@ -181,6 +192,7 @@ public class Player extends NetworkableComponent {
 
     /**
      * Checks if the building coordinates correspond to a building a player owns
+     *
      * @param buildingToCheck The building to check
      * @return true of the player owns it, false if not
      */
@@ -195,9 +207,10 @@ public class Player extends NetworkableComponent {
 
         return null;
     }
-    
+
     /**
      * Checks if the building coordinates corresponds to a building coordinates in the list
+     *
      * @param buildingToCheck The building to check is in the list
      * @param buildingsToCheck The list
      * @return true if in the list false if not
@@ -282,9 +295,10 @@ public class Player extends NetworkableComponent {
 
     /**
      * This will return all hex tiles within a radius except the one in the tile
+     *
      * @param radius The radius to check
      * @param tile the tile to check
-     * @return A list of tiles 
+     * @return A list of tiles
      */
     public ArrayList<HexagonTile> getTilesInRadius(
             int radius,

@@ -6,12 +6,10 @@ import static org.dragonskulle.utils.Env.*;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.UnlitMaterial;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.ui.*;
 import org.joml.Math;
 import org.joml.Vector3f;
@@ -54,6 +52,13 @@ public class App {
         // And it needs to be in the game
         mainScene.addRootObject(camera);
 
+        HumanPlayer human = new HumanPlayer();
+        Player player = new Player();
+
+        GameObject ui = new GameObject("UI");
+        ui.addComponent(human);
+        
+        /*
         // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");
 
@@ -100,88 +105,88 @@ public class App {
         mainScene.addRootObject(cube);
 
         // UI Example:
-        GameObject uiPlayer =
+        GameObject ui =
                 new GameObject(
                         "ui",
                         new TransformUI(false),
                         (root) -> {
-                            root.addComponent(new HumanPlayer());
-                            root.getTransform().scale(0.95f, 0.95f, 1f);
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0.01f);
                         });
 
-        /*ui.buildChild(
-                        "square",
-                        new TransformUI(true),
-                        (square) -> {
-                            square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.5f)));
+        ui.buildChild(
+                "square",
+                new TransformUI(true),
+                (square) -> {
+                    square.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.5f)));
 
-                            square.getTransform(TransformUI.class)
-                                    .setParentAnchor(0.01f, 0.1f, 0.49f, 0.98f);
+                    square.getTransform(TransformUI.class)
+                            .setParentAnchor(0.01f, 0.1f, 0.49f, 0.98f);
 
-                            square.buildChild(
-                                    "square2",
-                                    new TransformUI(true),
-                                    (square2) -> {
-                                        square2.addComponent(
-                                                new UIRenderable(
-                                                        new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
-                                                        new SampledTexture("test_cc0_texture.jpg")));
-                                        // square2.getTransform(TransformUI.class).translate(0f, -0.3f);
-                                        square2.getTransform(TransformUI.class)
-                                                .setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
-                                        square2.getTransform(TransformUI.class).setTargetAspectRatio(1f);
-                                        square2.getTransform(TransformUI.class).setMaintainAspect(true);
-                                        UIButton uiButton =
-                                                new UIButton(
-                                                        null,
-                                                        (button, __) -> {
-                                                            button.getGameObject()
-                                                                    .getTransform(TransformUI.class)
-                                                                    .rotateDeg(15f);
-                                                        },
-                                                        null,
-                                                        null,
-                                                        (button, deltaTime) -> {
-                                                            button.getGameObject()
-                                                                    .getTransform(TransformUI.class)
-                                                                    .rotateDeg(-60f * deltaTime);
-                                                        });
-                                        square2.addComponent(uiButton);
-                                    });
+                    square.buildChild(
+                            "square2",
+                            new TransformUI(true),
+                            (square2) -> {
+                                square2.addComponent(
+                                        new UIRenderable(
+                                                new Vector4f(0.6f, 0.6f, 0.6f, 0.9f),
+                                                new SampledTexture("test_cc0_texture.jpg")));
+                                // square2.getTransform(TransformUI.class).translate(0f, -0.3f);
+                                square2.getTransform(TransformUI.class)
+                                        .setParentAnchor(0.3f, 0.05f, 0.7f, 0.5f);
+                                square2.getTransform(TransformUI.class).setTargetAspectRatio(1f);
+                                square2.getTransform(TransformUI.class).setMaintainAspect(true);
+                                UIButton uiButton =
+                                        new UIButton(
+                                                null,
+                                                (button, __) -> {
+                                                    button.getGameObject()
+                                                            .getTransform(TransformUI.class)
+                                                            .rotateDeg(15f);
+                                                },
+                                                null,
+                                                null,
+                                                (button, deltaTime) -> {
+                                                    button.getGameObject()
+                                                            .getTransform(TransformUI.class)
+                                                            .rotateDeg(-60f * deltaTime);
+                                                });
+                                square2.addComponent(uiButton);
+                            });
 
-                            square.buildChild(
-                                    "button1",
-                                    new TransformUI(true),
-                                    (button) -> {
-                                        button.addComponent(
-                                                new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                                        button.getTransform(TransformUI.class)
-                                                .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
-                                        button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
-                                        button.getTransform(TransformUI.class).setMaintainAspect(true);
-                                        button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
+                    square.buildChild(
+                            "button1",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.addComponent(
+                                        new UIRenderable(new SampledTexture("ui/wide_button.png")));
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.2f);
+                                button.getTransform(TransformUI.class).setMaintainAspect(true);
+                                button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
 
-                                        UIButton newButton =
-                                                new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(1f, 0.5f, 0.05f),
-                                                                Font.getFontResource("Rise of Kingdom.ttf"),
-                                                                "Click me!"),
-                                                        (uiButton, __) -> {
-                                                            uiButton.getLabelText()
-                                                                    .get()
-                                                                    .setText(
-                                                                            uiButton.getLabelText()
-                                                                                            .get()
-                                                                                            .getText()
-                                                                                    + "a");
-                                                        });
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(1f, 0.5f, 0.05f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Click me!"),
+                                                (uiButton, __) -> {
+                                                    uiButton.getLabelText()
+                                                            .get()
+                                                            .setText(
+                                                                    uiButton.getLabelText()
+                                                                                    .get()
+                                                                                    .getText()
+                                                                            + "a");
+                                                });
 
-                                        button.addComponent(newButton);
-                                    });
-                        });
+                                button.addComponent(newButton);
+                            });
+                });
         */
-        mainScene.addRootObject(uiPlayer);
+        mainScene.addRootObject(ui);
 
         // Load the main scene as the presentation scene
         Engine.getInstance().loadPresentationScene(mainScene);

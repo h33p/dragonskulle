@@ -10,8 +10,8 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
  * The Class which holds the data so buildings can be sold
- * @author DragonSkulle
  *
+ * @author DragonSkulle
  */
 public final class SellData implements INetSerializable {
 
@@ -33,6 +33,7 @@ public final class SellData implements INetSerializable {
 
     /**
      * The Constructor
+     *
      * @param toSell The building to sell
      */
     public SellData(Building toSell) {

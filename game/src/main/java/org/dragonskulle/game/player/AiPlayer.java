@@ -21,9 +21,7 @@ import org.dragonskulle.game.player.networkData.StatData;
  *
  * @author DragonSkulle
  */
-public class AiPlayer extends Component
-        implements IFixedUpdate,
-                IOnStart { 
+public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
     protected float mTimeSinceStart;
     protected int mLowerBoundTime = 5;

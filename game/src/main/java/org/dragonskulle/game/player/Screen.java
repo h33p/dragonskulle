@@ -2,9 +2,10 @@
 package org.dragonskulle.game.player;
 
 /**
- * A {@code enum} which contains all the different screens the human player could see whilst playing a game
- * @author DragonSkulle
+ * A {@code enum} which contains all the different screens the human player could see whilst playing
+ * a game
  *
+ * @author DragonSkulle
  */
 public enum Screen {
     MAP_SCREEN, // All the buildings you can see everything need to click a tile to interact
