@@ -1,13 +1,14 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.components;
+package org.dragonskulle.renderer.components;
 
 import java.nio.ByteBuffer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.renderer.IMaterial;
+import org.dragonskulle.components.*;
 import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.UnlitMaterial;
+import org.dragonskulle.renderer.materials.IMaterial;
+import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 

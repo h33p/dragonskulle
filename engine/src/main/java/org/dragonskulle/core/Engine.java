@@ -6,15 +6,15 @@ import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.audio.AudioManager;
-import org.dragonskulle.components.Camera;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.Renderable;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.ui.UIManager;
 
 /**

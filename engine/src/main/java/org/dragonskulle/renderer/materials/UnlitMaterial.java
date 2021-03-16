@@ -1,10 +1,18 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.renderer;
+package org.dragonskulle.renderer.materials;
 
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import org.dragonskulle.renderer.AttributeDescription;
+import org.dragonskulle.renderer.BindingDescription;
+import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.renderer.ShaderBuf;
+import org.dragonskulle.renderer.ShaderKind;
+import org.dragonskulle.renderer.ShaderSet;
+import org.dragonskulle.renderer.Texture;
+import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.*;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;

@@ -1,8 +1,9 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.components;
+package org.dragonskulle.renderer.components;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.components.*;
 import org.dragonskulle.core.Reference;
 import org.joml.*;
 

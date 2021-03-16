@@ -7,13 +7,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Renderable;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.renderer.*;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
+import org.dragonskulle.renderer.components.Renderable;
+import org.dragonskulle.renderer.materials.UnlitMaterial;
 
 /**
  * @author Leela Muppala

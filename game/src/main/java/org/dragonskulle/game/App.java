@@ -12,8 +12,8 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.UnlitMaterial;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.joml.Math;
 
 public class App {
