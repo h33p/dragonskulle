@@ -70,7 +70,7 @@ public class SampledTexture implements NativeResource, Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mTexture.get(), mMapping);
+        return Objects.hash(mTexture != null ? mTexture.get() : null, mMapping);
     }
 
     @Override

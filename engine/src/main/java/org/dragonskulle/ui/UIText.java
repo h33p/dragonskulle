@@ -13,6 +13,7 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.Vertex;
+import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;

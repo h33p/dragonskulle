@@ -27,10 +27,10 @@ import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.Camera;
-import org.dragonskulle.components.Renderable;
 import org.dragonskulle.renderer.DrawCallState.DrawData;
 import org.dragonskulle.renderer.DrawCallState.NonInstancedDraw;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Renderable;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -83,6 +83,12 @@ public class Renderer implements NativeResource {
     private long mDepthImageView;
 
     private int mFrameCounter = 0;
+
+    @Getter(AccessLevel.PUBLIC)
+    private int mInstancedCalls = 0;
+
+    @Getter(AccessLevel.PUBLIC)
+    private int mSlowCalls = 0;
 
     private VulkanMeshBuffer mCurrentMeshBuffer;
     private Map<Integer, VulkanMeshBuffer> mDiscardedMeshBuffers = new HashMap<>();
@@ -1163,6 +1169,9 @@ public class Renderer implements NativeResource {
 
     void recordCommandBuffer(ImageContext ctx, Camera camera) {
 
+        mInstancedCalls = 0;
+        mSlowCalls = 0;
+
         mVertexConstants.proj = camera.getProj();
         mVertexConstants.view = camera.getView();
 
@@ -1280,6 +1289,7 @@ public class Renderer implements NativeResource {
                                         null);
                             }
 
+                            mInstancedCalls++;
                             vkCmdDrawIndexed(
                                     ctx.commandBuffer,
                                     meshDescriptor.getIndexCount(),
@@ -1339,6 +1349,7 @@ public class Renderer implements NativeResource {
                                         null);
                             }
 
+                            mSlowCalls++;
                             vkCmdDrawIndexed(
                                     ctx.commandBuffer, meshDescriptor.getIndexCount(), 1, 0, 0, 0);
                         }
