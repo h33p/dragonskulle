@@ -44,7 +44,7 @@ public class Player extends NetworkableComponent {
      * @param capital the capital used by the player
      */
     public Player(Reference<HexagonMap> map, Reference<Building> capital) { // TODO DO we need?
-        UNIQUE_ID = 5;            //TODO need to make this static so unique for each player
+        UNIQUE_ID = 5; // TODO need to make this static so unique for each player
         mMapComponent = map;
         mOwnedBuildings = new ArrayList<Reference<Building>>();
         mOwnedBuildings.add(capital);
