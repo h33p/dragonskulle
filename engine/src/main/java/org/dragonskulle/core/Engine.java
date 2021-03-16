@@ -399,7 +399,9 @@ public class Engine {
      *
      * @param component Component to be destroyed at the end of the current frame
      */
-    public void addDestroyedComponent(Component component) {}
+    public void addDestroyedComponent(Component component) {
+        mDestroyedComponents.add(component);
+    }
 
     /**
      * Getter for mInactiveScenes
