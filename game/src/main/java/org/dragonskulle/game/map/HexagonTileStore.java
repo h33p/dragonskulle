@@ -76,8 +76,8 @@ class HexagonTileStore {
      * @param r r coordinate of the tile
      */
     public HexagonTile getTile(int q, int r) {
-        q -= mCoordShift;
-        r -= mCoordShift;
+        q += mCoordShift;
+        r += mCoordShift;
 
         if (q < 0 || r < 0 || q >= mTiles.length || r >= mTiles.length) return null;
 
