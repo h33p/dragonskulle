@@ -227,10 +227,10 @@ public class NetworkClient {
                 closeAllConnections();
                 mClientListener.disconnected();
             }
+            mProcessScheduler.cancel();
             mSocket = null;
             mDOut = null;
             mClientListener = null;
-
             mClientRunner.cancel();
             mClientThread.join();
         } catch (Exception exception) {
