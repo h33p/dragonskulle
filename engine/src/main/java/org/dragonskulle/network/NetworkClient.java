@@ -167,11 +167,7 @@ public class NetworkClient {
         GameObject networkManagerGO =
                 new GameObject(
                         "client_network_manager",
-                        (go) ->
-                                go.addComponent(
-                                        new ClientNetworkManager(
-                                                clientInstance::processRequests,
-                                                clientInstance::sendBytes)));
+                        (go) -> go.addComponent(clientInstance.createNetworkManager()));
 
         mLoadingScreen.destroy();
         mainScene.addRootObject(networkManagerGO);
@@ -324,6 +320,10 @@ public class NetworkClient {
      */
     public void linkToScene(Scene scene) {
         this.mGame.linkToScene(scene);
+    }
+
+    public ClientNetworkManager createNetworkManager() {
+        return new ClientNetworkManager(this::processRequests, this::sendBytes, this::dispose);
     }
 
     /**

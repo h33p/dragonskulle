@@ -1,4 +1,7 @@
-package org.dragonskulle.network;/**
- * @author Oscar L
- */public interface DisposingMethod {
+/* (C) 2021 DragonSkulle */
+package org.dragonskulle.network;
+
+public interface DisposingMethod {
+    /** Call. */
+    void call();
 }

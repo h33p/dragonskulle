@@ -9,7 +9,6 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.*;
-import org.dragonskulle.network.components.NetworkManager;
 
 /** @author Oscar L */
 public class ServerApp {
@@ -40,10 +39,7 @@ public class ServerApp {
         GameObject networkManagerGO =
                 new GameObject(
                         "server_network_manager",
-                        (go) ->
-                                go.addComponent(
-                                        new NetworkManager(
-                                                serverInstance.mServer::fixedBroadcastUpdate)));
+                        (go) -> go.addComponent(serverInstance.createNetworkManager()));
         mainScene.addRootObject(networkManagerGO);
 
         serverInstance.linkToScene(mainScene);
