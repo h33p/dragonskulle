@@ -36,7 +36,6 @@ public class GameObject implements Serializable {
     @Getter private GameObject mParent;
     @Getter private Transform mTransform = new Transform3D();
     @Getter private final String mName;
-    // TODO: Make some sort of Tag class or enum and add here
     @Getter private boolean mEnabled;
     /** How deep the object is within the game object structure */
     @Getter private int mDepth = 0;
@@ -112,8 +111,6 @@ public class GameObject implements Serializable {
 
         return null;
     }
-
-    // TODO: GetComponentsIn(Parent/Children)
 
     /**
      * Constructor for GameObject, defaults mEnabled to true
