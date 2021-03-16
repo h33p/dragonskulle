@@ -15,6 +15,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import com.google.common.io.Resources;
+
 /**
  * This will hold all the information needed for each Clip
  *
@@ -47,10 +49,10 @@ public class AudioClip {
         // Silent.wav should be somewhere.
         try {
 
-            AudioInputStream startingStream =
-                    AudioSystem.getAudioInputStream(
-                            new File("engine/src/main/resources/audio/Silent.wav")
-                                    .getAbsoluteFile());
+        	String resourceFile = "audio/Silent.wav";
+        	AudioInputStream startingStream = AudioSystem.getAudioInputStream(
+                    new File(Resources.getResource(resourceFile).getPath()).getAbsoluteFile());
+            
             mClip.open(startingStream);
 
         } catch (UnsupportedAudioFileException | IOException e) {

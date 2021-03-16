@@ -3,11 +3,15 @@ package org.dragonskulle.game;
 
 import static org.dragonskulle.utils.Env.*;
 
+import org.dragonskulle.audio.AudioManager;
+import org.dragonskulle.audio.AudioSource;
+import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.audio.GameAudio;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
@@ -158,15 +162,7 @@ public class App {
                                 button.addComponent(
                                         new UIRenderable(new SampledTexture("ui/wide_button.png")));
 
-                                /*
-                                button.getTransform().scale(0.8f, 0.8f, 1f);
-                                button.getTransform().translate(0f, 0.4f, 0f);
-
-                                Reference<Renderable> uiRef = ui.getComponent(Renderable.class);
-                                // GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);
-                                //	Audio Tutorial
-                                UIButton newButton =
-                                        new UIButton( // a.audibleClick(   Audio Tutorial */
+                                                               
 
                                 button.getTransform(TransformUI.class)
                                         .setParentAnchor(0.2f, 0.5f, 0.8f, 0.5f);
@@ -174,13 +170,14 @@ public class App {
                                 button.getTransform(TransformUI.class).setMaintainAspect(true);
                                 button.getTransform(TransformUI.class).setTargetAspectRatio(2f);
 
+                                GameAudio a = new GameAudio("button-10.wav", SoundType.SFX);
                                 UIButton newButton =
                                         new UIButton(
                                                 new UIText(
                                                         new Vector3f(1f, 0.5f, 0.05f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Click me!"),
-                                                (uiButton, __) -> {
+                                                a.audibleClick((uiButton, __) -> {
                                                     uiButton.getLabelText()
                                                             .get()
                                                             .setText(
@@ -188,7 +185,7 @@ public class App {
                                                                                     .get()
                                                                                     .getText()
                                                                             + "a");
-                                                });
+                                                }));
 
                                 button.addComponent(newButton);
                             });
@@ -200,14 +197,14 @@ public class App {
         Engine.getInstance().loadPresentationScene(mainScene);
 
         // Audio Tutorial
-        /*
+        
         AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
         AudioManager.getInstance().setVolume(SoundType.SFX, 100);
         AudioSource audio = new AudioSource();
         audio.filename = "waves.wav";
         audio.channel = SoundType.BACKGROUND;
         audio.play();
-        */
+        
 
         // Run the game
         Engine.getInstance().start("Germany", new GameBindings());
