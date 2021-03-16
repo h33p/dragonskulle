@@ -168,6 +168,9 @@ public class Engine {
         float secondTimer = 0;
         float cumulativeTime = 0;
 
+        int instancedDrawCalls = 0;
+        int slowDrawCalls = 0;
+
         while (mIsRunning) {
             // Calculate time for last frame
             float mCurTime = Time.getTimeInSeconds();
@@ -207,17 +210,23 @@ public class Engine {
             lateFrameUpdate(deltaTime);
 
             renderFrame();
+            instancedDrawCalls += mGLFWState.getRenderer().getInstancedCalls();
+            slowDrawCalls += mGLFWState.getRenderer().getSlowCalls();
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
 
             frames++;
-            if (secondTimer > 1.0) {
+            if (secondTimer >= 1.0) {
                 // One second has elapsed so frames contains the FPS
 
                 // Have no use for this currently besides printing it to console
                 System.out.println("FPS:" + frames);
-                secondTimer = 0;
+                System.out.println("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
+                System.out.println("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
+                instancedDrawCalls = 0;
+                slowDrawCalls = 0;
+                secondTimer -= 1.0;
                 frames = 0;
             }
         }

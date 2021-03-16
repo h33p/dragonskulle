@@ -13,6 +13,7 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.materials.IColouredMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.joml.Math;
 
@@ -88,6 +89,10 @@ public class App {
                         new Transform3D(0f, -4f, 1.5f),
                         (go) -> {
                             go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
+                            go.getComponent(Renderable.class)
+                                    .get()
+                                    .getMaterial(IColouredMaterial.class)
+                                    .setAlpha(0.7f);
                             // You spin me right round...
                             go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
                         });
@@ -101,6 +106,10 @@ public class App {
                         new Transform3D(0f, -2f, 1.5f),
                         (go) -> {
                             go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
+                            go.getComponent(Renderable.class)
+                                    .get()
+                                    .getMaterial(IColouredMaterial.class)
+                                    .setAlpha(0.7f);
                             // You spin me right round...
                             go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
                         });
