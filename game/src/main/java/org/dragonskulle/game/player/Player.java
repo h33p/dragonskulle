@@ -48,7 +48,6 @@ public class Player extends NetworkableComponent implements IOnStart {
      */
     public Player() { 
         UNIQUE_ID = 5; // TODO need to make this static so unique for each player
-        
     }
 
     

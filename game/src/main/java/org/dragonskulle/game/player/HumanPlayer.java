@@ -46,7 +46,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
     public void onStart() {
         // TODO Auto-generated method stub
 
-    	mPlayer = getGameObject.getComponent(Player.class);
+    	mPlayer = getGameObject().getComponent(Player.class);
         mMapScreen =
                 getGameObject() // Should work its lombok.
                         .buildChild(
