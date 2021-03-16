@@ -10,7 +10,7 @@ public class DefenceStat extends Stat<Double> {
         return map(
                 mValueMin,
                 mValueMax,
-                Double.valueOf(mLevel),
+                Double.valueOf(mLevel.get()),
                 Double.valueOf(LEVEL_MIN),
                 Double.valueOf(LEVEL_MAX));
     }
@@ -18,5 +18,10 @@ public class DefenceStat extends Stat<Double> {
     @Override
     protected Double levelToValue() {
         return mapLevel();
+    }
+
+    @Override
+    protected void onDestroy() {
+
     }
 }

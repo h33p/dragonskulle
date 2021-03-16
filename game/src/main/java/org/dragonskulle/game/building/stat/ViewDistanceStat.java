@@ -7,4 +7,8 @@ public class ViewDistanceStat extends Stat<Integer> {
     protected Integer levelToValue() {
         return 3;
     }
+
+    @Override
+    protected void onDestroy() {
+    }
 }

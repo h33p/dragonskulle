@@ -7,4 +7,9 @@ public class AttackDistanceStat extends Stat<Integer> {
     protected Integer levelToValue() {
         return 2;
     }
+
+    @Override
+    protected void onDestroy() {
+
+    }
 }

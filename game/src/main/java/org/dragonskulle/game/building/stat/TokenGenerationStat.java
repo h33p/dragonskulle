@@ -5,6 +5,11 @@ public class TokenGenerationStat extends Stat<Integer> {
 
     @Override
     protected Integer levelToValue() {
-        return mLevel;
+        return mLevel.get();
+    }
+
+    @Override
+    protected void onDestroy() {
+
     }
 }
