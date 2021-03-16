@@ -190,7 +190,6 @@ public class Engine {
             // Start all enabled components (Called on all active scenes)
             startEnabledComponents();
 
-            // TODO: Process inputs here before any updates are performed
             mIsRunning = mGLFWState.processEvents();
 
             Scene.setActiveScene(mPresentationScene);
