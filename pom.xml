@@ -23,7 +23,6 @@
 	<modules>
 		<module>engine</module>
 		<module>game</module>
-        <module>network</module>
     </modules>
 
 	<dependencies>
@@ -43,6 +42,7 @@
 	<reporting>
 		<plugins>
 			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
 			</plugin>
@@ -71,6 +71,8 @@
 					<version>2.22.1</version>
 					<configuration>
 						<redirectTestOutputToFile>false</redirectTestOutputToFile>
+                        <reuseForks>true</reuseForks>
+                        <forkCount>1</forkCount>
 					</configuration>
 				</plugin>
 				<plugin>

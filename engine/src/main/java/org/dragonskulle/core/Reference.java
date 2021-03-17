@@ -42,6 +42,11 @@ public class Reference<T> implements Serializable {
         return mObject;
     }
 
+    /**
+     * Check whether the reference has been cleared
+     *
+     * @return true if the reference is still valid, false otherwise
+     */
     public boolean isValid() {
         return mObject != null;
     }

@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Objects;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
@@ -21,10 +20,48 @@ import org.lwjgl.system.NativeResource;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Builder
-class SampledTexture implements NativeResource, Serializable {
+public class SampledTexture implements NativeResource, Serializable {
     @Getter private Resource<Texture> mTexture;
     @Getter private TextureMapping mMapping;
+
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param texture input texture resource
+     * @param mapping input texture mapping
+     */
+    public SampledTexture(Resource<Texture> texture, TextureMapping mapping) {
+        mTexture = texture;
+        mMapping = mapping;
+    }
+
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param texture input texture resource
+     */
+    public SampledTexture(Resource<Texture> texture) {
+        this(texture, new TextureMapping());
+    }
+
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param textureName input texture resource name
+     * @param mapping input texture mapping
+     */
+    public SampledTexture(String textureName, TextureMapping mapping) {
+        this(Texture.getResource(textureName), mapping);
+    }
+
+    /**
+     * Constructor for SampledTexture
+     *
+     * @param textureName input texture resource name
+     */
+    public SampledTexture(String textureName) {
+        this(textureName, new TextureMapping());
+    }
 
     @Override
     public void free() {
@@ -33,7 +70,7 @@ class SampledTexture implements NativeResource, Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mTexture.get(), mMapping);
+        return Objects.hash(mTexture != null ? mTexture.get() : null, mMapping);
     }
 
     @Override

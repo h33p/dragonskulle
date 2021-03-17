@@ -10,9 +10,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.Transform;
-import org.joml.Matrix4fc;
+import org.dragonskulle.components.Transform3D;
 
 /**
  * GameObject class
@@ -23,18 +25,20 @@ import org.joml.Matrix4fc;
  *     actions but each component that is added to the GameObject will be able to interact with
  *     itself in the world and other GameObjects.
  */
+@Accessors(prefix = "m")
 public class GameObject implements Serializable {
 
-    private final Reference<GameObject> mReference = new Reference<>(this);
+    @Getter private final Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
     private final ArrayList<GameObject> mChildren = new ArrayList<>();
 
-    private GameObject mRoot;
-    private GameObject mParent;
-    private Transform mTransform = new Transform();
-    private final String mName;
-    // TODO: Make some sort of Tag class or enum and add here
-    private boolean mActive;
+    @Getter private GameObject mRoot;
+    @Getter private GameObject mParent;
+    @Getter private Transform mTransform = new Transform3D();
+    @Getter private final String mName;
+    @Getter private boolean mEnabled;
+    /** How deep the object is within the game object structure */
+    @Getter private int mDepth = 0;
 
     /**
      * A handler interface for building game objects
@@ -81,34 +85,35 @@ public class GameObject implements Serializable {
 
     /**
      * Find an instance of a GameObject with a given name in the currently active scene. This is
-     * very slow and should not be used in any update loops. Instead, you should get all references
-     * to necessary GameObject's in onAwake or onStart and save them for future use.
+     * very, very slow and should not be used in any update loops. Instead, you should get all
+     * references to necessary GameObjects in onAwake or onStart and save them for future use.
      *
      * @param name Name of the object to search for
      * @return A reference to the first GameObject found, or null if nothing is found
      */
     public static Reference<GameObject> FindObjectByName(String name) {
-        Scene activeScene = Engine.getInstance().getActiveScene();
+        List<Scene> activeScenes = Engine.getInstance().getActiveScenes();
 
-        for (GameObject root : activeScene.getRootObjects()) {
+        for (Scene s : activeScenes) {
+            for (GameObject root : s.getGameObjects()) {
 
-            ArrayList<GameObject> children = new ArrayList<>();
-            root.getAllChildren(children);
+                ArrayList<GameObject> children = new ArrayList<>();
+                root.getAllChildren(children);
 
-            for (GameObject obj : children) {
+                for (GameObject obj : children) {
 
-                if (obj.mName.equals(name)) {
-                    return obj.getReference();
+                    if (obj.mName.equals(name)) {
+                        return obj.getReference();
+                    }
                 }
             }
         }
+
         return null;
     }
 
-    // TODO: GetComponentsIn(Parent/Children)
-
     /**
-     * Constructor for GameObject, defaults mActive to true
+     * Constructor for GameObject, defaults mEnabled to true
      *
      * @param name The name of the object
      */
@@ -120,13 +125,13 @@ public class GameObject implements Serializable {
      * Constructor for GameObject
      *
      * @param name The name of the object
-     * @param active Whether the object is active or not
+     * @param enabled Whether the object is enabled or not
      */
-    public GameObject(String name, boolean active) {
+    public GameObject(String name, boolean enabled) {
         mRoot = null;
         mParent = null;
         mName = name;
-        mActive = active;
+        mEnabled = enabled;
         mTransform.setGameObject(this);
     }
 
@@ -134,11 +139,11 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup
      *
      * @param name name of the object
-     * @param active controls whether the object is active by default
+     * @param enabled controls whether the object is enabled by default
      * @param handler handler callback that allows to do initial setup
      */
-    public GameObject(String name, boolean active, Transform transform, IBuildHandler handler) {
-        this(name, active, transform);
+    public GameObject(String name, boolean enabled, Transform transform, IBuildHandler handler) {
+        this(name, enabled, transform);
         handler.handleBuild(this);
     }
 
@@ -156,11 +161,11 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup
      *
      * @param name name of the object
-     * @param active controls whether the object is active by default
+     * @param enabled controls whether the object is enabled by default
      * @param handler handler callback that allows to do initial setup
      */
-    public GameObject(String name, boolean active, IBuildHandler handler) {
-        this(name, active);
+    public GameObject(String name, boolean enabled, IBuildHandler handler) {
+        this(name, enabled);
         handler.handleBuild(this);
     }
 
@@ -175,7 +180,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mActive to true
+     * Constructor for GameObject, defaults mEnabled to true
      *
      * @param name The name of the object
      * @param transform Transformation properties to apply
@@ -185,45 +190,19 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mActive to true
-     *
-     * @param name The name of the object
-     * @param matrix Transformation matrix to use
-     */
-    public GameObject(String name, Matrix4fc matrix) {
-        this(name, true, matrix);
-    }
-
-    /**
      * Constructur for GameObject
      *
      * @param name The name of the object
-     * @param active Whether the object is active or not
+     * @param enabled Whether the object is enabled or not
      * @param transform Object transformation
      */
-    public GameObject(String name, boolean active, Transform transform) {
+    public GameObject(String name, boolean enabled, Transform transform) {
         mRoot = null;
         mParent = null;
         mName = name;
-        mActive = active;
+        mEnabled = enabled;
         mTransform = transform;
         mTransform.setGameObject(this);
-    }
-
-    /**
-     * Constructur for GameObject
-     *
-     * @param name The name of the object
-     * @param active Whether the object is active or not
-     * @param matrix Object transformation
-     */
-    public GameObject(String name, boolean active, Matrix4fc matrix) {
-        mRoot = null;
-        mParent = null;
-        mName = name;
-        mActive = active;
-        mTransform.setGameObject(this);
-        mTransform.setLocalMatrix(matrix);
     }
 
     /**
@@ -336,7 +315,9 @@ public class GameObject implements Serializable {
         } else {
             child.mRoot = mRoot;
         }
+        child.setEnabled(mEnabled);
         child.mParent = this;
+        child.setDepth(mDepth + 1);
         mChildren.add(child);
     }
 
@@ -353,6 +334,8 @@ public class GameObject implements Serializable {
         for (GameObject child : children) {
             child.mRoot = root;
             child.mParent = this;
+            child.setEnabled(mEnabled);
+            child.setDepth(this.mDepth + 1);
         }
         mChildren.addAll(children);
     }
@@ -365,7 +348,7 @@ public class GameObject implements Serializable {
      * @param handler handler callback to do initial setup
      */
     public void buildChild(String name, IBuildHandler handler) {
-        buildChild(name, true, handler);
+        buildChild(name, mEnabled, handler);
     }
 
     /**
@@ -375,8 +358,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, boolean active, IBuildHandler handler) {
-        GameObject go = new GameObject(name, active);
+    public void buildChild(String name, boolean enabled, IBuildHandler handler) {
+        GameObject go = new GameObject(name, enabled);
         this.addChild(go);
         handler.handleBuild(go);
     }
@@ -389,7 +372,7 @@ public class GameObject implements Serializable {
      * @param handler handler callback to do initial setup
      */
     public void buildChild(String name, Transform transform, IBuildHandler handler) {
-        buildChild(name, true, transform, handler);
+        buildChild(name, mEnabled, transform, handler);
     }
 
     /**
@@ -400,8 +383,8 @@ public class GameObject implements Serializable {
      * @param handler handler callback to do initial setup
      */
     public void buildChild(
-            String name, boolean active, Transform transform, IBuildHandler handler) {
-        GameObject go = new GameObject(name, active, transform);
+            String name, boolean enabled, Transform transform, IBuildHandler handler) {
+        GameObject go = new GameObject(name, enabled, transform);
         this.addChild(go);
         handler.handleBuild(go);
     }
@@ -453,6 +436,7 @@ public class GameObject implements Serializable {
         if (mParent != null) {
             mParent.removeChild(this);
             mParent = null;
+            setDepth(0);
         }
         mRoot = null;
     }
@@ -514,30 +498,12 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mActive
+     * Getter for mTransform with cast
      *
-     * @return mActive
+     * @return mTransform cast to type if cast is valid, null otherwise
      */
-    public boolean isActive() {
-        return mActive;
-    }
-
-    /**
-     * Setter for mActive
-     *
-     * @param val New value for mActive
-     */
-    public void setActive(boolean val) {
-        mActive = val;
-    }
-
-    /**
-     * Getter for mTransform
-     *
-     * @return mTransform
-     */
-    public Transform getTransform() {
-        return mTransform;
+    public <T extends Transform> T getTransform(Class<T> type) {
+        return type.isInstance(mTransform) ? type.cast(mTransform) : null;
     }
 
     /**
@@ -550,15 +516,6 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mReference
-     *
-     * @return mReference
-     */
-    public Reference<GameObject> getReference() {
-        return mReference;
-    }
-
-    /**
      * Check whether a GameObject is a root object
      *
      * @return true if it's a root, false otherwise
@@ -568,20 +525,26 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mRoot, used for testing
+     * Setter for mEnabled. This value is recursively set for all children
      *
-     * @return mRoot
+     * @param enabled New value for mEnabled
      */
-    protected GameObject getRoot() {
-        return mRoot;
+    public void setEnabled(boolean enabled) {
+        mEnabled = enabled;
+
+        for (GameObject child : mChildren) {
+            child.setEnabled(enabled);
+        }
     }
 
     /**
-     * Getter for mParent, used for testing
+     * Setter for mDepth
      *
-     * @return mParent
+     * <p>This method will recursively update mDepth for all mChildren
      */
-    protected GameObject getParent() {
-        return mParent;
+    protected void setDepth(int newDepth) {
+        mDepth = newDepth;
+
+        for (GameObject child : mChildren) child.setDepth(mDepth + 1);
     }
 }

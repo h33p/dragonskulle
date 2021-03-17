@@ -4,11 +4,12 @@ package org.dragonskulle.game.building;
 import java.util.ArrayList;
 import java.util.Random;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.stat.AttackDistanceStat;
 import org.dragonskulle.game.building.stat.AttackStat;
 import org.dragonskulle.game.building.stat.DefenceStat;
@@ -17,12 +18,20 @@ import org.dragonskulle.game.building.stat.TokenGenerationStat;
 import org.dragonskulle.game.building.stat.ViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncInt;
 
+/**
+ * A Building component.
+ *
+ * @author Craig Wilbourne
+ */
 @Accessors(prefix = "m")
 @Log
-public class Building extends Component {
+public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
-	/** Stores the attack strength of the building. */
+    /** Stores the attack strength of the building. */
     @Getter private AttackStat mAttack;
     /** Stores the defence strength of the building. */
     @Getter private DefenceStat mDefence;
@@ -33,55 +42,75 @@ public class Building extends Component {
     /** Stores the attack range of the building. */
     @Getter private AttackDistanceStat mAttackDistance;
 
-    /** The owner of the building. */
-    @Getter @Setter private Reference<TestPlayer> mOwner = new Reference<TestPlayer>(null);
+    /** ID of the owner of the building. */
+    private SyncInt mOwnerID = new SyncInt(-1);
+    /** Whether the building is a capital. */
+    private SyncBool mIsCapital = new SyncBool(false);
+
     /** The HexagonTile the building is on. */
-    private Reference<HexagonTile> mTile = new Reference<HexagonTile>(null);
+    private Reference<HexagonTile> mTileReference = new Reference<HexagonTile>(null);
     /** The HexagonMap being used. */
-    private Reference<HexagonMap> mHexagonMap = new Reference<HexagonMap>(null);
+    private Reference<HexagonMap> mMapReference = new Reference<HexagonMap>(null);
 
     /**
      * Create a new {@link Building}. Adds the Building to the {@link HexagonMap} at the specified
      * {@link HexagonTile}.
      *
-     * @param hexagonMap The HexagonMap being used.
      * @param hexagonTile The HexagonTile the building is on.
      */
-    public Building(Reference<HexagonMap> hexagonMap, Reference<HexagonTile> hexagonTile) {
-        mTile = hexagonTile;
-        mHexagonMap = hexagonMap;
+    public Building(HexagonTile hexagonTile) {
 
+        // TODO Clean up.
+        // Move contents out of constructor.
+
+        mTileReference = new Reference<HexagonTile>(hexagonTile);
+    }
+
+    @Override
+    public void onAwake() {
+        // Create the Stats.
         mAttack = new AttackStat();
         mDefence = new DefenceStat();
         mTokenGeneration = new TokenGenerationStat();
         mViewDistance = new ViewDistanceStat();
         mAttackDistance = new AttackDistanceStat();
 
+        // For debugging, set all stat levels to 5.
+        // TODO: Remove.
         mAttack.setLevel(5);
         mDefence.setLevel(5);
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
+    }
 
-        // Move out of constructor:
-        HexagonMap map = hexagonMap.get();
-        HexagonTile tile = mTile.get();
-        if (map != null && tile != null) {
-            map.storeBuilding(this, tile.getQ(), tile.getR());
-        }
+    @Override
+    public void onStart() {
+        // Get a reference to the map.
+        mMapReference =
+                Scene.getActiveScene()
+                        .getSingleton(HexagonMap.class)
+                        .getReference(HexagonMap.class);
+
+        HexagonMap map = mMapReference.get();
+        HexagonTile tile = mTileReference.get();
+        if (map == null || tile == null) return;
+
+        map.storeBuilding(this, tile.getQ(), tile.getR());
     }
 
     /**
      * Attack an opponent building.
-     * <p>
-     * There is a chance this will either fail or succeed, influenced by the attack stat of the attacking building and the defence stats of the opponent building.
+     *
+     * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
+     * attacking building and the defence stats of the opponent building.
      *
      * @param opponent The building to attack.
      */
     public void attack(Building opponent) {
-       // TODO: Make attack success dependent on building stats.
-    	
-    	Random random = new Random();
+        // TODO: Add Lelaa's code here.
+
+        Random random = new Random();
         double successChance = random.nextDouble();
         // Set a 50% chance of success.
         double target = 0.5;
@@ -93,7 +122,7 @@ public class Building extends Component {
                             successChance, target));
 
             // Claim the opponent building.
-            opponent.setOwner(mOwner);
+            // opponent.setOwner(mOwner);
             // TODO: Allow the Players to update their lists of buildings they own.
         } else {
             log.info(
@@ -110,7 +139,7 @@ public class Building extends Component {
      * @return All the HexagonTiles within the building's view range, excluding the Building's
      *     HexagonTile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getViewTiles() {
+    public ArrayList<HexagonTile> getViewableTiles() {
         // Get the current view distance.
         int distance = mViewDistance.getValue();
         // Get the tiles within the view distance.
@@ -124,7 +153,7 @@ public class Building extends Component {
      * @return All the HexagonTiles within the building's attack range, excluding the Building's
      *     HexagonTile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getAttackTiles() {
+    public ArrayList<HexagonTile> getAttackableTiles() {
         // Get the current view distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the view distance.
@@ -142,17 +171,17 @@ public class Building extends Component {
         ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
 
         // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonTile tile = mTile.get();
-        HexagonMap map = mHexagonMap.get();
+        HexagonTile tile = mTileReference.get();
+        HexagonMap map = mMapReference.get();
         if (tile == null || map == null) return tiles;
 
         // Get the current q and r coordinates.
         int qCentre = tile.getQ();
         int rCentre = tile.getR();
-        
+
         for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {            	
-            	// Only get tiles whose s coordinates are within the desired range.
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
                 int sOffset = -qOffset - rOffset;
 
                 // Do not include tiles outside of the radius.
@@ -160,7 +189,8 @@ public class Building extends Component {
                 // Do not include the building's HexagonTile.
                 if (qOffset == 0 && rOffset == 0) continue;
 
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset, s));
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
+                // s));
 
                 // Attempt to get the desired tile, and check if it exists.
                 HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
@@ -171,37 +201,35 @@ public class Building extends Component {
             }
         }
 
-        log.info("Number of tiles in range: " + tiles.size());
-        
+        // log.info("Number of tiles in range: " + tiles.size());
+
         return tiles;
     }
 
     /**
-     * Get an ArrayList of opponent {@link Building}s within the range defined by {@link #mAttackDistance}. 
-     * 
+     * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
+     * #mAttackDistance}.
+     *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
     public ArrayList<Building> getAttackableBuildings() {
         ArrayList<Building> buildings = new ArrayList<Building>();
 
         // Ensure the map and owner exist.
-        HexagonMap map = mHexagonMap.get();
-        TestPlayer owner = mOwner.get();
-        if (map == null || owner == null) return buildings;
+        HexagonMap map = mMapReference.get();
+        if (map == null) return buildings;
 
         // Get all the tiles in attackable distance.
-        ArrayList<HexagonTile> attackTiles = getAttackTiles();
+        ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         for (HexagonTile tile : attackTiles) {
             // Get the building on an attackable tile, if it exists.
-        	Building building = map.getBuilding(tile.getQ(), tile.getR());
-        	if (building == null) continue;
+            Building building = map.getBuilding(tile.getQ(), tile.getR());
+            if (building == null) continue;
 
-        	// Ensure the building is not owned by the owner of this building.
-            Reference<TestPlayer> buildingOwner = building.getOwner();
-            // TODO Replace references to the player with a player ID.
-            if (owner.equals(buildingOwner.get())) {
+            // Ensure the building is not owned by the owner of this building.
+            if (getOwnerID() == building.getOwnerID()) {
                 log.info("Building owned by same player.");
-            	continue;
+                continue;
             }
 
             // Add the opponent building to the list of attackable buildings.
@@ -225,6 +253,53 @@ public class Building extends Component {
         stats.add(mAttackDistance);
 
         return stats;
+    }
+
+    /**
+     * Store the owner's ID.
+     *
+     * @param id The ID of the owner.
+     */
+    public void setOwnerID(int id) {
+        mOwnerID.set(id);
+    }
+
+    /**
+     * Get the ID of the owner of the building.
+     *
+     * @return The ID of the owner.
+     */
+    public int getOwnerID() {
+        return mOwnerID.get();
+    }
+
+    /**
+     * Set the owner of the building.
+     *
+     * @param player The owner.
+     */
+    public void setOwner(TestPlayer player) {
+        setOwnerID(player.getID());
+    }
+
+    /**
+     * Get whether the building is a capital.
+     *
+     * @return Whether the building is a capital.
+     */
+    public boolean isCapital() {
+        return mIsCapital.get();
+    }
+
+    /**
+     * Set the building to be a capital.
+     *
+     * <p>By default, buildings are not capitals.
+     *
+     * @param isCapital Whether the building should be capital.
+     */
+    public void setCapital(boolean isCapital) {
+        mIsCapital.set(isCapital);
     }
 
     @Override
