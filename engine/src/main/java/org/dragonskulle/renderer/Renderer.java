@@ -659,6 +659,7 @@ public class Renderer implements NativeResource {
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
             deviceFeatures.samplerAnisotropy(mPhysicalDevice.getFeatureSupport().anisotropyEnable);
+            deviceFeatures.geometryShader(true);
 
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
             createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);

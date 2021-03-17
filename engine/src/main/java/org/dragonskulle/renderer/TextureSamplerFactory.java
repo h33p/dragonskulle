@@ -6,6 +6,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
+import lombok.EqualsAndHashCode;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
@@ -20,7 +21,18 @@ class TextureSamplerFactory implements NativeResource {
     private VkDevice mDevice;
     private float mMaxAnisotropy;
     private boolean mAnisotropyEnable;
-    private HashMap<TextureMapping, Long> mSamplers;
+    private HashMap<SamplerDescriptor, Long> mSamplers;
+
+    @EqualsAndHashCode
+    private static class SamplerDescriptor {
+        TextureMapping mMapping;
+        int mMipLevels;
+
+        public SamplerDescriptor(TextureMapping mapping, int mipLevels) {
+            mMapping = mapping;
+            mMipLevels = mipLevels;
+        }
+    }
 
     public TextureSamplerFactory(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
@@ -33,12 +45,14 @@ class TextureSamplerFactory implements NativeResource {
      * Get a sampler with specified texture mapping
      *
      * @param mapping texture mapping properties to get the sampler for
+     * @param mipLevels mip map levels to use
      */
-    public long getSampler(TextureMapping mapping) {
-        Long sampler = mSamplers.get(mapping);
+    public long getSampler(TextureMapping mapping, int mipLevels) {
+        SamplerDescriptor desc = new SamplerDescriptor(mapping, mipLevels);
+        Long sampler = mSamplers.get(desc);
         if (sampler == null) {
-            sampler = createSampler(mapping, mAnisotropyEnable);
-            mSamplers.put(mapping, sampler);
+            sampler = createSampler(desc, mAnisotropyEnable);
+            mSamplers.put(desc, sampler);
         }
         return sampler;
     }
@@ -48,15 +62,15 @@ class TextureSamplerFactory implements NativeResource {
         mSamplers.values().stream().forEach(d -> vkDestroySampler(mDevice, d, null));
     }
 
-    private long createSampler(TextureMapping mapping, boolean anisotropyEnable) {
+    private long createSampler(SamplerDescriptor desc, boolean anisotropyEnable) {
         try (MemoryStack stack = stackPush()) {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.callocStack(stack);
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-            samplerInfo.magFilter(mapping.filtering.getValue());
-            samplerInfo.minFilter(mapping.filtering.getValue());
-            samplerInfo.addressModeU(mapping.wrapU.getValue());
-            samplerInfo.addressModeV(mapping.wrapV.getValue());
-            samplerInfo.addressModeW(mapping.wrapW.getValue());
+            samplerInfo.magFilter(desc.mMapping.filtering.getValue());
+            samplerInfo.minFilter(desc.mMapping.filtering.getValue());
+            samplerInfo.addressModeU(desc.mMapping.wrapU.getValue());
+            samplerInfo.addressModeV(desc.mMapping.wrapV.getValue());
+            samplerInfo.addressModeW(desc.mMapping.wrapW.getValue());
             samplerInfo.anisotropyEnable(anisotropyEnable);
             samplerInfo.maxAnisotropy(mMaxAnisotropy);
             samplerInfo.borderColor(VK_BORDER_COLOR_INT_TRANSPARENT_BLACK);
@@ -66,7 +80,7 @@ class TextureSamplerFactory implements NativeResource {
             samplerInfo.mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR);
             samplerInfo.mipLodBias(0.0f);
             samplerInfo.minLod(0.0f);
-            samplerInfo.maxLod(0.0f);
+            samplerInfo.maxLod(desc.mMipLevels);
 
             LongBuffer pSampler = stack.longs(0);
 

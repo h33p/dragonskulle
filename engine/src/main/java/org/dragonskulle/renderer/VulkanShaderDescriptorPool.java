@@ -180,6 +180,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
 
             int[][] uniformDataInfos = {
                 {shaderSet.getVertexUniformDataSize(), VK_SHADER_STAGE_VERTEX_BIT},
+                {shaderSet.getGeometryUniformDataSize(), VK_SHADER_STAGE_GEOMETRY_BIT},
                 {shaderSet.getFragmentUniformDataSize(), VK_SHADER_STAGE_FRAGMENT_BIT}
             };
 

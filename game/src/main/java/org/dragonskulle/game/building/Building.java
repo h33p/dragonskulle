@@ -2,116 +2,175 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
-import java.util.Random;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Component;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.game.building.stat.AttackDistanceStat;
-import org.dragonskulle.game.building.stat.AttackStat;
-import org.dragonskulle.game.building.stat.DefenceStat;
-import org.dragonskulle.game.building.stat.Stat;
-import org.dragonskulle.game.building.stat.TokenGenerationStat;
-import org.dragonskulle.game.building.stat.ViewDistanceStat;
+import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
+import org.dragonskulle.game.building.stat.SyncAttackStat;
+import org.dragonskulle.game.building.stat.SyncDefenceStat;
+import org.dragonskulle.game.building.stat.SyncStat;
+import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
+import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncInt;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 
 /**
  * A Building component.
+ *
+ * <p>Once created, the GameObject needs a {@link TransformHex} component to place it in the game
+ * and to allow the logic to access its position.
+ *
+ * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
+ * #setOwnerID(int)}.
+ *
+ * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
+ * {@link HexagonMap#storeBuilding(Building, int, int)}).
  *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends Component {
+public class Building extends NetworkableComponent implements IOnAwake {
 
     /** Stores the attack strength of the building. */
-    @Getter private AttackStat mAttack;
+    @Getter private final SyncAttackStat mAttack = new SyncAttackStat();
     /** Stores the defence strength of the building. */
-    @Getter private DefenceStat mDefence;
+    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat();
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private TokenGenerationStat mTokenGeneration;
+    @Getter private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
     /** Stores the view range of the building. */
-    @Getter private ViewDistanceStat mViewDistance;
+    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
     /** Stores the attack range of the building. */
-    @Getter private AttackDistanceStat mAttackDistance;
+    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
 
-    /** The owner of the building. */
-    @Getter @Setter private Reference<Player> mOwner = new Reference<>(null);
-    /** The HexagonTile the building is on. */
-    @Getter private Reference<HexagonTile> mTile = new Reference<HexagonTile>(null);
-    /** The HexagonMap being used. */
-    private Reference<HexagonMap> mHexagonMap = new Reference<HexagonMap>(null);
+    /** ID of the owner of the building. */
+    private final SyncInt mOwnerID = new SyncInt(-1);
+    /** Whether the building is a capital. */
+    private final SyncBool mIsCapital = new SyncBool(false);
 
     /**
-     * Create a new {@link Building}. Adds the Building to the {@link HexagonMap} at the specified
-     * {@link HexagonTile}.
-     *
-     * @param hexagonMap The HexagonMap being used.
-     * @param hexagonTile The HexagonTile the building is on.
+     * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
+     * HexagonTile}.
      */
-    public Building(Reference<HexagonMap> hexagonMap, Reference<HexagonTile> hexagonTile) {
+    public Building() {}
 
-        // TODO Clean up.
-        // Move contents out of constructor.
-
-        mTile = hexagonTile;
-        mHexagonMap = hexagonMap;
-
-        mAttack = new AttackStat();
-        mDefence = new DefenceStat();
-        mTokenGeneration = new TokenGenerationStat();
-        mViewDistance = new ViewDistanceStat();
-        mAttackDistance = new AttackDistanceStat();
-
+    @Override
+    public void onAwake() {
+        // For debugging, set all stat levels to 5.
+        // TODO: Remove.
         mAttack.setLevel(5);
         mDefence.setLevel(5);
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
-
-        // Move out of constructor:
-        HexagonMap map = hexagonMap.get();
-        HexagonTile tile = mTile.get();
-        if (map != null && tile != null) {
-            map.storeBuilding(this, tile.getQ(), tile.getR());
-        }
     }
 
     /**
      * Attack an opponent building.
      *
+     * <p><b> Currently has no effect other than the basic calculations (i.e. it does not transfer
+     * ownership of Buildings). </b>
+     *
      * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
      * attacking building and the defence stats of the opponent building.
      *
      * @param opponent The building to attack.
+     * @return Whether the attack was successful or not.
      */
-    public void attack(Building opponent) {
-        // TODO: Make attack success dependent on building stats.
+    public boolean attack(Building opponent) {
+        /** The number of sides on the dice */
+        final int maxValue = 1000;
 
-        Random random = new Random();
-        double successChance = random.nextDouble();
-        // Set a 50% chance of success.
-        double target = 0.5;
+        // Get the attacker and defender's stats.
+        int attack = mAttack.getValue();
+        int defence = opponent.mDefence.getValue();
 
-        if (successChance >= target) {
-            log.info(
-                    String.format(
-                            "Successful attack: random number %f was greater or equal to target %f.",
-                            successChance, target));
+        // Stores the highest result of rolling a dice a set number of times, defined by the attack
+        // stat.
+        int highestAttack = 0;
+        // Stores the highest result of rolling a dice a set number of times, defined by the defence
+        // stat.
+        int highestDefence = 0;
 
-            // Claim the opponent building.
-            opponent.setOwner(mOwner);
-            // TODO: Allow the Players to update their lists of buildings they own.
-        } else {
-            log.info(
-                    String.format(
-                            "Failed attack: random number %f was not greater or equal to target %f.",
-                            successChance, target));
+        // Roll a die a number of times defined by the attack stat.
+        for (int i = 1; i < attack; i++) {
+            int value = (int) (Math.random() * (maxValue) + 1);
+            // Store the highest value achieved.
+            if (value > highestAttack) {
+                highestAttack = value;
+            }
         }
+
+        // Roll a die a number of times defined by the defence stat.
+        for (int i = 1; i < defence; i++) {
+            int value = (int) (Math.random() * (maxValue) + 1);
+            // Store the highest value achieved.
+            if (value > defence) {
+                highestDefence = value;
+            }
+        }
+
+        // Check to see who has the highest value, and won.
+        if (highestAttack > highestDefence) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a
+     * set radius.
+     *
+     * @param radius The radius.
+     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
+     */
+    private ArrayList<HexagonTile> getTilesInRadius(int radius) {
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+
+        // Get the map.
+        HexagonMap map = getMap();
+        // Get the current position.
+        Vector3i position = getPosition();
+
+        // Get the current q and r coordinates.
+        int qCentre = position.x();
+        int rCentre = position.y();
+
+        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
+
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
+                // Do not include the building's HexagonTile.
+                if (qOffset == 0 && rOffset == 0) continue;
+
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
+                // s));
+
+                // Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
+                if (selectedTile == null) continue;
+
+                // Add the tile to the list.
+                tiles.add(selectedTile);
+            }
+        }
+
+        // log.info("Number of tiles in range: " + tiles.size());
+
+        return tiles;
     }
 
     /**
@@ -143,52 +202,6 @@ public class Building extends Component {
     }
 
     /**
-     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a
-     * set radius.
-     *
-     * @param radius The radius.
-     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
-     */
-    private ArrayList<HexagonTile> getTilesInRadius(int radius) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonTile tile = mTile.get();
-        HexagonMap map = mHexagonMap.get();
-        if (tile == null || map == null) return tiles;
-
-        // Get the current q and r coordinates.
-        int qCentre = tile.getQ();
-        int rCentre = tile.getR();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
-        }
-
-        log.info("Number of tiles in range: " + tiles.size());
-
-        return tiles;
-    }
-
-    /**
      * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
      * #mAttackDistance}.
      *
@@ -197,10 +210,8 @@ public class Building extends Component {
     public ArrayList<Building> getAttackableBuildings() {
         ArrayList<Building> buildings = new ArrayList<Building>();
 
-        // Ensure the map and owner exist.
-        HexagonMap map = mHexagonMap.get();
-        Player owner = mOwner.get();
-        if (map == null || owner == null) return buildings;
+        // Get the map.
+        HexagonMap map = getMap();
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
@@ -210,9 +221,7 @@ public class Building extends Component {
             if (building == null) continue;
 
             // Ensure the building is not owned by the owner of this building.
-            Reference<Player> buildingOwner = building.getOwner();
-            // TODO Replace references to the player with a player ID.
-            if (owner.equals(buildingOwner.get())) {
+            if (getOwnerID() == building.getOwnerID()) {
                 log.info("Building owned by same player.");
                 continue;
             }
@@ -225,12 +234,40 @@ public class Building extends Component {
     }
 
     /**
+     * Get the current axial coordinates of the building.
+     *
+     * @return A 3d-vector of integers containing the x, y and z position of the building.
+     */
+    private Vector3i getPosition() {
+        Vector3f floatPosition = new Vector3f();
+        TransformHex tranform = getGameObject().getComponent(TransformHex.class).get();
+        tranform.getLocalPosition(floatPosition);
+
+        Vector3i position = new Vector3i();
+        position.set((int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
+
+        return position;
+    }
+
+    /**
+     * Get the {@link HexagonMap} being used.
+     *
+     * @return The map.
+     */
+    private HexagonMap getMap() {
+        return Scene.getActiveScene()
+                .getSingleton(HexagonMap.class)
+                .getReference(HexagonMap.class)
+                .get();
+    }
+
+    /**
      * Get an ArrayList of Stats that the Building has.
      *
      * @return An ArrayList of Stats.
      */
-    public ArrayList<Stat<?>> getStats() {
-        ArrayList<Stat<?>> stats = new ArrayList<Stat<?>>();
+    public ArrayList<SyncStat<?>> getStats() {
+        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>();
         stats.add(mAttack);
         stats.add(mDefence);
         stats.add(mTokenGeneration);
@@ -238,6 +275,53 @@ public class Building extends Component {
         stats.add(mAttackDistance);
 
         return stats;
+    }
+
+    /**
+     * Store the owner's ID.
+     *
+     * @param id The ID of the owner.
+     */
+    public void setOwnerID(int id) {
+        mOwnerID.set(id);
+    }
+
+    /**
+     * Get the ID of the owner of the building.
+     *
+     * @return The ID of the owner.
+     */
+    public int getOwnerID() {
+        return mOwnerID.get();
+    }
+
+    /**
+     * Set the owner of the building.
+     *
+     * @param player The owner.
+     */
+    public void setOwner(TestPlayer player) {
+        setOwnerID(player.getID());
+    }
+
+    /**
+     * Get whether the building is a capital.
+     *
+     * @return Whether the building is a capital.
+     */
+    public boolean isCapital() {
+        return mIsCapital.get();
+    }
+
+    /**
+     * Set the building to be a capital.
+     *
+     * <p>By default, buildings are not capitals.
+     *
+     * @param isCapital Whether the building should be capital.
+     */
+    public void setCapital(boolean isCapital) {
+        mIsCapital.set(isCapital);
     }
 
     @Override

@@ -25,7 +25,7 @@ public abstract class Transform extends Component {
 
     protected boolean mShouldUpdate = true;
 
-    protected boolean mHasInv = false;
+    protected boolean mHasInverted = false;
 
     /**
      * Get the world matrix for this transform. If mShouldUpdate is true, it will then recursively
@@ -47,9 +47,9 @@ public abstract class Transform extends Component {
     }
 
     public Matrix4fc getInvWorldMatrix() {
-        if (mShouldUpdate || !mHasInv) {
+        if (mShouldUpdate || !mHasInverted) {
             mInvMatrix.set(getWorldMatrix()).invert();
-            mHasInv = true;
+            mHasInverted = true;
         }
         return mInvMatrix;
     }
@@ -60,6 +60,7 @@ public abstract class Transform extends Component {
             return;
         }
         mShouldUpdate = true;
+        mHasInverted = false;
         for (GameObject obj : mGameObject.getChildren()) {
             obj.getTransform().setUpdateFlag();
         }
