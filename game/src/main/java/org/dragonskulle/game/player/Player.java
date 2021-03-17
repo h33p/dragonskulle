@@ -64,7 +64,9 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @param building
      */
     public void addBuilding(Reference<Building> building) {
+    	
         mOwnedBuildings.add(building);
+        log.info("Added Building");
     }
 
     /**
@@ -98,6 +100,8 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         // Checks if server
         if (getNetworkObject() != null && getNetworkObject().isServer()) {
+        	
+        	log.info("Updating Server Side Tokens info");
 
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
@@ -111,6 +115,7 @@ public class Player extends NetworkableComponent implements IOnStart {
 
                 mTokens.set(mTokens.get() + TOKEN_RATE);
                 mLastTokenUpdate = 0;
+                log.info("Tokens at: " +  Integer.toString(mTokens.get()));
             }
         }
     }
@@ -159,6 +164,7 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         // Checks if there is enough tokens for this
         if (mTokens.get() < COST) {
+        	log.info("Do not have enough for attack");
             return;
         }
 
@@ -172,9 +178,10 @@ public class Player extends NetworkableComponent implements IOnStart {
         Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
 
         // Checks to see if building is yours and if so get proper one
-        Reference<Building> attacker = checkBuildingYours(attackingFrom, mOwnedBuildings);
+        Reference<Building> attacker = checkBuildingYours(attackingFrom, this);
 
         if (attacker == null) {
+        	log.info("Cannot find building attacker");
             return;
         }
 
@@ -183,32 +190,37 @@ public class Player extends NetworkableComponent implements IOnStart {
         Building defending = checkAttackable(defender, attackableBuildings);
 
         if (defending == null) {
+        	log.info("Cannot find building to attack");
             return;
         }
         // Checks building is correct
-        Reference<Building> isYours = checkBuildingYours(defending, mOwnedBuildings);
+        Reference<Building> isYours = checkBuildingYours(defending, this);
         if (isYours != null) {
+        	log.info("ITS YOUR BUILDING DUMMY");
             return;
         }
 
         // ATTACK!!! (Sorry...)
         boolean won = attacker.get().attack(defending);
+        log.info("Attack is: " + Boolean.toString(won));
         mTokens.set(mTokens.get() - COST);
         
         // If you've won attack
         if (won) {
         	mOwnedBuildings.add(new Reference<Building>(defending));
         	for (Reference<Player> player: mPlayersOnline) {
-        		List<Reference<Building>> playersBuildings = player.get().getOwnedBuildings();
-        		Reference<Building> buildingToRemove = checkBuildingYours(defending, playersBuildings);
+        		Reference<Building> buildingToRemove = checkBuildingYours(defending, player.get());
         		
         		if (buildingToRemove != null) {
         			player.get().removeBuilding(buildingToRemove);
+        			
+        			log.info("Removed Building");
         			return;
         		}
         	}
         	
         }
+        log.info("Done");
 
         return;
     }
@@ -219,11 +231,12 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @param buildingToCheck The building to check
      * @return true of the player owns it, false if not
      */
-    private Reference<Building> checkBuildingYours(Building buildingToCheck, List<Reference<Building>> toCheck) {
+    private Reference<Building> checkBuildingYours(Building buildingToCheck, Player player) {
 
         // Checks the building is yours
-        for (Reference<Building> building : toCheck) {
-
+        for (int i = 0; i < player.numberOfBuildings(); i++) {
+        	
+        	Reference<Building> building = player.getBuilding(i);
             if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
                     && building.get().getTile().get().getQ()
                             == buildingToCheck.getTile().get().getQ()) {
@@ -273,6 +286,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         int COST = 5;
 
         if (mTokens.get() < COST) {
+        	log.info("Not enough tokens for building");
             return;
         }
 
@@ -285,7 +299,9 @@ public class Player extends NetworkableComponent implements IOnStart {
         HexagonMap map = mMapComponent.get();
         HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
 
+        log.info("Got the map & tile");
         if (buildingWithinRadius(getTilesInRadius(1, tile))) {
+        	log.info("Trying to build too close to another building");
             return;
         }
 
@@ -294,6 +310,8 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         // Store the building.
         map.storeBuilding(building, tile.getQ(), tile.getR());
+        
+        log.info("Building added");
     }
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {

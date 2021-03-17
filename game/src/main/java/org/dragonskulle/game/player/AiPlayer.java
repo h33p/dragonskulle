@@ -16,11 +16,14 @@ import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.game.player.networkData.StatData;
 
+import lombok.extern.java.Log;
+
 /**
  * This base class will allow AI players to be created and used throughout the game.
  *
  * @author DragonSkulle
  */
+@Log
 public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
     /** The time since the last check if the AI player can play. (Start at 0) */
@@ -117,6 +120,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
             // Checks if there are tiles
             if (tilesToUse.size() != 0) {
+            	
+            	log.info("AI: Placing building cos only have capital");
                 // Picks a random number thus a random tile
                 int randomIndex = mRandom.nextInt(tilesToUse.size());
                 HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
@@ -136,6 +141,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
             if (randomNumber <= mTileProbability) {
 
                 // Gets all the tiles it can expand to
+            	log.info("Placing Building");
                 List<HexagonTile> tilesToUse = hexTilesToExpand();
 
                 // Checks if there are tiles
@@ -159,6 +165,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 // Choose to upgrade a building
                 if (randomNumber <= mUpgradeBuilding) {
 
+                	log.info("AI: Upgrading");
                     // Get the building to upgrade
                     Reference<Building> building =
                             mPlayer.get()
@@ -179,6 +186,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 } else if (randomNumber > mUpgradeBuilding
                         && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
 
+                	log.info("AI: Attacking");
                     ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
 
                     // Will create a list of [attacker (your building), defender (building to
@@ -218,7 +226,10 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     // Choose to sell a building
                 } else {
 
+                	log.info("AI: Selling");
                     if (mPlayer.get().numberOfBuildings() > 1) {
+                    	
+                    
                         // Pick a building to sell
                         Building buildingToSell =
                                 mPlayer.get()
