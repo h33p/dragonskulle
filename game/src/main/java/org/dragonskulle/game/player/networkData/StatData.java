@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
@@ -16,7 +17,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 public class StatData implements INetSerializable {
 
     private Building mBuilding;
-    private Stat<?> mStat;
+    private SyncStat<?> mStat;
 
     public StatData() {}
 
@@ -26,7 +27,7 @@ public class StatData implements INetSerializable {
      * @param building The building to upgrade
      * @param stat The stat to upgrade
      */
-    public StatData(Building building, Stat<?> stat) {
+    public StatData(Building building, SyncStat<?> stat) {
         mBuilding = building;
         mStat = stat;
     }

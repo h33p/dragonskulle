@@ -11,6 +11,7 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
@@ -172,8 +173,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                                             mRandom.nextInt(mPlayer.get().numberOfBuildings()));
 
                     // Get Stat to upgrade
-                    ArrayList<Stat<?>> statsArray = building.get().getStats();
-                    Stat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
+                    ArrayList<SyncStat<?>> statsArray = building.get().getStats();
+                    SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
 
                     // Send to server
                     mPlayer.get()

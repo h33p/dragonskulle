@@ -170,13 +170,8 @@ public class Player extends NetworkableComponent implements IOnStart {
         HexagonTile attackerTile = data.getAttackingFrom();
         HexagonTile defenderTile = data.getAttacking();
 
-        // Create 2 dummy Buildings to use for checks.
-        Building attackingFrom =
-                new Building(mMapComponent, new Reference<HexagonTile>(attackerTile));
-        Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
-
         // Checks to see if building is yours and if so get proper one
-        Reference<Building> attacker = checkBuildingYours(attackingFrom, this);
+        Reference<Building> attacker = checkBuildingYours(attackerTile, this);
 
         if (attacker == null) {
             log.info("Cannot find building attacker");
@@ -185,14 +180,14 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         // Get the proper version of the defending building
         ArrayList<Building> attackableBuildings = attacker.get().getAttackableBuildings();
-        Building defending = checkAttackable(defender, attackableBuildings);
+        Building defending = checkAttackable(defenderTile, attackableBuildings);
 
         if (defending == null) {
             log.info("Cannot find building to attack");
             return;
         }
         // Checks building is correct
-        Reference<Building> isYours = checkBuildingYours(defending, this);
+        Reference<Building> isYours = checkBuildingYours(defenderTile, this);
         if (isYours != null) {
             log.info("ITS YOUR BUILDING DUMMY");
             return;
@@ -207,7 +202,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         if (won) {
             mOwnedBuildings.add(new Reference<Building>(defending));
             for (Reference<Player> player : mPlayersOnline) {
-                Reference<Building> buildingToRemove = checkBuildingYours(defending, player.get());
+                Reference<Building> buildingToRemove = checkBuildingYours(defending.g, player.get());// TODO NEED WAY TO GET Q & R VALUES
 
                 if (buildingToRemove != null) {
                     player.get().removeBuilding(buildingToRemove);
@@ -228,15 +223,15 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @param buildingToCheck The building to check
      * @return true of the player owns it, false if not
      */
-    private Reference<Building> checkBuildingYours(Building buildingToCheck, Player player) {
+    private Reference<Building> checkBuildingYours(HexagonTile buildingToCheck, Player player) {
 
         // Checks the building is yours
         for (int i = 0; i < player.numberOfBuildings(); i++) {
 
             Reference<Building> building = player.getBuilding(i);
-            if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
+            if (building.get().getTile().get().getR() == buildingToCheck.getR()
                     && building.get().getTile().get().getQ()
-                            == buildingToCheck.getTile().get().getQ()) {
+                            == buildingToCheck.getQ()) {
                 return building;
             }
         }
@@ -252,12 +247,12 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @return true if in the list false if not
      */
     private Building checkAttackable(
-            Building buildingToCheck, ArrayList<Building> buildingsToCheck) {
+            HexagonTile buildingToCheck, ArrayList<Building> buildingsToCheck) {
 
         // Checks building is yours
         for (Building building : buildingsToCheck) {
-            if (building.getTile().get().getR() == buildingToCheck.getTile().get().getR()
-                    && building.getTile().get().getQ() == buildingToCheck.getTile().get().getQ()) {
+            if (building.getTile().get().getR() == buildingToCheck.getR()
+                    && building.getTile().get().getQ() == buildingToCheck.getQ()) {
                 return building;
             }
         }
@@ -302,6 +297,7 @@ public class Player extends NetworkableComponent implements IOnStart {
             return;
         }
 
+        //TODO REDO
         // Create a new building.
         Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
 
