@@ -61,18 +61,9 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     }
 
     /**
-     * Calculate the value of the stat from the current level.
-     *
-     * @return The value, of type {@code T}, of the stat at the current level.
-     */
-    protected abstract T getValueFromLevel();
-
-    /**
-     * Get the value of the stat.
+     * Get the value of the stat, of type {@code T}, at the current level.
      *
      * @return The value of the stat.
      */
-    public T getValue() {
-        return getValueFromLevel();
-    }
+    public abstract T getValue();
 }

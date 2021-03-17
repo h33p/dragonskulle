@@ -9,7 +9,7 @@ package org.dragonskulle.game.building.stat;
 public class SyncTokenGenerationStat extends SyncStat<Integer> {
 
     @Override
-    protected Integer getValueFromLevel() {
+    public Integer getValue() {
         return get();
     }
 }
