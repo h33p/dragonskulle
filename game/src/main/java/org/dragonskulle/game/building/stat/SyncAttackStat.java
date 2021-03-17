@@ -6,22 +6,10 @@ package org.dragonskulle.game.building.stat;
  *
  * @author Craig Wilbourne
  */
-public class SyncAttackStat extends SyncStat<Double> implements DoubleMap {
-
-    private final double mValueMin = 0.25;
-    private final double mValueMax = 1.0;
-
-    private double mapLevel() {
-        return map(
-                mValueMin,
-                mValueMax,
-                Double.valueOf(get()),
-                Double.valueOf(LEVEL_MIN),
-                Double.valueOf(LEVEL_MAX));
-    }
+public class SyncAttackStat extends SyncStat<Integer> implements DoubleMap {
 
     @Override
-    protected Double getValueFromLevel() {
-        return mapLevel();
+    protected Integer getValueFromLevel() {
+        return get() + 1;
     }
 }
