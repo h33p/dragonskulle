@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player;
 
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
@@ -29,7 +30,7 @@ import org.joml.Vector4f;
  *
  * @author DragonSkulle
  */
-public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
+public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     // All screens to be used
     private Screen mScreenOn = Screen.MAP_SCREEN;
@@ -160,11 +161,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
 
     @Override
     protected void onDestroy() {}
+    
+    @Override
+	public void fixedUpdate(float deltaTime) {
+    	
+		// Update token
+        mPlayer.get().updateTokens(deltaTime);
+		
+	}
 
     @Override
     public void frameUpdate(float deltaTime) {
-        // Update token
-        mPlayer.get().updateTokens(deltaTime);
 
         // Choose which screen to show
         mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
