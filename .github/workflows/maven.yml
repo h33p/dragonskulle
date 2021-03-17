@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -30,6 +31,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -48,6 +50,7 @@ jobs:
 
   doc-gen:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -66,6 +69,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8

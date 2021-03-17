@@ -18,7 +18,6 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.ui.TransformUI;
@@ -206,10 +205,7 @@ public class Server {
         GameObject networkManagerGO =
                 new GameObject(
                         "server_network_manager",
-                        (go) ->
-                                go.addComponent(
-                                        new NetworkManager(
-                                                serverInstance.mServer::fixedBroadcastUpdate)));
+                        (go) -> go.addComponent(serverInstance.createNetworkManager()));
 
         mLoadingScreen.destroy();
         mainScene.addRootObject(networkManagerGO);

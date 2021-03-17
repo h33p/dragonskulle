@@ -4,6 +4,7 @@ package org.dragonskulle.network.components;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.network.ClientGameInstance;
+import org.dragonskulle.network.DisposingMethod;
 import org.dragonskulle.network.FixedUpdate;
 
 /** @author Oscar L */
@@ -13,8 +14,9 @@ public class ClientNetworkManager extends NetworkManager {
 
     public ClientNetworkManager(
             FixedUpdate serverUpdateCallback,
-            ClientGameInstance.NetworkClientSendBytesCallback sendBytesToServerCallback) {
-        super(serverUpdateCallback);
+            ClientGameInstance.NetworkClientSendBytesCallback sendBytesToServerCallback,
+            DisposingMethod dispose) {
+        super(serverUpdateCallback, dispose);
         mSendToServer = sendBytesToServerCallback;
     }
 }
