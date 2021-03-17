@@ -372,7 +372,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public Reference<GameObject> buildChild(String name, Transform transform, IBuildHandler handler) {
+    public Reference<GameObject> buildChild(
+            String name, Transform transform, IBuildHandler handler) {
         return buildChild(name, mEnabled, transform, handler);
     }
 
@@ -456,10 +457,8 @@ public class GameObject implements Serializable {
     void recreateReferences() {
         mReference.clear();
         mReference = new Reference<>(this);
-        for (Component c : mComponents)
-            c.recreateReference();
-        for (GameObject c : mChildren)
-            c.recreateReferences();
+        for (Component c : mComponents) c.recreateReference();
+        for (GameObject c : mChildren) c.recreateReferences();
     }
 
     /**

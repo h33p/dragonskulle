@@ -1,41 +1,55 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.io.PrintWriter;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-/** @author Oscar L The interface Server listener. */
-interface ServerListener {
+/**
+ * The interface Server listener.
+ *
+ * @author Aurimas Blažulionis
+ * @author Oscar L
+ */
+public interface ServerListener {
     /**
      * Client connected event.
      *
+     * <p>This will be called from the client socket thread.
+     *
      * @param client the client
-     * @param out the out
+     * @return which network ID was allocated for the client
      */
-    void clientConnected(ClientInstance client, PrintWriter out);
+    int clientConnected(ServerClient client);
+
+    /**
+     * Client activated event.
+     *
+     * <p>This will be called from the main thread when the client gets fully connected.
+     *
+     * @param client the client
+     */
+    void clientActivated(ServerClient client);
 
     /**
      * Client disconnected event.
      *
-     * @param client the client
-     */
-    void clientDisconnected(ClientInstance client);
-
-    /**
-     * Received input event.
+     * <p>This will be called from the client socket thread.
      *
      * @param client the client
-     * @param msg the msg
      */
-    void receivedInput(ClientInstance client, String msg);
-
-    /** Server closed event. */
-    void serverClosed();
+    void clientDisconnected(ServerClient client);
 
     /**
-     * Received bytes event.
+     * Client component request.
      *
-     * @param client the client
-     * @param bytes the bytes
+     * <p>This will be called from the main thread.
+     *
+     * @param client requesting client
+     * @param objectID target network object ID
+     * @param requestID request ID on the object
+     * @param stream stream of the request
      */
-    void receivedBytes(ClientInstance client, byte[] bytes);
+    void clientComponentRequest(
+            ServerClient client, int objectID, int requestID, DataInputStream stream)
+            throws IOException;
 }

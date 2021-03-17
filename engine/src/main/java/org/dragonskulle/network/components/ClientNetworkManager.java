@@ -68,9 +68,9 @@ public class ClientNetworkManager extends NetworkManager {
         }
 
         @Override
-		public void error(String s) {
-			mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
-		}
+        public void error(String s) {
+            mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
+        }
 
         /**
          * Updates a networkable object from server message.
@@ -96,13 +96,15 @@ public class ClientNetworkManager extends NetworkManager {
         @Override
         public void spawnNetworkObject(byte[] payload) {
             int objectId = NetworkObject.getIntFromBytes(payload, SPAWN_OBJECT_ID);
+            int ownerId = NetworkObject.getIntFromBytes(payload, SPAWN_OWNER_ID);
             int spawnTemplateId = NetworkObject.getIntFromBytes(payload, SPAWN_TEMPLATE_ID);
-            spawnNewNetworkObject(objectId, spawnTemplateId);
+            spawnNewNetworkObject(objectId, ownerId, spawnTemplateId);
         }
     }
 
     private static final int SPAWN_OBJECT_ID = 0;
-    private static final int SPAWN_TEMPLATE_ID = SPAWN_OBJECT_ID + 4;
+    private static final int SPAWN_OWNER_ID = SPAWN_OBJECT_ID + 4;
+    private static final int SPAWN_TEMPLATE_ID = SPAWN_OWNER_ID + 4;
 
     private NetworkClient mClient;
     private IClientListener mListener = new Listener();
@@ -111,7 +113,7 @@ public class ClientNetworkManager extends NetworkManager {
     private Scene mGameScene;
     private Scene mPrevScene;
     private IConnectionResultHandler mConnectionHandler;
-	private int mTicksWithoutRequests = 0;
+    private int mTicksWithoutRequests = 0;
 
     /** An map of references to objects. */
     private final HashMap<Integer, Reference<NetworkObject>> mNetworkObjectReferences =
@@ -171,19 +173,17 @@ public class ClientNetworkManager extends NetworkManager {
                 }
             } else if (mConnectionState == ConnectionState.JOINED_GAME) {
                 // TODO: handle lobby -> game transition here
-				onDisconnect();
+                onDisconnect();
             }
         }
 
         if (mConnectionState == ConnectionState.JOINED_GAME) {
-			if (mClient.processRequests() <= 0) {
-				mTicksWithoutRequests++;
-				if (mTicksWithoutRequests > 320)
-					onDisconnect();
-				else if (mTicksWithoutRequests == 100)
-					log.info("100 ticks without updates! 220 more till disconnect!");
-			} else
-				mTicksWithoutRequests = 0;
+            if (mClient.processRequests() <= 0) {
+                mTicksWithoutRequests++;
+                if (mTicksWithoutRequests > 3200) onDisconnect();
+                else if (mTicksWithoutRequests == 1000)
+                    log.info("1000 ticks without updates! 2200 more till disconnect!");
+            } else mTicksWithoutRequests = 0;
         }
     }
 
@@ -196,7 +196,7 @@ public class ClientNetworkManager extends NetworkManager {
 
         if (mPrevScene == null) mPrevScene = Scene.getActiveScene();
 
-		Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mGameScene);
+        Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mGameScene);
 
         if (engine.getPresentationScene() == Scene.getActiveScene())
             engine.loadPresentationScene(mGameScene);
@@ -215,7 +215,7 @@ public class ClientNetworkManager extends NetworkManager {
         Engine engine = Engine.getInstance();
 
         if (mPrevScene != null) {
-			Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mPrevScene);
+            Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mPrevScene);
 
             if (engine.getPresentationScene() == Scene.getActiveScene())
                 engine.loadPresentationScene(mPrevScene);
@@ -223,10 +223,10 @@ public class ClientNetworkManager extends NetworkManager {
         }
 
         mConnectionState = ConnectionState.NOT_CONNECTED;
-		if (mClient != null) {
-			mClient.dispose();
-			mClient = null;
-		}
+        if (mClient != null) {
+            mClient.dispose();
+            mClient = null;
+        }
     }
 
     /**
@@ -240,10 +240,11 @@ public class ClientNetworkManager extends NetworkManager {
         return mNetworkObjectReferences.get(networkObjectId);
     }
 
-    private Reference<NetworkObject> spawnNewNetworkObject(int networkObjectId, int templateId) {
+    private Reference<NetworkObject> spawnNewNetworkObject(
+            int networkObjectId, int ownerID, int templateId) {
         // TODO: use member templates
         final GameObject go = Templates.instantiate(templateId);
-        final NetworkObject nob = new NetworkObject(networkObjectId, false);
+        final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false);
         go.addComponent(nob);
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
         log.info("adding a new root object to the scene");

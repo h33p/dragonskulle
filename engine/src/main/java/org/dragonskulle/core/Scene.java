@@ -60,9 +60,10 @@ public class Scene {
         }
     }
 
-    /** Moves a root object from one scene to the next.
+    /**
+     * Moves a root object from one scene to the next.
      *
-     * Although
+     * <p>Although
      */
     public void moveRootObjectToScene(GameObject object, Scene target) {
         if (mGameObjects.remove(object)) {

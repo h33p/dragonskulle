@@ -6,17 +6,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.logging.Logger;
-import org.apache.commons.codec.binary.Hex;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
-import org.dragonskulle.core.Engine;
-import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
 
 /**
@@ -60,10 +52,7 @@ public class NetworkClient {
      * @param port the port
      * @param listener the listener
      */
-    public NetworkClient(
-            String ip,
-            int port,
-            IClientListener listener) {
+    public NetworkClient(String ip, int port, IClientListener listener) {
         mClientListener = listener;
         try {
             mClientRunner = new ClientRunner();
@@ -217,10 +206,9 @@ public class NetworkClient {
                 }
             }
 
-			if (mClientListener != null)
-				mClientListener.disconnected();
+            if (mClientListener != null) mClientListener.disconnected();
 
-			dispose();
+            dispose();
             System.out.println("cancelled successfully");
         }
     }
@@ -238,15 +226,15 @@ public class NetworkClient {
     /** Processes all requests. */
     public int processRequests() {
         mLogger.fine("processing all " + this.mRequests.size() + " requests");
-		int cnt = 0;
+        int cnt = 0;
         while (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
             if (requestBytes != null) {
                 processBytes(requestBytes);
             }
-			cnt++;
+            cnt++;
         }
-		return cnt;
+        return cnt;
     }
 
     /**

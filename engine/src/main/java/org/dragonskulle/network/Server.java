@@ -1,332 +1,198 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
-// based on
+// originally based on
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
+// later rewritten
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Scene;
-import org.dragonskulle.exceptions.DecodingException;
-import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.network.components.ServerNetworkManager;
-import org.dragonskulle.renderer.Font;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
 
 /**
  * The type Server.
  *
  * @author Oscar L
+ * @author Aurimas Blažulionis
  *     <p>This is the main Server Class, it handles setup and stores all client connections. It can
  *     broadcast messages to every client and receive from individual clients.
  */
 @Accessors(prefix = "m")
 public class Server {
     private static final Logger mLogger = Logger.getLogger(Server.class.getName());
+    private static final int MAX_CLIENTS = 128;
 
-    /** If the client will automatically process any recieved messages. */
-    private boolean mAutoProcessMessages = false;
+    /** The timeout for accepting a client. */
+    private static final int SO_TIMEOUT = 400;
+
     /** The Port. */
     private int mPort;
     /** The Server listener. */
     private ServerListener mServerListener;
-    /** The socket connections to all clients. */
-    private final SocketStore mSockets = new SocketStore();
+
+    private final ServerSocket mServerSocket;
     /** The Server thread. */
     private Thread mServerThread;
     /** The Server runner. */
     private ServerRunner mServerRunner;
-    /** The game instance for the server. */
-    private ServerGameInstance mGame;
-    /**
-     * The Network objects - this can be moved to game instance but no point until game has been
-     * merged in.
-     */
-    @Getter
-    public final HashMap<Integer, Reference<NetworkObject>> mNetworkObjects = new HashMap<>();
 
-    /** true if linked to a game scene. */
-    public boolean mLinkedToScene = false;
+    /** Array of clients. Indexed by their network ID */
+    private final Map<Integer, ServerClient> mClients = new TreeMap<>();
 
-    /** The scheduled requests to be processed. */
-    private final ListenableQueue<Request> mRequests = new ListenableQueue<>(new LinkedList<>());
-    /** The Counter used to assign objects a unique id. */
-    private final AtomicInteger mNetworkObjectCounter;
-
-    /** Used to run @link{mFixedUpdate} when not linked to a game scene, for testing. */
-    private final Timer mFixedUpdate = new Timer();
+    private final ListenableQueue<Socket> mPendingClients =
+            new ListenableQueue<>(new LinkedList<>());
+    private int mClientCount = 0;
+    private final AtomicInteger mClientIDCounter = new AtomicInteger(0);
+    private final ListenableQueue<ServerClient> mPendingConnectedClients =
+            new ListenableQueue<>(new LinkedList<>());
+    private final ListenableQueue<ServerClient> mPendingDisconnectedClients =
+            new ListenableQueue<>(new LinkedList<>());
 
     /**
      * Instantiates a new Server. Scene linking is required once the scene is created.
      *
      * @param port the port
      * @param listener the listener
-     * @param mNetworkObjectCounter the networkCounter from its parent, this is so id's are globally
-     *     in sync.
      */
-    public Server(int port, ServerListener listener, AtomicInteger mNetworkObjectCounter) {
+    public Server(int port, ServerListener listener) throws IOException {
         mLogger.fine("[S] Setting up server");
-        this.mNetworkObjectCounter = mNetworkObjectCounter;
         mServerListener = listener;
-        try {
-            ServerSocket server_sock =
-                    new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
-            mSockets.initServer(server_sock);
-            if (this.mPort == 0) {
-                this.mPort = mSockets.getServerPort();
-            } else {
-                this.mPort = port;
-            }
-            this.createGame();
-            mServerRunner = new ServerRunner();
-            mServerThread = new Thread(this.mServerRunner);
-            mServerThread.setDaemon(true);
-            mServerThread.setName("Server");
-            mLogger.fine("[S] Starting server");
-            mServerThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        mServerSocket =
+                new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
+        mServerSocket.setSoTimeout(SO_TIMEOUT);
+
+        if (this.mPort == 0) {
+            this.mPort = mServerSocket.getLocalPort();
+        } else {
+            this.mPort = port;
         }
+        mServerRunner = new ServerRunner();
+        mServerThread = new Thread(this.mServerRunner);
+        mServerThread.setDaemon(true);
+        mServerThread.setName("Server");
+        mLogger.fine("[S] Starting server");
+        mServerThread.start();
+    }
+
+    public Collection<ServerClient> getClients() {
+        return mClients.values();
+    }
+
+    public int updateClientList() {
+        // First, cleanup any disconnected clients
+        ServerClient c;
+        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
+
+        // Secondly accept all clients that already connected
+        while ((c = mPendingConnectedClients.poll()) != null) {
+            mClients.put(c.getNetworkID(), c);
+            mServerListener.clientActivated(c);
+        }
+
+        // Now accept new socket connections
+        Socket s;
+        int cnt = 0;
+        while (mClientCount < MAX_CLIENTS && (s = mPendingClients.poll()) != null) {
+            new ServerClient(s, mServerListener).startThread();
+            mClientCount++;
+            cnt++;
+        }
+
+        return cnt;
     }
 
     /**
-     * Instantiates a new Server in debug mode. Scene linking is required once the scene is created.
+     * Process requests on the clients
      *
-     * @param port the port
-     * @param listener the listener
-     * @param autoProcessUpdate sets debug mode
-     * @param mNetworkObjectCounter the networkCounter from its parent, this is so id's are globally
-     *     in sync
+     * @param clientRequests maximum number of requests to process per client
+     * @return total number of requests processed
      */
-    public Server(
-            int port,
-            ServerListener listener,
-            boolean autoProcessUpdate,
-            AtomicInteger mNetworkObjectCounter) {
-        mLogger.fine("[S] Setting up server in debug mode");
-        this.mNetworkObjectCounter = mNetworkObjectCounter;
-        this.mAutoProcessMessages = autoProcessUpdate;
-        mServerListener = listener;
-        try {
-            ServerSocket server_sock =
-                    new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
-            mSockets.initServer(server_sock);
-            if (this.mPort == 0) {
-                this.mPort = mSockets.getServerPort();
-            } else {
-                this.mPort = port;
-            }
-            this.createGame();
+    public int processClientRequests(int clientRequests) {
+        int cnt = 0;
 
-            mServerRunner = new ServerRunner();
-            mServerThread = new Thread(this.mServerRunner);
-            mServerThread.setDaemon(true);
-            mServerThread.setName("Server");
-            mLogger.fine("[S] Starting server");
-            mServerThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        for (ServerClient c : mClients.values()) cnt += c.processRequests(clientRequests);
+
+        return cnt;
     }
 
     /**
-     * Instantiates a new Server. Scene linking is not needed if constructed in this way
+     * Add connected client to pending client list
      *
-     * @param port the port
-     * @param listener the listener
-     * @param autoProcessUpdate sets debug mode
-     * @param mNetworkObjectCounter the networkCounter from its parent, this is so id's are globally
-     *     in sync
-     * @param mainScene the linked scene
-     */
-    public Server(
-            int port,
-            ServerListener listener,
-            boolean autoProcessUpdate,
-            AtomicInteger mNetworkObjectCounter,
-            Scene mainScene) {
-        this.mNetworkObjectCounter = mNetworkObjectCounter;
-        this.mAutoProcessMessages = autoProcessUpdate;
-        mServerListener = listener;
-        try {
-            ServerSocket server_sock =
-                    new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
-            mSockets.initServer(server_sock);
-            if (this.mPort == 0) {
-                this.mPort = mSockets.getServerPort();
-            } else {
-                this.mPort = port;
-            }
-            this.createGame();
-            this.linkToScene(mainScene);
-            mServerRunner = new ServerRunner();
-            mServerThread = new Thread(this.mServerRunner);
-            mServerThread.setDaemon(true);
-            mServerThread.setName("Server");
-            mLogger.fine("[S] Starting server");
-            mServerThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Starts a server game in the current scene.
+     * <p>This method will be called from outside the main thread. We will place the client to a
+     * pending list that will be processed on the next network update. And then, the client will be
+     * fully spawned in.
      *
-     * @param mainScene the main scene
+     * @param client client to connect
+     * @return its allocated network client ID
      */
-    public static void startServerGame(Scene mainScene) {
-        GameObject mLoadingScreen =
-                new GameObject(
-                        "loading_screen",
-                        new TransformUI(false),
-                        (self) -> {
-                            self.addComponent(
-                                    new UIText(
-                                            new Vector3f(1f, 1f, 0.05f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Loading"));
-                        });
-        mainScene.addRootObject(mLoadingScreen);
-        LogManager.getLogManager().reset();
-        final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
-        StartServer serverInstance = new StartServer(mNetworkObjectCounter, true, true, mainScene);
-        GameObject networkManagerGO =
-                new GameObject(
-                        "server_network_manager",
-                        (go) -> go.addComponent(serverInstance.createNetworkManager()));
-
-        mLoadingScreen.destroy();
-        mainScene.addRootObject(networkManagerGO);
-        System.out.println("fully loaded");
+    public int addConnectedClient(ServerClient client) {
+        int id = mClientIDCounter.getAndIncrement();
+        client.setNetworkID(id);
+        mPendingConnectedClients.add(client);
+        return id;
     }
 
-    /**
-     * Executes bytes on the server.
-     *
-     * @param messageType the message type
-     * @param payload the payload
-     * @param sendBytesToClient the socket of the requesting client, to be called if a communication
-     *     directly to the client is needed
-     */
-    public void executeBytes(
-            byte messageType, byte[] payload, SendBytesToClientCurry sendBytesToClient) {
-        // byte[] message;
-        mLogger.info("EXECB - " + messageType);
-        switch (messageType) {
-            case NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST:
-                handleClientRequest(payload);
-                break;
-                // TODO: here implement a generic way to pass client->server commands
-            default:
-                mLogger.info(
-                        "The server received a request from a client to do something "
-                                + messageType);
-                break;
+    public void onClientDisconnect(ServerClient c) {
+        mPendingDisconnectedClients.add(c);
+    }
+
+    private boolean removeClient(ServerClient c) {
+        ServerClient mapClient = mClients.remove(c.getNetworkID());
+
+        if (mapClient != c) {
+            mLogger.warning("Illegal client passed!");
+        } else if (mapClient != null) {
+            mapClient.closeSocket();
+            mapClient.joinThread();
+            mClientCount--;
+            return true;
         }
-    }
 
-    private void handleClientRequest(byte[] payload) {
-        try (ByteArrayInputStream bytes = new ByteArrayInputStream(payload)) {
-            try (DataInputStream stream = new DataInputStream(bytes)) {
-                int objectID = stream.readInt();
-
-                Reference<NetworkObject> networkObject = getNetworkObject(objectID);
-
-                // TODO: Authenticate here whether this particular client is authorized to invoke
-                // requests on this object
-
-                if (networkObject == null) {
-                    mLogger.info("Client sent request with invalid object ID! " + objectID);
-                    return;
-                }
-
-                NetworkObject obj = networkObject.get();
-
-                // Normal to happen if object gets destroyed after client sent their request
-                if (obj == null) {
-                    mLogger.fine("Client made a request on already destroyed object! " + objectID);
-                }
-
-                int requestID = stream.readInt();
-
-                if (!obj.handleClientRequest(requestID, stream))
-                    mLogger.warning("Client passed invalid request! " + requestID);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Starts fixed update task. */
-    public void startFixedUpdateDetachedFromGame() {
-        int begin = 0;
-        int timeInterval = 200;
-        INetworkUpdate fixedUpdate = this::fixedBroadcastUpdate;
-        mFixedUpdate.schedule(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        if (mAutoProcessMessages) {
-                            fixedUpdate.call();
-                        }
-                    }
-                },
-                begin,
-                timeInterval);
-    }
-
-    /** Cancels the scheduled fixed update task. */
-    public void cancelFixedUpdate() {
-        this.mFixedUpdate.cancel();
+        return false;
     }
 
     /** Dispose. */
     public void dispose() {
-        try {
-            cancelFixedUpdate();
-            this.mServerRunner.cancel();
-            this.mServerThread.join();
-            this.mSockets.close();
-            if (mServerListener != null) {
-                this.mServerListener.serverClosed();
-                this.mServerListener = null;
+        for (ServerClient c : mClients.values()) c.closeSocket();
+
+        if (mServerRunner != null) {
+            mServerRunner.cancel();
+
+            try {
+                this.mServerThread.join();
+            } catch (InterruptedException e) {
+                mLogger.warning("Server thread was interrupted!");
+                e.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            mLogger.fine("Error disposing");
-            mLogger.fine(e.toString());
+
+            mServerRunner = null;
         }
-    }
 
-    /** Creates game. */
-    public void createGame() {
-        this.mGame = new ServerGameInstance();
-    }
+        Socket s;
+        while ((s = mPendingClients.poll()) != null) {
+            try {
+                s.shutdownOutput();
+                s.close();
+                mClientCount--;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-    /**
-     * Links the server to scene, this doesn't have to be used if testing.
-     *
-     * @param scene the game scene
-     */
-    public void linkToScene(Scene scene) {
-        this.mLinkedToScene = true;
-        this.mGame.setScene(scene);
-    }
+        for (ServerClient c : mClients.values()) c.joinThread();
 
-    public void viewPendingRequests() {
-        System.out.println(this.mRequests.toString());
+        mClientCount -= mClients.size();
+
+        mClients.clear();
+
+        if (mClientCount != 0) {
+            mLogger.severe("Client count non-zero on disposal! Current count: " + mClientCount);
+        }
     }
 
     /**
@@ -342,18 +208,15 @@ public class Server {
         @Override
         public void run() {
             while (mOpen && !Thread.currentThread().isInterrupted()) {
-                if (mGame.isSetup()) {
-                    //                    if (!mAutoProcessMessages) {
-                    //                        mProcessTimer.schedule(new
-                    // FixedBroadCastUpdateSchedule(), 0, 400);
-                    //                    }
-                    Socket clientSocket = mSockets.acceptClient();
-                    if (clientSocket != null) {
-                        Thread clientThread = new Thread(clientRunner(clientSocket));
-                        clientThread.setDaemon(true);
-                        clientThread.setName("Client " + clientSocket.getInetAddress().toString());
-                        clientThread.start();
-                    }
+                Socket clientSocket = null;
+
+                try {
+                    clientSocket = mServerSocket.accept();
+                } catch (IOException __) {
+                }
+
+                if (clientSocket != null) {
+                    mPendingClients.add(clientSocket);
                 }
             }
         }
@@ -362,273 +225,5 @@ public class Server {
         public void cancel() {
             this.mOpen = false;
         }
-    }
-
-    /** The interface for a fixed update broadcast event. */
-    private class FixedBroadCastUpdateSchedule extends TimerTask {
-        public void run() {
-            processRequests();
-        }
-    }
-
-    /**
-     * THe Client Runner is the thread given to each client to handle its own socket. Commands are
-     * read from the input stream. It will pass all commands to the correct handler function. {@link
-     * org.dragonskulle.network.ServerListener}***
-     *
-     * @param sock the sock
-     * @return runnable runnable
-     */
-    private Runnable clientRunner(Socket sock) {
-        if (sock == null) {
-            return () -> {};
-        }
-        return () -> {
-            try {
-                mLogger.fine("Spawning client thread");
-                boolean connected;
-                int hasBytes = 0;
-                byte[] bArray; // max flatbuffer size
-                byte[] terminateBytes =
-                        new byte[NetworkConfig.TERMINATE_BYTES_LENGTH]; // max flatbuffer size
-                this.mSockets.addClient(sock);
-
-                BufferedInputStream bIn = new BufferedInputStream(sock.getInputStream());
-                PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-                // create client as object
-                ClientInstance client = new ClientInstance(sock.getInetAddress(), sock.getPort());
-                mServerListener.clientConnected(client, out);
-                connected = sock.isConnected();
-
-                if (connected) {
-                    // Spawn network object for the cube thingy and capital
-                    spawnNetworkObject(client, Templates.find("cube"));
-                    spawnNetworkObject(client, Templates.find("capital"));
-                }
-                while (connected) {
-                    try {
-                        bArray = NetworkMessage.readMessageFromStream(bIn);
-                        if (bArray.length != 0) {
-                            if (Arrays.equals(bArray, terminateBytes)) {
-                                this.mSockets.terminateClient(sock); // close and remove
-                                mServerListener.clientDisconnected(client);
-                                connected = false;
-                            } else {
-                                queueRequest(client, bArray);
-                                //                                processBytes(client, bArray);
-
-                            }
-                        }
-                    } catch (IOException e) {
-                        this.mSockets.terminateClient(sock); // close and remove
-                        mServerListener.clientDisconnected(client);
-                        connected = false;
-                    }
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
-        };
-    }
-
-    /**
-     * Spawns a network object on server, if linked to a game it will also spawn it on the game.
-     *
-     * @param templateId ID of spawnable template
-     */
-    private Reference<NetworkObject> spawnNetworkObject(ClientInstance client, int templateId) {
-        int netId = this.allocateId();
-
-        NetworkObject networkObject = new NetworkObject(netId, true);
-        GameObject object = Templates.instantiate(templateId);
-        object.addComponent(networkObject);
-        Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
-
-        if (mLinkedToScene) {
-            this.mGame.spawnNetworkObjectOnScene(networkObject);
-        } else {
-            networkObject.onAwake();
-        }
-
-        this.mNetworkObjects.put(netId, ref);
-
-        byte[] spawnMessage =
-                NetworkMessage.build(
-                        NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT,
-                        NetworkMessage.convertIntsToByteArray(netId, templateId));
-        this.mSockets.sendBytesToClient(client, spawnMessage);
-
-        return ref;
-    }
-
-    /**
-     * Queues a request to be processed.
-     *
-     * @param client the client
-     * @param bArray the bytes to be processed later
-     */
-    private void queueRequest(ClientInstance client, byte[] bArray) {
-        this.mRequests.add(new Request(client, bArray));
-    }
-
-    /** Process all requests. */
-    public void processRequests() {
-        if (!this.mRequests.isEmpty()) {
-            for (int i = 0; i < this.mRequests.size(); i++) {
-                Request request = this.mRequests.poll();
-                if (request != null) {
-                    processBytes(request.client, request.bytes);
-                }
-            }
-        }
-    }
-
-    /**
-     * Gets a network object.
-     *
-     * @param networkObjectId the id of the object
-     * @return the network object found, null if not found
-     */
-    private Reference<NetworkObject> getNetworkObject(int networkObjectId) {
-        return this.mNetworkObjects.get(networkObjectId);
-    }
-
-    /** @return true if the server has unprocess requests */
-    public boolean hasRequests() {
-        return !this.mRequests.isEmpty();
-    }
-
-    /** Processes a single request. */
-    public void processSingleRequest() {
-        if (!this.mRequests.isEmpty()) {
-            Request request = this.mRequests.poll();
-            if (request != null) {
-                processBytes(request.client, request.bytes);
-            }
-        }
-    }
-
-    /** Clear pending requests. */
-    public void clearPendingRequests() {
-        this.mRequests.clear();
-    }
-
-    /**
-     * Processes bytes.
-     *
-     * @param client the client
-     * @param bytes the bytes
-     */
-    private void processBytes(ClientInstance client, byte[] bytes) {
-        mServerListener.receivedBytes(client, bytes);
-        try {
-            parseBytes(client, bytes);
-        } catch (DecodingException e) {
-            mLogger.fine(e.getMessage());
-            mLogger.fine(new String(bytes, StandardCharsets.UTF_8));
-        }
-    }
-
-    /**
-     * Parse bytes.
-     *
-     * @param client the client
-     * @param bytes the bytes
-     * @throws DecodingException Thrown if there was any issue with the bytes
-     */
-    private void parseBytes(ClientInstance client, byte[] bytes) throws DecodingException {
-        mLogger.warning("bytes parsing");
-        try {
-            parse(bytes, (parsedBytes) -> this.mSockets.sendBytesToClient(client, parsedBytes));
-        } catch (Exception e) {
-            mLogger.fine("Error in parseBytes");
-            e.printStackTrace();
-            throw new DecodingException("Message is not of valid type");
-        }
-    }
-
-    /**
-     * Parses a network message from bytes and executes the correct functions. This is for server
-     * use.
-     *
-     * @param buff the buff
-     * @param sendBytesToClient the send bytes to client
-     */
-    public void parse(byte[] buff, SendBytesToClientCurry sendBytesToClient) {
-        if (buff.length == 0 || Arrays.equals(buff, new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0})) {
-            return;
-        }
-        int i = 0;
-        boolean validStart = NetworkMessage.verifyMessageStart(buff);
-        i += 5;
-        if (validStart) {
-            //            mLogger.fine("Valid Message Start\n");
-            byte messageType = NetworkMessage.getMessageType(buff);
-            i += 1;
-            int payloadSize = NetworkMessage.getPayloadSize(buff);
-            i += 4;
-            byte[] payload = NetworkMessage.getPayload(buff, messageType, i, payloadSize);
-            i += payloadSize;
-            boolean consumedMessage = NetworkMessage.verifyMessageEnd(i, buff);
-            if (consumedMessage) {
-                if (messageType == (byte) 0) {
-                    mLogger.fine("\nValid Message");
-                    mLogger.fine("Type : " + messageType);
-                    mLogger.fine("Payload : " + Arrays.toString(payload));
-                } else {
-                    executeBytes(messageType, payload, sendBytesToClient);
-                }
-            }
-        } else {
-            mLogger.fine("invalid message start");
-        }
-    }
-
-    /** The interface Send bytes to client curry. */
-    interface SendBytesToClientCurry {
-        /**
-         * Send.
-         *
-         * @param bytes the bytes
-         */
-        void send(byte[] bytes);
-    }
-
-    /** Fixed broadcast update. */
-    public void fixedBroadcastUpdate() {
-        mLogger.info(mNetworkObjects.toString());
-
-        processRequests();
-        for (Reference<NetworkObject> networkObject : this.mNetworkObjects.values()) {
-            networkObject.get().broadcastUpdate(this.mSockets::broadcast);
-        }
-    }
-
-    /** The type Request. */
-    private static class Request {
-        /** The Client. */
-        public final ClientInstance client;
-        /** The Bytes. */
-        public final byte[] bytes;
-
-        /**
-         * Instantiates a new Request.
-         *
-         * @param client the client
-         * @param bytes the bytes
-         */
-        Request(ClientInstance client, byte[] bytes) {
-            this.client = client;
-            this.bytes = bytes;
-        }
-    }
-
-    /**
-     * Allocates an id for an object.
-     *
-     * @return the allocated id.
-     */
-    private int allocateId() {
-        return mNetworkObjectCounter.getAndIncrement();
     }
 }
