@@ -68,7 +68,9 @@ public class ClientNetworkManager extends NetworkManager {
         }
 
         @Override
-        public void error(String s) {}
+		public void error(String s) {
+			mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
+		}
 
         /**
          * Updates a networkable object from server message.
@@ -109,6 +111,7 @@ public class ClientNetworkManager extends NetworkManager {
     private Scene mGameScene;
     private Scene mPrevScene;
     private IConnectionResultHandler mConnectionHandler;
+	private int mTicksWithoutRequests = 0;
 
     /** An map of references to objects. */
     private final HashMap<Integer, Reference<NetworkObject>> mNetworkObjectReferences =
@@ -149,6 +152,7 @@ public class ClientNetworkManager extends NetworkManager {
         if (nextState != null) {
 
             System.out.println(nextState.toString());
+            System.out.println(mConnectionState.toString());
 
             if (mConnectionState == ConnectionState.CONNECTING) {
                 switch (nextState) {
@@ -167,12 +171,19 @@ public class ClientNetworkManager extends NetworkManager {
                 }
             } else if (mConnectionState == ConnectionState.JOINED_GAME) {
                 // TODO: handle lobby -> game transition here
-                mConnectionState = ConnectionState.NOT_CONNECTED;
+				onDisconnect();
             }
         }
 
         if (mConnectionState == ConnectionState.JOINED_GAME) {
-            mClient.processRequests();
+			if (mClient.processRequests() <= 0) {
+				mTicksWithoutRequests++;
+				if (mTicksWithoutRequests > 320)
+					onDisconnect();
+				else if (mTicksWithoutRequests == 100)
+					log.info("100 ticks without updates! 220 more till disconnect!");
+			} else
+				mTicksWithoutRequests = 0;
         }
     }
 
@@ -184,6 +195,8 @@ public class ClientNetworkManager extends NetworkManager {
         Engine engine = Engine.getInstance();
 
         if (mPrevScene == null) mPrevScene = Scene.getActiveScene();
+
+		Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mGameScene);
 
         if (engine.getPresentationScene() == Scene.getActiveScene())
             engine.loadPresentationScene(mGameScene);
@@ -202,13 +215,18 @@ public class ClientNetworkManager extends NetworkManager {
         Engine engine = Engine.getInstance();
 
         if (mPrevScene != null) {
+			Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mPrevScene);
+
             if (engine.getPresentationScene() == Scene.getActiveScene())
                 engine.loadPresentationScene(mPrevScene);
             else engine.activateScene(mPrevScene);
         }
 
         mConnectionState = ConnectionState.NOT_CONNECTED;
-        mClient.dispose();
+		if (mClient != null) {
+			mClient.dispose();
+			mClient = null;
+		}
     }
 
     /**

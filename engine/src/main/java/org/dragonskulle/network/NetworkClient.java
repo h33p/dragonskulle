@@ -203,9 +203,6 @@ public class NetworkClient {
                     bArray = NetworkMessage.readMessageFromStream(mBIn);
                     if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
-                            mClientListener.disconnected();
-                            didTryDispose.set(true);
-                            dispose();
                             break;
                         } else {
                             queueRequest(bArray);
@@ -216,15 +213,14 @@ public class NetworkClient {
                     if (mClientListener != null) {
                         mClientListener.error("failed to read from input stream");
                     }
-                    if (!didTryDispose.get()) {
-                        dispose();
-                    }
                     break;
                 }
             }
-            if (!didTryDispose.get()) {
-                dispose();
-            }
+
+			if (mClientListener != null)
+				mClientListener.disconnected();
+
+			dispose();
             System.out.println("cancelled successfully");
         }
     }
@@ -240,14 +236,17 @@ public class NetworkClient {
     }
 
     /** Processes all requests. */
-    public void processRequests() {
-        mLogger.info("processing all " + this.mRequests.size() + " requests");
+    public int processRequests() {
+        mLogger.fine("processing all " + this.mRequests.size() + " requests");
+		int cnt = 0;
         while (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
             if (requestBytes != null) {
                 processBytes(requestBytes);
             }
+			cnt++;
         }
+		return cnt;
     }
 
     /**
