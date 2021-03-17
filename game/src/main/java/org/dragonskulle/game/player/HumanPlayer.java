@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -24,8 +25,6 @@ import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
-import lombok.extern.java.Log;
 
 /**
  * This class will allow a user to interact with game.
@@ -189,7 +188,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
 
-        // Checks that its clicking somehting
+        // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
         if (GameActions.LEFT_CLICK.isActivated()
                 && UIManager.getInstance().getHoveredObject() == null
@@ -213,7 +212,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             // And then select the tile
             mHexChosen = mPlayer.get().getMapComponent().get().getTile((int) pos.x, (int) pos.y);
-            
+
             log.info("Human:Got the Hexagon to enter");
 
             // When chosen a hexagon
@@ -233,13 +232,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     // Checks if cannot build here
                     if (mPlayer.get()
                             .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
-                    	log.info("Human:Cannot build");
+                        log.info("Human:Cannot build");
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
                         // If you can build
                     } else {
-                    	log.info("Human:Change Screen");
+                        log.info("Human:Change Screen");
                         mScreenOn = Screen.TILE_SCREEN;
                     }
                     // Checks if the player owns the building

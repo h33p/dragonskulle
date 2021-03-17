@@ -16,7 +16,6 @@ import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
 import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
