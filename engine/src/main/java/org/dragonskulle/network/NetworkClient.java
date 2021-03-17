@@ -63,6 +63,8 @@ public class NetworkClient {
      */
     private final Timer mProcessScheduler = new Timer();
 
+    private AtomicBoolean didDispose = new AtomicBoolean(false);
+
     /**
      * Instantiates a new Network client.
      *
@@ -223,27 +225,33 @@ public class NetworkClient {
     /** Dispose. */
     public void dispose() {
         try {
-            if (mOpen) {
-                this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
-                mOpen = false;
-                closeAllConnections();
-                mClientListener.disconnected();
-                this.getNetworkableObjects()
-                        .forEach(
-                                (__, e) -> {
-                                    NetworkObject obj = e.get();
-                                    if (obj != null) {
-                                        obj.getGameObject().destroy();
-                                    }
-                                });
+            if (!didDispose.get()) {
+                System.out.println("DISPOSINGKOWSDUVBNOWEINCV");
+                didDispose.set(true);
+                if (mOpen) {
+                    this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
+                    mOpen = false;
+                    closeAllConnections();
+                    mClientListener.disconnected();
+                    this.getNetworkableObjects()
+                            .forEach(
+                                    (__, e) -> {
+                                        NetworkObject obj = e.get();
+                                        if (obj != null) {
+                                            obj.getGameObject().destroy();
+                                        }
+                                    });
+                }
+                if (mGame.isLinkedToScene()) {
+                    Engine.getInstance().loadPresentationScene("mainMenu");
+                }
+                mProcessScheduler.cancel();
+                mSocket = null;
+                mDOut = null;
+                mClientListener = null;
+                mClientThread.interrupt();
+                mClientThread.join();
             }
-            Engine.getInstance().loadPresentationScene("mainMenu");
-            mProcessScheduler.cancel();
-            mSocket = null;
-            mDOut = null;
-            mClientListener = null;
-            mClientThread.interrupt();
-            mClientThread.join();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -352,13 +360,9 @@ public class NetworkClient {
             if (mAutoProcessMessages) {
                 setProcessMessagesAutomatically(true);
             }
+
             while (mOpen) {
                 try {
-                    if (Thread.interrupted()) {
-                        if (!didTryDispose.get()) {
-                            dispose();
-                        }
-                    }
                     bArray = NetworkMessage.readMessageFromStream(mBIn);
                     if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
@@ -381,6 +385,10 @@ public class NetworkClient {
                     break;
                 }
             }
+            if (!didTryDispose.get()) {
+                dispose();
+            }
+            System.out.println("cancelled successfully");
         }
     }
 
