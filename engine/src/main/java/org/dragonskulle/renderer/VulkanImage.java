@@ -6,6 +6,9 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import org.dragonskulle.utils.MathUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -16,6 +19,7 @@ import org.lwjgl.vulkan.*;
  *
  * @author Aurimas Blažulionis
  */
+@Accessors(prefix = "m")
 class VulkanImage implements NativeResource {
     public long image;
     public long memory;
@@ -23,6 +27,7 @@ class VulkanImage implements NativeResource {
     private int mFormat;
     private int mAspectMask;
     private int mImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    @Getter private int mMipLevels = 1;
     private VkDevice mDevice;
 
     private boolean mNeedsFree = true;
@@ -103,7 +108,9 @@ class VulkanImage implements NativeResource {
                 VK_FORMAT_R8G8B8A8_SRGB,
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT
+                        | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+                        | VK_IMAGE_USAGE_SAMPLED_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         try (MemoryStack stack = stackPush()) {
@@ -128,7 +135,111 @@ class VulkanImage implements NativeResource {
 
             copyFromBuffer(mStagingBuffer, commandBuffer, texture.getWidth(), texture.getHeight());
 
-            transitionImageLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            generateMipmaps(
+                    commandBuffer,
+                    physicalDevice,
+                    VK_FORMAT_R8G8B8A8_SRGB,
+                    texture.getWidth(),
+                    texture.getHeight());
+        }
+    }
+
+    private void generateMipmaps(
+            VkCommandBuffer commandBuffer,
+            PhysicalDevice physDev,
+            int format,
+            int width,
+            int height) {
+        try (MemoryStack stack = stackPush()) {
+            VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.callocStack(1, stack);
+            barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
+            barrier.image(image);
+            barrier.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+            barrier.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+            barrier.subresourceRange().aspectMask(mAspectMask);
+            barrier.subresourceRange().baseArrayLayer(0);
+            barrier.subresourceRange().layerCount(1);
+            barrier.subresourceRange().levelCount(1);
+
+            VkImageBlit.Buffer blit = VkImageBlit.callocStack(1, stack);
+
+            int twidth = width;
+            int theight = height;
+
+            for (int i = 0; i < mMipLevels - 1; i++) {
+                barrier.subresourceRange().baseMipLevel(i);
+
+                barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                barrier.newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                barrier.srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT);
+                barrier.dstAccessMask(VK_ACCESS_TRANSFER_READ_BIT);
+
+                vkCmdPipelineBarrier(
+                        commandBuffer,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        0,
+                        null,
+                        null,
+                        barrier);
+
+                blit.srcOffsets(0).clear();
+                blit.srcOffsets(1).set(twidth, theight, 1);
+                blit.srcSubresource().aspectMask(mAspectMask);
+                blit.srcSubresource().mipLevel(i);
+                blit.srcSubresource().baseArrayLayer(0);
+                blit.srcSubresource().layerCount(1);
+                blit.dstOffsets(0).clear();
+                blit.dstOffsets(1)
+                        .set(twidth > 1 ? twidth / 2 : 1, theight > 1 ? theight / 2 : 1, 1);
+                blit.dstSubresource().aspectMask(mAspectMask);
+                blit.dstSubresource().mipLevel(i + 1);
+                blit.dstSubresource().baseArrayLayer(0);
+                blit.dstSubresource().layerCount(1);
+
+                vkCmdBlitImage(
+                        commandBuffer,
+                        image,
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                        image,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        blit,
+                        physDev.getFeatureSupport().optimalLinearTiling
+                                ? VK_FILTER_LINEAR
+                                : VK_FILTER_NEAREST);
+
+                barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                barrier.newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                barrier.srcAccessMask(VK_ACCESS_TRANSFER_READ_BIT);
+                barrier.dstAccessMask(VK_ACCESS_SHADER_READ_BIT);
+
+                vkCmdPipelineBarrier(
+                        commandBuffer,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                        0,
+                        null,
+                        null,
+                        barrier);
+
+                if (twidth > 1) twidth /= 2;
+                if (theight > 1) theight /= 2;
+            }
+
+            barrier.subresourceRange().baseMipLevel(mMipLevels - 1);
+            barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            barrier.newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            barrier.srcAccessMask(VK_ACCESS_TRANSFER_READ_BIT);
+            barrier.dstAccessMask(VK_ACCESS_SHADER_READ_BIT);
+
+            vkCmdPipelineBarrier(
+                    commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    0,
+                    null,
+                    null,
+                    barrier);
         }
     }
 
@@ -145,6 +256,11 @@ class VulkanImage implements NativeResource {
         mDevice = device;
         mFormat = format;
         mAspectMask = aspectMask;
+        mMipLevels =
+                (usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) == 0
+                        ? 1
+                        : MathUtils.log(Math.max(width, height), 2) + 1;
+
         try (MemoryStack stack = stackPush()) {
             VkImageCreateInfo imageInfo = VkImageCreateInfo.callocStack(stack);
             imageInfo.sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO);
@@ -152,7 +268,7 @@ class VulkanImage implements NativeResource {
             imageInfo.extent().width(width);
             imageInfo.extent().height(height);
             imageInfo.extent().depth(1);
-            imageInfo.mipLevels(1);
+            imageInfo.mipLevels(mMipLevels);
             imageInfo.arrayLayers(1);
             imageInfo.format(mFormat);
             imageInfo.tiling(tiling);
@@ -218,7 +334,7 @@ class VulkanImage implements NativeResource {
 
             createInfo.subresourceRange().aspectMask(mAspectMask);
             createInfo.subresourceRange().baseMipLevel(0);
-            createInfo.subresourceRange().levelCount(1);
+            createInfo.subresourceRange().levelCount(mMipLevels);
             createInfo.subresourceRange().baseArrayLayer(0);
             createInfo.subresourceRange().layerCount(1);
 
@@ -274,7 +390,7 @@ class VulkanImage implements NativeResource {
             barrier.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
             barrier.image(image);
             barrier.subresourceRange().baseMipLevel(0);
-            barrier.subresourceRange().levelCount(1);
+            barrier.subresourceRange().levelCount(mMipLevels);
             barrier.subresourceRange().baseMipLevel(0);
             barrier.subresourceRange().layerCount(1);
 

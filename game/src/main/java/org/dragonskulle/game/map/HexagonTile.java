@@ -10,11 +10,12 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.renderer.*;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Renderable;
-import org.dragonskulle.renderer.materials.UnlitMaterial;
+import org.dragonskulle.renderer.materials.IColouredMaterial;
 
 /**
  * @author Leela Muppala
@@ -34,8 +35,9 @@ public class HexagonTile {
                                 new SampledTexture(
                                         "map/grass.png",
                                         new TextureMapping(
-                                                TextureFiltering.NEAREST, TextureWrapping.REPEAT));
-                        UnlitMaterial mat = new UnlitMaterial(texture);
+                                                TextureFiltering.LINEAR, TextureWrapping.REPEAT));
+                        IColouredMaterial mat = new VertexHighlightMaterial(texture);
+                        mat.getColour().set(0f, 1f, 0f, 1f);
                         go.addComponent(new Renderable(mesh, mat));
                     });
 
@@ -79,6 +81,12 @@ public class HexagonTile {
     /** The length of the tile from the origin */
     public int length() {
         return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
+    }
+
+    public int distTo(int q, int r) {
+        int s = -q - r;
+
+        return (int) ((Math.abs(q - mQ) + Math.abs(r - mR) + Math.abs(s - mS)) / 2);
     }
 
     @Override

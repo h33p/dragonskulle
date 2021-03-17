@@ -88,7 +88,7 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
                         "selection effect",
                         new TransformHex(tile.getQ(), tile.getR()),
                         (handle) -> {
-                            handle.getTransform(TransformHex.class).translate(0.1f);
+                            handle.getTransform(TransformHex.class).translate(0.03f);
 
                             IMaterial mat = null;
 

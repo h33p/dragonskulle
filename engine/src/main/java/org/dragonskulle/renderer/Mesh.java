@@ -28,30 +28,27 @@ public class Mesh implements Serializable {
     private int mCachedHashCode = 0;
 
     private static final Vertex[] HEXAGON_VERTICES = {
-        new Vertex(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, 0.0f)),
         new Vertex(
-                new Vector3f(-0.5f, 0.86603f, 0.0f),
+                new Vector3f(0.86603f, -0.5f, 0.0f),
                 new Vector3f(1.0f),
-                new Vector2f(-0.5f, 0.86603f)),
+                new Vector2f(0.86603f, -0.5f)),
         new Vertex(
-                new Vector3f(0.5f, 0.86603f, 0.0f),
+                new Vector3f(0.86603f, 0.5f, 0.0f),
                 new Vector3f(1.0f),
-                new Vector2f(0.5f, 0.86603f)),
-        new Vertex(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(1.0f), new Vector2f(1.0f, 0.0f)),
+                new Vector2f(0.86603f, 0.5f)),
+        new Vertex(new Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, 1.0f)),
         new Vertex(
-                new Vector3f(0.5f, -0.86603f, 0.0f),
+                new Vector3f(-0.86603f, 0.5f, 0.0f),
                 new Vector3f(1.0f),
-                new Vector2f(0.5f, -0.86603f)),
+                new Vector2f(-0.86603f, 0.5f)),
         new Vertex(
-                new Vector3f(-0.5f, -0.86603f, 0.0f),
+                new Vector3f(-0.86603f, -0.5f, 0.0f),
                 new Vector3f(1.0f),
-                new Vector2f(-0.5f, -0.86603f)),
-        new Vertex(new Vector3f(-1.0f, 0.0f, 0.0f), new Vector3f(1.0f), new Vector2f(-1.0f, 0.0f)),
+                new Vector2f(-0.86603f, -0.5f)),
+        new Vertex(new Vector3f(0.0f, -1.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, -1.0f)),
     };
 
-    private static final int[] HEXAGON_INDICES = {
-        1, 0, 2, 2, 0, 3, 3, 0, 4, 4, 0, 5, 5, 0, 6, 6, 0, 1
-    };
+    private static final int[] HEXAGON_INDICES = {0, 4, 5, 1, 2, 3, 0, 1, 3, 0, 3, 4};
 
     private static final Vertex[] CUBE_VERTICES = {
         new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector3f(1.f), new Vector2f(0.0f, 0.0f)),

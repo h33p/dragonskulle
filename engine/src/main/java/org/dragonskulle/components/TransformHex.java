@@ -31,8 +31,7 @@ public class TransformHex extends Transform {
 
     private Vector3f mPosition = new Vector3f();
 
-    // TODO: probably change the mesh to be pointy ended, and set this to 0
-    private float mRotation = DEG_TO_RAD * 90f;
+    private float mRotation = 0f;
     private float mHeight = 0f;
 
     private Vector3f mCartesianPosition = new Vector3f();
@@ -49,8 +48,9 @@ public class TransformHex extends Transform {
         setPosition(axial);
     }
 
-    public TransformHex(float q, float r, float s) {
-        setPosition(q, r, s);
+    public TransformHex(float q, float r, float height) {
+        setPosition(q, r);
+        mHeight = height;
     }
 
     public TransformHex(float q, float r) {
