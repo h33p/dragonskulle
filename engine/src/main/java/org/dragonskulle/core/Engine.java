@@ -153,8 +153,8 @@ public class Engine {
 
     /**
      * Load the first active or inactive scene found as the presentation scene. This might not give
-     * the expected results if there are multiple scenes with the same name. It is also not the
-     * most efficient, so if possible maintain a reference to scenes and load them directly
+     * the expected results if there are multiple scenes with the same name. It is also not the most
+     * efficient, so if possible maintain a reference to scenes and load them directly
      *
      * @param name Name of the scene to set as the presentation scene
      */

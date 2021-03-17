@@ -22,13 +22,13 @@ public class SocketStore {
     /** The Server. */
     private ServerSocket mServer;
     /** The Store for all the sockets. */
-    private final ArrayList<Socket> mStore;
+    private final List<Socket> mStore;
     /** The timeout for accepting a client. */
     private static final int SO_TIMEOUT = 400;
 
     /** Instantiates a new Socket store. */
     public SocketStore() {
-        this.mStore = new ArrayList<>();
+        this.mStore = Collections.synchronizedList(new ArrayList<Socket>());
     }
 
     /**
@@ -38,8 +38,7 @@ public class SocketStore {
      */
     public void broadcast(byte[] buf) {
         DataOutputStream dOut;
-        List<Socket> asyncList = Collections.synchronizedList(this.mStore);
-        for (Socket connection : asyncList) {
+        for (Socket connection : mStore) {
             try {
                 if (connection.isClosed()) {
                     mLogger.fine("Client socket output has closed");
@@ -79,7 +78,7 @@ public class SocketStore {
         // TODO add check for invalid socket
         mLogger.fine("Adding client");
         mLogger.fine("Socket :" + sock.toString());
-        Collections.synchronizedList(this.mStore).add(sock);
+        mStore.add(sock);
     }
 
     /**
@@ -100,7 +99,7 @@ public class SocketStore {
         } catch (Exception ignored) {
         }
 
-        Collections.synchronizedList(this.mStore).clear();
+        this.mStore.clear();
         this.mServer = null;
     }
 
@@ -155,7 +154,7 @@ public class SocketStore {
     public boolean terminateClient(Socket sock) {
         // if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
-        return Collections.synchronizedList(this.mStore).remove(sock);
+        return mStore.remove(sock);
     }
 
     /**
@@ -168,7 +167,7 @@ public class SocketStore {
         if (!sock.isClosed()) {
             this.terminateClient(sock);
         } else {
-            Collections.synchronizedList(this.mStore).remove(sock);
+            mStore.remove(sock);
         }
     }
 
@@ -179,9 +178,7 @@ public class SocketStore {
      * @param response_bytes the response bytes
      */
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
-        List<Socket> asyncList = Collections.synchronizedList(this.mStore);
-
-        for (Socket sock : asyncList) {
+        for (Socket sock : mStore) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
                 mLogger.fine("Sending bytes to client");
                 try {
