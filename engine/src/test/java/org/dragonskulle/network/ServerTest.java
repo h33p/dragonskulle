@@ -33,9 +33,7 @@ public class ServerTest {
             mServerInstance = new Server(port, mServerListener, true, new AtomicInteger(0));
             mClientListener = new ClientEars();
             mNetworkClient = new NetworkClient("127.0.0.1", port, mClientListener, false);
-            clientNetworkManager =
-                    new ClientNetworkManager(
-                            mNetworkClient::processRequests, mNetworkClient::sendBytes);
+            clientNetworkManager = mNetworkClient.createNetworkManager();
             mServerInstance.startFixedUpdateDetachedFromGame();
         }
 
@@ -47,7 +45,9 @@ public class ServerTest {
             mNetworkClient = new NetworkClient("127.0.0.1", port, mClientListener, false);
             clientNetworkManager =
                     new ClientNetworkManager(
-                            mNetworkClient::processRequests, mNetworkClient::sendBytes);
+                            mNetworkClient::processRequests,
+                            mNetworkClient::sendBytes,
+                            mNetworkClient::dispose);
             //            mServerInstance.startFixedUpdateDetachedFromGame();
         }
 
