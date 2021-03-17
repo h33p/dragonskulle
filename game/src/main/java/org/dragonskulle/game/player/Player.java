@@ -54,11 +54,12 @@ public class Player extends NetworkableComponent implements IOnStart {
     @Override
     public void onStart() {
 
-        mMapComponent = Scene.getActiveScene()
-                .getSingleton(HexagonMap.class)
-                .getReference(HexagonMap.class);
+        mMapComponent =
+                Scene.getActiveScene()
+                        .getSingleton(HexagonMap.class)
+                        .getReference(HexagonMap.class);
         mOwnedBuildings = new ArrayList<Reference<Building>>();
-        //mOwnedBuildings.add(capital);
+        // mOwnedBuildings.add(capital);
         updateTokens(UPDATE_TIME + 1);
     }
     /**
