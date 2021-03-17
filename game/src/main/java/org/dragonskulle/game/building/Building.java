@@ -31,7 +31,7 @@ import org.joml.Vector3i;
  *
  * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
  * #setOwnerID(int)}.
- * 
+
  * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via {@link HexagonMap#storeBuilding(Building, int, int)}).
  *
  * @author Craig Wilbourne
@@ -93,30 +93,81 @@ public class Building extends NetworkableComponent implements IOnAwake {
      * @return Whether the attack was successful or not.
      */
     public boolean attack(Building opponent) {
-        // TODO: Add Lelaa's code here.
+        /** The number of sides on the dice*/
+        int dice = 1000;
 
-        Random random = new Random();
-        double successChance = random.nextDouble();
-        // Set a 50% chance of success.
-        double target = 0.5;
+        int attack = mAttack.getValue();
+        int defence = opponent.mDefence.getValue();
 
-        if (successChance >= target) {
-            log.info(
-                    String.format(
-                            "Successful attack: random number %f was greater or equal to target %f.",
-                            successChance, target));
+        /**Stores the highest result of rolling a dice an attack number of times*/
+        int highestAttack = 0;
+        /**Stores the highest result of rolling a dice an defence number of times*/
+        int highestDefence = 0;
 
-            // Claim the opponent building.
-            // TODO: Allow the Players to update their lists of buildings they own.
-            return true;
+        /**Rolls attack number of dice and stores it in the arrayList attackValue*/
+        for (int i = 1; i < attack; i++ ){
+            int value = (int) (Math.random() * (dice) + 1);
+            //Sets highestAttack to the highest roll of the dice
+            if(value > highestAttack) {
+                highestAttack = value;
+            }
         }
 
-        log.info(
-                String.format(
-                        "Failed attack: random number %f was not greater or equal to target %f.",
-                        successChance, target));
+        /**Resets the attack value to the highest roll*/
+        attack = highestAttack;
 
-        return false;
+        /**Rolls defence number of dice and stores it in the arrayList defenceValue*/
+        for (int i = 1; i < defence; i++ ){
+            int value =(int) (Math.random() * (dice) + 1);
+
+            //Sets the highestDefence to the highest roll of the dice
+            if(value > defence) {
+                highestDefence = value;
+            }
+        }
+
+        /**Resets the defence value to the highest roll*/
+        defence = highestDefence;
+
+        if (attack > defence) {
+            log.info(
+                    String.format(
+                            "Successful attack",
+                            attack, defence));
+            return true;
+
+        }
+        else if (attack < defence){
+            log.info(
+                    String.format(
+                            "Failed attack",
+                            attack, defence));
+            return false;
+        }
+        else{
+
+            /**Used to calculate a random success rate as the attack and defence stats are the same*/
+            Random random = new Random();
+            double successChance = random.nextDouble();
+
+            // Set a 50% chance of success.
+            double target = 0.5;
+
+            if (successChance>=target) {
+                log.info(
+                        String.format(
+                                "Successful attack using random as attack and defence stats are the same",
+                                successChance, target));
+                return true;
+            }
+            else {
+                log.info(
+                        String.format(
+                                "Successful defence using random as attack and defence stats are the same",
+                                successChance, target));
+                return false;
+            }
+        }
     }
 
     /**
