@@ -4,6 +4,8 @@ package org.dragonskulle.network;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -18,6 +20,7 @@ import org.dragonskulle.network.components.NetworkObject;
  *     will spawn into its own store (mNetworkObjectReferences) so that it can be tested without the
  *     attached game.
  */
+@Accessors(prefix = "m")
 public class ClientGameInstance {
     private static final Logger mLogger = Logger.getLogger(ClientGameInstance.class.getName());
 
@@ -30,7 +33,7 @@ public class ClientGameInstance {
      */
     private Scene mLinkedScene;
     /** This flag is for marking if the instance is linked to a game scene. */
-    private boolean mIsLinkedToScene = false;
+    @Getter private boolean mIsLinkedToScene = false;
 
     /**
      * Instantiates a new Client game instance, A callback is needed to send bytes to the server.

@@ -428,8 +428,10 @@ public class GameObject implements Serializable {
         Engine.getInstance().mDestroyedComponents.addAll(mComponents);
 
         // Destroy the transform of this GameObject
-        mTransform.destroy();
-        mTransform = null;
+        if (mTransform != null) {
+            mTransform.destroy();
+            mTransform = null;
+        }
 
         // After we have finished destroying we need to clear our reference so nothing attempts to
         // access this after being destroyed

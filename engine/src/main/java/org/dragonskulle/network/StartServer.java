@@ -4,6 +4,7 @@ package org.dragonskulle.network;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.network.components.NetworkManager;
 
 /** @author Oscar L How to start the server Start server. */
 public class StartServer {
@@ -93,5 +94,9 @@ public class StartServer {
      */
     public void linkToScene(Scene scene) {
         this.mServer.linkToScene(scene);
+    }
+
+    public NetworkManager createNetworkManager() {
+        return new NetworkManager(this.mServer::fixedBroadcastUpdate, this::dispose);
     }
 }
