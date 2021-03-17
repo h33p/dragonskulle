@@ -226,13 +226,19 @@ public class NetworkClient {
     public void dispose() {
         try {
             if (!didDispose.get()) {
-                System.out.println("DISPOSINGKOWSDUVBNOWEINCV");
                 didDispose.set(true);
                 if (mOpen) {
+                    if (mGame != null) {
+                        if (mGame.isLinkedToScene()) {
+                            Engine.getInstance().loadPresentationScene("mainMenu");
+                        }
+                    }
                     this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
                     mOpen = false;
                     closeAllConnections();
-                    mClientListener.disconnected();
+                    if (mClientListener != null) {
+                        mClientListener.disconnected();
+                    }
                     this.getNetworkableObjects()
                             .forEach(
                                     (__, e) -> {
@@ -242,15 +248,14 @@ public class NetworkClient {
                                         }
                                     });
                 }
-                if (mGame.isLinkedToScene()) {
-                    Engine.getInstance().loadPresentationScene("mainMenu");
-                }
                 mProcessScheduler.cancel();
                 mSocket = null;
                 mDOut = null;
                 mClientListener = null;
-                mClientThread.interrupt();
-                mClientThread.join();
+                if (mClientThread != null) {
+                    mClientThread.interrupt();
+                    mClientThread.join();
+                }
             }
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -275,8 +280,10 @@ public class NetworkClient {
     public void sendBytes(byte[] bytes) {
         if (mOpen) {
             try {
-                mLogger.fine("sending bytes");
-                mDOut.write(bytes);
+                if (mDOut != null) {
+                    mLogger.fine("sending bytes");
+                    mDOut.write(bytes);
+                }
             } catch (IOException e) {
                 mLogger.fine("Failed to send bytes");
             }
