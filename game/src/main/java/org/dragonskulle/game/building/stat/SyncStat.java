@@ -2,9 +2,7 @@
 package org.dragonskulle.game.building.stat;
 
 import java.io.Serializable;
-import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
@@ -16,18 +14,12 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @param <T> The datatype of the stat value.
  */
 @Accessors(prefix = "m")
-public abstract class Stat<T extends Serializable> extends NetworkableComponent {
+public abstract class SyncStat<T extends Serializable> extends SyncInt {
 
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 0;
     /** The highest level possible. */
     public static final int LEVEL_MAX = 5;
-
-    /**
-     * The current level of the stat. This will always be between {@link #LEVEL_MIN} and {@link
-     * #LEVEL_MAX}, inclusive.
-     */
-    @Getter protected SyncInt mLevel = new SyncInt(LEVEL_MIN);
 
     /**
      * Set the level, and calculate and the new value.
@@ -38,18 +30,18 @@ public abstract class Stat<T extends Serializable> extends NetworkableComponent 
      */
     public void setLevel(int level) {
         level = getBoundedLevel(level);
-        mLevel.set(level);
+        set(level);
     }
 
     /** Increase the level of the stat and calculate the new value. */
     public void increaseLevel() {
-        int level = mLevel.get() + 1;
+        int level = get() + 1;
         setLevel(level);
     }
 
     /** Decrease the level of the stat and calculate the new value. */
     public void decreaseLevel() {
-        int level = mLevel.get() - 1;
+        int level = get() - 1;
         setLevel(level);
     }
 
@@ -60,9 +52,9 @@ public abstract class Stat<T extends Serializable> extends NetworkableComponent 
      * @return The level, bounded between the minimum and maximum possible levels.
      */
     private int getBoundedLevel(int level) {
-        if (mLevel.get() < LEVEL_MIN) {
+        if (get() < LEVEL_MIN) {
             return LEVEL_MIN;
-        } else if (mLevel.get() > LEVEL_MAX) {
+        } else if (get() > LEVEL_MAX) {
             return LEVEL_MAX;
         }
         return level;

@@ -6,13 +6,10 @@ package org.dragonskulle.game.building.stat;
  *
  * @author Craig Wilbourne
  */
-public class ViewDistanceStat extends Stat<Integer> {
+public class SyncViewDistanceStat extends SyncStat<Integer> {
 
     @Override
     protected Integer getValueFromLevel() {
         return 3;
     }
-
-    @Override
-    protected void onDestroy() {}
 }

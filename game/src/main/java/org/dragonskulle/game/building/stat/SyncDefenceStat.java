@@ -2,11 +2,11 @@
 package org.dragonskulle.game.building.stat;
 
 /**
- * Contains the value used to make an attack.
+ * Contains the value used to defend against an attack.
  *
  * @author Craig Wilbourne
  */
-public class AttackStat extends Stat<Double> implements DoubleMap {
+public class SyncDefenceStat extends SyncStat<Double> implements DoubleMap {
 
     private final double mValueMin = 0.25;
     private final double mValueMax = 1.0;
@@ -15,7 +15,7 @@ public class AttackStat extends Stat<Double> implements DoubleMap {
         return map(
                 mValueMin,
                 mValueMax,
-                Double.valueOf(mLevel.get()),
+                Double.valueOf(get()),
                 Double.valueOf(LEVEL_MIN),
                 Double.valueOf(LEVEL_MAX));
     }
@@ -24,7 +24,4 @@ public class AttackStat extends Stat<Double> implements DoubleMap {
     protected Double getValueFromLevel() {
         return mapLevel();
     }
-
-    @Override
-    protected void onDestroy() {}
 }

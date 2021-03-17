@@ -6,13 +6,10 @@ package org.dragonskulle.game.building.stat;
  *
  * @author Craig Wilbourne
  */
-public class TokenGenerationStat extends Stat<Integer> {
+public class SyncTokenGenerationStat extends SyncStat<Integer> {
 
     @Override
     protected Integer getValueFromLevel() {
-        return mLevel.get();
+        return get();
     }
-
-    @Override
-    protected void onDestroy() {}
 }

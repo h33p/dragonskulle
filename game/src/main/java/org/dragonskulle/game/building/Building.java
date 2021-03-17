@@ -9,12 +9,12 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.stat.AttackDistanceStat;
-import org.dragonskulle.game.building.stat.AttackStat;
-import org.dragonskulle.game.building.stat.DefenceStat;
-import org.dragonskulle.game.building.stat.Stat;
-import org.dragonskulle.game.building.stat.TokenGenerationStat;
-import org.dragonskulle.game.building.stat.ViewDistanceStat;
+import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
+import org.dragonskulle.game.building.stat.SyncAttackStat;
+import org.dragonskulle.game.building.stat.SyncDefenceStat;
+import org.dragonskulle.game.building.stat.SyncStat;
+import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
+import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -33,20 +33,20 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake {
 
     /** Stores the attack strength of the building. */
-    @Getter private AttackStat mAttack;
+    @Getter private SyncAttackStat mAttack;
     /** Stores the defence strength of the building. */
-    @Getter private DefenceStat mDefence;
+    @Getter private SyncDefenceStat mDefence;
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private TokenGenerationStat mTokenGeneration;
+    @Getter private SyncTokenGenerationStat mTokenGeneration;
     /** Stores the view range of the building. */
-    @Getter private ViewDistanceStat mViewDistance;
+    @Getter private SyncViewDistanceStat mViewDistance;
     /** Stores the attack range of the building. */
-    @Getter private AttackDistanceStat mAttackDistance;
+    @Getter private SyncAttackDistanceStat mAttackDistance;
 
     /** ID of the owner of the building. */
-    private SyncInt mOwnerID = new SyncInt(-1);
+    private final SyncInt mOwnerID = new SyncInt(-1);
     /** Whether the building is a capital. */
-    private SyncBool mIsCapital = new SyncBool(false);
+    private final SyncBool mIsCapital = new SyncBool(false);
 
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
@@ -57,11 +57,11 @@ public class Building extends NetworkableComponent implements IOnAwake {
     @Override
     public void onAwake() {
         // Create the Stats.
-        mAttack = new AttackStat();
-        mDefence = new DefenceStat();
-        mTokenGeneration = new TokenGenerationStat();
-        mViewDistance = new ViewDistanceStat();
-        mAttackDistance = new AttackDistanceStat();
+        mAttack = new SyncAttackStat();
+        mDefence = new SyncDefenceStat();
+        mTokenGeneration = new SyncTokenGenerationStat();
+        mViewDistance = new SyncViewDistanceStat();
+        mAttackDistance = new SyncAttackDistanceStat();
 
         // For debugging, set all stat levels to 5.
         // TODO: Remove.
@@ -250,8 +250,8 @@ public class Building extends NetworkableComponent implements IOnAwake {
      *
      * @return An ArrayList of Stats.
      */
-    public ArrayList<Stat<?>> getStats() {
-        ArrayList<Stat<?>> stats = new ArrayList<Stat<?>>();
+    public ArrayList<SyncStat<?>> getStats() {
+        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>();
         stats.add(mAttack);
         stats.add(mDefence);
         stats.add(mTokenGeneration);
