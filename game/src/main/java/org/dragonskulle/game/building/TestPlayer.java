@@ -6,4 +6,10 @@ package org.dragonskulle.game.building;
  *
  * @author Craig
  */
-public class TestPlayer {}
+public class TestPlayer {
+
+    public int getID() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+}
