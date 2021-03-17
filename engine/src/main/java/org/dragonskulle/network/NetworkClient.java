@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
 import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -26,55 +25,37 @@ import org.joml.Vector3f;
 
 /**
  * @author Oscar L
- * <p>This is the client usage, you will create an instance, by providing the correct server to
- * connect to. ClientListener is the handler for commands that the client receives. {@link
- * org.dragonskulle.network.ClientListener}**
+ *     <p>This is the client usage, you will create an instance, by providing the correct server to
+ *     connect to. ClientListener is the handler for commands that the client receives. {@link
+ *     org.dragonskulle.network.ClientListener}**
  */
 public class NetworkClient {
     private static final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
 
-    /**
-     * The Socket connection to the server.
-     */
+    /** The Socket connection to the server. */
     private Socket mSocket;
-    /**
-     * The byte output stream.
-     */
+    /** The byte output stream. */
     private DataOutputStream mDOut;
-    /**
-     * The byte input stream.
-     */
+    /** The byte input stream. */
     private BufferedInputStream mBIn;
-    /**
-     * The Game Instance.
-     */
+    /** The Game Instance. */
     private ClientGameInstance mGame;
 
-    /**
-     * The Client listener to notify of important events.
-     */
+    /** The Client listener to notify of important events. */
     private ClientListener mClientListener;
-    /**
-     * True if the socket is open.
-     */
+    /** True if the socket is open. */
     private boolean mOpen = true;
 
-    /**
-     * Stores all requests from the server once scheduled.
-     */
+    /** Stores all requests from the server once scheduled. */
     private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
-    /**
-     * The Runnable for @{mClientThread}.
-     */
+    /** The Runnable for @{mClientThread}. */
     private ClientRunner mClientRunner;
     /**
      * The thread that watches @link{dIn} for messages and adds them to the message
      * queue @link{mRequests}.
      */
     private Thread mClientThread;
-    /**
-     * True if requests are to be automatically processed every time period.
-     */
+    /** True if requests are to be automatically processed every time period. */
     private boolean mAutoProcessMessages;
     /**
      * Schedules the processing of received messages @link {mRequests} runs dependant
@@ -85,9 +66,9 @@ public class NetworkClient {
     /**
      * Instantiates a new Network client.
      *
-     * @param ip                  the ip
-     * @param port                the port
-     * @param listener            the listener
+     * @param ip the ip
+     * @param port the port
+     * @param listener the listener
      * @param autoProcessMessages true if should auto process messages
      */
     public NetworkClient(
@@ -121,11 +102,11 @@ public class NetworkClient {
     /**
      * Instantiates a new Network client.
      *
-     * @param ip                  the ip
-     * @param port                the port
-     * @param listener            the listener
+     * @param ip the ip
+     * @param port the port
+     * @param listener the listener
      * @param autoProcessMessages true if should auto process messages
-     * @param scene               the game scene to be linked
+     * @param scene the game scene to be linked
      */
     public NetworkClient(
             String ip,
@@ -163,8 +144,8 @@ public class NetworkClient {
      * Starts a client game in the game scene, this is started from the menu.
      *
      * @param mainScene the main scene
-     * @param ip        the ip of the server
-     * @param port      the port of the server
+     * @param ip the ip of the server
+     * @param port the port of the server
      */
     public static void startClientGame(Scene mainScene, String ip, int port) {
         GameObject mLoadingScreen =
@@ -199,7 +180,7 @@ public class NetworkClient {
      * Execute bytes after parsing. This is the client version.
      *
      * @param messageType the message type
-     * @param payload     the payload
+     * @param payload the payload
      * @return the byteCode of the message processed.
      */
     public byte executeBytes(byte messageType, byte[] payload) {
@@ -239,9 +220,7 @@ public class NetworkClient {
         this.mGame.spawnNetworkObject(payload);
     }
 
-    /**
-     * Dispose.
-     */
+    /** Dispose. */
     public void dispose() {
         try {
             if (mOpen) {
@@ -249,12 +228,14 @@ public class NetworkClient {
                 mOpen = false;
                 closeAllConnections();
                 mClientListener.disconnected();
-                this.getNetworkableObjects().forEach((__, e) -> {
-                    NetworkObject obj = e.get();
-                    if (obj != null) {
-                        obj.getGameObject().destroy();
-                    }
-                });
+                this.getNetworkableObjects()
+                        .forEach(
+                                (__, e) -> {
+                                    NetworkObject obj = e.get();
+                                    if (obj != null) {
+                                        obj.getGameObject().destroy();
+                                    }
+                                });
             }
             Engine.getInstance().loadPresentationScene("mainMenu");
             mProcessScheduler.cancel();
@@ -367,8 +348,7 @@ public class NetworkClient {
         @Override
         public void run() {
             byte[] bArray;
-            byte[] terminateBytes =
-                    new byte[NetworkConfig.TERMINATE_BYTES_LENGTH];
+            byte[] terminateBytes = new byte[NetworkConfig.TERMINATE_BYTES_LENGTH];
             if (mAutoProcessMessages) {
                 setProcessMessagesAutomatically(true);
             }
@@ -404,9 +384,7 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * The Auto Processing requests TimerTask.
-     */
+    /** The Auto Processing requests TimerTask. */
     private class ProcessRequestScheduled extends TimerTask {
         public void run() {
             processRequests();
@@ -423,9 +401,7 @@ public class NetworkClient {
         this.mRequests.addIfUnique(bArray);
     }
 
-    /**
-     * Processes all requests.
-     */
+    /** Processes all requests. */
     public void processRequests() {
         mLogger.info("processing all " + this.mRequests.size() + " requests");
         while (!this.mRequests.isEmpty()) {
@@ -445,9 +421,7 @@ public class NetworkClient {
         return !this.mRequests.isEmpty();
     }
 
-    /**
-     * Processes a single request.
-     */
+    /** Processes a single request. */
     public void processSingleRequest() {
         if (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
@@ -457,9 +431,7 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Clears the pending requests.
-     */
+    /** Clears the pending requests. */
     public void clearPendingRequests() {
         this.mRequests.clear();
     }
@@ -497,9 +469,7 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Closes all connections.
-     */
+    /** Closes all connections. */
     private void closeAllConnections() {
         mOpen = false;
 
@@ -519,16 +489,12 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * @return True if has a map, false otherwise.
-     */
+    /** @return True if has a map, false otherwise. */
     public boolean hasMap() {
         return this.mGame.hasSpawnedMap();
     }
 
-    /**
-     * @return True if has a capital, false otherwise.
-     */
+    /** @return True if has a capital, false otherwise. */
     public boolean hasCapital() {
         return this.mGame.hasSpawnedCapital();
     }

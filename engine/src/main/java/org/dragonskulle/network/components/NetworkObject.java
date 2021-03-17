@@ -6,7 +6,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
@@ -27,32 +26,24 @@ import org.dragonskulle.utils.IOUtils;
 public class NetworkObject extends Component implements IOnAwake {
 
     private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
-    /**
-     * true if the component is on the server.
-     */
-    @Getter
-    private final boolean mIsServer;
-    /**
-     * The id of the object.
-     */
+    /** true if the component is on the server. */
+    @Getter private final boolean mIsServer;
+    /** The id of the object. */
     public final int mNetworkObjectId;
 
     @Getter
     private final ArrayList<Reference<NetworkableComponent>> mNetworkableComponents =
             new ArrayList<>();
 
-    @Getter
-    private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
+    @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
 
-    /**
-     * The network client ID that owns this
-     */
+    /** The network client ID that owns this */
     private int mOwnerId;
 
     /**
      * Instantiates a new Network object.
      *
-     * @param id       the id
+     * @param id the id
      * @param isServer true if the object is on the server
      */
     public NetworkObject(int id, boolean isServer) {
@@ -61,8 +52,7 @@ public class NetworkObject extends Component implements IOnAwake {
     }
 
     @Override
-    public void onDestroy() {
-    }
+    public void onDestroy() {}
 
     @Override
     public void onAwake() {
@@ -106,7 +96,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * Gets id from bytes.
      *
      * @param payload the payload
-     * @param offset  the offset
+     * @param offset the offset
      * @return the id from bytes
      */
     public static int getIntFromBytes(byte[] payload, int offset) {
@@ -167,7 +157,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * <p>ClientRequest::invoke to Server to here to ClientRequest::handle
      *
      * @param requestID the request id
-     * @param stream    the input stream
+     * @param stream the input stream
      * @return true if executed successfully.
      * @throws IOException the io exception
      */
@@ -187,7 +177,7 @@ public class NetworkObject extends Component implements IOnAwake {
     /**
      * Updates itself from bytes authored by server.
      *
-     * @param payload  the payload
+     * @param payload the payload
      * @param instance the instance
      * @throws IOException thrown if failed to read client streams
      */
@@ -232,7 +222,7 @@ public class NetworkObject extends Component implements IOnAwake {
     /**
      * Seperates the updates for each children from the bytes it receives.
      *
-     * @param buff   the buff
+     * @param buff the buff
      * @param offset the offset
      * @return the children update bytes
      * @throws IOException the io exception
@@ -270,9 +260,7 @@ public class NetworkObject extends Component implements IOnAwake {
         return out;
     }
 
-    /**
-     * A callback to broadcast a message to all clients
-     */
+    /** A callback to broadcast a message to all clients */
     public interface ServerBroadcastCallback {
         /**
          * Call.
@@ -282,9 +270,7 @@ public class NetworkObject extends Component implements IOnAwake {
         void call(byte[] bytes);
     }
 
-    /**
-     * A callback to broadcast a message to a SINGLE clients,this client is the owner
-     */
+    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
     public interface SendBytesToClientCallback {
         /**
          * Call.
