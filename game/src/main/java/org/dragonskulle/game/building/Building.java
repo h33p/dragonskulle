@@ -31,6 +31,8 @@ import org.joml.Vector3i;
  *
  * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
  * #setOwnerID(int)}.
+ * 
+ * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via {@link HexagonMap#storeBuilding(Building, int, int)}).
  *
  * @author Craig Wilbourne
  */
