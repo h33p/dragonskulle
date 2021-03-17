@@ -33,8 +33,10 @@ public class Player extends NetworkableComponent implements IOnStart {
     private List<Reference<Building>> mOwnedBuildings;
     // The map component
     @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
+    
+    private List<Reference<Player>> mPlayersOnline = new ArrayList<Reference<Player>>();
 
-    private final int UNIQUE_ID;
+    @Getter private final int UNIQUE_ID;
     private static int mNextID;
     @Getter private SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
@@ -60,6 +62,7 @@ public class Player extends NetworkableComponent implements IOnStart {
                         .getReference(HexagonMap.class);
         mOwnedBuildings = new ArrayList<Reference<Building>>();
         // mOwnedBuildings.add(capital);
+        //TODO Get all Players & add to list
         updateTokens(UPDATE_TIME + 1);
     }
     /**
@@ -79,6 +82,10 @@ public class Player extends NetworkableComponent implements IOnStart {
      */
     public Reference<Building> getBuilding(int index) {
         return mOwnedBuildings.get(index);
+    }
+    
+    public void removeBuilding(Reference<Building> buildingToRemove) {
+    	mOwnedBuildings.remove(buildingToRemove);
     }
 
     /**
@@ -172,7 +179,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         Building defender = new Building(mMapComponent, new Reference<HexagonTile>(defenderTile));
 
         // Checks to see if building is yours and if so get proper one
-        Reference<Building> attacker = checkBuildingYours(attackingFrom);
+        Reference<Building> attacker = checkBuildingYours(attackingFrom, mOwnedBuildings);
 
         if (attacker == null) {
             return;
@@ -186,14 +193,29 @@ public class Player extends NetworkableComponent implements IOnStart {
             return;
         }
         // Checks building is correct
-        Reference<Building> isYours = checkBuildingYours(defending);
+        Reference<Building> isYours = checkBuildingYours(defending, mOwnedBuildings);
         if (isYours != null) {
             return;
         }
 
         // ATTACK!!! (Sorry...)
-        attacker.get().attack(defending);
+        boolean won = attacker.get().attack(defending);
         mTokens.set(mTokens.get() - COST);
+        
+        // If you've won attack
+        if (won) {
+        	mOwnedBuildings.add(new Reference<Building>(defending));
+        	for (Reference<Player> player: mPlayersOnline) {
+        		List<Reference<Building>> playersBuildings = player.get().getOwnedBuildings();
+        		Reference<Building> buildingToRemove = checkBuildingYours(defending, playersBuildings);
+        		
+        		if (buildingToRemove != null) {
+        			player.get().removeBuilding(buildingToRemove);
+        			return;
+        		}
+        	}
+        	
+        }
 
         return;
     }
@@ -204,10 +226,10 @@ public class Player extends NetworkableComponent implements IOnStart {
      * @param buildingToCheck The building to check
      * @return true of the player owns it, false if not
      */
-    private Reference<Building> checkBuildingYours(Building buildingToCheck) {
+    private Reference<Building> checkBuildingYours(Building buildingToCheck, List<Reference<Building>> toCheck) {
 
         // Checks the building is yours
-        for (Reference<Building> building : mOwnedBuildings) {
+        for (Reference<Building> building : toCheck) {
 
             if (building.get().getTile().get().getR() == buildingToCheck.getTile().get().getR()
                     && building.get().getTile().get().getQ()

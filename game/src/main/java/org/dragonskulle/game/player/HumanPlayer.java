@@ -161,14 +161,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     protected void onDestroy() {}
-    
+
     @Override
-	public void fixedUpdate(float deltaTime) {
-    	
-		// Update token
+    public void fixedUpdate(float deltaTime) {
+
+        // Update token
         mPlayer.get().updateTokens(deltaTime);
-		
-	}
+    }
 
     @Override
     public void frameUpdate(float deltaTime) {
