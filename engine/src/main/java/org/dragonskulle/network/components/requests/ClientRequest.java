@@ -4,7 +4,7 @@ package org.dragonskulle.network.components.requests;
 import java.io.*;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.network.ClientGameInstance;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.ClientNetworkManager;
@@ -56,9 +56,9 @@ public class ClientRequest<T extends INetSerializable> {
                     oos.flush();
                 }
                 bos.close();
-                final ClientGameInstance.NetworkClientSendBytesCallback networkManager =
-                        ClientNetworkManager.getSendToServer();
-                networkManager.send(
+                final ClientNetworkManager networkManager =
+                        Scene.getActiveScene().getSingleton(ClientNetworkManager.class);
+                networkManager.sendToServer(
                         NetworkMessage.build(
                                 NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST, bos.toByteArray()));
             }

@@ -11,7 +11,6 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.requests.ClientRequest;
@@ -178,10 +177,9 @@ public class NetworkObject extends Component implements IOnAwake {
      * Updates itself from bytes authored by server.
      *
      * @param payload the payload
-     * @param instance the instance
      * @throws IOException thrown if failed to read client streams
      */
-    public void updateFromBytes(byte[] payload, ClientGameInstance instance) throws IOException {
+    public void updateFromBytes(byte[] payload) throws IOException {
         // TODO clear this up by using ByteStreams
         int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
 

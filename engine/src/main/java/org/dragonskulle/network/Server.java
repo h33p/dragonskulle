@@ -18,8 +18,8 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
@@ -208,7 +208,7 @@ public class Server {
                         "server_network_manager",
                         (go) ->
                                 go.addComponent(
-                                        new NetworkManager(
+                                        new ServerNetworkManager(
                                                 serverInstance.mServer::fixedBroadcastUpdate)));
 
         mLoadingScreen.destroy();
@@ -277,7 +277,7 @@ public class Server {
     public void startFixedUpdateDetachedFromGame() {
         int begin = 0;
         int timeInterval = 200;
-        FixedUpdate fixedUpdate = this::fixedBroadcastUpdate;
+        INetworkUpdate fixedUpdate = this::fixedBroadcastUpdate;
         mFixedUpdate.schedule(
                 new TimerTask() {
                     @Override

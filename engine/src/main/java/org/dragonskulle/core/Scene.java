@@ -60,6 +60,17 @@ public class Scene {
         }
     }
 
+    /** Moves a root object from one scene to the next.
+     *
+     * Although
+     */
+    public void moveRootObjectToScene(GameObject object, Scene target) {
+        if (mGameObjects.remove(object)) {
+            target.addRootObject(object);
+            object.recreateReferences();
+        }
+    }
+
     /**
      * Register a singleton
      *

@@ -2,7 +2,7 @@
 package org.dragonskulle.network;
 
 /** The interface Fixed update simulation. */
-public interface FixedUpdate {
+public interface INetworkUpdate {
     /** Call. */
     void call();
 }

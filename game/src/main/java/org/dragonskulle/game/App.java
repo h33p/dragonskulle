@@ -15,6 +15,7 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.Server;
+import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.components.*;
@@ -186,6 +187,11 @@ public class App {
         mainMenu.addRootObject(cube);
         mainMenu.addRootObject(hexRoot);
 
+        Reference<ClientNetworkManager> manager = new ClientNetworkManager(mainScene).getReference(ClientNetworkManager.class);
+        GameObject clientNetworkManager =
+            new GameObject("client network manager",
+                    (handle) -> handle.addComponent(manager.get()));
+
         GameObject mainUI =
                 new GameObject(
                         "mainUI",
@@ -314,6 +320,16 @@ public class App {
 
                     bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
 
+                    final Reference<GameObject> connectingRef = bg.buildChild("connecting", false, new TransformUI(true), (text) -> {
+                        text.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0.12f, 0.5f, 0.12f);
+                        text.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                        text.addComponent(new UIText(new Vector3f(0f), Font.getFontResource("Rise of Kingdom.ttf"), "Connecting..."));
+                    });
+                    final Reference<UIText> connectingTextRef = connectingRef.get().getComponent(UIText.class);
+
+                    connectingTextRef.get().setEnabled(false);
+
                     bg.buildChild(
                             "joinButton",
                             new TransformUI(true),
@@ -329,10 +345,13 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join (Temporary)"),
                                                 (uiButton, __) -> {
-                                                    NetworkClient.startClientGame(
-                                                            mainScene, "127.0.0.1", 7000);
-                                                    Engine.getInstance()
-                                                            .loadPresentationScene(mainScene);
+                                                    manager.get().connect("127.0.0.1", 7000, (outcome) -> {
+                                                        System.out.println("CONNECTION OUTCOME: " + outcome);
+                                                        if (connectingTextRef.isValid())
+                                                            connectingTextRef.get().setEnabled(false);
+                                                    });
+                                                    if (connectingTextRef.isValid())
+                                                        connectingTextRef.get().setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
@@ -420,6 +439,8 @@ public class App {
 
         mainMenu.addRootObject(GameObject.instantiate(hexRoot));
         mainMenu.addRootObject(GameObject.instantiate(cube));
+
+        mainMenu.addRootObject(clientNetworkManager);
 
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
