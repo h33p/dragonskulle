@@ -6,7 +6,7 @@ package org.dragonskulle.game.building.stat;
  *
  * @author Craig Wilbourne
  */
-public class SyncAttackStat extends SyncStat<Integer> implements DoubleMap {
+public class SyncAttackStat extends SyncStat<Integer> {
 
     @Override
     protected Integer getValueFromLevel() {
