@@ -7,73 +7,67 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.core.Reference;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.stat.AttackDistanceStat;
-import org.dragonskulle.game.building.stat.AttackStat;
-import org.dragonskulle.game.building.stat.DefenceStat;
-import org.dragonskulle.game.building.stat.Stat;
-import org.dragonskulle.game.building.stat.TokenGenerationStat;
-import org.dragonskulle.game.building.stat.ViewDistanceStat;
+import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
+import org.dragonskulle.game.building.stat.SyncAttackStat;
+import org.dragonskulle.game.building.stat.SyncDefenceStat;
+import org.dragonskulle.game.building.stat.SyncStat;
+import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
+import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 
 /**
  * A Building component.
+ *
+ * <p>Once created, the GameObject needs a {@link TransformHex} component to place it in the game
+ * and to allow the logic to access its position.
+ *
+ * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
+ * #setOwnerID(int)}.
  *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
+public class Building extends NetworkableComponent implements IOnAwake {
 
     /** Stores the attack strength of the building. */
-    @Getter private AttackStat mAttack;
+    @Getter private SyncAttackStat mAttack;
     /** Stores the defence strength of the building. */
-    @Getter private DefenceStat mDefence;
+    @Getter private SyncDefenceStat mDefence;
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private TokenGenerationStat mTokenGeneration;
+    @Getter private SyncTokenGenerationStat mTokenGeneration;
     /** Stores the view range of the building. */
-    @Getter private ViewDistanceStat mViewDistance;
+    @Getter private SyncViewDistanceStat mViewDistance;
     /** Stores the attack range of the building. */
-    @Getter private AttackDistanceStat mAttackDistance;
+    @Getter private SyncAttackDistanceStat mAttackDistance;
 
     /** ID of the owner of the building. */
-    private SyncInt mOwnerID = new SyncInt(-1);
+    private final SyncInt mOwnerID = new SyncInt(-1);
     /** Whether the building is a capital. */
-    private SyncBool mIsCapital = new SyncBool(false);
-
-    /** The HexagonTile the building is on. */
-    private Reference<HexagonTile> mTileReference = new Reference<HexagonTile>(null);
-    /** The HexagonMap being used. */
-    private Reference<HexagonMap> mMapReference = new Reference<HexagonMap>(null);
+    private final SyncBool mIsCapital = new SyncBool(false);
 
     /**
-     * Create a new {@link Building}. Adds the Building to the {@link HexagonMap} at the specified
-     * {@link HexagonTile}.
-     *
-     * @param hexagonTile The HexagonTile the building is on.
+     * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
+     * HexagonTile}.
      */
-    public Building(HexagonTile hexagonTile) {
-
-        // TODO Clean up.
-        // Move contents out of constructor.
-
-        mTileReference = new Reference<HexagonTile>(hexagonTile);
-    }
+    public Building() {}
 
     @Override
     public void onAwake() {
         // Create the Stats.
-        mAttack = new AttackStat();
-        mDefence = new DefenceStat();
-        mTokenGeneration = new TokenGenerationStat();
-        mViewDistance = new ViewDistanceStat();
-        mAttackDistance = new AttackDistanceStat();
+        mAttack = new SyncAttackStat();
+        mDefence = new SyncDefenceStat();
+        mTokenGeneration = new SyncTokenGenerationStat();
+        mViewDistance = new SyncViewDistanceStat();
+        mAttackDistance = new SyncAttackDistanceStat();
 
         // For debugging, set all stat levels to 5.
         // TODO: Remove.
@@ -84,52 +78,143 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mAttackDistance.setLevel(5);
     }
 
-    @Override
-    public void onStart() {
-        // Get a reference to the map.
-        mMapReference =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
-
-        HexagonMap map = mMapReference.get();
-        HexagonTile tile = mTileReference.get();
-        if (map == null || tile == null) return;
-
-        map.storeBuilding(this, tile.getQ(), tile.getR());
-    }
-
     /**
      * Attack an opponent building.
+     *
+     * <p><b> Currently has no effect other than the basic calculations (i.e. it does not transfer
+     * ownership of Buildings). </b>
      *
      * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
      * attacking building and the defence stats of the opponent building.
      *
      * @param opponent The building to attack.
+     * @return Whether the attack was successful or not.
      */
-    public void attack(Building opponent) {
-        // TODO: Add Lelaa's code here.
+    public boolean attack(Building opponent) {
 
-        Random random = new Random();
-        double successChance = random.nextDouble();
-        // Set a 50% chance of success.
-        double target = 0.5;
+        /** The number of sides on the dice*/
+        int dice = 1000;
 
-        if (successChance >= target) {
-            log.info(
-                    String.format(
-                            "Successful attack: random number %f was greater or equal to target %f.",
-                            successChance, target));
+        int attack = mAttack.getValue();
+        int defence = opponent.mDefence.getValue();
 
-            // Claim the opponent building.
-            // opponent.setOwner(mOwner);
-            // TODO: Allow the Players to update their lists of buildings they own.
-        } else {
-            log.info(
-                    String.format(
-                            "Failed attack: random number %f was not greater or equal to target %f.",
-                            successChance, target));
+        /**Stores the highest result of rolling a dice an attack number of times*/
+        int highestAttack = 0;
+        /**Stores the highest result of rolling a dice an defence number of times*/
+        int highestDefence = 0;
+
+        /**Rolls attack number of dice and stores it in the arrayList attackValue*/
+        for (int i = 1; i < attack; i++ ){
+            int value = (int) (Math.random() * (dice) + 1);
+            //Sets highestAttack to the highest roll of the dice
+            if(value > highestAttack) {
+                highestAttack = value;
+            }
         }
+
+        /**Resets the attack value to the highest roll*/
+        attack = highestAttack;
+
+        /**Rolls defence number of dice and stores it in the arrayList defenceValue*/
+        for (int i = 1; i < defence; i++ ){
+            int value =(int) (Math.random() * (dice) + 1);
+
+            //Sets the highestDefence to the highest roll of the dice
+            if(value > defence) {
+                highestDefence = value;
+            }
+        }
+
+        /**Resets the defence value to the highest roll*/
+        defence = highestDefence;
+
+        if (attack > defence) {
+            log.info(
+                    String.format(
+                            "Successful attack",
+                            attack, defence));
+            return true;
+
+        }
+        else if (attack < defence){
+            log.info(
+                    String.format(
+                            "Failed attack",
+                            attack, defence));
+            return false;
+        }
+        else{
+
+            /**Used to calculate a random success rate as the attack and defence stats are the same*/
+            Random random = new Random();
+            double successChance = random.nextDouble();
+
+            // Set a 50% chance of success.
+            double target = 0.5;
+
+            if (successChance>=target) {
+                log.info(
+                        String.format(
+                                "Successful attack using random as attack and defence stats are the same",
+                                successChance, target));
+                return true;
+            }
+            else {
+                log.info(
+                        String.format(
+                                "Successful defence using random as attack and defence stats are the same",
+                                successChance, target));
+                return false;
+            }
+        }
+    }
+
+
+
+    /**
+     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a
+     * set radius.
+     *
+     * @param radius The radius.
+     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
+     */
+    private ArrayList<HexagonTile> getTilesInRadius(int radius) {
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+
+        // Get the map.
+        HexagonMap map = getMap();
+        // Get the current position.
+        Vector3i position = getPosition();
+
+        // Get the current q and r coordinates.
+        int qCentre = position.x();
+        int rCentre = position.y();
+
+        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
+
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
+                // Do not include the building's HexagonTile.
+                if (qOffset == 0 && rOffset == 0) continue;
+
+                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
+                // s));
+
+                // Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
+                if (selectedTile == null) continue;
+
+                // Add the tile to the list.
+                tiles.add(selectedTile);
+            }
+        }
+
+        // log.info("Number of tiles in range: " + tiles.size());
+
+        return tiles;
     }
 
     /**
@@ -161,52 +246,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a
-     * set radius.
-     *
-     * @param radius The radius.
-     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
-     */
-    private ArrayList<HexagonTile> getTilesInRadius(int radius) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonTile tile = mTileReference.get();
-        HexagonMap map = mMapReference.get();
-        if (tile == null || map == null) return tiles;
-
-        // Get the current q and r coordinates.
-        int qCentre = tile.getQ();
-        int rCentre = tile.getR();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
-        }
-
-        // log.info("Number of tiles in range: " + tiles.size());
-
-        return tiles;
-    }
-
-    /**
      * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
      * #mAttackDistance}.
      *
@@ -215,9 +254,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public ArrayList<Building> getAttackableBuildings() {
         ArrayList<Building> buildings = new ArrayList<Building>();
 
-        // Ensure the map and owner exist.
-        HexagonMap map = mMapReference.get();
-        if (map == null) return buildings;
+        // Get the map.
+        HexagonMap map = getMap();
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
@@ -240,12 +278,40 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
+     * Get the current axial coordinates of the building.
+     *
+     * @return A 3d-vector of integers containing the x, y and z position of the building.
+     */
+    private Vector3i getPosition() {
+        Vector3f floatPosition = new Vector3f();
+        TransformHex tranform = getGameObject().getComponent(TransformHex.class).get();
+        tranform.getLocalPosition(floatPosition);
+
+        Vector3i position = new Vector3i();
+        position.set((int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
+
+        return position;
+    }
+
+    /**
+     * Get the {@link HexagonMap} being used.
+     *
+     * @return The map.
+     */
+    private HexagonMap getMap() {
+        return Scene.getActiveScene()
+                .getSingleton(HexagonMap.class)
+                .getReference(HexagonMap.class)
+                .get();
+    }
+
+    /**
      * Get an ArrayList of Stats that the Building has.
      *
      * @return An ArrayList of Stats.
      */
-    public ArrayList<Stat<?>> getStats() {
-        ArrayList<Stat<?>> stats = new ArrayList<Stat<?>>();
+    public ArrayList<SyncStat<?>> getStats() {
+        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>();
         stats.add(mAttack);
         stats.add(mDefence);
         stats.add(mTokenGeneration);
