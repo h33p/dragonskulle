@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
+import com.google.common.io.Resources;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -46,8 +47,13 @@ public class AudioClip {
         // Tries to open the audio stream.  Should not really get to the catch statements as
         // Silent.wav should be somewhere.
         try {
+
+            String resourceFile = "audio/Silent.wav";
             AudioInputStream startingStream =
-                    AudioSystem.getAudioInputStream(new File("Silent.wav").getAbsoluteFile());
+                    AudioSystem.getAudioInputStream(
+                            new File(Resources.getResource(resourceFile).getPath())
+                                    .getAbsoluteFile());
+
             mClip.open(startingStream);
 
         } catch (UnsupportedAudioFileException | IOException e) {
