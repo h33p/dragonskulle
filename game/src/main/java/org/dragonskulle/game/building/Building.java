@@ -41,15 +41,15 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake {
 
     /** Stores the attack strength of the building. */
-    @Getter private SyncAttackStat mAttack = new SyncAttackStat();
+    @Getter private final SyncAttackStat mAttack = new SyncAttackStat();
     /** Stores the defence strength of the building. */
-    @Getter private SyncDefenceStat mDefence = new SyncDefenceStat();
+    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat();
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
+    @Getter private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
     /** Stores the view range of the building. */
-    @Getter private SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
+    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
     /** Stores the attack range of the building. */
-    @Getter private SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
+    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
 
     /** ID of the owner of the building. */
     private final SyncInt mOwnerID = new SyncInt(-1);
