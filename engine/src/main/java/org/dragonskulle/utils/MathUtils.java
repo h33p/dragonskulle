@@ -20,4 +20,14 @@ public class MathUtils {
     public static float lerp(float start, float end, float time) {
         return start + (end - start) * time;
     }
+
+    /**
+     * Calculate a logarithm in specified base
+     *
+     * @param val value to get the logarithm of
+     * @param base base to calculate the logarithm in
+     */
+    public static int log(int val, int base) {
+        return (int) (Math.log(val) / Math.log(base));
+    }
 }

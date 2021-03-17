@@ -55,6 +55,10 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     static class FeatureSupportDetails {
         boolean anisotropyEnable;
         float maxAnisotropy;
+        boolean geometryShaders;
+        boolean optimalLinearTiling;
+
+        static final int[] REQUIRED_TILED_FORMATS = {VK_FORMAT_R8G8B8A8_SRGB};
 
         public boolean isSuitable() {
             return true;
@@ -77,6 +81,13 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             this.mFeatureSupport = new FeatureSupportDetails();
             this.mFeatureSupport.anisotropyEnable = features.samplerAnisotropy();
             this.mFeatureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
+            this.mFeatureSupport.geometryShaders = features.geometryShader();
+            this.mFeatureSupport.optimalLinearTiling =
+                    findSupportedFormat(
+                                    FeatureSupportDetails.REQUIRED_TILED_FORMATS,
+                                    VK_IMAGE_TILING_OPTIMAL,
+                                    VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
+                            != -1;
 
             this.mScore = 0;
 
@@ -140,7 +151,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                         && (props.optimalTilingFeatures() & features) == features) return format;
             }
 
-            throw new RuntimeException("Failed to find supported format!");
+            return -1;
         }
     }
 

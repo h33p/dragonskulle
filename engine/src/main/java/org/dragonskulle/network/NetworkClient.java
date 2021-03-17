@@ -8,6 +8,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+import org.apache.commons.codec.binary.Hex;
+import org.dragonskulle.core.Engine;
+import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.exceptions.DecodingException;
 
 /**
@@ -41,6 +50,8 @@ public class NetworkClient {
      * queue @link{mRequests}.
      */
     private Thread mClientThread;
+
+    private AtomicBoolean didDispose = new AtomicBoolean(false);
 
     /**
      * Instantiates a new Network client.
@@ -98,18 +109,24 @@ public class NetworkClient {
     /** Dispose. */
     public void dispose() {
         try {
-            if (mOpen) {
-                this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
-                mOpen = false;
-                closeAllConnections();
-                mClientListener.disconnected();
+            if (!didDispose.get()) {
+                didDispose.set(true);
+                if (mOpen) {
+                    this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
+                    mOpen = false;
+                    closeAllConnections();
+                    if (mClientListener != null) {
+                        mClientListener.disconnected();
+                    }
+                }
+                mSocket = null;
+                mDOut = null;
+                mClientListener = null;
+                if (mClientThread != null) {
+                    mClientThread.interrupt();
+                    mClientThread.join();
+                }
             }
-            mSocket = null;
-            mDOut = null;
-            mClientListener = null;
-
-            mClientRunner.cancel();
-            mClientThread.join();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -133,8 +150,10 @@ public class NetworkClient {
     public void sendBytes(byte[] bytes) {
         if (mOpen) {
             try {
-                mLogger.fine("sending bytes");
-                mDOut.write(bytes);
+                if (mDOut != null) {
+                    mLogger.fine("sending bytes");
+                    mDOut.write(bytes);
+                }
             } catch (IOException e) {
                 mLogger.fine("Failed to send bytes");
             }
@@ -154,7 +173,9 @@ public class NetworkClient {
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
      */
+    @SuppressWarnings("")
     private class ClientRunner implements Runnable {
+        final AtomicBoolean didTryDispose = new AtomicBoolean(false);
 
         private String mIP;
         private int mPort;
@@ -177,12 +198,13 @@ public class NetworkClient {
             byte[] bArray;
             byte[] terminateBytes =
                     new byte[NetworkConfig.TERMINATE_BYTES_LENGTH]; // max flatbuffer size
-            while (mOpen && !Thread.currentThread().isInterrupted()) {
+            while (mOpen) {
                 try {
                     bArray = NetworkMessage.readMessageFromStream(mBIn);
                     if (bArray.length != 0) {
                         if (Arrays.equals(bArray, terminateBytes)) {
                             mClientListener.disconnected();
+                            didTryDispose.set(true);
                             dispose();
                             break;
                         } else {
@@ -194,16 +216,16 @@ public class NetworkClient {
                     if (mClientListener != null) {
                         mClientListener.error("failed to read from input stream");
                     }
-                    if (isConnected()) {
+                    if (!didTryDispose.get()) {
                         dispose();
                     }
                     break;
                 }
             }
-        }
-
-        /** Cancel. */
-        public void cancel() {
+            if (!didTryDispose.get()) {
+                dispose();
+            }
+            System.out.println("cancelled successfully");
         }
     }
 

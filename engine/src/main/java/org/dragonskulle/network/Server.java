@@ -206,10 +206,7 @@ public class Server {
         GameObject networkManagerGO =
                 new GameObject(
                         "server_network_manager",
-                        (go) ->
-                                go.addComponent(
-                                        new ServerNetworkManager(
-                                                serverInstance.mServer::fixedBroadcastUpdate)));
+                        (go) -> go.addComponent(serverInstance.createNetworkManager()));
 
         mLoadingScreen.destroy();
         mainScene.addRootObject(networkManagerGO);

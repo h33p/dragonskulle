@@ -13,6 +13,7 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.Server;
 import org.dragonskulle.network.components.ClientNetworkManager;
@@ -146,7 +147,8 @@ public class App {
         // Add a renderable to it
         hexagon.addComponent(new Renderable());
         Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
-        UnlitMaterial hexMaterial = hexRenderer.get().getMaterial(UnlitMaterial.class);
+        hexRenderer.get().setMaterial(new VertexHighlightMaterial());
+        IColouredMaterial hexMaterial = hexRenderer.get().getMaterial(IColouredMaterial.class);
 
         // Add wobble components
         hexagon.addComponent(new Wobbler());
