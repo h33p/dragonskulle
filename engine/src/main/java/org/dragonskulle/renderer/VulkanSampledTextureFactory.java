@@ -41,7 +41,8 @@ class VulkanSampledTextureFactory implements NativeResource {
             mSampledTexture =
                     new VulkanSampledTexture(
                             mImage.createImageView(),
-                            factory.mSamplerFactory.getSampler(texture.getMapping()));
+                            factory.mSamplerFactory.getSampler(
+                                    texture.getMapping(), mImage.getMipLevels()));
         }
     }
 

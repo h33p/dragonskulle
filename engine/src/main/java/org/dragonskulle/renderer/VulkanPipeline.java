@@ -99,6 +99,16 @@ class VulkanPipeline implements NativeResource {
             shaderStageCount++;
         }
 
+        Shader geomShader = null;
+        ShaderBuf geomShaderBuf = mShaderSet.getGeometryShader();
+
+        if (geomShaderBuf != null) {
+            geomShader = Shader.getShader(geomShaderBuf, mDevice);
+
+            if (geomShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
+            shaderStageCount++;
+        }
+
         Shader fragShader = null;
         ShaderBuf fragShaderBuf = mShaderSet.getFragmentShader();
 
@@ -141,6 +151,15 @@ class VulkanPipeline implements NativeResource {
                                 stack, mShaderSet.getVertexAttributeDescriptions()));
 
                 pipelineInfo.pVertexInputState(vertexInputInfo);
+            }
+
+            if (geomShader != null) {
+                VkPipelineShaderStageCreateInfo geomShaderStageInfo =
+                        shaderStages.get(--shaderStageCount);
+                geomShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
+                geomShaderStageInfo.stage(VK_SHADER_STAGE_GEOMETRY_BIT);
+                geomShaderStageInfo.module(geomShader.getModule());
+                geomShaderStageInfo.pName(stack.UTF8("main"));
             }
 
             if (fragShader != null) {
@@ -309,6 +328,7 @@ class VulkanPipeline implements NativeResource {
             }
 
             if (fragShader != null) fragShader.free();
+            if (geomShader != null) geomShader.free();
             if (vertShader != null) vertShader.free();
 
             pipeline = pPipeline.get(0);

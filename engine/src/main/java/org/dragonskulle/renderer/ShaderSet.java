@@ -44,9 +44,10 @@ public class ShaderSet implements NativeResource {
 
     /** Vertex shader used */
     protected Resource<ShaderBuf> mVertexShader;
+    /** Geometry shader used */
+    protected Resource<ShaderBuf> mGeometryShader;
     /** Fragment shader used */
     protected Resource<ShaderBuf> mFragmentShader;
-    // TODO: Geometry shaders
 
     /** Controls the order in which the material is rendered. Lower values mean earlier */
     @Getter protected int mRenderOrder = RenderOrder.OPAQUE.getValue();
@@ -80,11 +81,17 @@ public class ShaderSet implements NativeResource {
      */
     @Getter protected AttributeDescription[] mVertexAttributeDescriptions = {};
 
-    // TODO: handle this
     /** Shared uniform data size. This is to be passed to all objects using this shader set. */
     @Getter protected int mVertexUniformDataSize = 0;
+    // TODO: handle this
     /** Should we update the uniform buffer? */
     @Getter protected boolean mVertexUniformDataDirty = false;
+
+    /** Shared uniform data size. This is to be passed to all objects using this shader set. */
+    @Getter protected int mGeometryUniformDataSize = 0;
+    // TODO: handle this
+    /** Should we update the uniform buffer? */
+    @Getter protected boolean mGeometryUniformDataDirty = false;
 
     // TODO: handle push constants
     /** Sets shared constants to be passed to the fragment shader */
@@ -113,6 +120,15 @@ public class ShaderSet implements NativeResource {
     }
 
     /**
+     * Retrieve underlying geometry shader
+     *
+     * @return geometry shader if set, {@code null} otherwise
+     */
+    public ShaderBuf getGeometryShader() {
+        return mGeometryShader == null ? null : mGeometryShader.get();
+    }
+
+    /**
      * Retrieve underlying fragment shader
      *
      * @return fragment shader if set, {@code null} otherwise
@@ -127,6 +143,13 @@ public class ShaderSet implements NativeResource {
      * <p>TODO: actually support this in the renderer
      */
     public void writeVertexUniformData(int offset, ByteBuffer buffer) {}
+
+    /**
+     * Write the uniform data used by vertex shader
+     *
+     * <p>TODO: actually support this in the renderer
+     */
+    public void writeGeometryUniformData(int offset, ByteBuffer buffer) {}
 
     /**
      * Get the push constants used by fragment shader
@@ -160,6 +183,9 @@ public class ShaderSet implements NativeResource {
         boolean hasFragmentUniform = getFragmentUniformDataSize() > 0;
         numBindings += hasFragmentUniform ? 1 : 0;
 
+        boolean hasGeomUniform = getGeometryUniformDataSize() > 0;
+        numBindings += hasGeomUniform ? 1 : 0;
+
         boolean hasVertexUniform = getVertexUniformDataSize() > 0;
         numBindings += hasVertexUniform ? 1 : 0;
 
@@ -184,6 +210,9 @@ public class ShaderSet implements NativeResource {
     public void free() {
         if (mVertexShader != null) mVertexShader.free();
         mVertexShader = null;
+
+        if (mGeometryShader != null) mGeometryShader.free();
+        mGeometryShader = null;
 
         if (mFragmentShader != null) mFragmentShader.free();
         mFragmentShader = null;
