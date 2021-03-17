@@ -36,8 +36,6 @@ public class Player extends NetworkableComponent implements IOnStart {
     
     private List<Reference<Player>> mPlayersOnline = new ArrayList<Reference<Player>>();
 
-    @Getter private final int UNIQUE_ID;
-    private static int mNextID;
     @Getter private SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
@@ -45,13 +43,8 @@ public class Player extends NetworkableComponent implements IOnStart {
 
     /**
      * The base constructor for player
-     *
-     * @param map the map being used for this game
-     * @param capital the capital used by the player
      */
-    public Player() {
-        UNIQUE_ID = 5; // TODO need to make this static so unique for each player
-    }
+    public Player() {}
 
     @Override
     public void onStart() {
