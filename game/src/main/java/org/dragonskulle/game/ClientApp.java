@@ -14,7 +14,6 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.network.ClientEars;
 import org.dragonskulle.network.ClientListener;
 import org.dragonskulle.network.NetworkClient;
-import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 
 /** @author Oscar L */
@@ -55,11 +54,7 @@ public class ClientApp {
         GameObject networkManagerGO =
                 new GameObject(
                         "client_network_manager",
-                        (go) ->
-                                go.addComponent(
-                                        new ClientNetworkManager(
-                                                clientInstance::processRequests,
-                                                clientInstance::sendBytes)));
+                        (go) -> go.addComponent(clientInstance.createNetworkManager()));
         mainScene.addRootObject(networkManagerGO);
 
         Engine.getInstance().loadPresentationScene(mainScene);

@@ -151,6 +151,28 @@ public class Engine {
         mNewPresentationScene = scene;
     }
 
+    /**
+     * Load the first active or inactive scene found as the presentation scene. This might not give
+     * the expected results if there are multiple scenes with the same name. It is also not the
+     * most efficient, so if possible maintain a reference to scenes and load them directly
+     *
+     * @param name Name of the scene to set as the presentation scene
+     */
+    public void loadPresentationScene(String name) {
+        for (Scene s : mActiveScenes) {
+            if (s.getName().equals(name)) {
+                loadPresentationScene(s);
+                return;
+            }
+        }
+        for (Scene s : mInactiveScenes) {
+            if (s.getName().equals(name)) {
+                loadPresentationScene(s);
+                return;
+            }
+        }
+    }
+
     /** Stops the engine when the current frame has finished */
     public void stop() {
         mIsRunning = false;
@@ -366,7 +388,7 @@ public class Engine {
             mActiveScenes.add(s);
         }
 
-        // Unload all scenes that need to be unloaded
+        // Unload all scenes that need to be unloaded and flag all gameobjects for destruction
         for (Scene s : mScenesToUnload) {
             mScenesToUnload.remove(s);
             mActiveScenes.remove(s);
@@ -374,6 +396,28 @@ public class Engine {
             if (mPresentationScene != null && mPresentationScene == s) {
                 mPresentationScene = null;
             }
+            for (GameObject r : s.getGameObjects()) {
+                r.destroy();
+            }
+        }
+    }
+
+    /** Destroy all game objects and components in all scenes. Used for cleanup */
+    private void destroyAllObjects() {
+        for (Scene s : mActiveScenes) {
+            for (GameObject r : s.getGameObjects()) {
+                r.engineDestroy();
+            }
+        }
+
+        for (Scene s : mInactiveScenes) {
+            for (GameObject r : s.getGameObjects()) {
+                r.engineDestroy();
+            }
+        }
+
+        for (Component c : mDestroyedComponents) {
+            c.engineDestroy();
         }
     }
 
@@ -389,6 +433,8 @@ public class Engine {
     /** Cleans up all resources used by the engine on shutdown */
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
+
+        destroyAllObjects();
 
         AudioManager.getInstance().cleanup();
         mGLFWState.free();

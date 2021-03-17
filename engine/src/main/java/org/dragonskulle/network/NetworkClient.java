@@ -167,11 +167,7 @@ public class NetworkClient {
         GameObject networkManagerGO =
                 new GameObject(
                         "client_network_manager",
-                        (go) ->
-                                go.addComponent(
-                                        new ClientNetworkManager(
-                                                clientInstance::processRequests,
-                                                clientInstance::sendBytes)));
+                        (go) -> go.addComponent(clientInstance.createNetworkManager()));
 
         mLoadingScreen.destroy();
         mainScene.addRootObject(networkManagerGO);
@@ -230,11 +226,14 @@ public class NetworkClient {
                 mOpen = false;
                 closeAllConnections();
                 mClientListener.disconnected();
+                mLogger.warning(
+                        "Clearing networkable game objects as server disconnect. Should revert to main menu. (TODO)");
+                this.getNetworkableObjects().forEach((__, e) -> e.get().getGameObject().destroy());
             }
+            mProcessScheduler.cancel();
             mSocket = null;
             mDOut = null;
             mClientListener = null;
-
             mClientRunner.cancel();
             mClientThread.join();
         } catch (Exception exception) {
@@ -324,6 +323,10 @@ public class NetworkClient {
      */
     public void linkToScene(Scene scene) {
         this.mGame.linkToScene(scene);
+    }
+
+    public ClientNetworkManager createNetworkManager() {
+        return new ClientNetworkManager(this::processRequests, this::sendBytes, this::dispose);
     }
 
     /**

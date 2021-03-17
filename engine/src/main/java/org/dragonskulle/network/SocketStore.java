@@ -8,7 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -38,7 +38,8 @@ public class SocketStore {
      */
     public void broadcast(byte[] buf) {
         DataOutputStream dOut;
-        for (Socket connection : mStore) {
+        List<Socket> asyncList = Collections.synchronizedList(this.mStore);
+        for (Socket connection : asyncList) {
             try {
                 if (connection.isClosed()) {
                     mLogger.fine("Client socket output has closed");
@@ -78,7 +79,7 @@ public class SocketStore {
         // TODO add check for invalid socket
         mLogger.fine("Adding client");
         mLogger.fine("Socket :" + sock.toString());
-        this.mStore.add(sock);
+        Collections.synchronizedList(this.mStore).add(sock);
     }
 
     /**
@@ -99,7 +100,7 @@ public class SocketStore {
         } catch (Exception ignored) {
         }
 
-        this.mStore.clear();
+        Collections.synchronizedList(this.mStore).clear();
         this.mServer = null;
     }
 
@@ -154,7 +155,7 @@ public class SocketStore {
     public boolean terminateClient(Socket sock) {
         // if client connection failed, close the socket and remove
         this.shutdownSocket(sock);
-        return this.mStore.remove(sock);
+        return Collections.synchronizedList(this.mStore).remove(sock);
     }
 
     /**
@@ -167,7 +168,7 @@ public class SocketStore {
         if (!sock.isClosed()) {
             this.terminateClient(sock);
         } else {
-            this.mStore.remove(sock);
+            Collections.synchronizedList(this.mStore).remove(sock);
         }
     }
 
@@ -178,7 +179,9 @@ public class SocketStore {
      * @param response_bytes the response bytes
      */
     public void sendBytesToClient(ClientInstance client, byte[] response_bytes) {
-        for (Socket sock : this.mStore) {
+        List<Socket> asyncList = Collections.synchronizedList(this.mStore);
+
+        for (Socket sock : asyncList) {
             if (sock.getPort() == client.PORT && sock.getInetAddress() == client.IP) {
                 mLogger.fine("Sending bytes to client");
                 try {
