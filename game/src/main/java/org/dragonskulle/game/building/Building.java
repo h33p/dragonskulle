@@ -26,6 +26,12 @@ import org.joml.Vector3i;
 /**
  * A Building component.
  *
+ * <p>Once created, the GameObject needs a {@link TransformHex} component to place it in the game
+ * and to allow the logic to access its position.
+ *
+ * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
+ * #setOwnerID(int)}.
+ *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
@@ -218,7 +224,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
     }
 
     /**
-     * Get the current position of the building.
+     * Get the current axial coordinates of the building.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building.
      */
