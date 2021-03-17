@@ -76,7 +76,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
      * Attack an opponent building.
      *
      * <p><b> Currently has no effect other than the basic calculations (i.e. it does not transfer
-     * ownership of Buildings). <b>
+     * ownership of Buildings). </b>
      *
      * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
      * attacking building and the defence stats of the opponent building.
