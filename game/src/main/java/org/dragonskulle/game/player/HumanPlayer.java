@@ -65,10 +65,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                 (go) -> {
                                     go.addComponent(
                                             new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-                                    // TODO How to click hex
+                                    
 
-                                }); // This will draw a rectangle to the screen.  Need way to change
-        // screen
+                                }); 
 
         // Get the screen for confirming placing a building
         mPlaceScreen =
@@ -128,106 +127,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                 getGameObject()
                         .buildChild(
                                 "building options",
-                                new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(
-                                            new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-                                    // Choose to upgrade the building
-                                    go.buildChild(
-                                            "Upgrade Button",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png"))); // Make way to Go back
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                (handle, __) -> {
-                                                                    // TODO When clicked need to
-                                                                    // show options to upgrade
-                                                                    // building stats.  Will leave
-                                                                    // until after prototype
-
-                                                                    mScreenOn = Screen.STAT_SCREEN;
-                                                                }));
-                                            });
-                                    // Choose to attack a building from here
-                                    go.buildChild(
-                                            "Attack building",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                (handle, __) -> {
-
-                                                                    // Gets the building to attack
-                                                                    // from and stored
-                                                                    mBuildingChosen =
-                                                                            new Reference<Building>(
-                                                                                    mPlayer.get()
-                                                                                            .getMapComponent()
-                                                                                            .get()
-                                                                                            .getBuilding(
-                                                                                                    mHexChosen
-                                                                                                                                                                                                                       .getQ(),
-                                                                                                    mHexChosen
-                                                                                                            
-                                                                                                            .getR()));
-                                                                    mScreenOn =
-                                                                            Screen.ATTACK_SCREEN;
-                                                                }));
-                                            });
-                                    // Sell a building
-                                    go.buildChild(
-                                            "Sell building",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                (handle, __) -> {
-                                                                    // TODO When clicked need to
-                                                                    // sell building
-
-                                                                    mPlayer.get()
-                                                                            .mClientSellRequest
-                                                                            .invoke(
-                                                                                    new SellData(
-                                                                                            mBuildingChosen
-                                                                                                    .get())); // Send Data
-
-                                                                    mBuildingChosen = null;
-                                                                    mHexChosen = null;
-                                                                    mScreenOn = Screen.MAP_SCREEN;
-                                                                }));
-                                            });
-
-                                    // Go Back
-                                    go.buildChild(
-                                            "Go Back",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                (handle, __) -> {
-                                                                    mHexChosen = null;
-                                                                    mBuildingChosen = null;
-                                                                    mScreenOn = Screen.MAP_SCREEN;
-                                                                }));
-                                            });
-                                });
+                                new TransformUI(), this::building
+                                );
 
         // To Attack
         mChooseAttack =
@@ -424,5 +325,107 @@ public class HumanPlayer extends Component implements IFrameUpdate, IOnStart {
                                         mScreenOn = Screen.MAP_SCREEN;
                                     }));
                 });
+    }
+    
+    private void building(GameObject go) {
+    	go.addComponent(
+                    new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+            // Choose to upgrade the building
+            go.buildChild(
+                    "Upgrade Button",
+                    new TransformUI(true),
+                    (box) -> {
+                        box.addComponent(
+                                new UIRenderable(
+                                        new SampledTexture(
+                                                "ui/wide_button.png"))); // Make way to Go back
+                        box.addComponent(
+                                new UIButton(
+                                        (handle, __) -> {
+                                            // TODO When clicked need to
+                                            // show options to upgrade
+                                            // building stats.  Will leave
+                                            // until after prototype
+
+                                            mScreenOn = Screen.STAT_SCREEN;
+                                        }));
+                    });
+            // Choose to attack a building from here
+            go.buildChild(
+                    "Attack building",
+                    new TransformUI(true),
+                    (box) -> {
+                        box.addComponent(
+                                new UIRenderable(
+                                        new SampledTexture(
+                                                "ui/wide_button.png")));
+                        box.addComponent(
+                                new UIButton(
+                                        (handle, __) -> {
+
+                                            // Gets the building to attack
+                                            // from and stored
+                                            mBuildingChosen =
+                                                    new Reference<Building>(
+                                                            mPlayer.get()
+                                                                    .getMapComponent()
+                                                                    .get()
+                                                                    .getBuilding(
+                                                                            mHexChosen
+                                                                                                                                                                                               .getQ(),
+                                                                            mHexChosen
+                                                                                    
+                                                                                    .getR()));
+                                            mScreenOn =
+                                                    Screen.ATTACK_SCREEN;
+                                        }));
+                    });
+            // Sell a building
+            go.buildChild(
+                    "Sell building",
+                    new TransformUI(true),
+                    (box) -> {
+                        box.addComponent(
+                                new UIRenderable(
+                                        new SampledTexture(
+                                                "ui/wide_button.png")));
+                        box.addComponent(
+                                new UIButton(
+                                        (handle, __) -> {
+                                            // TODO When clicked need to
+                                            // sell building
+
+                                            mPlayer.get()
+                                                    .mClientSellRequest
+                                                    .invoke(
+                                                            new SellData(
+                                                                    mBuildingChosen
+                                                                            .get())); // Send Data
+
+                                            mBuildingChosen = null;
+                                            mHexChosen = null;
+                                            mScreenOn = Screen.MAP_SCREEN;
+                                        }));
+                    });
+
+            // Go Back
+            go.buildChild(
+                    "Go Back",
+                    new TransformUI(true),
+                    (box) -> {
+                        box.addComponent(
+                                new UIRenderable(
+                                        new SampledTexture(
+                                                "ui/wide_button.png")));
+                        box.addComponent(
+                                new UIButton(
+                                        (handle, __) -> {
+                                            mHexChosen = null;
+                                            mBuildingChosen = null;
+                                            mScreenOn = Screen.MAP_SCREEN;
+                                        }));
+                    });
+        
+    	
     }
 }
