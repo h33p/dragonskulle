@@ -265,7 +265,7 @@ public class NetworkObject extends Component implements IOnAwake {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
         boolean[] didChildUpdateMask = new boolean[mNetworkableComponents.size()];
-        mLogger.info("Networkable Object has n components : " + mNetworkableComponents.size());
+        mLogger.fine("Networkable Object has n components : " + mNetworkableComponents.size());
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (forceUpdate || mNetworkableComponents.get(i).get().hasBeenModified()) {
                 didChildUpdateMask[i] = true;

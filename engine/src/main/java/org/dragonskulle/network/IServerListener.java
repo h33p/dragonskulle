@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author Aurimas Blažulionis
  * @author Oscar L
  */
-public interface ServerListener {
+public interface IServerListener {
     /**
      * Client connected event.
      *

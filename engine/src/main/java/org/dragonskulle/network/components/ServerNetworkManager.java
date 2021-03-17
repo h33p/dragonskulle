@@ -15,18 +15,23 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
-import org.dragonskulle.network.ServerListener;
-import org.dragonskulle.network.Templates;
 
-/** @author Aurimas Blažulionis */
+/**
+ * Server network manager
+ *
+ * @author Aurimas Blažulionis
+ *     <p>This class is composed in NetworkManager, and handles all things server.
+ */
 @Accessors(prefix = "m")
 @Log
-public class ServerNetworkManager extends NetworkManager {
-    public class Listener implements ServerListener {
+public class ServerNetworkManager {
+    /** Server event listener */
+    public class Listener implements IServerListener {
         /**
          * Client connected event.
          *
@@ -41,8 +46,8 @@ public class ServerNetworkManager extends NetworkManager {
 
         @Override
         public void clientActivated(ServerClient client) {
-            spawnNetworkObject(client, Templates.find("cube"));
-            spawnNetworkObject(client, Templates.find("capital"));
+            if (mConnectedClientHandler != null)
+                mConnectedClientHandler.handle(mManager, client.getNetworkID());
         }
 
         /**
@@ -137,9 +142,14 @@ public class ServerNetworkManager extends NetworkManager {
         }
     }
 
-    private Listener mListener = new Listener();
-    private Server mServer;
-
+    /** Server event listener */
+    private final Listener mListener = new Listener();
+    /** Underlying server instance */
+    private final Server mServer;
+    /** Back reference to {@link NetworkManager} */
+    private final NetworkManager mManager;
+    /** Callback for connected clients */
+    private final NetworkManager.IConnectedClientHandler mConnectedClientHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
 
@@ -149,35 +159,31 @@ public class ServerNetworkManager extends NetworkManager {
      */
     @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
-    private Scene mGameScene;
-    private Scene mPrevScene;
-
-    public ServerNetworkManager(Scene gameScene) {
-        mGameScene = gameScene;
+    /**
+     * Constructor for {@link ServerNetworkManager}
+     *
+     * @param manager back reference to {@link NetworkManager}
+     * @param port target port to listen on
+     * @param connectedClientHandler callback for client connections
+     */
+    public ServerNetworkManager(
+            NetworkManager manager,
+            int port,
+            NetworkManager.IConnectedClientHandler connectedClientHandler)
+            throws IOException {
+        mManager = manager;
+        mServer = new Server(port, mListener);
+        mConnectedClientHandler = connectedClientHandler;
+        startGame();
     }
 
-    @Override
-    public boolean isServer() {
-        return true;
-    }
-
-    public void startGame() {
-        try {
-            mServer = new Server(7000, mListener);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
+    /** Start the game, load game scene */
+    void startGame() {
         Engine engine = Engine.getInstance();
 
-        if (mPrevScene == null) mPrevScene = Scene.getActiveScene();
-
-        Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mGameScene);
-
         if (engine.getPresentationScene() == Scene.getActiveScene())
-            engine.loadPresentationScene(mGameScene);
-        else engine.activateScene(mGameScene);
+            engine.loadPresentationScene(mManager.getGameScene());
+        else engine.activateScene(mManager.getGameScene());
     }
 
     /**
@@ -186,33 +192,47 @@ public class ServerNetworkManager extends NetworkManager {
      * @param owner target owner of the object
      * @param templateId ID of spawnable template
      */
-    private Reference<NetworkObject> spawnNetworkObject(ServerClient owner, int templateId) {
+    public Reference<NetworkObject> spawnNetworkObject(ServerClient owner, int templateId) {
+        return spawnNetworkObject(owner.getNetworkID(), templateId);
+    }
+
+    /**
+     * Spawns a network object on server by ID.
+     *
+     * @param ownerId target owner of the object. For server (AI) owned objects, use negative IDs
+     * @param templateId ID of the spawnable template
+     */
+    public Reference<NetworkObject> spawnNetworkObject(int ownerId, int templateId) {
         int netId = this.allocateId();
 
-        NetworkObject networkObject = new NetworkObject(netId, owner.getNetworkID(), true);
-        GameObject object = Templates.instantiate(templateId);
+        NetworkObject networkObject = new NetworkObject(netId, ownerId, true);
+        GameObject object = mManager.getSpawnableTemplates().instantiate(templateId);
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
 
-        mGameScene.addRootObject(object);
+        mManager.getGameScene().addRootObject(object);
 
         this.mNetworkObjects.put(netId, new ServerObjectEntry(ref, templateId));
 
         return ref;
     }
 
-    /**
-     * Gets a network object.
-     *
-     * @param networkObjectId the id of the object
-     * @return the network object found, null if not found
-     */
-    private ServerObjectEntry getNetworkObject(int networkObjectId) {
-        return this.mNetworkObjects.get(networkObjectId);
+    /** Destroy the server, and tell {@link NetworkManager} about it */
+    public void destroy() {
+        mServer.dispose();
+
+        mNetworkObjects.values().stream()
+                .map(e -> e.mNetworkObject)
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .map(NetworkObject::getGameObject)
+                .forEach(GameObject::destroy);
+
+        mManager.onServerDestroy();
     }
 
-    @Override
-    public void networkUpdate() {
+    /** Network update, called by {@link NetworkManager} */
+    void networkUpdate() {
         if (mServer == null) return;
 
         mServer.updateClientList();
@@ -231,10 +251,6 @@ public class ServerNetworkManager extends NetworkManager {
         }
     }
 
-    protected void joinLobby() {}
-
-    protected void joinGame() {}
-
     /**
      * Allocates an id for an object.
      *
@@ -242,10 +258,5 @@ public class ServerNetworkManager extends NetworkManager {
      */
     private int allocateId() {
         return mNetworkObjectCounter.getAndIncrement();
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (mServer != null) mServer.dispose();
     }
 }

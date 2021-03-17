@@ -26,22 +26,46 @@ import lombok.extern.java.Log;
 public class ServerClient {
     @Getter
     @Setter(AccessLevel.PACKAGE)
+    /**
+     * Network ID. All networked clients will have a non-negative ID. Negative IDs indicate either
+     * invalid IDs, or server owned objects
+     */
     private int mNetworkID = -1;
 
+    /** Underlying {@link Socket} */
     private Socket mSocket;
+    /** Is the client loop running, and supposed to be running */
     private boolean mRunning;
-    private ServerListener mServerListener;
+    /** Reference to the server event listener */
+    private IServerListener mServerListener;
+    /** Thread of the input loop */
     private Thread mThread;
+    /** Output stream for the socket */
     private DataOutputStream mDataOut;
 
     /** The scheduled requests to be processed. */
     private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
 
-    public ServerClient(Socket socket, ServerListener serverListener) {
+    /**
+     * Constructor for {@link ServerClient}
+     *
+     * @param socket socket for this connection
+     * @param serverListener reference to the server listener
+     */
+    ServerClient(Socket socket, IServerListener serverListener) {
         mSocket = socket;
         mServerListener = serverListener;
     }
 
+    /**
+     * Process a number of requests
+     *
+     * <p>This method will process up to the specified number of requests, and return the number of
+     * requests actually processed
+     *
+     * @param count maximum number of requests to process
+     * @return number of requests processed
+     */
     public int processRequests(int count) {
         int i = 0;
         byte[] req = null;
@@ -49,7 +73,21 @@ public class ServerClient {
         return i;
     }
 
-    public void closeSocket() {
+    /**
+     * Send byte message to the client
+     *
+     * @param message message to send
+     */
+    public void sendBytes(byte[] message) {
+        try {
+            mDataOut.write(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Close the socket, tell the thread to stop */
+    void closeSocket() {
         try {
             mRunning = false;
             mSocket.shutdownOutput();
@@ -59,7 +97,8 @@ public class ServerClient {
         }
     }
 
-    public void joinThread() {
+    /** Join the underlying thread */
+    void joinThread() {
         try {
             mThread.join();
         } catch (InterruptedException e) {
@@ -67,25 +106,18 @@ public class ServerClient {
         }
     }
 
-    public void startThread() {
+    /** Start the network input thread */
+    void startThread() {
         mThread = new Thread(this::run);
         mThread.setDaemon(true);
         mThread.setName("Client " + mSocket.getInetAddress().toString());
         mThread.start();
     }
 
-    public void sendBytes(byte[] message) {
-        try {
-            mDataOut.write(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * THe Client Runner is the thread given to each client to handle its own socket. Commands are
      * read from the input stream. It will pass all commands to the correct handler function. {@link
-     * org.dragonskulle.network.ServerListener}***
+     * org.dragonskulle.network.IServerListener}***
      */
     private void run() {
         mRunning = true;
@@ -156,7 +188,7 @@ public class ServerClient {
                     log.fine("Type : " + messageType);
                     log.fine("Payload : " + Arrays.toString(payload));
                 } else {
-                    executeBytes(messageType, payload);
+                    dispatchMessage(messageType, payload);
                 }
             }
         } else {
@@ -170,8 +202,7 @@ public class ServerClient {
      * @param messageType the message type
      * @param payload the payload
      */
-    private void executeBytes(byte messageType, byte[] payload) {
-        log.info("EXECB - " + messageType);
+    private void dispatchMessage(byte messageType, byte[] payload) {
         switch (messageType) {
             case NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST:
                 handleClientRequest(payload);

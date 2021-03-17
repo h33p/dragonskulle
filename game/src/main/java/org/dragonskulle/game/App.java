@@ -10,16 +10,19 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
-import org.dragonskulle.network.components.ClientNetworkManager;
-import org.dragonskulle.network.components.ServerNetworkManager;
+import org.dragonskulle.network.components.Capital.Capital;
+import org.dragonskulle.network.components.Capital.NetworkedTransform;
+import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
+import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
@@ -190,16 +193,35 @@ public class App {
         mainMenu.addRootObject(cube);
         mainMenu.addRootObject(hexRoot);
 
-        Reference<ClientNetworkManager> clientManager =
-                new ClientNetworkManager(mainScene).getReference(ClientNetworkManager.class);
-        Reference<ServerNetworkManager> serverManager =
-                new ServerNetworkManager(mainScene).getReference(ServerNetworkManager.class);
-        GameObject networkManager =
+        TemplateManager templates = new TemplateManager();
+
+        templates.addAllObjects(
+                new GameObject(
+                        "cube",
+                        (handle) -> {
+                            UnlitMaterial mat = new UnlitMaterial();
+                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
+                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
+                            handle.addComponent(new NetworkedTransform());
+                        }),
+                new GameObject(
+                        "capital",
+                        (handle) -> {
+                            UnlitMaterial mat = new UnlitMaterial();
+
+                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
+                            handle.addComponent(new Renderable(Mesh.HEXAGON, mat));
+                            handle.addComponent(new Capital());
+                        }));
+
+        Reference<NetworkManager> networkManager =
+                new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
+
+        GameObject networkManagerObject =
                 new GameObject(
                         "client network manager",
                         (handle) -> {
-                            handle.addComponent(clientManager.get());
-                            handle.addComponent(serverManager.get());
+                            handle.addComponent(networkManager.get());
                         });
 
         GameObject mainUI =
@@ -366,9 +388,9 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join (Temporary)"),
                                                 (uiButton, __) -> {
-                                                    clientManager
+                                                    networkManager
                                                             .get()
-                                                            .connect(
+                                                            .createClient(
                                                                     "127.0.0.1",
                                                                     7000,
                                                                     (outcome) -> {
@@ -435,7 +457,24 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host (Temporary)"),
                                                 (uiButton, __) -> {
-                                                    serverManager.get().startGame();
+                                                    networkManager
+                                                            .get()
+                                                            .createServer(
+                                                                    7000,
+                                                                    (manager, id) -> {
+                                                                        manager.getServerManager()
+                                                                                .spawnNetworkObject(
+                                                                                        id,
+                                                                                        manager
+                                                                                                .findTemplateByName(
+                                                                                                        "cube"));
+                                                                        manager.getServerManager()
+                                                                                .spawnNetworkObject(
+                                                                                        id,
+                                                                                        manager
+                                                                                                .findTemplateByName(
+                                                                                                        "capital"));
+                                                                    });
                                                 });
 
                                 button.addComponent(newButton);
@@ -470,7 +509,7 @@ public class App {
         mainMenu.addRootObject(GameObject.instantiate(hexRoot));
         mainMenu.addRootObject(GameObject.instantiate(cube));
 
-        mainMenu.addRootObject(networkManager);
+        mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);

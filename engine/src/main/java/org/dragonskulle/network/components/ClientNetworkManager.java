@@ -13,7 +13,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
-import org.dragonskulle.network.Templates;
 
 /**
  * @author Aurimas Blažulionis
@@ -21,11 +20,9 @@ import org.dragonskulle.network.Templates;
  */
 @Accessors(prefix = "m")
 @Log
-public class ClientNetworkManager extends NetworkManager {
-    public static interface IConnectionResultHandler {
-        void handle(boolean success);
-    }
+public class ClientNetworkManager {
 
+    /** Describes client connection state */
     private static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
@@ -35,6 +32,7 @@ public class ClientNetworkManager extends NetworkManager {
         CLEAN_DISCONNECTED
     }
 
+    /** Client listener */
     private class Listener implements IClientListener {
         @Override
         public void unknownHost() {
@@ -106,127 +104,51 @@ public class ClientNetworkManager extends NetworkManager {
     private static final int SPAWN_OWNER_ID = SPAWN_OBJECT_ID + 4;
     private static final int SPAWN_TEMPLATE_ID = SPAWN_OWNER_ID + 4;
 
-    private NetworkClient mClient;
-    private IClientListener mListener = new Listener();
+    /** Underlying network client instance */
+    private final NetworkClient mClient;
+    /** Client event callback listener */
+    private final IClientListener mListener = new Listener();
+    /** Current connection state */
     @Getter private ConnectionState mConnectionState = ConnectionState.NOT_CONNECTED;
+    /** Next connection state (set by the listener) */
     private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
-    private Scene mGameScene;
-    private Scene mPrevScene;
-    private IConnectionResultHandler mConnectionHandler;
+    /** Callback for connection result processing */
+    private NetworkManager.IConnectionResultHandler mConnectionHandler;
+    /** Back reference to the network manager */
+    private final NetworkManager mManager;
+    /** How many ticks elapsed without any updates */
     private int mTicksWithoutRequests = 0;
 
     /** An map of references to objects. */
     private final HashMap<Integer, Reference<NetworkObject>> mNetworkObjectReferences =
             new HashMap<>();
 
-    public ClientNetworkManager(Scene gameScene) {
-        mGameScene = gameScene;
+    /**
+     * Constructor for ClientNetworkManager
+     *
+     * @param manager target back reference to {@link NetworkManager}
+     * @param ip target connection IP address
+     * @param port target connection port
+     * @param handler connection result callback
+     */
+    ClientNetworkManager(
+            NetworkManager manager,
+            String ip,
+            int port,
+            NetworkManager.IConnectionResultHandler handler) {
+        mManager = manager;
+        mConnectionState = ConnectionState.CONNECTING;
+        mClient = new NetworkClient(ip, port, mListener);
+        mConnectionHandler = handler;
     }
 
-    @Override
-    public boolean isServer() {
-        return false;
-    }
-
-    /** Connect to a server */
-    public void connect(String ip, int port, IConnectionResultHandler handler) {
-        if (mClient != null && mConnectionState == ConnectionState.NOT_CONNECTED) {
-            mPrevScene = null;
-            onDisconnect();
-        }
-
-        if (mClient == null) {
-            mConnectionState = ConnectionState.CONNECTING;
-            mClient = new NetworkClient(ip, port, mListener);
-            mConnectionHandler = handler;
-        }
-    }
-
+    /**
+     * Send byte message to the server
+     *
+     * @param message message to send
+     */
     public void sendToServer(byte[] message) {
         mClient.sendBytes(message);
-    }
-
-    @Override
-    protected void networkUpdate() {
-
-        ConnectionState nextState = mNextConnectionState.getAndSet(null);
-
-        if (nextState != null) {
-
-            System.out.println(nextState.toString());
-            System.out.println(mConnectionState.toString());
-
-            if (mConnectionState == ConnectionState.CONNECTING) {
-                switch (nextState) {
-                    case CONNECTED:
-                        joinGame();
-                        if (mConnectionHandler != null) mConnectionHandler.handle(true);
-                        break;
-                    case CONNECTION_ERROR:
-                        mClient.dispose();
-                        mClient = null;
-                        if (mConnectionHandler != null) mConnectionHandler.handle(false);
-                        mConnectionState = ConnectionState.NOT_CONNECTED;
-                        break;
-                    default:
-                        break;
-                }
-            } else if (mConnectionState == ConnectionState.JOINED_GAME) {
-                // TODO: handle lobby -> game transition here
-                onDisconnect();
-            }
-        }
-
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
-            if (mClient.processRequests() <= 0) {
-                mTicksWithoutRequests++;
-                if (mTicksWithoutRequests > 3200) onDisconnect();
-                else if (mTicksWithoutRequests == 1000)
-                    log.info("1000 ticks without updates! 2200 more till disconnect!");
-            } else mTicksWithoutRequests = 0;
-        }
-    }
-
-    @Override
-    protected void joinLobby() {}
-
-    @Override
-    protected void joinGame() {
-        Engine engine = Engine.getInstance();
-
-        if (mPrevScene == null) mPrevScene = Scene.getActiveScene();
-
-        Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mGameScene);
-
-        if (engine.getPresentationScene() == Scene.getActiveScene())
-            engine.loadPresentationScene(mGameScene);
-        else engine.activateScene(mGameScene);
-
-        mConnectionState = ConnectionState.JOINED_GAME;
-    }
-
-    @Override
-    protected void onDestroy() {
-        mPrevScene = null;
-        onDisconnect();
-    }
-
-    protected void onDisconnect() {
-        Engine engine = Engine.getInstance();
-
-        if (mPrevScene != null) {
-            Scene.getActiveScene().moveRootObjectToScene(getGameObject(), mPrevScene);
-
-            if (engine.getPresentationScene() == Scene.getActiveScene())
-                engine.loadPresentationScene(mPrevScene);
-            else engine.activateScene(mPrevScene);
-        }
-
-        mConnectionState = ConnectionState.NOT_CONNECTED;
-        if (mClient != null) {
-            mClient.dispose();
-            mClient = null;
-        }
     }
 
     /**
@@ -240,16 +162,97 @@ public class ClientNetworkManager extends NetworkManager {
         return mNetworkObjectReferences.get(networkObjectId);
     }
 
+    /**
+     * Disconnect from the server
+     *
+     * <p>This method will disconnect from the server and tell {@link NetworkManager} about it.
+     */
+    public void disconnect() {
+        Engine engine = Engine.getInstance();
+
+        if (engine.getPresentationScene() == mManager.getGameScene())
+            engine.loadPresentationScene(Scene.getActiveScene());
+
+        mConnectionState = ConnectionState.NOT_CONNECTED;
+        mClient.dispose();
+
+        mNetworkObjectReferences.values().stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .map(NetworkObject::getGameObject)
+                .forEach(GameObject::destroy);
+
+        mManager.onClientDisconnect();
+    }
+
+    /** Network update method, called by {@link NetworkManager} */
+    void networkUpdate() {
+        ConnectionState nextState = mNextConnectionState.getAndSet(null);
+
+        if (nextState != null) {
+            System.out.println(nextState.toString());
+            System.out.println(mConnectionState.toString());
+
+            if (mConnectionState == ConnectionState.CONNECTING) {
+                switch (nextState) {
+                    case CONNECTED:
+                        joinGame();
+                        if (mConnectionHandler != null) mConnectionHandler.handle(true);
+                        break;
+                    case CONNECTION_ERROR:
+                        mClient.dispose();
+                        if (mConnectionHandler != null) mConnectionHandler.handle(false);
+                        mConnectionState = ConnectionState.NOT_CONNECTED;
+                        break;
+                    default:
+                        break;
+                }
+            } else if (mConnectionState == ConnectionState.JOINED_GAME) {
+                // TODO: handle lobby -> game transition here
+                disconnect();
+            }
+        }
+
+        if (mConnectionState == ConnectionState.JOINED_GAME) {
+            if (mClient.processRequests() <= 0) {
+                mTicksWithoutRequests++;
+                if (mTicksWithoutRequests > 3200) disconnect();
+                else if (mTicksWithoutRequests == 1000)
+                    log.info("1000 ticks without updates! 2200 more till disconnect!");
+            } else mTicksWithoutRequests = 0;
+        }
+    }
+
+    // TODO: implement lobby
+    // private void joinLobby() {}
+
+    /** Join the game map */
+    private void joinGame() {
+        Engine engine = Engine.getInstance();
+
+        if (engine.getPresentationScene() == Scene.getActiveScene())
+            engine.loadPresentationScene(mManager.getGameScene());
+        else engine.activateScene(mManager.getGameScene());
+
+        mConnectionState = ConnectionState.JOINED_GAME;
+    }
+
+    /**
+     * Spawn a new network object
+     *
+     * @param networkObjectId allocated object ID
+     * @param ownerId network owner ID
+     * @param templateId template ID
+     */
     private Reference<NetworkObject> spawnNewNetworkObject(
             int networkObjectId, int ownerID, int templateId) {
-        // TODO: use member templates
-        final GameObject go = Templates.instantiate(templateId);
+        final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);
         final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false);
         go.addComponent(nob);
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
         log.info("adding a new root object to the scene");
         log.info("nob to be spawned is : " + nob.toString());
-        mGameScene.addRootObject(go);
+        mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), ref);
 
         return ref;

@@ -22,7 +22,7 @@ public class ServerTest {
     private static final long TIMEOUT = 8;
 
     private static class TestContext implements NativeResource {
-        private ServerListener mServerListener;
+        private IServerListener mServerListener;
         private Server mServerInstance;
         private ClientEars mClientListener;
         private NetworkClient mNetworkClient;

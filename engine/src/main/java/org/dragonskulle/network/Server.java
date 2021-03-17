@@ -32,7 +32,7 @@ public class Server {
     /** The Port. */
     private int mPort;
     /** The Server listener. */
-    private ServerListener mServerListener;
+    private IServerListener mServerListener;
 
     private final ServerSocket mServerSocket;
     /** The Server thread. */
@@ -43,12 +43,28 @@ public class Server {
     /** Array of clients. Indexed by their network ID */
     private final Map<Integer, ServerClient> mClients = new TreeMap<>();
 
+    /**
+     * Accepted incoming clients. They have not been allocated any IDs yet, just waiting to be
+     * accepted by the main thread.
+     */
     private final ListenableQueue<Socket> mPendingClients =
             new ListenableQueue<>(new LinkedList<>());
+    /**
+     * Total client count. This includes all mClients, and not yet allocated PendingConnectedClients
+     */
     private int mClientCount = 0;
+    /** Network client ID counter. This is so as to ensure that every client has unique ID */
     private final AtomicInteger mClientIDCounter = new AtomicInteger(0);
+    /**
+     * Pending clients. Sockets for these clients have already been set up, they just need to be
+     * linked up by the main thread
+     */
     private final ListenableQueue<ServerClient> mPendingConnectedClients =
             new ListenableQueue<>(new LinkedList<>());
+    /**
+     * Pending disconnected clients. These are the clients main thread is supposed to remove on the
+     * next update.
+     */
     private final ListenableQueue<ServerClient> mPendingDisconnectedClients =
             new ListenableQueue<>(new LinkedList<>());
 
@@ -58,7 +74,7 @@ public class Server {
      * @param port the port
      * @param listener the listener
      */
-    public Server(int port, ServerListener listener) throws IOException {
+    public Server(int port, IServerListener listener) throws IOException {
         mLogger.fine("[S] Setting up server");
         mServerListener = listener;
 
@@ -83,7 +99,12 @@ public class Server {
         return mClients.values();
     }
 
-    public int updateClientList() {
+    /**
+     * Update client lists
+     *
+     * <p>This method will cleanup closed connections, and accept new clients in.
+     */
+    public void updateClientList() {
         // First, cleanup any disconnected clients
         ServerClient c;
         while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
@@ -96,14 +117,10 @@ public class Server {
 
         // Now accept new socket connections
         Socket s;
-        int cnt = 0;
         while (mClientCount < MAX_CLIENTS && (s = mPendingClients.poll()) != null) {
             new ServerClient(s, mServerListener).startThread();
             mClientCount++;
-            cnt++;
         }
-
-        return cnt;
     }
 
     /**
@@ -137,8 +154,13 @@ public class Server {
         return id;
     }
 
-    public void onClientDisconnect(ServerClient c) {
-        mPendingDisconnectedClients.add(c);
+    /**
+     * Thread safe client disconnect event
+     *
+     * @param client client to mark for removal
+     */
+    public void onClientDisconnect(ServerClient client) {
+        mPendingDisconnectedClients.add(client);
     }
 
     private boolean removeClient(ServerClient c) {
