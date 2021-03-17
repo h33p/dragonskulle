@@ -2,7 +2,6 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
-import java.util.Random;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -31,8 +30,9 @@ import org.joml.Vector3i;
  *
  * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
  * #setOwnerID(int)}.
-
- * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via {@link HexagonMap#storeBuilding(Building, int, int)}).
+ *
+ * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
+ * {@link HexagonMap#storeBuilding(Building, int, int)}).
  *
  * @author Craig Wilbourne
  */
@@ -41,15 +41,15 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake {
 
     /** Stores the attack strength of the building. */
-    @Getter private SyncAttackStat mAttack;
+    @Getter private SyncAttackStat mAttack = new SyncAttackStat();
     /** Stores the defence strength of the building. */
-    @Getter private SyncDefenceStat mDefence;
+    @Getter private SyncDefenceStat mDefence = new SyncDefenceStat();
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private SyncTokenGenerationStat mTokenGeneration;
+    @Getter private SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
     /** Stores the view range of the building. */
-    @Getter private SyncViewDistanceStat mViewDistance;
+    @Getter private SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
     /** Stores the attack range of the building. */
-    @Getter private SyncAttackDistanceStat mAttackDistance;
+    @Getter private SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
 
     /** ID of the owner of the building. */
     private final SyncInt mOwnerID = new SyncInt(-1);
@@ -64,13 +64,6 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
     @Override
     public void onAwake() {
-        // Create the Stats.
-        mAttack = new SyncAttackStat();
-        mDefence = new SyncDefenceStat();
-        mTokenGeneration = new SyncTokenGenerationStat();
-        mViewDistance = new SyncViewDistanceStat();
-        mAttackDistance = new SyncAttackDistanceStat();
-
         // For debugging, set all stat levels to 5.
         // TODO: Remove.
         mAttack.setLevel(5);
@@ -93,80 +86,43 @@ public class Building extends NetworkableComponent implements IOnAwake {
      * @return Whether the attack was successful or not.
      */
     public boolean attack(Building opponent) {
-        /** The number of sides on the dice*/
-        int dice = 1000;
+        /** The number of sides on the dice */
+        final int maxValue = 1000;
 
+        // Get the attacker and defender's stats.
         int attack = mAttack.getValue();
         int defence = opponent.mDefence.getValue();
 
-        /**Stores the highest result of rolling a dice an attack number of times*/
+        // Stores the highest result of rolling a dice a set number of times, defined by the attack
+        // stat.
         int highestAttack = 0;
-        /**Stores the highest result of rolling a dice an defence number of times*/
+        // Stores the highest result of rolling a dice a set number of times, defined by the defence
+        // stat.
         int highestDefence = 0;
 
-        /**Rolls attack number of dice and stores it in the arrayList attackValue*/
-        for (int i = 1; i < attack; i++ ){
-            int value = (int) (Math.random() * (dice) + 1);
-            //Sets highestAttack to the highest roll of the dice
-            if(value > highestAttack) {
+        // Roll a die a number of times defined by the attack stat.
+        for (int i = 1; i < attack; i++) {
+            int value = (int) (Math.random() * (maxValue) + 1);
+            // Store the highest value achieved.
+            if (value > highestAttack) {
                 highestAttack = value;
             }
         }
 
-        /**Resets the attack value to the highest roll*/
-        attack = highestAttack;
-
-        /**Rolls defence number of dice and stores it in the arrayList defenceValue*/
-        for (int i = 1; i < defence; i++ ){
-            int value =(int) (Math.random() * (dice) + 1);
-
-            //Sets the highestDefence to the highest roll of the dice
-            if(value > defence) {
+        // Roll a die a number of times defined by the defence stat.
+        for (int i = 1; i < defence; i++) {
+            int value = (int) (Math.random() * (maxValue) + 1);
+            // Store the highest value achieved.
+            if (value > defence) {
                 highestDefence = value;
             }
         }
 
-        /**Resets the defence value to the highest roll*/
-        defence = highestDefence;
-
-        if (attack > defence) {
-            log.info(
-                    String.format(
-                            "Successful attack",
-                            attack, defence));
+        // Check to see who has the highest value, and won.
+        if (highestAttack > highestDefence) {
             return true;
-
-        }
-        else if (attack < defence){
-            log.info(
-                    String.format(
-                            "Failed attack",
-                            attack, defence));
+        } else {
             return false;
-        }
-        else{
-
-            /**Used to calculate a random success rate as the attack and defence stats are the same*/
-            Random random = new Random();
-            double successChance = random.nextDouble();
-
-            // Set a 50% chance of success.
-            double target = 0.5;
-
-            if (successChance>=target) {
-                log.info(
-                        String.format(
-                                "Successful attack using random as attack and defence stats are the same",
-                                successChance, target));
-                return true;
-            }
-            else {
-                log.info(
-                        String.format(
-                                "Successful defence using random as attack and defence stats are the same",
-                                successChance, target));
-                return false;
-            }
         }
     }
 
