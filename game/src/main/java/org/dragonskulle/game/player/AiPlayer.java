@@ -96,9 +96,6 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
     @Override
     public void fixedUpdate(float deltaTime) {
 
-        // Update the tokens
-        mPlayer.get().updateTokens(deltaTime);
-
         // If you can play simulate the input
         if (playGame(deltaTime)) {
             log.info("Playing game");

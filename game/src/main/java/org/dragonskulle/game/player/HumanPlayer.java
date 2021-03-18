@@ -225,7 +225,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void fixedUpdate(float deltaTime) {
         // Update token
-        mPlayer.get().updateTokens(deltaTime);
         mLocalTokens = mPlayer.get().getTokens().get();
     }
 

@@ -7,6 +7,9 @@ import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+
+import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
@@ -32,7 +35,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
  */
 @Accessors(prefix = "m")
 @Log
-public class Player extends NetworkableComponent implements IOnStart {
+public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
     // List of Buildings -- stored & synced in HexagonMap
     private List<Reference<Building>> mOwnedBuildings;
@@ -409,4 +412,11 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         return tiles;
     }
+
+	@Override
+	public void fixedUpdate(float deltaTime) {
+		
+		updateTokens(deltaTime);
+		
+	}
 }
