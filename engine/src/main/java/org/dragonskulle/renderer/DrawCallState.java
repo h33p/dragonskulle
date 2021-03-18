@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
+import static org.lwjgl.vulkan.VK10.*;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +16,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.IMaterial;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
@@ -28,6 +31,7 @@ import org.lwjgl.vulkan.VkExtent2D;
  */
 @Accessors(prefix = "m")
 class DrawCallState implements NativeResource {
+    private VkDevice mDevice;
     private VulkanShaderDescriptorPool mDescriptorPool;
     @Getter private ShaderSet mShaderSet;
     @Getter private VulkanPipeline mPipeline;
@@ -101,6 +105,7 @@ class DrawCallState implements NativeResource {
     @Getter
     public static class DrawData {
         private TextureSet mTextureSet;
+        private VkDevice mDevice;
         long[] mDescriptorSets;
         int mInstanceBufferOffset;
 
@@ -111,6 +116,30 @@ class DrawCallState implements NativeResource {
             for (Renderable object : mObjects) {
                 object.writeVertexInstanceData(cur_off, buffer);
                 cur_off += shaderSet.getVertexBindingDescription().size;
+            }
+        }
+
+        public void slowUpdateInstanceBuffer(
+                ShaderSet shaderSet, PointerBuffer pData, long memory) {
+            int shaderSetSize = shaderSet.getVertexBindingDescription().size;
+            int cur_off = mInstanceBufferOffset;
+            for (Renderable object : mObjects) {
+                pData.rewind();
+                int res = vkMapMemory(mDevice, memory, cur_off, shaderSetSize, 0, pData);
+
+                if (res != VK_SUCCESS)
+                    throw new RuntimeException(
+                            String.format(
+                                    "Failed to map memory! Out of resources! off: %x sz: %x",
+                                    cur_off, shaderSetSize));
+
+                ByteBuffer byteBuffer = pData.getByteBuffer(shaderSetSize);
+
+                object.writeVertexInstanceData(0, byteBuffer);
+
+                vkUnmapMemory(mDevice, memory);
+
+                cur_off += shaderSetSize;
             }
         }
 
@@ -176,6 +205,7 @@ class DrawCallState implements NativeResource {
             int imageCount,
             ShaderSet shaderSet,
             Mesh mesh) {
+        mDevice = device;
         mDescriptorPool =
                 VulkanShaderDescriptorPool.createPool(
                         device, physicalDevice, shaderSet, imageCount);
@@ -217,6 +247,7 @@ class DrawCallState implements NativeResource {
         // If we never had this texture set, create a pool
         if (drawData == null) {
             drawData = new DrawData();
+            drawData.mDevice = mDevice;
             if (mShaderSet.mNumFragmentTextures > 0) {
                 SampledTexture[] matTextures = material.getFragmentTextures();
                 SampledTexture[] textures = new SampledTexture[mShaderSet.getNumFragmentTextures()];
@@ -242,6 +273,10 @@ class DrawCallState implements NativeResource {
 
     public void updateInstanceBuffer(ByteBuffer buffer) {
         for (DrawData d : mDrawData.values()) d.updateInstanceBuffer(mShaderSet, buffer);
+    }
+
+    public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory) {
+        for (DrawData d : mDrawData.values()) d.slowUpdateInstanceBuffer(mShaderSet, pData, memory);
     }
 
     @Override

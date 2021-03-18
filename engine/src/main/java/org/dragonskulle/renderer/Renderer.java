@@ -1153,18 +1153,29 @@ public class Renderer implements NativeResource {
 
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pData = stack.pointers(0);
-            vkMapMemory(mDevice, ctx.instanceBuffer.memory, 0, instanceBufferSize, 0, pData);
+            int res =
+                    vkMapMemory(
+                            mDevice, ctx.instanceBuffer.memory, 0, instanceBufferSize, 0, pData);
 
-            ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
+            if (res == VK_SUCCESS) {
+                ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
 
-            for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
-                for (DrawCallState state : stateMap.values()) {
-                    state.updateInstanceBuffer(byteBuffer);
-                    state.endDrawData(ctx.imageIndex);
+                for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                    for (DrawCallState state : stateMap.values()) {
+                        state.updateInstanceBuffer(byteBuffer);
+                        state.endDrawData(ctx.imageIndex);
+                    }
+                }
+
+                vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
+            } else {
+                for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                    for (DrawCallState state : stateMap.values()) {
+                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory);
+                        state.endDrawData(ctx.imageIndex);
+                    }
                 }
             }
-
-            vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
         }
     }
 
