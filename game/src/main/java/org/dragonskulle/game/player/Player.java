@@ -206,7 +206,7 @@ public class Player extends NetworkableComponent implements IOnStart {
             for (Reference<Player> player : mPlayersOnline) {
                 Reference<Building> buildingToRemove =
                         checkBuildingYours(
-                                defending.g, player.get()); // TODO NEED WAY TO GET Q & R VALUES
+                                defending.getTile(), player.get()); // TODO NEED WAY TO GET Q & R VALUES
 
                 if (buildingToRemove != null) {
                     player.get().removeBuilding(buildingToRemove);
