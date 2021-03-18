@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -17,6 +18,8 @@ import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
 import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.joml.Vector3f;
@@ -37,7 +40,7 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnAwake {
+public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** Stores the attack strength of the building. */
     @Getter public final SyncAttackStat mAttack = new SyncAttackStat();
@@ -68,6 +71,23 @@ public class Building extends NetworkableComponent implements IOnAwake {
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
+    }
+
+    @Override
+    public void onStart() {
+        Player owningPlayer =
+                getNetworkObject()
+                        .getNetworkManager()
+                        .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                        .map(NetworkObject::getGameObject)
+                        .map(go -> go.getComponent(Player.class))
+                        .filter(ref -> ref != null)
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .findFirst()
+                        .orElse(null);
+
+        if (owningPlayer != null) owningPlayer.addBuilding(this);
     }
 
     /**
@@ -262,14 +282,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
     private Vector3i getPosition() {
         Vector3f floatPosition = new Vector3f();
 
-        Reference<TransformHex> tranformReference =
-                getGameObject().getComponent(TransformHex.class);
-
-        if (tranformReference == null) {
-            return new Vector3i(0, 0, 0);
-        }
-
-        TransformHex tranform = tranformReference.get();
+        TransformHex tranform = getGameObject().getTransform(TransformHex.class);
 
         if (tranform == null) {
             return new Vector3i(0, 0, 0);

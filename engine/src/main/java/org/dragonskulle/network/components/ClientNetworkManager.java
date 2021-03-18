@@ -75,13 +75,17 @@ public class ClientNetworkManager {
         public void updateNetworkObject(byte[] payload) {
             // 4 bytes will be allocated for the id
             int idToUpdate = NetworkObject.getIdFromBytes(payload);
-            Reference<NetworkObject> networkObjectToUpdate = getNetworkObject(idToUpdate);
-            if (networkObjectToUpdate == null) {
+            ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
+            if (entry == null) {
                 log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
                 return;
             }
             try {
-                networkObjectToUpdate.get().updateFromBytes(payload);
+                entry.mNetworkObject.get().updateFromBytes(payload);
+                if (!entry.mSynchronized) {
+                    entry.mSynchronized = true;
+                    entry.mNetworkObject.get().getGameObject().setEnabled(true);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -93,6 +97,16 @@ public class ClientNetworkManager {
             int ownerId = NetworkObject.getIntFromBytes(payload, SPAWN_OWNER_ID);
             int spawnTemplateId = NetworkObject.getIntFromBytes(payload, SPAWN_TEMPLATE_ID);
             spawnNewNetworkObject(objectId, ownerId, spawnTemplateId);
+        }
+    }
+
+    private static class ClientObjectEntry {
+        private boolean mSynchronized;
+        private final Reference<NetworkObject> mNetworkObject;
+
+        public ClientObjectEntry(Reference<NetworkObject> networkObject) {
+            mSynchronized = false;
+            mNetworkObject = networkObject;
         }
     }
 
@@ -118,8 +132,7 @@ public class ClientNetworkManager {
     @Getter private int mNetID = -1;
 
     /** An map of references to objects. */
-    private final HashMap<Integer, Reference<NetworkObject>> mNetworkObjectReferences =
-            new HashMap<>();
+    private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
 
     /**
      * Constructor for ClientNetworkManager
@@ -156,8 +169,8 @@ public class ClientNetworkManager {
      * @return the network object found, if none exists then null.
      */
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
-        log.fine(mNetworkObjectReferences.toString());
-        return mNetworkObjectReferences.get(networkObjectId);
+        ClientObjectEntry entry = getNetworkObjectEntry(networkObjectId);
+        return entry == null ? null : entry.mNetworkObject;
     }
 
     /**
@@ -167,7 +180,7 @@ public class ClientNetworkManager {
      */
     public Stream<Reference<NetworkObject>> getNetworkObjects() {
         log.fine(mNetworkObjectReferences.toString());
-        return mNetworkObjectReferences.values().stream();
+        return mNetworkObjectReferences.values().stream().map(e -> e.mNetworkObject);
     }
 
     /**
@@ -186,6 +199,7 @@ public class ClientNetworkManager {
         mClient.dispose();
 
         mNetworkObjectReferences.values().stream()
+                .map(e -> e.mNetworkObject)
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .map(NetworkObject::getGameObject)
@@ -250,6 +264,17 @@ public class ClientNetworkManager {
     }
 
     /**
+     * Gets a network object by id.
+     *
+     * @param networkObjectId the id of the object
+     * @return the network object found, if none exists then null.
+     */
+    private ClientObjectEntry getNetworkObjectEntry(int networkObjectId) {
+        log.fine(mNetworkObjectReferences.toString());
+        return mNetworkObjectReferences.get(networkObjectId);
+    }
+
+    /**
      * Spawn a new network object
      *
      * @param networkObjectId allocated object ID
@@ -263,8 +288,9 @@ public class ClientNetworkManager {
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
         log.info("adding a new root object to the scene");
         log.info("nob to be spawned is : " + nob.toString());
+        go.setEnabled(false);
         mManager.getGameScene().addRootObject(go);
-        this.mNetworkObjectReferences.put(nob.getId(), ref);
+        this.mNetworkObjectReferences.put(nob.getId(), new ClientObjectEntry(ref));
         nob.networkInitialize();
     }
 }

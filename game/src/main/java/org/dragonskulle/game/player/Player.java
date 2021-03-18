@@ -286,7 +286,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             // Store the building.
             Building building = buildingGO.getComponent(Building.class).get();
             if (building != null) {
-                addBuilding(building);
                 map.storeBuilding(
                         buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
             }

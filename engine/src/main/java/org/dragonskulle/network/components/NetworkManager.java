@@ -2,12 +2,14 @@
 package org.dragonskulle.network.components;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.INetworkUpdate;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.ServerClient;
@@ -110,6 +112,20 @@ public class NetworkManager extends Component implements INetworkUpdate {
      */
     public boolean isClient() {
         return mClientManager != null;
+    }
+
+    public Stream<NetworkObject> getObjectsOwnedBy(int netId) {
+        Stream<Reference<NetworkObject>> obj = null;
+
+        if (mServerManager != null)
+            obj =
+                    mServerManager.getNetworkObjects().values().stream()
+                            .map(e -> e.getNetworkObject());
+        else if (mClientManager != null) obj = mClientManager.getNetworkObjects();
+
+        return obj.filter(Reference::isValid)
+                .map(Reference::get)
+                .filter(o -> o.getOwnerId() == netId);
     }
 
     /** Called whenever client disconnects */
