@@ -5,6 +5,7 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
+
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -41,15 +42,15 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final Vector4fc[] COLOURS = {
-        new Vector4f(1.f, 0.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 0.5f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.5f, 1f),
-        new Vector4f(0.5f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 1.f, 1f),
-        new Vector4f(1.f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 0.f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 0.f, 1f),
+            new Vector4f(0.f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 0.5f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 0.5f, 1f),
+            new Vector4f(0.5f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 1.f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 1.f, 1f),
+            new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
     private static Scene createMainScene() {
@@ -146,23 +147,7 @@ public class App {
             }
         }
 
-        // Create a cube. This syntax is slightly different
-        // This here, will allow you to "build" the cube in one go
-        GameObject cube =
-                new GameObject(
-                        "cube",
-                        new Transform3D(0f, 0f, 1.5f),
-                        (go) -> {
-                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            go.getComponent(Renderable.class)
-                                    .get()
-                                    .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(1f);
-                            // You spin me right round...
-                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-                        });
 
-        mainMenu.addRootObject(cube);
         mainMenu.addRootObject(hexRoot);
 
         TemplateManager templates = new TemplateManager();
@@ -263,6 +248,41 @@ public class App {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
+        GameObject hostGameUI =
+                new GameObject(
+                        "hostGameUI",
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                            root.buildChild(
+                                    "populate_with_ai",
+                                    new TransformUI(true),
+                                    (box) -> {
+                                        box.getTransform(TransformUI.class)
+                                                .setParentAnchor(
+                                                        0.3f, 0.93f, 1f, 0.93f);
+                                        box.getTransform(TransformUI.class)
+                                                .setMargin(0f, 0f, 0f, 0.07f);
+                                        box.addComponent(
+                                                new UIRenderable(
+                                                        new SampledTexture(
+                                                                "ui/wide_button.png")));
+                                        box.addComponent(
+                                                new UIButton(
+                                                        new UIText(
+                                                                new Vector3f(
+                                                                        0f, 0f, 0f),
+                                                                Font
+                                                                        .getFontResource(
+                                                                                "Rise of Kingdom.ttf"),
+                                                                "Fill game with AI"), (a,b) -> {
+                                                            System.out.println("should fill with ai");
+                                                }));
+                                    });
+
+                        });
+
         mainUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -288,6 +308,7 @@ public class App {
                                                 (uiButton, __) -> {
                                                     mainUI.setEnabled(false);
                                                     joinUI.setEnabled(true);
+                                                    hostGameUI.setEnabled(false);
                                                 });
 
                                 button.addComponent(newButton);
@@ -310,6 +331,8 @@ public class App {
                                                 (uiButton, __) -> {
                                                     mainUI.setEnabled(false);
                                                     hostUI.setEnabled(true);
+                                                    hostGameUI.setEnabled(true);
+
                                                 });
 
                                 button.addComponent(newButton);
@@ -502,9 +525,10 @@ public class App {
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
+        hostGameUI.setEnabled(false);
+        mainScene.addRootObject(hostGameUI);
 
         mainMenu.addRootObject(GameObject.instantiate(hexRoot));
-        mainMenu.addRootObject(GameObject.instantiate(cube));
 
         mainMenu.addRootObject(networkManagerObject);
 
@@ -556,3 +580,23 @@ public class App {
                 .spawnNetworkObject(id, manager.findTemplateByName("humanPlayer"));
     }
 }
+
+//        // Create a cube. This syntax is slightly different
+//        // This here, will allow you to "build" the cube in one go
+//        GameObject cube =
+//                new GameObject(
+//                        "cube",
+//                        new Transform3D(0f, 0f, 1.5f),
+//                        (go) -> {
+//                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
+//                            go.getComponent(Renderable.class)
+//                                    .get()
+//                                    .getMaterial(IColouredMaterial.class)
+//                                    .setAlpha(1f);
+//                            // You spin me right round...
+//                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
+//                        });
+//
+//        mainMenu.addRootObject(cube);
+//
+//        mainMenu.addRootObject(GameObject.instantiate(cube));
