@@ -108,10 +108,10 @@ public class ServerNetworkManager {
         }
     }
 
-    private static class ServerObjectEntry {
-        private final Reference<NetworkObject> mNetworkObject;
-        private final int mTemplateId;
-        private final Set<ServerClient> mSpawnedFor;
+    public static class ServerObjectEntry {
+        @Getter private final Reference<NetworkObject> mNetworkObject;
+        @Getter private final int mTemplateId;
+        @Getter private final Set<ServerClient> mSpawnedFor;
 
         public ServerObjectEntry(Reference<NetworkObject> networkObject, int templateId) {
             mNetworkObject = networkObject;

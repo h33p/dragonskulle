@@ -5,6 +5,7 @@ import java.io.IOException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.core.Scene;
@@ -15,6 +16,7 @@ import org.dragonskulle.core.TemplateManager;
  * @author Oscar L
  */
 @Accessors(prefix = "m")
+@Log
 public class NetworkManager extends Component implements IFixedUpdate {
 
     /** Simple client connection result handler */

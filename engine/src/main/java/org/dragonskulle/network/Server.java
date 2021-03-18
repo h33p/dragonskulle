@@ -195,6 +195,14 @@ public class Server {
             mServerRunner = null;
         }
 
+        if (mServerSocket != null) {
+            try {
+                mServerSocket.close();
+            } catch (IOException e) {
+
+            }
+        }
+
         Socket s;
         while ((s = mPendingClients.poll()) != null) {
             try {

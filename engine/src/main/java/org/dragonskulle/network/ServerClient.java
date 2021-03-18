@@ -93,7 +93,6 @@ public class ServerClient {
             mSocket.shutdownOutput();
             mSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

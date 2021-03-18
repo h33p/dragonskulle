@@ -4,6 +4,7 @@ package org.dragonskulle.network.components;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -160,6 +161,16 @@ public class ClientNetworkManager {
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
         log.fine(mNetworkObjectReferences.toString());
         return mNetworkObjectReferences.get(networkObjectId);
+    }
+
+    /**
+     * Gets all network objects as a stream
+     *
+     * @return the network object found, if none exists then null.
+     */
+    public Stream<Reference<NetworkObject>> getNetworkObjects() {
+        log.fine(mNetworkObjectReferences.toString());
+        return mNetworkObjectReferences.values().stream();
     }
 
     /**
