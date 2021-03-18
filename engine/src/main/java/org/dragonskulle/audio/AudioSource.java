@@ -51,7 +51,7 @@ public class AudioSource extends Component {
             mFileName = f.getName();
             mChannel = channel;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.severe("Failed to load audio from remote!, " + e.getMessage());
         }
     }
 
