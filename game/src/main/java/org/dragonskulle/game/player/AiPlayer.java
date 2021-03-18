@@ -171,6 +171,11 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                                     .reduce((__, second) -> second) // take the last
                                     .orElse(null);
 
+                    if(buildingToUpgrade == null) {
+                    	log.info("AI: could not get building to upgrade.");
+                    	return;
+                    }
+                    
                     // Get Stat to upgrade
                     ArrayList<SyncStat<?>> statsArray = buildingToUpgrade.getStats();
                     SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
