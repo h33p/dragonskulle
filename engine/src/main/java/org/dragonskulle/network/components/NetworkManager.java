@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.ServerClient;
@@ -18,7 +18,7 @@ import org.dragonskulle.network.ServerClient;
  */
 @Accessors(prefix = "m")
 @Log
-public class NetworkManager extends Component implements IFixedUpdate {
+public class NetworkManager extends Component implements INetworkUpdate {
 
     /** Simple client connection result handler */
     public static interface IConnectionResultHandler {
@@ -47,7 +47,7 @@ public class NetworkManager extends Component implements IFixedUpdate {
     }
 
     @Override
-    public void fixedUpdate(float deltaTime) {
+    public void networkUpdate() {
         Scene.getActiveScene().registerSingleton(this);
         mGameScene.registerSingleton(this);
 

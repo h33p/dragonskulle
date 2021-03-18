@@ -149,12 +149,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild(
                                 "buildingSelectedView options",
                                 new TransformUI(),
-                                this::buildingSelectedView);
+                                this::buildBuildingSelectedView);
 
         // To Attack
         mChooseAttack =
                 getGameObject()
-                        .buildChild("attackView screen", new TransformUI(), this::attackView);
+                        .buildChild("attackView screen", new TransformUI(), this::buildAttackView);
 
         // To upgrade stats
         mShowStat =
@@ -283,7 +283,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             // Convert those coordinates to local coordinates within the map
             Vector3f pos =
                     mainCam.screenToPlane(
-                            mPlayer.get().getMapComponent().get().getGameObject().getTransform(),
+                            mPlayer.get().getMapComponent().getGameObject().getTransform(),
                             screenPos.x(),
                             screenPos.y(),
                             new Vector3f());
@@ -295,9 +295,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             // And then select the tile
             Player player = mPlayer.get();
             if (player != null) {
-                Reference<HexagonMap> component = player.getMapComponent();
+                HexagonMap component = player.getMapComponent();
                 if (component != null) {
-                    mHexChosen = component.get().getTile((int) pos.x, (int) pos.y);
+                    mHexChosen = component.getTile((int) pos.x, (int) pos.y);
                 }
             }
 
@@ -311,7 +311,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         new Reference<Building>(
                                 mPlayer.get()
                                         .getMapComponent()
-                                        .get()
                                         .getBuilding(mHexChosen.getQ(), mHexChosen.getR()));
 
                 // If there is a buildingSelectedView there
@@ -357,7 +356,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      *
      * @param go The game object
      */
-    private void attackView(GameObject go) {
+    private void buildAttackView(GameObject go) {
 
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
@@ -427,7 +426,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
-    private void buildingSelectedView(GameObject go) {
+    private void buildBuildingSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
         // Choose to upgrade the buildingSelectedView
         go.buildChild(
@@ -477,7 +476,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                 new Reference<Building>(
                                                         mPlayer.get()
                                                                 .getMapComponent()
-                                                                .get()
                                                                 .getBuilding(
                                                                         mHexChosen.getQ(),
                                                                         mHexChosen.getR()));

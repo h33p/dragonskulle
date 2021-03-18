@@ -286,7 +286,6 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                                 if (mPlayer.get()
                                                 .getMapComponent()
-                                                .get()
                                                 .getTile(hexTile.getR(), hexTile.getQ())
                                         != null) {; // Ignore cos theres already a building there
                                 } else if (!checkCloseBuildings(
@@ -315,8 +314,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
         // Check if building there
         for (HexagonTile tile : hexTiles) {
-            if (mPlayer.get().getMapComponent().get().getBuilding(tile.getQ(), tile.getR())
-                    != null) {
+            if (mPlayer.get().getMapComponent().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return false;
             }
         }

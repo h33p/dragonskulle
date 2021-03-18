@@ -40,7 +40,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     // List of Buildings -- stored & synced in HexagonMap
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
     // The map component
-    @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
+    private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
@@ -62,6 +62,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
         updateTokens(UPDATE_TIME);
+    }
+
+    public HexagonMap getMapComponent() {
+        return mMapComponent == null ? null : mMapComponent.get();
     }
 
     /**

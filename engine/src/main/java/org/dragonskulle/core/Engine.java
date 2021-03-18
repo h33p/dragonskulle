@@ -10,6 +10,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
+import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
@@ -222,10 +223,14 @@ public class Engine {
 
             mIsRunning = exitCondition.shouldExit();
 
-            while (cumulativeTime > UPDATE_TIME) {
-                cumulativeTime -= UPDATE_TIME;
+            if (cumulativeTime > UPDATE_TIME) {
+                networkUpdate();
 
-                fixedUpdate();
+                do {
+                    cumulativeTime -= UPDATE_TIME;
+
+                    fixedUpdate();
+                } while (cumulativeTime > UPDATE_TIME);
             }
         }
     }
@@ -273,10 +278,14 @@ public class Engine {
             frameUpdate(deltaTime);
             Scene.setActiveScene(null);
 
-            while (cumulativeTime > UPDATE_TIME) {
-                cumulativeTime -= UPDATE_TIME;
+            if (cumulativeTime > UPDATE_TIME) {
+                networkUpdate();
 
-                fixedUpdate();
+                do {
+                    cumulativeTime -= UPDATE_TIME;
+
+                    fixedUpdate();
+                } while (cumulativeTime > UPDATE_TIME);
             }
 
             Scene.setActiveScene(mPresentationScene);
@@ -360,6 +369,18 @@ public class Engine {
             for (Component component : s.getEnabledComponents()) {
                 if (component instanceof IFixedUpdate) {
                     ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
+                }
+            }
+        }
+        Scene.setActiveScene(null);
+    }
+
+    private void networkUpdate() {
+        for (Scene s : mActiveScenes) {
+            Scene.setActiveScene(s);
+            for (Component component : s.getEnabledComponents()) {
+                if (component instanceof INetworkUpdate) {
+                    ((INetworkUpdate) component).networkUpdate();
                 }
             }
         }
