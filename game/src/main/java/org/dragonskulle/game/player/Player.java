@@ -54,7 +54,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         mOwnedBuildings = new ArrayList<Reference<Building>>();
         // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
-        updateTokens(UPDATE_TIME + 1);
+        updateTokens(UPDATE_TIME);
     }
     /**
      * Add a building to the ones the player owns
@@ -103,7 +103,7 @@ public class Player extends NetworkableComponent implements IOnStart {
 
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
-            if (mLastTokenUpdate > UPDATE_TIME) {
+            if (mLastTokenUpdate >= UPDATE_TIME) {
 
                 // Add tokens for each building
                 for (Reference<Building> building : mOwnedBuildings) {
