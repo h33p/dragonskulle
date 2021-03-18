@@ -212,7 +212,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                                 + mLocalTokens)));
                                             });
                                 });
-        mTokenBanner.get().setEnabled(true);
+        mTokenBanner.get().setEnabled(false);
     }
 
     @Override
