@@ -373,33 +373,6 @@ public class App {
                                                                                     .get()
                                                                                     .findTemplateByName(
                                                                                             "aiPlayer"));
-                                                            networkManager
-                                                                    .get()
-                                                                    .getServerManager()
-                                                                    .spawnNetworkObject(
-                                                                            -2,
-                                                                            networkManager
-                                                                                    .get()
-                                                                                    .findTemplateByName(
-                                                                                            "aiPlayer"));
-                                                            networkManager
-                                                                    .get()
-                                                                    .getServerManager()
-                                                                    .spawnNetworkObject(
-                                                                            -3,
-                                                                            networkManager
-                                                                                    .get()
-                                                                                    .findTemplateByName(
-                                                                                            "aiPlayer"));
-                                                            networkManager
-                                                                    .get()
-                                                                    .getServerManager()
-                                                                    .spawnNetworkObject(
-                                                                            -4,
-                                                                            networkManager
-                                                                                    .get()
-                                                                                    .findTemplateByName(
-                                                                                            "aiPlayer"));
                                                         }));
                                     });
                         });
