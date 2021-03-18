@@ -5,7 +5,6 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
-
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -42,15 +41,15 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final Vector4fc[] COLOURS = {
-            new Vector4f(1.f, 0.f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 0.f, 1f),
-            new Vector4f(0.f, 0.f, 1.f, 1f),
-            new Vector4f(1.f, 0.5f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 0.5f, 1f),
-            new Vector4f(0.5f, 0.f, 1.f, 1f),
-            new Vector4f(1.f, 1.f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 1.f, 1f),
-            new Vector4f(1.f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 0.f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 0.f, 1f),
+        new Vector4f(0.f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 0.5f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 0.5f, 1f),
+        new Vector4f(0.5f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 1.f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 1.f, 1f),
+        new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
     private static Scene createMainScene() {
@@ -146,7 +145,6 @@ public class App {
                 hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
             }
         }
-
 
         mainMenu.addRootObject(hexRoot);
 
@@ -260,27 +258,24 @@ public class App {
                                     new TransformUI(true),
                                     (box) -> {
                                         box.getTransform(TransformUI.class)
-                                                .setParentAnchor(
-                                                        0.3f, 0.93f, 1f, 0.93f);
+                                                .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
                                         box.getTransform(TransformUI.class)
                                                 .setMargin(0f, 0f, 0f, 0.07f);
                                         box.addComponent(
                                                 new UIRenderable(
-                                                        new SampledTexture(
-                                                                "ui/wide_button.png")));
+                                                        new SampledTexture("ui/wide_button.png")));
                                         box.addComponent(
                                                 new UIButton(
                                                         new UIText(
-                                                                new Vector3f(
-                                                                        0f, 0f, 0f),
-                                                                Font
-                                                                        .getFontResource(
-                                                                                "Rise of Kingdom.ttf"),
-                                                                "Fill game with AI"), (a,b) -> {
-                                                            System.out.println("should fill with ai");
-                                                }));
+                                                                new Vector3f(0f, 0f, 0f),
+                                                                Font.getFontResource(
+                                                                        "Rise of Kingdom.ttf"),
+                                                                "Fill game with AI"),
+                                                        (a, b) -> {
+                                                            System.out.println(
+                                                                    "should fill with ai");
+                                                        }));
                                     });
-
                         });
 
         mainUI.buildChild(
@@ -332,7 +327,6 @@ public class App {
                                                     mainUI.setEnabled(false);
                                                     hostUI.setEnabled(true);
                                                     hostGameUI.setEnabled(true);
-
                                                 });
 
                                 button.addComponent(newButton);
