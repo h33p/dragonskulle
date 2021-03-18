@@ -8,6 +8,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.Transform3D;
+import org.dragonskulle.game.camera.ScrollTranslate.IZoomNotify;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.utils.MathUtils;
 
@@ -17,7 +18,7 @@ import org.dragonskulle.utils.MathUtils;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwake {
+public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwake, IZoomNotify {
     @Getter @Setter public float mMinMoveSpeed = 10f;
     @Getter @Setter public float mMaxMoveSpeed = 90f;
 
