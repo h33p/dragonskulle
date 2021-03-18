@@ -230,7 +230,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             // And then select the tile
             mHexChosen = mPlayer.get().getMapComponent().get().getTile((int) pos.x, (int) pos.y);
 
-            log.info("Human:Got the Hexagon to enter");
+            System.out.println("Human:Got the Hexagon to enter");
 
             // When chosen a hexagon
             if (mHexChosen != null) {
@@ -249,13 +249,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     // Checks if cannot build here
                     if (mPlayer.get()
                             .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
-                        log.info("Human:Cannot build");
+                        System.out.println("Human:Cannot build");
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
                         // If you can build
                     } else {
-                        log.info("Human:Change Screen");
+                        System.out.println("Human:Change Screen");
                         mScreenOn = Screen.TILE_SCREEN;
                     }
                     // Checks if the player owns the building

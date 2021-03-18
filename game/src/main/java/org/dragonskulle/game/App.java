@@ -5,18 +5,23 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
+
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
+import org.dragonskulle.game.player.AiPlayer;
+import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
@@ -35,15 +40,15 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final Vector4fc[] COLOURS = {
-        new Vector4f(1.f, 0.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 0.5f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.5f, 1f),
-        new Vector4f(0.5f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 1.f, 1f),
-        new Vector4f(1.f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 0.f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 0.f, 1f),
+            new Vector4f(0.f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 0.5f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 0.5f, 1f),
+            new Vector4f(0.5f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 1.f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 1.f, 1f),
+            new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
     private static Scene createMainScene() {
@@ -175,7 +180,34 @@ public class App {
 
                             mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
                             handle.addComponent(new Renderable(Mesh.HEXAGON, mat));
-                        }));
+                        }),
+                new GameObject(
+                        "building",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            UnlitMaterial mat = new UnlitMaterial();
+                            mat.getColour().set(1, 0, 0, 1);
+                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
+                            handle.addComponent(new Building());
+                        }),
+                new GameObject(
+                        "humanPlayer",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            handle.addComponent(new HumanPlayer());
+                            handle.addComponent(new Player());
+
+                        }),
+                new GameObject(
+                        "aiPlayer",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            handle.addComponent(new AiPlayer());
+                            handle.addComponent(new Player());
+
+                        })
+
+        );
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
@@ -440,7 +472,7 @@ public class App {
                                                     networkManager
                                                             .get()
                                                             .createServer(
-                                                                    7000, (manager, id) -> {});
+                                                                    7000, App::onClientConnected);
                                                 });
 
                                 button.addComponent(newButton);
@@ -484,7 +516,11 @@ public class App {
         return mainMenu;
     }
 
-    /** Entrypoint of the program. Creates and runs one app instance */
+    /**
+     * Entrypoint of the program. Creates and runs one app instance
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         // Create a scene
         Scene mainScene = createMainScene();
@@ -517,5 +553,6 @@ public class App {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("humanPlayer"));
     }
 }
