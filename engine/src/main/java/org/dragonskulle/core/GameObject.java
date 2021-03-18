@@ -28,7 +28,7 @@ import org.dragonskulle.components.Transform3D;
 @Accessors(prefix = "m")
 public class GameObject implements Serializable {
 
-    @Getter private final Reference<GameObject> mReference = new Reference<>(this);
+    @Getter private Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
     private final ArrayList<GameObject> mChildren = new ArrayList<>();
 
@@ -347,8 +347,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, IBuildHandler handler) {
-        buildChild(name, mEnabled, handler);
+    public Reference<GameObject> buildChild(String name, IBuildHandler handler) {
+        return buildChild(name, mEnabled, handler);
     }
 
     /**
@@ -358,10 +358,11 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, boolean enabled, IBuildHandler handler) {
+    public Reference<GameObject> buildChild(String name, boolean enabled, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled);
         this.addChild(go);
         handler.handleBuild(go);
+        return go.getReference();
     }
 
     /**
@@ -371,8 +372,9 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(String name, Transform transform, IBuildHandler handler) {
-        buildChild(name, mEnabled, transform, handler);
+    public Reference<GameObject> buildChild(
+            String name, Transform transform, IBuildHandler handler) {
+        return buildChild(name, mEnabled, transform, handler);
     }
 
     /**
@@ -382,11 +384,12 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public void buildChild(
+    public Reference<GameObject> buildChild(
             String name, boolean enabled, Transform transform, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled, transform);
         this.addChild(go);
         handler.handleBuild(go);
+        return go.getReference();
     }
 
     /**
@@ -448,6 +451,14 @@ public class GameObject implements Serializable {
      */
     public void destroy() {
         Engine.getInstance().mDestroyedObjects.add(this);
+    }
+
+    /** Recreate all references within the game object */
+    void recreateReferences() {
+        mReference.clear();
+        mReference = new Reference<>(this);
+        for (Component c : mComponents) c.recreateReference();
+        for (GameObject c : mChildren) c.recreateReferences();
     }
 
     /**

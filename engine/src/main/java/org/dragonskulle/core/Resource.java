@@ -36,7 +36,7 @@ public class Resource<T> implements NativeResource {
      * @return the underlying {@code T} value. Never {@code null}.
      */
     public T get() {
-        return instance.getResource();
+        return instance != null ? instance.getResource() : null;
     }
 
     /**

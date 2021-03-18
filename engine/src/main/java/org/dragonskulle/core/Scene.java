@@ -61,6 +61,18 @@ public class Scene {
     }
 
     /**
+     * Moves a root object from one scene to the next.
+     *
+     * <p>Although
+     */
+    public void moveRootObjectToScene(GameObject object, Scene target) {
+        if (mGameObjects.remove(object)) {
+            target.addRootObject(object);
+            object.recreateReferences();
+        }
+    }
+
+    /**
      * Register a singleton
      *
      * <p>Allows to register a singleton for the scene. Singletons are meant for components that
