@@ -5,7 +5,6 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
-
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -42,15 +41,15 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final Vector4fc[] COLOURS = {
-            new Vector4f(1.f, 0.f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 0.f, 1f),
-            new Vector4f(0.f, 0.f, 1.f, 1f),
-            new Vector4f(1.f, 0.5f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 0.5f, 1f),
-            new Vector4f(0.5f, 0.f, 1.f, 1f),
-            new Vector4f(1.f, 1.f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 1.f, 1f),
-            new Vector4f(1.f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 0.f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 0.f, 1f),
+        new Vector4f(0.f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 0.5f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 0.5f, 1f),
+        new Vector4f(0.5f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 1.f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 1.f, 1f),
+        new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
     private static Scene createMainScene() {
@@ -200,7 +199,6 @@ public class App {
                         (handle) -> {
                             handle.addComponent(new HumanPlayer());
                             handle.addComponent(new Player());
-
                         }),
                 new GameObject(
                         "aiPlayer",
@@ -208,10 +206,7 @@ public class App {
                         (handle) -> {
                             handle.addComponent(new AiPlayer());
                             handle.addComponent(new Player());
-
-                        })
-
-        );
+                        }));
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
@@ -557,6 +552,7 @@ public class App {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("humanPlayer"));
+        manager.getServerManager()
+                .spawnNetworkObject(id, manager.findTemplateByName("humanPlayer"));
     }
 }

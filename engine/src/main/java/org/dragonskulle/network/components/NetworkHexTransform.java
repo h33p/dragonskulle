@@ -1,10 +1,9 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
 import org.dragonskulle.components.*;
-import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 
 public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate, IOnAwake {
     public SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
@@ -19,8 +18,7 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -39,7 +37,6 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
                 hexTransform.setPosition(mAxialCoordinate.get());
             }
         }
-
     }
 
     public void setAxial(int q, int r, int s) {
@@ -50,9 +47,7 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
         this.mAxialCoordinate.set(coordinates);
     }
 
-    /**
-     * Called when a component is first added to a scene to allow initial setup of variables
-     */
+    /** Called when a component is first added to a scene to allow initial setup of variables */
     @Override
     public void onAwake() {
         hexTransform = getGameObject().getTransform(TransformHex.class);
@@ -61,8 +56,6 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
 
     @Override
     public String toString() {
-        return "NetworkHexTransform{" +
-                "mAxialCoordinate=" + mAxialCoordinate +
-                '}';
+        return "NetworkHexTransform{" + "mAxialCoordinate=" + mAxialCoordinate + '}';
     }
 }

@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-import com.sun.org.apache.xerces.internal.xni.parser.XMLComponent;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
@@ -51,11 +50,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<Player> mPlayer;
     private int mLocalTokens = 0;
 
-    /**
-     * The constructor for the human player
-     */
-    public HumanPlayer() {
-    }
+    /** The constructor for the human player */
+    public HumanPlayer() {}
 
     @Override
     public void onStart() {
@@ -91,7 +87,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             (box) -> {
                                                 box.getTransform(TransformUI.class)
                                                         .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                                                box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                                                box.getTransform(TransformUI.class)
+                                                        .setMargin(0f, 0f, 0f, 0.07f);
                                                 box.addComponent(
                                                         new UIRenderable(
                                                                 new SampledTexture(
@@ -123,7 +120,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             (box) -> {
                                                 box.getTransform(TransformUI.class)
                                                         .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                                box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                                                box.getTransform(TransformUI.class)
+                                                        .setMargin(0f, 0f, 0f, 0.07f);
                                                 box.addComponent(
                                                         new UIRenderable(
                                                                 new SampledTexture(
@@ -187,40 +185,38 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 });
 
         mTokenBanner =
-                getGameObject().buildChild("token_view", new TransformUI(),
-                        (go) -> {
-                            go.addComponent(
-                                    new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
+                getGameObject()
+                        .buildChild(
+                                "token_view",
+                                new TransformUI(),
+                                (go) -> {
+                                    go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
 
-                            ; // TODO will add stuff for Stats AFTER prototype
+                                    ; // TODO will add stuff for Stats AFTER prototype
 
-                            go.buildChild(
-                                    "token_count",
-                                    new TransformUI(true),
-                                    (box) -> {
-                                        box.addComponent(
-                                                new UIRenderable(
-                                                        new SampledTexture(
-                                                                "ui/wide_button.png")));
-                                        box.addComponent(
-                                                new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(0f, 0f, 0f),
-                                                                Font.getFontResource(
-                                                                        "Rise of Kingdom.ttf"),
-                                                                "Your tokens are " + mLocalTokens)
-                                                ));
-
-
-                                    });
-                        });
+                                    go.buildChild(
+                                            "token_count",
+                                            new TransformUI(true),
+                                            (box) -> {
+                                                box.addComponent(
+                                                        new UIRenderable(
+                                                                new SampledTexture(
+                                                                        "ui/wide_button.png")));
+                                                box.addComponent(
+                                                        new UIButton(
+                                                                new UIText(
+                                                                        new Vector3f(0f, 0f, 0f),
+                                                                        Font.getFontResource(
+                                                                                "Rise of Kingdom.ttf"),
+                                                                        "Your tokens are "
+                                                                                + mLocalTokens)));
+                                            });
+                                });
         mTokenBanner.get().setEnabled(true);
-
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -242,14 +238,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * This will choose what to do when the user can see the full map
-     */
+    /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
 
         // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
-        if (GameActions.LEFT_CLICK.isActivated() //                && UIManager.getInstance().getHoveredObject() == null, this is breaking something
+        if (GameActions.LEFT_CLICK.isActivated() //                &&
+                // UIManager.getInstance().getHoveredObject() == null, this
+                // is breaking something
                 && mainCam != null) {
             // Retrieve scaled screen coordinates
             Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
@@ -342,8 +338,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
         // If its equal to null ignore
-        if (mBuildingChosen.get() == null) {
-            ;
+        if (mBuildingChosen.get() == null) {;
         } else {
             // For each Building add a button for it
             for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
@@ -390,12 +385,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Go Back",
                 new TransformUI(true),
                 (box) -> {
-                    box.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
                     box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
-
                             new UIButton(
                                     new UIText(
                                             new Vector3f(0f, 0f, 0f),
@@ -416,8 +409,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Upgrade Button",
                 new TransformUI(true),
                 (box) -> {
-                    box.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
                     box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(
                             new UIRenderable(
@@ -443,15 +435,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Attack building",
                 new TransformUI(true),
                 (box) -> {
-                    box.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
+                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
                     box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
-                            new UIButton(new UIText(
-                                    new Vector3f(0f, 0f, 0f),
-                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                    "Attack!"),
+                            new UIButton(
+                                    new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Attack!"),
                                     (handle, __) -> {
 
                                         // Gets the building to attack
@@ -472,8 +464,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Sell building",
                 new TransformUI(true),
                 (box) -> {
-                    box.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
+                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
                     box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
@@ -504,8 +495,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Go Back",
                 new TransformUI(true),
                 (box) -> {
-                    box.getTransform(TransformUI.class)
-                            .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
                     box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(

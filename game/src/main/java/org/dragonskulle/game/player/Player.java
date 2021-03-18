@@ -3,13 +3,10 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
@@ -40,22 +37,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     // List of Buildings -- stored & synced in HexagonMap
     private List<Reference<Building>> mOwnedBuildings;
     // The map component
-    @Getter
-    private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
+    @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
 
     private List<Reference<Player>> mPlayersOnline = new ArrayList<Reference<Player>>();
 
-    @Getter
-    public SyncInt mTokens = new SyncInt(0);
+    @Getter public SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    /**
-     * The base constructor for player
-     */
-    public Player() {
-    }
+    /** The base constructor for player */
+    public Player() {}
 
     @Override
     public void onStart() {
@@ -113,7 +105,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Checks if server
         if (getNetworkObject() != null && getNetworkObject().isServer()) {
 
-
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
             if (mLastTokenUpdate >= UPDATE_TIME) {
@@ -131,9 +122,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
-    /**
-     * We need to initialize requests here, since java does not like to serialize lambdas
-     */
+    /** We need to initialize requests here, since java does not like to serialize lambdas */
     @Override
     protected void onNetworkInitialize() {
 
@@ -144,8 +133,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     // Selling of buildings is handled below
     public transient ClientRequest<SellData> mClientSellRequest;
@@ -217,11 +205,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // If you've won attack
         if (won) {
             mOwnedBuildings.add(new Reference<Building>(defending));
-            //defending.setOwnerID();  TODO SET ID
+            // defending.setOwnerID();  TODO SET ID
             for (Reference<Player> player : mPlayersOnline) {
                 Reference<Building> buildingToRemove =
                         checkBuildingYours(
-                                defending.getTile(), player.get()); // TODO NEED WAY TO GET Q & R VALUES
+                                defending.getTile(),
+                                player.get()); // TODO NEED WAY TO GET Q & R VALUES
 
                 if (buildingToRemove != null) {
                     player.get().removeBuilding(buildingToRemove);
@@ -260,7 +249,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Checks if the building coordinates corresponds to a building coordinates in the list
      *
-     * @param buildingToCheck  The building to check is in the list
+     * @param buildingToCheck The building to check is in the list
      * @param buildingsToCheck The list
      * @return true if in the list false if not
      */
@@ -303,12 +292,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Contains the coordinates:
         HexagonTile tileCoordinates = data.getHexTile();
 
-        //Gets the actual tile
+        // Gets the actual tile
         HexagonMap map = mMapComponent.get();
         HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
 
         log.info("Got the map & tile");
-        if (buildingWithinRadius(getTilesInRadius(1, tile))) {            //TODO Merge into one function
+        if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function
             log.info("Trying to build too close to another building");
             return;
         }
@@ -324,19 +313,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                 getNetworkObject().getOwnerId(),
                                 networkManager.findTemplateByName("building"));
         if (obj != null) {
-            GameObject buildingGO = obj.get()
-                    .getGameObject();
+            GameObject buildingGO = obj.get().getGameObject();
 
-            buildingGO
-                    .getTransform(TransformHex.class)
-                    .setPosition(tile.getQ(), tile.getR());
+            buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
 
             // Remove the tokens.
             mTokens.set(mTokens.get() - COST);
 
-            //mOwnedBuildings = new ArrayList<Reference<Building>>();
+            // mOwnedBuildings = new ArrayList<Reference<Building>>();
             // Store the building.
-            map.storeBuilding(buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
+            map.storeBuilding(
+                    buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
         }
         log.info("Building added");
     }
@@ -370,7 +357,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will return all hex tiles within a radius except the one in the tile
      *
      * @param radius The radius to check
-     * @param tile   the tile to check
+     * @param tile the tile to check
      * @return A list of tiles
      */
     public ArrayList<HexagonTile> getTilesInRadius(
@@ -414,10 +401,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return tiles;
     }
 
-	@Override
-	public void fixedUpdate(float deltaTime) {
-		
-		updateTokens(deltaTime);
-		
-	}
+    @Override
+    public void fixedUpdate(float deltaTime) {
+
+        updateTokens(deltaTime);
+    }
 }
