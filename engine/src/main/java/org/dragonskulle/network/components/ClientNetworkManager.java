@@ -46,12 +46,6 @@ public class ClientNetworkManager {
         }
 
         @Override
-        public void receivedInput(String msg) {}
-
-        @Override
-        public void receivedBytes(byte[] bytes) {}
-
-        @Override
         public void serverClosed() {
             mNextConnectionState.set(ConnectionState.CLEAN_DISCONNECTED);
         }
@@ -257,11 +251,10 @@ public class ClientNetworkManager {
      * Spawn a new network object
      *
      * @param networkObjectId allocated object ID
-     * @param ownerId network owner ID
+     * @param ownerID network owner ID
      * @param templateId template ID
      */
-    private Reference<NetworkObject> spawnNewNetworkObject(
-            int networkObjectId, int ownerID, int templateId) {
+    private void spawnNewNetworkObject(int networkObjectId, int ownerID, int templateId) {
         final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);
         final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false);
         go.addComponent(nob);
@@ -270,7 +263,5 @@ public class ClientNetworkManager {
         log.info("nob to be spawned is : " + nob.toString());
         mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), ref);
-
-        return ref;
     }
 }

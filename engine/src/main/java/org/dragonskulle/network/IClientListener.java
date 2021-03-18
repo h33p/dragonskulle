@@ -13,20 +13,6 @@ public interface IClientListener {
     /** Could not connect. */
     void couldNotConnect();
 
-    /**
-     * Received input.
-     *
-     * @param msg the msg
-     */
-    void receivedInput(String msg);
-
-    /**
-     * Received bytes.
-     *
-     * @param bytes the bytes
-     */
-    void receivedBytes(byte[] bytes);
-
     /** Server closed. */
     void serverClosed();
 

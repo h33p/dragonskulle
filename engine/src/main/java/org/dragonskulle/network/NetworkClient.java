@@ -4,7 +4,6 @@ package org.dragonskulle.network;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -230,52 +229,11 @@ public class NetworkClient {
         while (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
             if (requestBytes != null) {
-                processBytes(requestBytes);
+                parseBytes(requestBytes);
             }
             cnt++;
         }
         return cnt;
-    }
-
-    /**
-     * Checks if the client has requests left to process.
-     *
-     * @return true if there are requests, false otherwise.
-     */
-    public boolean hasRequests() {
-        return !this.mRequests.isEmpty();
-    }
-
-    /** Processes a single request. */
-    public void processSingleRequest() {
-        if (!this.mRequests.isEmpty()) {
-            byte[] requestBytes = this.mRequests.poll();
-            if (requestBytes != null) {
-                mLogger.fine("Processing message with type: " + processBytes(requestBytes));
-            }
-        }
-    }
-
-    /** Clears the pending requests. */
-    public void clearPendingRequests() {
-        this.mRequests.clear();
-    }
-
-    /**
-     * Processes bytes from a message.
-     *
-     * @param bytes the bytes
-     */
-    private byte processBytes(byte[] bytes) {
-        mClientListener.receivedBytes(bytes);
-        //        mLogger.fine("parsing bytes :: " + Hex.encodeHexString(bytes));
-        try {
-            return parseBytes(bytes);
-        } catch (DecodingException e) {
-            mLogger.fine(e.getMessage());
-            mLogger.fine(new String(bytes, StandardCharsets.UTF_8));
-            return (byte) -1;
-        }
     }
 
     /**
@@ -284,13 +242,12 @@ public class NetworkClient {
      * @param bytes the bytes
      * @throws DecodingException the decoding exception
      */
-    private byte parseBytes(byte[] bytes) throws DecodingException {
+    private void parseBytes(byte[] bytes) {
         try {
-            return NetworkMessage.parse(bytes, this);
+            NetworkMessage.parse(bytes, this);
         } catch (Exception e) {
             mLogger.fine("error parsing bytes");
             e.printStackTrace();
-            throw new DecodingException("Message is not of valid type");
         }
     }
 
