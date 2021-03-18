@@ -6,6 +6,7 @@ import static org.dragonskulle.utils.Env.*;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
@@ -510,6 +511,8 @@ public class App {
                             });
                 });
 
+        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
+        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
