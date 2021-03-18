@@ -273,7 +273,6 @@ public class App {
                                                         (a, b) -> {
                                                             System.out.println(
                                                                     "should fill with ai");
-
                                                             networkManager
                                                                     .get()
                                                                     .getServerManager()
@@ -310,6 +309,7 @@ public class App {
                                                                                     .get()
                                                                                     .findTemplateByName(
                                                                                             "aiPlayer"));
+
                                                         }));
                                     });
                         });

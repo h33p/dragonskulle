@@ -134,8 +134,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfBuildings() == 1) { // TODO Refactor it so it's only done once
 
-            log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
-
+        	log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings. Should be one");
+        	
             // Gets all the tiles it can expand to
             List<HexagonTile> tilesToUse = hexTilesToExpand();
 
@@ -157,6 +157,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
             }
 
         } else {
+        	log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings. Shoudl be  more than  one");
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
 
