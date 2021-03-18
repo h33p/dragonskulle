@@ -525,8 +525,8 @@ public class App {
                                                                     networkManager
                                                                             .get()
                                                                             .createClient(
-                                                                                    "4.tcp.ngrok.io",
-                                                                                    19487,
+                                                                                    "127.0.0.1",
+                                                                                    7000,
                                                                                     (manager,
                                                                                             netID) -> {
                                                                                         if (netID

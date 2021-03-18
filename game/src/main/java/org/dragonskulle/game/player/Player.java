@@ -260,40 +260,61 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
+        log.info("Checking DOne");
         
         
-        // Create a new building.
-        NetworkManager networkManager = getNetworkObject().getNetworkManager();
-        GameObject buildingGO = obj.get().getGameObject();
         
-
-        buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
-
-        
-        // Store the building.
-        Building building = buildingGO.getComponent(Building.class).get();
-        
-        if (!buildingWithinRadius(getTilesInRadius(building.getViewDistance().getValue(), tile))) {
+        log.info("Checking");
+        if (!buildingWithinRadius(getTilesInRadius(3, tile))) {
         	log.info("Too far");
         	return;
         }
+        log.info("Checking 2 Fone");
+        
+        NetworkManager networkManager = getNetworkObject().getNetworkManager();
 
         if (networkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
             return;
         }
-
+        
+     // Create a new building.
        
+        
+        Reference<NetworkObject> obj =
+                networkManager
+                        .getServerManager()
+                        .spawnNetworkObject(
+                                getNetworkObject().getOwnerId(),
+                                networkManager.findTemplateByName("building"));
+        
+       
+
         if (obj != null) {
-                      // Remove the tokens.
+            
+        	 GameObject buildingGO = obj.get().getGameObject();
+             
+
+             buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
+
+             
+             // Store the building.
+             Building building = buildingGO.getComponent(Building.class).get();
+           
+
+            // Remove the tokens.
             mTokens.set(mTokens.get() - COST);
 
             // mOwnedBuildings = new ArrayList<Reference<Building>>();
             // Store the building.
+            log.info("Building is" + building);
             
             if (building != null) {
+            	log.info("");
                 map.storeBuilding(
                         buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
+                
+                log.info("Map Component Validness: " + mMapComponent.get().getBuilding(tile.getQ(), tile.getR()));
             }
         }
         log.info("Building added");
@@ -301,6 +322,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
+        	
             if (mMapComponent.isValid()
                     && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
