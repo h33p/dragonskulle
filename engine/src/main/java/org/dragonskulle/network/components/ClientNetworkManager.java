@@ -206,9 +206,8 @@ public class ClientNetworkManager {
                         if (mConnectionHandler != null) mConnectionHandler.handle(true);
                         break;
                     case CONNECTION_ERROR:
-                        mClient.dispose();
                         if (mConnectionHandler != null) mConnectionHandler.handle(false);
-                        mConnectionState = ConnectionState.NOT_CONNECTED;
+                        disconnect();
                         break;
                     default:
                         break;
