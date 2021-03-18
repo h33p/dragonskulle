@@ -80,7 +80,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 "place screen",
                                 new TransformUI(),
                                 this::buildPlaceSelectedView
-                                });
+                                );
 
         // Screen to choose what to do for a buildingSelectedView
         mBuildingSelectedScreen =
@@ -474,67 +474,67 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
     
-    private void buildPlaceScreen(GameObject go) {
-    	           go.addComponent(
-                    new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-            // Will build a box to confirm
-            go.buildChild(
-                    "confirm box",
-                    new TransformUI(true),
-                    (box) -> {
-                        box.getTransform(TransformUI.class)
-                                .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                        box.getTransform(TransformUI.class)
-                                .setMargin(0f, 0f, 0f, 0.07f);
-                        box.addComponent(
-                                new UIRenderable(
-                                        new SampledTexture(
-                                                "ui/wide_button.png")));
-                        box.addComponent(
-                                // When clicked send the data to the server
-                                new UIButton(
-                                        new UIText(
-                                                new Vector3f(0f, 0f, 0f),
-                                                Font.getFontResource(
-                                                        "Rise of Kingdom.ttf"),
-                                                "Place Building"),
-                                        (handle, __) -> {
-                                            mPlayer.get()
-                                                    .getClientBuildRequest()
-                                                    .invoke(
-                                                            new BuildData(
-                                                                    mHexChosen));
+    private void buildPlaceSelectedView(GameObject go){
+        go.addComponent(
+                new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+        // Will build a box to confirm
+        go.buildChild(
+                "confirm box",
+                new TransformUI(true),
+                (box) -> {
+                    box.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
+                    box.getTransform(TransformUI.class)
+                            .setMargin(0f, 0f, 0f, 0.07f);
+                    box.addComponent(
+                            new UIRenderable(
+                                    new SampledTexture(
+                                            "ui/wide_button.png")));
+                    box.addComponent(
+                            // When clicked send the data to the server
+                            new UIButton(
+                                    new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource(
+                                                    "Rise of Kingdom.ttf"),
+                                            "Place Building"),
+                                    (handle, __) -> {
+                                        mPlayer.get()
+                                                .getClientBuildRequest()
+                                                .invoke(
+                                                        new BuildData(
+                                                                mHexChosen));
 
-                                            mHexChosen = null;
-                                            mBuildingChosen = null;
-                                            mScreenOn = Screen.MAP_SCREEN;
-                                        }));
-                    });
-            // Go Back button
-            go.buildChild(
-                    "Go Back",
-                    new TransformUI(true),
-                    (box) -> {
-                        box.getTransform(TransformUI.class)
-                                .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                        box.getTransform(TransformUI.class)
-                                .setMargin(0f, 0f, 0f, 0.07f);
-                        box.addComponent(
-                                new UIRenderable(
-                                        new SampledTexture(
-                                                "ui/wide_button.png")));
-                        box.addComponent(
-                                new UIButton(
-                                        new UIText(
-                                                new Vector3f(0f, 0f, 0f),
-                                                Font.getFontResource(
-                                                        "Rise of Kingdom.ttf"),
-                                                "Go Back"),
-                                        (handle, __) -> {
-                                            mHexChosen = null;
-                                            mBuildingChosen = null;
-                                            mScreenOn = Screen.MAP_SCREEN;
-                                        }));
-                    });
+                                        mHexChosen = null;
+                                        mBuildingChosen = null;
+                                        mScreenOn = Screen.MAP_SCREEN;
+                                    }));
+                });
+        // Go Back button
+        go.buildChild(
+                "Go Back",
+                new TransformUI(true),
+                (box) -> {
+                    box.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                    box.getTransform(TransformUI.class)
+                            .setMargin(0f, 0f, 0f, 0.07f);
+                    box.addComponent(
+                            new UIRenderable(
+                                    new SampledTexture(
+                                            "ui/wide_button.png")));
+                    box.addComponent(
+                            new UIButton(
+                                    new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource(
+                                                    "Rise of Kingdom.ttf"),
+                                            "Go Back"),
+                                    (handle, __) -> {
+                                        mHexChosen = null;
+                                        mBuildingChosen = null;
+                                        mScreenOn = Screen.MAP_SCREEN;
+                                    }));
+                });
     }
 }
