@@ -6,6 +6,7 @@ import static org.dragonskulle.utils.Env.*;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
@@ -513,8 +514,23 @@ public class App {
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
+                        new TransformUI(true),
                         (root) -> {
                             root.addComponent(new AudioSource());
+
+                            TransformUI t = root.getTransform(TransformUI.class);
+                            t.setParentAnchor(0.6f, 0.75f, 0.8f, 0.75f);
+                            t.setMargin(0f, 0.1f, 0f, 0.2f);
+
+                            root.addComponent(new UIButton(
+                                    new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Mute/Unmute"),
+                                    (uiButton, __) ->
+                                            AudioManager.getInstance().toggleMute(SoundType.BACKGROUND)
+                            ));
+
                         });
 
         System.out.println("checking if i have an audio source component");
