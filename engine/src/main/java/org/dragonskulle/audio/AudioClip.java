@@ -159,7 +159,7 @@ public class AudioClip {
         }
         mClip.setMicrosecondPosition(0);
         mClip.start();
-        
+
         LOGGER.log(Level.WARNING, "Started clip");
 
         if (mClip.isActive() && mLooping) {

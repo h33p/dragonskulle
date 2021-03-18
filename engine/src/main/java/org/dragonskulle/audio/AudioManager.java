@@ -14,8 +14,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * This is a class which allows the game to play audio and to control the volume of the audio
  *
  * @author Dragonskulle
- * <p>This is a singleton class so to use this use it as {@code
- * AudioManager.getInstance().method()}
+ *     <p>This is a singleton class so to use this use it as {@code
+ *     AudioManager.getInstance().method()}
  */
 public class AudioManager {
 
@@ -25,9 +25,7 @@ public class AudioManager {
 
     public static final Logger LOGGER = Logger.getLogger("audiomanager");
 
-    /**
-     * This constructor creates the AudioManager. If the Mixer is not created it is set to null.
-     */
+    /** This constructor creates the AudioManager. If the Mixer is not created it is set to null. */
     private AudioManager() {
 
         // Creates the mixer
@@ -50,7 +48,7 @@ public class AudioManager {
     /**
      * This will play audio from the file. If this file does not exist then it will not be played
      *
-     * @param channel  Whether to play as Background music or as a Sound Effect
+     * @param channel Whether to play as Background music or as a Sound Effect
      * @param fileName the name of the file which has the music. Must be a .wav file
      * @return whether the music has been successful to play
      */
@@ -93,7 +91,7 @@ public class AudioManager {
     /**
      * Set the mute value for a specific channel
      *
-     * @param channel   The channel to mute
+     * @param channel The channel to mute
      * @param muteValue whether to mute the channel or not
      */
     public void setMute(SoundType channel, boolean muteValue) {
@@ -132,7 +130,7 @@ public class AudioManager {
      * Set the volume of selected channel between 0 and 100
      *
      * @param channel The channel to change volume
-     * @param setVol  the volume to change to
+     * @param setVol the volume to change to
      */
     public void setVolume(SoundType channel, int setVol) {
 
@@ -162,9 +160,7 @@ public class AudioManager {
         return -1;
     }
 
-    /**
-     * This closes the Mixer and must be called at the end of a program.
-     */
+    /** This closes the Mixer and must be called at the end of a program. */
     public void cleanup() {
 
         if (mMixer != null) {

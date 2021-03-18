@@ -5,7 +5,6 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
-
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
@@ -40,15 +39,15 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final Vector4fc[] COLOURS = {
-            new Vector4f(1.f, 0.f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 0.f, 1f),
-            new Vector4f(0.f, 0.f, 1.f, 1f),
-            new Vector4f(1.f, 0.5f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 0.5f, 1f),
-            new Vector4f(0.5f, 0.f, 1.f, 1f),
-            new Vector4f(1.f, 1.f, 0.f, 1f),
-            new Vector4f(0.f, 1.f, 1.f, 1f),
-            new Vector4f(1.f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 0.f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 0.f, 1f),
+        new Vector4f(0.f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 0.5f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 0.5f, 1f),
+        new Vector4f(0.5f, 0.f, 1.f, 1f),
+        new Vector4f(1.f, 1.f, 0.f, 1f),
+        new Vector4f(0.f, 1.f, 1.f, 1f),
+        new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
     private static Scene createMainScene() {
@@ -133,7 +132,6 @@ public class App {
                             go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
                         });
 
-
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
@@ -145,15 +143,15 @@ public class App {
                             t.setParentAnchor(0.6f, 0.75f, 0.8f, 0.75f);
                             t.setMargin(0f, 0.1f, 0f, 0.2f);
 
-                            root.addComponent(new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Mute/Unmute"),
-                                    (uiButton, __) ->
-                                            AudioManager.getInstance().toggleMute(SoundType.BACKGROUND)
-                            ));
-
+                            root.addComponent(
+                                    new UIButton(
+                                            new UIText(
+                                                    new Vector3f(0f, 0f, 0f),
+                                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                                    "Mute/Unmute"),
+                                            (uiButton, __) ->
+                                                    AudioManager.getInstance()
+                                                            .toggleMute(SoundType.BACKGROUND)));
                         });
 
         Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
@@ -258,7 +256,6 @@ public class App {
                         (handle) -> {
                             handle.addComponent(networkManager.get());
                         });
-
 
         GameObject gameTitle =
                 new GameObject(
@@ -514,8 +511,7 @@ public class App {
                                                     networkManager
                                                             .get()
                                                             .createServer(
-                                                                    7000, (manager, id) -> {
-                                                                    });
+                                                                    7000, (manager, id) -> {});
                                                 });
 
                                 button.addComponent(newButton);
@@ -544,7 +540,6 @@ public class App {
                             });
                 });
 
-
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
@@ -556,15 +551,15 @@ public class App {
                             t.setParentAnchor(0.6f, 0.75f, 0.8f, 0.75f);
                             t.setMargin(0f, 0.1f, 0f, 0.2f);
 
-                            root.addComponent(new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Mute/Unmute"),
-                                    (uiButton, __) ->
-                                            AudioManager.getInstance().toggleMute(SoundType.BACKGROUND)
-                            ));
-
+                            root.addComponent(
+                                    new UIButton(
+                                            new UIText(
+                                                    new Vector3f(0f, 0f, 0f),
+                                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                                    "Mute/Unmute"),
+                                            (uiButton, __) ->
+                                                    AudioManager.getInstance()
+                                                            .toggleMute(SoundType.BACKGROUND)));
                         });
 
         Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
@@ -591,9 +586,7 @@ public class App {
         return mainMenu;
     }
 
-    /**
-     * Entrypoint of the program. Creates and runs one app instance
-     */
+    /** Entrypoint of the program. Creates and runs one app instance */
     public static void main(String[] args) {
         // Create a scene
         Scene mainScene = createMainScene();
