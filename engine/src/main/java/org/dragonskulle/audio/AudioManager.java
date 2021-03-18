@@ -176,4 +176,8 @@ public class AudioManager {
     public static AudioManager getInstance() {
         return AUDIO_MANAGER_INSTANCE;
     }
+
+    public void toggleMute(SoundType background) {
+        this.setMute(background, !this.getMute(background));
+    }
 }
