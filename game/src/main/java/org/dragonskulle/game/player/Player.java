@@ -280,8 +280,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             // mOwnedBuildings = new ArrayList<Reference<Building>>();
             // Store the building.
-            map.storeBuilding(
-                    buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
+            Building building = buildingGO.getComponent(Building.class).get();
+            if(building != null) {
+            	addBuilding(building);
+                map.storeBuilding(
+                        buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
+            }
+            
         }
         log.info("Building added");
     }
