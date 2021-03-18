@@ -169,7 +169,7 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
-        boolean pressed = GameActions.ACTION_1.isActivated();
+        boolean pressed = GameActions.LEFT_CLICK.isActivated();
 
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 

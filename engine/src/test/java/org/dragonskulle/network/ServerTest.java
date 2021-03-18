@@ -115,9 +115,9 @@ public class ServerTest {
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
                     mPort,
-                    (res) -> {
+                    (__, netid) -> {
                         mLogger.info("CONNECTED CLIENT");
-                        assertTrue(res);
+                        assertTrue(netid >= 0);
                     });
 
             mTestThread.start();

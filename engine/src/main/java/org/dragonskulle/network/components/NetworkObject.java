@@ -6,12 +6,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
@@ -25,13 +22,15 @@ import org.dragonskulle.utils.IOUtils;
  * @author Oscar L The NetworkObject deals with any networked variables.
  */
 @Accessors(prefix = "m")
-public class NetworkObject extends Component implements IOnAwake {
+public class NetworkObject extends Component {
 
     private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
     /** true if the component is on the server. */
     @Getter private final boolean mIsServer;
     /** The id of the object. */
     public final int mNetworkObjectId;
+
+    @Getter private final NetworkManager mNetworkManager;
 
     @Getter
     private final ArrayList<Reference<NetworkableComponent>> mNetworkableComponents =
@@ -40,9 +39,7 @@ public class NetworkObject extends Component implements IOnAwake {
     @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
 
     /** The network client ID that owns this */
-    @Getter
-    @Setter(AccessLevel.PRIVATE)
-    private int mOwnerId;
+    @Getter private int mOwnerId;
 
     /**
      * Instantiates a new Network object.
@@ -51,17 +48,34 @@ public class NetworkObject extends Component implements IOnAwake {
      * @param ownerId the id of the owner
      * @param isServer true if the object is on the server
      */
-    public NetworkObject(int id, int ownerId, boolean isServer) {
+    public NetworkObject(int id, int ownerId, boolean isServer, NetworkManager manager) {
         mNetworkObjectId = id;
         mOwnerId = ownerId;
         mIsServer = isServer;
+        mNetworkManager = manager;
+    }
+
+    /**
+     * Check whether this object is owned by the client/server
+     *
+     * @return {@code true} if the object is ours, {@code false} otherwise.
+     */
+    public boolean isMine() {
+        if (mOwnerId < 0 && mIsServer) return true;
+
+        ClientNetworkManager clientManager = mNetworkManager.getClientManager();
+
+        return clientManager != null && clientManager.getNetID() == mOwnerId;
+    }
+
+    public void setOwnerId(int newOwnerID) {
+        if (mIsServer) mOwnerId = newOwnerID;
     }
 
     @Override
     public void onDestroy() {}
 
-    @Override
-    public void onAwake() {
+    public void networkInitialize() {
         getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
 
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
@@ -103,7 +117,7 @@ public class NetworkObject extends Component implements IOnAwake {
 
     @Override
     public String toString() {
-        return "NetworkObject{"
+        return "(NetworkObject{"
                 + "children="
                 + getNetworkableComponents()
                 + ", networkObjectId='"
@@ -159,7 +173,7 @@ public class NetworkObject extends Component implements IOnAwake {
         int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
 
         int ownerId = getIntFromBytes(payload, OWNER_ID_OFFSET);
-        this.setOwnerId(ownerId);
+        mOwnerId = ownerId;
 
         int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
 

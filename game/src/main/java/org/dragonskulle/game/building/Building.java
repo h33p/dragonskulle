@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
 import org.dragonskulle.game.building.stat.SyncAttackStat;
@@ -16,9 +18,10 @@ import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
 import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
-import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -28,8 +31,7 @@ import org.joml.Vector3i;
  * <p>Once created, the GameObject needs a {@link TransformHex} component to place it in the game
  * and to allow the logic to access its position.
  *
- * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
- * #setOwnerID(int)}.
+ * <p>The owner of the Building also needs to be set via {@link NetworkObject#setOwnerId}.
  *
  * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
  * {@link HexagonMap#storeBuilding(Building, int, int)}).
@@ -38,7 +40,7 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnAwake {
+public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** Stores the attack strength of the building. */
     @Getter public final SyncAttackStat mAttack = new SyncAttackStat();
@@ -51,8 +53,6 @@ public class Building extends NetworkableComponent implements IOnAwake {
     /** Stores the attack range of the building. */
     @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
 
-    /** ID of the owner of the building. */
-    public final SyncInt mOwnerID = new SyncInt(-1);
     /** Whether the building is a capital. */
     public final SyncBool mIsCapital = new SyncBool(false);
 
@@ -71,6 +71,23 @@ public class Building extends NetworkableComponent implements IOnAwake {
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
+    }
+
+    @Override
+    public void onStart() {
+        Player owningPlayer =
+                getNetworkObject()
+                        .getNetworkManager()
+                        .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                        .map(NetworkObject::getGameObject)
+                        .map(go -> go.getComponent(Player.class))
+                        .filter(ref -> ref != null)
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .findFirst()
+                        .orElse(null);
+
+        if (owningPlayer != null) owningPlayer.addBuilding(this);
     }
 
     /**
@@ -138,6 +155,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
         // Get the map.
         HexagonMap map = getMap();
+        if (map == null) return tiles;
         // Get the current position.
         Vector3i position = getPosition();
 
@@ -170,6 +188,20 @@ public class Building extends NetworkableComponent implements IOnAwake {
         // log.info("Number of tiles in range: " + tiles.size());
 
         return tiles;
+    }
+
+    /**
+     * Will return the tile which the building currently sits on
+     *
+     * @return The {@link HexagonTile} which the building rests
+     */
+    public HexagonTile getTile() {
+        HexagonMap map = getMap();
+        if (map == null) return null;
+
+        Vector3i position = getPosition();
+
+        return map.getTile(position.x(), position.y());
     }
 
     /**
@@ -211,6 +243,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
         // Get the map.
         HexagonMap map = getMap();
+        if (map == null) return buildings;
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
@@ -232,6 +265,15 @@ public class Building extends NetworkableComponent implements IOnAwake {
         return buildings;
     }
 
+    public boolean isBuildingAttackable(Building target) {
+        ArrayList<HexagonTile> attackTiles = getAttackableTiles();
+        HexagonTile targetTile = target.getTile();
+        for (HexagonTile tile : attackTiles) {
+            if (tile.equals(targetTile)) return true;
+        }
+        return false;
+    }
+
     /**
      * Get the current axial coordinates of the building.
      *
@@ -239,7 +281,13 @@ public class Building extends NetworkableComponent implements IOnAwake {
      */
     private Vector3i getPosition() {
         Vector3f floatPosition = new Vector3f();
-        TransformHex tranform = getGameObject().getComponent(TransformHex.class).get();
+
+        TransformHex tranform = getGameObject().getTransform(TransformHex.class);
+
+        if (tranform == null) {
+            return new Vector3i(0, 0, 0);
+        }
+
         tranform.getLocalPosition(floatPosition);
 
         Vector3i position = new Vector3i();
@@ -254,10 +302,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
      * @return The map.
      */
     private HexagonMap getMap() {
-        return Scene.getActiveScene()
-                .getSingleton(HexagonMap.class)
-                .getReference(HexagonMap.class)
-                .get();
+        return Scene.getActiveScene().getSingleton(HexagonMap.class);
     }
 
     /**
@@ -277,30 +322,12 @@ public class Building extends NetworkableComponent implements IOnAwake {
     }
 
     /**
-     * Store the owner's ID.
-     *
-     * @param id The ID of the owner.
-     */
-    public void setOwnerID(int id) {
-        mOwnerID.set(id);
-    }
-
-    /**
      * Get the ID of the owner of the building.
      *
      * @return The ID of the owner.
      */
     public int getOwnerID() {
-        return mOwnerID.get();
-    }
-
-    /**
-     * Set the owner of the building.
-     *
-     * @param player The owner.
-     */
-    public void setOwner(TestPlayer player) {
-        setOwnerID(player.getID());
+        return getNetworkObject().getOwnerId();
     }
 
     /**

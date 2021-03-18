@@ -245,7 +245,7 @@ public abstract class NetworkableComponent extends Component {
         DataInputStream stream = new DataInputStream(bis);
 
         if (didSkip != offset) return;
-        for (int i = 0; i < mask.length; i++) {
+        for (int i = 0; i < mask.length && i < mFields.length; i++) {
             if (mask[i]) {
                 try {
                     Field field = this.mFields[i];

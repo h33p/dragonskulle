@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import lombok.experimental.Accessors;
@@ -47,8 +48,7 @@ public class Server {
      * Accepted incoming clients. They have not been allocated any IDs yet, just waiting to be
      * accepted by the main thread.
      */
-    private final ListenableQueue<Socket> mPendingClients =
-            new ListenableQueue<>(new LinkedList<>());
+    private final ConcurrentLinkedQueue<Socket> mPendingClients = new ConcurrentLinkedQueue<>();
     /**
      * Total client count. This includes all mClients, and not yet allocated PendingConnectedClients
      */
@@ -59,14 +59,14 @@ public class Server {
      * Pending clients. Sockets for these clients have already been set up, they just need to be
      * linked up by the main thread
      */
-    private final ListenableQueue<ServerClient> mPendingConnectedClients =
-            new ListenableQueue<>(new LinkedList<>());
+    private final ConcurrentLinkedQueue<ServerClient> mPendingConnectedClients =
+            new ConcurrentLinkedQueue<>();
     /**
      * Pending disconnected clients. These are the clients main thread is supposed to remove on the
      * next update.
      */
-    private final ListenableQueue<ServerClient> mPendingDisconnectedClients =
-            new ListenableQueue<>(new LinkedList<>());
+    private final ConcurrentLinkedQueue<ServerClient> mPendingDisconnectedClients =
+            new ConcurrentLinkedQueue<>();
 
     /**
      * Instantiates a new Server. Scene linking is required once the scene is created.
@@ -109,9 +109,13 @@ public class Server {
         ServerClient c;
         while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
+        byte[] netID = {-1};
+
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
+            netID[0] = (byte) c.getNetworkID();
+            c.sendBytes(netID);
             mServerListener.clientActivated(c);
         }
 

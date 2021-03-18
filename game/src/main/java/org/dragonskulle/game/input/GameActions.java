@@ -29,7 +29,7 @@ public class GameActions extends Actions {
     public static final Action MENU_UP = new Action("MENU_UP");
     public static final Action MENU_DOWN = new Action("MENU_DOWN");
 
-    public static final Action ACTION_1 = new Action("ACTION_1");
-    public static final Action ACTION_2 = new Action("ACTION_2");
+    public static final Action LEFT_CLICK = new Action("LEFT_CLICK");
+    public static final Action RIGHT_CLICK = new Action("RIGHT_CLICK");
     public static final Action ACTION_3 = new Action("ACTION_3");
 }

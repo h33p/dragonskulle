@@ -14,6 +14,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.ZoomTilt;
@@ -21,7 +22,11 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
+import org.dragonskulle.game.player.AiPlayer;
+import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
+import org.dragonskulle.network.components.NetworkHexTransform;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
@@ -145,41 +150,6 @@ public class App {
 
         mainScene.addRootObject(hexagonMap);
 
-        // Create a cube. This syntax is slightly different
-        // This here, will allow you to "build" the cube in one go
-        GameObject cube =
-                new GameObject(
-                        "cube",
-                        new Transform3D(0f, -4f, 1.5f),
-                        (go) -> {
-                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            go.getComponent(Renderable.class)
-                                    .get()
-                                    .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(1f);
-                            // You spin me right round...
-                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-                        });
-
-        mainScene.addRootObject(cube);
-
-        cube =
-                new GameObject(
-                        "cube",
-                        new Transform3D(0f, -2f, 1.5f),
-                        (go) -> {
-                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            go.getComponent(Renderable.class)
-                                    .get()
-                                    .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(0.7f);
-                            // You spin me right round...
-                            go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
-                        });
-
-        // Aaand, spawn it!
-        mainScene.addRootObject(cube);
-
         return mainScene;
     }
 
@@ -195,6 +165,7 @@ public class App {
         camera.addComponent(new Camera());
         mainMenu.addRootObject(camera);
 
+        // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");
 
         // Add a renderable to it
@@ -223,23 +194,6 @@ public class App {
             }
         }
 
-        // Create a cube. This syntax is slightly different
-        // This here, will allow you to "build" the cube in one go
-        GameObject cube =
-                new GameObject(
-                        "cube",
-                        new Transform3D(0f, 0f, 1.5f),
-                        (go) -> {
-                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-                            go.getComponent(Renderable.class)
-                                    .get()
-                                    .getMaterial(IColouredMaterial.class)
-                                    .setAlpha(1f);
-                            // You spin me right round...
-                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-                        });
-
-        mainMenu.addRootObject(cube);
         mainMenu.addRootObject(hexRoot);
 
         TemplateManager templates = new TemplateManager();
@@ -259,6 +213,29 @@ public class App {
 
                             mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
                             handle.addComponent(new Renderable(Mesh.HEXAGON, mat));
+                        }),
+                new GameObject(
+                        "building",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            UnlitMaterial mat = new UnlitMaterial();
+                            mat.getColour().set(1, 0, 0, 1);
+                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
+                            handle.addComponent(new Building());
+                            handle.addComponent(new NetworkHexTransform());
+                        }),
+                new GameObject(
+                        "player",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            handle.addComponent(new Player());
+                        }),
+                new GameObject(
+                        "aiPlayer",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            handle.addComponent(new AiPlayer());
+                            handle.addComponent(new Player());
                         }));
 
         Reference<NetworkManager> networkManager =
@@ -359,6 +336,47 @@ public class App {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
+        GameObject hostGameUI =
+                new GameObject(
+                        "hostGameUI",
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                            root.buildChild(
+                                    "populate_with_ai",
+                                    new TransformUI(true),
+                                    (box) -> {
+                                        box.getTransform(TransformUI.class)
+                                                .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
+                                        box.getTransform(TransformUI.class)
+                                                .setMargin(0f, 0f, 0f, 0.07f);
+                                        box.addComponent(
+                                                new UIRenderable(
+                                                        new SampledTexture("ui/wide_button.png")));
+                                        box.addComponent(
+                                                new UIButton(
+                                                        new UIText(
+                                                                new Vector3f(0f, 0f, 0f),
+                                                                Font.getFontResource(
+                                                                        "Rise of Kingdom.ttf"),
+                                                                "Fill game with AI"),
+                                                        (a, b) -> {
+                                                            System.out.println(
+                                                                    "should fill with ai");
+                                                            networkManager
+                                                                    .get()
+                                                                    .getServerManager()
+                                                                    .spawnNetworkObject(
+                                                                            -1,
+                                                                            networkManager
+                                                                                    .get()
+                                                                                    .findTemplateByName(
+                                                                                            "aiPlayer"));
+                                                        }));
+                                    });
+                        });
+
         mainUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -387,8 +405,8 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     joinUI.setEnabled(true);
+                                                                    hostGameUI.setEnabled(false);
                                                                 }));
-
                                 button.addComponent(newButton);
                             });
 
@@ -412,8 +430,8 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     hostUI.setEnabled(true);
+                                                                    hostGameUI.setEnabled(true);
                                                                 }));
-
                                 button.addComponent(newButton);
                             });
 
@@ -457,7 +475,6 @@ public class App {
                                 button.addComponent(newButton);
                             });
                 });
-
         joinUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -510,24 +527,27 @@ public class App {
                                                                             .createClient(
                                                                                     "127.0.0.1",
                                                                                     7000,
-                                                                                    (outcome) -> {
-                                                                                        System.out
-                                                                                                .println(
-                                                                                                        "CONNECTION OUTCOME: "
-                                                                                                                + outcome);
-                                                                                        if (connectingTextRef
-                                                                                                .isValid())
+                                                                                    (manager,
+                                                                                            netID) -> {
+                                                                                        if (netID
+                                                                                                >= 0) {
+                                                                                            onConnectedClient(
+                                                                                                    mainScene,
+                                                                                                    manager,
+                                                                                                    netID);
+                                                                                        } else if (connectingTextRef
+                                                                                                .isValid()) {
                                                                                             connectingTextRef
                                                                                                     .get()
                                                                                                     .setEnabled(
                                                                                                             false);
+                                                                                        }
                                                                                     });
                                                                     if (connectingTextRef.isValid())
                                                                         connectingTextRef
                                                                                 .get()
                                                                                 .setEnabled(true);
                                                                 }));
-
                                 button.addComponent(newButton);
                             });
 
@@ -587,10 +607,9 @@ public class App {
                                                                             .get()
                                                                             .createServer(
                                                                                     7000,
-                                                                                    (manager,
-                                                                                            id) -> {});
+                                                                                    App
+                                                                                            ::onClientConnected);
                                                                 }));
-
                                 button.addComponent(newButton);
                             });
 
@@ -622,9 +641,10 @@ public class App {
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
+        hostGameUI.setEnabled(false);
+        mainScene.addRootObject(hostGameUI);
 
         mainMenu.addRootObject(GameObject.instantiate(hexRoot));
-        mainMenu.addRootObject(GameObject.instantiate(cube));
 
         mainMenu.addRootObject(networkManagerObject);
 
@@ -636,7 +656,11 @@ public class App {
         return mainMenu;
     }
 
-    /** Entrypoint of the program. Creates and runs one app instance */
+    /**
+     * Entrypoint of the program. Creates and runs one app instance
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         // Create a scene
         Scene mainScene = createMainScene();
@@ -663,11 +687,49 @@ public class App {
                 System.out.println(Arrays.toString(t.getValue()));
             }
         }
+
+        System.exit(0);
+    }
+
+    private static void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
+        System.out.println("CONNECTED ID " + netID);
+
+        GameObject humanPlayer =
+                new GameObject(
+                        "human player",
+                        (handle) -> {
+                            handle.addComponent(
+                                    new HumanPlayer(
+                                            manager.getReference(NetworkManager.class), netID));
+                        });
+
+        mainScene.addRootObject(humanPlayer);
     }
 
     private static void onClientConnected(NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 }
+
+//        // Create a cube. This syntax is slightly different
+//        // This here, will allow you to "build" the cube in one go
+//        GameObject cube =
+//                new GameObject(
+//                        "cube",
+//                        new Transform3D(0f, 0f, 1.5f),
+//                        (go) -> {
+//                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
+//                            go.getComponent(Renderable.class)
+//                                    .get()
+//                                    .getMaterial(IColouredMaterial.class)
+//                                    .setAlpha(1f);
+//                            // You spin me right round...
+//                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
+//                        });
+//
+//        mainMenu.addRootObject(cube);
+//
+//        mainMenu.addRootObject(GameObject.instantiate(cube));

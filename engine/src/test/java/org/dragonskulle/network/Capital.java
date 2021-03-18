@@ -48,7 +48,6 @@ public class Capital extends NetworkableComponent {
             mClientToggled.set(data.mToBuilding);
         }
     }
-
     // The following functions are helpers to toggle the sync values
 
     /**

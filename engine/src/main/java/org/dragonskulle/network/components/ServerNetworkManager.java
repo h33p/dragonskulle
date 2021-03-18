@@ -205,7 +205,7 @@ public class ServerNetworkManager {
     public Reference<NetworkObject> spawnNetworkObject(int ownerId, int templateId) {
         int netId = this.allocateId();
 
-        NetworkObject networkObject = new NetworkObject(netId, ownerId, true);
+        NetworkObject networkObject = new NetworkObject(netId, ownerId, true, mManager);
         GameObject object = mManager.getSpawnableTemplates().instantiate(templateId);
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
@@ -213,6 +213,7 @@ public class ServerNetworkManager {
         mManager.getGameScene().addRootObject(object);
 
         this.mNetworkObjects.put(netId, new ServerObjectEntry(ref, templateId));
+        networkObject.networkInitialize();
 
         return ref;
     }
