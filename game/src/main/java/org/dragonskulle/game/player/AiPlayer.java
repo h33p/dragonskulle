@@ -39,7 +39,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
     protected Random mRandom = new Random();
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 0.5;
+    protected float mTileProbability = (float) 1.0;
 
     protected float mBuildingProbability = 1 - mTileProbability;
 
@@ -170,7 +170,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 // Gets all the tiles it can expand to
                 log.info("Placing Building");
                 List<HexagonTile> tilesToUse = hexTilesToExpand();
-
+                
                 // Checks if there are tiles
                 if (tilesToUse.size() != 0) {
                     // Picks a random number thus a random tile
@@ -300,7 +300,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
     private List<HexagonTile> hexTilesToExpand() {
 
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
-
+        
         mPlayer.get()
                 .getBuildings()
                 .filter(Reference::isValid)
@@ -308,21 +308,19 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 .forEach(
                         building -> {
                             List<HexagonTile> hexTilesWhichCanBeSeen = building.getViewableTiles();
+                            log.info("hexTilesWhichCanBeSeen: " + hexTilesWhichCanBeSeen);
 
                             // Check each tile is valid
                             for (HexagonTile hexTile : hexTilesWhichCanBeSeen) {
 
-                                if (mPlayer.get()
-                                                .getMapComponent()
-                                                .getTile(hexTile.getR(), hexTile.getQ())
-                                        != null) {; // Ignore cos theres already a building there
-                                } else if (!checkCloseBuildings(
-                                        hexTile)) {; // IGNORE TILE IT'S WITHIN 1 HEX
-                                }
-
-                                // Can add extra checks here.
+                                if (hexTile.getBuilding() != null) {
+                                	// log.info("Already building at location."); // Ignore cos theres already a building there
+                                } else if (!checkCloseBuildings(hexTile)) {
+                                	// log.info("Building within 1 hex."); // Ignore cos theres already a building there; // IGNORE TILE IT'S WITHIN 1 HEX
+                                } // Can add extra checks here.
                                 else {
                                     hexTilesToExpand.add(hexTile);
+                                    // log.info("Good tile:" + hexTile); 
                                 }
                             }
                         });
