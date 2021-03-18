@@ -102,6 +102,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
         // If you can play simulate the input
         if (playGame(deltaTime)) {
+        	log.info("Playing game");
             simulateInput();
         }
     }
