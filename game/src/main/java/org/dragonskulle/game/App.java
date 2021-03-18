@@ -24,6 +24,7 @@ import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
+import org.dragonskulle.network.components.NetworkHexTransform;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
@@ -191,6 +192,7 @@ public class App {
                             mat.getColour().set(1, 0, 0, 1);
                             handle.addComponent(new Renderable(Mesh.CUBE, mat));
                             handle.addComponent(new Building());
+                            handle.addComponent(new NetworkHexTransform());
                         }),
                 new GameObject(
                         "humanPlayer",
