@@ -5,6 +5,9 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
+
+import org.dragonskulle.audio.AudioSource;
+import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -36,15 +39,15 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final Vector4fc[] COLOURS = {
-        new Vector4f(1.f, 0.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 0.5f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.5f, 1f),
-        new Vector4f(0.5f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 1.f, 1f),
-        new Vector4f(1.f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 0.f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 0.f, 1f),
+            new Vector4f(0.f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 0.5f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 0.5f, 1f),
+            new Vector4f(0.5f, 0.f, 1.f, 1f),
+            new Vector4f(1.f, 1.f, 0.f, 1f),
+            new Vector4f(0.f, 1.f, 1.f, 1f),
+            new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
     private static Scene createMainScene() {
@@ -477,7 +480,8 @@ public class App {
                                                     networkManager
                                                             .get()
                                                             .createServer(
-                                                                    7000, (manager, id) -> {});
+                                                                    7000, (manager, id) -> {
+                                                                    });
                                                 });
 
                                 button.addComponent(newButton);
@@ -506,6 +510,22 @@ public class App {
                             });
                 });
 
+        GameObject audioObject =
+                new GameObject(
+                        "audioObject",
+                        (root) -> {
+                            root.addComponent(new AudioSource());
+                        });
+
+        System.out.println("checking if i have an audio source component");
+        Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
+        if (refAudio.isValid()) {
+            System.out.println("loading an audio file");
+            refAudio.get().loadAudio("country_background_short.wav", SoundType.BACKGROUND);
+            System.out.println("playing an audio file");
+            refAudio.get().play();
+        }
+
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
 
@@ -517,11 +537,14 @@ public class App {
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
+        mainMenu.addRootObject(audioObject);
 
         return mainMenu;
     }
 
-    /** Entrypoint of the program. Creates and runs one app instance */
+    /**
+     * Entrypoint of the program. Creates and runs one app instance
+     */
     public static void main(String[] args) {
         // Create a scene
         Scene mainScene = createMainScene();
