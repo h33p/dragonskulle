@@ -163,6 +163,12 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 if (randomNumber <= mUpgradeBuilding) {
 
                     log.info("AI: Upgrading");
+                    
+                    if(mPlayer.get().numberOfBuildings() <= 0) {
+                    	log.info("AI: Has no buildings.");
+                    	return;
+                    }
+                    
                     // Get the building to upgrade
                     Reference<Building> building =
                             mPlayer.get()
