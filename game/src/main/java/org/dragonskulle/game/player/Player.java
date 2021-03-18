@@ -75,6 +75,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void addBuilding(Building building) {
         mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
+        log.info("Building size" + mOwnedBuildings.size());
         log.info("Added Building");
     }
 
