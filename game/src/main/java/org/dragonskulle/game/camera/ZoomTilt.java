@@ -18,7 +18,7 @@ import org.dragonskulle.utils.MathUtils;
  */
 @Accessors(prefix = "m")
 public class ZoomTilt extends Component implements IFrameUpdate, IOnAwake, IZoomNotify {
-    @Getter @Setter public float mMinTilt = -20f;
+    @Getter @Setter public float mMinTilt = -30f;
     @Getter @Setter public float mMaxTilt = -75f;
 
     @Getter @Setter private float mZoomLevel = 0.f;
