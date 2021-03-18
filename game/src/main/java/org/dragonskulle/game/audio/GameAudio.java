@@ -22,8 +22,8 @@ public class GameAudio {
      */
     public GameAudio(String filename, SoundType channel) {
         mAudio = new AudioSource();
-        mAudio.filename = filename;
-        mAudio.channel = channel;
+        mAudio.mFileName = filename;
+        mAudio.mChannel = channel;
     }
 
     /**

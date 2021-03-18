@@ -7,19 +7,31 @@ import org.dragonskulle.components.Component;
  * An engine component which allows you to play audio.
  *
  * @author Dragonskulle
- *     <p>Both filename and the SoundType channel are public fields which can be accessed
+ * <p>Both filename and the SoundType channel are public fields which can be accessed
  */
 public class AudioSource extends Component {
 
-    public String filename;
-    public SoundType channel = SoundType.SFX;
+    public String mFileName;
+    public SoundType mChannel = SoundType.SFX;
 
-    /** Constructor */
-    public AudioSource() {}
+    /**
+     * Constructor
+     */
+    public AudioSource() {
+        super();
+    }
 
-    /** Plays the audio on the current specified channel from the current specified filename */
+    public AudioSource(String filename, SoundType channel) {
+        super();
+        mFileName = filename;
+        mChannel = channel;
+    }
+
+    /**
+     * Plays the audio on the current specified channel from the current specified filename
+     */
     public void play() {
-        AudioManager.getInstance().play(channel, filename);
+        AudioManager.getInstance().play(mChannel, mFileName);
     }
 
     @Override
