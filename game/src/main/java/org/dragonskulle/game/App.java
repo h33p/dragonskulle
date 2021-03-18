@@ -139,7 +139,7 @@ public class App {
         GameObject camera = new GameObject("mainCamera");
         Transform3D tr = (Transform3D) camera.getTransform();
         // Set where it's at
-        tr.setPosition(0f, 0f, 2f);
+        tr.setPosition(0f, 0f, 1.5f);
         tr.rotateDeg(-30f, 0f, 70f);
         tr.translateLocal(0f, -8f, 0f);
         camera.addComponent(new Camera());
@@ -220,6 +220,24 @@ public class App {
                         (handle) -> {
                             handle.addComponent(networkManager.get());
                         });
+
+        GameObject gameTitle =
+                new GameObject(
+                        "title",
+                        new TransformUI(true),
+                        (title) -> {
+                            TransformUI t = title.getTransform(TransformUI.class);
+                            t.setParentAnchor(0.4f, 0.05f, 0.8f, 0.05f);
+                            t.setMargin(0f, 0f, 0f, 0.2f);
+
+                            title.addComponent(
+                                    new UIText(
+                                            new Vector3f(1f, 1f, 1f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Hex Wars"));
+                        });
+
+        mainMenu.addRootObject(gameTitle);
 
         GameObject mainUI =
                 new GameObject(
