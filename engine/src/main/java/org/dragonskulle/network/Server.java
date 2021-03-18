@@ -109,9 +109,13 @@ public class Server {
         ServerClient c;
         while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
+        byte[] netID = {-1};
+
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
+            netID[0] = (byte) c.getNetworkID();
+            c.sendBytes(netID);
             mServerListener.clientActivated(c);
         }
 

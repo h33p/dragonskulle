@@ -68,7 +68,7 @@ public class HexagonTile {
      * @param r The second coordinate.
      * @param s The third coordinate.
      */
-    public HexagonTile(int q, int r, int s) {
+    HexagonTile(int q, int r, int s) {
         this.mQ = q;
         this.mR = r;
         this.mS = s;

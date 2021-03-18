@@ -6,13 +6,12 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.ServerClient;
@@ -40,9 +39,7 @@ public class NetworkObject extends Component implements IOnAwake {
     @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
 
     /** The network client ID that owns this */
-    @Getter
-    @Setter(AccessLevel.PRIVATE)
-    private int mOwnerId;
+    @Getter private int mOwnerId;
 
     /**
      * Instantiates a new Network object.
@@ -55,6 +52,27 @@ public class NetworkObject extends Component implements IOnAwake {
         mNetworkObjectId = id;
         mOwnerId = ownerId;
         mIsServer = isServer;
+    }
+
+    /**
+     * Check whether this object is owned by the client/server
+     *
+     * @return {@code true} if the object is ours, {@code false} otherwise.
+     */
+    public boolean isMine() {
+        if (mOwnerId < 0 && mIsServer) return true;
+
+        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
+
+        if (networkManager == null) return false;
+
+        ClientNetworkManager clientManager = networkManager.getClientManager();
+
+        return clientManager != null && clientManager.getNetID() == mOwnerId;
+    }
+
+    public void setOwnerId(int newOwnerID) {
+        if (mIsServer) mOwnerId = newOwnerID;
     }
 
     @Override
@@ -159,7 +177,7 @@ public class NetworkObject extends Component implements IOnAwake {
         int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
 
         int ownerId = getIntFromBytes(payload, OWNER_ID_OFFSET);
-        this.setOwnerId(ownerId);
+        mOwnerId = ownerId;
 
         int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
 

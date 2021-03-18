@@ -50,14 +50,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<Player> mPlayer;
     private int mLocalTokens = 0;
 
+    private final int mNetID;
+
     /** The constructor for the human player */
-    public HumanPlayer() {}
+    public HumanPlayer(int netID) {
+        mNetID = netID;
+    }
 
     @Override
     public void onStart() {
-
-        // Get the player
-        mPlayer = getGameObject().getComponent(Player.class);
 
         // Get the screen for map
         mMapScreen =
@@ -103,7 +104,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                         "Place Building"),
                                                                 (handle, __) -> {
                                                                     mPlayer.get()
-                                                                            .mClientBuildRequest
+                                                                            .getClientBuildRequest()
                                                                             .invoke(
                                                                                     new BuildData(
                                                                                             mHexChosen));
@@ -220,6 +221,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void fixedUpdate(float deltaTime) {
+
+        // Try getting the player if haven't already
+        if (mPlayer == null) {
+            mPlayer = Scene.getActiveScene().getSingleton(Player.class).getReference(Player.class);
+        }
+
+        if (mPlayer == null) return;
+
         // Update token
         mLocalTokens = mPlayer.get().getTokens().get();
     }
@@ -316,16 +325,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * @return true if the player owns the building, false if not
      */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
+        if (buildingToCheck == null || !buildingToCheck.isValid()) return false;
 
-        // Goes through all buildings and check that the two buildings are equal
-        for (int i = 0; i < mPlayer.get().numberOfBuildings(); i++) {
-            Reference<Building> building = mPlayer.get().getBuilding(i);
-
-            if (building == buildingToCheck) {
-                return true;
-            }
-        }
-        return false;
+        return mPlayer.get().getBuilding(buildingToCheck.get().getTile()) != null;
     }
 
     /**
@@ -364,7 +366,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                                 // Send attack to server
                                                 mPlayer.get()
-                                                        .mClientAttackRequest
+                                                        .getClientAttackRequest()
                                                         .invoke(
                                                                 new AttackData(
                                                                         mBuildingChosen.get(),
@@ -478,7 +480,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         // sell building
 
                                         mPlayer.get()
-                                                .mClientSellRequest
+                                                .getClientSellRequest()
                                                 .invoke(
                                                         new SellData(
                                                                 mBuildingChosen

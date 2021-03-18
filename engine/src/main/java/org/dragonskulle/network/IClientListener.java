@@ -19,8 +19,12 @@ public interface IClientListener {
     /** Disconnected. */
     void disconnected();
 
-    /** Connected to server. */
-    void connectedToServer();
+    /**
+     * Connected to server.
+     *
+     * @param netID network ID the server gave us
+     */
+    void connectedToServer(int netID);
 
     /**
      * Error.

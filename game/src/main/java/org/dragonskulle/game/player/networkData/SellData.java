@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -15,19 +16,8 @@ import org.dragonskulle.network.components.sync.INetSerializable;
  */
 public final class SellData implements INetSerializable {
 
-    private HexagonTile mTile;
-
-    @Override
-    public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mTile.getQ());
-        stream.writeInt(mTile.getR());
-        stream.writeInt(mTile.getS());
-    }
-
-    @Override
-    public void deserialize(DataInputStream stream) throws IOException {
-        this.mTile = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
-    }
+    private int mQ;
+    private int mR;
 
     public SellData() {}
 
@@ -37,6 +27,26 @@ public final class SellData implements INetSerializable {
      * @param toSell The building to sell
      */
     public SellData(Building toSell) {
-        mTile = toSell.getTile();
+        HexagonTile tileToSell = toSell.getTile();
+
+        mQ = tileToSell.getQ();
+        mR = tileToSell.getR();
+    }
+
+    @Override
+    public void serialize(DataOutputStream stream) throws IOException {
+        stream.writeInt(mQ);
+        stream.writeInt(mR);
+    }
+
+    @Override
+    public void deserialize(DataInputStream stream) throws IOException {
+        mQ = stream.readInt();
+        mR = stream.readInt();
+    }
+
+    public Building getBuilding(HexagonMap map) {
+        HexagonTile tile = map.getTile(mQ, mR);
+        return tile == null ? null : tile.getBuilding();
     }
 }

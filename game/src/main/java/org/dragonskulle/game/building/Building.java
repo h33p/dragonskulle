@@ -18,7 +18,6 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
-import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -28,7 +27,7 @@ import org.joml.Vector3i;
  * <p>Once created, the GameObject needs a {@link TransformHex} component to place it in the game
  * and to allow the logic to access its position.
  *
- * <p>The owner of the Building also needs to be set via {@link #setOwnerID(int)}.
+ * <p>The owner of the Building also needs to be set via {@link NetworkObject#setOwnerId}.
  *
  * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
  * {@link HexagonMap#storeBuilding(Building, int, int)}).
@@ -50,8 +49,6 @@ public class Building extends NetworkableComponent implements IOnAwake {
     /** Stores the attack range of the building. */
     @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
 
-    /** ID of the owner of the building. */
-    public final SyncInt mOwnerID = new SyncInt(-1);
     /** Whether the building is a capital. */
     public final SyncBool mIsCapital = new SyncBool(false);
 
@@ -244,6 +241,15 @@ public class Building extends NetworkableComponent implements IOnAwake {
         return buildings;
     }
 
+    public boolean isBuildingAttackable(Building target) {
+        ArrayList<HexagonTile> attackTiles = getAttackableTiles();
+        HexagonTile targetTile = target.getTile();
+        for (HexagonTile tile : attackTiles) {
+            if (tile.equals(targetTile)) return true;
+        }
+        return false;
+    }
+
     /**
      * Get the current axial coordinates of the building.
      *
@@ -289,21 +295,12 @@ public class Building extends NetworkableComponent implements IOnAwake {
     }
 
     /**
-     * Store the owner's ID.
-     *
-     * @param id The ID of the owner.
-     */
-    public void setOwnerID(int id) {
-        mOwnerID.set(id);
-    }
-
-    /**
      * Get the ID of the owner of the building.
      *
      * @return The ID of the owner.
      */
     public int getOwnerID() {
-        return mOwnerID.get();
+        return getNetworkObject().getOwnerId();
     }
 
     /**

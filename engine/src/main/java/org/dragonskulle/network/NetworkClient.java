@@ -174,7 +174,9 @@ public class NetworkClient {
                 mSocket = new Socket(mIP, mPort);
                 mBIn = new BufferedInputStream(mSocket.getInputStream());
                 mDOut = new DataOutputStream(mSocket.getOutputStream());
-                mClientListener.connectedToServer();
+                byte[] netID = {-1};
+                mBIn.read(netID);
+                mClientListener.connectedToServer((int) netID[0]);
             } catch (UnknownHostException exception) {
                 mOpen = false;
                 mClientListener.unknownHost();

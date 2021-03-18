@@ -4,9 +4,9 @@ package org.dragonskulle.game.player.networkData;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -17,24 +17,26 @@ import org.dragonskulle.network.components.sync.INetSerializable;
  */
 @Accessors(prefix = "m")
 public class AttackData implements INetSerializable {
-    @Getter private HexagonTile mAttackingFrom;
-    @Getter private HexagonTile mAttacking;
+    private int mFromQ;
+    private int mFromR;
+    private int mToQ;
+    private int mToR;
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mAttackingFrom.getQ());
-        stream.writeInt(mAttackingFrom.getR());
-        stream.writeInt(mAttackingFrom.getS());
+        stream.writeInt(mFromQ);
+        stream.writeInt(mFromR);
 
-        stream.writeInt(mAttacking.getQ());
-        stream.writeInt(mAttacking.getR());
-        stream.writeInt(mAttacking.getS());
+        stream.writeInt(mToQ);
+        stream.writeInt(mToR);
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
-        this.mAttackingFrom = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
-        this.mAttacking = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
+        mFromQ = stream.readInt();
+        mFromR = stream.readInt();
+        mToQ = stream.readInt();
+        mToR = stream.readInt();
     }
 
     public AttackData() {}
@@ -46,7 +48,21 @@ public class AttackData implements INetSerializable {
      * @param attacking The defending building
      */
     public AttackData(Building attackingFrom, Building attacking) {
-        this.mAttackingFrom = attackingFrom.getTile();
-        this.mAttacking = attacking.getTile();
+        HexagonTile fromTile = attackingFrom.getTile();
+        mFromQ = fromTile.getQ();
+        mFromR = fromTile.getR();
+        HexagonTile toTile = attacking.getTile();
+        mToQ = toTile.getQ();
+        mToR = toTile.getR();
+    }
+
+    public Building getAttackingFrom(HexagonMap map) {
+        HexagonTile tile = map.getTile(mFromQ, mFromR);
+        return tile == null ? null : tile.getBuilding();
+    }
+
+    public Building getAttackingTo(HexagonMap map) {
+        HexagonTile tile = map.getTile(mFromQ, mFromR);
+        return tile == null ? null : tile.getBuilding();
     }
 }

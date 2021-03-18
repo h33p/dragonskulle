@@ -41,6 +41,5 @@ public class StatData implements INetSerializable {
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
         // TODO Auto-generated method stub
-
     }
 }

@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -32,7 +33,7 @@ public class TransformHex extends Transform {
     private Vector3f mPosition = new Vector3f();
 
     private float mRotation = 0f;
-    private float mHeight = 0f;
+    @Getter private float mHeight = 0f;
 
     private Vector3f mCartesianPosition = new Vector3f();
     private Matrix4f mWorldMatrix = new Matrix4f();
@@ -84,6 +85,7 @@ public class TransformHex extends Transform {
      */
     public void translate(float q, float r) {
         mPosition.add(q, r, 0f);
+        setUpdateFlag();
     }
 
     /**
@@ -96,6 +98,7 @@ public class TransformHex extends Transform {
     public void translate(float q, float r, float height) {
         mPosition.add(q, r, 0f);
         mHeight += height;
+        setUpdateFlag();
     }
 
     /**
@@ -105,6 +108,17 @@ public class TransformHex extends Transform {
      */
     public void translate(float height) {
         mHeight += height;
+        setUpdateFlag();
+    }
+
+    /**
+     * Set the object's height
+     *
+     * @param height new height
+     */
+    public void setHeight(float height) {
+        mHeight = height;
+        setUpdateFlag();
     }
 
     /**

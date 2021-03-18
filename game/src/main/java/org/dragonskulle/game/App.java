@@ -19,7 +19,6 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
-import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
@@ -194,19 +193,18 @@ public class App {
                             handle.addComponent(new NetworkHexTransform());
                         }),
                 new GameObject(
-                        "humanPlayer",
+                        "player",
                         new TransformHex(0, 0, 1),
                         (handle) -> {
-                            handle.addComponent(new HumanPlayer());
                             handle.addComponent(new Player());
-                        }),
-                new GameObject(
-                        "aiPlayer",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            handle.addComponent(new AiPlayer());
-                            handle.addComponent(new Player());
-                        }));
+                        })
+                /*new GameObject(
+                "aiPlayer",
+                new TransformHex(0, 0, 1),
+                (handle) -> {
+                    handle.addComponent(new AiPlayer());
+                    handle.addComponent(new Player());
+                })*/ );
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
@@ -404,16 +402,18 @@ public class App {
                                                             .createClient(
                                                                     "127.0.0.1",
                                                                     7000,
-                                                                    (outcome) -> {
-                                                                        System.out.println(
-                                                                                "CONNECTION OUTCOME: "
-                                                                                        + outcome);
-                                                                        if (connectingTextRef
-                                                                                .isValid())
+                                                                    (manager, netID) -> {
+                                                                        if (netID >= 0) {
+                                                                            onConnectedClient(
+                                                                                    mainScene,
+                                                                                    manager, netID);
+                                                                        } else if (connectingTextRef
+                                                                                .isValid()) {
                                                                             connectingTextRef
                                                                                     .get()
                                                                                     .setEnabled(
                                                                                             false);
+                                                                        }
                                                                     });
                                                     if (connectingTextRef.isValid())
                                                         connectingTextRef.get().setEnabled(true);
@@ -546,13 +546,27 @@ public class App {
                 System.out.println(Arrays.toString(t.getValue()));
             }
         }
+
+        System.exit(0);
+    }
+
+    private static void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
+        System.out.println("CONNECTED ID " + netID);
+
+        GameObject humanPlayer =
+                new GameObject(
+                        "human player",
+                        (handle) -> {
+                            handle.addComponent(new HumanPlayer(netID));
+                        });
+
+        mainScene.addRootObject(humanPlayer);
     }
 
     private static void onClientConnected(NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
-        manager.getServerManager()
-                .spawnNetworkObject(id, manager.findTemplateByName("humanPlayer"));
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 }

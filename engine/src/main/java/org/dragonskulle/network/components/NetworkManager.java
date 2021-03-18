@@ -22,7 +22,7 @@ public class NetworkManager extends Component implements IFixedUpdate {
 
     /** Simple client connection result handler */
     public static interface IConnectionResultHandler {
-        void handle(boolean success);
+        void handle(NetworkManager manager, int netID);
     }
 
     /** Simple server client connection handler interface. */

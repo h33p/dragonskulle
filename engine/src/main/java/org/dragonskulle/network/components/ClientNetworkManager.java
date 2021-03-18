@@ -56,7 +56,8 @@ public class ClientNetworkManager {
         }
 
         @Override
-        public void connectedToServer() {
+        public void connectedToServer(int netID) {
+            mNetID = netID;
             mNextConnectionState.set(ConnectionState.CONNECTED);
         }
 
@@ -113,6 +114,8 @@ public class ClientNetworkManager {
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates */
     private int mTicksWithoutRequests = 0;
+
+    @Getter private int mNetID = -1;
 
     /** An map of references to objects. */
     private final HashMap<Integer, Reference<NetworkObject>> mNetworkObjectReferences =
@@ -203,10 +206,10 @@ public class ClientNetworkManager {
                 switch (nextState) {
                     case CONNECTED:
                         joinGame();
-                        if (mConnectionHandler != null) mConnectionHandler.handle(true);
+                        if (mConnectionHandler != null) mConnectionHandler.handle(mManager, mNetID);
                         break;
                     case CONNECTION_ERROR:
-                        if (mConnectionHandler != null) mConnectionHandler.handle(false);
+                        if (mConnectionHandler != null) mConnectionHandler.handle(mManager, -1);
                         disconnect();
                         break;
                     default:

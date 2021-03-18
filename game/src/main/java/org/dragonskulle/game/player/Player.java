@@ -2,7 +2,10 @@
 package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -35,11 +38,11 @@ import org.dragonskulle.network.components.sync.SyncInt;
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
     // List of Buildings -- stored & synced in HexagonMap
-    private List<Reference<Building>> mOwnedBuildings;
+    private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
     // The map component
     @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
 
-    private List<Reference<Player>> mPlayersOnline = new ArrayList<Reference<Player>>();
+    private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
     @Getter public SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
@@ -56,7 +59,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
-        mOwnedBuildings = new ArrayList<Reference<Building>>();
         // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
         updateTokens(UPDATE_TIME);
@@ -67,24 +69,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param building
      */
-    public void addBuilding(Reference<Building> building) {
-
-        mOwnedBuildings.add(building);
+    public void addBuilding(Building building) {
+        mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
         log.info("Added Building");
     }
 
-    /**
-     * Get a reference to the building at this index
-     *
-     * @param index The index to get data from
-     * @return The building
-     */
-    public Reference<Building> getBuilding(int index) {
-        return mOwnedBuildings.get(index);
+    public void removeBuilding(Building buildingToRemove) {
+        mOwnedBuildings.remove(buildingToRemove.getTile());
     }
 
-    public void removeBuilding(Reference<Building> buildingToRemove) {
-        mOwnedBuildings.remove(buildingToRemove);
+    public Reference<Building> getBuilding(HexagonTile tile) {
+        return mOwnedBuildings.get(tile);
+    }
+
+    public Stream<Reference<Building>> getBuildings() {
+        return mOwnedBuildings.values().stream();
     }
 
     /**
@@ -101,7 +100,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * owned buildings to check if need to update tokens. Should only be ran on the server
      */
     public void updateTokens(float time) {
-
         // Checks if server
         if (getNetworkObject() != null && getNetworkObject().isServer()) {
 
@@ -110,10 +108,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             if (mLastTokenUpdate >= UPDATE_TIME) {
 
                 // Add tokens for each building
-                for (Reference<Building> building : mOwnedBuildings) {
-                    mTokens.set(mTokens.get() + building.get().getTokenGeneration().getValue());
-                }
-                // Add final tokens
+                mOwnedBuildings.values().stream()
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .forEach(
+                                b ->
+                                        mTokens.set(
+                                                mTokens.get() + b.getTokenGeneration().getValue()));
 
                 mTokens.set(mTokens.get() + TOKEN_RATE);
                 mLastTokenUpdate = 0;
@@ -125,18 +126,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** We need to initialize requests here, since java does not like to serialize lambdas */
     @Override
     protected void onNetworkInitialize() {
-
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
         mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
         mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
+
+        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
 
     @Override
     protected void onDestroy() {}
 
     // Selling of buildings is handled below
-    public transient ClientRequest<SellData> mClientSellRequest;
+    @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
     /**
      * How this component will react to an sell event.
@@ -153,7 +155,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     // attacking of buildings is handled below
-    public transient ClientRequest<AttackData> mClientAttackRequest;
+    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
 
     /**
      * How this component will react to an attack event.
@@ -171,104 +173,54 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Get the hexagon tiles
-        HexagonTile attackerTile = data.getAttackingFrom();
-        HexagonTile defenderTile = data.getAttacking();
+        Building attackingBuilding = data.getAttackingFrom(null);
+        Building defenderBuilding = data.getAttackingTo(null);
 
-        // Checks to see if building is yours and if so get proper one
-        Reference<Building> attacker = checkBuildingYours(attackerTile, this);
-
-        if (attacker == null) {
-            log.info("Cannot find building attacker");
+        if (attackingBuilding == null
+                || defenderBuilding == null
+                || attackingBuilding.getNetworkObject().getOwnerId()
+                        != getNetworkObject().getOwnerId()) {
+            log.info("Invalid building selection!");
             return;
         }
 
-        // Get the proper version of the defending building
-        ArrayList<Building> attackableBuildings = attacker.get().getAttackableBuildings();
-        Building defending = checkAttackable(defenderTile, attackableBuildings);
-
-        if (defending == null) {
-            log.info("Cannot find building to attack");
+        if (!attackingBuilding.isBuildingAttackable(defenderBuilding)) {
+            log.info("Player passed a non-attackable building!");
             return;
         }
+
         // Checks building is correct
-        Reference<Building> isYours = checkBuildingYours(defenderTile, this);
-        if (isYours != null) {
+        if (defenderBuilding.getOwnerID() == attackingBuilding.getOwnerID()) {
             log.info("ITS YOUR BUILDING DUMMY");
             return;
         }
 
         // ATTACK!!! (Sorry...)
-        boolean won = attacker.get().attack(defending);
+        boolean won = attackingBuilding.attack(defenderBuilding);
         log.info("Attack is: " + Boolean.toString(won));
         mTokens.set(mTokens.get() - COST);
 
         // If you've won attack
         if (won) {
-            mOwnedBuildings.add(new Reference<Building>(defending));
-            // defending.setOwnerID();  TODO SET ID
-            for (Reference<Player> player : mPlayersOnline) {
-                Reference<Building> buildingToRemove =
-                        checkBuildingYours(
-                                defending.getTile(),
-                                player.get()); // TODO NEED WAY TO GET Q & R VALUES
+            Reference<Player> player = mPlayersOnline.get(defenderBuilding.getOwnerID());
 
-                if (buildingToRemove != null) {
-                    player.get().removeBuilding(buildingToRemove);
-
-                    log.info("Removed Building");
-                    return;
-                }
+            if (player != null && player.isValid()) {
+                player.get().mOwnedBuildings.remove(defenderBuilding.getTile());
+            } else {
+                log.warning("Player not found!");
             }
+
+            mOwnedBuildings.put(
+                    defenderBuilding.getTile(), defenderBuilding.getReference(Building.class));
+            defenderBuilding.getNetworkObject().setOwnerId(attackingBuilding.getOwnerID());
         }
         log.info("Done");
 
         return;
     }
 
-    /**
-     * Checks if the building coordinates correspond to a building a player owns
-     *
-     * @param buildingToCheck The building to check
-     * @return true of the player owns it, false if not
-     */
-    private Reference<Building> checkBuildingYours(HexagonTile buildingToCheck, Player player) {
-
-        // Checks the building is yours
-        for (int i = 0; i < player.numberOfBuildings(); i++) {
-
-            Reference<Building> building = player.getBuilding(i);
-            if (building.get().getTile().getR() == buildingToCheck.getR()
-                    && building.get().getTile().getQ() == buildingToCheck.getQ()) {
-                return building;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Checks if the building coordinates corresponds to a building coordinates in the list
-     *
-     * @param buildingToCheck The building to check is in the list
-     * @param buildingsToCheck The list
-     * @return true if in the list false if not
-     */
-    private Building checkAttackable(
-            HexagonTile buildingToCheck, ArrayList<Building> buildingsToCheck) {
-
-        // Checks building is yours
-        for (Building building : buildingsToCheck) {
-            if (building.getTile().getR() == buildingToCheck.getR()
-                    && building.getTile().getQ() == buildingToCheck.getQ()) {
-                return building;
-            }
-        }
-
-        return null;
-    }
-
     // Building is handled below
-    public transient ClientRequest<BuildData> mClientBuildRequest;
+    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
 
     /**
      * How this component will react to a Build event.
@@ -289,12 +241,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
-        // Contains the coordinates:
-        HexagonTile tileCoordinates = data.getHexTile();
-
         // Gets the actual tile
         HexagonMap map = mMapComponent.get();
-        HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
+        HexagonTile tile = data.getTile(map);
+
+        if (tile.getBuilding() != null) {
+            log.info("Building already exists!");
+            return;
+        }
 
         log.info("Got the map & tile");
         if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function
@@ -338,7 +292,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     // Upgrading Stats is handled below
-    public transient ClientRequest<StatData> mClientStatRequest;
+    @Getter private transient ClientRequest<StatData> mClientStatRequest;
 
     /**
      * How this component will react to an upgrade event.

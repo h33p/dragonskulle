@@ -4,8 +4,8 @@ package org.dragonskulle.game.player.networkData;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -17,7 +17,8 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 @Accessors(prefix = "m")
 public class BuildData implements INetSerializable {
 
-    @Getter private HexagonTile mHexTile;
+    private int mQ;
+    private int mR;
 
     public BuildData() {}
 
@@ -27,18 +28,23 @@ public class BuildData implements INetSerializable {
      * @param hexTileToAdd The {@code HexagonTile} to build on
      */
     public BuildData(HexagonTile hexTileToAdd) {
-        mHexTile = hexTileToAdd;
+        mQ = hexTileToAdd.getQ();
+        mR = hexTileToAdd.getR();
     }
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mHexTile.getQ());
-        stream.writeInt(mHexTile.getR());
-        stream.writeInt(mHexTile.getS());
+        stream.writeInt(mQ);
+        stream.writeInt(mR);
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
-        mHexTile = new HexagonTile(stream.readInt(), stream.readInt(), stream.readInt());
+        mQ = stream.readInt();
+        mR = stream.readInt();
+    }
+
+    public HexagonTile getTile(HexagonMap map) {
+        return map.getTile(mQ, mR);
     }
 }
