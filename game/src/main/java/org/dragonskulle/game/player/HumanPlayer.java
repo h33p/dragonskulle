@@ -176,7 +176,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Try getting the player if haven't already
         if (mPlayer == null) {
-            mPlayer = Scene.getActiveScene().getSingleton(Player.class).getReference(Player.class);
+            if(Scene.getActiveScene().getSingleton(Player.class) == null) {
+            	return;
+            }
+        	
+        	mPlayer = Scene.getActiveScene().getSingleton(Player.class).getReference(Player.class);
         }
 
         if (mPlayer == null) return;
