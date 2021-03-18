@@ -98,7 +98,7 @@ public class App {
                             root.addComponent(new AudioSource());
 
                             TransformUI t = root.getTransform(TransformUI.class);
-                            t.setParentAnchor(0.6f, 0.75f, 0.8f, 0.75f);
+                            t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
                             t.setMargin(0f, 0.1f, 0f, 0.2f);
 
                             root.addComponent(
@@ -279,7 +279,7 @@ public class App {
                             root.addComponent(new AudioSource());
 
                             TransformUI t = root.getTransform(TransformUI.class);
-                            t.setParentAnchor(0.6f, 0.75f, 0.8f, 0.75f);
+                            t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
                             t.setMargin(0f, 0.1f, 0f, 0.2f);
 
                             root.addComponent(
