@@ -288,6 +288,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         // Contains the coordinates:
         HexagonTile tileCoordinates = data.getHexTile();
 
+        //Gets the actual tile
         HexagonMap map = mMapComponent.get();
         HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
 
@@ -307,10 +308,12 @@ public class Player extends NetworkableComponent implements IOnStart {
                         .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
                                 networkManager.findTemplateByName("building"));
-        obj.get()
+        
+        Building building = obj.get()
                 .getGameObject()
                 .getTransform(TransformHex.class)
-                .setPosition(tileCoordinates.getQ(), tileCoordinates.getR());
+                .setPosition(tile.getQ(), tile.getR());
+        
         
         // Remove the tokens.
         mTokens.set(mTokens.get() - COST);
