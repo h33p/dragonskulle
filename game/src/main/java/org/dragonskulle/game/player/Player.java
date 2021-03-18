@@ -264,6 +264,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Create a new building.
         NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
 
+        if(networkManager.getServerManager() == null) {
+        	log.warning("Server manager is null.");
+        	return;
+        }
+        
         Reference<NetworkObject> obj =
                 networkManager
                         .getServerManager()

@@ -135,6 +135,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
         // Get the map.
         HexagonMap map = getMap();
+        if(map == null) return tiles;
         // Get the current position.
         Vector3i position = getPosition();
 
@@ -176,6 +177,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
      */
     public HexagonTile getTile() {
         HexagonMap map = getMap();
+        if(map == null) return null;
 
         Vector3i position = getPosition();
 
@@ -221,6 +223,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
         // Get the map.
         HexagonMap map = getMap();
+        if(map == null) return buildings;
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
@@ -284,11 +287,8 @@ public class Building extends NetworkableComponent implements IOnAwake {
      *
      * @return The map.
      */
-    private HexagonMap getMap() {
-        return Scene.getActiveScene()
-                .getSingleton(HexagonMap.class)
-                .getReference(HexagonMap.class)
-                .get();
+    private HexagonMap getMap() {    	
+    	return Scene.getActiveScene().getSingleton(HexagonMap.class);    	
     }
 
     /**
