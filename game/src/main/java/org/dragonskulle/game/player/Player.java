@@ -293,7 +293,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
-            if (mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
+            if (mMapComponent.isValid() && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
             }
         }

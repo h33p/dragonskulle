@@ -186,11 +186,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mPlayer == null) return;
 
         // Update token
-        mLocalTokens = mPlayer.get().getTokens().get();
-        if (mTokenBannerButton.isValid()) {
-            Reference<UIText> txt = mTokenBannerButton.get().getLabelText();
-            if (txt != null && txt.isValid()) {
-                txt.get().setText("Tokens: " + mLocalTokens);
+        if(mPlayer.isValid()) {
+            mLocalTokens = mPlayer.get().getTokens().get();
+            if (mTokenBannerButton.isValid()) {
+                Reference<UIText> txt = mTokenBannerButton.get().getLabelText();
+                if (txt != null && txt.isValid()) {
+                    txt.get().setText("Tokens: " + mLocalTokens);
+                }
             }
         }
     }
