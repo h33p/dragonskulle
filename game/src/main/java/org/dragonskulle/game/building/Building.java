@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
 import org.dragonskulle.game.building.stat.SyncAttackStat;
@@ -257,7 +258,19 @@ public class Building extends NetworkableComponent implements IOnAwake {
      */
     private Vector3i getPosition() {
         Vector3f floatPosition = new Vector3f();
-        TransformHex tranform = getGameObject().getComponent(TransformHex.class).get();
+        
+        Reference<TransformHex> tranformReference = getGameObject().getComponent(TransformHex.class);
+        
+        if(tranformReference == null) {
+        	return new Vector3i(0, 0, 0);
+        }
+        
+        TransformHex tranform = tranformReference.get();
+
+        if(tranform == null) {
+        	return new Vector3i(0, 0, 0);
+        }
+        
         tranform.getLocalPosition(floatPosition);
 
         Vector3i position = new Vector3i();
