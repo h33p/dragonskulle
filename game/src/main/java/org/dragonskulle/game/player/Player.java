@@ -285,9 +285,6 @@ public class Player extends NetworkableComponent implements IOnStart {
             return;
         }
 
-        // Remove the tokens.
-        mTokens.set(mTokens.get() - COST);
-
         // Contains the coordinates:
         HexagonTile tileCoordinates = data.getHexTile();
 
@@ -295,15 +292,13 @@ public class Player extends NetworkableComponent implements IOnStart {
         HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
 
         log.info("Got the map & tile");
-        if (buildingWithinRadius(getTilesInRadius(1, tile))) {
+        if (buildingWithinRadius(getTilesInRadius(1, tile))) {			//TODO Merge into one function
             log.info("Trying to build too close to another building");
             return;
         }
 
         // TODO REDO
         // Create a new building.
-        // Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
-
         NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
 
         Reference<NetworkObject> obj =
@@ -316,8 +311,11 @@ public class Player extends NetworkableComponent implements IOnStart {
                 .getGameObject()
                 .getTransform(TransformHex.class)
                 .setPosition(tileCoordinates.getQ(), tileCoordinates.getR());
+        
+        // Remove the tokens.
+        mTokens.set(mTokens.get() - COST);
 
-        mOwnedBuildings = new ArrayList<Reference<Building>>();
+        //mOwnedBuildings = new ArrayList<Reference<Building>>();
         // Store the building.
         map.storeBuilding(building, tile.getQ(), tile.getR());
 
