@@ -37,6 +37,6 @@ public final class SellData implements INetSerializable {
      * @param toSell The building to sell
      */
     public SellData(Building toSell) {
-        mTile = toSell.getTile().get();
+        mTile = toSell.getTile();
     }
 }

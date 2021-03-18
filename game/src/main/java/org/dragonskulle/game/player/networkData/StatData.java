@@ -33,9 +33,9 @@ public class StatData implements INetSerializable {
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mBuilding.getTile().get().getQ());
-        stream.writeInt(mBuilding.getTile().get().getR());
-        stream.writeInt(mBuilding.getTile().get().getS());
+        stream.writeInt(mBuilding.getTile().getQ());
+        stream.writeInt(mBuilding.getTile().getR());
+        stream.writeInt(mBuilding.getTile().getS());
     }
 
     @Override

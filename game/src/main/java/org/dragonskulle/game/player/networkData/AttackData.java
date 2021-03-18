@@ -46,7 +46,7 @@ public class AttackData implements INetSerializable {
      * @param attacking The defending building
      */
     public AttackData(Building attackingFrom, Building attacking) {
-        this.mAttackingFrom = attackingFrom.getTile().get();
-        this.mAttacking = attacking.getTile().get();
+        this.mAttackingFrom = attackingFrom.getTile();
+        this.mAttacking = attacking.getTile();
     }
 }
