@@ -4,10 +4,8 @@ package org.dragonskulle.network.components.requests;
 import java.io.*;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -56,9 +54,8 @@ public class ClientRequest<T extends INetSerializable> {
                     oos.flush();
                 }
                 bos.close();
-                final NetworkManager networkManager =
-                        Scene.getActiveScene().getSingleton(NetworkManager.class);
-                networkManager
+                mNetworkObject
+                        .getNetworkManager()
                         .getClientManager()
                         .sendToServer(
                                 NetworkMessage.build(

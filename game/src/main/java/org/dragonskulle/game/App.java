@@ -183,12 +183,12 @@ public class App {
                             handle.addComponent(new Player());
                         }),
                 new GameObject(
-                "aiPlayer",
-                new TransformHex(0, 0, 1),
-                (handle) -> {
-                    handle.addComponent(new AiPlayer());
-                    handle.addComponent(new Player());
-                }));
+                        "aiPlayer",
+                        new TransformHex(0, 0, 1),
+                        (handle) -> {
+                            handle.addComponent(new AiPlayer());
+                            handle.addComponent(new Player());
+                        }));
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
@@ -273,12 +273,43 @@ public class App {
                                                         (a, b) -> {
                                                             System.out.println(
                                                                     "should fill with ai");
-                                                            
-                                                            networkManager.get().getServerManager().spawnNetworkObject(-1, networkManager.get().findTemplateByName("aiPlayer"));
-                                                        	networkManager.get().getServerManager().spawnNetworkObject(-2, networkManager.get().findTemplateByName("aiPlayer"));
-                                                        	networkManager.get().getServerManager().spawnNetworkObject(-3, networkManager.get().findTemplateByName("aiPlayer"));
-                                                        	networkManager.get().getServerManager().spawnNetworkObject(-4, networkManager.get().findTemplateByName("aiPlayer"));
-                                                            
+
+                                                            networkManager
+                                                                    .get()
+                                                                    .getServerManager()
+                                                                    .spawnNetworkObject(
+                                                                            -1,
+                                                                            networkManager
+                                                                                    .get()
+                                                                                    .findTemplateByName(
+                                                                                            "aiPlayer"));
+                                                            networkManager
+                                                                    .get()
+                                                                    .getServerManager()
+                                                                    .spawnNetworkObject(
+                                                                            -2,
+                                                                            networkManager
+                                                                                    .get()
+                                                                                    .findTemplateByName(
+                                                                                            "aiPlayer"));
+                                                            networkManager
+                                                                    .get()
+                                                                    .getServerManager()
+                                                                    .spawnNetworkObject(
+                                                                            -3,
+                                                                            networkManager
+                                                                                    .get()
+                                                                                    .findTemplateByName(
+                                                                                            "aiPlayer"));
+                                                            networkManager
+                                                                    .get()
+                                                                    .getServerManager()
+                                                                    .spawnNetworkObject(
+                                                                            -4,
+                                                                            networkManager
+                                                                                    .get()
+                                                                                    .findTemplateByName(
+                                                                                            "aiPlayer"));
                                                         }));
                                     });
                         });
@@ -582,7 +613,9 @@ public class App {
                 new GameObject(
                         "human player",
                         (handle) -> {
-                            handle.addComponent(new HumanPlayer(netID));
+                            handle.addComponent(
+                                    new HumanPlayer(
+                                            manager.getReference(NetworkManager.class), netID));
                         });
 
         mainScene.addRootObject(humanPlayer);

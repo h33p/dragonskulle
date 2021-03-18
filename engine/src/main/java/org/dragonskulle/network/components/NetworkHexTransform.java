@@ -32,7 +32,7 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
             if (netman.isServer()) {
                 Vector3f newPosition = hexTransform.getLocalPosition(new Vector3f());
                 newPosition.z = hexTransform.getHeight();
-                if (!mAxialCoordinate.get().equals(newPosition)) {
+                if (!mAxialCoordinate.get().equals(newPosition) || true) {
                     mAxialCoordinate.set(newPosition);
                 }
             } else {

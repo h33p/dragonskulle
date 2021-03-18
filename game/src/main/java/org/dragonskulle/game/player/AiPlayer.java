@@ -105,46 +105,42 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
      */
     private void simulateInput() {
 
-    	
-    	
-    	if(mPlayer.get().numberOfBuildings() == 0) {
-    		log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
-    		
-    		int min = -10;
-    		int max = 10;
-    		
-    		int posX = min + (int)(Math.random() * ((max - min) + 1));
-    		int posY = min + (int)(Math.random() * ((max - min) + 1));
-    		
-            HexagonTile tile = mPlayer.get()
-                    .getMapComponent()
-                    .getTile(posX, posY);
+        if (mPlayer.get().numberOfBuildings() == 0) {
+            log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
 
-            if(tile == null) {
-            	return;
+            int min = -10;
+            int max = 10;
+
+            int posX = min + (int) (Math.random() * ((max - min) + 1));
+            int posY = min + (int) (Math.random() * ((max - min) + 1));
+
+            HexagonTile tile = mPlayer.get().getMapComponent().getTile(posX, posY);
+
+            if (tile == null) {
+                return;
             }
-            
+
             log.info("Selected tile: " + tile);
             log.info("Building on tile: " + tile.getBuilding());
-            
-            if(tile.getBuilding() == null) {            	
-            	// Send to server
+
+            if (tile.getBuilding() == null) {
+                // Send to server
                 mPlayer.get().handleEvent(new BuildData(tile));
             }
-            
-    		return;
-    	}
-    	
+
+            return;
+        }
+
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfBuildings() == 1) { // TODO Refactor it so it's only done once
 
-        	log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
-        	
+            log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
+
             // Gets all the tiles it can expand to
             List<HexagonTile> tilesToUse = hexTilesToExpand();
 
             log.info("tilesToUse: " + tilesToUse);
-            
+
             // Checks if there are tiles
             if (tilesToUse.size() != 0) {
 
@@ -255,7 +251,9 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                         Building[] buildingToAttack =
                                 buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
                         // Send to server
-                        mPlayer.get().handleEvent(new AttackData(buildingToAttack[0], buildingToAttack[1]));
+                        mPlayer.get()
+                                .handleEvent(
+                                        new AttackData(buildingToAttack[0], buildingToAttack[1]));
 
                         return;
                     } else {

@@ -258,12 +258,13 @@ public class ClientNetworkManager {
      */
     private void spawnNewNetworkObject(int networkObjectId, int ownerID, int templateId) {
         final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);
-        final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false);
+        final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false, mManager);
         go.addComponent(nob);
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
         log.info("adding a new root object to the scene");
         log.info("nob to be spawned is : " + nob.toString());
         mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), ref);
+        nob.networkInitialize();
     }
 }

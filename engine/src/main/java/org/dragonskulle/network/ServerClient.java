@@ -8,7 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,7 +44,7 @@ public class ServerClient {
     private DataOutputStream mDataOut;
 
     /** The scheduled requests to be processed. */
-    private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
+    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
 
     /**
      * Constructor for {@link ServerClient}

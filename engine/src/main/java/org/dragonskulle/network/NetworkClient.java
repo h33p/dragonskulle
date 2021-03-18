@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
@@ -32,7 +33,7 @@ public class NetworkClient {
     private boolean mOpen = true;
 
     /** Stores all requests from the server once scheduled. */
-    private final ListenableQueue<byte[]> mRequests = new ListenableQueue<>(new LinkedList<>());
+    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
     /** The Runnable for @{mClientThread}. */
     private ClientRunner mClientRunner;
 
@@ -221,7 +222,7 @@ public class NetworkClient {
      */
     private void queueRequest(byte[] bArray) {
         mLogger.fine("queuing request :: " + Hex.encodeHexString(bArray));
-        this.mRequests.addIfUnique(bArray);
+        this.mRequests.add(bArray);
     }
 
     /** Processes all requests. */
@@ -233,6 +234,8 @@ public class NetworkClient {
             if (requestBytes != null) {
                 parseBytes(requestBytes);
             }
+            if (cnt > 100) mLogger.info("CNT " + cnt);
+
             cnt++;
         }
         return cnt;

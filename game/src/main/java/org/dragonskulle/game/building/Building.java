@@ -135,7 +135,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
         // Get the map.
         HexagonMap map = getMap();
-        if(map == null) return tiles;
+        if (map == null) return tiles;
         // Get the current position.
         Vector3i position = getPosition();
 
@@ -177,7 +177,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
      */
     public HexagonTile getTile() {
         HexagonMap map = getMap();
-        if(map == null) return null;
+        if (map == null) return null;
 
         Vector3i position = getPosition();
 
@@ -223,7 +223,7 @@ public class Building extends NetworkableComponent implements IOnAwake {
 
         // Get the map.
         HexagonMap map = getMap();
-        if(map == null) return buildings;
+        if (map == null) return buildings;
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
@@ -261,19 +261,20 @@ public class Building extends NetworkableComponent implements IOnAwake {
      */
     private Vector3i getPosition() {
         Vector3f floatPosition = new Vector3f();
-        
-        Reference<TransformHex> tranformReference = getGameObject().getComponent(TransformHex.class);
-        
-        if(tranformReference == null) {
-        	return new Vector3i(0, 0, 0);
+
+        Reference<TransformHex> tranformReference =
+                getGameObject().getComponent(TransformHex.class);
+
+        if (tranformReference == null) {
+            return new Vector3i(0, 0, 0);
         }
-        
+
         TransformHex tranform = tranformReference.get();
 
-        if(tranform == null) {
-        	return new Vector3i(0, 0, 0);
+        if (tranform == null) {
+            return new Vector3i(0, 0, 0);
         }
-        
+
         tranform.getLocalPosition(floatPosition);
 
         Vector3i position = new Vector3i();
@@ -287,8 +288,8 @@ public class Building extends NetworkableComponent implements IOnAwake {
      *
      * @return The map.
      */
-    private HexagonMap getMap() {    	
-    	return Scene.getActiveScene().getSingleton(HexagonMap.class);    	
+    private HexagonMap getMap() {
+        return Scene.getActiveScene().getSingleton(HexagonMap.class);
     }
 
     /**

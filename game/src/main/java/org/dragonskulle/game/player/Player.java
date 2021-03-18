@@ -105,8 +105,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void updateTokens(float time) {
         // Checks if server
-        if (getNetworkObject() != null && getNetworkObject().isServer()) {
-
+        if (getNetworkObject().isServer()) {
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
             if (mLastTokenUpdate >= UPDATE_TIME) {
@@ -262,13 +261,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // TODO REDO
         // Create a new building.
-        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
+        NetworkManager networkManager = getNetworkObject().getNetworkManager();
 
-        if(networkManager.getServerManager() == null) {
-        	log.warning("Server manager is null.");
-        	return;
+        if (networkManager.getServerManager() == null) {
+            log.warning("Server manager is null.");
+            return;
         }
-        
+
         Reference<NetworkObject> obj =
                 networkManager
                         .getServerManager()
@@ -286,19 +285,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             // mOwnedBuildings = new ArrayList<Reference<Building>>();
             // Store the building.
             Building building = buildingGO.getComponent(Building.class).get();
-            if(building != null) {
-            	addBuilding(building);
+            if (building != null) {
+                addBuilding(building);
                 map.storeBuilding(
                         buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
             }
-            
         }
         log.info("Building added");
     }
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
-            if (mMapComponent.isValid() && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
+            if (mMapComponent.isValid()
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
             }
         }

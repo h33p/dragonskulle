@@ -13,6 +13,8 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
+import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.Camera;
@@ -52,9 +54,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private int mLocalTokens = 0;
 
     private final int mNetID;
+    private final Reference<NetworkManager> mNetworkManager;
 
     /** The constructor for the human player */
-    public HumanPlayer(int netID) {
+    public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
+        mNetworkManager = networkManager;
         mNetID = netID;
     }
 
@@ -173,20 +177,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void fixedUpdate(float deltaTime) {
-
         // Try getting the player if haven't already
         if (mPlayer == null) {
-            if(Scene.getActiveScene().getSingleton(Player.class) == null) {
-            	return;
-            }
-        	
-        	mPlayer = Scene.getActiveScene().getSingleton(Player.class).getReference(Player.class);
+            NetworkManager manager = mNetworkManager.get();
+
+            if (manager != null && manager.getClientManager() != null)
+                mPlayer =
+                        manager.getClientManager()
+                                .getNetworkObjects()
+                                .filter(Reference::isValid)
+                                .map(Reference::get)
+                                .filter(NetworkObject::isMine)
+                                .map(NetworkObject::getGameObject)
+                                .map(go -> go.getComponent(Player.class))
+                                .filter(ref -> ref != null)
+                                .findFirst()
+                                .orElse(null);
         }
 
         if (mPlayer == null) return;
 
         // Update token
-        if(mPlayer.isValid()) {
+        if (mPlayer.isValid()) {
             mLocalTokens = mPlayer.get().getTokens().get();
             if (mTokenBannerButton.isValid()) {
                 Reference<UIText> txt = mTokenBannerButton.get().getLabelText();
