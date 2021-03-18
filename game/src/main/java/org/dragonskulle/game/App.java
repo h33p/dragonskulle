@@ -133,6 +133,38 @@ public class App {
                             go.addComponent(new Spinner(-360.f, 1000.f, 0.1f));
                         });
 
+
+        GameObject audioObject =
+                new GameObject(
+                        "audioObject",
+                        new TransformUI(true),
+                        (root) -> {
+                            root.addComponent(new AudioSource());
+
+                            TransformUI t = root.getTransform(TransformUI.class);
+                            t.setParentAnchor(0.6f, 0.75f, 0.8f, 0.75f);
+                            t.setMargin(0f, 0.1f, 0f, 0.2f);
+
+                            root.addComponent(new UIButton(
+                                    new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Mute/Unmute"),
+                                    (uiButton, __) ->
+                                            AudioManager.getInstance().toggleMute(SoundType.BACKGROUND)
+                            ));
+
+                        });
+
+        Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
+        if (refAudio.isValid()) {
+            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 60);
+            AudioManager.getInstance().setVolume(SoundType.SFX, 80);
+            refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
+            refAudio.get().play();
+        }
+
+        mainScene.addRootObject(audioObject);
         // Aaand, spawn it!
         mainScene.addRootObject(cube);
 
@@ -226,6 +258,7 @@ public class App {
                         (handle) -> {
                             handle.addComponent(networkManager.get());
                         });
+
 
         GameObject gameTitle =
                 new GameObject(
@@ -511,8 +544,7 @@ public class App {
                             });
                 });
 
-        AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 100);
-        AudioManager.getInstance().setVolume(SoundType.SFX, 100);
+
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
@@ -535,12 +567,11 @@ public class App {
 
                         });
 
-        System.out.println("checking if i have an audio source component");
         Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
         if (refAudio.isValid()) {
-            System.out.println("loading an audio file");
-            refAudio.get().loadAudio("country_background_short.wav", SoundType.BACKGROUND);
-            System.out.println("playing an audio file");
+            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 70);
+            AudioManager.getInstance().setVolume(SoundType.SFX, 80);
+            refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudio.get().play();
         }
 
