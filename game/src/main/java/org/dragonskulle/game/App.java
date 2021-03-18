@@ -19,6 +19,7 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
+import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
@@ -180,14 +181,14 @@ public class App {
                         new TransformHex(0, 0, 1),
                         (handle) -> {
                             handle.addComponent(new Player());
-                        })
-                /*new GameObject(
+                        }),
+                new GameObject(
                 "aiPlayer",
                 new TransformHex(0, 0, 1),
                 (handle) -> {
                     handle.addComponent(new AiPlayer());
                     handle.addComponent(new Player());
-                })*/ );
+                }));
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
@@ -272,6 +273,12 @@ public class App {
                                                         (a, b) -> {
                                                             System.out.println(
                                                                     "should fill with ai");
+                                                            
+                                                            networkManager.get().getServerManager().spawnNetworkObject(-1, networkManager.get().findTemplateByName("aiPlayer"));
+                                                        	networkManager.get().getServerManager().spawnNetworkObject(-2, networkManager.get().findTemplateByName("aiPlayer"));
+                                                        	networkManager.get().getServerManager().spawnNetworkObject(-3, networkManager.get().findTemplateByName("aiPlayer"));
+                                                        	networkManager.get().getServerManager().spawnNetworkObject(-4, networkManager.get().findTemplateByName("aiPlayer"));
+                                                            
                                                         }));
                                     });
                         });
