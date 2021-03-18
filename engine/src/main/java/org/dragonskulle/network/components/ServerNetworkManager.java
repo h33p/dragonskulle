@@ -36,7 +36,6 @@ public class ServerNetworkManager {
          * Client connected event.
          *
          * @param client the client
-         * @param out the out
          * @return which network ID was allocated for the client
          */
         @Override
