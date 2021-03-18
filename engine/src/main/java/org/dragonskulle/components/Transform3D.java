@@ -80,6 +80,48 @@ public class Transform3D extends Transform {
     }
 
     /**
+     * Set the rotation of the object relative to the parent
+     *
+     * @param rotation Vector3f containing the desired rotation
+     */
+    public void setRotation(Vector3fc rotation) {
+        setRotation(rotation.x(), rotation.y(), rotation.z());
+    }
+
+    /**
+     * Set the rotation of the object relative to the parent
+     *
+     * @param rotation Vector3f containing the desired rotation
+     */
+    public void setRotationDeg(Vector3fc rotation) {
+        setRotation(
+                rotation.x() * DEG_TO_RAD, rotation.y() * DEG_TO_RAD, rotation.z() * DEG_TO_RAD);
+    }
+
+    /**
+     * Set the rotation of the object relative to the parent
+     *
+     * @param x X coordinate of rotation
+     * @param y Y coordinate of rotation
+     * @param z Z coordinate of rotation
+     */
+    public void setRotation(float x, float y, float z) {
+        mLocalMatrix.setRotationXYZ(x, y, z);
+        setUpdateFlag();
+    }
+
+    /**
+     * Set the rotation of the object relative to the parent
+     *
+     * @param x X coordinate of rotation
+     * @param y Y coordinate of rotation
+     * @param z Z coordinate of rotation
+     */
+    public void setRotationDeg(float x, float y, float z) {
+        setRotation(x * DEG_TO_RAD, y * DEG_TO_RAD, z * DEG_TO_RAD);
+    }
+
+    /**
      * Rotate the object with euler angles
      *
      * @param eulerAngles Vector containing euler angles to rotate object with

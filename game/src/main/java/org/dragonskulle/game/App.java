@@ -15,6 +15,7 @@ import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
+import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
@@ -67,13 +68,14 @@ public class App {
                             rig.buildChild(
                                     "rotationRig",
                                     (pitchRig) -> {
-                                        pitchRig.getTransform(Transform3D.class)
-                                                .rotateDeg(-45f, 0f, 0f);
+                                        ZoomTilt zoomTilt = new ZoomTilt();
+                                        pitchRig.addComponent(zoomTilt);
                                         pitchRig.buildChild(
                                                 "camera",
                                                 (camera) -> {
                                                     ScrollTranslate scroll =
-                                                            new ScrollTranslate(keyboardMovement);
+                                                            new ScrollTranslate(
+                                                                    keyboardMovement, zoomTilt);
                                                     scroll.getStartPos().set(0f, -5f, 0f);
                                                     scroll.getEndPos().set(0f, -100f, 0f);
                                                     camera.addComponent(scroll);
