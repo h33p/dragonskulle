@@ -3,11 +3,13 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
@@ -35,17 +37,22 @@ public class Player extends NetworkableComponent implements IOnStart {
     // List of Buildings -- stored & synced in HexagonMap
     private List<Reference<Building>> mOwnedBuildings;
     // The map component
-    @Getter private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
+    @Getter
+    private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
 
     private List<Reference<Player>> mPlayersOnline = new ArrayList<Reference<Player>>();
 
-    @Getter private SyncInt mTokens = new SyncInt(0);
+    @Getter
+    public SyncInt mTokens = new SyncInt(0);
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    /** The base constructor for player */
-    public Player() {}
+    /**
+     * The base constructor for player
+     */
+    public Player() {
+    }
 
     @Override
     public void onStart() {
@@ -59,6 +66,7 @@ public class Player extends NetworkableComponent implements IOnStart {
         // TODO Get all Players & add to list
         updateTokens(UPDATE_TIME);
     }
+
     /**
      * Add a building to the ones the player owns
      *
@@ -102,7 +110,6 @@ public class Player extends NetworkableComponent implements IOnStart {
         // Checks if server
         if (getNetworkObject() != null && getNetworkObject().isServer()) {
 
-            log.info("Updating Server Side Tokens info");
 
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
@@ -116,12 +123,14 @@ public class Player extends NetworkableComponent implements IOnStart {
 
                 mTokens.set(mTokens.get() + TOKEN_RATE);
                 mLastTokenUpdate = 0;
-                log.info("Tokens at: " + Integer.toString(mTokens.get()));
+                log.info("Tokens at: " + mTokens.get());
             }
         }
     }
 
-    /** We need to initialize requests here, since java does not like to serialize lambdas */
+    /**
+     * We need to initialize requests here, since java does not like to serialize lambdas
+     */
     @Override
     protected void onNetworkInitialize() {
 
@@ -132,7 +141,8 @@ public class Player extends NetworkableComponent implements IOnStart {
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     // Selling of buildings is handled below
     public transient ClientRequest<SellData> mClientSellRequest;
@@ -246,7 +256,7 @@ public class Player extends NetworkableComponent implements IOnStart {
     /**
      * Checks if the building coordinates corresponds to a building coordinates in the list
      *
-     * @param buildingToCheck The building to check is in the list
+     * @param buildingToCheck  The building to check is in the list
      * @param buildingsToCheck The list
      * @return true if in the list false if not
      */
@@ -278,52 +288,53 @@ public class Player extends NetworkableComponent implements IOnStart {
         // Add to the HexagonMap
         // Take tokens off
 
-//        // TODO: Move to Building.
-//        int COST = 5;
-//
-//        if (mTokens.get() < COST) {
-//            log.info("Not enough tokens for building");
-//            return;
-//        }
-//
-//        // Contains the coordinates:
-//        HexagonTile tileCoordinates = data.getHexTile();
-//
-//        //Gets the actual tile
-//        HexagonMap map = mMapComponent.get();
-//        HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
-//
-//        log.info("Got the map & tile");
-//        if (buildingWithinRadius(getTilesInRadius(1, tile))) {			//TODO Merge into one function
-//            log.info("Trying to build too close to another building");
-//            return;
-//        }
-//
-//        // TODO REDO
-//        // Create a new building.
-//        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
-//
-//        Reference<NetworkObject> obj =
-//                networkManager
-//                        .getServerServerManager()
-//                        .spawnNetworkObject(
-//                                getNetworkObject().getOwnerId(),
-//                                networkManager.findTemplateByName("building"));
-//
-//        Building building = obj.get()
-//                .getGameObject()
-//                .getTransform(TransformHex.class)
-//                .setPosition(tile.getQ(), tile.getR());
-//
-//
-//        // Remove the tokens.
-//        mTokens.set(mTokens.get() - COST);
-//
-//        //mOwnedBuildings = new ArrayList<Reference<Building>>();
-//        // Store the building.
-//        map.storeBuilding(building, tile.getQ(), tile.getR());
-//
-//        log.info("Building added");
+        // TODO: Move to Building.
+        int COST = 5;
+
+        if (mTokens.get() < COST) {
+            log.info("Not enough tokens for building");
+            return;
+        }
+
+        // Contains the coordinates:
+        HexagonTile tileCoordinates = data.getHexTile();
+
+        //Gets the actual tile
+        HexagonMap map = mMapComponent.get();
+        HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
+
+        log.info("Got the map & tile");
+        if (buildingWithinRadius(getTilesInRadius(1, tile))) {            //TODO Merge into one function
+            log.info("Trying to build too close to another building");
+            return;
+        }
+
+        // TODO REDO
+        // Create a new building.
+        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
+
+        Reference<NetworkObject> obj =
+                networkManager
+                        .getServerManager()
+                        .spawnNetworkObject(
+                                getNetworkObject().getOwnerId(),
+                                networkManager.findTemplateByName("building"));
+        if (obj != null) {
+            GameObject buildingGO = obj.get()
+                    .getGameObject();
+
+            buildingGO
+                    .getTransform(TransformHex.class)
+                    .setPosition(tile.getQ(), tile.getR());
+
+            // Remove the tokens.
+            mTokens.set(mTokens.get() - COST);
+
+            //mOwnedBuildings = new ArrayList<Reference<Building>>();
+            // Store the building.
+            map.storeBuilding(buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
+        }
+        log.info("Building added");
     }
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
@@ -355,7 +366,7 @@ public class Player extends NetworkableComponent implements IOnStart {
      * This will return all hex tiles within a radius except the one in the tile
      *
      * @param radius The radius to check
-     * @param tile the tile to check
+     * @param tile   the tile to check
      * @return A list of tiles
      */
     public ArrayList<HexagonTile> getTilesInRadius(

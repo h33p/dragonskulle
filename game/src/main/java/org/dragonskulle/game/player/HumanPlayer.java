@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import com.sun.org.apache.xerces.internal.xni.parser.XMLComponent;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -12,6 +13,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
@@ -51,8 +53,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // The player
     private Reference<Player> mPlayer;
 
-    /** The constructor for the human player */
-    public HumanPlayer() {}
+    /**
+     * The constructor for the human player
+     */
+    public HumanPlayer() {
+    }
 
     @Override
     public void onStart() {
@@ -179,7 +184,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -202,17 +208,21 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
-        if (GameActions.LEFT_CLICK.isActivated()
-                && UIManager.getInstance().getHoveredObject() == null
+        log.info("-----\nis clicking? " + GameActions.LEFT_CLICK.isActivated() + "is clicking? " + GameActions.LEFT_CLICK.isActivated() + "is hovered? " + UIManager.getInstance().getHoveredObject() + "is mainCam? " + mainCam);
+        if (GameActions.LEFT_CLICK.isActivated() //                && UIManager.getInstance().getHoveredObject() == null, this is breaking something
                 && mainCam != null) {
+            System.out.println("Human: a");
 
             // Retrieve scaled screen coordinates
             Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+            System.out.println("Human: ab");
 
             // Convert those coordinates to local coordinates within the map
             Vector3f pos =
@@ -221,14 +231,25 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             screenPos.x(),
                             screenPos.y(),
                             new Vector3f());
+            System.out.println("Human: abc");
 
             // Convert those coordinates to axial
             TransformHex.cartesianToAxial(pos);
             // And round them
             TransformHex.roundAxial(pos);
+            System.out.println("Human: abcd");
 
             // And then select the tile
-            mHexChosen = mPlayer.get().getMapComponent().get().getTile((int) pos.x, (int) pos.y);
+            Player player = mPlayer.get();
+            System.out.println("Human: getting player");
+            if (player != null) {
+                System.out.println("Human: got player");
+                Reference<HexagonMap> component = player.getMapComponent();
+                if (component != null) {
+                    System.out.println("Human: got component");
+                    mHexChosen = component.get().getTile((int) pos.x, (int) pos.y);
+                }
+            }
 
             System.out.println("Human:Got the Hexagon to enter");
 
@@ -298,7 +319,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
         // If its equal to null ignore
-        if (mBuildingChosen.get() == null) {;
+        if (mBuildingChosen.get() == null) {
+            ;
         } else {
             // For each Building add a button for it
             for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
