@@ -260,32 +260,37 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
-        // TODO REDO
+        
+        
         // Create a new building.
         NetworkManager networkManager = getNetworkObject().getNetworkManager();
+        GameObject buildingGO = obj.get().getGameObject();
+        
+
+        buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
+
+        
+        // Store the building.
+        Building building = buildingGO.getComponent(Building.class).get();
+        
+        if (!buildingWithinRadius(getTilesInRadius(building.getViewDistance().getValue(), tile))) {
+        	log.info("Too far");
+        	return;
+        }
 
         if (networkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
             return;
         }
 
-        Reference<NetworkObject> obj =
-                networkManager
-                        .getServerManager()
-                        .spawnNetworkObject(
-                                getNetworkObject().getOwnerId(),
-                                networkManager.findTemplateByName("building"));
+       
         if (obj != null) {
-            GameObject buildingGO = obj.get().getGameObject();
-
-            buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
-
-            // Remove the tokens.
+                      // Remove the tokens.
             mTokens.set(mTokens.get() - COST);
 
             // mOwnedBuildings = new ArrayList<Reference<Building>>();
             // Store the building.
-            Building building = buildingGO.getComponent(Building.class).get();
+            
             if (building != null) {
                 map.storeBuilding(
                         buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
