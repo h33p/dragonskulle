@@ -28,7 +28,7 @@ import org.joml.Vector3i;
  * <p>Once created, the GameObject needs a {@link TransformHex} component to place it in the game
  * and to allow the logic to access its position.
  *
- * <p>The owner of the Building also needs to be set via {@link #setOwner(TestPlayer)} or {@link
+ * <p>The owner of the Building also needs to be set via {@link
  * #setOwnerID(int)}.
  *
  * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
@@ -307,14 +307,6 @@ public class Building extends NetworkableComponent implements IOnAwake {
         return mOwnerID.get();
     }
 
-    /**
-     * Set the owner of the building.
-     *
-     * @param player The owner.
-     */
-    public void setOwner(TestPlayer player) {
-        setOwnerID(player.getID());
-    }
 
     /**
      * Get whether the building is a capital.
