@@ -5,7 +5,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.network.components.sync.INetSerializable;
 

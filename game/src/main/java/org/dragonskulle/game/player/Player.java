@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
@@ -16,6 +17,7 @@ import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.game.player.networkData.StatData;
+import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -202,7 +204,9 @@ public class Player extends NetworkableComponent implements IOnStart {
         if (won) {
             mOwnedBuildings.add(new Reference<Building>(defending));
             for (Reference<Player> player : mPlayersOnline) {
-                Reference<Building> buildingToRemove = checkBuildingYours(defending.g, player.get());// TODO NEED WAY TO GET Q & R VALUES
+                Reference<Building> buildingToRemove =
+                        checkBuildingYours(
+                                defending.g, player.get()); // TODO NEED WAY TO GET Q & R VALUES
 
                 if (buildingToRemove != null) {
                     player.get().removeBuilding(buildingToRemove);
@@ -230,8 +234,7 @@ public class Player extends NetworkableComponent implements IOnStart {
 
             Reference<Building> building = player.getBuilding(i);
             if (building.get().getTile().get().getR() == buildingToCheck.getR()
-                    && building.get().getTile().get().getQ()
-                            == buildingToCheck.getQ()) {
+                    && building.get().getTile().get().getQ() == buildingToCheck.getQ()) {
                 return building;
             }
         }
@@ -297,10 +300,24 @@ public class Player extends NetworkableComponent implements IOnStart {
             return;
         }
 
-        //TODO REDO
+        // TODO REDO
         // Create a new building.
-        Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
+        // Building building = new Building(mMapComponent, new Reference<HexagonTile>(tile));
 
+        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
+
+        Reference<NetworkObject> obj =
+                networkManager
+                        .getServerServerManager()
+                        .spawnNetworkObject(
+                                getNetworkObject().getOwnerId(),
+                                networkManager.findTemplateByName("building"));
+        obj.get()
+                .getGameObject()
+                .getTransform(TransformHex.class)
+                .setPosition(tileCoordinates.getQ(), tileCoordinates.getR());
+
+        mOwnedBuildings = new ArrayList<Reference<Building>>();
         // Store the building.
         map.storeBuilding(building, tile.getQ(), tile.getR());
 

@@ -10,7 +10,6 @@ import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
@@ -102,7 +101,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
         // If you can play simulate the input
         if (playGame(deltaTime)) {
-        	log.info("Playing game");
+            log.info("Playing game");
             simulateInput();
         }
     }
