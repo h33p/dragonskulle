@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.ui.UIButton;
 
 /**
  * An engine component which allows you to play audio.
@@ -62,5 +63,20 @@ public class AudioSource extends Component {
     @Override
     protected void onDestroy() {
         // TODO: Implement onDestroy for AudioSource
+    }
+
+    /**
+     * The button click to play the sound
+     *
+     * @param onClick The stuff to do when clicking the button
+     * @return The stuff to do when clicking a button + playing a sound
+     */
+    public UIButton.IButtonEvent audibleClick(UIButton.IButtonEvent onClick) {
+        return (a, b) -> {
+            play();
+            if (onClick != null) {
+                onClick.eventHandler(a, b);
+            }
+        };
     }
 }
