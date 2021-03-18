@@ -37,7 +37,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Screen mScreenOn = Screen.MAP_SCREEN;
     private Reference<GameObject> mMapScreen;
     private Reference<GameObject> mPlaceScreen;
-    private Reference<GameObject> mBuildingScreen;
+    private Reference<GameObject> mBuildingSelectedScreen;
     private Reference<GameObject> mChooseAttack;
     private Reference<GameObject> mShowStat;
     private Reference<GameObject> mTokenBanner;
@@ -51,11 +51,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<Player> mPlayer;
     private int mLocalTokens = 0;
 
-    /**
-     * The constructor for the human player
-     */
-    public HumanPlayer() {
-    }
+    /** The constructor for the human player */
+    public HumanPlayer() {}
 
     @Override
     public void onStart() {
@@ -75,7 +72,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
                                 });
 
-        // Get the screen for confirming placing a building
+        // Get the screen for confirming placing a buildingSelectedView
         mPlaceScreen =
                 getGameObject()
                         .buildChild(
@@ -145,13 +142,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             });
                                 });
 
-        // Screen to choose what to do for a building
-        mBuildingScreen =
-                getGameObject().buildChild("building options", new TransformUI(), this::building);
+        // Screen to choose what to do for a buildingSelectedView
+        mBuildingSelectedScreen =
+                getGameObject()
+                        .buildChild(
+                                "buildingSelectedView options",
+                                new TransformUI(),
+                                this::buildingSelectedView);
 
         // To Attack
         mChooseAttack =
-                getGameObject().buildChild("attack screen", new TransformUI(), this::attack);
+                getGameObject()
+                        .buildChild("attackView screen", new TransformUI(), this::attackView);
 
         // To upgrade stats
         mShowStat =
@@ -194,32 +196,35 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 "token_view",
                                 new TransformUI(),
                                 (go) -> {
-
                                     go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
 
                                     ; // TODO will add stuff for Stats AFTER prototype
 
-                                    Reference<GameObject> tmp_ref = go.buildChild(
-                                            "token_count",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.getTransform(TransformUI.class)
-                                                        .setParentAnchor(0f, 0.01f, 0.5f, 0.01f);
-                                                box.getTransform(TransformUI.class)
-                                                        .setMargin(0f, 0f, 0f, 0.07f);
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                new UIText(
-                                                                        new Vector3f(0f, 0f, 0f),
-                                                                        Font.getFontResource(
-                                                                                "Rise of Kingdom.ttf"),
-                                                                        "Tokens: "
-                                                                                + mLocalTokens)));
-                                            });
+                                    Reference<GameObject> tmp_ref =
+                                            go.buildChild(
+                                                    "token_count",
+                                                    new TransformUI(true),
+                                                    (box) -> {
+                                                        box.getTransform(TransformUI.class)
+                                                                .setParentAnchor(
+                                                                        0f, 0.01f, 0.5f, 0.01f);
+                                                        box.getTransform(TransformUI.class)
+                                                                .setMargin(0f, 0f, 0f, 0.07f);
+                                                        box.addComponent(
+                                                                new UIRenderable(
+                                                                        new SampledTexture(
+                                                                                "ui/wide_button.png")));
+                                                        box.addComponent(
+                                                                new UIButton(
+                                                                        new UIText(
+                                                                                new Vector3f(
+                                                                                        0f, 0f, 0f),
+                                                                                Font
+                                                                                        .getFontResource(
+                                                                                                "Rise of Kingdom.ttf"),
+                                                                                "Tokens: "
+                                                                                        + mLocalTokens)));
+                                                    });
 
                                     mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
                                 });
@@ -227,8 +232,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -237,8 +241,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mTokenBannerButton.isValid()) {
             Reference<UIText> txt = mTokenBannerButton.get().getLabelText();
             if (txt != null && txt.isValid()) {
-                txt.get().setText("Tokens: "
-                        + mLocalTokens);
+                txt.get().setText("Tokens: " + mLocalTokens);
             }
         }
     }
@@ -249,7 +252,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Choose which screen to show
         mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
         mPlaceScreen.get().setEnabled(mScreenOn == Screen.TILE_SCREEN);
-        mBuildingScreen.get().setEnabled(mScreenOn == Screen.BUILDING_SCREEN);
+        mBuildingSelectedScreen.get().setEnabled(mScreenOn == Screen.BUILDING_SELECTED_SCREEN);
         mChooseAttack.get().setEnabled(mScreenOn == Screen.ATTACK_SCREEN);
         mShowStat.get().setEnabled(mScreenOn == Screen.STAT_SCREEN);
         if (mScreenOn == Screen.MAP_SCREEN) {
@@ -257,9 +260,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * This will choose what to do when the user can see the full map
-     */
+    /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -296,7 +297,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             // When chosen a hexagon
             if (mHexChosen != null) {
 
-                // Gets reference to building
+                // Gets reference to buildingSelectedView
                 Reference<Building> buildingOnTile =
                         new Reference<Building>(
                                 mPlayer.get()
@@ -304,7 +305,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         .get()
                                         .getBuilding(mHexChosen.getQ(), mHexChosen.getR()));
 
-                // If there is a building there
+                // If there is a buildingSelectedView there
                 if (buildingOnTile.get() == null) {
 
                     // Checks if cannot build here
@@ -319,10 +320,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         System.out.println("Human:Change Screen");
                         mScreenOn = Screen.TILE_SCREEN;
                     }
-                    // Checks if the player owns the building
+                    // Checks if the player owns the buildingSelectedView
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
                     mBuildingChosen = buildingOnTile;
-                    mScreenOn = Screen.BUILDING_SCREEN;
+                    mScreenOn = Screen.BUILDING_SELECTED_SCREEN;
                 } else {
                     return;
                 }
@@ -331,10 +332,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     /**
-     * A Method to check if the player owns that building or not
+     * A Method to check if the player owns that buildingSelectedView or not
      *
-     * @param buildingToCheck The building to check
-     * @return true if the player owns the building, false if not
+     * @param buildingToCheck The buildingSelectedView to check
+     * @return true if the player owns the buildingSelectedView, false if not
      */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
 
@@ -354,19 +355,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      *
      * @param go The game object
      */
-    private void attack(GameObject go) {
+    private void attackView(GameObject go) {
 
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
         // If its equal to null ignore
-        if (mBuildingChosen.get() == null) {
-            ;
+        if (mBuildingChosen.get() == null) {;
         } else {
             // For each Building add a button for it
             for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
 
                 go.buildChild(
-                        "Attack building",
+                        "Attack buildingSelectedView",
                         new TransformUI(true),
                         (box) -> {
                             box.getTransform(TransformUI.class)
@@ -379,12 +379,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             new UIText(
                                                     new Vector3f(0f, 0f, 0f),
                                                     Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "Attack building "), // TODO (After Prototype)
+                                                    "Attack buildingSelectedView "), // TODO (After
+                                            // Prototype)
                                             // -- Need way to show
-                                            // different building
+                                            // different buildingSelectedView
                                             (handle, __) -> {
 
-                                                // Send attack to server
+                                                // Send attackView to server
                                                 mPlayer.get()
                                                         .mClientAttackRequest
                                                         .invoke(
@@ -424,9 +425,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
-    private void building(GameObject go) {
+    private void buildingSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-        // Choose to upgrade the building
+        // Choose to upgrade the buildingSelectedView
         go.buildChild(
                 "Upgrade Button",
                 new TransformUI(true),
@@ -446,15 +447,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     (handle, __) -> {
                                         // TODO When clicked need to
                                         // show options to upgrade
-                                        // building stats.  Will leave
+                                        // buildingSelectedView stats.  Will leave
                                         // until after prototype
 
                                         mScreenOn = Screen.STAT_SCREEN;
                                     }));
                 });
-        // Choose to attack a building from here
+        // Choose to attackView a buildingSelectedView from here
         go.buildChild(
-                "Attack building",
+                "Attack buildingSelectedView",
                 new TransformUI(true),
                 (box) -> {
                     box.getTransform(TransformUI.class).setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
@@ -468,7 +469,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             "Attack!"),
                                     (handle, __) -> {
 
-                                        // Gets the building to attack
+                                        // Gets the buildingSelectedView to attackView
                                         // from and stored
                                         mBuildingChosen =
                                                 new Reference<Building>(
@@ -481,9 +482,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         mScreenOn = Screen.ATTACK_SCREEN;
                                     }));
                 });
-        // Sell a building
+        // Sell a buildingSelectedView
         go.buildChild(
-                "Sell building",
+                "Sell buildingSelectedView",
                 new TransformUI(true),
                 (box) -> {
                     box.getTransform(TransformUI.class).setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
@@ -497,7 +498,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             "Sell Building -- Not Done"),
                                     (handle, __) -> {
                                         // TODO When clicked need to
-                                        // sell building
+                                        // sell buildingSelectedView
 
                                         mPlayer.get()
                                                 .mClientSellRequest
