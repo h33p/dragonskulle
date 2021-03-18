@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.network.components.requests;
+package org.dragonskulle.network;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

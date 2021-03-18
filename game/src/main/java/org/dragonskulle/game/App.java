@@ -17,8 +17,7 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
-import org.dragonskulle.network.components.Capital.Capital;
-import org.dragonskulle.network.components.Capital.NetworkedTransform;
+import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
@@ -202,7 +201,6 @@ public class App {
                             UnlitMaterial mat = new UnlitMaterial();
                             mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
                             handle.addComponent(new Renderable(Mesh.CUBE, mat));
-                            handle.addComponent(new NetworkedTransform());
                         }),
                 new GameObject(
                         "capital",
@@ -211,7 +209,6 @@ public class App {
 
                             mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
                             handle.addComponent(new Renderable(Mesh.HEXAGON, mat));
-                            handle.addComponent(new Capital());
                         }));
 
         Reference<NetworkManager> networkManager =
@@ -460,21 +457,7 @@ public class App {
                                                     networkManager
                                                             .get()
                                                             .createServer(
-                                                                    7000,
-                                                                    (manager, id) -> {
-                                                                        manager.getServerManager()
-                                                                                .spawnNetworkObject(
-                                                                                        id,
-                                                                                        manager
-                                                                                                .findTemplateByName(
-                                                                                                        "cube"));
-                                                                        manager.getServerManager()
-                                                                                .spawnNetworkObject(
-                                                                                        id,
-                                                                                        manager
-                                                                                                .findTemplateByName(
-                                                                                                        "capital"));
-                                                                    });
+                                                                    7000, (manager, id) -> {});
                                                 });
 
                                 button.addComponent(newButton);
@@ -545,5 +528,11 @@ public class App {
                 System.out.println(Arrays.toString(t.getValue()));
             }
         }
+    }
+
+    private static void onClientConnected(NetworkManager manager, ServerClient networkClient) {
+        int id = networkClient.getNetworkID();
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
     }
 }

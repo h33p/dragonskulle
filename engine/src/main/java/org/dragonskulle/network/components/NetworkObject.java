@@ -335,14 +335,11 @@ public class NetworkObject extends Component implements IOnAwake {
         bytes.add(sizeOfMaskBytes);
 
         // add mask
-        byte[] maskBytes = new byte[didChildUpdateMask.length];
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             boolean didChildUpdate = didChildUpdateMask[i];
             if (didChildUpdate) {
-                maskBytes[i] = ((byte) 1);
                 bytes.add((byte) 1);
             } else {
-                maskBytes[i] = ((byte) 0);
                 bytes.add((byte) 0);
             }
         }

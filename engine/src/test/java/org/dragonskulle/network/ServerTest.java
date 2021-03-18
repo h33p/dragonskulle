@@ -14,11 +14,8 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
-import org.dragonskulle.network.components.Capital.Capital;
-import org.dragonskulle.network.components.Capital.NetworkedTransform;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.requests.TestAttackData;
 import org.junit.*;
 import org.lwjgl.system.NativeResource;
 
@@ -51,12 +48,10 @@ public class ServerTest {
                             handle.addComponent(new Capital());
                         }));
 
-        GameObject networkManager =
-                new GameObject("netman", handle -> handle.addComponent(CLIENT_NETWORK_MANAGER));
-        CLIENT_NETMAN_SCENE.addRootObject(networkManager);
-        networkManager =
-                new GameObject("netman", handle -> handle.addComponent(SERVER_NETWORK_MANAGER));
-        SERVER_NETMAN_SCENE.addRootObject(networkManager);
+        CLIENT_NETMAN_SCENE.addRootObject(
+                new GameObject("netman", handle -> handle.addComponent(CLIENT_NETWORK_MANAGER)));
+        SERVER_NETMAN_SCENE.addRootObject(
+                new GameObject("netman", handle -> handle.addComponent(SERVER_NETWORK_MANAGER)));
     }
 
     private static ReentrantLock mEngineLock = new ReentrantLock();

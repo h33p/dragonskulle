@@ -45,8 +45,7 @@ public class ServerNetworkManager {
 
         @Override
         public void clientActivated(ServerClient client) {
-            if (mConnectedClientHandler != null)
-                mConnectedClientHandler.handle(mManager, client.getNetworkID());
+            if (mConnectedClientHandler != null) mConnectedClientHandler.handle(mManager, client);
         }
 
         /**
@@ -180,9 +179,11 @@ public class ServerNetworkManager {
     void startGame() {
         Engine engine = Engine.getInstance();
 
-        if (engine.getPresentationScene() == Scene.getActiveScene())
+        if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
-        else engine.activateScene(mManager.getGameScene());
+        } else {
+            engine.activateScene(mManager.getGameScene());
+        }
     }
 
     /**
@@ -235,7 +236,7 @@ public class ServerNetworkManager {
         if (mServer == null) return;
 
         mServer.updateClientList();
-        mServer.processClientRequests(16);
+        mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
 
         for (ServerClient c : mServer.getClients()) {
             for (ServerObjectEntry entry : mNetworkObjects.values()) {

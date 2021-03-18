@@ -10,6 +10,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.network.ServerClient;
 
 /**
  * @author Aurimas Blažulionis
@@ -26,7 +27,7 @@ public class NetworkManager extends Component implements IFixedUpdate {
 
     /** Simple server client connection handler interface. */
     public static interface IConnectedClientHandler {
-        void handle(NetworkManager manager, int id);
+        void handle(NetworkManager manager, ServerClient client);
     }
 
     /** Registered spawnable templates */
@@ -62,8 +63,9 @@ public class NetworkManager extends Component implements IFixedUpdate {
      * @param resultHandler connection result callback
      */
     public void createClient(String ip, int port, IConnectionResultHandler resultHandler) {
-        if (mClientManager == null && mServerManager == null)
+        if (mClientManager == null && mServerManager == null) {
             mClientManager = new ClientNetworkManager(this, ip, port, resultHandler);
+        }
     }
 
     /**

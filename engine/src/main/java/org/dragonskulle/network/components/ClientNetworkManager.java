@@ -181,8 +181,9 @@ public class ClientNetworkManager {
     public void disconnect() {
         Engine engine = Engine.getInstance();
 
-        if (engine.getPresentationScene() == mManager.getGameScene())
+        if (engine.getPresentationScene() == mManager.getGameScene()) {
             engine.loadPresentationScene(Scene.getActiveScene());
+        }
 
         mConnectionState = ConnectionState.NOT_CONNECTED;
         mClient.dispose();
@@ -227,9 +228,11 @@ public class ClientNetworkManager {
         if (mConnectionState == ConnectionState.JOINED_GAME) {
             if (mClient.processRequests() <= 0) {
                 mTicksWithoutRequests++;
-                if (mTicksWithoutRequests > 3200) disconnect();
-                else if (mTicksWithoutRequests == 1000)
+                if (mTicksWithoutRequests > 3200) {
+                    disconnect();
+                } else if (mTicksWithoutRequests == 1000) {
                     log.info("1000 ticks without updates! 2200 more till disconnect!");
+                }
             } else mTicksWithoutRequests = 0;
         }
     }
@@ -241,9 +244,11 @@ public class ClientNetworkManager {
     private void joinGame() {
         Engine engine = Engine.getInstance();
 
-        if (engine.getPresentationScene() == Scene.getActiveScene())
+        if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
-        else engine.activateScene(mManager.getGameScene());
+        } else {
+            engine.activateScene(mManager.getGameScene());
+        }
 
         mConnectionState = ConnectionState.JOINED_GAME;
     }
