@@ -18,6 +18,7 @@ import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.game.player.networkData.StatData;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -277,52 +278,52 @@ public class Player extends NetworkableComponent implements IOnStart {
         // Add to the HexagonMap
         // Take tokens off
 
-        // TODO: Move to Building.
-        int COST = 5;
-
-        if (mTokens.get() < COST) {
-            log.info("Not enough tokens for building");
-            return;
-        }
-
-        // Contains the coordinates:
-        HexagonTile tileCoordinates = data.getHexTile();
-
-        //Gets the actual tile
-        HexagonMap map = mMapComponent.get();
-        HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
-
-        log.info("Got the map & tile");
-        if (buildingWithinRadius(getTilesInRadius(1, tile))) {			//TODO Merge into one function
-            log.info("Trying to build too close to another building");
-            return;
-        }
-
-        // TODO REDO
-        // Create a new building.
-        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
-
-        Reference<NetworkObject> obj =
-                networkManager
-                        .getServerServerManager()
-                        .spawnNetworkObject(
-                                getNetworkObject().getOwnerId(),
-                                networkManager.findTemplateByName("building"));
-        
-        Building building = obj.get()
-                .getGameObject()
-                .getTransform(TransformHex.class)
-                .setPosition(tile.getQ(), tile.getR());
-        
-        
-        // Remove the tokens.
-        mTokens.set(mTokens.get() - COST);
-
-        //mOwnedBuildings = new ArrayList<Reference<Building>>();
-        // Store the building.
-        map.storeBuilding(building, tile.getQ(), tile.getR());
-
-        log.info("Building added");
+//        // TODO: Move to Building.
+//        int COST = 5;
+//
+//        if (mTokens.get() < COST) {
+//            log.info("Not enough tokens for building");
+//            return;
+//        }
+//
+//        // Contains the coordinates:
+//        HexagonTile tileCoordinates = data.getHexTile();
+//
+//        //Gets the actual tile
+//        HexagonMap map = mMapComponent.get();
+//        HexagonTile tile = map.getTile(tileCoordinates.getQ(), tileCoordinates.getR());
+//
+//        log.info("Got the map & tile");
+//        if (buildingWithinRadius(getTilesInRadius(1, tile))) {			//TODO Merge into one function
+//            log.info("Trying to build too close to another building");
+//            return;
+//        }
+//
+//        // TODO REDO
+//        // Create a new building.
+//        NetworkManager networkManager = Scene.getActiveScene().getSingleton(NetworkManager.class);
+//
+//        Reference<NetworkObject> obj =
+//                networkManager
+//                        .getServerServerManager()
+//                        .spawnNetworkObject(
+//                                getNetworkObject().getOwnerId(),
+//                                networkManager.findTemplateByName("building"));
+//
+//        Building building = obj.get()
+//                .getGameObject()
+//                .getTransform(TransformHex.class)
+//                .setPosition(tile.getQ(), tile.getR());
+//
+//
+//        // Remove the tokens.
+//        mTokens.set(mTokens.get() - COST);
+//
+//        //mOwnedBuildings = new ArrayList<Reference<Building>>();
+//        // Store the building.
+//        map.storeBuilding(building, tile.getQ(), tile.getR());
+//
+//        log.info("Building added");
     }
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
