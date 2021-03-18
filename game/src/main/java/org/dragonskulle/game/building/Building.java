@@ -41,20 +41,20 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake {
 
     /** Stores the attack strength of the building. */
-    @Getter private final SyncAttackStat mAttack = new SyncAttackStat();
+    @Getter public final SyncAttackStat mAttack = new SyncAttackStat();
     /** Stores the defence strength of the building. */
-    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat();
+    @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat();
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
+    @Getter public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
     /** Stores the view range of the building. */
-    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
+    @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
     /** Stores the attack range of the building. */
-    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
+    @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
 
     /** ID of the owner of the building. */
-    private final SyncInt mOwnerID = new SyncInt(-1);
+    public final SyncInt mOwnerID = new SyncInt(-1);
     /** Whether the building is a capital. */
-    private final SyncBool mIsCapital = new SyncBool(false);
+    public final SyncBool mIsCapital = new SyncBool(false);
 
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
