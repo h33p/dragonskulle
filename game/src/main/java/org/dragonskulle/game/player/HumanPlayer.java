@@ -91,6 +91,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             "confirm box",
                                             new TransformUI(true),
                                             (box) -> {
+                                            	box.getTransform(TransformUI.class)
+                                                .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
+                                            	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                                                 box.addComponent(
                                                         new UIRenderable(
                                                                 new SampledTexture(
@@ -120,6 +123,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             "Go Back",
                                             new TransformUI(true),
                                             (box) -> {
+                                            	box.getTransform(TransformUI.class)
+                                                .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                                            	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                                                 box.addComponent(
                                                         new UIRenderable(
                                                                 new SampledTexture(
@@ -329,6 +335,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         "Attack building",
                         new TransformUI(true),
                         (box) -> {
+                        	box.getTransform(TransformUI.class)
+                            .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                        	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                             box.addComponent(
                                     new UIRenderable(new SampledTexture("ui/wide_button.png")));
                             box.addComponent(
@@ -364,8 +373,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Go Back",
                 new TransformUI(true),
                 (box) -> {
+                	box.getTransform(TransformUI.class)
+                    .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
+                    		
                             new UIButton(
                                     new UIText(
                                             new Vector3f(0f, 0f, 0f),
@@ -386,6 +399,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Upgrade Button",
                 new TransformUI(true),
                 (box) -> {
+                	box.getTransform(TransformUI.class)
+                    .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(
                             new UIRenderable(
                                     new SampledTexture(
@@ -410,6 +426,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Attack building",
                 new TransformUI(true),
                 (box) -> {
+                	box.getTransform(TransformUI.class)
+                    .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
+                	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
                             new UIButton(new UIText(
@@ -436,6 +455,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Sell building",
                 new TransformUI(true),
                 (box) -> {
+                	box.getTransform(TransformUI.class)
+                    .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
+                	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
                             new UIButton(
@@ -465,6 +487,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 "Go Back",
                 new TransformUI(true),
                 (box) -> {
+                	box.getTransform(TransformUI.class)
+                    .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
+                	box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
                             new UIButton(
