@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.camera;
 
+import java.util.Arrays;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -20,6 +21,11 @@ import org.joml.Vector3f;
  */
 @Accessors(prefix = "m")
 public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake {
+
+    public static interface IZoomNotify {
+        void setZoomLevel(float level);
+    }
+
     @Getter @Setter
     /** Controls the minimum zoom speed */
     private float mMinSpeed = 0.01f;
@@ -45,7 +51,7 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
     private float mZoomLerpTime = 0.1f;
     private float mZoomLevel = 0f;
     private transient Transform3D mTransform;
-    private KeyboardMovement mMovement;
+    private IZoomNotify[] mNotify;
 
     /** Constructor for {@link ScrollTranslate} */
     public ScrollTranslate() {}
@@ -53,11 +59,10 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
     /**
      * Constructor for {@link ScrollTranslate}
      *
-     * @param movement if non-null, this reference will be told every frame how much we are zoomed
-     *     in.
+     * @param notify list of components that need to be notified of the zoom level changes.
      */
-    public ScrollTranslate(KeyboardMovement movement) {
-        mMovement = movement;
+    public ScrollTranslate(IZoomNotify... notify) {
+        mNotify = notify;
     }
 
     @Override
@@ -84,7 +89,9 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
             mZoomLevel = Math.min(1.f, Math.max(lerpTime, 0.f));
             mStartPos.lerp(mEndPos, mZoomLevel, mTmpTransform);
             mTransform.setPosition(mTmpTransform);
-            if (mMovement != null) mMovement.setZoomLevel(mZoomLevel);
+            if (mNotify != null) {
+                Arrays.stream(mNotify).forEach(n -> n.setZoomLevel(mZoomLevel));
+            }
         }
     }
 
