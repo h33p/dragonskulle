@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.network.components.Capital;
+package org.dragonskulle.network;
 
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.Transform3D;

@@ -53,6 +53,10 @@ public class Engine {
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
 
+    public interface IEngineExitCondition {
+        boolean shouldExit();
+    }
+
     private Engine() {}
 
     /**
@@ -68,7 +72,19 @@ public class Engine {
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
-        mainLoop();
+        mainLoop(mGLFWState::processEvents);
+    }
+
+    /**
+     * Starts only fixed updates of the engine, allows for custom quit condition
+     *
+     * <p>Note that this method will not destroy game object references!
+     *
+     * @param exitCondition customizable exit condition
+     */
+    public synchronized void startFixedDebug(IEngineExitCondition exitCondition) {
+        mIsRunning = true;
+        debugLoop(exitCondition);
     }
 
     /**
@@ -178,8 +194,44 @@ public class Engine {
         mIsRunning = false;
     }
 
+    /** Debug loop of the engine */
+    private void debugLoop(IEngineExitCondition exitCondition) {
+        float mPrevTime = Time.getTimeInSeconds();
+
+        float cumulativeTime = 0;
+
+        while (mIsRunning) {
+            // Calculate time for last frame
+            float mCurTime = Time.getTimeInSeconds();
+            float deltaTime = mCurTime - mPrevTime;
+            mPrevTime = mCurTime;
+
+            cumulativeTime += deltaTime;
+
+            // Update scenes
+            switchScenes();
+
+            // Update all component lists in active scenes
+            updateScenesComponentsList();
+
+            // Wake up all components that aren't awake (Called on all active scenes)
+            wakeComponents();
+
+            // Start all enabled components (Called on all active scenes)
+            startEnabledComponents();
+
+            mIsRunning = exitCondition.shouldExit();
+
+            while (cumulativeTime > UPDATE_TIME) {
+                cumulativeTime -= UPDATE_TIME;
+
+                fixedUpdate();
+            }
+        }
+    }
+
     /** Main loop of the engine */
-    private void mainLoop() {
+    private void mainLoop(IEngineExitCondition exitCondition) {
 
         float mPrevTime = Time.getTimeInSeconds();
 
@@ -212,7 +264,7 @@ public class Engine {
             // Start all enabled components (Called on all active scenes)
             startEnabledComponents();
 
-            mIsRunning = mGLFWState.processEvents();
+            mIsRunning = exitCondition.shouldExit();
 
             Scene.setActiveScene(mPresentationScene);
             UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());

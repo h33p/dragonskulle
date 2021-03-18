@@ -6,14 +6,16 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.network.ClientGameInstance;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
+import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.utils.IOUtils;
 
@@ -38,17 +40,21 @@ public class NetworkObject extends Component implements IOnAwake {
     @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
 
     /** The network client ID that owns this */
+    @Getter
+    @Setter(AccessLevel.PRIVATE)
     private int mOwnerId;
 
     /**
      * Instantiates a new Network object.
      *
      * @param id the id
+     * @param ownerId the id of the owner
      * @param isServer true if the object is on the server
      */
-    public NetworkObject(int id, boolean isServer) {
+    public NetworkObject(int id, int ownerId, boolean isServer) {
         mNetworkObjectId = id;
-        this.mIsServer = isServer;
+        mOwnerId = ownerId;
+        mIsServer = isServer;
     }
 
     @Override
@@ -70,29 +76,6 @@ public class NetworkObject extends Component implements IOnAwake {
     }
 
     /**
-     * Sets owner id.
-     *
-     * @param id the id
-     */
-    public void setOwnerId(int id) {
-        this.mOwnerId = id;
-    }
-
-    /**
-     * Gets the bytes of the network object id. (OWNER)
-     *
-     * @return the bytes
-     */
-    private ArrayList<Byte> getOwnerIdBytes() {
-        ArrayList<Byte> ownerId = new ArrayList<>(); // 4 bytes
-        byte[] bytes = NetworkMessage.convertIntToByteArray(this.getOwnerId());
-        for (Byte aByte : bytes) {
-            ownerId.add(aByte);
-        }
-        return ownerId;
-    }
-
-    /**
      * Gets id from bytes.
      *
      * @param payload the payload
@@ -103,15 +86,6 @@ public class NetworkObject extends Component implements IOnAwake {
         byte[] bytes = Arrays.copyOfRange(payload, offset, offset + 4);
 
         return NetworkMessage.convertByteArrayToInt(bytes);
-    }
-
-    /**
-     * Gets the owner id.
-     *
-     * @return the owner id
-     */
-    public int getOwnerId() {
-        return this.mOwnerId;
     }
 
     @Override
@@ -178,10 +152,9 @@ public class NetworkObject extends Component implements IOnAwake {
      * Updates itself from bytes authored by server.
      *
      * @param payload the payload
-     * @param instance the instance
      * @throws IOException thrown if failed to read client streams
      */
-    public void updateFromBytes(byte[] payload, ClientGameInstance instance) throws IOException {
+    public void updateFromBytes(byte[] payload) throws IOException {
         // TODO clear this up by using ByteStreams
         int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
 
@@ -260,26 +233,6 @@ public class NetworkObject extends Component implements IOnAwake {
         return out;
     }
 
-    /** A callback to broadcast a message to all clients */
-    public interface ServerBroadcastCallback {
-        /**
-         * Call.
-         *
-         * @param bytes the bytes
-         */
-        void call(byte[] bytes);
-    }
-
-    /** A callback to broadcast a message to a SINGLE clients,this client is the owner */
-    public interface SendBytesToClientCallback {
-        /**
-         * Call.
-         *
-         * @param bytes the bytes
-         */
-        void call(byte[] bytes);
-    }
-
     /**
      * Gets network object id.
      *
@@ -290,18 +243,31 @@ public class NetworkObject extends Component implements IOnAwake {
     }
 
     /**
+     * Reset update mask
+     *
+     * <p>Called after all clients got their updates sent.
+     */
+    public void resetUpdateMask() {
+        mNetworkableComponents.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .forEach(NetworkableComponent::resetUpdateMask);
+    }
+
+    /**
      * Broadcasts updates all of the modified children as one message @param broadcastCallback the
      * broadcast callback
      *
-     * @param broadcastCallback the broadcast callback
+     * @param client client to update the values for
+     * @param forceUpdate whether or not forcefully update all syncvars
      */
-    public void broadcastUpdate(ServerBroadcastCallback broadcastCallback) {
+    public void sendUpdate(ServerClient client, boolean forceUpdate) {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
         boolean[] didChildUpdateMask = new boolean[mNetworkableComponents.size()];
-        mLogger.info("Networkable Object has n components : " + mNetworkableComponents.size());
+        mLogger.fine("Networkable Object has n components : " + mNetworkableComponents.size());
         for (int i = 0; i < didChildUpdateMask.length; i++) {
-            if (mNetworkableComponents.get(i).get().hasBeenModified()) {
+            if (forceUpdate || mNetworkableComponents.get(i).get().hasBeenModified()) {
                 didChildUpdateMask[i] = true;
                 if (!shouldBroadcast) {
                     shouldBroadcast = true;
@@ -309,9 +275,13 @@ public class NetworkObject extends Component implements IOnAwake {
             }
         }
         if (shouldBroadcast) {
-            byte[] bytes = generateBroadcastUpdateBytes(didChildUpdateMask);
-            mLogger.fine("Broadcast update size:: " + bytes.length);
-            broadcastCallback.call(
+            byte[] bytes = generateUpdateBytes(didChildUpdateMask);
+            mLogger.fine(
+                    "Update update size for client "
+                            + client.getNetworkID()
+                            + ":: "
+                            + bytes.length);
+            client.sendBytes(
                     NetworkMessage.build(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT, bytes));
         }
     }
@@ -322,7 +292,7 @@ public class NetworkObject extends Component implements IOnAwake {
      * @param didChildUpdateMask the mask of children which updates
      * @return the bytes to be broadcasted
      */
-    private byte[] generateBroadcastUpdateBytes(boolean[] didChildUpdateMask) {
+    private byte[] generateUpdateBytes(boolean[] didChildUpdateMask) {
         //        mLogger.fine("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
 
@@ -365,14 +335,11 @@ public class NetworkObject extends Component implements IOnAwake {
         bytes.add(sizeOfMaskBytes);
 
         // add mask
-        byte[] maskBytes = new byte[didChildUpdateMask.length];
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             boolean didChildUpdate = didChildUpdateMask[i];
             if (didChildUpdate) {
-                maskBytes[i] = ((byte) 1);
                 bytes.add((byte) 1);
             } else {
-                maskBytes[i] = ((byte) 0);
                 bytes.add((byte) 0);
             }
         }

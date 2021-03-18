@@ -98,6 +98,15 @@ public abstract class NetworkableComponent extends Component {
     protected void onNetworkInitialize() {}
 
     /**
+     * Reset the changed bitmask
+     *
+     * <p>Call this after every network update, once all clients had their state updated
+     */
+    void resetUpdateMask() {
+        for (int i = 0; i < mFieldsMask.length; i++) mFieldsMask[i] = false;
+    }
+
+    /**
      * Serialize component.
      *
      * @param force whether to write all fields in
@@ -116,7 +125,6 @@ public abstract class NetworkableComponent extends Component {
                     try {
                         mask.add((byte) 1);
                         ((ISyncVar) f.get(this)).serialize(stream);
-                        this.mFieldsMask[i] = false; // reset flag
                     } catch (IllegalAccessException | IOException e) {
                         e.printStackTrace();
                     }
