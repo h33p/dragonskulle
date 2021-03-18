@@ -41,6 +41,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<GameObject> mChooseAttack;
     private Reference<GameObject> mShowStat;
     private Reference<GameObject> mTokenBanner;
+    private Reference<UIButton> mTokenBannerButton;
 
     // Data which is needed on different screens
     private HexagonTile mHexChosen;
@@ -50,8 +51,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<Player> mPlayer;
     private int mLocalTokens = 0;
 
-    /** The constructor for the human player */
-    public HumanPlayer() {}
+    /**
+     * The constructor for the human player
+     */
+    public HumanPlayer() {
+    }
 
     @Override
     public void onStart() {
@@ -190,14 +194,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 "token_view",
                                 new TransformUI(),
                                 (go) -> {
+
                                     go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
 
                                     ; // TODO will add stuff for Stats AFTER prototype
 
-                                    go.buildChild(
+                                    Reference<GameObject> tmp_ref = go.buildChild(
                                             "token_count",
                                             new TransformUI(true),
                                             (box) -> {
+                                                box.getTransform(TransformUI.class)
+                                                        .setParentAnchor(0f, 0.01f, 0.5f, 0.01f);
+                                                box.getTransform(TransformUI.class)
+                                                        .setMargin(0f, 0f, 0f, 0.07f);
                                                 box.addComponent(
                                                         new UIRenderable(
                                                                 new SampledTexture(
@@ -208,20 +217,30 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                         new Vector3f(0f, 0f, 0f),
                                                                         Font.getFontResource(
                                                                                 "Rise of Kingdom.ttf"),
-                                                                        "Your tokens are "
+                                                                        "Tokens: "
                                                                                 + mLocalTokens)));
                                             });
+
+                                    mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
                                 });
-        mTokenBanner.get().setEnabled(false);
+        mTokenBanner.get().setEnabled(true);
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
         // Update token
         mLocalTokens = mPlayer.get().getTokens().get();
+        if (mTokenBannerButton.isValid()) {
+            Reference<UIText> txt = mTokenBannerButton.get().getLabelText();
+            if (txt != null && txt.isValid()) {
+                txt.get().setText("Tokens: "
+                        + mLocalTokens);
+            }
+        }
     }
 
     @Override
@@ -238,7 +257,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -338,7 +359,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
         // If its equal to null ignore
-        if (mBuildingChosen.get() == null) {;
+        if (mBuildingChosen.get() == null) {
+            ;
         } else {
             // For each Building add a button for it
             for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
