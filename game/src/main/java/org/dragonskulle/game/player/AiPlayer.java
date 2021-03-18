@@ -28,9 +28,9 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
     /** The time since the last check if the AI player can play. (Start at 0) */
     protected float mTimeSinceStart;
     /** The lower bound for the random number to choose a time */
-    protected int mLowerBoundTime = 5;
+    protected int mLowerBoundTime = 1;
     /** The upper bound for the random number to choose a time */
-    protected int mUpperBoundTime = 10;
+    protected int mUpperBoundTime = 2;
     /** Will hold how long the AI player has to wait until playing */
     protected int mTimeToWait;
 
@@ -105,12 +105,46 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
      */
     private void simulateInput() {
 
+    	
+    	
+    	if(mPlayer.get().numberOfBuildings() == 0) {
+    		log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
+    		
+    		int min = -10;
+    		int max = 10;
+    		
+    		int posX = min + (int)(Math.random() * ((max - min) + 1));
+    		int posY = min + (int)(Math.random() * ((max - min) + 1));
+    		
+            HexagonTile tile = mPlayer.get()
+                    .getMapComponent()
+                    .getTile(posX, posY);
+
+            if(tile == null) {
+            	return;
+            }
+            
+            log.info("Selected tile: " + tile);
+            log.info("Building on tile: " + tile.getBuilding());
+            
+            if(tile.getBuilding() == null) {            	
+            	// Send to server
+                mPlayer.get().handleEvent(new BuildData(tile));
+            }
+            
+    		return;
+    	}
+    	
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfBuildings() == 1) { // TODO Refactor it so it's only done once
 
+        	log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
+        	
             // Gets all the tiles it can expand to
             List<HexagonTile> tilesToUse = hexTilesToExpand();
 
+            log.info("tilesToUse: " + tilesToUse);
+            
             // Checks if there are tiles
             if (tilesToUse.size() != 0) {
 
@@ -120,7 +154,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
 
                 // Send to server
-                mPlayer.get().getClientBuildRequest().invoke(new BuildData(tileToExpandTo));
+                mPlayer.get().handleEvent(new BuildData(tileToExpandTo));
                 return;
             } else {
                 return; // end
@@ -144,7 +178,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
 
                     // Send to server
-                    mPlayer.get().getClientBuildRequest().invoke(new BuildData(tileToExpandTo));
+                    mPlayer.get().handleEvent(new BuildData(tileToExpandTo));
                     return;
                 } else {
                     return; // end
@@ -181,9 +215,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
 
                     // Send to server
-                    mPlayer.get()
-                            .getClientStatRequest()
-                            .invoke(new StatData(buildingToUpgrade, statToUpgrade));
+                    mPlayer.get().handleEvent(new StatData(buildingToUpgrade, statToUpgrade));
                     return;
 
                     // Choose to attack
@@ -223,9 +255,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                         Building[] buildingToAttack =
                                 buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
                         // Send to server
-                        mPlayer.get()
-                                .getClientAttackRequest()
-                                .invoke(new AttackData(buildingToAttack[0], buildingToAttack[1]));
+                        mPlayer.get().handleEvent(new AttackData(buildingToAttack[0], buildingToAttack[1]));
 
                         return;
                     } else {
@@ -251,9 +281,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                         // Now have building to sell
                         if (buildingToSell != null) {
-                            mPlayer.get()
-                                    .getClientSellRequest()
-                                    .invoke(new SellData(buildingToSell));
+                            mPlayer.get().handleEvent(new SellData(buildingToSell));
                         }
                         return;
                     } else {
