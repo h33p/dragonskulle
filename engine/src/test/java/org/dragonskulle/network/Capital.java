@@ -1,12 +1,11 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.network.components.Capital;
+package org.dragonskulle.network;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
-import org.dragonskulle.network.components.requests.TestAttackData;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncString;

@@ -20,7 +20,7 @@ import org.dragonskulle.core.Reference;
 @Accessors(prefix = "m")
 public abstract class Component implements Serializable {
 
-    @Getter private final Reference<Component> mReference = new Reference<>(this);
+    @Getter private Reference<Component> mReference = new Reference<>(this);
 
     @Getter @Setter protected GameObject mGameObject;
 
@@ -60,5 +60,10 @@ public abstract class Component implements Serializable {
     public final <T extends Component> Reference<T> getReference(Class<T> type) {
         if (type.isInstance(this)) return (Reference<T>) mReference;
         return null;
+    }
+
+    public final void recreateReference() {
+        mReference.clear();
+        mReference = new Reference<>(this);
     }
 }

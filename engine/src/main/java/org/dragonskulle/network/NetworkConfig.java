@@ -16,4 +16,7 @@ public class NetworkConfig {
 
     /** The constant MAX_TRANSMISSION_SIZE. */
     static final int MAX_TRANSMISSION_SIZE = 512;
+
+    /** How many client requests can we process in a given tick (per client) */
+    public static final int MAX_CLIENT_REQUESTS = 32;
 }
