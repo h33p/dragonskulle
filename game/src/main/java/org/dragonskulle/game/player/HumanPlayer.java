@@ -390,11 +390,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 (box) -> {
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
-                            new UIText(
+                            new UIButton(new UIText(
                                     new Vector3f(0f, 0f, 0f),
                                     Font.getFontResource("Rise of Kingdom.ttf"),
                                     "Attack!"),
-                            new UIButton(
                                     (handle, __) -> {
 
                                         // Gets the building to attack

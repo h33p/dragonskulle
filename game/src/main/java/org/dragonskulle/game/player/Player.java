@@ -233,8 +233,8 @@ public class Player extends NetworkableComponent implements IOnStart {
         for (int i = 0; i < player.numberOfBuildings(); i++) {
 
             Reference<Building> building = player.getBuilding(i);
-            if (building.get().getTile().get().getR() == buildingToCheck.getR()
-                    && building.get().getTile().get().getQ() == buildingToCheck.getQ()) {
+            if (building.get().getTile().getR() == buildingToCheck.getR()
+                    && building.get().getTile().getQ() == buildingToCheck.getQ()) {
                 return building;
             }
         }
@@ -254,8 +254,8 @@ public class Player extends NetworkableComponent implements IOnStart {
 
         // Checks building is yours
         for (Building building : buildingsToCheck) {
-            if (building.getTile().get().getR() == buildingToCheck.getR()
-                    && building.getTile().get().getQ() == buildingToCheck.getQ()) {
+            if (building.getTile().getR() == buildingToCheck.getR()
+                    && building.getTile().getQ() == buildingToCheck.getQ()) {
                 return building;
             }
         }
