@@ -16,12 +16,14 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
+import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -90,7 +92,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                         "ui/wide_button.png")));
                                                 box.addComponent(
                                                         // When clicked send the data to the server
-                                                        new UIButton(
+                                                        new UIButton(new UIText(
+                                                                new Vector3f(0f, 0f, 0f),
+                                                                Font.getFontResource("Rise of Kingdom.ttf"),
+                                                                "Place Building"),
                                                                 (handle, __) -> {
                                                                     mPlayer.get()
                                                                             .mClientBuildRequest
@@ -113,7 +118,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                 new SampledTexture(
                                                                         "ui/wide_button.png")));
                                                 box.addComponent(
-                                                        new UIButton(
+                                                        new UIButton(new UIText(
+                                                                new Vector3f(0f, 0f, 0f),
+                                                                Font.getFontResource("Rise of Kingdom.ttf"),
+                                                                "Go Back"),
                                                                 (handle, __) -> {
                                                                     mHexChosen = null;
                                                                     mBuildingChosen = null;
@@ -151,7 +159,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                 new SampledTexture(
                                                                         "ui/wide_button.png")));
                                                 box.addComponent(
-                                                        new UIButton(
+                                                        new UIButton(new UIText(
+                                                                new Vector3f(0f, 0f, 0f),
+                                                                Font.getFontResource("Rise of Kingdom.ttf"),
+                                                                "Go Back"),
                                                                 (handle, __) -> {
                                                                     mHexChosen = null;
                                                                     mBuildingChosen = null;
@@ -293,7 +304,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             box.addComponent(
                                     new UIRenderable(new SampledTexture("ui/wide_button.png")));
                             box.addComponent(
-                                    new UIButton(
+                                    new UIButton(new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Attack building "),		// TODO (After Prototype) -- Need way to show different building
                                             (handle, __) -> {
 
                                                 // Send attack to server
@@ -321,7 +335,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 (box) -> {
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
-                            new UIButton(
+                            new UIButton(new UIText(
+                                    new Vector3f(0f, 0f, 0f),
+                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                    "Go Back"),
                                     (handle, __) -> {
                                         mHexChosen = null;
                                         mBuildingChosen = null;
@@ -342,7 +359,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     new SampledTexture(
                                             "ui/wide_button.png"))); // Make way to Go back
                     box.addComponent(
-                            new UIButton(
+                            new UIButton(new UIText(
+                                    new Vector3f(0f, 0f, 0f),
+                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                    "Upgrade Building -- Not completed"),
                                     (handle, __) -> {
                                         // TODO When clicked need to
                                         // show options to upgrade
@@ -358,7 +378,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 new TransformUI(true),
                 (box) -> {
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
+                    box.addComponent(new UIText(
+                            new Vector3f(0f, 0f, 0f),
+                            Font.getFontResource("Rise of Kingdom.ttf"),
+                            "Attack!"),
                             new UIButton(
                                     (handle, __) -> {
 
@@ -383,6 +406,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
                             new UIButton(
+                            		new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Sell Building -- Not Done"),
                                     (handle, __) -> {
                                         // TODO When clicked need to
                                         // sell building
@@ -407,7 +434,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 (box) -> {
                     box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
                     box.addComponent(
-                            new UIButton(
+                            new UIButton(new UIText(
+                                    new Vector3f(0f, 0f, 0f),
+                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                    "Go Back"),
                                     (handle, __) -> {
                                         mHexChosen = null;
                                         mBuildingChosen = null;
