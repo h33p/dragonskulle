@@ -217,6 +217,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // If you've won attack
         if (won) {
             mOwnedBuildings.add(new Reference<Building>(defending));
+            //defending.setOwnerID();  TODO SET ID
             for (Reference<Player> player : mPlayersOnline) {
                 Reference<Building> buildingToRemove =
                         checkBuildingYours(
