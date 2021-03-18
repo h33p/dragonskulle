@@ -173,6 +173,18 @@ public class Building extends NetworkableComponent implements IOnAwake {
     }
 
     /**
+     * Will return the tile which the building currently sits on
+     * @return The {@link HexagonTile} which the building rests 
+     */
+    public HexagonTile getTile() {
+    	HexagonMap map = getMap();
+        
+        Vector3i position = getPosition();
+        
+        return map.getTile(position.x(), position.y());
+    }
+    
+    /**
      * Get an ArrayList of {@link HexagonTile}s that are within the Building's view range, as
      * specified by {@link #mViewDistance}.
      *
