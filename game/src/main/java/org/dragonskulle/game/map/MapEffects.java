@@ -109,7 +109,7 @@ public class MapEffects extends Component implements IOnStart {
      * Select a single tile, overriding previous selection
      *
      * @param tile tile to select
-     * @param highlightType type of highlight to use
+     * @param selection type of highlight to use
      */
     public void highlightTile(HexagonTile tile, HighlightSelection selection) {
 
