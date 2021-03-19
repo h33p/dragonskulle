@@ -12,17 +12,20 @@ layout(location = 2) in vec2 inUV;
 
 layout(location = 3) in mat4 model;
 layout(location = 7) in vec4 instColor;
-layout(location = 8) in float distPow;
-layout(location = 9) in float maxDist;
+layout(location = 8) in vec4 instTexColor;
+layout(location = 9) in float distPow;
+layout(location = 10) in float maxDist;
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec2 fragUV;
-layout(location = 2) out float outDistPow;
-layout(location = 3) out float outMaxDist;
+layout(location = 1) out vec4 fragTexColor;
+layout(location = 2) out vec2 fragUV;
+layout(location = 3) out float outDistPow;
+layout(location = 4) out float outMaxDist;
 
 void main() {
 	gl_Position = consts.proj * consts.view * model * vec4(inPosition, 1.0);
 	fragColor = vec4(inColor, 1.0) * instColor;
+	fragTexColor = instTexColor;
 	fragUV = inUV;
 
 	outDistPow = distPow;
