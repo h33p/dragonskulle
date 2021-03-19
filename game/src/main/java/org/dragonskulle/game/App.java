@@ -131,7 +131,7 @@ public class App {
                 audioButtonEffect.getComponent(AudioSource.class);
 
         if (refAudio.isValid()) {
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 60);
+            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 40);
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
@@ -284,7 +284,7 @@ public class App {
         Reference<AudioSource> refAudioButtonEffect =
                 audioButtonEffect.getComponent(AudioSource.class);
         if (refAudio.isValid()) {
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 70);
+            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 40);
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);

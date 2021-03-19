@@ -10,6 +10,9 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.map.MapEffects.HighlightSelection;
+import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
@@ -56,14 +59,25 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private final int mNetID;
     private final Reference<NetworkManager> mNetworkManager;
 
+    // Visual effects
+    private Reference<MapEffects> mMapEffects;
+    private boolean mVisualsNeedUpdate;
+
     /** The constructor for the human player */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
         mNetID = netID;
+        mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
     }
 
     @Override
     public void onStart() {
+
+        mMapEffects =
+                Scene.getActiveScene()
+                        .getSingleton(MapEffects.class)
+                        .getReference(MapEffects.class);
+        mVisualsNeedUpdate = true;
 
         // Get the screen for map
         mMapScreen =
@@ -126,7 +140,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                 (handle, __) -> {
                                                                     mHexChosen = null;
                                                                     mBuildingChosen = null;
-                                                                    mScreenOn = Screen.MAP_SCREEN;
+                                                                    setScreenOn(Screen.MAP_SCREEN);
                                                                 }));
                                             });
                                 });
@@ -221,6 +235,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mScreenOn == Screen.MAP_SCREEN) {
             mapScreen();
         }
+
+        if (mVisualsNeedUpdate) updateVisuals();
     }
 
     /** This will choose what to do when the user can see the full map */
@@ -280,17 +296,81 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         // If you can build
                     } else {
                         System.out.println("Human:Change Screen");
-                        mScreenOn = Screen.TILE_SCREEN;
+                        setScreenOn(Screen.TILE_SCREEN);
                     }
                     // Checks if the player owns the buildingSelectedView
                 } else if (hasPlayerGotBuilding(buildingOnTile)) {
                     mBuildingChosen = buildingOnTile;
-                    mScreenOn = Screen.BUILDING_SELECTED_SCREEN;
+                    setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
                 } else {
                     return;
                 }
             }
         }
+    }
+
+    private void updateVisuals() {
+        mVisualsNeedUpdate = false;
+
+        if (mMapEffects == null || mPlayer == null) return;
+
+        Player player = mPlayer.get();
+
+        if (player == null) return;
+
+        MapEffects effects = mMapEffects.get();
+
+        switch (mScreenOn) {
+            case MAP_SCREEN:
+                log.info("UPDATE MAP SCREEN");
+                effects.highlightTiles(
+                        (tile) -> {
+                            Player owner = player.getTileOwner(tile);
+                            if (owner != null) {
+                                log.info(
+                                        String.format(
+                                                "HIGHLIGHT OWNER AT %d %d",
+                                                tile.getQ(), tile.getR()));
+                                return owner.getPlayerHighlightSelection();
+                            }
+                            return HighlightSelection.CLEARED;
+                        });
+                break;
+            case BUILDING_SELECTED_SCREEN:
+                effects.highlightTiles(
+                        (tile) -> {
+                            if (tile == mHexChosen)
+                                return StandardHighlightType.VALID.asSelection();
+                            return HighlightSelection.CLEARED;
+                        });
+                break;
+            case TILE_SCREEN:
+                effects.highlightTiles(
+                        (tile) -> {
+                            if (tile == mHexChosen)
+                                return StandardHighlightType.PLAIN.asSelection();
+                            return HighlightSelection.CLEARED;
+                        });
+                break;
+            case ATTACK_SCREEN:
+                effects.highlightTiles(
+                        (tile) -> {
+                            return HighlightSelection.CLEARED;
+                        });
+                break;
+            case STAT_SCREEN:
+                break;
+        }
+    }
+
+    /** Marks visuals to update whenever a new object is spawned */
+    private void onSpawnObject(NetworkObject obj) {
+        if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
+    }
+
+    private void setScreenOn(Screen newScreen) {
+        if (!newScreen.equals(mScreenOn)) mVisualsNeedUpdate = true;
+        mScreenOn = newScreen;
     }
 
     /**
@@ -352,7 +432,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                                 mHexChosen = null;
                                                 mBuildingChosen = null;
-                                                mScreenOn = Screen.MAP_SCREEN;
+                                                setScreenOn(Screen.MAP_SCREEN);
                                             }));
                         });
             }
@@ -375,7 +455,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     (handle, __) -> {
                                         mHexChosen = null;
                                         mBuildingChosen = null;
-                                        mScreenOn = Screen.MAP_SCREEN;
+                                        setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
     }
@@ -405,7 +485,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         // buildingSelectedView stats.  Will leave
                                         // until after prototype
 
-                                        mScreenOn = Screen.STAT_SCREEN;
+                                        setScreenOn(Screen.STAT_SCREEN);
                                     }));
                 });
         // Choose to attackView a buildingSelectedView from here
@@ -433,7 +513,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                 .getBuilding(
                                                                         mHexChosen.getQ(),
                                                                         mHexChosen.getR()));
-                                        mScreenOn = Screen.ATTACK_SCREEN;
+                                        setScreenOn(Screen.ATTACK_SCREEN);
                                     }));
                 });
         // Sell a buildingSelectedView
@@ -463,7 +543,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                         mBuildingChosen = null;
                                         mHexChosen = null;
-                                        mScreenOn = Screen.MAP_SCREEN;
+                                        setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
 
@@ -484,7 +564,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     (handle, __) -> {
                                         mHexChosen = null;
                                         mBuildingChosen = null;
-                                        mScreenOn = Screen.MAP_SCREEN;
+                                        setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
     }
@@ -513,7 +593,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                         mHexChosen = null;
                                         mBuildingChosen = null;
-                                        mScreenOn = Screen.MAP_SCREEN;
+                                        setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
         // Go Back button
@@ -533,7 +613,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     (handle, __) -> {
                                         mHexChosen = null;
                                         mBuildingChosen = null;
-                                        mScreenOn = Screen.MAP_SCREEN;
+                                        setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
     }

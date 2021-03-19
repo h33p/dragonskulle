@@ -18,6 +18,8 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
@@ -27,6 +29,9 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncInt;
+import org.dragonskulle.network.components.sync.SyncVector3;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * This is the class which contains all the needed data to play a game
@@ -45,6 +50,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
     @Getter public SyncInt mTokens = new SyncInt(0);
+    @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
+    @Getter private HighlightSelection mPlayerHighlightSelection;
+
+    private static final Vector3f[] COLOURS = {
+        new Vector3f(0.5f, 1f, 0.05f),
+        new Vector3f(0.05f, 1f, 0.86f),
+        new Vector3f(0.89f, 0.05f, 1f),
+        new Vector3f(0.1f, 0.56f, 0.05f),
+        new Vector3f(0.05f, 1f, 0.34f),
+        new Vector3f(0.05f, 1f, 0.34f),
+        new Vector3f(0.1f, 0.05f, 0.56f),
+        new Vector3f(0f, 0f, 0f)
+    };
+
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
@@ -53,12 +72,26 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public Player() {}
 
     @Override
+    protected void onConnectedSyncvars() {
+        if (getNetworkObject().isServer()) {
+            int id = getNetworkObject().getOwnerId() % COLOURS.length;
+            if (id < 0) id += COLOURS.length;
+            mPlayerColour.set(COLOURS[id]);
+        }
+    }
+
+    @Override
     public void onStart() {
 
         mMapComponent =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
+
+        Vector3fc col = mPlayerColour.get();
+        mPlayerHighlightSelection =
+                MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
+
         // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
         updateTokens(UPDATE_TIME);
@@ -68,6 +101,31 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return mMapComponent == null ? null : mMapComponent.get();
     }
 
+    public Player getTileOwner(HexagonTile tile) {
+        Building building = tile.getBuilding();
+
+        if (building != null) {
+            log.info(
+                    "NON NULL BUILDING "
+                            + tile.getQ()
+                            + " "
+                            + tile.getR()
+                            + " "
+                            + building.getOwnerID());
+            return building.getOwner();
+        }
+
+        for (HexagonTile nearTile : getTilesInRadius(5, tile)) {
+            building = nearTile.getBuilding();
+            if (building != null) {
+                if (building.getTile().equals(tile)) return building.getOwner();
+                if (building.getViewableTiles().contains(tile)) return building.getOwner();
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Add a building to the ones the player owns
      *
@@ -75,8 +133,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void addBuilding(Building building) {
         mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
+        building.getTile().setBuilding(building);
         log.info("Building size" + mOwnedBuildings.size());
-        log.info("Added Building");
+        log.info("Added Building " + building.getTile().getQ() + " " + building.getTile().getR());
     }
 
     public void removeBuilding(Building buildingToRemove) {
@@ -284,12 +343,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             mTokens.set(mTokens.get() - COST);
 
             // mOwnedBuildings = new ArrayList<Reference<Building>>();
-            // Store the building.
-            Building building = buildingGO.getComponent(Building.class).get();
-            if (building != null) {
-                map.storeBuilding(
-                        buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
-            }
         }
         log.info("Building added");
     }

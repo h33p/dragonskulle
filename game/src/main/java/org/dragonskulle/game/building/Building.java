@@ -75,19 +75,21 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
-        Player owningPlayer =
-                getNetworkObject()
-                        .getNetworkManager()
-                        .getObjectsOwnedBy(getNetworkObject().getOwnerId())
-                        .map(NetworkObject::getGameObject)
-                        .map(go -> go.getComponent(Player.class))
-                        .filter(ref -> ref != null)
-                        .filter(Reference::isValid)
-                        .map(Reference::get)
-                        .findFirst()
-                        .orElse(null);
-
+        Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addBuilding(this);
+    }
+
+    public Player getOwner() {
+        return getNetworkObject()
+                .getNetworkManager()
+                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                .map(NetworkObject::getGameObject)
+                .map(go -> go.getComponent(Player.class))
+                .filter(ref -> ref != null)
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

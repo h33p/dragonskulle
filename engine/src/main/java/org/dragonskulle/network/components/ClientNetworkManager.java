@@ -2,7 +2,9 @@
 package org.dragonskulle.network.components;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -14,6 +16,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 
 /**
  * @author Aurimas Blažulionis
@@ -123,11 +126,13 @@ public class ClientNetworkManager {
     /** Next connection state (set by the listener) */
     private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
     /** Callback for connection result processing */
-    private NetworkManager.IConnectionResultHandler mConnectionHandler;
+    private NetworkManager.IConnectionResultEvent mConnectionHandler;
     /** Back reference to the network manager */
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates */
     private int mTicksWithoutRequests = 0;
+    /** Listeners for spawn events */
+    private List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
 
     @Getter private int mNetID = -1;
 
@@ -146,7 +151,7 @@ public class ClientNetworkManager {
             NetworkManager manager,
             String ip,
             int port,
-            NetworkManager.IConnectionResultHandler handler) {
+            NetworkManager.IConnectionResultEvent handler) {
         mManager = manager;
         mConnectionState = ConnectionState.CONNECTING;
         mClient = new NetworkClient(ip, port, mListener);
@@ -171,6 +176,14 @@ public class ClientNetworkManager {
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
         ClientObjectEntry entry = getNetworkObjectEntry(networkObjectId);
         return entry == null ? null : entry.mNetworkObject;
+    }
+
+    public void registerSpawnListener(IObjectSpawnEvent listener) {
+        mSpawnListeners.add(listener);
+    }
+
+    public void unregisterSpawnListener(IObjectSpawnEvent listener) {
+        mSpawnListeners.remove(listener);
     }
 
     /**
@@ -292,5 +305,6 @@ public class ClientNetworkManager {
         mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), new ClientObjectEntry(ref));
         nob.networkInitialize();
+        mSpawnListeners.stream().forEach(l -> l.handleSpawn(nob));
     }
 }

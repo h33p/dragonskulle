@@ -23,13 +23,18 @@ import org.dragonskulle.network.ServerClient;
 public class NetworkManager extends Component implements INetworkUpdate {
 
     /** Simple client connection result handler */
-    public static interface IConnectionResultHandler {
+    public static interface IConnectionResultEvent {
         void handle(NetworkManager manager, int netID);
     }
 
     /** Simple server client connection handler interface. */
-    public static interface IConnectedClientHandler {
+    public static interface IConnectedClientEvent {
         void handle(NetworkManager manager, ServerClient client);
+    }
+
+    /** A registerable listener for when objects are spawned */
+    public static interface IObjectSpawnEvent {
+        void handleSpawn(NetworkObject object);
     }
 
     /** Registered spawnable templates */
@@ -64,7 +69,7 @@ public class NetworkManager extends Component implements INetworkUpdate {
      * @param port network port to connect to
      * @param resultHandler connection result callback
      */
-    public void createClient(String ip, int port, IConnectionResultHandler resultHandler) {
+    public void createClient(String ip, int port, IConnectionResultEvent resultHandler) {
         if (mClientManager == null && mServerManager == null) {
             mClientManager = new ClientNetworkManager(this, ip, port, resultHandler);
         }
@@ -76,7 +81,7 @@ public class NetworkManager extends Component implements INetworkUpdate {
      * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
      */
-    public void createServer(int port, IConnectedClientHandler connectionHandler) {
+    public void createServer(int port, IConnectedClientEvent connectionHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
                 mServerManager = new ServerNetworkManager(this, port, connectionHandler);

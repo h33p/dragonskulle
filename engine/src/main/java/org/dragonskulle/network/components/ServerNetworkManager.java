@@ -147,7 +147,7 @@ public class ServerNetworkManager {
     /** Back reference to {@link NetworkManager} */
     private final NetworkManager mManager;
     /** Callback for connected clients */
-    private final NetworkManager.IConnectedClientHandler mConnectedClientHandler;
+    private final NetworkManager.IConnectedClientEvent mConnectedClientHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
 
@@ -167,7 +167,7 @@ public class ServerNetworkManager {
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
-            NetworkManager.IConnectedClientHandler connectedClientHandler)
+            NetworkManager.IConnectedClientEvent connectedClientHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
@@ -238,6 +238,12 @@ public class ServerNetworkManager {
 
         mServer.updateClientList();
         mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
+
+        for (Entry<Integer, ServerObjectEntry> entry : mNetworkObjects.entrySet()) {
+            NetworkObject obj = entry.getValue().mNetworkObject.get();
+            if (obj != null) obj.beforeNetSerialize();
+            else mNetworkObjects.remove(entry.getKey());
+        }
 
         for (ServerClient c : mServer.getClients()) {
             for (ServerObjectEntry entry : mNetworkObjects.values()) {
