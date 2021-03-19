@@ -59,6 +59,49 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
+        
+        NetworkManager networkManager = getNetworkObject().getNetworkManager();
+
+        if (networkManager.getServerManager() == null) {
+            log.warning("Server manager is null.");
+            return;
+        }
+        
+        HexagonMap map = mMapComponent.get();
+        
+        
+        Reference<NetworkObject> obj =
+                networkManager
+                        .getServerManager()
+                        .spawnNetworkObject(
+                                getNetworkObject().getOwnerId(),
+                                networkManager.findTemplateByName("building"));
+        
+       
+
+        if (obj != null) {
+            
+        	 GameObject buildingGO = obj.get().getGameObject();
+             
+        	 int min = -10;
+             int max = 10;
+
+             int posX = min + (int) (Math.random() * ((max - min) + 1));
+             int posY = min + (int) (Math.random() * ((max - min) + 1));
+
+             buildingGO.getTransform(TransformHex.class).setPosition(posX, posY);
+             
+             Building building = buildingGO.getComponent(Building.class).get();
+             
+             if (building != null) {
+             	log.info("");
+                 map.storeBuilding(
+                         buildingGO.getComponent(Building.class).get(), posX, posY);
+                 
+                
+             }
+        }
+        
         // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
         updateTokens(UPDATE_TIME);
