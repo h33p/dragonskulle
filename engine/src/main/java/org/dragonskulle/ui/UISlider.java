@@ -19,12 +19,12 @@ import org.joml.Vector4f;
  */
 @Accessors(prefix = "m")
 public class UISlider extends Component implements IOnAwake, IFrameUpdate {
-    /** Simple interface describing button callback events */
+    /** Simple interface describing slider callback events */
     public interface ISliderValueEvent {
         /**
          * Method for handling the event
          *
-         * @param button calling slider
+         * @param slider calling slider
          * @param value the new value of the slider
          */
         public void eventHandler(UISlider slider, float value);
