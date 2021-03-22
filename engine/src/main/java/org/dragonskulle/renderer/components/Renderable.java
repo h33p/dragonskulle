@@ -25,7 +25,9 @@ public class Renderable extends Component {
     @Getter @Setter protected IMaterial mMaterial = new UnlitMaterial();
 
     /** Construct a Renderable with default parameters */
-    public Renderable() {}
+    public Renderable() {
+        mMesh.incRefCount();
+    }
 
     /**
      * Construct a Renderable with specified parameters
