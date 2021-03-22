@@ -327,10 +327,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         (tile) -> {
                             Player owner = player.getTileOwner(tile);
                             if (owner != null) {
-                                log.info(
-                                        String.format(
-                                                "HIGHLIGHT OWNER AT %d %d",
-                                                tile.getQ(), tile.getR()));
                                 return owner.getPlayerHighlightSelection();
                             }
                             return HighlightSelection.CLEARED;

@@ -105,13 +105,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Building building = tile.getBuilding();
 
         if (building != null) {
-            log.info(
-                    "NON NULL BUILDING "
-                            + tile.getQ()
-                            + " "
-                            + tile.getR()
-                            + " "
-                            + building.getOwnerID());
             return building.getOwner();
         }
 
