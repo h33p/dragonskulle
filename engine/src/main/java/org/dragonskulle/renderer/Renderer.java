@@ -319,6 +319,24 @@ public class Renderer implements NativeResource {
     }
 
     /**
+     * Retrieve the size of the current vertex buffer
+     *
+     * @return size of vertex buffer
+     */
+    public int getVertexBufferSize() {
+        return mCurrentMeshBuffer == null ? 0 : mCurrentMeshBuffer.getMaxVertexOffset();
+    }
+
+    /**
+     * Retrieve the size of the current index buffer
+     *
+     * @return size of index buffer
+     */
+    public int getIndexBufferSize() {
+        return mCurrentMeshBuffer == null ? 0 : mCurrentMeshBuffer.getMaxIndexOffset();
+    }
+
+    /**
      * Free all renderer resources
      *
      * <p>Call this method to shutdown the renderer and free all its resources.
@@ -1094,13 +1112,14 @@ public class Renderer implements NativeResource {
 
         mToPresort.clear();
 
+        mCurrentMeshBuffer.cleanupUnusedMeshes();
+
         for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
-            for (DrawCallState state : stateMap.values()) state.startDrawData(mCurrentMeshBuffer);
+            for (DrawCallState state : stateMap.values()) state.startDrawData();
 
         DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
 
         for (Renderable renderable : renderables) {
-
             if (renderable.getMesh() == null) continue;
 
             tmpKey.setRenderable(renderable);
@@ -1120,7 +1139,7 @@ public class Renderer implements NativeResource {
                 // We don't want to put the temp key in, becuase it changes values
                 DrawCallState.HashKey newKey = new DrawCallState.HashKey(renderable);
                 state = new DrawCallState(this, mImageContexts.length, newKey);
-                state.startDrawData(mCurrentMeshBuffer);
+                state.startDrawData();
                 stateMap.put(newKey, state);
             }
             state.addObject(renderable);
@@ -1130,6 +1149,7 @@ public class Renderer implements NativeResource {
 
         for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
             for (DrawCallState state : stateMap.values()) {
+                state.updateMeshBuffer(mCurrentMeshBuffer);
                 instanceBufferSize = state.setInstanceBufferOffset(instanceBufferSize);
 
                 ShaderSet shaderSet = state.getShaderSet();
@@ -1271,7 +1291,6 @@ public class Renderer implements NativeResource {
                         continue;
 
                     VulkanPipeline pipeline = callState.getPipeline();
-                    VulkanMeshBuffer.MeshDescriptor meshDescriptor = callState.getMeshDescriptor();
 
                     vkCmdBindPipeline(
                             ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
@@ -1285,6 +1304,8 @@ public class Renderer implements NativeResource {
 
                     for (DrawCallState.DrawData drawData : drawDataCollection) {
                         try (MemoryStack innerStack = stackPush()) {
+                            VulkanMeshBuffer.MeshDescriptor meshDescriptor =
+                                    drawData.getMeshDescriptor();
 
                             LongBuffer offsets =
                                     innerStack.longs(
@@ -1332,7 +1353,7 @@ public class Renderer implements NativeResource {
 
                             VulkanPipeline pipeline = object.getState().getPipeline();
                             VulkanMeshBuffer.MeshDescriptor meshDescriptor =
-                                    object.getState().getMeshDescriptor();
+                                    object.getData().getMeshDescriptor();
 
                             vkCmdBindPipeline(
                                     ctx.commandBuffer,
