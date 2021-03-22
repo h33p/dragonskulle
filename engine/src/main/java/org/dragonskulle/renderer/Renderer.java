@@ -79,6 +79,9 @@ public class Renderer implements NativeResource {
     private ImageContext[] mImageContexts;
     private FrameContext[] mFrameContexts;
 
+    @Getter(AccessLevel.PUBLIC)
+    private int mInstanceBufferSize = 0;
+
     private VulkanImage mDepthImage;
     private long mDepthImageView;
 
@@ -104,7 +107,7 @@ public class Renderer implements NativeResource {
     static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
     private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
-    private static final int INSTANCE_BUFFER_SIZE = envInt("INSTANCE_BUFFER_SIZE", 8);
+    private static final int INSTANCE_BUFFER_SIZE = envInt("INSTANCE_BUFFER_SIZE", 1);
 
     private static final long UINT64_MAX = -1L;
     private static final int FRAMES_IN_FLIGHT = 4;
@@ -123,6 +126,7 @@ public class Renderer implements NativeResource {
         public long framebuffer;
         public int imageIndex;
 
+        public int instanceBufferSize;
         public VulkanBuffer instanceBuffer;
 
         private long mImageView;
@@ -138,7 +142,7 @@ public class Renderer implements NativeResource {
 
             this.mDevice = renderer.mDevice;
 
-            instanceBuffer = renderer.createInstanceBuffer(INSTANCE_BUFFER_SIZE * 1024 * 1024);
+            instanceBufferSize = 0;
         }
 
         /** Create a framebuffer from image view */
@@ -171,7 +175,7 @@ public class Renderer implements NativeResource {
         }
 
         private void free() {
-            instanceBuffer.free();
+            if (instanceBuffer != null) instanceBuffer.free();
             vkDestroyFramebuffer(mDevice, framebuffer, null);
             vkDestroyImageView(mDevice, mImageView, null);
         }
@@ -189,6 +193,7 @@ public class Renderer implements NativeResource {
      */
     public Renderer(String appName, long window) throws RuntimeException {
         LOGGER.info("Initialize renderer");
+        mInstanceBufferSize = INSTANCE_BUFFER_SIZE * 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
         if (DEBUG_MODE) mDebugMessenger = createDebugLogger();
@@ -1142,9 +1147,14 @@ public class Renderer implements NativeResource {
             }
         }
 
-        // TODO: Resize instance buffer
-        if (instanceBufferSize > INSTANCE_BUFFER_SIZE * 1024 * 1024)
-            throw new RuntimeException("Would overflow instance buffer! Auri, Implement resizing!");
+        if (instanceBufferSize > ctx.instanceBufferSize) {
+            int cursize = mInstanceBufferSize > 0 ? mInstanceBufferSize : 4096;
+            while (instanceBufferSize > cursize) cursize *= 2;
+            if (ctx.instanceBuffer != null) ctx.instanceBuffer.free();
+            ctx.instanceBuffer = createInstanceBuffer(cursize);
+            ctx.instanceBufferSize = cursize;
+            mInstanceBufferSize = cursize;
+        }
 
         if (mCurrentMeshBuffer.isDirty()) {
             mDiscardedMeshBuffers.put(ctx.imageIndex, mCurrentMeshBuffer);
