@@ -95,9 +95,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         mNetworkManager = getNetworkObject().getNetworkManager();
     
-        while (mNetworkManager == null) {
-        	mNetworkManager = getNetworkObject().getNetworkManager();
-        }
         distributeCoordinates();
 
 
@@ -142,11 +139,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
     
     private boolean addNewBuilding(int qPos, int rPos) {
+    	if (mNetworkManager == null) {
+    		log.warning("Error is here");
+    		return true;
+    	}
     	
+    	//mNetworkManager = getNetworkObject().getNetworkManager();
     	if (mNetworkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
             
-            //TODO HUMAN PLAYER NOT GETTING THIS??  WHYYYYYYYYY
+            //TODO HUMAN PLAYER NOT GETTING THIS??  Because you're not the server dummy
             return false;
         }
         
