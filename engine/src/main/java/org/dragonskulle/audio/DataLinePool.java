@@ -1,25 +1,26 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * This is a class which stores all the different lines used in the mixer
  *
  * @author Dragonskulle
  */
+@Accessors(prefix = "m")
+@Log
 public class DataLinePool {
 
     private AudioClip[] mSounds;
     private final int NUMBER_OF_CLIPS = 1;
-    private int mMasterVol;
-    private boolean mMasterMute;
-
-    public static final Logger LOGGER = Logger.getLogger("DataLine");
+    @Getter private int mMasterVol;
+    @Getter private boolean mMasterMute;
 
     /**
      * The only Constructor to be allowed to use
@@ -40,8 +41,7 @@ public class DataLinePool {
                     clip = new AudioClip(mixer, false);
                 } catch (LineUnavailableException e) {
                     clip = null;
-                    LOGGER.log(
-                            Level.WARNING,
+                    log.warning(
                             "Clip is unabale to be made thus will not be able to play audio on this clip");
                 }
             } else {
@@ -50,8 +50,7 @@ public class DataLinePool {
 
                 } catch (LineUnavailableException e) {
                     clip = null;
-                    LOGGER.log(
-                            Level.WARNING,
+                    log.warning(
                             "Clip is unabale to be made thus will not be able to play audio on this clip");
                 }
             }
@@ -121,25 +120,6 @@ public class DataLinePool {
             mSounds[i] = toUse;
         }
         mMasterVol = setVol;
-    }
-
-    /**
-     * Getter for the mute value
-     *
-     * @return mute value
-     */
-    public boolean getMute() {
-
-        return mMasterMute;
-    }
-
-    /**
-     * Getter for the volume value
-     *
-     * @return volume value
-     */
-    public int getVolume() {
-        return mMasterVol;
     }
 
     /**
