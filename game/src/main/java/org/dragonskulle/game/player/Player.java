@@ -144,6 +144,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * This will add a building in a specific location
+     *
      * @param qPos The q Position of the building
      * @param rPos The r position of the building
      * @return true if it succeeds false if not
@@ -193,7 +194,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * ??  (AURI/CRAIG)
+     * ?? (AURI/CRAIG)
+     *
      * @return
      */
     public HexagonMap getMapComponent() {
@@ -202,6 +204,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * ?? (AURI/CRAIG)
+     *
      * @param tile
      * @return
      */
@@ -237,6 +240,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Will remove a building from the buildings you own
+     *
      * @param buildingToRemove The building to remove
      */
     public void removeBuilding(Building buildingToRemove) {
@@ -245,6 +249,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Gets the building from this tile
+     *
      * @param tile The tile to get the building from
      * @return The reference to a building
      */
@@ -254,6 +259,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * ?? (AURI/CRAIG)
+     *
      * @return
      */
     public Stream<Reference<Building>> getBuildings() {
