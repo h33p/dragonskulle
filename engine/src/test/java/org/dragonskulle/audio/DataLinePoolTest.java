@@ -121,29 +121,29 @@ public class DataLinePoolTest {
 
                 AudioClip clip = dataLine.openStream(audio);
 
-                Assert.assertEquals(50, dataLine.getMasterVolume());
+                Assert.assertEquals(50, dataLine.getMasterVol());
 
                 Assert.assertNotNull(dataLine);
 
                 dataLine.setVolume(60);
 
-                Assert.assertEquals(60, dataLine.getMasterVolume());
+                Assert.assertEquals(60, dataLine.getMasterVol());
 
                 dataLine.setVolume(100);
 
-                Assert.assertEquals(100, dataLine.getMasterVolume());
+                Assert.assertEquals(100, dataLine.getMasterVol());
 
                 dataLine.setVolume(0);
-                Assert.assertEquals(0, dataLine.getMasterVolume());
+                Assert.assertEquals(0, dataLine.getMasterVol());
 
                 dataLine.setVolume(48);
-                Assert.assertEquals(48, dataLine.getMasterVolume());
+                Assert.assertEquals(48, dataLine.getMasterVol());
 
                 dataLine.setVolume(-14);
-                Assert.assertEquals(0, dataLine.getMasterVolume());
+                Assert.assertEquals(0, dataLine.getMasterVol());
 
                 dataLine.setVolume(106);
-                Assert.assertEquals(100, dataLine.getMasterVolume());
+                Assert.assertEquals(100, dataLine.getMasterVol());
             } catch (UnsupportedAudioFileException | IOException e) {
                 assumeNoException(e);
             }
