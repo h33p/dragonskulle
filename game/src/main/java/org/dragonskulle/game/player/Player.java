@@ -206,7 +206,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * ?? (AURI/CRAIG)
      *
      * @param tile ??
-     * @return  ??
+     * @return ??
      */
     public Player getTileOwner(HexagonTile tile) {
         Building building = tile.getBuilding();
@@ -278,7 +278,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
      * owned buildings to check if need to update tokens. Should only be ran on the server
-     * 
+     *
      * @param time The time since the last update
      */
     public void updateTokens(float time) {
