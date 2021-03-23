@@ -57,7 +57,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public final SyncBool mIsCapital = new SyncBool(false);
     
     /** The tiles the building claims, including the tile the building is currently on. */
-    private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
+    @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
+    
+    /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
+    @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
+    
+    /** The tiles the building can currently attack (within the current {@link #mAttackDistance}). */
+    @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
@@ -81,22 +87,60 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addBuilding(this);
         
-        claimTiles();
+        generateClaimTiles();
+        repopulateLists();
     }
 
     /**
+     * Regenerate the stored lists of tiles that relate to the stats.
+     * <p>
+     * <ul>
+     * <li>{@link #mAttackDistance} relates to {@link #mAttackableTiles}. 
+     * <li>{@link #mViewDistance} relates to {@link #mViewableTiles}.
+     * <p>
+     * Needs to be called after a stat is altered.
+     */
+    public void repopulateLists(){
+    	generateViewTiles();
+        generateAttackableTiles();
+    }
+    
+    /**
      * Claim the tiles around the building and the tile the building is on.
      */
-    private void claimTiles() {
+    private void generateClaimTiles() {
     	// Claim the tiles around the building.
     	mClaimedTiles = getTilesInRadius(1);
         // Claim the tile the building is on.
     	mClaimedTiles.add(getTile());
         
-    	// Claim each hexagon.
+    	// Allow each hexagon tile to store the claim.
         for (HexagonTile hexagonTile : mClaimedTiles) {
 			hexagonTile.setClaimedBy(this);
 		}
+    }
+    
+    /**
+     * Store the tiles that can be viewed around the building, including the tile the building is on.
+     */
+    private void generateViewTiles() {
+    	// Get the current view distance.
+        int distance = mViewDistance.getValue();
+        
+        // Get the tiles within the view distance.
+        mViewableTiles = getTilesInRadius(distance);
+        // View the tile the building is on.
+    	mViewableTiles.add(getTile());
+    }
+    
+    /**
+     * Store the tiles that can be attacked around the building, excluding the tile the building is on.
+     */
+    private void generateAttackableTiles() {
+    	 // Get the current attack distance.
+        int distance = mAttackDistance.getValue();
+        // Get the tiles within the attack distance.
+        mAttackableTiles = getTilesInRadius(distance);
     }
     
     public Player getOwner() {
@@ -224,34 +268,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         Vector3i position = getPosition();
 
         return map.getTile(position.x(), position.y());
-    }
-
-    /**
-     * Get an ArrayList of {@link HexagonTile}s that are within the Building's view range, as
-     * specified by {@link #mViewDistance}.
-     *
-     * @return All the HexagonTiles within the building's view range, excluding the Building's
-     *     HexagonTile, otherwise an empty ArrayList.
-     */
-    public ArrayList<HexagonTile> getViewableTiles() {
-        // Get the current view distance.
-        int distance = mViewDistance.getValue();
-        // Get the tiles within the view distance.
-        return getTilesInRadius(distance);
-    }
-
-    /**
-     * Get an ArrayList of {@link HexagonTile}s that are within the Building's attack range, as
-     * specified by {@link #mAttackDistance}.
-     *
-     * @return All the HexagonTiles within the building's attack range, excluding the Building's
-     *     HexagonTile, otherwise an empty ArrayList.
-     */
-    public ArrayList<HexagonTile> getAttackableTiles() {
-        // Get the current view distance.
-        int distance = mAttackDistance.getValue();
-        // Get the tiles within the view distance.
-        return getTilesInRadius(distance);
     }
 
     /**

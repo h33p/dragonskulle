@@ -61,7 +61,7 @@ public class HexagonTile {
     @Getter @Setter private Building mBuilding;
 
     /** The building that claims the tile, or {@code null}. */
-    @Getter @Setter private Building mClaimedBy = null;
+    @Getter private Building mClaimedBy = null;
 
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
@@ -95,5 +95,28 @@ public class HexagonTile {
     @Override
     public String toString() {
         return Arrays.toString(new int[] {this.mQ, this.mR, this.mS});
+    }
+    
+    /**
+     * Set which {@link Building} claims the tile. Do not claim the tile if another building already claimed it.
+     * 
+     * @param building The building which claimed the tile. 
+     * @return {@code true} if the claim was successful, otherwise {@code false} if the tile is already claimed.
+     */
+    public boolean setClaimedBy(Building building) {
+		if(isClaimed()) return false;
+    	
+		mClaimedBy = building;
+		return true;
+    }
+    
+    /**
+     * Whether the tile is claimed by a building.
+     * 
+     * @return Whether the tile is claimed by a building.
+     */
+    public boolean isClaimed() {
+    	if(mClaimedBy != null) return true;
+    	return false;
     }
 }
