@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.renderer.*;
@@ -39,6 +40,12 @@ public class HexagonTile {
                         IColouredMaterial mat = new VertexHighlightMaterial(texture);
                         mat.getColour().set(0f, 1f, 0f, 1f);
                         go.addComponent(new Renderable(mesh, mat));
+                        
+                        Reference<Renderable> hexRenderer = go.getComponent(Renderable.class);
+                        VertexHighlightMaterial hexMaterial =
+                                hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
+                        hexMaterial.setDistancePow(20f);
+                        hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
                     });
 
     /** This is the axial storage system for each tile */
