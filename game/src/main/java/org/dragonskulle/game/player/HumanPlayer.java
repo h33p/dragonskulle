@@ -86,10 +86,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild(
                                 "map screen",
                                 new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(
-                                            new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-                                });
+                                this::mapScreenView);
 
         // Get the screen for confirming placing a buildingSelectedView
         mPlaceScreen =
@@ -116,73 +113,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild(
                                 "Stat screen",
                                 new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(
-                                            new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-
-                                    ; // TODO will add stuff for Stats AFTER prototype
-
-                                    go.buildChild(
-                                            "Go Back",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                new UIText(
-                                                                        new Vector3f(0f, 0f, 0f),
-                                                                        Font.getFontResource(
-                                                                                "Rise of Kingdom.ttf"),
-                                                                        "Go Back"),
-                                                                (handle, __) -> {
-                                                                    mHexChosen = null;
-                                                                    mBuildingChosen = null;
-                                                                    setScreenOn(Screen.MAP_SCREEN);
-                                                                }));
-                                            });
-                                });
+                                this::statView);
 
         mTokenBanner =
                 getGameObject()
                         .buildChild(
                                 "token_view",
                                 new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
-
-                                    ; // TODO will add stuff for Stats AFTER prototype
-
-                                    Reference<GameObject> tmp_ref =
-                                            go.buildChild(
-                                                    "token_count",
-                                                    new TransformUI(true),
-                                                    (box) -> {
-                                                        box.getTransform(TransformUI.class)
-                                                                .setParentAnchor(
-                                                                        0f, 0.01f, 0.5f, 0.01f);
-                                                        box.getTransform(TransformUI.class)
-                                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                                        box.addComponent(
-                                                                new UIRenderable(
-                                                                        new SampledTexture(
-                                                                                "ui/wide_button.png")));
-                                                        box.addComponent(
-                                                                new UIButton(
-                                                                        new UIText(
-                                                                                new Vector3f(
-                                                                                        0f, 0f, 0f),
-                                                                                Font
-                                                                                        .getFontResource(
-                                                                                                "Rise of Kingdom.ttf"),
-                                                                                "Tokens: "
-                                                                                        + mLocalTokens)));
-                                                    });
-
-                                    mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
-                                });
+                                this::tokenView);
         mTokenBanner.get().setEnabled(true);
     }
 
@@ -612,5 +550,79 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
+    }
+    
+    private void mapScreenView(GameObject go) {
+    	
+            go.addComponent(
+                    new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+        
+    }
+    
+    private void statView(GameObject go) {
+    	
+            go.addComponent(
+                    new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+
+            ; // TODO will add stuff for Stats AFTER prototype
+
+            go.buildChild(
+                    "Go Back",
+                    new TransformUI(true),
+                    (box) -> {
+                        box.addComponent(
+                                new UIRenderable(
+                                        new SampledTexture(
+                                                "ui/wide_button.png")));
+                        box.addComponent(
+                                new UIButton(
+                                        new UIText(
+                                                new Vector3f(0f, 0f, 0f),
+                                                Font.getFontResource(
+                                                        "Rise of Kingdom.ttf"),
+                                                "Go Back"),
+                                        (handle, __) -> {
+                                            mHexChosen = null;
+                                            mBuildingChosen = null;
+                                            setScreenOn(Screen.MAP_SCREEN);
+                                        }));
+                    });
+        
+    }
+    
+    private void tokenView(GameObject go) {
+    	
+            go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
+
+            ; // TODO will add stuff for Stats AFTER prototype
+
+            Reference<GameObject> tmp_ref =
+                    go.buildChild(
+                            "token_count",
+                            new TransformUI(true),
+                            (box) -> {
+                                box.getTransform(TransformUI.class)
+                                        .setParentAnchor(
+                                                0f, 0.01f, 0.5f, 0.01f);
+                                box.getTransform(TransformUI.class)
+                                        .setMargin(0f, 0f, 0f, 0.07f);
+                                box.addComponent(
+                                        new UIRenderable(
+                                                new SampledTexture(
+                                                        "ui/wide_button.png")));
+                                box.addComponent(
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(
+                                                                0f, 0f, 0f),
+                                                        Font
+                                                                .getFontResource(
+                                                                        "Rise of Kingdom.ttf"),
+                                                        "Tokens: "
+                                                                + mLocalTokens)));
+                            });
+
+            mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
+        
     }
 }
