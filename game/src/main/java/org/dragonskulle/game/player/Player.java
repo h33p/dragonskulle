@@ -109,6 +109,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         updateTokens(UPDATE_TIME);
     }
 
+    /**
+     * This will randomly place a capital using an angle so each person is within their own slice
+     */
     private void distributeCoordinates() {
 
         float angleOfCircle = (float) 360 / (float) playersToPlay;
@@ -139,11 +142,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         buildingToBecomeCapital.setCapital(true);
     }
 
+    /**
+     * This will add a building in a specific location
+     * @param qPos The q Position of the building
+     * @param rPos The r position of the building
+     * @return true if it succeeds false if not
+     */
     private boolean addNewBuilding(int qPos, int rPos) {
-        if (mNetworkManager == null) {
-            log.warning("Error is here");
-            return true;
-        }
 
         // mNetworkManager = getNetworkObject().getNetworkManager();
         if (mNetworkManager.getServerManager() == null) {
@@ -187,10 +192,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return false;
     }
 
+    /**
+     * ??  (AURI/CRAIG)
+     * @return
+     */
     public HexagonMap getMapComponent() {
         return mMapComponent == null ? null : mMapComponent.get();
     }
 
+    /**
+     * ?? (AURI/CRAIG)
+     * @param tile
+     * @return
+     */
     public Player getTileOwner(HexagonTile tile) {
         Building building = tile.getBuilding();
 
@@ -221,14 +235,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Added Building " + building.getTile().getQ() + " " + building.getTile().getR());
     }
 
+    /**
+     * Will remove a building from the buildings you own
+     * @param buildingToRemove The building to remove
+     */
     public void removeBuilding(Building buildingToRemove) {
         mOwnedBuildings.remove(buildingToRemove.getTile());
     }
 
+    /**
+     * Gets the building from this tile
+     * @param tile The tile to get the building from
+     * @return The reference to a building
+     */
     public Reference<Building> getBuilding(HexagonTile tile) {
         return mOwnedBuildings.get(tile);
     }
 
+    /**
+     * ?? (AURI/CRAIG)
+     * @return
+     */
     public Stream<Reference<Building>> getBuildings() {
         return mOwnedBuildings.values().stream();
     }
@@ -423,7 +450,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This checks if a building is within a certain radius
+     * This checks if a building is within a certain radius & whether it is your own building
      *
      * @param tiles The tiles to check
      * @return true if it is within radius false if not
