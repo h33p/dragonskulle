@@ -98,7 +98,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * <li>{@link #mAttackDistance} relates to {@link #mAttackableTiles}. 
      * <li>{@link #mViewDistance} relates to {@link #mViewableTiles}.
      * <p>
-     * Needs to be called after a stat is altered.
+     * <b>Needs to be called after a stat is altered.</b>
      */
     public void repopulateLists(){
     	generateViewTiles();
