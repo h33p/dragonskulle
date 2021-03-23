@@ -42,7 +42,7 @@ public class DataLinePool {
                 } catch (LineUnavailableException e) {
                     clip = null;
                     log.warning(
-                            "Clip is unabale to be made thus will not be able to play audio on this clip");
+                            "Clip is unable to be made thus will not be able to play audio on this clip");
                 }
             } else {
                 try {
@@ -51,7 +51,7 @@ public class DataLinePool {
                 } catch (LineUnavailableException e) {
                     clip = null;
                     log.warning(
-                            "Clip is unabale to be made thus will not be able to play audio on this clip");
+                            "Clip is unable to be made thus will not be able to play audio on this clip");
                 }
             }
 
