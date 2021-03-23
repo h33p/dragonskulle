@@ -8,6 +8,9 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.player.Player;
 
+import lombok.extern.java.Log;
+
+@Log
 public abstract class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
 	/** The time since the last check if the AI player can play. (Start at 0) */
