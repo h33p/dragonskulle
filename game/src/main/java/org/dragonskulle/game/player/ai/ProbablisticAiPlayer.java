@@ -36,9 +36,15 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
     protected float mAttackBuilding = (float) 0.7;
     protected float mSellBuilding = (float) 0.1;
-
+    
+    
     /** A Constructor for an AI Player */
     public ProbablisticAiPlayer() {}
+    
+    @Override
+    public void onStart() {
+    	super.onStart();
+    }
 
     @Override
     protected void simulateInput() {
