@@ -48,6 +48,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
+    
+    private int playersToPlay = 6;  		//TODO this needs to be set dynamically -- specifies how many players will play this game
+    
+    NetworkManager mNetworkManager; 
 
     /** The base constructor for player */
     public Player() {}
@@ -60,18 +64,29 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
         
-        NetworkManager networkManager = getNetworkObject().getNetworkManager();
-
-        if (networkManager.getServerManager() == null) {
+        mNetworkManager = getNetworkObject().getNetworkManager();
+    
+        // mOwnedBuildings.add(capital);
+        // TODO Get all Players & add to list
+        updateTokens(UPDATE_TIME);
+    }
+    
+    private void distributeCoordinates() {
+    	;
+    }
+    
+    private boolean addNewBuilding(int qPos, int rPos) {
+    	
+    	if (networkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
-            return;
+            return false;
         }
         
         HexagonMap map = mMapComponent.get();
         
         
         Reference<NetworkObject> obj =
-                networkManager
+                mNetworkManager
                         .getServerManager()
                         .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
@@ -83,28 +98,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             
         	 GameObject buildingGO = obj.get().getGameObject();
              
-        	 int min = -10;
-             int max = 10;
-
-             int posX = min + (int) (Math.random() * ((max - min) + 1));
-             int posY = min + (int) (Math.random() * ((max - min) + 1));
-
-             buildingGO.getTransform(TransformHex.class).setPosition(posX, posY);
+        	 buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
              
              Building building = buildingGO.getComponent(Building.class).get();
+             
+             //TODO Check building isn't here
              
              if (building != null) {
              	log.info("");
                  map.storeBuilding(
-                         buildingGO.getComponent(Building.class).get(), posX, posY);
-                 
-                
+                         buildingGO.getComponent(Building.class).get(), qPos, rPos);        
              }
+             
+             
         }
-        
-        // mOwnedBuildings.add(capital);
-        // TODO Get all Players & add to list
-        updateTokens(UPDATE_TIME);
     }
 
     public HexagonMap getMapComponent() {
@@ -314,52 +321,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         log.info("Checking 2 Fone");
         
-        NetworkManager networkManager = getNetworkObject().getNetworkManager();
-
-        if (networkManager.getServerManager() == null) {
-            log.warning("Server manager is null.");
-            return;
+        boolean addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
+        
+        if (addedNewBuilding) {
+        	mTokens.set(mTokens.get() - COST);
         }
-        
-     // Create a new building.
-       
-        
-        Reference<NetworkObject> obj =
-                networkManager
-                        .getServerManager()
-                        .spawnNetworkObject(
-                                getNetworkObject().getOwnerId(),
-                                networkManager.findTemplateByName("building"));
-        
-       
-
-        if (obj != null) {
             
-        	 GameObject buildingGO = obj.get().getGameObject();
-             
-
-             buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
-
-             
-             // Store the building.
-             Building building = buildingGO.getComponent(Building.class).get();
-           
-
-            // Remove the tokens.
-            mTokens.set(mTokens.get() - COST);
-
-            // mOwnedBuildings = new ArrayList<Reference<Building>>();
-            // Store the building.
-            log.info("Building is" + building);
-            
-            if (building != null) {
-            	log.info("");
-                map.storeBuilding(
-                        buildingGO.getComponent(Building.class).get(), tile.getQ(), tile.getR());
-                
-                log.info("Map Component Validness: " + mMapComponent.get().getBuilding(tile.getQ(), tile.getR()));
-            }
-        }
+       
         log.info("Building added");
     }
 
