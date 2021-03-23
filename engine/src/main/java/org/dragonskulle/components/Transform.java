@@ -21,7 +21,6 @@ import org.joml.Vector3fc;
  *     <p>More concrete transform types are used to modify the object's transformation.
  */
 public abstract class Transform extends Component {
-    protected static final float DEG_TO_RAD = (float) Math.PI / 180.f;
 
     protected final Matrix4f mInvMatrix = new Matrix4f();
 

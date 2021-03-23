@@ -21,11 +21,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.Camera;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIManager;
-import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.*;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -62,6 +58,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // Visual effects
     private Reference<MapEffects> mMapEffects;
     private boolean mVisualsNeedUpdate;
+    private Reference<GameObject> mZoomSlider;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -81,7 +78,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void onStart() {
-
         mMapEffects =
                 Scene.getActiveScene()
                         .getSingleton(MapEffects.class)
@@ -91,7 +87,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), this::mapScreenView);
+                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
+
+        mZoomSlider =
+                // Creates a blank screen
+                getGameObject()
+                        .buildChild(
+                                "zoom_slider",
+                                new TransformUI(true),
+                                (go) -> {
+                                    go.addComponent(new UILinkedScrollBar());
+                                });
 
         // Get the screen for confirming placing a buildingSelectedView
         mPlaceScreen =
@@ -113,10 +119,73 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild("attackView screen", new TransformUI(), this::buildAttackView);
 
         // To upgrade stats
-        mShowStat = getGameObject().buildChild("Stat screen", new TransformUI(), this::statView);
+        mShowStat =
+                getGameObject()
+                        .buildChild(
+                                "Stat screen",
+                                new TransformUI(),
+                                (go) -> {; // TODO will add stuff for Stats AFTER prototype
 
-        mTokenBanner = getGameObject().buildChild("token_view", new TransformUI(), this::tokenView);
+                                    go.buildChild(
+                                            "Go Back",
+                                            new TransformUI(true),
+                                            (box) -> {
+                                                box.addComponent(
+                                                        new UIRenderable(
+                                                                new SampledTexture(
+                                                                        "ui/wide_button.png")));
+                                                box.addComponent(
+                                                        new UIButton(
+                                                                new UIText(
+                                                                        new Vector3f(0f, 0f, 0f),
+                                                                        Font.getFontResource(
+                                                                                "Rise of Kingdom.ttf"),
+                                                                        "Go Back"),
+                                                                (handle, __) -> {
+                                                                    mHexChosen = null;
+                                                                    mBuildingChosen = null;
+                                                                    setScreenOn(Screen.MAP_SCREEN);
+                                                                }));
+                                            });
+                                });
+
+        mTokenBanner =
+                getGameObject()
+                        .buildChild(
+                                "token_view",
+                                new TransformUI(),
+                                (go) -> {; // TODO will add stuff for Stats AFTER prototype
+
+                                    Reference<GameObject> tmp_ref =
+                                            go.buildChild(
+                                                    "token_count",
+                                                    new TransformUI(true),
+                                                    (box) -> {
+                                                        box.getTransform(TransformUI.class)
+                                                                .setParentAnchor(
+                                                                        0f, 0.01f, 0.5f, 0.01f);
+                                                        box.getTransform(TransformUI.class)
+                                                                .setMargin(0f, 0f, 0f, 0.07f);
+                                                        box.addComponent(
+                                                                new UIRenderable(
+                                                                        new SampledTexture(
+                                                                                "ui/wide_button.png")));
+                                                        box.addComponent(
+                                                                new UIButton(
+                                                                        new UIText(
+                                                                                new Vector3f(
+                                                                                        0f, 0f, 0f),
+                                                                                Font
+                                                                                        .getFontResource(
+                                                                                                "Rise of Kingdom.ttf"),
+                                                                                "Tokens: "
+                                                                                        + mLocalTokens)));
+                                                    });
+
+                                    mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
+                                });
         mTokenBanner.get().setEnabled(true);
+        mZoomSlider.get().setEnabled(true);
     }
 
     @Override
@@ -177,12 +246,72 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
-        if (mPlayer != null
-                && GameActions.LEFT_CLICK.isActivated() //                &&
-                // UIManager.getInstance().getHoveredObject() == null, this
-                // is breaking something
-                && mainCam != null) {
-            // Retrieve scaled screen coordinates
+        if (GameActions.LEFT_CLICK.isActivated()) {
+            if (UIManager.getInstance().getHoveredObject() == null
+                    // this
+                    // is breaking something
+                    && mainCam != null) {
+                // Retrieve scaled screen coordinates
+                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+                // Convert those coordinates to local coordinates within the map
+                Vector3f pos =
+                        mainCam.screenToPlane(
+                                mPlayer.get().getMapComponent().getGameObject().getTransform(),
+                                screenPos.x(),
+                                screenPos.y(),
+                                new Vector3f());
+
+                // Convert those coordinates to axial
+                TransformHex.cartesianToAxial(pos);
+                // And round them
+                TransformHex.roundAxial(pos);
+                // And then select the tile
+                Player player = mPlayer.get();
+                if (player != null) {
+                    HexagonMap component = player.getMapComponent();
+                    if (component != null) {
+                        mHexChosen = component.getTile((int) pos.x, (int) pos.y);
+                    }
+                }
+
+                log.info("Human:Got the Hexagon to enter");
+
+                // When chosen a hexagon
+                if (mHexChosen != null) {
+
+                    // Gets reference to buildingSelectedView
+                    Reference<Building> buildingOnTile =
+                            new Reference<Building>(
+                                    mPlayer.get()
+                                            .getMapComponent()
+                                            .getBuilding(mHexChosen.getQ(), mHexChosen.getR()));
+
+                    // If there is a buildingSelectedView there
+                    if (buildingOnTile.get() == null) {
+
+                        // Checks if cannot build here
+                        if (mPlayer.get()
+                                .buildingWithinRadius(
+                                        mPlayer.get().getTilesInRadius(1, mHexChosen))) {
+                            System.out.println("Human:Cannot build");
+                            mHexChosen = null;
+                            mBuildingChosen = null;
+                            return;
+                            // If you can build
+                        } else {
+                            System.out.println("Human:Change Screen");
+                            setScreenOn(Screen.TILE_SCREEN);
+                        }
+                        // Checks if the player owns the buildingSelectedView
+                    } else if (hasPlayerGotBuilding(buildingOnTile)) {
+                        mBuildingChosen = buildingOnTile;
+                        setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+                    } else {
+                        return;
+                    }
+                }
+            }
+        } else if (GameActions.RIGHT_CLICK.isActivated()) {
             Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
             // Convert those coordinates to local coordinates within the map
             Vector3f pos =
@@ -192,44 +321,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             screenPos.y(),
                             new Vector3f());
 
-            // Convert those coordinates to axial
-            TransformHex.cartesianToAxial(pos);
-            // And round them
-            TransformHex.roundAxial(pos);
-            // And then select the tile
-            Player player = mPlayer.get();
-            if (player != null) {
-                HexagonMap component = player.getMapComponent();
-                if (component != null) {
-                    mHexChosen = component.getTile((int) pos.x, (int) pos.y);
-                }
-            }
-
-            log.info("Human:Got the Hexagon to enter");
-
-            if (mHexChosen != null) {
-                if (mHexChosen.hasBuilding()) {
-                    Building building = mHexChosen.getBuilding();
-
-                    if (hasPlayerGotBuilding(building.getReference(Building.class))) {
-                        mBuildingChosen = building.getReference(Building.class);
-                        setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                    }
-                } else {
-                    // Checks if cannot build here
-                    if (mPlayer.get()
-                            .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
-                        System.out.println("Human:Cannot build");
-                        mHexChosen = null;
-                        mBuildingChosen = null;
-                        return;
-                    } else {
-                        // If you can build
-                        System.out.println("Human:Change Screen");
-                        setScreenOn(Screen.TILE_SCREEN);
-                    }
-                }
-            }
+            System.out.println("[DEBUG] RCL Position : " + screenPos.toString());
+            System.out.println("[DEBUG] RCL Position From Camera : " + pos.toString());
         }
     }
 
