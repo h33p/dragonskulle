@@ -37,7 +37,7 @@ export default function handler(req, res) {
                             var removed = [];
                             hosts.forEach(host => {
                                 let dt = Date.parse(host.updatedAt);
-                                if (dt + 24 * 60 * 60 < Date.now()) {
+                                if (dt + 432000 < Date.now()) {
                                     Host.findByIdAndRemove(host._id)
                                         .catch(() => {
                                         });
