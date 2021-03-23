@@ -67,10 +67,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final int TOKEN_RATE = 5;
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
-    
-    private int playersToPlay = 6;  		//TODO this needs to be set dynamically -- specifies how many players will play this game
-    
-    NetworkManager mNetworkManager; 
+
+    private int playersToPlay =
+            6; // TODO this needs to be set dynamically -- specifies how many players will play this
+    // game
+
+    NetworkManager mNetworkManager;
 
     /** The base constructor for player */
     public Player() {}
@@ -91,15 +93,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
-        
-        
-        mNetworkManager = getNetworkObject().getNetworkManager();
-    
-        if (getNetworkObject().isServer()) {
-        	distributeCoordinates();
-        	
-        }
 
+        mNetworkManager = getNetworkObject().getNetworkManager();
+
+        if (getNetworkObject().isServer()) {
+            distributeCoordinates();
+        }
 
         Vector3fc col = mPlayerColour.get();
         mPlayerHighlightSelection =
@@ -109,88 +108,80 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // TODO Get all Players & add to list
         updateTokens(UPDATE_TIME);
     }
-    
-    private void distributeCoordinates() {
-    	
-    	float angleOfCircle = (float) 360 / (float) playersToPlay;
-    	
-    	// This says how many people have joined the server so far
-    	int playersOnlineNow = mPlayersOnline.size();
-    	
-    	// This gives us the angle to find our coordinates
-    	float angleToStart = playersOnlineNow * angleOfCircle;
-    	float angleToEnd = (playersOnlineNow+1) * angleOfCircle;
-    	
-    	/* TODO NOTES
-    	Create a line from each of these angles.  Use Maths
-    	Then choose a pair of coordinates from between those lines
-    	Change to Axial
-    	Done????
-    	*/
-    	//boolean finished;
 
-    	int min = -10;
-    	int max = 10;
-    	
-    	int posX = min + (int) (Math.random() * ((max - min) + 1));
+    private void distributeCoordinates() {
+
+        float angleOfCircle = (float) 360 / (float) playersToPlay;
+
+        // This says how many people have joined the server so far
+        int playersOnlineNow = mPlayersOnline.size();
+
+        // This gives us the angle to find our coordinates
+        float angleToStart = playersOnlineNow * angleOfCircle;
+        float angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
+
+        /* TODO NOTES
+        Create a line from each of these angles.  Use Maths
+        Then choose a pair of coordinates from between those lines
+        Change to Axial
+        Done????
+        */
+        // boolean finished;
+
+        int min = -10;
+        int max = 10;
+
+        int posX = min + (int) (Math.random() * ((max - min) + 1));
         int posY = min + (int) (Math.random() * ((max - min) + 1));
-        //HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
+        // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
         addNewBuilding(posX, posY);
         Building buildingToBecomeCapital = mMapComponent.get().getBuilding(posX, posY);
         buildingToBecomeCapital.setCapital(true);
-        
-       
-    	
     }
-    
+
     private boolean addNewBuilding(int qPos, int rPos) {
-    	if (mNetworkManager == null) {
-    		log.warning("Error is here");
-    		return true;
-    	}
-    	
-    	//mNetworkManager = getNetworkObject().getNetworkManager();
-    	if (mNetworkManager.getServerManager() == null) {
+        if (mNetworkManager == null) {
+            log.warning("Error is here");
+            return true;
+        }
+
+        // mNetworkManager = getNetworkObject().getNetworkManager();
+        if (mNetworkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
-            
-            
+
             return false;
         }
-        
+
         HexagonMap map = mMapComponent.get();
-        
+
         Building buildingHere = map.getBuilding(qPos, rPos);
-        
+
         if (buildingHere != null) {
-        	log.warning("Building already here");
-        	return false;
+            log.warning("Building already here");
+            return false;
         }
-        
+
         Reference<NetworkObject> obj =
                 mNetworkManager
                         .getServerManager()
                         .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
-        
-       
 
         if (obj != null) {
-            
-        	 GameObject buildingGO = obj.get().getGameObject();
-             
-        	 buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
-             
-             Building building = buildingGO.getComponent(Building.class).get();
-             
-             
-             if (building != null) {
-             	log.info("Stored building");
-                 map.storeBuilding(
-                         buildingGO.getComponent(Building.class).get(), qPos, rPos);    
-                 
-                 return true;
-             }             
+
+            GameObject buildingGO = obj.get().getGameObject();
+
+            buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
+
+            Building building = buildingGO.getComponent(Building.class).get();
+
+            if (building != null) {
+                log.info("Stored building");
+                map.storeBuilding(buildingGO.getComponent(Building.class).get(), qPos, rPos);
+
+                return true;
+            }
         }
         log.warning("Couldn't create building");
         return false;
@@ -400,37 +391,40 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         HexagonMap map = mMapComponent.get();
         HexagonTile tile = data.getTile(map);
 
-        if (tile.getBuilding() != null) {				//TODO Craig says the next two checks will be done by tile
+        if (tile.getBuilding()
+                != null) { // TODO Craig says the next two checks will be done by tile
             log.info("Building already exists!");
             return;
         }
 
         log.info("Got the map & tile");
-        if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function -- Craig says this will be done by tile
+        if (buildingWithinRadius(
+                getTilesInRadius(
+                        1,
+                        tile))) { // TODO Merge into one function -- Craig says this will be done by
+            // tile
             log.info("Trying to build too close to another building");
             return;
-        } 
-        
+        }
+
         log.info("Checking");
-        if (!buildingWithinRadius(getTilesInRadius(3, tile))) {  		//TODO KEEP
-        	log.info("Too far");
-        	return;
+        if (!buildingWithinRadius(getTilesInRadius(3, tile))) { // TODO KEEP
+            log.info("Too far");
+            return;
         }
         log.info("Checking 2 Fone");
-        
+
         boolean addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
-        
+
         if (addedNewBuilding) {
-        	mTokens.set(mTokens.get() - COST);
-        	log.info("Building added");
-        } 
-       
-        
+            mTokens.set(mTokens.get() - COST);
+            log.info("Building added");
+        }
     }
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
-        	
+
             if (mMapComponent.isValid()
                     && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
