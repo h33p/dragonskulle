@@ -33,7 +33,20 @@ export default function handler(req, res) {
             connectToDatabase()
                 .then(() => {
                     Host.find()
-                        .then(hosts => { res.status(200).json(hosts); resolve(); })
+                        .then(hosts => {
+                            var removed = [];
+                            hosts.forEach(host => {
+                                let dt = Date.parse(host.updatedAt);
+                                if (dt + 24 * 60 * 60 < Date.now()) {
+                                    Host.findByIdAndRemove(host._id)
+                                        .catch(() => {
+                                        });
+                                    removed.push(host._id);
+                                }
+                            })
+                            res.status(200).json(hosts.filter(s => !removed.includes(s._id)));
+                            resolve();
+                        })
                         .catch(err => {
                             res.setHeader('content-type', 'text/plain');
                             res.status(err.statusCode || 500).json({ 'body': 'Could not fetch the hosts.' });
