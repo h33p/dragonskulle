@@ -4,23 +4,16 @@ package org.dragonskulle.game.map;
 import java.util.HashMap;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.*;
-import org.dragonskulle.ui.UIManager;
-import org.joml.Vector2fc;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -29,13 +22,10 @@ import org.joml.Vector4f;
  *     valid, and invalid tiles, and so on.
  */
 @Accessors(prefix = "m")
-@Log
-public class MapEffects extends Component implements IOnStart, IFrameUpdate {
+public class MapEffects extends Component implements IOnStart {
 
-    /** Describes tile selection option */
-    public static enum HighlightType {
-        IGNORE(-2),
-        NONE(-1),
+    /** Describes tile highlight option */
+    public static enum StandardHighlightType {
         VALID(0),
         INVALID(1),
         PLAIN(2);
@@ -44,44 +34,91 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
         @Getter
         private final int mValue;
 
-        HighlightType(int type) {
+        StandardHighlightType(int type) {
             this.mValue = type;
+        }
+
+        public IRefCountedMaterial getMaterial() {
+            switch (this) {
+                case VALID:
+                    return VALID_MATERIAL;
+                case INVALID:
+                    return INVALID_MATERIAL;
+                case PLAIN:
+                    return PLAIN_MATERIAL;
+                default:
+                    return null;
+            }
+        }
+
+        public HighlightSelection asSelection() {
+            return HighlightSelection.with(getMaterial());
+        }
+    }
+
+    /** A class describing a sleection. Value of null means ignoring */
+    public static class HighlightSelection {
+        private boolean mClear;
+        private IRefCountedMaterial mMaterial;
+
+        public static final HighlightSelection CLEARED = cleared();
+
+        private HighlightSelection() {}
+
+        public static HighlightSelection ignored() {
+            return null;
+        }
+
+        public static HighlightSelection with(IRefCountedMaterial material) {
+            HighlightSelection ret = new HighlightSelection();
+            ret.mMaterial = material;
+            return ret;
+        }
+
+        private static HighlightSelection cleared() {
+            HighlightSelection ret = new HighlightSelection();
+            ret.mClear = true;
+            return ret;
         }
     }
 
     /** A simple tile highlight selection interface */
     public static interface IHighlightSelector {
-        public HighlightType handleTile(HexagonTile tile);
+        public HighlightSelection handleTile(HexagonTile tile);
     }
 
-    public static final UnlitMaterial VALID_MATERIAL =
-            new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(0f, 1f, 0.2f, 0.5f));
-    public static final UnlitMaterial INVALID_MATERIAL =
-            new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(1f, 0.08f, 0f, 0.5f));
-    public static final UnlitMaterial PLAIN_MATERIAL =
-            new UnlitMaterial(
-                    new SampledTexture("white.bmp"), new Vector4f(0.7f, 0.94f, 0.98f, 0.5f));
+    public static final IRefCountedMaterial VALID_MATERIAL =
+            highlightMaterialFromColour(0f, 1f, 0.2f);
+    public static final IRefCountedMaterial INVALID_MATERIAL =
+            highlightMaterialFromColour(1f, 0.08f, 0f);
+    public static final IRefCountedMaterial PLAIN_MATERIAL =
+            highlightMaterialFromColour(0.7f, 0.94f, 0.98f);
 
-    private HashMap<HexagonTile, GameObject> mSelectedTiles = new HashMap<>();
+    private HashMap<HexagonTile, GameObject> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
 
-    private boolean mLastPressed = false;
-    private int mClickCounter = 0;
-    int mRange = 0;
+    public static IRefCountedMaterial highlightMaterialFromColour(float r, float g, float b) {
+        return new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(r, g, b, 0.5f));
+    }
+
+    public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
+        return HighlightSelection.with(highlightMaterialFromColour(r, g, b));
+    }
 
     /**
      * Select a single tile, overriding previous selection
      *
      * @param tile tile to select
-     * @param highlightType type of highlight to use
+     * @param selection type of highlight to use
      */
-    public void selectTile(HexagonTile tile, HighlightType highlightType) {
+    public void highlightTile(HexagonTile tile, HighlightSelection selection) {
 
-        if (tile == null || highlightType == HighlightType.IGNORE) return;
+        if (tile == null || selection == null) return;
 
-        GameObject effectObject = mSelectedTiles.remove(tile);
+        GameObject effectObject = mHighlightedTiles.remove(tile);
         if (effectObject != null) effectObject.destroy();
-        if (highlightType == HighlightType.NONE) return;
+        if (selection.mClear) return;
+        if (!ensureMapReference()) return;
 
         effectObject =
                 new GameObject(
@@ -90,27 +127,13 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
                         (handle) -> {
                             handle.getTransform(TransformHex.class).translate(0.03f);
 
-                            IMaterial mat = null;
-
-                            switch (highlightType) {
-                                case VALID:
-                                    mat = VALID_MATERIAL.incRefCount();
-                                    break;
-                                case INVALID:
-                                    mat = INVALID_MATERIAL.incRefCount();
-                                    break;
-                                case PLAIN:
-                                    mat = PLAIN_MATERIAL.incRefCount();
-                                    break;
-                                default:
-                                    break;
-                            }
+                            IRefCountedMaterial mat = selection.mMaterial.incRefCount();
 
                             Renderable rend = new Renderable(Mesh.HEXAGON, mat);
                             handle.addComponent(rend);
                         });
 
-        mSelectedTiles.put(tile, effectObject);
+        mHighlightedTiles.put(tile, effectObject);
 
         mMapReference.get().getGameObject().addChild(effectObject);
     }
@@ -123,8 +146,8 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
      *
      * @param selector selector that handles tile selection
      */
-    public void selectTiles(IHighlightSelector selector) {
-        mMapReference.get().getAllTiles().forEach(t -> selectTile(t, selector.handleTile(t)));
+    public void highlightTiles(IHighlightSelector selector) {
+        mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t)));
     }
 
     /**
@@ -134,8 +157,8 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
      *
      * @param tile tile to deselect
      */
-    public void deselectTile(HexagonTile tile) {
-        selectTile(tile, HighlightType.NONE);
+    public void unhighlightTile(HexagonTile tile) {
+        highlightTile(tile, HighlightSelection.CLEARED);
     }
 
     /**
@@ -143,9 +166,9 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
      *
      * <p>This will clear any selection that currently takes place
      */
-    public void deselectAllTiles() {
-        for (GameObject go : mSelectedTiles.values()) go.destroy();
-        mSelectedTiles.clear();
+    public void unhighlightAllTiles() {
+        for (GameObject go : mHighlightedTiles.values()) go.destroy();
+        mHighlightedTiles.clear();
     }
 
     /**
@@ -154,77 +177,28 @@ public class MapEffects extends Component implements IOnStart, IFrameUpdate {
      * @param tile tile to check
      * @return {@code true} if the tile is currently selected, {@code false} otherwise.
      */
-    public boolean isTileSelected(HexagonTile tile) {
-        return mSelectedTiles.get(tile) != null;
+    public boolean isTileHighlighted(HexagonTile tile) {
+        return mHighlightedTiles.get(tile) != null;
     }
 
     @Override
     public void onStart() {
-        mMapReference =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
+        Scene.getActiveScene().registerSingleton(this);
+        ensureMapReference();
         System.out.println(mMapReference);
     }
 
     @Override
-    public void frameUpdate(float deltaTime) {
-        boolean pressed = GameActions.LEFT_CLICK.isActivated();
-
-        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
-
-        if (pressed && mainCam != null) {
-            // Retrieve scaled screen coordinates
-            Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
-
-            // Convert those coordinates to local coordinates within the map
-            Vector3f pos =
-                    mainCam.screenToPlane(
-                            mMapReference.get().getGameObject().getTransform(),
-                            screenPos.x(),
-                            screenPos.y(),
-                            new Vector3f());
-
-            // Convert those coordinates to axial
-            TransformHex.cartesianToAxial(pos);
-            // And round them
-            TransformHex.roundAxial(pos);
-
-            // And then select the tile
-            selectTile(mMapReference.get().getTile((int) pos.x, (int) pos.y), HighlightType.PLAIN);
-        }
-
-        if (pressed && !mLastPressed) {
-            mClickCounter++;
-
-            if (mClickCounter % 50 > 25) mRange--;
-            else mRange++;
-
-            switch (mClickCounter) {
-                case 1:
-                    selectTile(mMapReference.get().getTile(1, 1), HighlightType.PLAIN);
-                    break;
-                case 2:
-                    selectTile(mMapReference.get().getTile(1, 1), HighlightType.INVALID);
-                    break;
-                case 3:
-                    selectTile(mMapReference.get().getTile(1, 1), HighlightType.VALID);
-                    break;
-                default:
-                    // Apply selection to all tiles that are within mRange from origin
-                    selectTiles(
-                            (tile) -> {
-                                if (tile.length() < mRange)
-                                    return HighlightType.values()[mClickCounter % 5];
-                                return HighlightType.NONE;
-                            });
-            }
-        }
-        mLastPressed = pressed;
+    protected void onDestroy() {
+        unhighlightAllTiles();
     }
 
-    @Override
-    protected void onDestroy() {
-        deselectAllTiles();
+    private boolean ensureMapReference() {
+        if (mMapReference != null) return true;
+        mMapReference =
+                Scene.getActiveScene()
+                        .getSingleton(HexagonMap.class)
+                        .getReference(HexagonMap.class);
+        return mMapReference != null;
     }
 }

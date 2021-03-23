@@ -40,13 +40,15 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
             final int FLOAT_SIZE = 4;
 
             mVertexBindingDescription =
-                    BindingDescription.instancedWithMatrix(COLOUR_SIZE + 2 * FLOAT_SIZE);
+                    BindingDescription.instancedWithMatrix(COLOUR_SIZE * 2 + 2 * FLOAT_SIZE);
             mVertexAttributeDescriptions =
                     AttributeDescription.withMatrix(
                             new AttributeDescription(1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 0),
-                            new AttributeDescription(1, 1, VK_FORMAT_R32_SFLOAT, COLOUR_SIZE),
                             new AttributeDescription(
-                                    1, 2, VK_FORMAT_R32_SFLOAT, COLOUR_SIZE + FLOAT_SIZE));
+                                    1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, COLOUR_SIZE),
+                            new AttributeDescription(1, 2, VK_FORMAT_R32_SFLOAT, COLOUR_SIZE * 2),
+                            new AttributeDescription(
+                                    1, 3, VK_FORMAT_R32_SFLOAT, COLOUR_SIZE * 2 + FLOAT_SIZE));
             mNumFragmentTextures = 1;
         }
 
@@ -70,6 +72,8 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
 
     /** Colour of the vertex highlight. It will multiply the texture's colour */
     @Getter private final Vector4f mColour = new Vector4f(0.5f);
+    /** Colour of the vertex highlight. It will multiply the texture's colour */
+    @Getter private final Vector4f mTexColour = new Vector4f(1f);
 
     @Getter @Setter private float mDistancePow = 80.f;
     @Getter @Setter private float mVertexDistance = 1f;
@@ -109,15 +113,16 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
     }
 
     public ShaderSet getShaderSet() {
-        if (mColour.w < 1f) return TRANSPARENT_SET;
+        if (mTexColour.w < 1f) return TRANSPARENT_SET;
         return OPAQUE_SET;
     }
 
     public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         mColour.get(offset, buffer);
-        buffer.putFloat(offset + 4 * 4, mDistancePow);
-        buffer.putFloat(offset + 4 * 5, mVertexDistance);
+        mTexColour.get(offset + 4 * 4, buffer);
+        buffer.putFloat(offset + 4 * 8, mDistancePow);
+        buffer.putFloat(offset + 4 * 9, mVertexDistance);
     }
 
     public SampledTexture[] getFragmentTextures() {

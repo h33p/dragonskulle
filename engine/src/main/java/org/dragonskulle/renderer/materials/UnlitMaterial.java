@@ -28,7 +28,8 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UnlitMaterial implements IMaterial, IColouredMaterial, Serializable {
+public class UnlitMaterial
+        implements IMaterial, IColouredMaterial, IRefCountedMaterial, Serializable {
     public static class UnlitShaderSet extends ShaderSet {
         public UnlitShaderSet() {
             mVertexShader = ShaderBuf.getResource("unlit", ShaderKind.VERTEX_SHADER);
@@ -110,7 +111,7 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, Serializable
         return mFragmentTextures;
     }
 
-    public UnlitMaterial incRefCount() {
+    public IRefCountedMaterial incRefCount() {
         mRefCount++;
         return this;
     }

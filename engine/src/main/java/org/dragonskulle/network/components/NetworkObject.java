@@ -102,6 +102,13 @@ public class NetworkObject extends Component {
         return NetworkMessage.convertByteArrayToInt(bytes);
     }
 
+    public void beforeNetSerialize() {
+        for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
+            NetworkableComponent nc = comp.get();
+            nc.beforeNetSerialize();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -289,7 +296,7 @@ public class NetworkObject extends Component {
             }
         }
         if (shouldBroadcast) {
-            byte[] bytes = generateUpdateBytes(didChildUpdateMask);
+            byte[] bytes = generateUpdateBytes(didChildUpdateMask, forceUpdate);
             mLogger.fine(
                     "Update update size for client "
                             + client.getNetworkID()
@@ -306,7 +313,7 @@ public class NetworkObject extends Component {
      * @param didChildUpdateMask the mask of children which updates
      * @return the bytes to be broadcasted
      */
-    private byte[] generateUpdateBytes(boolean[] didChildUpdateMask) {
+    private byte[] generateUpdateBytes(boolean[] didChildUpdateMask, boolean forceUpdate) {
         //        mLogger.fine("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
 
@@ -319,8 +326,11 @@ public class NetworkObject extends Component {
 
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {
+
+                childChunk.clear();
+
                 // child did update
-                byte[] childBytes = mNetworkableComponents.get(i).get().serialize();
+                byte[] childBytes = mNetworkableComponents.get(i).get().serialize(forceUpdate);
                 for (byte childByte : childBytes) {
                     childChunk.add(childByte);
                 }

@@ -6,7 +6,7 @@ import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate, IOnAwake {
+public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate {
     public SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
     private TransformHex hexTransform;
 
@@ -22,17 +22,28 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
     protected void onDestroy() {}
 
     @Override
-    public void fixedUpdate(float deltaTime) {
+    public void beforeNetSerialize() {
         setHexPosition();
     }
 
+    @Override
+    public void afterNetUpdate() {
+        setHexPosition();
+    }
+
+    @Override
+    public void fixedUpdate(float deltaTime) {
+        if (getNetworkObject().isServer()) setHexPosition();
+    }
+
     private void setHexPosition() {
-        NetworkObject netman = getNetworkObject();
-        if (netman != null && hexTransform != null) {
-            if (netman.isServer()) {
+        if (hexTransform == null) hexTransform = getGameObject().getTransform(TransformHex.class);
+
+        if (hexTransform != null) {
+            if (getNetworkObject().isServer()) {
                 Vector3f newPosition = hexTransform.getLocalPosition(new Vector3f());
                 newPosition.z = hexTransform.getHeight();
-                if (!mAxialCoordinate.get().equals(newPosition) || true) {
+                if (!mAxialCoordinate.get().equals(newPosition)) {
                     mAxialCoordinate.set(newPosition);
                 }
             } else {
@@ -41,13 +52,6 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
                 hexTransform.setHeight(pos.z());
             }
         }
-    }
-
-    /** Called when a component is first added to a scene to allow initial setup of variables */
-    @Override
-    public void onAwake() {
-        hexTransform = getGameObject().getTransform(TransformHex.class);
-        setHexPosition();
     }
 
     @Override

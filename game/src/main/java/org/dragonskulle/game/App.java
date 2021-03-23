@@ -5,6 +5,7 @@ import static org.dragonskulle.utils.Env.*;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Scanner;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
@@ -32,7 +33,6 @@ import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.*;
-import org.dragonskulle.renderer.materials.IColouredMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.dragonskulle.ui.*;
 import org.joml.*;
@@ -42,6 +42,9 @@ public class App {
 
     private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
+
+    private static String sIP = "127.0.0.1";
+    private static int sPort = 7000;
 
     private static final Vector4fc[] COLOURS = {
         new Vector4f(1.f, 0.f, 0.f, 1f),
@@ -131,7 +134,7 @@ public class App {
                 audioButtonEffect.getComponent(AudioSource.class);
 
         if (refAudio.isValid()) {
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 60);
+            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 70);
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
@@ -172,7 +175,10 @@ public class App {
         hexagon.addComponent(new Renderable());
         Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
         hexRenderer.get().setMaterial(new VertexHighlightMaterial());
-        IColouredMaterial hexMaterial = hexRenderer.get().getMaterial(IColouredMaterial.class);
+        VertexHighlightMaterial hexMaterial =
+                hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
+        hexMaterial.setDistancePow(10f);
+        hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
 
         // Add wobble components
         hexagon.addComponent(new Wobbler());
@@ -525,8 +531,8 @@ public class App {
                                                                     networkManager
                                                                             .get()
                                                                             .createClient(
-                                                                                    "127.0.0.1",
-                                                                                    7000,
+                                                                                    sIP,
+                                                                                    sPort,
                                                                                     (manager,
                                                                                             netID) -> {
                                                                                         if (netID
@@ -606,7 +612,7 @@ public class App {
                                                                     networkManager
                                                                             .get()
                                                                             .createServer(
-                                                                                    7000,
+                                                                                    sPort,
                                                                                     App
                                                                                             ::onClientConnected);
                                                                 }));
@@ -673,6 +679,27 @@ public class App {
 
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
+
+        // Load dev console
+        // TODO: actually make a fully fledged console
+        // TODO: join it at the end
+        new Thread(
+                        () -> {
+                            Scanner in = new Scanner(System.in);
+
+                            String line;
+
+                            while ((line = in.nextLine()) != null) {
+                                try {
+                                    sPort = in.nextInt();
+                                    sIP = line.trim();
+                                    System.out.println("Address set successfully!");
+                                } catch (Exception e) {
+                                    System.out.println("Failed to set IP and port!");
+                                }
+                            }
+                        })
+                .start();
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());

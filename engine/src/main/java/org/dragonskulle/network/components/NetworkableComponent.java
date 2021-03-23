@@ -74,6 +74,8 @@ public abstract class NetworkableComponent extends Component {
         }
 
         if (networkObject.isServer()) connectSyncVars();
+
+        onConnectedSyncvars();
     }
 
     /** Connect sync vars. Only should be ran on server */
@@ -96,6 +98,12 @@ public abstract class NetworkableComponent extends Component {
     }
 
     protected void onNetworkInitialize() {}
+
+    protected void onConnectedSyncvars() {}
+
+    void beforeNetSerialize() {}
+
+    protected void afterNetUpdate() {}
 
     /**
      * Reset the changed bitmask
@@ -178,6 +186,7 @@ public abstract class NetworkableComponent extends Component {
         // cast to one byte
         boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, MASK_OFFSET);
         updateSyncVarsFromBytes(masks, payload, MASK_OFFSET + maskLength);
+        afterNetUpdate();
     }
 
     /**

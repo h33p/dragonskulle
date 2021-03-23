@@ -120,8 +120,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 return;
             }
 
-            log.info("Selected tile: " + tile);
-            log.info("Building on tile: " + tile.getBuilding());
+            // log.info("Selected tile: " + tile);
+            // log.info("Building on tile: " + tile.getBuilding());
 
             if (tile.getBuilding() == null) {
                 // Send to server
@@ -142,7 +142,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
             // Gets all the tiles it can expand to
             List<HexagonTile> tilesToUse = hexTilesToExpand();
 
-            log.info("tilesToUse: " + tilesToUse);
+            // log.info("tilesToUse: " + tilesToUse);
 
             // Checks if there are tiles
             if (tilesToUse.size() != 0) {
@@ -313,7 +313,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                 .forEach(
                         building -> {
                             List<HexagonTile> hexTilesWhichCanBeSeen = building.getViewableTiles();
-                            log.info("hexTilesWhichCanBeSeen: " + hexTilesWhichCanBeSeen);
+                            // log.info("hexTilesWhichCanBeSeen: " + hexTilesWhichCanBeSeen);
 
                             // Check each tile is valid
                             for (HexagonTile hexTile : hexTilesWhichCanBeSeen) {
