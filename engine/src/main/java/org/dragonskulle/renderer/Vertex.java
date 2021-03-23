@@ -5,7 +5,6 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +16,6 @@ import org.joml.*;
  *
  * @author Aurimas Blažulionis
  */
-@Builder
 @Accessors(prefix = "m")
 @EqualsAndHashCode
 public class Vertex implements Serializable {
@@ -40,6 +38,16 @@ public class Vertex implements Serializable {
     @Getter @Setter private Vector3fc mPos;
     @Getter @Setter private Vector3fc mColor;
     @Getter @Setter private Vector2fc mUv;
+
+    public Vertex() {
+        this(new Vector3f(), new Vector3f(1f), new Vector2f());
+    }
+
+    public Vertex(Vector3fc pos, Vector3fc color, Vector2fc uv) {
+        mPos = pos;
+        mColor = color;
+        mUv = uv;
+    }
 
     /** Copy the vertice to a byte buffer */
     public void copyTo(int offset, ByteBuffer buffer) {
