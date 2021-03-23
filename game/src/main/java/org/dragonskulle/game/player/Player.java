@@ -196,7 +196,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * ?? (AURI/CRAIG)
      *
-     * @return
+     * @return A HexagonMap ??
      */
     public HexagonMap getMapComponent() {
         return mMapComponent == null ? null : mMapComponent.get();
@@ -205,8 +205,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * ?? (AURI/CRAIG)
      *
-     * @param tile
-     * @return
+     * @param tile ??
+     * @return  ??
      */
     public Player getTileOwner(HexagonTile tile) {
         Building building = tile.getBuilding();
@@ -229,7 +229,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Add a building to the ones the player owns
      *
-     * @param building
+     * @param building The building to add
      */
     public void addBuilding(Building building) {
         mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
@@ -260,7 +260,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * ?? (AURI/CRAIG)
      *
-     * @return
+     * @return ??
      */
     public Stream<Reference<Building>> getBuildings() {
         return mOwnedBuildings.values().stream();
@@ -278,6 +278,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
      * owned buildings to check if need to update tokens. Should only be ran on the server
+     * 
+     * @param time The time since the last update
      */
     public void updateTokens(float time) {
         // Checks if server
@@ -456,7 +458,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This checks if a building is within a certain radius & whether it is your own building
+     * This checks if a building is within a certain radius and whether it is your own building
      *
      * @param tiles The tiles to check
      * @return true if it is within radius false if not
