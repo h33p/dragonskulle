@@ -79,7 +79,8 @@ public class DataLinePoolTest {
 
                 AudioClip clip = dataLine.openStream(audio);
 
-                Assert.assertFalse(dataLine.isMasterMute()); // checks when created it is started as mute
+                Assert.assertFalse(
+                        dataLine.isMasterMute()); // checks when created it is started as mute
 
                 dataLine.setMute(true);
 
