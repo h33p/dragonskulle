@@ -109,18 +109,24 @@ public class App {
                             t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
                             t.setMargin(0f, 0.1f, 0f, 0.2f);
 
-                            root.addComponent(
-                                    new UIButton(
-                                            new UIText(
-                                                    new Vector3f(0f, 0f, 0f),
-                                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "Mute/Unmute"),
-                                            (uiButton, __) -> {
-                                                AudioManager.getInstance()
-                                                        .toggleMute(SoundType.BACKGROUND);
-                                                AudioManager.getInstance()
-                                                        .toggleMute(SoundType.SFX);
-                                            }));
+                            //                            root.addComponent(
+                            //                                    new UIButton(
+                            //                                            new UIText(
+                            //                                                    new Vector3f(0f,
+                            // 0f, 0f),
+                            //
+                            // Font.getFontResource("Rise of Kingdom.ttf"),
+                            //                                                    "Mute/Unmute"),
+                            //                                            (uiButton, __) -> {
+                            //
+                            // AudioManager.getInstance()
+                            //
+                            // .toggleMute(SoundType.BACKGROUND);
+                            //
+                            // AudioManager.getInstance()
+                            //
+                            // .toggleMute(SoundType.SFX);
+                            //                                            }));
                         });
         GameObject audioButtonEffect =
                 new GameObject(
@@ -138,7 +144,7 @@ public class App {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
+            //            refAudio.get().play();
         }
 
         mainScene.addRootObject(audioObject);
@@ -294,7 +300,7 @@ public class App {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
+            //            refAudio.get().play();
         }
 
         GameObject gameTitle =

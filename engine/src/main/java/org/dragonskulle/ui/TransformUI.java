@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
@@ -256,7 +257,7 @@ public class TransformUI extends Transform {
     }
 
     public void rotateDeg(float deg) {
-        mRotation += deg * Transform.DEG_TO_RAD;
+        mRotation += deg * MathUtils.DEG_TO_RAD;
         setUpdateFlag();
     }
 
