@@ -190,9 +190,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                          buildingGO.getComponent(Building.class).get(), qPos, rPos);    
                  
                  return true;
-             }
-             
-             
+             }             
         }
         log.warning("Couldn't create building");
         return false;
@@ -402,13 +400,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         HexagonMap map = mMapComponent.get();
         HexagonTile tile = data.getTile(map);
 
-        if (tile.getBuilding() != null) {
+        if (tile.getBuilding() != null) {				//TODO Craig says the next two checks will be done by tile
             log.info("Building already exists!");
             return;
         }
 
         log.info("Got the map & tile");
-        if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function
+        if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function -- Craig says this will be done by tile
             log.info("Trying to build too close to another building");
             return;
         } 
