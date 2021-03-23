@@ -233,9 +233,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * AURI!!  This updates what the user can see
-     */
+    /** AURI!! This updates what the user can see */
     private void updateVisuals() {
         mVisualsNeedUpdate = false;
 
@@ -293,6 +291,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /**
      * AURI!!!
+     *
      * @param newScreen
      */
     private void setScreenOn(Screen newScreen) {
@@ -388,7 +387,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     /**
-     * This will create the screen which gives the actions of what a player can do once they have clicked a building
+     * This will create the screen which gives the actions of what a player can do once they have
+     * clicked a building
+     *
      * @param go The {@code GameObject} to build off
      */
     private void buildBuildingSelectedView(GameObject go) {
@@ -502,6 +503,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /**
      * This will create the screen which you can build a building offf
+     *
      * @param go The {@code GameObject} to build off
      */
     private void buildPlaceSelectedView(GameObject go) {
@@ -555,6 +557,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /**
      * This screen allows the user to interact with the map
+     *
      * @param go The {@code GameObject} to build off
      */
     private void mapScreenView(GameObject go) {
@@ -564,6 +567,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /**
      * This will allow the user to upgrade stats
+     *
      * @param go The {@code GameObject} to build off
      */
     private void statView(GameObject go) {
