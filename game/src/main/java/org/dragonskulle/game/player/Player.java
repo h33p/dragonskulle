@@ -84,6 +84,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         HexagonMap map = mMapComponent.get();
         
+        Building buildingHere = map.getBuilding(qPos, rPos);
+        
+        if (buildingHere != null) {
+        	log.warning("Building already here");
+        	return false;
+        }
         
         Reference<NetworkObject> obj =
                 mNetworkManager
@@ -102,16 +108,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
              
              Building building = buildingGO.getComponent(Building.class).get();
              
-             //TODO Check building isn't here
              
              if (building != null) {
-             	log.info("");
+             	log.info("Stored building");
                  map.storeBuilding(
-                         buildingGO.getComponent(Building.class).get(), qPos, rPos);        
+                         buildingGO.getComponent(Building.class).get(), qPos, rPos);    
+                 
+                 return true;
              }
              
              
         }
+        log.warning("Couldn't create building");
+        return false;
     }
 
     public HexagonMap getMapComponent() {
