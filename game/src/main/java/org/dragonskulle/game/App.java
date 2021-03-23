@@ -23,9 +23,9 @@ import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
-import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.ai.ProbablisticAiPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkHexTransform;
 import org.dragonskulle.network.components.NetworkManager;
@@ -240,7 +240,7 @@ public class App {
                         "aiPlayer",
                         new TransformHex(0, 0, 1),
                         (handle) -> {
-                            handle.addComponent(new AiPlayer());
+                            handle.addComponent(new ProbablisticAiPlayer());
                             handle.addComponent(new Player());
                         }));
 
