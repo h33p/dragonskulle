@@ -408,7 +408,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         log.info("Checking");
-        if (!buildingWithinRadius(getTilesInRadius(3, tile))) { // TODO KEEP
+        if (!buildingWithinRadiusYours(getTilesInRadius(3, tile))) { // TODO KEEP
             log.info("Too far");
             return;
         }
@@ -427,11 +427,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tiles The tiles to check
      * @return true if it is within radius false if not
      */
+    public boolean buildingWithinRadiusYours(ArrayList<HexagonTile> tiles) {
+        for (HexagonTile tile : tiles) {
+
+            if (mMapComponent.isValid()
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID() == getNetworkObject().getOwnerId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * This checks if a building is within a certain radius
+     * @param tiles The tiles to check
+     * @return true if it is within radius false if not
+     */
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
 
             if (mMapComponent.isValid()
-                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID() == getNetworkObject().getOwnerID()) {
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
             }
         }
