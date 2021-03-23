@@ -95,7 +95,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         mNetworkManager = getNetworkObject().getNetworkManager();
     
-        distributeCoordinates();
+        if (getNetworkObject().isServer()) {
+        	distributeCoordinates();
+        }
 
 
         Vector3fc col = mPlayerColour.get();
@@ -124,17 +126,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	Change to Axial
     	Done????
     	*/
-    	boolean finished;
-    	do {
+    	//boolean finished;
+
     	int min = -10;
     	int max = 10;
     	
     	int posX = min + (int) (Math.random() * ((max - min) + 1));
         int posY = min + (int) (Math.random() * ((max - min) + 1));
-        finished = addNewBuilding(posX, posY);
-    	}
-        while (!finished);
-       
+        //HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
+        addNewBuilding(posX, posY);
     	
     }
     
