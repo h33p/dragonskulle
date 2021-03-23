@@ -206,15 +206,16 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
 
         if (mRenderable != null && UIManager.getInstance().getHoveredObject() == mRenderable) {
 
-            // Call mOnClick if we pressed this button
-            if (!mouseDown && mHadReleasedHover) {
-                if (mLastMouseDown && mOnClick != null) mOnClick.eventHandler(this, deltaTime);
-            }
-
-            // Call mOnPressDown if we pressed down the button
-            if (mouseDown && !mLastMouseDown && mHadReleasedHover) {
-                mPressedDown = true;
-                if (mOnPressDown != null) mOnPressDown.eventHandler(this, deltaTime);
+            // We moved the mouse over without pressing it down
+            if (mHadReleasedHover) {
+                if (!mouseDown) {
+                    // Call mOnClick if we pressed this button
+                    if (mLastMouseDown && mOnClick != null) mOnClick.eventHandler(this, deltaTime);
+                } else if (!mLastMouseDown) {
+                    mPressedDown = true;
+                    // Call mOnPressDown if we pressed down the button
+                    if (mOnPressDown != null) mOnPressDown.eventHandler(this, deltaTime);
+                }
             }
 
             // Handle cases where cursor enters/leaves the button while pressing the button down
