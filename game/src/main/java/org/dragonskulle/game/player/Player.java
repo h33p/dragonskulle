@@ -64,21 +64,53 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
         
+        
         mNetworkManager = getNetworkObject().getNetworkManager();
     
-        // mOwnedBuildings.add(capital);
-        // TODO Get all Players & add to list
+        while (mNetworkManager == null) {
+        	mNetworkManager = getNetworkObject().getNetworkManager();
+        }
+        distributeCoordinates();
         updateTokens(UPDATE_TIME);
     }
     
     private void distributeCoordinates() {
-    	;
+    	
+    	float angleOfCircle = (float) 360 / (float) playersToPlay;
+    	
+    	// This says how many people have joined the server so far
+    	int playersOnlineNow = mPlayersOnline.size();
+    	
+    	// This gives us the angle to find our coordinates
+    	float angleToStart = playersOnlineNow * angleOfCircle;
+    	float angleToEnd = (playersOnlineNow+1) * angleOfCircle;
+    	
+    	/* TODO NOTES
+    	Create a line from each of these angles.  Use Maths
+    	Then choose a pair of coordinates from between those lines
+    	Change to Axial
+    	Done????
+    	*/
+    	boolean finished;
+    	do {
+    	int min = -10;
+    	int max = 10;
+    	
+    	int posX = min + (int) (Math.random() * ((max - min) + 1));
+        int posY = min + (int) (Math.random() * ((max - min) + 1));
+        finished = addNewBuilding(posX, posY);
+    	}
+        while (!finished);
+       
+    	
     }
     
     private boolean addNewBuilding(int qPos, int rPos) {
     	
-    	if (networkManager.getServerManager() == null) {
+    	if (mNetworkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
+            
+            //TODO HUMAN PLAYER NOT GETTING THIS??  WHYYYYYYYYY
             return false;
         }
         
@@ -96,7 +128,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getServerManager()
                         .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
-                                networkManager.findTemplateByName("building"));
+                                mNetworkManager.findTemplateByName("building"));
         
        
 
@@ -334,10 +366,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         if (addedNewBuilding) {
         	mTokens.set(mTokens.get() - COST);
-        }
-            
+        	log.info("Building added");
+        } 
        
-        log.info("Building added");
+        
     }
 
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
