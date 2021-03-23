@@ -27,7 +27,7 @@ import org.dragonskulle.game.player.networkData.StatData;
 public class ProbablisticAiPlayer extends AiPlayer {
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 1.0;
+    protected float mTileProbability = (float) 0.5;
 
     protected float mBuildingProbability = 1 - mTileProbability;
 
@@ -48,32 +48,6 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
     @Override
     protected void simulateInput() {
-
-        if (mPlayer.get().numberOfBuildings() == 0) {
-            log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
-
-            int min = -10;
-            int max = 10;
-
-            int posX = min + (int) (Math.random() * ((max - min) + 1));
-            int posY = min + (int) (Math.random() * ((max - min) + 1));
-
-            HexagonTile tile = mPlayer.get().getMapComponent().getTile(posX, posY);
-
-            if (tile == null) {
-                return;
-            }
-
-            // log.info("Selected tile: " + tile);
-            // log.info("Building on tile: " + tile.getBuilding());
-
-            if (tile.getBuilding() == null) {
-                // Send to server
-                mPlayer.get().handleEvent(new BuildData(tile));
-            }
-
-            return;
-        }
 
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfBuildings() == 1) { // TODO Refactor it so it's only done once
@@ -263,15 +237,13 @@ public class ProbablisticAiPlayer extends AiPlayer {
                             for (HexagonTile hexTile : hexTilesWhichCanBeSeen) {
 
                                 if (hexTile.getBuilding() != null) {
-                                    // log.info("Already building at location."); // Ignore cos
-                                    // theres already a building there
+                                    // Ignore cos there's already a building there
                                 } else if (!checkCloseBuildings(hexTile)) {
-                                    // log.info("Building within 1 hex."); // Ignore cos theres
-                                    // already a building there; // IGNORE TILE IT'S WITHIN 1 HEX
+                                    // IGNORE TILE IT'S WITHIN 1 HEX
                                 } // Can add extra checks here.
                                 else {
                                     hexTilesToExpand.add(hexTile);
-                                    // log.info("Good tile:" + hexTile);
+                                    
                                 }
                             }
                         });
@@ -286,6 +258,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
      * @return {@code true} if that hextile is valid to build in or {@code false} if it's not valid
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
+    	
         // Get a radius of tiles
         ArrayList<HexagonTile> hexTiles = mPlayer.get().getTilesInRadius(1, hexTile);
 
