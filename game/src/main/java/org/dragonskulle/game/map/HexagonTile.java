@@ -60,6 +60,9 @@ public class HexagonTile {
     /** Building that is on the tile */
     @Getter @Setter private Building mBuilding;
 
+    /** The building that claims the tile, or {@code null}. */
+    @Getter @Setter private Building mClaimedBy = null;
+
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
      * 0.

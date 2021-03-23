@@ -55,6 +55,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Whether the building is a capital. */
     public final SyncBool mIsCapital = new SyncBool(false);
+    
+    /** The tiles the building claims, including the tile the building is currently on. */
+    private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
 
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
@@ -77,8 +80,25 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public void onStart() {
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addBuilding(this);
+        
+        claimTiles();
     }
 
+    /**
+     * Claim the tiles around the building and the tile the building is on.
+     */
+    private void claimTiles() {
+    	// Claim the tiles around the building.
+    	mClaimedTiles = getTilesInRadius(1);
+        // Claim the tile the building is on.
+    	mClaimedTiles.add(getTile());
+        
+    	// Claim each hexagon.
+        for (HexagonTile hexagonTile : mClaimedTiles) {
+			hexagonTile.setClaimedBy(this);
+		}
+    }
+    
     public Player getOwner() {
         return getNetworkObject()
                 .getNetworkManager()
