@@ -60,8 +60,6 @@ public class ProbablisticAiPlayer extends AiPlayer {
             // Gets all the tiles it can expand to
             List<HexagonTile> tilesToUse = hexTilesToExpand();
 
-            // log.info("tilesToUse: " + tilesToUse);
-
             // Checks if there are tiles
             if (tilesToUse.size() != 0) {
 
@@ -81,7 +79,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
             log.info(
                     "AI: I have "
                             + mPlayer.get().numberOfBuildings()
-                            + " buildings. Shoudl be  more than  one");
+                            + " buildings. Should be  more than  one");
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
 
