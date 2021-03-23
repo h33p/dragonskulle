@@ -40,7 +40,7 @@ public class HexagonTile {
                         IColouredMaterial mat = new VertexHighlightMaterial(texture);
                         mat.getColour().set(0f, 1f, 0f, 1f);
                         go.addComponent(new Renderable(mesh, mat));
-                        
+
                         Reference<Renderable> hexRenderer = go.getComponent(Renderable.class);
                         VertexHighlightMaterial hexMaterial =
                                 hexRenderer.get().getMaterial(VertexHighlightMaterial.class);

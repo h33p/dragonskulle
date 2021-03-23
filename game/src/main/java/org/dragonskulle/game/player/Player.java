@@ -424,6 +424,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * This checks if a building is within a certain radius
+     *
      * @param tiles The tiles to check
      * @return true if it is within radius false if not
      */
@@ -431,15 +432,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         for (HexagonTile tile : tiles) {
 
             if (mMapComponent.isValid()
-                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID() == getNetworkObject().getOwnerId()) {
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID()
+                            == getNetworkObject().getOwnerId()) {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
      * This checks if a building is within a certain radius
+     *
      * @param tiles The tiles to check
      * @return true if it is within radius false if not
      */
