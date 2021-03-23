@@ -233,6 +233,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
+    /**
+     * AURI!!  This updates what the user can see
+     */
     private void updateVisuals() {
         mVisualsNeedUpdate = false;
 
@@ -288,6 +291,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
+    /**
+     * AURI!!!
+     * @param newScreen
+     */
     private void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn)) mVisualsNeedUpdate = true;
         mScreenOn = newScreen;
@@ -308,7 +315,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /**
      * This is a function which outputs what the user should see on a map
      *
-     * @param go The game object
+     * @param go The {@code GameObject} to build off
      */
     private void buildAttackView(GameObject go) {
 
@@ -380,6 +387,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
+    /**
+     * This will create the screen which gives the actions of what a player can do once they have clicked a building
+     * @param go The {@code GameObject} to build off
+     */
     private void buildBuildingSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
         // Choose to upgrade the buildingSelectedView
@@ -489,6 +500,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
+    /**
+     * This will create the screen which you can build a building offf
+     * @param go The {@code GameObject} to build off
+     */
     private void buildPlaceSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
         // Will build a box to confirm
@@ -538,11 +553,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
+    /**
+     * This screen allows the user to interact with the map
+     * @param go The {@code GameObject} to build off
+     */
     private void mapScreenView(GameObject go) {
 
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
     }
 
+    /**
+     * This will allow the user to upgrade stats
+     * @param go The {@code GameObject} to build off
+     */
     private void statView(GameObject go) {
 
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
