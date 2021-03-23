@@ -97,6 +97,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     
         if (getNetworkObject().isServer()) {
         	distributeCoordinates();
+        	
         }
 
 
@@ -135,6 +136,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int posY = min + (int) (Math.random() * ((max - min) + 1));
         //HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
         addNewBuilding(posX, posY);
+        Building buildingToBecomeCapital = mMapComponent.get().getBuilding(posX, posY);
+        buildingToBecomeCapital.setCapital(true);
+        
+       
     	
     }
     
@@ -148,7 +153,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	if (mNetworkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
             
-            //TODO HUMAN PLAYER NOT GETTING THIS??  Because you're not the server dummy
+            
             return false;
         }
         
@@ -406,15 +411,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function
             log.info("Trying to build too close to another building");
             return;
-        }
-
-
-        log.info("Checking DOne");
-        
-        
+        } 
         
         log.info("Checking");
-        if (!buildingWithinRadius(getTilesInRadius(3, tile))) {
+        if (!buildingWithinRadius(getTilesInRadius(3, tile))) {  		//TODO KEEP
         	log.info("Too far");
         	return;
         }
