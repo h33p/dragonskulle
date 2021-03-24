@@ -1,6 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
@@ -32,20 +35,21 @@ import org.joml.Vector4f;
  * @author DragonSkulle
  */
 @Log
+@Accessors(prefix = "m")
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     // All screens to be used
     private Screen mScreenOn = Screen.MAP_SCREEN;
     private Reference<GameObject> mMapScreen;
-    private Reference<GameObject> mPlaceScreen;
-    private Reference<GameObject> mBuildingSelectedScreen;
-    private Reference<GameObject> mChooseAttack;
-    private Reference<GameObject> mShowStat;
-    private Reference<GameObject> mMenuDrawer;
+
+    private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
+    @Getter
+    @Setter
     private HexagonTile mHexChosen;
-    private Reference<Building> mBuildingChosen = new Reference<Building>(null);
+
+    private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -94,58 +98,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     go.addComponent(new UILinkedScrollBar());
                                 });
 
-        // Get the screen for confirming placing a buildingSelectedView
-        mPlaceScreen =
-                getGameObject()
-                        .buildChild(
-                                "place screen", new TransformUI(), this::buildPlaceSelectedView);
 
-        // Screen to choose what to do for a buildingSelectedView
-        mBuildingSelectedScreen =
-                getGameObject()
-                        .buildChild(
-                                "buildingSelectedView options",
-                                new TransformUI(),
-                                this::buildBuildingSelectedView);
-
-        // To Attack
-        mChooseAttack =
-                getGameObject()
-                        .buildChild("attackView screen", new TransformUI(), this::buildAttackView);
-
-        // To upgrade stats
-        mShowStat =
-                getGameObject()
-                        .buildChild(
-                                "Stat screen",
-                                new TransformUI(),
-                                (go) -> {
-                                    ; // TODO will add stuff for Stats AFTER prototype
-
-                                    go.buildChild(
-                                            "Go Back",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                new UIText(
-                                                                        new Vector3f(0f, 0f, 0f),
-                                                                        Font.getFontResource(
-                                                                                "Rise of Kingdom.ttf"),
-                                                                        "Go Back"),
-                                                                (handle, __) -> {
-                                                                    mHexChosen = null;
-                                                                    mBuildingChosen = null;
-                                                                    setScreenOn(Screen.MAP_SCREEN);
-                                                                }));
-                                            });
-                                });
-
-        mMenuDrawer = getGameObject().buildChild(
+        getGameObject().buildChild(
                 "menu_drawer",
                 new TransformUI(true),
                 (go) -> {
@@ -154,11 +108,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 UITokenCounter tokenCounter = new UITokenCounter();
                                 self.addComponent(tokenCounter);
                             });
-                    go.addComponent(new UIMenuLeftDrawer());
-                    //go.addComponentMenuViewBuilder() this will be updated depending on the objects provided to the menu
+                    go.addComponent(new UIMenuLeftDrawer(mBuildingChosen, this::getHexChosen, this::setHexChosen, this::setScreenOn));
                 });
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
+        mMenuDrawer = getGameObject().getComponent(UIMenuLeftDrawer.class);
     }
 
     @Override
@@ -200,16 +154,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void frameUpdate(float deltaTime) {
-
         // Choose which screen to show
-        mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
-        mPlaceScreen.get().setEnabled(mScreenOn == Screen.TILE_SCREEN);
-        mBuildingSelectedScreen.get().setEnabled(mScreenOn == Screen.BUILDING_SELECTED_SCREEN);
-        mChooseAttack.get().setEnabled(mScreenOn == Screen.ATTACK_SCREEN);
-        mShowStat.get().setEnabled(mScreenOn == Screen.STAT_SCREEN);
         if (mScreenOn == Screen.MAP_SCREEN) {
-            mapScreen();
+            mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
+        } else {
+            if (mMenuDrawer != null && mMenuDrawer.isValid()) {
+                mMenuDrawer.get().setMenu(mScreenOn);
+            }
         }
+        mapScreen();
 
         if (mVisualsNeedUpdate) updateVisuals();
     }
@@ -375,82 +328,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         return mPlayer.get().getBuilding(buildingToCheck.get().getTile()) != null;
     }
 
-    /**
-     * This is a function which outputs what the user should see on a map
-     *
-     * @param go The game object
-     */
-    private void buildAttackView(GameObject go) {
-
-        go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-
-        // If its equal to null ignore
-        if (mBuildingChosen.get() == null) {
-            ;
-        } else {
-            // For each Building add a button for it
-            for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
-
-                go.buildChild(
-                        "Attack buildingSelectedView",
-                        new TransformUI(true),
-                        (box) -> {
-                            box.getTransform(TransformUI.class)
-                                    .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                            box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                            box.addComponent(
-                                    new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                            box.addComponent(
-                                    new UIButton(
-                                            new UIText(
-                                                    new Vector3f(0f, 0f, 0f),
-                                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "Attack buildingSelectedView "), // TODO (After
-                                            // Prototype)
-                                            // -- Need way to show
-                                            // different buildingSelectedView
-                                            (handle, __) -> {
-
-                                                // Send attackView to server
-                                                mPlayer.get()
-                                                        .getClientAttackRequest()
-                                                        .invoke(
-                                                                new AttackData(
-                                                                        mBuildingChosen.get(),
-                                                                        building)); // TODO Send
-                                                // data to
-                                                // this which
-
-                                                mHexChosen = null;
-                                                mBuildingChosen = null;
-                                                setScreenOn(Screen.MAP_SCREEN);
-                                            }));
-                        });
-            }
-        }
-
-        // Back Button
-        go.buildChild(
-                "Go Back",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Go Back"),
-                                    (handle, __) -> {
-                                        mHexChosen = null;
-                                        mBuildingChosen = null;
-                                        setScreenOn(Screen.MAP_SCREEN);
-                                    }));
-                });
-    }
-
     private void buildBuildingSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
         // Choose to upgrade the buildingSelectedView
@@ -558,7 +435,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
-    }
+    } //TODO Creating in UIMENuLeftDrawer
 
     private void buildPlaceSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
@@ -607,5 +484,5 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
-    }
+    } //TODO Creating in UIMENuLeftDrawer
 }

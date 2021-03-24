@@ -13,5 +13,3 @@ javadocs/
 target/*
 thunderclap.wav
 *.bin
-
-/serverless/
