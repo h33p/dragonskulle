@@ -1,0 +1,120 @@
+package org.dragonskulle.audio;
+
+import com.sun.media.sound.WaveFileReader;
+
+import org.lwjgl.openal.AL11;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
+import java.util.logging.Logger;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+public class WaveSound {
+
+    private static final Logger LOGGER = Logger.getLogger("audio");
+
+    public ByteBuffer data;
+    public int buffer;
+    public int sampleRate;
+    public int format;
+
+    public int bits;
+    public int channels;
+
+    public void setALFormat() {
+        switch (bits) {
+            case 16:
+                if (channels > 1) {
+                    format = AL11.AL_FORMAT_STEREO16;
+                } else {
+                    format = AL11.AL_FORMAT_MONO16;
+                }
+                break;
+            case 8:
+                if (channels > 1) {
+                    format = AL11.AL_FORMAT_STEREO8;
+                } else {
+                    format = AL11.AL_FORMAT_MONO8;
+                }
+        }
+    }
+
+    /**
+     * Fix up the raw audio bytes and get them into a format that OpenAL can play.
+     *
+     * @param rawBytes Raw audio bytes to process
+     * @param eightBitAudio Whether the sample size is 8 bits
+     * @param order The endianness of the audio bytes
+     * @return ByteBuffer containing the fixed bytes
+     */
+    private static ByteBuffer processRawBytes(byte[] rawBytes, boolean eightBitAudio, ByteOrder order) {
+        ByteBuffer dst = ByteBuffer.allocate(rawBytes.length);
+        dst.order(ByteOrder.nativeOrder());
+        ByteBuffer src = ByteBuffer.wrap(rawBytes);
+        src.order(order);
+
+        if (eightBitAudio) {
+            while (src.hasRemaining()) {
+                dst.put(src.get());
+            }
+        } else {
+            ShortBuffer srcBuffer = src.asShortBuffer();
+            ShortBuffer dstBuffer = dst.asShortBuffer();
+
+            while (srcBuffer.hasRemaining()) {
+                dstBuffer.put(srcBuffer.get());
+            }
+        }
+        dst.rewind();
+        return dst;
+    }
+
+    /**
+     * Parses a .wav file from a FileInputStream.  This is really slow so ideally all sounds should
+     * be loaded straight away instead of during gameplay
+     *
+     * @param file .wav File to parse
+     * @return A WaveSound object if file could be parsed, null otherwise
+     */
+    public static WaveSound loadWav(File file) {
+        try {
+            AudioInputStream audioInputStream = new WaveFileReader().getAudioInputStream(file);
+
+            WaveSound sound = new WaveSound();
+            AudioFormat format = audioInputStream.getFormat();
+
+            sound.sampleRate = (int)format.getSampleRate();
+
+            sound.bits = format.getSampleSizeInBits();
+            sound.channels = format.getChannels();
+            sound.setALFormat();
+
+            int audioLength = (int)audioInputStream.getFrameLength() * format.getFrameSize();
+
+            byte[] audioBytes = new byte[audioLength];
+
+            // TODO: Probably isn't the best way to do this
+            int bytesRead = audioInputStream.read(audioBytes);
+            if (audioLength != bytesRead) {
+                LOGGER.warning("Failed to read in expected number of audio bytes");
+                return null;
+            }
+
+            ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
+            sound.data = processRawBytes(audioBytes, sound.bits == 8, order);
+
+            return sound;
+        } catch (UnsupportedAudioFileException e) {
+            LOGGER.warning("Attempted to load unsupported audio file");
+        } catch (IOException e) {
+            LOGGER.warning("Attempted to load file that doesn't exist");
+        }
+        return null;
+    }
+}
