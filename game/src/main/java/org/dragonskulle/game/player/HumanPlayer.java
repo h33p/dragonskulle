@@ -41,8 +41,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<GameObject> mBuildingSelectedScreen;
     private Reference<GameObject> mChooseAttack;
     private Reference<GameObject> mShowStat;
-    private Reference<GameObject> mTokenBanner;
-    private Reference<UIButton> mTokenBannerButton;
+    private Reference<GameObject> mMenuDrawer;
 
     // Data which is needed on different screens
     private HexagonTile mHexChosen;
@@ -59,12 +58,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<MapEffects> mMapEffects;
     private boolean mVisualsNeedUpdate;
     private Reference<GameObject> mZoomSlider;
+    private Reference<UITokenCounter> mTokenCounter;
+    private Reference<GameObject> mTokenCounterObject;
 
     /**
-     * Create a {@link HumanPlayer}.
-     *
-     * @param networkManager The network manager.
-     * @param netID The human player's network ID.
+     * The constructor for the human player
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
@@ -87,7 +85,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
+                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {
+                });
 
         mZoomSlider =
                 // Creates a blank screen
@@ -124,7 +123,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild(
                                 "Stat screen",
                                 new TransformUI(),
-                                (go) -> {; // TODO will add stuff for Stats AFTER prototype
+                                (go) -> {
+                                    ; // TODO will add stuff for Stats AFTER prototype
 
                                     go.buildChild(
                                             "Go Back",
@@ -149,47 +149,25 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             });
                                 });
 
-        mTokenBanner =
-                getGameObject()
-                        .buildChild(
-                                "token_view",
-                                new TransformUI(),
-                                (go) -> {; // TODO will add stuff for Stats AFTER prototype
+        mMenuDrawer = getGameObject().buildChild(
+                "menu_drawer",
+                new TransformUI(true),
+                (go) -> {
+                    mTokenCounterObject = go.buildChild("token_counter", new TransformUI(true),
+                            (self) -> {
+                                UITokenCounter tokenCounter = new UITokenCounter();
+                                self.addComponent(tokenCounter);
+                            });
+                    go.addComponent(new UIMenuLeftDrawer());
+                    //go.addComponentMenuViewBuilder() this will be updated depending on the objects provided to the menu
+                });
 
-                                    Reference<GameObject> tmp_ref =
-                                            go.buildChild(
-                                                    "token_count",
-                                                    new TransformUI(true),
-                                                    (box) -> {
-                                                        box.getTransform(TransformUI.class)
-                                                                .setParentAnchor(
-                                                                        0f, 0.01f, 0.5f, 0.01f);
-                                                        box.getTransform(TransformUI.class)
-                                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                                        box.addComponent(
-                                                                new UIRenderable(
-                                                                        new SampledTexture(
-                                                                                "ui/wide_button.png")));
-                                                        box.addComponent(
-                                                                new UIButton(
-                                                                        new UIText(
-                                                                                new Vector3f(
-                                                                                        0f, 0f, 0f),
-                                                                                Font
-                                                                                        .getFontResource(
-                                                                                                "Rise of Kingdom.ttf"),
-                                                                                "Tokens: "
-                                                                                        + mLocalTokens)));
-                                                    });
-
-                                    mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
-                                });
-        mTokenBanner.get().setEnabled(true);
-        mZoomSlider.get().setEnabled(true);
+        mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -216,11 +194,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Update token
         if (mPlayer.isValid()) {
             mLocalTokens = mPlayer.get().getTokens().get();
-            if (mTokenBannerButton.isValid()) {
-                Reference<UIText> txt = mTokenBannerButton.get().getLabelText();
-                if (txt != null && txt.isValid()) {
-                    txt.get().setText("Tokens: " + mLocalTokens);
-                }
+            if (mTokenCounter != null && mTokenCounter.isValid()) {
+                mTokenCounter.get().setLabelReference(mLocalTokens);
+            } else {
+                mTokenCounter = getGameObject().getComponent(UITokenCounter.class);
             }
         }
     }
@@ -241,7 +218,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -377,7 +356,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
@@ -429,7 +410,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
 
         // If its equal to null ignore
-        if (mBuildingChosen.get() == null) {;
+        if (mBuildingChosen.get() == null) {
+            ;
         } else {
             // For each Building add a button for it
             for (Building building : mBuildingChosen.get().getAttackableBuildings()) {
