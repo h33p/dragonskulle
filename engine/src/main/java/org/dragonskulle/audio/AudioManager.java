@@ -128,8 +128,31 @@ public class AudioManager {
     }
 
 
+    /**
+     * Cleanup all resources still in use
+     */
+    public void cleanup() {
+        if (mALDev == -1) {
+            return;
+        }
 
+        for (Source s : mSources) {
+            AL11.alDeleteSources(s.getSource());
+        }
+        mSources.clear();
 
+        for (WaveSound s : mSoundMap.values()) {
+            AL11.alDeleteBuffers(s.buffer);
+            s.data.clear();
+        }
+        mSoundMap.clear();
+
+        ALC11.alcMakeContextCurrent(0L);
+        ALC11.alcDestroyContext(mALCtx);
+        ALC11.alcCloseDevice(mALDev);
+        mALDev = -1;
+        mALCtx = -1;
+    }
 
     /**
      * Get the singleton instance of the audio manager
