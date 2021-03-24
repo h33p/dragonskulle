@@ -1,5 +1,8 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio.components;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.Source;
 import org.dragonskulle.audio.WaveSound;
@@ -8,9 +11,6 @@ import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL11;
-
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 @Accessors(prefix = "m")
 public class AudioSource extends Component implements IFixedUpdate, IOnAwake {
@@ -22,9 +22,7 @@ public class AudioSource extends Component implements IFixedUpdate, IOnAwake {
     @Getter private float mRadius = 10f;
     @Getter private int mLooping = AL11.AL_FALSE;
 
-    /**
-     * Update the position of the source to that of the GameObject
-     */
+    /** Update the position of the source to that of the GameObject */
     private void updatePosition() {
         if (mSource == null) {
             return;
@@ -63,9 +61,7 @@ public class AudioSource extends Component implements IFixedUpdate, IOnAwake {
         AL11.alSourcePlay(s);
     }
 
-    /**
-     * Detach the Source from this AudioSource if there is one
-     */
+    /** Detach the Source from this AudioSource if there is one */
     public void detachSource() {
         if (mSource == null) {
             return;
@@ -157,11 +153,15 @@ public class AudioSource extends Component implements IFixedUpdate, IOnAwake {
     protected void onDestroy() {
         detachSource();
         mSound = null;
+        AudioManager.getInstance().removeAudioSource(getReference(AudioSource.class));
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
         updatePosition();
+
+        // TODO: Need to track time left in the clip
+
     }
 
     @Override

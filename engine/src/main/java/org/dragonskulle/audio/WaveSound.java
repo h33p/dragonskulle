@@ -1,19 +1,17 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
 import com.sun.media.sound.WaveFileReader;
-
-import org.lwjgl.openal.AL11;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.logging.Logger;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import org.lwjgl.openal.AL11;
 
 public class WaveSound {
 
@@ -53,7 +51,8 @@ public class WaveSound {
      * @param order The endianness of the audio bytes
      * @return ByteBuffer containing the fixed bytes
      */
-    private static ByteBuffer processRawBytes(byte[] rawBytes, boolean eightBitAudio, ByteOrder order) {
+    private static ByteBuffer processRawBytes(
+            byte[] rawBytes, boolean eightBitAudio, ByteOrder order) {
         ByteBuffer dst = ByteBuffer.allocate(rawBytes.length);
         dst.order(ByteOrder.nativeOrder());
         ByteBuffer src = ByteBuffer.wrap(rawBytes);
@@ -76,7 +75,7 @@ public class WaveSound {
     }
 
     /**
-     * Parses a .wav file from a FileInputStream.  This is really slow so ideally all sounds should
+     * Parses a .wav file from a FileInputStream. This is really slow so ideally all sounds should
      * be loaded straight away instead of during gameplay
      *
      * @param file .wav File to parse
@@ -89,13 +88,13 @@ public class WaveSound {
             WaveSound sound = new WaveSound();
             AudioFormat format = audioInputStream.getFormat();
 
-            sound.sampleRate = (int)format.getSampleRate();
+            sound.sampleRate = (int) format.getSampleRate();
 
             sound.bits = format.getSampleSizeInBits();
             sound.channels = format.getChannels();
             sound.setALFormat();
 
-            int audioLength = (int)audioInputStream.getFrameLength() * format.getFrameSize();
+            int audioLength = (int) audioInputStream.getFrameLength() * format.getFrameSize();
 
             byte[] audioBytes = new byte[audioLength];
 

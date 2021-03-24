@@ -1,19 +1,7 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
-import org.dragonskulle.audio.components.AudioListener;
-import org.dragonskulle.audio.components.AudioSource;
-import org.dragonskulle.core.Reference;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALC;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALC11;
-import org.lwjgl.openal.ALCCapabilities;
-import org.lwjgl.openal.ALCapabilities;
-
 import java.io.File;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -21,16 +9,28 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import org.dragonskulle.audio.components.AudioListener;
+import org.dragonskulle.audio.components.AudioSource;
+import org.dragonskulle.core.Reference;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC11;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.ALCapabilities;
 
 /**
  * The manager for the engine's audio system
  *
  * @author Harry Stoltz
- * <p>This class will handle the loading and buffering of all sound files, and will also manage a
- * pool of sources that can be used by AudioSources to play the sounds back
+ *     <p>This class will handle the loading and buffering of all sound files, and will also manage
+ *     a pool of sources that can be used by AudioSources to play the sounds back
  */
+@Accessors(prefix = "m")
 public class AudioManager {
     private static final Logger LOGGER = Logger.getLogger("audio");
     private static final AudioManager AUDIO_MANAGER = new AudioManager();
@@ -47,21 +47,23 @@ public class AudioManager {
     private long mALDev = -1;
     private long mALCtx = -1;
 
+    @Getter private boolean mInitialized = false;
+
     /**
      * Constructor for AudioManager. It's private as AudioManager is designed as a singleton. Opens
-     * an OpenAL device and creates and sets the context for the process. Also attempts to create
-     * up to MAX_SOURCES sources
+     * an OpenAL device and creates and sets the context for the process. Also attempts to create up
+     * to MAX_SOURCES sources
      */
     private AudioManager() {
         // TODO: For now I'm just using the "best" device available, I have made AudioDevices.java
         //       which can be used to enumerate devices so we can allow user to choose in the future
-        long device = ALC11.alcOpenDevice((ByteBuffer)null);
+        long device = ALC11.alcOpenDevice((ByteBuffer) null);
         if (device == 0L) {
             LOGGER.severe("Failed to open default OpenAL device, no audio will be available");
             return;
         }
 
-        long ctx = ALC11.alcCreateContext(device, (IntBuffer)null);
+        long ctx = ALC11.alcCreateContext(device, (IntBuffer) null);
         if (!ALC11.alcMakeContextCurrent(ctx)) {
             LOGGER.severe("Failed to set OpenAL context, no audio will be available");
             ALC11.alcCloseDevice(device);
@@ -76,19 +78,17 @@ public class AudioManager {
         // Set the distance model that will be used
         AL11.alDistanceModel(AL11.AL_LINEAR_DISTANCE_CLAMPED);
 
-
         mALDev = device;
         mALCtx = ctx;
 
         setupSources();
 
-        LOGGER.info("Initialize AudioManager: "
-                + mSources.size() + " sources available");
+        mInitialized = true;
+
+        LOGGER.info("Initialize AudioManager: " + mSources.size() + " sources available");
     }
 
-    /**
-     * Attempt to create MAX_SOURCES sources
-     */
+    /** Attempt to create MAX_SOURCES sources */
     private void setupSources() {
         for (int i = 0; i < MAX_SOURCES; i++) {
             int source = AL11.alGenSources();
@@ -104,9 +104,9 @@ public class AudioManager {
     }
 
     /**
-     * Attempt to get the first source in mSources that is not in use.
-     * In theory, this should never return null as if there are more than MAX_SOURCES AudioSources
-     * currently active, some will have their source detached before this is ever called
+     * Attempt to get the first source in mSources that is not in use. In theory, this should never
+     * return null as if there are more than MAX_SOURCES AudioSources currently active, some will
+     * have their source detached before this is ever called
      *
      * @return An inactive Source, or null if none were available
      */
@@ -222,7 +222,7 @@ public class AudioManager {
                 i--;
             }
         }
-
+        
         // List is not sorted by priority for now but will be in the future so
         // detach all sources from index mSources.size() onwards
         if (mActiveAudioSources.size() > mSources.size()) {
@@ -266,9 +266,13 @@ public class AudioManager {
         }
     }
 
-    /**
-     * Cleanup all resources still in use
-     */
+    public void removeAudioListener(Reference<AudioListener> audioListener) {
+        if (mAudioListener == audioListener) {
+            mAudioListener = null;
+        }
+    }
+
+    /** Cleanup all resources still in use */
     public void cleanup() {
         if (mALDev == -1) {
             return;

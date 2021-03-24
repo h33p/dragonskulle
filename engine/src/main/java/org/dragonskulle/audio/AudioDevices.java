@@ -1,10 +1,10 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
-
-import org.lwjgl.openal.ALC11;
-import org.lwjgl.openal.ALUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.lwjgl.openal.ALC11;
+import org.lwjgl.openal.ALUtil;
 
 /**
  * Utility class for enumerating OpenAL devices
