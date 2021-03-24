@@ -6,9 +6,6 @@ import static org.dragonskulle.utils.Env.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
-import org.dragonskulle.audio.AudioManager;
-import org.dragonskulle.audio.AudioSource;
-import org.dragonskulle.audio.SoundType;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -98,6 +95,7 @@ public class App {
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
 
+        /*
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
@@ -117,16 +115,17 @@ public class App {
                                                     "Mute/Unmute"),
                                             (uiButton, __) -> {
                                                 AudioManager.getInstance()
-                                                        .toggleMute(SoundType.BACKGROUND);
+                                                       .toggleMute(SoundType.BACKGROUND);
                                                 AudioManager.getInstance()
-                                                        .toggleMute(SoundType.SFX);
+                                                       .toggleMute(SoundType.SFX);
                                             }));
                         });
+
         GameObject audioButtonEffect =
                 new GameObject(
                         "audioObject",
                         (root) -> {
-                            root.addComponent(new AudioSource());
+                            //root.addComponent(new AudioSource());
                         });
 
         Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
@@ -141,7 +140,9 @@ public class App {
             refAudio.get().play();
         }
 
+
         mainScene.addRootObject(audioObject);
+        */
 
         GameObject hexagonMap =
                 new GameObject(
@@ -254,6 +255,7 @@ public class App {
                             handle.addComponent(networkManager.get());
                         });
 
+        /*
         GameObject audioObject =
                 new GameObject(
                         "audioObject",
@@ -296,7 +298,7 @@ public class App {
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
             refAudio.get().play();
         }
-
+        */
         GameObject gameTitle =
                 new GameObject(
                         "title",
@@ -405,14 +407,11 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join Game"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick(
-                                                                (uiButton, __) -> {
-                                                                    mainUI.setEnabled(false);
-                                                                    joinUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(false);
-                                                                }));
+                                                (uiButton, __) -> {
+                                                    mainUI.setEnabled(false);
+                                                    joinUI.setEnabled(true);
+                                                    hostGameUI.setEnabled(false);
+                                                });
                                 button.addComponent(newButton);
                             });
 
@@ -430,14 +429,11 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host Game"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick(
-                                                                (uiButton, __) -> {
-                                                                    mainUI.setEnabled(false);
-                                                                    hostUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(true);
-                                                                }));
+                                                (uiButton, __) -> {
+                                                    mainUI.setEnabled(false);
+                                                    hostUI.setEnabled(true);
+                                                    hostGameUI.setEnabled(true);
+                                                });
                                 button.addComponent(newButton);
                             });
 
@@ -455,9 +451,7 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Settings"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick((uiButton, __) -> {}));
+                                                (uiButton, __) -> {});
 
                                 button.addComponent(newButton);
                             });
@@ -541,36 +535,28 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join (Temporary)"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick(
-                                                                (uiButton, __) -> {
-                                                                    networkManager
-                                                                            .get()
-                                                                            .createClient(
-                                                                                    sIP,
-                                                                                    sPort,
-                                                                                    (manager,
-                                                                                            netID) -> {
-                                                                                        if (netID
-                                                                                                >= 0) {
-                                                                                            onConnectedClient(
-                                                                                                    mainScene,
-                                                                                                    manager,
-                                                                                                    netID);
-                                                                                        } else if (connectingTextRef
-                                                                                                .isValid()) {
-                                                                                            connectingTextRef
-                                                                                                    .get()
-                                                                                                    .setEnabled(
-                                                                                                            false);
-                                                                                        }
-                                                                                    });
-                                                                    if (connectingTextRef.isValid())
-                                                                        connectingTextRef
-                                                                                .get()
-                                                                                .setEnabled(true);
-                                                                }));
+                                                (uiButton, __) -> {
+                                                    networkManager
+                                                            .get()
+                                                            .createClient(
+                                                                    sIP,
+                                                                    sPort,
+                                                                    (manager, netID) -> {
+                                                                        if (netID >= 0) {
+                                                                            onConnectedClient(
+                                                                                    mainScene,
+                                                                                    manager, netID);
+                                                                        } else if (connectingTextRef
+                                                                                .isValid()) {
+                                                                            connectingTextRef
+                                                                                    .get()
+                                                                                    .setEnabled(
+                                                                                            false);
+                                                                        }
+                                                                    });
+                                                    if (connectingTextRef.isValid())
+                                                        connectingTextRef.get().setEnabled(true);
+                                                });
                                 button.addComponent(newButton);
                             });
 
@@ -588,13 +574,10 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Cancel"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick(
-                                                                (uiButton, __) -> {
-                                                                    joinUI.setEnabled(false);
-                                                                    mainUI.setEnabled(true);
-                                                                }));
+                                                (uiButton, __) -> {
+                                                    joinUI.setEnabled(false);
+                                                    mainUI.setEnabled(true);
+                                                });
 
                                 button.addComponent(newButton);
                             });
@@ -622,17 +605,12 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host (Temporary)"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick(
-                                                                (uiButton, __) -> {
-                                                                    networkManager
-                                                                            .get()
-                                                                            .createServer(
-                                                                                    sPort,
-                                                                                    App
-                                                                                            ::onClientConnected);
-                                                                }));
+                                                (uiButton, __) -> {
+                                                    networkManager
+                                                            .get()
+                                                            .createServer(
+                                                                    sPort, App::onClientConnected);
+                                                });
                                 button.addComponent(newButton);
                             });
 
@@ -650,13 +628,10 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Cancel"),
-                                                refAudioButtonEffect
-                                                        .get()
-                                                        .audibleClick(
-                                                                (uiButton, __) -> {
-                                                                    hostUI.setEnabled(false);
-                                                                    mainUI.setEnabled(true);
-                                                                }));
+                                                (uiButton, __) -> {
+                                                    hostUI.setEnabled(false);
+                                                    mainUI.setEnabled(true);
+                                                });
 
                                 button.addComponent(newButton);
                             });
@@ -674,7 +649,6 @@ public class App {
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
-        mainMenu.addRootObject(audioObject);
 
         return mainMenu;
     }

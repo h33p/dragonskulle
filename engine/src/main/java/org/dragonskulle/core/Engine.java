@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -508,8 +507,6 @@ public class Engine {
         // TODO: Release all resources that are still used at the time of shutdown here
 
         destroyAllObjects();
-
-        AudioManager.getInstance().cleanup();
         mGLFWState.free();
     }
 
