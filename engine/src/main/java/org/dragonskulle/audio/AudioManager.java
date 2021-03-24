@@ -1,5 +1,7 @@
 package org.dragonskulle.audio;
 
+import org.dragonskulle.audio.components.AudioSource;
+import org.dragonskulle.core.Reference;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -10,10 +12,12 @@ import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +38,8 @@ public class AudioManager {
 
     private final Map<Integer, WaveSound> mSoundMap = new HashMap<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
+    private final HashSet<Reference<AudioSource>> mAudioSources = new HashSet<>();
+
 
     private long mALDev = -1;
     private long mALCtx = -1;
@@ -127,6 +133,41 @@ public class AudioManager {
         return true;
     }
 
+    /**
+     * Handles the distribution of sources between all of the AudioSources in the scene, assigning
+     * sources to those that have the highest priority and removing them from those that no longer
+     * need them
+     */
+    public void update() {
+        // First remove any references to AudioSources that are no longer valid
+        mAudioSources.removeIf(ref -> !ref.isValid());
+
+        // TODO: Some way to sort the list of AudioSources so that higher priority is at the front
+        //      Then iterate through, detach all sources from AudioSources that are no longer in use
+        //      or are out of range etc
+        //      Then go back through attaching the free sources to the highest priority AudioSources
+        //      that currently do not have a source attached
+
+
+    }
+
+    /**
+     * Register an audio source so that it can have a source attached to it when required
+     *
+     * @param audioSource Reference to the AudioSource that will be registered
+     */
+    public void registerAudioSource(Reference<AudioSource> audioSource) {
+        mAudioSources.add(audioSource);
+    }
+
+    /**
+     * De-register an audio source so that it will no longer have sources attached to it
+     *
+     * @param audioSource Reference to the AudioSource that will be registered
+     */
+    public void deregisterAudioSource(Reference<AudioSource> audioSource) {
+        mAudioSources.remove(audioSource);
+    }
 
     /**
      * Cleanup all resources still in use
