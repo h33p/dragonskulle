@@ -20,12 +20,14 @@ import org.joml.Vector3fc;
 @Accessors(prefix = "m")
 public class Renderable extends Component {
     /** Mesh of the object */
-    @Getter @Setter protected Mesh mMesh = Mesh.HEXAGON;
+    @Getter private Mesh mMesh = Mesh.HEXAGON;
     /** Material of the object */
     @Getter @Setter protected IMaterial mMaterial = new UnlitMaterial();
 
     /** Construct a Renderable with default parameters */
-    public Renderable() {}
+    public Renderable() {
+        mMesh.incRefCount();
+    }
 
     /**
      * Construct a Renderable with specified parameters
@@ -36,6 +38,7 @@ public class Renderable extends Component {
     public Renderable(Mesh mesh, IMaterial material) {
         mMesh = mesh;
         mMaterial = material;
+        if (mMesh != null) mMesh.incRefCount();
     }
 
     /**
@@ -73,9 +76,17 @@ public class Renderable extends Component {
         return camPosition.distanceSquared(tmpVec);
     }
 
+    /** Set the mesh used on this renderable */
+    public void setMesh(Mesh mesh) {
+        if (mMesh != null) mMesh.decRefCount();
+        mMesh = mesh;
+        if (mMesh != null) mMesh.incRefCount();
+    }
+
     /** Free the underlying resources */
     @Override
     public void onDestroy() {
+        setMesh(null);
         mMaterial.free();
     }
 }

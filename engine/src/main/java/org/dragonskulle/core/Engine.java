@@ -308,6 +308,12 @@ public class Engine {
                 System.out.println("FPS:" + frames);
                 System.out.println("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
                 System.out.println("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
+                System.out.println("IB Size:" + mGLFWState.getRenderer().getInstanceBufferSize());
+                System.out.println(
+                        "MB Size:"
+                                + mGLFWState.getRenderer().getVertexBufferSize()
+                                + ":"
+                                + mGLFWState.getRenderer().getIndexBufferSize());
                 instancedDrawCalls = 0;
                 slowDrawCalls = 0;
                 secondTimer -= 1.0;
