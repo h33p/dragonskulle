@@ -6,6 +6,7 @@ import static org.dragonskulle.utils.Env.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
@@ -13,6 +14,7 @@ import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.building.Building;
@@ -57,6 +59,8 @@ public class App {
         new Vector4f(0.f, 1.f, 1.f, 1f),
         new Vector4f(1.f, 0.f, 1.f, 1f),
     };
+
+    private static final Resource<GLTF> GLTF_FILE = GLTF.getResource("testin");
 
     private static Scene createMainScene() {
         // Create a scene
@@ -138,7 +142,7 @@ public class App {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
+            // refAudio.get().play();
         }
 
         mainScene.addRootObject(audioObject);
@@ -294,7 +298,7 @@ public class App {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
+            // refAudio.get().play();
         }
 
         GameObject gameTitle =
@@ -678,7 +682,7 @@ public class App {
         Engine.getInstance().loadScene(mainScene, false);
 
         // Load the mainMenu as the presentation scene
-        Engine.getInstance().loadPresentationScene(mainMenu);
+        Engine.getInstance().loadPresentationScene(GLTF_FILE.get().getDefaultScene());
 
         // Load dev console
         // TODO: actually make a fully fledged console

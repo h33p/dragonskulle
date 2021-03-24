@@ -49,6 +49,8 @@ public class Camera extends Component implements IFrameUpdate {
     /** Current screen aspect ratio */
     private float mAspectRatio = 1.f;
 
+    @Getter private final Vector3f mViewDirection = new Vector3f(0f, 1f, 0f);
+
     private Matrix4f mToView = new Matrix4f();
     private final Vector3f mTmpPos = new Vector3f();
     private final Vector3f mTmpDir = new Vector3f();
@@ -162,7 +164,7 @@ public class Camera extends Component implements IFrameUpdate {
         Matrix4fc worldMatrix = getGameObject().getTransform().getWorldMatrix();
 
         Vector3f pos = worldMatrix.getTranslation(mTmpPos);
-        Vector3f dir = worldMatrix.transformDirection(0, 1, 0, mTmpDir.zero());
+        Vector3f dir = worldMatrix.transformDirection(mViewDirection, mTmpDir.zero());
 
         return mToView.identity().lookAt(pos, dir.add(pos), UP_DIR);
     }

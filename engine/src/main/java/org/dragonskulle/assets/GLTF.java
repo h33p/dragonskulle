@@ -2,6 +2,7 @@
 package org.dragonskulle.assets;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.experimental.Accessors;
@@ -18,6 +19,7 @@ import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.Vertex;
 import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.materials.IRefCountedMaterial;
 import org.dragonskulle.renderer.materials.PBRMaterial;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -40,26 +42,31 @@ public class GLTF implements NativeResource {
 
     private static class GLTFAccessor<T> {
         ByteBuffer mBuffer;
+        int mPosition;
         int mCount;
         IGetObj<T> mGetObj;
 
         private static interface IGetObj<T> {
-            T get(ByteBuffer buffer, int index);
+            T get(ByteBuffer buffer, int position, int index);
         }
 
-        public GLTFAccessor(ByteBuffer buffer, int count, IGetObj<T> getObj) {
+        public GLTFAccessor(ByteBuffer buffer, int position, int count, IGetObj<T> getObj) {
             mBuffer = buffer;
+            mPosition = position;
             mCount = count;
             mGetObj = getObj;
         }
 
         public T get(int index) {
             if (index >= mCount || index < 0) return null;
-            return mGetObj.get(mBuffer, index);
+            return mGetObj.get(mBuffer, mPosition, index);
         }
 
         public static GLTFAccessor<?> fromStringType(
                 String type, int componentType, ByteBuffer buffer, int count) {
+
+            int position = buffer.position();
+
             IGetObj<?> getObj = null;
 
             switch (type) {
@@ -68,21 +75,30 @@ public class GLTF implements NativeResource {
                         case 5120: // BYTE
                         case 5121: // UNSIGNED_BYTE
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         buf.rewind();
-                                        buf.position(idx);
+                                        buf.position(pos + idx);
                                         byte ret = buf.get();
                                         buf.rewind();
                                         return ret;
                                     };
                             break;
                         case 5122: // SHORT
+                            getObj =
+                                    (buf, pos, idx) -> {
+                                        buf.rewind();
+                                        buf.position(pos + idx * 2);
+                                        short ret = buf.getShort();
+                                        buf.rewind();
+                                        return ret;
+                                    };
+                            break;
                         case 5123: // UNSIGNED_SHORT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         buf.rewind();
-                                        buf.position(idx * 2);
-                                        short ret = buf.getShort();
+                                        buf.position(pos + idx * 2);
+                                        int ret = ((int) buf.getShort()) & 0xffff;
                                         buf.rewind();
                                         return ret;
                                     };
@@ -90,9 +106,9 @@ public class GLTF implements NativeResource {
                         case 5124: // INT
                         case 5125: // UNSIGNED_INT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         buf.rewind();
-                                        buf.position(idx * 4);
+                                        buf.position(pos + idx * 4);
                                         int ret = buf.getInt();
                                         buf.rewind();
                                         return ret;
@@ -100,9 +116,9 @@ public class GLTF implements NativeResource {
                             break;
                         case 5126: // FLOAT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         buf.rewind();
-                                        buf.position(idx * 4);
+                                        buf.position(pos + idx * 4);
                                         float ret = buf.getFloat();
                                         buf.rewind();
                                         return ret;
@@ -116,10 +132,10 @@ public class GLTF implements NativeResource {
                     switch (componentType) {
                         case 5125: // UNSIGNED_INT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         Vector2i ret = new Vector2i();
                                         buf.rewind();
-                                        buf.position(idx * 2 * 4);
+                                        buf.position(pos + idx * 2 * 4);
                                         ret.set(buf.getInt(), buf.getInt());
                                         buf.rewind();
                                         return ret;
@@ -127,10 +143,10 @@ public class GLTF implements NativeResource {
                             break;
                         case 5126: // FLOAT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         Vector2f ret = new Vector2f();
                                         buf.rewind();
-                                        buf.position(idx * 2 * 4);
+                                        buf.position(pos + idx * 2 * 4);
                                         ret.set(buf.getFloat(), buf.getFloat());
                                         buf.rewind();
                                         return ret;
@@ -144,10 +160,10 @@ public class GLTF implements NativeResource {
                     switch (componentType) {
                         case 5125: // UNSIGNED_INT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         Vector3i ret = new Vector3i();
                                         buf.rewind();
-                                        buf.position(idx * 3 * 4);
+                                        buf.position(pos + idx * 3 * 4);
                                         ret.set(buf.getInt(), buf.getInt(), buf.getInt());
                                         buf.rewind();
                                         return ret;
@@ -155,10 +171,10 @@ public class GLTF implements NativeResource {
                             break;
                         case 5126: // FLOAT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         Vector3f ret = new Vector3f();
                                         buf.rewind();
-                                        buf.position(idx * 3 * 4);
+                                        buf.position(pos + idx * 3 * 4);
                                         ret.set(buf.getFloat(), buf.getFloat(), buf.getFloat());
                                         buf.rewind();
                                         return ret;
@@ -172,10 +188,10 @@ public class GLTF implements NativeResource {
                     switch (componentType) {
                         case 5125: // UNSIGNED_INT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         Vector4i ret = new Vector4i();
                                         buf.rewind();
-                                        buf.position(idx * 4 * 4);
+                                        buf.position(pos + idx * 4 * 4);
                                         ret.set(
                                                 buf.getInt(),
                                                 buf.getInt(),
@@ -187,10 +203,10 @@ public class GLTF implements NativeResource {
                             break;
                         case 5126: // FLOAT
                             getObj =
-                                    (buf, idx) -> {
+                                    (buf, pos, idx) -> {
                                         Vector4f ret = new Vector4f();
                                         buf.rewind();
-                                        buf.position(idx * 4 * 4);
+                                        buf.position(pos + idx * 4 * 4);
                                         ret.set(
                                                 buf.getFloat(),
                                                 buf.getFloat(),
@@ -208,7 +224,7 @@ public class GLTF implements NativeResource {
                     break;
             }
 
-            return getObj == null ? null : new GLTFAccessor<>(buffer, count, getObj);
+            return getObj == null ? null : new GLTFAccessor<>(buffer, position, count, getObj);
         }
     }
 
@@ -223,12 +239,6 @@ public class GLTF implements NativeResource {
         Object val = obj.get(key);
         if (val != null) return Float.parseFloat(val.toString());
         return defaultValue;
-    }
-
-    private static Float parseFloat(JSONObject obj, String key) {
-        Object val = obj.get(key);
-        if (val != null) return Float.parseFloat(val.toString());
-        return null;
     }
 
     private static Float parseFloat(Object val) {
@@ -267,7 +277,6 @@ public class GLTF implements NativeResource {
         if (images != null) {
             for (Object image : images) {
                 String uri = (String) ((JSONObject) image).get("uri");
-                System.out.println(uri);
                 loadedImages.add(Texture.getResource(uri));
             }
         }
@@ -376,7 +385,9 @@ public class GLTF implements NativeResource {
                 int buf = parseInt(view, "buffer");
                 int len = parseInt(view, "byteLength");
                 int off = parseInt(view, "byteOffset");
-                bufferViewList.add(ByteBuffer.wrap(bufferList.get(buf).get(), off, len));
+                ByteBuffer bBuf = ByteBuffer.wrap(bufferList.get(buf).get(), off, len);
+                bBuf.order(ByteOrder.LITTLE_ENDIAN);
+                bufferViewList.add(bBuf);
             }
         }
 
@@ -415,8 +426,9 @@ public class GLTF implements NativeResource {
                     GLTFAccessor<?> indexAccessor = accessorList.get(parseInt(submesh, "indices"));
                     indices = new int[indexAccessor.mCount];
 
-                    for (int i = 0; i < indices.length; i++)
+                    for (int i = 0; i < indices.length; i++) {
                         indices[i] = parseIntFromScalar(indexAccessor.get(i));
+                    }
 
                     JSONObject attributes = (JSONObject) submesh.get("attributes");
                     if (attributes != null) {
@@ -452,6 +464,8 @@ public class GLTF implements NativeResource {
                 String type = cam.get("type").toString();
 
                 Camera camera = new Camera();
+                // Blender cameras look down.
+                camera.getViewDirection().set(0, 0, -1);
                 switch (type) {
                     case "perspective":
                         {
@@ -529,7 +543,7 @@ public class GLTF implements NativeResource {
                                                 parseFloat(rotation.get(2)),
                                                 parseFloat(rotation.get(3)));
 
-                                handle.getTransform(Transform3D.class).rotate(quat);
+                                handle.getTransform(Transform3D.class).setRotation(quat);
                             }
 
                             JSONArray translation = (JSONArray) node.get("translation");
@@ -545,12 +559,15 @@ public class GLTF implements NativeResource {
 
                             Integer mesh = parseInt(node, "mesh");
                             if (mesh != null) {
-                                Renderable rend =
-                                        new Renderable(
-                                                mMeshes.get(mesh),
-                                                mMaterials
-                                                        .get(mMatIndices.get(mesh))
-                                                        .incRefCount());
+
+                                Integer matIndex = mMatIndices.get(mesh);
+
+                                IRefCountedMaterial mat =
+                                        matIndex == null
+                                                ? new PBRMaterial()
+                                                : mMaterials.get(matIndex).incRefCount();
+
+                                Renderable rend = new Renderable(mMeshes.get(mesh), mat);
                                 handle.addComponent(rend);
                             }
 

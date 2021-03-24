@@ -82,6 +82,16 @@ public class Transform3D extends Transform {
     /**
      * Set the rotation of the object relative to the parent
      *
+     * @param rotation {@link Quaternionfc} containing the desired quaternion rotation
+     */
+    public void setRotation(Quaternionfc rotation) {
+        mLocalMatrix.rotation(rotation);
+        setUpdateFlag();
+    }
+
+    /**
+     * Set the rotation of the object relative to the parent
+     *
      * @param rotation Vector3f containing the desired rotation
      */
     public void setRotation(Vector3fc rotation) {
