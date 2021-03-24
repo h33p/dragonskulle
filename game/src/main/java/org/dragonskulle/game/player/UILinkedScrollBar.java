@@ -68,7 +68,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
                         });
 
         sliderReference = newSlider.getReference();
-        newSlider.setRoundStep(2f);
+        newSlider.setRoundStep(1f);
         newSlider.setMaxValue(100f);
         newSlider.setMinValue(0f);
         getGameObject().addComponent(newSlider);

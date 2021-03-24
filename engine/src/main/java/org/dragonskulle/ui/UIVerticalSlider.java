@@ -149,17 +149,17 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
                                             new Vector4f(0.5f), new SampledTexture("white.bmp")));
                             TransformUI barTransform = bar.getTransform(TransformUI.class);
                             barTransform.setParentAnchor(0f, 0f, 0f, 1f);
-                            barTransform.setMargin(-0.01f, -1.4f, 0.01f, 1.4f);
+                            barTransform.setMargin(-0.012f, -1.4f, 0.012f, 1.4f);
                             bar.buildChild(
                                     "slider knob",
                                     new TransformUI(true),
                                     (knob) -> {
                                         knob.addComponent(
                                                 new UIRenderable(
-                                                        new SampledTexture("ui/round_knob.png")));
+                                                        new SampledTexture("ui/slider_bar.png")));
                                         mKnobTransform = knob.getTransform(TransformUI.class);
                                         mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
-                                        mKnobTransform.setMargin(-8f, -8f, 8f, 8f);
+                                        mKnobTransform.setMargin(-15f, -15f, 15f, 15f);
                                         knob.addComponent(
                                                 new UIButton(
                                                         null,
