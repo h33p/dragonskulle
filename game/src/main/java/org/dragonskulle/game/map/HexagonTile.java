@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.game.player.Player;
@@ -61,8 +62,8 @@ public class HexagonTile {
     /** Building that is on the tile */
     @Getter @Setter private Building mBuilding;
 
-    /** The building that claims the tile, or {@code null}. */
-    private Building mClaimedBy = null;
+    /** A reference to the building that claims the tile, or {@code null}. */
+    private Reference<Building> mClaimedBy = new Reference<Building>(null);
 
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
@@ -107,7 +108,7 @@ public class HexagonTile {
     public boolean setClaimedBy(Building building) {
 		if(isClaimed()) return false;
     	
-		mClaimedBy = building;
+		mClaimedBy = new Reference<Building>(building);
 		return true;
     }
     
@@ -117,8 +118,8 @@ public class HexagonTile {
      * @return Whether the tile is claimed by a building.
      */
     public boolean isClaimed() {
-    	if(mClaimedBy != null) return true;
-    	return false;
+    	if(mClaimedBy == null || mClaimedBy.isValid() == false) return false;
+    	return true;
     }
     
     /**
@@ -130,6 +131,6 @@ public class HexagonTile {
     	if(!isClaimed()) {
     		return null;    		
     	}
-    	return mClaimedBy.getOwner();
+    	return mClaimedBy.get().getOwner();
     }
 }
