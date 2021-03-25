@@ -1,10 +1,9 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
@@ -13,11 +12,8 @@ import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Accessors(prefix = "m")
 public class UITokenCounter extends Component implements IOnStart {
     public void setLabelReference(int newTokens) {
@@ -30,13 +26,9 @@ public class UITokenCounter extends Component implements IOnStart {
         }
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-
-    }
+    protected void onDestroy() {}
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -46,23 +38,16 @@ public class UITokenCounter extends Component implements IOnStart {
     public void onStart() {
         final TransformUI transform = getGameObject().getTransform(TransformUI.class);
         transform.setMaintainAspect(false);
-        transform.setParentAnchor(
-                0.37f, 0.08f, 0.37f, 0.08f);
+        transform.setParentAnchor(0.37f, 0.08f, 0.37f, 0.08f);
         transform.setMargin(-0.285f, -0.034f, 0.285f, 0.034f);
-        getGameObject().addComponent(
-                new UIRenderable(
-                        new SampledTexture(
-                                "ui/info_box.png")));
+        getGameObject().addComponent(new UIRenderable(new SampledTexture("ui/info_box.png")));
 
-        getGameObject().addComponent(
-                new UIButton(
-                        new UIText(
-                                new Vector3f(
-                                        0f, 0f, 0f),
-                                Font
-                                        .getFontResource(
-                                                "Rise of Kingdom.ttf"),
-                                "Tokens: 0"
-                        )));
+        getGameObject()
+                .addComponent(
+                        new UIButton(
+                                new UIText(
+                                        new Vector3f(0f, 0f, 0f),
+                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                        "Tokens: 0")));
     }
 }

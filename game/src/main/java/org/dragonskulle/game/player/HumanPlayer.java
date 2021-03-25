@@ -16,18 +16,12 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
-import org.dragonskulle.game.player.networkData.AttackData;
-import org.dragonskulle.game.player.networkData.BuildData;
-import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.*;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 /**
  * This class will allow a user to interact with game.
@@ -45,11 +39,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter
-    @Setter
-    private HexagonTile mHexChosen;
+    @Getter @Setter private HexagonTile mHexChosen;
 
-    private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -64,10 +56,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<GameObject> mZoomSlider;
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
+    private HexagonTile mLastHexChosen;
 
-    /**
-     * The constructor for the human player
-     */
+    /** The constructor for the human player */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
         mNetID = netID;
@@ -85,8 +76,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {
-                });
+                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
 
         mZoomSlider =
                 // Creates a blank screen
@@ -98,26 +88,39 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     go.addComponent(new UILinkedScrollBar());
                                 });
 
-
-        getGameObject().buildChild(
-                "menu_drawer",
-                new TransformUI(true),
-                (go) -> {
-                    mTokenCounterObject = go.buildChild("token_counter", new TransformUI(true),
-                            (self) -> {
-                                UITokenCounter tokenCounter = new UITokenCounter();
-                                self.addComponent(tokenCounter);
-                            });
-                    go.addComponent(new UIMenuLeftDrawer(mBuildingChosen, this::getHexChosen, this::setHexChosen, this::setScreenOn));
-                });
+        getGameObject()
+                .buildChild(
+                        "menu_drawer",
+                        new TransformUI(true),
+                        (go) -> {
+                            mTokenCounterObject =
+                                    go.buildChild(
+                                            "token_counter",
+                                            new TransformUI(true),
+                                            (self) -> {
+                                                UITokenCounter tokenCounter = new UITokenCounter();
+                                                self.addComponent(tokenCounter);
+                                            });
+                            go.addComponent(
+                                    new UIMenuLeftDrawer(
+                                            this::getBuildingChosen,
+                                            this::setBuildingChosen,
+                                            this::getHexChosen,
+                                            this::setHexChosen,
+                                            this::setScreenOn,
+                                            this::getPlayer));
+                        });
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = getGameObject().getComponent(UIMenuLeftDrawer.class);
     }
 
-    @Override
-    protected void onDestroy() {
+    private Reference<Player> getPlayer() {
+        return this.mPlayer;
     }
+
+    @Override
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -143,42 +146,39 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Update token
         if (mPlayer.isValid()) {
-            mLocalTokens = mPlayer.get().getTokens().get();
-            if (mTokenCounter != null && mTokenCounter.isValid()) {
-                mTokenCounter.get().setLabelReference(mLocalTokens);
-            } else {
-                mTokenCounter = getGameObject().getComponent(UITokenCounter.class);
-            }
+            updateVisibleTokens();
+        }
+    }
+
+    private void updateVisibleTokens() {
+        mLocalTokens = mPlayer.get().getTokens().get();
+        if (mTokenCounter != null && mTokenCounter.isValid()) {
+            mTokenCounter.get().setLabelReference(mLocalTokens);
+        } else {
+            mTokenCounter = getGameObject().getComponent(UITokenCounter.class);
         }
     }
 
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
-        if (mScreenOn == Screen.MAP_SCREEN) {
-            mMapScreen.get().setEnabled(mScreenOn == Screen.MAP_SCREEN);
-        } else {
-            if (mMenuDrawer != null && mMenuDrawer.isValid()) {
-                mMenuDrawer.get().setMenu(mScreenOn);
-            }
+
+        if (mMenuDrawer != null && mMenuDrawer.isValid()) {
+            mMenuDrawer.get().setMenu(mScreenOn);
         }
+
         mapScreen();
 
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /**
-     * This will choose what to do when the user can see the full map
-     */
+    /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
 
         // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
         if (GameActions.LEFT_CLICK.isActivated()) {
-            if (UIManager.getInstance().getHoveredObject() == null
-                    // this
-                    // is breaking something
-                    && mainCam != null) {
+            if (UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
                 // Retrieve scaled screen coordinates
                 Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
                 // Convert those coordinates to local coordinates within the map
@@ -198,6 +198,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 if (player != null) {
                     HexagonMap component = player.getMapComponent();
                     if (component != null) {
+                        mLastHexChosen = mHexChosen;
                         mHexChosen = component.getTile((int) pos.x, (int) pos.y);
                     }
                 }
@@ -215,7 +216,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             .getBuilding(mHexChosen.getQ(), mHexChosen.getR()));
 
                     // If there is a buildingSelectedView there
-                    if (buildingOnTile.get() == null) {
+                    if (!buildingOnTile.isValid()) {
 
                         // Checks if cannot build here
                         if (mPlayer.get()
@@ -278,12 +279,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                effects.highlightTiles(
-                        (tile) -> {
-                            if (tile == mHexChosen)
-                                return StandardHighlightType.VALID.asSelection();
-                            return HighlightSelection.CLEARED;
-                        });
+                undoLastHighlight();
+                highlightSelectedTile(StandardHighlightType.VALID);
                 break;
             case TILE_SCREEN:
                 effects.highlightTiles(
@@ -296,7 +293,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case ATTACK_SCREEN:
                 effects.highlightTiles(
                         (tile) -> {
-                            return HighlightSelection.CLEARED;
+                            return HighlightSelection.ignored();
                         });
                 break;
             case STAT_SCREEN:
@@ -304,15 +301,35 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * Marks visuals to update whenever a new object is spawned
-     */
+    private void highlightSelectedTile(StandardHighlightType highlight) {
+        if (mHexChosen != null) {
+            mMapEffects.get().highlightTile(mHexChosen, highlight.asSelection());
+        }
+    }
+
+    private void undoLastHighlight() {
+        MapEffects effects = mMapEffects.get();
+        if (effects != null && mLastHexChosen != null) {
+            final Player lastTileOwner = mPlayer.get().getTileOwner(mLastHexChosen);
+            if (lastTileOwner != null) {
+                effects.highlightTile(
+                        mLastHexChosen,
+                        lastTileOwner
+                                .getPlayerHighlightSelection()); // set tile to what it was before
+            } else {
+                effects.unhighlightTile(mLastHexChosen);
+            }
+        }
+    }
+
+    /** Marks visuals to update whenever a new object is spawned */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
     private void setScreenOn(Screen newScreen) {
-        if (!newScreen.equals(mScreenOn)) mVisualsNeedUpdate = true;
+        if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen))
+            mVisualsNeedUpdate = true;
         mScreenOn = newScreen;
     }
 
@@ -327,162 +344,4 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         return mPlayer.get().getBuilding(buildingToCheck.get().getTile()) != null;
     }
-
-    private void buildBuildingSelectedView(GameObject go) {
-        go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-        // Choose to upgrade the buildingSelectedView
-        go.buildChild(
-                "Upgrade Button",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(
-                            new UIRenderable(
-                                    new SampledTexture(
-                                            "ui/wide_button.png"))); // Make way to Go back
-                    box.addComponent(
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Upgrade Building -- Not completed"),
-                                    (handle, __) -> {
-                                        // TODO When clicked need to
-                                        // show options to upgrade
-                                        // buildingSelectedView stats.  Will leave
-                                        // until after prototype
-
-                                        setScreenOn(Screen.STAT_SCREEN);
-                                    }));
-                });
-        // Choose to attackView a buildingSelectedView from here
-        go.buildChild(
-                "Attack buildingSelectedView",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Attack!"),
-                                    (handle, __) -> {
-
-                                        // Gets the buildingSelectedView to attackView
-                                        // from and stored
-                                        mBuildingChosen =
-                                                new Reference<Building>(
-                                                        mPlayer.get()
-                                                                .getMapComponent()
-                                                                .getBuilding(
-                                                                        mHexChosen.getQ(),
-                                                                        mHexChosen.getR()));
-                                        setScreenOn(Screen.ATTACK_SCREEN);
-                                    }));
-                });
-        // Sell a buildingSelectedView
-        go.buildChild(
-                "Sell buildingSelectedView",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Sell Building -- Not Done"),
-                                    (handle, __) -> {
-                                        // TODO When clicked need to
-                                        // sell buildingSelectedView
-
-                                        mPlayer.get()
-                                                .getClientSellRequest()
-                                                .invoke(
-                                                        new SellData(
-                                                                mBuildingChosen
-                                                                        .get())); // Send Data
-
-                                        mBuildingChosen = null;
-                                        mHexChosen = null;
-                                        setScreenOn(Screen.MAP_SCREEN);
-                                    }));
-                });
-
-        // Go Back
-        go.buildChild(
-                "Go Back",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Go Back"),
-                                    (handle, __) -> {
-                                        mHexChosen = null;
-                                        mBuildingChosen = null;
-                                        setScreenOn(Screen.MAP_SCREEN);
-                                    }));
-                });
-    } //TODO Creating in UIMENuLeftDrawer
-
-    private void buildPlaceSelectedView(GameObject go) {
-        go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-        // Will build a box to confirm
-        go.buildChild(
-                "confirm box",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
-                            // When clicked send the data to the server
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Place Building"),
-                                    (handle, __) -> {
-                                        mPlayer.get()
-                                                .getClientBuildRequest()
-                                                .invoke(new BuildData(mHexChosen));
-
-                                        mHexChosen = null;
-                                        mBuildingChosen = null;
-                                        setScreenOn(Screen.MAP_SCREEN);
-                                    }));
-                });
-        // Go Back button
-        go.buildChild(
-                "Go Back",
-                new TransformUI(true),
-                (box) -> {
-                    box.getTransform(TransformUI.class).setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                    box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-                    box.addComponent(
-                            new UIButton(
-                                    new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Go Back"),
-                                    (handle, __) -> {
-                                        mHexChosen = null;
-                                        mBuildingChosen = null;
-                                        setScreenOn(Screen.MAP_SCREEN);
-                                    }));
-                });
-    } //TODO Creating in UIMENuLeftDrawer
 }
