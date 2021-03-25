@@ -43,15 +43,15 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** Stores the attack strength of the building. */
-    @Getter public final SyncAttackStat mAttack = new SyncAttackStat();
+    @Getter public final SyncAttackStat mAttack = new SyncAttackStat(this);
     /** Stores the defence strength of the building. */
-    @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat();
+    @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat(this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat();
+    @Getter public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
     /** Stores the view range of the building. */
-    @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat();
+    @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
     /** Stores the attack range of the building. */
-    @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat();
+    @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
 
     /** Whether the building is a capital. */
     public final SyncBool mIsCapital = new SyncBool(false);
@@ -80,12 +80,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
-        
-        mAttack.setBuilding(this);
-        mDefence.setBuilding(this);
-        mTokenGeneration.setBuilding(this);
-        mViewDistance.setBuilding(this);
-        mAttackDistance.setBuilding(this);
         
     }
 

@@ -28,6 +28,10 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
+    public SyncStat(Building building) {
+		this.mBuilding = new Reference<Building>(building);
+	}
+    
     /**
      * Set the level, and calculate and the new value.
      *
@@ -78,12 +82,8 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     public void deserialize(DataInputStream in) throws IOException {
     	super.deserialize(in);
     	
-    	// The stats have changed, so repopulate the lists.
+    	// The stats have changed, so call the building's afterStatChange.
     	if(mBuilding == null || mBuilding.isValid() == false) return;
 		mBuilding.get().afterStatChange();
-    }
-    
-    public void setBuilding(Building building) {
-    	mBuilding = new Reference<Building>(building);
     }
 }
