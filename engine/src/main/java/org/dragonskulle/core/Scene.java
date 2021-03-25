@@ -54,10 +54,8 @@ public class Scene {
      *
      * @param object The GameObject to be removed from the scene
      */
-    public void destroyRootObject(GameObject object) {
-        if (mGameObjects.remove(object)) {
-            object.destroy();
-        }
+    public void removeRootObject(GameObject object) {
+        mGameObjects.remove(object);
     }
 
     /**

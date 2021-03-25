@@ -25,6 +25,9 @@ public class Mesh implements Serializable {
     /** Indices of the mesh. In pairs of 3, forming triangles */
     private int[] mIndices;
 
+    /** Reference count of the mesh used for resource tracking */
+    @Getter private int mRefCount = 0;
+
     private int mCachedHashCode = 0;
 
     private static final Vertex[] HEXAGON_VERTICES = {
@@ -159,6 +162,14 @@ public class Mesh implements Serializable {
     }
 
     // TODO: mesh optimization methods, and other utilities
+
+    public void incRefCount() {
+        mRefCount++;
+    }
+
+    public void decRefCount() {
+        mRefCount--;
+    }
 
     @Override
     public int hashCode() {
