@@ -263,6 +263,7 @@ public class NetworkClient {
         try {
             if (mSocket != null) {
                 mSocket.close();
+                mSocket = null;
             }
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -270,6 +271,7 @@ public class NetworkClient {
         try {
             if (mDOut != null) {
                 mDOut.close();
+                mDOut = null;
             }
         } catch (Exception exception) {
             exception.printStackTrace();
