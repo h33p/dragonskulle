@@ -45,7 +45,7 @@ public class NetworkManager extends Component implements INetworkUpdate {
     @Getter(AccessLevel.PACKAGE)
     protected final TemplateManager mSpawnableTemplates;
     /** Target game scene */
-    @Getter(AccessLevel.PACKAGE)
+    @Getter(AccessLevel.PUBLIC)
     private Scene mGameScene;
     /** Client manager. Exists when there is a client connection */
     @Getter private transient ClientNetworkManager mClientManager;

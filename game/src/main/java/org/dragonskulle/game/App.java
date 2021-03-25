@@ -547,6 +547,10 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     networkManager
                                                                             .get()
+                                                                            .recreateGameScene(
+                                                                                    createMainScene());
+                                                                    networkManager
+                                                                            .get()
                                                                             .createClient(
                                                                                     sIP,
                                                                                     sPort,
@@ -555,7 +559,6 @@ public class App {
                                                                                         if (netID
                                                                                                 >= 0) {
                                                                                             onConnectedClient(
-                                                                                                    mainScene,
                                                                                                     manager,
                                                                                                     netID);
                                                                                         } else if (connectingTextRef
@@ -739,7 +742,7 @@ public class App {
         System.exit(0);
     }
 
-    private static void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
+    private static void onConnectedClient(NetworkManager manager, int netID) {
         System.out.println("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
@@ -751,7 +754,7 @@ public class App {
                                             manager.getReference(NetworkManager.class), netID));
                         });
 
-        mainScene.addRootObject(humanPlayer);
+        manager.getGameScene().addRootObject(humanPlayer);
     }
 
     private static void onClientConnected(NetworkManager manager, ServerClient networkClient) {
