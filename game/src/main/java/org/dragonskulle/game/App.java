@@ -44,7 +44,12 @@ public class App {
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
     private static final int BGM_ID =
+            AudioManager.getInstance().loadSound("game_background.wav");
+    private static final int BGM_2_ID =
             AudioManager.getInstance().loadSound("country_background_short.wav");
+    private static final int BUTTON_SFX_ID =
+            AudioManager.getInstance().loadSound("button-10.wav");
+
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
@@ -117,7 +122,7 @@ public class App {
                                         // TODO: Keep reference to this so that we can change
                                         // volume and stuff on the go
                                         bgSource.setLooping(true);
-                                        bgSource.setVolume(0.5f);
+                                        bgSource.setVolume(0.1f);
                                         bgSource.setSound(BGM_ID);
                                     });
                         });
@@ -212,9 +217,9 @@ public class App {
                 "bgSource",
                 (bgm) -> {
                     AudioSource source = new AudioSource();
-                    source.setLooping(true);
+                    source.setLooping(false);
                     source.setVolume(0.1f);
-                    source.setSound(BGM_ID);
+                    source.setSound(BGM_2_ID);
                     bgm.addComponent(source);
                 });
 

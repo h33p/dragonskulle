@@ -21,7 +21,7 @@ public class WaveSound implements Serializable {
     public int buffer;
     public int sampleRate;
     public int format;
-
+    public float length;
     public int bits;
     public int channels;
 
@@ -104,6 +104,13 @@ public class WaveSound implements Serializable {
                 LOGGER.warning("Failed to read in expected number of audio bytes");
                 return null;
             }
+
+            sound.length = (float)bytesRead / format.getSampleRate();
+
+            if (sound.bits == 16) {
+                sound.length /= 2;
+            }
+
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
             ByteBuffer buffer = processRawBytes(audioBytes, sound.bits == 8, order);

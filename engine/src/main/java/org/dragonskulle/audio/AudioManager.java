@@ -220,9 +220,8 @@ public class AudioManager {
             AudioSource audioSource = mAudioSources.get(i).get();
 
             // TODO: Distance check
-            // TODO: Check audio time left (Need to calculate sound length first)
 
-            if (audioSource.getSound() == null) {
+            if (audioSource.getSound() == null || audioSource.getTimeLeft() < 0f) {
                 mAudioSources.remove(i);
                 audioSource.detachSource();
                 i--;
