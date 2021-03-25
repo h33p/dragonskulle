@@ -4,6 +4,7 @@
         "version" : "2.0"
     },
     "extensionsUsed" : [
+        "DSKULLE_game_object",
         "KHR_lights_punctual"
     ],
     "extensionsRequired" : [
@@ -40,6 +41,21 @@
     ],
     "nodes" : [
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "components" : [
+                        {
+                            "className" : "org.dragonskulle.game.Spinner",
+                            "properties" : [
+                                {
+                                    "name" : "spinSpeed",
+                                    "value" : 264.17999267578125
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
             "mesh" : 0,
             "name" : "Cube"
         },
@@ -47,7 +63,8 @@
             "extensions" : {
                 "KHR_lights_punctual" : {
                     "light" : 0
-                }
+                },
+                "DSKULLE_game_object" : {}
             },
             "name" : "Light",
             "rotation" : [
@@ -64,6 +81,9 @@
         },
         {
             "camera" : 0,
+            "extensions" : {
+                "DSKULLE_game_object" : {}
+            },
             "name" : "Camera",
             "rotation" : [
                 0.483536034822464,
@@ -78,6 +98,9 @@
             ]
         },
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {}
+            },
             "mesh" : 1,
             "name" : "Suzanne",
             "rotation" : [
@@ -93,6 +116,9 @@
             ]
         },
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {}
+            },
             "mesh" : 2,
             "name" : "Torus.001",
             "translation" : [

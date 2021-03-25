@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.assets;
 
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
@@ -33,13 +35,21 @@ import org.json.simple.parser.ParseException;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Class describing a renderable UI object
+ * Allows loading <a href="https://www.khronos.org/gltf/">glTF 2.0</a> assets.
  *
  * @author Aurimas Blažulionis
+ *     <p>Our engine mostly follows the glTF standard, except we set up direction to be Z+, instead
+ *     of Y+, which is what our engine uses. In addition, "DSKULLE_game_object" extension is
+ *     utilized to store components and their properties directly on the glTF files.
+ *     <p>Retrieving a {@link GLTF} resource is done through {@link GLTF#getResource} static method.
+ *     The resulting resource should be freed when no longer used. It contains parsed {@link Scene}
+ *     objects, with {@link GameObject} nodes, which have {@link Component} objects attached to
+ *     them.
  */
 @Accessors(prefix = "m")
 public class GLTF implements NativeResource {
 
+    /** Describes glTF buffer accessor */
     private static class GLTFAccessor<T> {
         ByteBuffer mBuffer;
         int mPosition;
@@ -258,6 +268,11 @@ public class GLTF implements NativeResource {
         return null;
     }
 
+    private static Integer parseInt(Object val) {
+        if (val != null) return Integer.parseInt(val.toString());
+        return null;
+    }
+
     private static int parseIntFromScalar(Object obj) {
         if (obj instanceof Integer) return (Integer) obj;
         else if (obj instanceof Long) return (int) (long) (Long) obj;
@@ -268,6 +283,11 @@ public class GLTF implements NativeResource {
         return 0;
     }
 
+    /**
+     * Constructor for {@link GLTF}
+     *
+     * @throws ParseException when parsing JSON fails
+     */
     private GLTF(String data) throws ParseException {
         JSONObject decoded = (JSONObject) JSONValue.parse(data);
 
@@ -523,12 +543,9 @@ public class GLTF implements NativeResource {
         loadedImages.stream().filter(e -> e != null).forEach(Resource::free);
     }
 
-    public GameObject parseNode(JSONArray nodes, int idx) throws ParseException {
+    public GameObject parseNode(JSONArray nodes, int idx) {
         JSONObject node = (JSONObject) nodes.get(idx);
         String name = node.get("name").toString();
-
-        // We said no exceptions, but this whole thing is between an exception
-        ParseException[] exception = {null};
 
         GameObject ret =
                 new GameObject(
@@ -576,22 +593,147 @@ public class GLTF implements NativeResource {
 
                             // TODO: parse lights
 
+                            JSONObject extensions = (JSONObject) node.get("extensions");
+
+                            if (extensions != null) {
+                                JSONObject gameObj =
+                                        (JSONObject) extensions.get("DSKULLE_game_object");
+                                if (gameObj != null) {
+                                    JSONArray comps = (JSONArray) gameObj.get("components");
+                                    if (comps != null) {
+                                        for (Object comp : comps) {
+                                            parseComponent(handle, (JSONObject) comp);
+                                        }
+                                    }
+                                }
+                            }
+
                             JSONArray children = (JSONArray) node.get("children");
                             if (children != null) {
                                 for (Object cidx : children) {
-                                    try {
-                                        handle.addChild(parseNode(nodes, parseIntFromScalar(cidx)));
-                                    } catch (ParseException e) {
-                                        exception[0] = e;
-                                        break;
-                                    }
+                                    handle.addChild(parseNode(nodes, parseIntFromScalar(cidx)));
                                 }
                             }
                         });
 
-        if (exception[0] != null) throw exception[0];
-
         return ret;
+    }
+
+    /** Parse component from JSON and add it on the game object */
+    private void parseComponent(GameObject gameObject, JSONObject component) {
+        String className = (String) component.get("className");
+
+        if (className == null) return;
+
+        try {
+            Class<?> type = Class.forName(className);
+
+            // Make sure we are parsing a component
+            // Avoid adding transform as a component
+            if (!Component.class.isAssignableFrom(type) || Transform.class.isAssignableFrom(type))
+                return;
+
+            Component comp = null;
+
+            try {
+                comp = (Component) type.getConstructor().newInstance();
+            } catch (Exception e) {
+                return;
+            }
+
+            JSONArray properties = (JSONArray) component.get("properties");
+
+            if (properties != null) {
+                for (Object obj : properties) {
+                    if (!(obj instanceof JSONObject)) continue;
+                    JSONObject prop = (JSONObject) obj;
+                    String name = (String) prop.get("name");
+                    if (name == null) continue;
+                    Object value = prop.get("value");
+                    if (value == null) continue;
+                    assignComponentField(comp, name, value);
+                }
+            }
+
+            gameObject.addComponent(comp);
+        } catch (ClassNotFoundException e) {
+            return;
+        }
+    }
+
+    /** Assign value to variable by name */
+    private void assignComponentField(Component comp, String name, Object value) {
+        Field f;
+        try {
+            f = comp.getClass().getField(name);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        f.setAccessible(true);
+
+        try {
+            writeField(comp, f, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Write a field into the object
+     *
+     * <p>This method will write into primitive fields, or recurse into vectors/syncvars
+     */
+    private void writeField(Object obj, Field f, Object value) throws IllegalAccessException {
+        Class<?> type = f.getType();
+
+        if (type.isPrimitive()) {
+            writePrimitiveField(obj, f, value);
+        } else {
+            // Check here whether it's a Vec, or SyncVar
+            if (ISyncVar.class.isAssignableFrom(type)) {
+                Field[] syncFields = type.getDeclaredFields();
+                for (Field sf : syncFields) {
+                    Class<?> sfType = sf.getType();
+                    if (sfType.isPrimitive() || Vector3f.class.isAssignableFrom(sfType)) {
+                        sf.setAccessible(true);
+                        ISyncVar svar = (ISyncVar) f.get(obj);
+                        writeField(svar, sf, value);
+                        break;
+                    }
+                }
+            } else if (Vector3f.class.isAssignableFrom(type)) {
+                Vector3f vec = (Vector3f) f.get(obj);
+                JSONArray values = (JSONArray) value;
+                vec.set(
+                        parseFloat(values.get(0)),
+                        parseFloat(values.get(1)),
+                        parseFloat(values.get(2)));
+            }
+        }
+    }
+
+    /** Write a primitive field into the object */
+    private void writePrimitiveField(Object obj, Field f, Object value)
+            throws IllegalAccessException {
+        Class<?> type = f.getType();
+
+        if (type == int.class) {
+            f.setInt(obj, Integer.parseInt(value.toString()));
+        } else if (type == long.class) {
+            f.setLong(obj, Long.parseLong(value.toString()));
+        } else if (type == short.class) {
+            f.setShort(obj, Short.parseShort(value.toString()));
+        } else if (type == byte.class) {
+            f.setByte(obj, Byte.parseByte(value.toString()));
+        } else if (type == float.class) {
+            f.setFloat(obj, Float.parseFloat(value.toString()));
+        } else if (type == double.class) {
+            f.setDouble(obj, Double.parseDouble(value.toString()));
+        } else if (type == boolean.class) {
+            f.setBoolean(obj, Boolean.parseBoolean(value.toString()));
+        }
     }
 
     public Scene getDefaultScene() {
