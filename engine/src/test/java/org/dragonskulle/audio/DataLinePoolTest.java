@@ -79,17 +79,18 @@ public class DataLinePoolTest {
 
                 AudioClip clip = dataLine.openStream(audio);
 
-                Assert.assertFalse(dataLine.getMute()); // checks when created it is started as mute
+                Assert.assertFalse(
+                        dataLine.isMasterMute()); // checks when created it is started as mute
 
                 dataLine.setMute(true);
 
-                Assert.assertTrue(dataLine.getMute()); // checks it can change value
+                Assert.assertTrue(dataLine.isMasterMute()); // checks it can change value
 
                 dataLine.setMute(true);
-                Assert.assertTrue(dataLine.getMute());
+                Assert.assertTrue(dataLine.isMasterMute());
 
                 dataLine.setMute(false);
-                Assert.assertFalse(dataLine.getMute());
+                Assert.assertFalse(dataLine.isMasterMute());
             } catch (UnsupportedAudioFileException | IOException e) {
                 assumeNoException(e);
             }
@@ -121,29 +122,29 @@ public class DataLinePoolTest {
 
                 AudioClip clip = dataLine.openStream(audio);
 
-                Assert.assertEquals(50, dataLine.getVolume());
+                Assert.assertEquals(50, dataLine.getMasterVol());
 
                 Assert.assertNotNull(dataLine);
 
                 dataLine.setVolume(60);
 
-                Assert.assertEquals(60, dataLine.getVolume());
+                Assert.assertEquals(60, dataLine.getMasterVol());
 
                 dataLine.setVolume(100);
 
-                Assert.assertEquals(100, dataLine.getVolume());
+                Assert.assertEquals(100, dataLine.getMasterVol());
 
                 dataLine.setVolume(0);
-                Assert.assertEquals(0, dataLine.getVolume());
+                Assert.assertEquals(0, dataLine.getMasterVol());
 
                 dataLine.setVolume(48);
-                Assert.assertEquals(48, dataLine.getVolume());
+                Assert.assertEquals(48, dataLine.getMasterVol());
 
                 dataLine.setVolume(-14);
-                Assert.assertEquals(0, dataLine.getVolume());
+                Assert.assertEquals(0, dataLine.getMasterVol());
 
                 dataLine.setVolume(106);
-                Assert.assertEquals(100, dataLine.getVolume());
+                Assert.assertEquals(100, dataLine.getMasterVol());
             } catch (UnsupportedAudioFileException | IOException e) {
                 assumeNoException(e);
             }
