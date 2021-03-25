@@ -16,6 +16,7 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
+import org.dragonskulle.game.player.networkData.StatData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.Font;
@@ -138,7 +139,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                                 "Rise of Kingdom.ttf"),
                                                                         "Go Back"),
                                                                 (handle, __) -> {
-                                                                    mHexChosen = null;
+
+                                                                	if(mBuildingChosen != null){
+	                                                                	// Send stats to server
+	                                                                    mPlayer.get()
+	                                                                            .getClientStatRequest()
+	                                                                            .invoke(
+	                                                                                    new StatData(
+	                                                                                            mBuildingChosen.get().getTile())); // TODO Send
+                                                                	}
+                                                                	
+                                                                	mHexChosen = null;
                                                                     mBuildingChosen = null;
                                                                     setScreenOn(Screen.MAP_SCREEN);
                                                                 }));

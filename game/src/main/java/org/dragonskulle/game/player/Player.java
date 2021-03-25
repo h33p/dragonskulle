@@ -126,7 +126,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void addBuilding(Building building) {
         mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
-        building.getTile().setBuilding(building);
+        // building.getTile().setBuilding(building);
         log.info("Building size" + mOwnedBuildings.size());
         log.info("Added Building " + building.getTile().getQ() + " " + building.getTile().getR());
     }
@@ -359,7 +359,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data attack event being executed on the server.
      */
     public void handleEvent(StatData data) {
-        // TODO implement
+    	log.info("Increasing stat.");
+        HexagonMap map = mMapComponent.get();
+        Building building = data.getBuilding(map);
+        
+        log.info("Suggesting that stats changed.");
+        building.statsChanged();
+        
+    	// TODO implement
         // Get Building
         // Get Stat
         // Upgrade
