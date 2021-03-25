@@ -480,6 +480,23 @@ public class App {
 
                                 button.addComponent(newButton);
                             });
+
+                    bg.buildChild(
+                            "slider",
+                            new TransformUI(true),
+                            (slider) -> {
+                                slider.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
+                                slider.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UISlider newSlider =
+                                        new UISlider((uiSlider, val) -> System.out.println(val));
+
+                                newSlider.setRoundStep(0.1f);
+                                newSlider.setMaxValue(10f);
+
+                                slider.addComponent(newSlider);
+                            });
                 });
         joinUI.buildChild(
                 "bg",

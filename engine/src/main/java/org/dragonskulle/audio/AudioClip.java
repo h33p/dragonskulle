@@ -4,8 +4,6 @@ package org.dragonskulle.audio;
 import com.google.common.io.Resources;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
@@ -15,21 +13,24 @@ import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * This will hold all the information needed for each Clip
  *
  * @author Dragonskulle
  */
+@Accessors(prefix = "m")
+@Log
 public class AudioClip {
 
     private Clip mClip;
     private BooleanControl mMute;
     private FloatControl mVolume;
-    private int mCurrentVol;
-    private boolean mLooping;
-
-    public static final Logger LOGGER = Logger.getLogger("audio");
+    @Getter private int mCurrentVol;
+    @Getter private boolean mLooping;
 
     /**
      * The Constructor which creates the class
@@ -57,9 +58,7 @@ public class AudioClip {
             mClip.open(startingStream);
 
         } catch (UnsupportedAudioFileException | IOException e) {
-            LOGGER.log(
-                    Level.WARNING,
-                    "Unable to open Silent.wav.  Please tell someone sooner rather than later");
+            log.warning("Unable to open Silent.wav.  Please tell someone sooner rather than later");
         }
         // Gets mute and mVolume control and sets them
         mMute = (BooleanControl) mClip.getControl(BooleanControl.Type.MUTE);
@@ -124,24 +123,6 @@ public class AudioClip {
     }
 
     /**
-     * Gets the current Volume
-     *
-     * @return the current Volume
-     */
-    public int getVolume() {
-        return mCurrentVol;
-    }
-
-    /**
-     * Whether the Clip is Looping
-     *
-     * @return a boolean stating whether this is looping
-     */
-    public boolean getLooping() {
-        return mLooping;
-    }
-
-    /**
      * Plays the audio
      *
      * @param audio the audio stream to play
@@ -153,18 +134,18 @@ public class AudioClip {
         try {
             mClip.open(audio);
         } catch (LineUnavailableException e) {
-            LOGGER.log(Level.WARNING, "The line is unavailable");
+            log.warning("The line is unavailable");
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "This file does not exist");
+            log.warning("This file does not exist");
         }
         mClip.setMicrosecondPosition(0);
         mClip.start();
 
-        LOGGER.log(Level.WARNING, "Started clip");
+        log.info("Started clip");
 
         if (mClip.isActive() && mLooping) {
             mClip.loop(Clip.LOOP_CONTINUOUSLY);
-            LOGGER.log(Level.WARNING, "LOOPING");
+            log.warning("LOOPING");
         }
 
         return mClip;
