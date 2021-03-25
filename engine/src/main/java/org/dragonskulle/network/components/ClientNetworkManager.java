@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -27,9 +26,7 @@ import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 @Log
 public class ClientNetworkManager {
 
-    /**
-     * Describes client connection state
-     */
+    /** Describes client connection state */
     private static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
@@ -39,9 +36,7 @@ public class ClientNetworkManager {
         CLEAN_DISCONNECTED
     }
 
-    /**
-     * Client listener
-     */
+    /** Client listener */
     private class Listener implements IClientListener {
         @Override
         public void unknownHost() {
@@ -122,54 +117,34 @@ public class ClientNetworkManager {
     private static final int SPAWN_OWNER_ID = SPAWN_OBJECT_ID + 4;
     private static final int SPAWN_TEMPLATE_ID = SPAWN_OWNER_ID + 4;
 
-    /**
-     * Underlying network client instance
-     */
+    /** Underlying network client instance */
     private final NetworkClient mClient;
-    /**
-     * Client event callback listener
-     */
+    /** Client event callback listener */
     private final IClientListener mListener = new Listener();
-    /**
-     * Current connection state
-     */
-    @Getter
-    private ConnectionState mConnectionState = ConnectionState.NOT_CONNECTED;
-    /**
-     * Next connection state (set by the listener)
-     */
+    /** Current connection state */
+    @Getter private ConnectionState mConnectionState = ConnectionState.NOT_CONNECTED;
+    /** Next connection state (set by the listener) */
     private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
-    /**
-     * Callback for connection result processing
-     */
+    /** Callback for connection result processing */
     private NetworkManager.IConnectionResultEvent mConnectionHandler;
-    /**
-     * Back reference to the network manager
-     */
+    /** Back reference to the network manager */
     private final NetworkManager mManager;
-    /**
-     * How many ticks elapsed without any updates
-     */
+    /** How many ticks elapsed without any updates */
     private int mTicksWithoutRequests = 0;
-    /**
-     * Listeners for spawn events
-     */
+    /** Listeners for spawn events */
     private List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
 
-    @Getter
-    private int mNetID = -1;
+    @Getter private int mNetID = -1;
 
-    /**
-     * An map of references to objects.
-     */
+    /** An map of references to objects. */
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
 
     /**
      * Constructor for ClientNetworkManager
      *
      * @param manager target back reference to {@link NetworkManager}
-     * @param ip      target connection IP address
-     * @param port    target connection port
+     * @param ip target connection IP address
+     * @param port target connection port
      * @param handler connection result callback
      */
     ClientNetworkManager(
@@ -235,24 +210,18 @@ public class ClientNetworkManager {
 
         mConnectionState = ConnectionState.NOT_CONNECTED;
         mClient.dispose();
-//this isn't doing it FIXME
+
         mNetworkObjectReferences.values().stream()
                 .map(e -> e.mNetworkObject)
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .map(NetworkObject::getGameObject)
-                .forEach((e) -> {
-                    System.out.println("Destroying e");
-                    e.destroy();
-                });
-        System.out.println("HERE");
+                .forEach(GameObject::destroy);
         mNetworkObjectReferences.clear();
         mManager.onClientDisconnect();
     }
 
-    /**
-     * Network update method, called by {@link NetworkManager}
-     */
+    /** Network update method, called by {@link NetworkManager} */
     void networkUpdate() {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
@@ -294,9 +263,7 @@ public class ClientNetworkManager {
     // TODO: implement lobby
     // private void joinLobby() {}
 
-    /**
-     * Join the game map
-     */
+    /** Join the game map */
     private void joinGame() {
         Engine engine = Engine.getInstance();
 
@@ -324,8 +291,8 @@ public class ClientNetworkManager {
      * Spawn a new network object
      *
      * @param networkObjectId allocated object ID
-     * @param ownerID         network owner ID
-     * @param templateId      template ID
+     * @param ownerID network owner ID
+     * @param templateId template ID
      */
     private void spawnNewNetworkObject(int networkObjectId, int ownerID, int templateId) {
         final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);

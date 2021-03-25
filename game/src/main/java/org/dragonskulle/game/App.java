@@ -58,7 +58,7 @@ public class App {
         new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
-    private static Scene createMainScene() {
+    protected static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -609,6 +609,10 @@ public class App {
                                                         .get()
                                                         .audibleClick(
                                                                 (uiButton, __) -> {
+                                                                    networkManager
+                                                                            .get()
+                                                                            .recreateGameScene(
+                                                                                    createMainScene());
                                                                     networkManager
                                                                             .get()
                                                                             .createServer(
