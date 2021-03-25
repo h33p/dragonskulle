@@ -43,13 +43,10 @@ public class App {
     private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
 
-    private static final int BGM_ID =
-            AudioManager.getInstance().loadSound("game_background.wav");
+    private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
     private static final int BGM_2_ID =
             AudioManager.getInstance().loadSound("country_background_short.wav");
-    private static final int BUTTON_SFX_ID =
-            AudioManager.getInstance().loadSound("button-10.wav");
-
+    private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-10.wav");
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
@@ -123,7 +120,7 @@ public class App {
                                         // volume and stuff on the go
                                         bgSource.setLooping(true);
                                         bgSource.setVolume(0.1f);
-                                        bgSource.setSound(BGM_ID);
+                                        bgSource.playSound(BGM_ID);
                                     });
                         });
 
@@ -219,17 +216,20 @@ public class App {
                     AudioSource source = new AudioSource();
                     source.setLooping(false);
                     source.setVolume(0.1f);
-                    source.setSound(BGM_2_ID);
+                    source.playSound(BGM_2_ID);
                     bgm.addComponent(source);
                 });
 
-        audio.buildChild(
-                "effectSource",
-                (sfx) -> {
-                    AudioSource source = new AudioSource();
-                    source.setVolume(0.5f);
-                    sfx.addComponent(source);
-                });
+        Reference<AudioSource> effectSource =
+                audio.buildChild(
+                                "effectSource",
+                                (sfx) -> {
+                                    AudioSource source = new AudioSource();
+                                    source.setVolume(0.05f);
+                                    sfx.addComponent(source);
+                                })
+                        .get()
+                        .getComponent(AudioSource.class);
 
         mainMenu.addRootObject(audio);
 
@@ -434,6 +434,9 @@ public class App {
                                                                         "Rise of Kingdom.ttf"),
                                                                 "Fill game with AI"),
                                                         (a, b) -> {
+                                                            effectSource
+                                                                    .get()
+                                                                    .playSound(BUTTON_SFX_ID);
                                                             System.out.println(
                                                                     "should fill with ai");
                                                             networkManager
@@ -475,6 +478,7 @@ public class App {
                                                     mainUI.setEnabled(false);
                                                     joinUI.setEnabled(true);
                                                     hostGameUI.setEnabled(false);
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
                                 button.addComponent(newButton);
                             });
@@ -497,6 +501,7 @@ public class App {
                                                     mainUI.setEnabled(false);
                                                     hostUI.setEnabled(true);
                                                     hostGameUI.setEnabled(true);
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
                                 button.addComponent(newButton);
                             });
@@ -515,7 +520,9 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Settings"),
-                                                (uiButton, __) -> {});
+                                                (uiButton, __) -> {
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
+                                                });
 
                                 button.addComponent(newButton);
                             });
@@ -534,7 +541,10 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Quit"),
-                                                (uiButton, __) -> Engine.getInstance().stop());
+                                                (uiButton, __) -> {
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
+                                                    Engine.getInstance().stop();
+                                                });
 
                                 button.addComponent(newButton);
                             });
@@ -600,6 +610,7 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join (Temporary)"),
                                                 (uiButton, __) -> {
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     networkManager
                                                             .get()
                                                             .createClient(
@@ -639,6 +650,7 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Cancel"),
                                                 (uiButton, __) -> {
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     joinUI.setEnabled(false);
                                                     mainUI.setEnabled(true);
                                                 });
@@ -670,6 +682,7 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host (Temporary)"),
                                                 (uiButton, __) -> {
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     networkManager
                                                             .get()
                                                             .createServer(
@@ -693,6 +706,7 @@ public class App {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Cancel"),
                                                 (uiButton, __) -> {
+                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     hostUI.setEnabled(false);
                                                     mainUI.setEnabled(true);
                                                 });

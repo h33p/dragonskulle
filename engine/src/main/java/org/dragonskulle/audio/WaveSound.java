@@ -105,12 +105,11 @@ public class WaveSound implements Serializable {
                 return null;
             }
 
-            sound.length = (float)bytesRead / format.getSampleRate();
+            sound.length = (float) bytesRead / format.getSampleRate();
 
             if (sound.bits == 16) {
                 sound.length /= 2;
             }
-
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
             ByteBuffer buffer = processRawBytes(audioBytes, sound.bits == 8, order);
