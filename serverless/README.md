@@ -2,7 +2,9 @@
 This is for keeping track of available non LAN hosts
 
 ##Endpoints
+
 GET /api/hosts - gets all hosts
+
 PUSH /api/hosts - creates a new entry, must be in format 
 ```json
 {
@@ -12,4 +14,5 @@ PUSH /api/hosts - creates a new entry, must be in format
 ```
 
 DELETE /api/hosts/{id} - deletes entry
+
 GET /api/hosts/{id} - retrieves a specific entry
