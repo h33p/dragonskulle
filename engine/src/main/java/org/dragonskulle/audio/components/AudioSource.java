@@ -9,7 +9,9 @@ import org.dragonskulle.audio.WaveSound;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL11;
 
@@ -167,6 +169,13 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
 
     @Override
     public void fixedUpdate(float deltaTime) {
+        if (Scene.getActiveScene() != Engine.getInstance().getPresentationScene()) {
+            if (mSource != null) {
+                detachSource();
+            }
+            return;
+        }
+
         updatePosition();
     }
 
