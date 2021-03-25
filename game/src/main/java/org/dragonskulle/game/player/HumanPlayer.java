@@ -146,7 +146,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 	                                                                            .getClientStatRequest()
 	                                                                            .invoke(
 	                                                                                    new StatData(
-	                                                                                            mBuildingChosen.get().getTile())); // TODO Send
+	                                                                                            mBuildingChosen.get(), null)); // TODO Send
                                                                 	}
                                                                 	
                                                                 	mHexChosen = null;

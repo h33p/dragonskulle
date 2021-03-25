@@ -27,9 +27,11 @@ public class StatData implements INetSerializable {
 
     public StatData() {}
     
-    public StatData(HexagonTile selectedTile) {
-    	mQ = selectedTile.getQ();
-        mR = selectedTile.getR();
+    public StatData(Building building, SyncStat<?> stat) {
+    	if(building == null) return;
+    	
+    	mQ = building.getTile().getQ();
+        mR = building.getTile().getR();
     }
 
     @Override
