@@ -38,7 +38,7 @@ public class AudioManager {
     // TODO: Decide how many simultaneous audio sources we want to support
     private static final int MAX_SOURCES = 32;
 
-    private final Map<Integer, WaveSound> mSoundMap = new HashMap<>();
+    private final ArrayList<WaveSound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
     private final HashSet<Reference<AudioSource>> mAudioSources = new HashSet<>();
     private final ArrayList<Reference<AudioSource>> mActiveAudioSources = new ArrayList<>();
@@ -151,41 +151,37 @@ public class AudioManager {
     /**
      * Load a sound and give it an ID
      *
-     * @param id ID for the sound
      * @param file .wav File to be loaded
-     * @return true if the file was loaded successfully, false otherwise
+     * @return The id of the loaded sound, or -1 if there was an error loading
      */
-    public boolean loadSound(int id, String file) {
-        if (mALDev == -1) {
-            return false;
-        }
-        return loadSound(id, new File(file));
+    public int loadSound(String file) {
+        return loadSound(new File(file));
     }
 
     /**
      * Load a sound and give it an ID
      *
-     * @param id ID for the sound
      * @param file .wav File to be loaded
-     * @return true if the file was loaded successfully, false otherwise
+     * @return The id of the loaded sound, or -1 if there was an error loading
      */
-    public boolean loadSound(int id, File file) {
+    public int loadSound(File file) {
         if (mALDev == -1) {
-            return false;
+            return -1;
         }
 
         WaveSound sound = WaveSound.loadWav(file);
 
         if (sound == null) {
-            return false;
+            return -1;
         }
 
         sound.buffer = AL10.alGenBuffers();
         AL10.alBufferData(sound.buffer, sound.format, sound.data, sound.sampleRate);
 
-        mSoundMap.put(id, sound);
+        int id = mSounds.size();
+        mSounds.add(sound);
 
-        return true;
+        return id;
     }
 
     /**
@@ -195,7 +191,11 @@ public class AudioManager {
      * @return A WaveSound object representing the sound, or null if there was no sound with that id
      */
     public WaveSound getSound(int id) {
-        return mSoundMap.getOrDefault(id, null);
+        if (id < 0 || id >= mSounds.size()) {
+            return null;
+        } else {
+            return mSounds.get(id);
+        }
     }
 
     /**
@@ -283,11 +283,11 @@ public class AudioManager {
         }
         mSources.clear();
 
-        for (WaveSound s : mSoundMap.values()) {
+        for (WaveSound s : mSounds) {
             AL11.alDeleteBuffers(s.buffer);
             s.data.clear();
         }
-        mSoundMap.clear();
+        mSounds.clear();
 
         ALC11.alcMakeContextCurrent(0L);
         ALC11.alcDestroyContext(mALCtx);
