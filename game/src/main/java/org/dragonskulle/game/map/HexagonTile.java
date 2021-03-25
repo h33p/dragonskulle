@@ -11,6 +11,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.renderer.*;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
@@ -61,7 +62,7 @@ public class HexagonTile {
     @Getter @Setter private Building mBuilding;
 
     /** The building that claims the tile, or {@code null}. */
-    @Getter private Building mClaimedBy = null;
+    private Building mClaimedBy = null;
 
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
@@ -118,5 +119,17 @@ public class HexagonTile {
     public boolean isClaimed() {
     	if(mClaimedBy != null) return true;
     	return false;
+    }
+    
+    /**
+     * Get the {@link Player} who has claimed this tile (either because there is a building on it or because it is adjacent to a building).
+     * 
+     * @return The Player who has claimed this tile, or {@code null} if no Player claims it.
+     */
+    public Player getClaimant() {
+    	if(!isClaimed()) {
+    		return null;    		
+    	}
+    	return mClaimedBy.getOwner();
     }
 }
