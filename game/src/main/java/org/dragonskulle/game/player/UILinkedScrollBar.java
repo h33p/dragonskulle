@@ -52,7 +52,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
         tran.setMargin(0f, 0f, 0f, 0.07f);
-        tran.setPosition(2.55f, -0.6f);
+        tran.setPosition(2.6f, -0.6f);
 
         UIVerticalSlider newSlider =
                 new UIVerticalSlider(
