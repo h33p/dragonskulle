@@ -156,6 +156,56 @@ public class App {
         return mainScene;
     }
 
+    protected static Scene createMainScene(
+            Reference<NetworkManager> networkManagerReference, boolean asServer) {
+        Scene mainScene = createMainScene();
+        if (networkManagerReference != null && networkManagerReference.isValid() && asServer) {
+            GameObject hostGameUI =
+                    new GameObject(
+                            "hostGameUI",
+                            new TransformUI(false),
+                            (root) -> {
+                                root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                                root.getTransform(TransformUI.class).setParentAnchor(0f);
+                                root.buildChild(
+                                        "populate_with_ai",
+                                        new TransformUI(true),
+                                        (box) -> {
+                                            box.getTransform(TransformUI.class)
+                                                    .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
+                                            box.getTransform(TransformUI.class)
+                                                    .setMargin(0f, 0f, 0f, 0.07f);
+                                            box.addComponent(
+                                                    new UIRenderable(
+                                                            new SampledTexture(
+                                                                    "ui/wide_button.png")));
+                                            box.addComponent(
+                                                    new UIButton(
+                                                            new UIText(
+                                                                    new Vector3f(0f, 0f, 0f),
+                                                                    Font.getFontResource(
+                                                                            "Rise of Kingdom.ttf"),
+                                                                    "Fill game with AI"),
+                                                            (a, b) -> {
+                                                                System.out.println(
+                                                                        "should fill with ai");
+                                                                networkManagerReference
+                                                                        .get()
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -1,
+                                                                                networkManagerReference
+                                                                                        .get()
+                                                                                        .findTemplateByName(
+                                                                                                "aiPlayer"));
+                                                            }));
+                                        });
+                            });
+            mainScene.addRootObject(hostGameUI);
+        }
+        return mainScene;
+    }
+
     private static Scene createMainMenu(Scene mainScene) {
         Scene mainMenu = new Scene("mainMenu");
 
@@ -249,7 +299,7 @@ public class App {
 
         GameObject networkManagerObject =
                 new GameObject(
-                        "client network manager",
+                        "network manager",
                         (handle) -> {
                             handle.addComponent(networkManager.get());
                         });
@@ -342,47 +392,6 @@ public class App {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject hostGameUI =
-                new GameObject(
-                        "hostGameUI",
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                            root.buildChild(
-                                    "populate_with_ai",
-                                    new TransformUI(true),
-                                    (box) -> {
-                                        box.getTransform(TransformUI.class)
-                                                .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
-                                        box.getTransform(TransformUI.class)
-                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                        box.addComponent(
-                                                new UIRenderable(
-                                                        new SampledTexture("ui/wide_button.png")));
-                                        box.addComponent(
-                                                new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(0f, 0f, 0f),
-                                                                Font.getFontResource(
-                                                                        "Rise of Kingdom.ttf"),
-                                                                "Fill game with AI"),
-                                                        (a, b) -> {
-                                                            System.out.println(
-                                                                    "should fill with ai");
-                                                            networkManager
-                                                                    .get()
-                                                                    .getServerManager()
-                                                                    .spawnNetworkObject(
-                                                                            -1,
-                                                                            networkManager
-                                                                                    .get()
-                                                                                    .findTemplateByName(
-                                                                                            "aiPlayer"));
-                                                        }));
-                                    });
-                        });
-
         mainUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -411,7 +420,6 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     joinUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(false);
                                                                 }));
                                 button.addComponent(newButton);
                             });
@@ -436,7 +444,6 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     hostUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(true);
                                                                 }));
                                 button.addComponent(newButton);
                             });
@@ -548,7 +555,9 @@ public class App {
                                                                     networkManager
                                                                             .get()
                                                                             .recreateGameScene(
-                                                                                    createMainScene());
+                                                                                    createMainScene(
+                                                                                            networkManager,
+                                                                                            false));
                                                                     networkManager
                                                                             .get()
                                                                             .createClient(
@@ -632,7 +641,9 @@ public class App {
                                                                     networkManager
                                                                             .get()
                                                                             .recreateGameScene(
-                                                                                    createMainScene());
+                                                                                    createMainScene(
+                                                                                            networkManager,
+                                                                                            true));
                                                                     networkManager
                                                                             .get()
                                                                             .createServer(
@@ -671,8 +682,6 @@ public class App {
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
-        hostGameUI.setEnabled(false);
-        mainScene.addRootObject(hostGameUI);
 
         mainMenu.addRootObject(GameObject.instantiate(hexRoot));
 
