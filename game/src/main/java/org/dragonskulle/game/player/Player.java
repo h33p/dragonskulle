@@ -16,6 +16,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
@@ -363,8 +364,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         HexagonMap map = mMapComponent.get();
         Building building = data.getBuilding(map);
         
+        // Used for testing:
+        if(building.getAttack().get() + 1 > SyncStat.LEVEL_MAX) {
+        	building.getAttack().setLevel(0);
+        } else {
+        	building.getAttack().increaseLevel();
+        }
+        
+        
         log.info("Suggesting that stats changed.");
-        building.statsChanged();
+        //building.statsChanged();
         
     	// TODO implement
         // Get Building

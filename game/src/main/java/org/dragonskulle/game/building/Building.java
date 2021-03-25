@@ -64,8 +64,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     
     /** The tiles the building can currently attack (within the current {@link #mAttackDistance}). */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
-
-    public SyncChange mStatsChanged = new SyncChange();
     
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
@@ -83,7 +81,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
         
-        mStatsChanged.setBuilding(this);
+        mAttack.setBuilding(this);
+        mDefence.setBuilding(this);
+        mTokenGeneration.setBuilding(this);
+        mViewDistance.setBuilding(this);
+        mAttackDistance.setBuilding(this);
+        
     }
 
     @Override
@@ -110,10 +113,15 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * <p>
      * <b>Needs to be called after a stat is altered.</b>
      */
-    public void repopulateLists(){
-    	log.info("Repopulating lists related to Stats.");
+    private void repopulateLists(){
     	generateViewTiles();
         generateAttackableTiles();
+    }
+    
+    public void afterStatChange() {
+    	log.info("Repopulating lists related to Stats.");
+    	log.info("Attack level: " + getAttack().get());
+    	repopulateLists();
     }
     
     /**
@@ -402,7 +410,4 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Override
     protected void onDestroy() {}
     
-    public void statsChanged() {
-    	mStatsChanged.flagChange();
-    }
 }
