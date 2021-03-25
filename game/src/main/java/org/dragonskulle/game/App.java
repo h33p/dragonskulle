@@ -216,7 +216,7 @@ public class App {
                     AudioSource source = new AudioSource();
                     source.setLooping(false);
                     source.setVolume(0.1f);
-                    source.playSound(BGM_2_ID);
+                    source.playSound(BGM_ID);
                     bgm.addComponent(source);
                 });
 

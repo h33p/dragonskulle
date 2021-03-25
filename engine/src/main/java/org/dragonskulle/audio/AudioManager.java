@@ -43,6 +43,8 @@ public class AudioManager {
     private long mALDev = -1;
     private long mALCtx = -1;
 
+    private float mMasterVolume;
+
     @Getter private boolean mInitialized = false;
 
     /**
@@ -78,6 +80,7 @@ public class AudioManager {
         mALCtx = ctx;
 
         setupSources();
+        setMasterVolume(0.5f);
 
         mInitialized = true;
 
@@ -257,6 +260,14 @@ public class AudioManager {
         } else {
             mAudioListener = listener.getReference(AudioListener.class);
         }
+    }
+
+    public void setMasterVolume(float volume) {
+        volume = Math.max(0f, volume);
+        volume = Math.min(volume, 1f);
+
+        mMasterVolume = volume;
+        AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
     }
 
     /** Cleanup all resources still in use */
