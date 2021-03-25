@@ -6,6 +6,9 @@ import static org.dragonskulle.utils.Env.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
+import org.dragonskulle.audio.AudioManager;
+import org.dragonskulle.audio.components.AudioListener;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
@@ -39,6 +42,9 @@ public class App {
 
     private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
     private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
+
+    private static final int BGM_ID =
+            AudioManager.getInstance().loadSound("country_background_short.wav");
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
@@ -90,6 +96,29 @@ public class App {
 
                                                     camera.addComponent(new MapEffects());
                                                 });
+                                    });
+
+                            rig.buildChild(
+                                    "audioListener",
+                                    (al) -> {
+                                        AudioListener listener = new AudioListener();
+
+                                        al.addComponent(listener);
+                                        mainScene.registerSingleton(listener);
+                                    });
+
+                            rig.buildChild(
+                                    "bgm",
+                                    (bgm) -> {
+                                        AudioSource bgSource = new AudioSource();
+
+                                        bgm.addComponent(bgSource);
+
+                                        // TODO: Keep reference to this so that we can change
+                                        // volume and stuff on the go
+                                        bgSource.setLooping(true);
+                                        bgSource.setVolume(0.5f);
+                                        bgSource.setSound(BGM_ID);
                                     });
                         });
 
@@ -168,6 +197,36 @@ public class App {
         tr.translateLocal(0f, -8f, 0f);
         camera.addComponent(new Camera());
         mainMenu.addRootObject(camera);
+
+        GameObject audio = new GameObject("audio");
+
+        audio.buildChild(
+                "listener",
+                (l) -> {
+                    AudioListener listener = new AudioListener();
+                    mainMenu.registerSingleton(listener);
+                    l.addComponent(listener);
+                });
+
+        audio.buildChild(
+                "bgSource",
+                (bgm) -> {
+                    AudioSource source = new AudioSource();
+                    source.setLooping(true);
+                    source.setVolume(0.1f);
+                    source.setSound(BGM_ID);
+                    bgm.addComponent(source);
+                });
+
+        audio.buildChild(
+                "effectSource",
+                (sfx) -> {
+                    AudioSource source = new AudioSource();
+                    source.setVolume(0.5f);
+                    sfx.addComponent(source);
+                });
+
+        mainMenu.addRootObject(audio);
 
         // Create a hexagon template
         GameObject hexagon = new GameObject("hexagon");

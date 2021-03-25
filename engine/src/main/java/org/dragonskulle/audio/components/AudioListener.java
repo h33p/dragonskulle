@@ -1,14 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio.components;
 
+import lombok.experimental.Accessors;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.core.Reference;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL11;
 
-public class AudioListener extends Component implements IFixedUpdate, IOnAwake {
+@Accessors(prefix = "m")
+public class AudioListener extends Component implements IFixedUpdate {
 
     /** Set the OpenAL listener's position to the position of mGameObject */
     private void updatePosition() {
@@ -37,12 +39,11 @@ public class AudioListener extends Component implements IFixedUpdate, IOnAwake {
             return;
         }
 
-        updatePosition();
-        updateRotation();
-    }
-
-    @Override
-    public void onAwake() {
-        AudioManager.getInstance().setAudioListener(getReference(AudioListener.class));
+        // Only update position and rotation if this AudioListener is the currently active one
+        Reference<AudioListener> curAudioListener = AudioManager.getInstance().getAudioListener();
+        if (curAudioListener.isValid() && curAudioListener.get().equals(this)) {
+            updatePosition();
+            updateRotation();
+        }
     }
 }

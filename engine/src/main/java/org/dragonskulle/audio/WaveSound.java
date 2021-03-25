@@ -4,6 +4,7 @@ package org.dragonskulle.audio;
 import com.sun.media.sound.WaveFileReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -13,11 +14,10 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.lwjgl.openal.AL11;
 
-public class WaveSound {
+public class WaveSound implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger("audio");
 
-    public ByteBuffer data;
     public int buffer;
     public int sampleRate;
     public int format;
@@ -53,7 +53,7 @@ public class WaveSound {
      */
     private static ByteBuffer processRawBytes(
             byte[] rawBytes, boolean eightBitAudio, ByteOrder order) {
-        ByteBuffer dst = ByteBuffer.allocate(rawBytes.length);
+        ByteBuffer dst = ByteBuffer.allocateDirect(rawBytes.length);
         dst.order(ByteOrder.nativeOrder());
         ByteBuffer src = ByteBuffer.wrap(rawBytes);
         src.order(order);
@@ -106,7 +106,10 @@ public class WaveSound {
             }
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
-            sound.data = processRawBytes(audioBytes, sound.bits == 8, order);
+            ByteBuffer buffer = processRawBytes(audioBytes, sound.bits == 8, order);
+
+            sound.buffer = AL11.alGenBuffers();
+            AL11.alBufferData(sound.buffer, sound.format, buffer, sound.sampleRate);
 
             return sound;
         } catch (UnsupportedAudioFileException e) {

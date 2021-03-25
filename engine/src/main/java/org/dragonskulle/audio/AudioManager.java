@@ -5,18 +5,15 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC11;
@@ -40,10 +37,9 @@ public class AudioManager {
 
     private final ArrayList<WaveSound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
-    private final HashSet<Reference<AudioSource>> mAudioSources = new HashSet<>();
-    private final ArrayList<Reference<AudioSource>> mActiveAudioSources = new ArrayList<>();
+    private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
 
-    private Reference<AudioListener> mAudioListener;
+    @Getter private Reference<AudioListener> mAudioListener;
     private long mALDev = -1;
     private long mALCtx = -1;
 
@@ -155,7 +151,18 @@ public class AudioManager {
      * @return The id of the loaded sound, or -1 if there was an error loading
      */
     public int loadSound(String file) {
-        return loadSound(new File(file));
+
+        String[] searchPaths = {
+            "engine/src/main/resources/audio/", "game/src/main/resources/audio/"
+        };
+
+        for (String p : searchPaths) {
+            File f = new File(p + file).getAbsoluteFile();
+            if (f.exists()) {
+                return loadSound(f);
+            }
+        }
+        return -1;
     }
 
     /**
@@ -174,9 +181,6 @@ public class AudioManager {
         if (sound == null) {
             return -1;
         }
-
-        sound.buffer = AL10.alGenBuffers();
-        AL10.alBufferData(sound.buffer, sound.format, sound.data, sound.sampleRate);
 
         int id = mSounds.size();
         mSounds.add(sound);
@@ -204,35 +208,37 @@ public class AudioManager {
      * need them
      */
     public void update() {
+        if (mAudioListener == null) {
+            return;
+        }
+
         // First remove any references to AudioSources that are no longer valid
         mAudioSources.removeIf(ref -> !ref.isValid());
 
-        mActiveAudioSources.addAll(mAudioSources);
-
         // All references will be valid because they any invalid ones are removed at the start
-        for (int i = 0; i < mActiveAudioSources.size(); i++) {
-            AudioSource audioSource = mActiveAudioSources.get(i).get();
+        for (int i = 0; i < mAudioSources.size(); i++) {
+            AudioSource audioSource = mAudioSources.get(i).get();
 
             // TODO: Distance check
             // TODO: Check audio time left (Need to calculate sound length first)
 
             if (audioSource.getSound() == null) {
-                mActiveAudioSources.remove(i);
+                mAudioSources.remove(i);
                 audioSource.detachSource();
                 i--;
             }
         }
-        
+
         // List is not sorted by priority for now but will be in the future so
         // detach all sources from index mSources.size() onwards
-        if (mActiveAudioSources.size() > mSources.size()) {
-            detachSources(mActiveAudioSources.subList(mSources.size(), mActiveAudioSources.size()));
-            attachSources(mActiveAudioSources.subList(0, mSources.size()));
+        if (mAudioSources.size() > mSources.size()) {
+            detachSources(mAudioSources.subList(mSources.size(), mAudioSources.size()));
+            attachSources(mAudioSources.subList(0, mSources.size()));
         } else {
-            attachSources(mActiveAudioSources);
+            attachSources(mAudioSources);
         }
 
-        mActiveAudioSources.clear();
+        mAudioSources.clear();
     }
 
     /**
@@ -244,31 +250,13 @@ public class AudioManager {
         mAudioSources.add(audioSource);
     }
 
-    /**
-     * Remove an audio source so that it will no longer have sources attached to it
-     *
-     * @param audioSource Reference to the AudioSource that will be removed
-     */
-    public void removeAudioSource(Reference<AudioSource> audioSource) {
-        mAudioSources.remove(audioSource);
-    }
-
-    /**
-     * Set the active AudioListener component for the scene. If multiple AudioListeners exist in one
-     * scene, there is no way to know for certain which audioListener will actually be set as the
-     * active listener and that behaviour should not be relied upon.
-     *
-     * @param audioListener Reference to the AudioListener component to be used
-     */
-    public void setAudioListener(Reference<AudioListener> audioListener) {
-        if (audioListener.isValid()) {
-            mAudioListener = audioListener;
-        }
-    }
-
-    public void removeAudioListener(Reference<AudioListener> audioListener) {
-        if (mAudioListener == audioListener) {
+    /** Get the AudioListner from the current scene */
+    public void setAudioListener() {
+        AudioListener listener = Scene.getActiveScene().getSingleton(AudioListener.class);
+        if (listener == null) {
             mAudioListener = null;
+        } else {
+            mAudioListener = listener.getReference(AudioListener.class);
         }
     }
 
@@ -285,7 +273,6 @@ public class AudioManager {
 
         for (WaveSound s : mSounds) {
             AL11.alDeleteBuffers(s.buffer);
-            s.data.clear();
         }
         mSounds.clear();
 

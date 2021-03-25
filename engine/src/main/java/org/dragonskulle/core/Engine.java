@@ -273,6 +273,7 @@ public class Engine {
 
             Scene.setActiveScene(mPresentationScene);
             UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
+            AudioManager.getInstance().setAudioListener();
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
@@ -291,6 +292,8 @@ public class Engine {
             Scene.setActiveScene(mPresentationScene);
             // Call LateFrameUpdate on the presentation scene
             lateFrameUpdate(deltaTime);
+
+            AudioManager.getInstance().update();
 
             renderFrame();
             instancedDrawCalls += mGLFWState.getRenderer().getInstancedCalls();
