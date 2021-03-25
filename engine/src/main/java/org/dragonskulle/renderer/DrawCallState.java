@@ -37,42 +37,43 @@ class DrawCallState implements NativeResource {
     @Getter private VulkanPipeline mPipeline;
     private TextureSetFactory mTextureSetFactory;
     private VulkanSampledTextureFactory mTextureFactory;
-    private Mesh mMesh;
-    @Getter private VulkanMeshBuffer.MeshDescriptor mMeshDescriptor;
-    private Map<TextureHashKey, DrawData> mDrawData = new HashMap<>();
+    private Map<DrawDataHashKey, DrawData> mDrawData = new HashMap<>();
 
-    private TextureHashKey mTmpTextureHashKey = new TextureHashKey();
+    private DrawDataHashKey mTmpDrawDataHashKey = new DrawDataHashKey();
 
-    private static class TextureHashKey {
+    private static class DrawDataHashKey {
         SampledTexture[] mMatTextures;
+        Mesh mMesh;
 
-        private TextureHashKey() {}
+        private DrawDataHashKey() {}
 
-        public TextureHashKey(IMaterial material) {
-            setMaterial(material);
+        public DrawDataHashKey(IMaterial material, Renderable renderable) {
+            setData(material, renderable);
         }
 
-        public void setMaterial(IMaterial material) {
+        public void setData(IMaterial material, Renderable renderable) {
             mMatTextures = material.getFragmentTextures();
+            mMesh = renderable.getMesh();
         }
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(mMatTextures);
+            return Objects.hash(Arrays.hashCode(mMatTextures), mMesh);
         }
 
         @Override
         public boolean equals(Object other) {
             if (this == other) return true;
             if (other == null) return false;
-            if (!(other instanceof TextureHashKey)) return false;
-            return Arrays.equals(mMatTextures, ((TextureHashKey) other).mMatTextures);
+            if (!(other instanceof DrawDataHashKey)) return false;
+            DrawDataHashKey otherKey = (DrawDataHashKey) other;
+            return Arrays.equals(mMatTextures, otherKey.mMatTextures)
+                    && mMesh.equals(otherKey.mMesh);
         }
     }
 
     public static class HashKey {
         ShaderSet mShaderSet;
-        Mesh mMesh;
 
         public HashKey() {}
 
@@ -82,12 +83,11 @@ class DrawCallState implements NativeResource {
 
         public void setRenderable(Renderable renderable) {
             mShaderSet = renderable.getMaterial().getShaderSet();
-            mMesh = renderable.getMesh();
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mShaderSet, mMesh);
+            return mShaderSet.hashCode();
         }
 
         @Override
@@ -96,7 +96,7 @@ class DrawCallState implements NativeResource {
             if (other == null) return false;
             if (!(other instanceof HashKey)) return false;
             HashKey otherKey = (HashKey) other;
-            return mShaderSet.equals(otherKey.mShaderSet) && mMesh.equals(otherKey.mMesh);
+            return mShaderSet.equals(otherKey.mShaderSet);
         }
     }
 
@@ -105,6 +105,8 @@ class DrawCallState implements NativeResource {
     @Getter
     public static class DrawData {
         private TextureSet mTextureSet;
+        private Mesh mMesh;
+        private VulkanMeshBuffer.MeshDescriptor mMeshDescriptor;
         private VkDevice mDevice;
         long[] mDescriptorSets;
         int mInstanceBufferOffset;
@@ -190,8 +192,7 @@ class DrawCallState implements NativeResource {
                 renderer.getTextureSetFactory(),
                 renderer.getTextureFactory(),
                 imageCount,
-                key.mShaderSet,
-                key.mMesh);
+                key.mShaderSet);
     }
 
     private DrawCallState(
@@ -203,14 +204,12 @@ class DrawCallState implements NativeResource {
             TextureSetFactory textureSetFactory,
             VulkanSampledTextureFactory textureFactory,
             int imageCount,
-            ShaderSet shaderSet,
-            Mesh mesh) {
+            ShaderSet shaderSet) {
         mDevice = device;
         mDescriptorPool =
                 VulkanShaderDescriptorPool.createPool(
                         device, physicalDevice, shaderSet, imageCount);
         mShaderSet = shaderSet;
-        mMesh = mesh;
         mTextureSetFactory = textureSetFactory;
         mTextureFactory = textureFactory;
 
@@ -228,10 +227,10 @@ class DrawCallState implements NativeResource {
         return mDrawData.values();
     }
 
-    public void startDrawData(VulkanMeshBuffer meshBuffer) {
-        mMeshDescriptor = meshBuffer.addMesh(mMesh);
-
+    public void startDrawData() {
         for (DrawData d : mDrawData.values()) d.mObjects.clear();
+
+        mDrawData.entrySet().removeIf(e -> e.getValue().getMesh().getRefCount() <= 0);
     }
 
     public void endDrawData(int imageIndex) {
@@ -242,9 +241,9 @@ class DrawCallState implements NativeResource {
 
     public void addObject(Renderable object) {
         IMaterial material = object.getMaterial();
-        mTmpTextureHashKey.setMaterial(material);
-        DrawData drawData = mDrawData.get(mTmpTextureHashKey);
-        // If we never had this texture set, create a pool
+        mTmpDrawDataHashKey.setData(material, object);
+        DrawData drawData = mDrawData.get(mTmpDrawDataHashKey);
+        // If we never had this texture set and mesh combo, create a pool
         if (drawData == null) {
             drawData = new DrawData();
             drawData.mDevice = mDevice;
@@ -259,10 +258,16 @@ class DrawCallState implements NativeResource {
                 }
 
                 drawData.mTextureSet = mTextureSetFactory.getSet(textures, mTextureFactory);
+                drawData.mMesh = object.getMesh();
             }
-            mDrawData.put(new TextureHashKey(material), drawData);
+            mDrawData.put(new DrawDataHashKey(material, object), drawData);
         }
         drawData.mObjects.add(object);
+    }
+
+    public void updateMeshBuffer(VulkanMeshBuffer meshBuffer) {
+        for (DrawData data : mDrawData.values())
+            data.mMeshDescriptor = meshBuffer.addMesh(data.mMesh);
     }
 
     public int setInstanceBufferOffset(int offset) {
