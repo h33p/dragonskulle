@@ -239,13 +239,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void addBuilding(Building building, int qPos, int rPos) {
         HexagonMap map = this.getMapComponent();
-        if (map != null) {
+        if (map == null) {
+        	log.warning("Map doesn't exist");
+        	return;
+        }
+        else {
             map.storeBuilding(building, qPos, rPos);
             log.info("stored building on map tile");
             if (building.getNetworkObject().isMine()) {
                 mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
             }
-            log.info("added building into hash" + mOwnedBuildings.size());
+            log.info("added building into hash" + map.getTile(qPos, rPos).getQ() + " " + map.getTile(qPos, rPos).getR());
             log.info("ownedBuilding size" + mOwnedBuildings.size());
             log.info("Added Building " + qPos + " " + rPos);
         }
