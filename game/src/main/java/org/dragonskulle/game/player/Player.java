@@ -43,6 +43,7 @@ import org.joml.Vector3fc;
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
     // List of Buildings -- stored & synced in HexagonMap
+    //    @Getter
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
     // The map component
     private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
@@ -68,6 +69,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
+    private int playersToPlay =
+            6; // TODO this needs to be set dynamically -- specifies how many players will play this
+    // game
+
+    NetworkManager mNetworkManager;
+
     /** The base constructor for player */
     public Player() {}
 
@@ -88,6 +95,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
 
+        mNetworkManager = getNetworkObject().getNetworkManager();
+
+        if (getNetworkObject().isServer()) {
+            distributeCoordinates();
+        }
+
         Vector3fc col = mPlayerColour.get();
         mPlayerHighlightSelection =
                 MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
@@ -97,10 +110,111 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         updateTokens(UPDATE_TIME);
     }
 
+    /**
+     * This will randomly place a capital using an angle so each person is within their own slice
+     */
+    private void distributeCoordinates() {
+
+        float angleOfCircle = (float) 360 / (float) playersToPlay;
+
+        // This says how many people have joined the server so far
+        int playersOnlineNow = mPlayersOnline.size();
+
+        // This gives us the angle to find our coordinates
+        float angleToStart = playersOnlineNow * angleOfCircle;
+        float angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
+
+        /* TODO NOTES
+        Create a line from each of these angles.  Use Maths
+        Then choose a pair of coordinates from between those lines
+        Change to Axial
+        Done????
+        */
+        // boolean finished;
+
+        int min = -10;
+        int max = 10;
+
+        int posX = min + (int) (Math.random() * ((max - min) + 1));
+        int posY = min + (int) (Math.random() * ((max - min) + 1));
+        // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
+        addNewBuilding(posX, posY);
+        Building buildingToBecomeCapital = mMapComponent.get().getBuilding(posX, posY);
+        buildingToBecomeCapital.setCapital(true);
+    }
+
+    /**
+     * This will add a building in a specific location
+     *
+     * @param qPos The q Position of the building
+     * @param rPos The r position of the building
+     * @return true if it succeeds false if not
+     */
+    private boolean addNewBuilding(int qPos, int rPos) {
+
+        if (mNetworkManager.getServerManager() == null) {
+            log.warning("Server manager is null.");
+
+            return false;
+        }
+
+        HexagonMap map = mMapComponent.get();
+
+        HexagonTile tile = map.getTile(qPos, rPos);
+        if (tile == null) {
+            log.warning("Tile does not exist");
+            return false;
+        }
+
+        Building buildingHere = map.getBuilding(qPos, rPos);
+
+        if (buildingHere != null) {
+            log.warning("Building already here");
+            return false;
+        }
+
+        Reference<NetworkObject> obj =
+                mNetworkManager
+                        .getServerManager()
+                        .spawnNetworkObject(
+                                getNetworkObject().getOwnerId(),
+                                mNetworkManager.findTemplateByName("building"));
+
+        if (obj == null) {
+            log.warning("Could not create a Network Object");
+            return false;
+        }
+
+        GameObject buildingGO = obj.get().getGameObject();
+        buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        Building building = buildingGO.getComponent(Building.class).get();
+
+        if (building == null) {
+            log.warning("Could not create a building");
+            return false;
+        }
+
+        addBuilding(building, qPos, rPos);
+        log.info("Stored building");
+
+        return true;
+    }
+
+    /**
+     * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
+     *
+     * @return The HexagonMap being used, otherwise {@code null}.
+     */
     public HexagonMap getMapComponent() {
         return mMapComponent == null ? null : mMapComponent.get();
     }
 
+    /**
+     * This gets the Player Object who owns that tile -- Will be changed
+     *
+     * @param tile The tile to check who owns it
+     * @return Which player owns it
+     */
     public Player getTileOwner(HexagonTile tile) {
         Building building = tile.getBuilding();
 
@@ -122,25 +236,86 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Add a building to the ones the player owns
      *
-     * @param building
+     * @param building The building to add
      */
-    public void addBuilding(Building building) {
-        mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
-        building.getTile().setBuilding(building);
-        log.info("Building size" + mOwnedBuildings.size());
-        log.info("Added Building " + building.getTile().getQ() + " " + building.getTile().getR());
+    public void addBuilding(Building building, int qPos, int rPos) {
+        HexagonMap map = this.getMapComponent();
+        if (map == null) {
+            log.warning("Map doesn't exist");
+            return;
+        }
+        map.storeBuilding(building, qPos, rPos);
+        log.info("stored building on map tile");
+        if (building.getNetworkObject().isMine()) {
+            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+        }
+
+        log.info(
+                "added building into hash"
+                        + map.getTile(qPos, rPos).getQ()
+                        + " "
+                        + map.getTile(qPos, rPos).getR());
+        log.info("ownedBuilding size" + mOwnedBuildings.size());
+        log.info("Added Building " + qPos + " " + rPos);
     }
 
+    /**
+     * Add a building to the ones the player owns
+     *
+     * @param building The building to add
+     */
+    public void addBuilding(Building building) {
+        HexagonMap map = this.getMapComponent();
+        if (map == null) {
+            log.warning("Map doesn't exist");
+            return;
+        }
+        final HexagonTile buildingTile = building.getTile(); // TODO this will default to null
+        map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
+        log.info("stored building on map tile");
+        if (building.getNetworkObject().isMine()) {
+            mOwnedBuildings.put(
+                    map.getTile(buildingTile.getQ(), buildingTile.getR()),
+                    building.getReference(Building.class));
+        }
+        log.info("added building into hash" + mOwnedBuildings.size());
+        log.info("ownedBuilding size" + mOwnedBuildings.size());
+        log.info("Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
+    }
+
+    /**
+     * Will remove a building from the buildings you own
+     *
+     * @param buildingToRemove The building to remove
+     */
     public void removeBuilding(Building buildingToRemove) {
         mOwnedBuildings.remove(buildingToRemove.getTile());
     }
 
-    public Reference<Building> getBuilding(HexagonTile tile) {
+    /**
+     * This will get the building from this tile if you own that building
+     *
+     * @param tile The tile to get the building from
+     * @return The reference to a building if it yours
+     */
+    public Reference<Building> getOwnedBuilding(HexagonTile tile) {
         return mOwnedBuildings.get(tile);
     }
 
-    public Stream<Reference<Building>> getBuildings() {
+    /**
+     * This will return a {@code Stream} of values of buildings which are owned by the player
+     *
+     * @return A stream containing references to the buildings the player owns
+     */
+    public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
         return mOwnedBuildings.values().stream();
+    }
+
+    public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
+        if (buildingToRemove.isValid() && buildingToRemove.get().getTile() != null) {
+            return mOwnedBuildings.remove(buildingToRemove.get().getTile(), buildingToRemove);
+        }
+        return false;
     }
 
     /**
@@ -155,6 +330,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
      * owned buildings to check if need to update tokens. Should only be ran on the server
+     *
+     * @param time The time since the last update
      */
     public void updateTokens(float time) {
         // Checks if server
@@ -301,47 +478,65 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         HexagonMap map = mMapComponent.get();
         HexagonTile tile = data.getTile(map);
 
-        if (tile.getBuilding() != null) {
+        if (tile.getBuilding()
+                != null) { // TODO Craig says the next two checks will be done by tile
             log.info("Building already exists!");
             return;
         }
 
         log.info("Got the map & tile");
-        if (buildingWithinRadius(getTilesInRadius(1, tile))) { // TODO Merge into one function
+        if (buildingWithinRadius(
+                getTilesInRadius(
+                        1,
+                        tile))) { // TODO Merge into one function -- Craig says this will be done by
+            // tile
             log.info("Trying to build too close to another building");
             return;
         }
 
-        // TODO REDO
-        // Create a new building.
-        NetworkManager networkManager = getNetworkObject().getNetworkManager();
-
-        if (networkManager.getServerManager() == null) {
-            log.warning("Server manager is null.");
+        log.info("Checking");
+        if (!buildingWithinRadiusYours(getTilesInRadius(3, tile))) { // TODO KEEP
+            log.info("Too far");
             return;
         }
+        log.info("Checking 2 Fone");
 
-        Reference<NetworkObject> obj =
-                networkManager
-                        .getServerManager()
-                        .spawnNetworkObject(
-                                getNetworkObject().getOwnerId(),
-                                networkManager.findTemplateByName("building"));
-        if (obj != null) {
-            GameObject buildingGO = obj.get().getGameObject();
+        boolean addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
 
-            buildingGO.getTransform(TransformHex.class).setPosition(tile.getQ(), tile.getR());
-
-            // Remove the tokens.
+        if (addedNewBuilding) {
             mTokens.set(mTokens.get() - COST);
-
-            // mOwnedBuildings = new ArrayList<Reference<Building>>();
+            log.info("Building added");
         }
-        log.info("Building added");
     }
 
+    /**
+     * This checks if a building is within a certain radius and whether it is your own building
+     *
+     * @param tiles The tiles to check
+     * @return true if it is within radius false if not
+     */
+    public boolean buildingWithinRadiusYours(ArrayList<HexagonTile> tiles) {
+        for (HexagonTile tile : tiles) {
+
+            if (mMapComponent.isValid()
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID()
+                            == getNetworkObject().getOwnerId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This checks if a building is within a certain radius
+     *
+     * @param tiles The tiles to check
+     * @return true if it is within radius false if not
+     */
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
+
             if (mMapComponent.isValid()
                     && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
@@ -418,5 +613,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public void fixedUpdate(float deltaTime) {
 
         updateTokens(deltaTime);
+    }
+
+    public void addOwnership(Reference<Building> buildingReference) {
+        final HexagonTile tile = buildingReference.get().getTile();
+        if (tile != null) {
+            this.mOwnedBuildings.put(tile, buildingReference);
+        }
+    }
+
+    public boolean thinksOwnsBuilding(Reference<Building> buildingReference) {
+        final HexagonTile tile = buildingReference.get().getTile();
+        if (tile != null) {
+            final Reference<Building> foundBuilding = this.mOwnedBuildings.get(tile);
+            if (foundBuilding != null) {
+                return foundBuilding == buildingReference;
+            }
+        }
+        return false;
     }
 }

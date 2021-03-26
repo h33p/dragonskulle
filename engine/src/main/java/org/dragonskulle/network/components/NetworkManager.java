@@ -42,6 +42,11 @@ public class NetworkManager extends Component implements INetworkUpdate {
         Scene buildScene(NetworkManager manager, boolean isServer);
     }
 
+    /** A registerable listener for when objects change owner */
+    public static interface IObjectOwnerModifiedEvent {
+        void handleModifyOwner(Reference<NetworkObject> object);
+    }
+
     /** Registered spawnable templates */
     @Getter(AccessLevel.PACKAGE)
     protected final TemplateManager mSpawnableTemplates;

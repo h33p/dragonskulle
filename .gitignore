@@ -1,6 +1,7 @@
 */target/*
 *.swp
 .idea
+.vscode
 */.settings/*
 */*.project
 .project

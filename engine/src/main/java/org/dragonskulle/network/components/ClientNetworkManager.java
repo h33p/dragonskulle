@@ -16,6 +16,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.components.NetworkManager.IObjectOwnerModifiedEvent;
 import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 
 /**
@@ -84,7 +85,11 @@ public class ClientNetworkManager {
                 return;
             }
             try {
-                entry.mNetworkObject.get().updateFromBytes(payload);
+                int oldOwner = entry.mNetworkObject.get().getOwnerId();
+                int newOwner = entry.mNetworkObject.get().updateFromBytes(payload);
+                if (oldOwner != newOwner) { // ownership has changed
+                    updateOwnershipLink(entry.mNetworkObject);
+                }
                 if (!entry.mSynchronized) {
                     entry.mSynchronized = true;
                     entry.mNetworkObject.get().getGameObject().setEnabled(true);
@@ -92,6 +97,10 @@ public class ClientNetworkManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        private void updateOwnershipLink(Reference<NetworkObject> mNetworkObject) {
+            mModifiedOwnerListeners.stream().forEach(l -> l.handleModifyOwner(mNetworkObject));
         }
 
         @Override
@@ -133,6 +142,8 @@ public class ClientNetworkManager {
     private int mTicksWithoutRequests = 0;
     /** Listeners for spawn events */
     private List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
+    /** Listeners for owner modification events */
+    private List<IObjectOwnerModifiedEvent> mModifiedOwnerListeners = new ArrayList<>();
 
     @Getter private int mNetID = -1;
 
@@ -184,6 +195,14 @@ public class ClientNetworkManager {
 
     public void unregisterSpawnListener(IObjectSpawnEvent listener) {
         mSpawnListeners.remove(listener);
+    }
+
+    public void registerOwnershipModificationListener(IObjectOwnerModifiedEvent listener) {
+        mModifiedOwnerListeners.add(listener);
+    }
+
+    public void unregisterOwnershipModificationListener(IObjectOwnerModifiedEvent listener) {
+        mModifiedOwnerListeners.remove(listener);
     }
 
     /**

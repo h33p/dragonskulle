@@ -68,6 +68,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mNetworkManager = networkManager;
         mNetID = netID;
         mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
+        mNetworkManager
+                .get()
+                .getClientManager()
+                .registerOwnershipModificationListener(this::onOwnerModifiedObject);
     }
 
     @Override
@@ -290,6 +294,21 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
+    /** Marks visuals to update whenever a new object is spawned */
+    private void onOwnerModifiedObject(Reference<NetworkObject> obj) {
+        // remove from self as owned if exists, then we need to check if we are the owner again
+        if (obj.isValid()) {
+            final Reference<Building> buildingReference =
+                    obj.get().getGameObject().getComponent(Building.class);
+            if (obj.get().isMine()) {
+                mPlayer.get().addOwnership(buildingReference);
+            } else if (buildingReference != null
+                    && mPlayer.get().thinksOwnsBuilding(buildingReference)) {
+                mPlayer.get().removeFromOwnedBuildings(buildingReference);
+            }
+        }
+    }
+
     /**
      * AURI!!!
      *
@@ -309,7 +328,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
         if (buildingToCheck == null || !buildingToCheck.isValid()) return false;
 
-        return mPlayer.get().getBuilding(buildingToCheck.get().getTile()) != null;
+        return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;
     }
 
     /**

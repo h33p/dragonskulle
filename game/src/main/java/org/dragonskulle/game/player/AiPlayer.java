@@ -201,7 +201,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                     Building buildingToUpgrade =
                             mPlayer.get()
-                                    .getBuildings()
+                                    .getOwnedBuildingsAsStream()
                                     .filter(Reference::isValid)
                                     .map(Reference::get)
                                     .limit(upgradeID + 1) // limit to the random number
@@ -231,7 +231,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     // Will create a list of [attacker (your building), defender (building to
                     // attack)]
                     mPlayer.get()
-                            .getBuildings()
+                            .getOwnedBuildingsAsStream()
                             .filter(Reference::isValid)
                             .map(Reference::get)
                             .forEach(
@@ -276,7 +276,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                         Building buildingToSell =
                                 mPlayer.get()
-                                        .getBuildings()
+                                        .getOwnedBuildingsAsStream()
                                         .filter(Reference::isValid)
                                         .map(Reference::get)
                                         .filter(b -> !b.isCapital())
@@ -307,7 +307,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
 
         mPlayer.get()
-                .getBuildings()
+                .getOwnedBuildingsAsStream()
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .forEach(
