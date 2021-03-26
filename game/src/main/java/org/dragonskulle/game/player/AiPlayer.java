@@ -199,8 +199,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                     log.info("AI: Upgrading");
 
-                    Building buildingToUpgrade = // TODO This won't work due to mOwnedBuildings not
-                            // being updated
+                    Building buildingToUpgrade =
                             mPlayer.get()
                                     .getOwnedBuildingsAsStream()
                                     .filter(Reference::isValid)
@@ -232,9 +231,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     // Will create a list of [attacker (your building), defender (building to
                     // attack)]
                     mPlayer.get()
-                            .getOwnedBuildingsAsStream() // TODO This won't work due to
-                            // mOwnedBuildings not
-                            // being updated
+                            .getOwnedBuildingsAsStream()
                             .filter(Reference::isValid)
                             .map(Reference::get)
                             .forEach(
@@ -279,8 +276,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                         Building buildingToSell =
                                 mPlayer.get()
-                                        .getOwnedBuildingsAsStream() // TODO This won't work due to
-                                        // mOwnedBuildings not being updated
+                                        .getOwnedBuildingsAsStream()
                                         .filter(Reference::isValid)
                                         .map(Reference::get)
                                         .filter(b -> !b.isCapital())
@@ -311,9 +307,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
 
         mPlayer.get()
-                .getOwnedBuildingsAsStream() // TODO This won't work due to mOwnedBuildings not
-                // being
-                // updated
+                .getOwnedBuildingsAsStream()
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .forEach(
