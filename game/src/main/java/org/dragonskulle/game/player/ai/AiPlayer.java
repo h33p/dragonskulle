@@ -1,19 +1,18 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai;
 
 import java.util.Random;
-
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.player.Player;
 
-import lombok.extern.java.Log;
-
 @Log
 public abstract class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
-	/** The time since the last check if the AI player can play. (Start at 0) */
+    /** The time since the last check if the AI player can play. (Start at 0) */
     protected float mTimeSinceStart;
     /** The lower bound for the random number to choose a time */
     protected int mLowerBoundTime = 1;
@@ -23,12 +22,12 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     protected int mTimeToWait;
 
     protected Random mRandom = new Random();
-	
-	protected Reference<Player> mPlayer;
-	
-	public AiPlayer() {}
-	
-	@Override
+
+    protected Reference<Player> mPlayer;
+
+    public AiPlayer() {}
+
+    @Override
     public void onStart() {
 
         // Sets up all unitialised variables
@@ -36,7 +35,6 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         mTimeSinceStart = 0;
         createNewRandomTime();
     }
-	
 
     /**
      * This will check to see whether the AI Player can actually play or not
@@ -57,15 +55,15 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
         return false;
     }
-    
+
     /** This will set how long the AI player has to wait until they can play */
     protected void createNewRandomTime() {
         mTimeToWait = mRandom.nextInt() % (mUpperBoundTime + 1 - mLowerBoundTime) + mLowerBoundTime;
     }
-    
+
     @Override
     protected void onDestroy() {}
-    
+
     @Override
     public void fixedUpdate(float deltaTime) {
 
@@ -75,7 +73,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
             simulateInput();
         }
     }
-    
+
     /**
      * This will simulate the action to be done by the AI player. For the base class this will be
      * done using probability

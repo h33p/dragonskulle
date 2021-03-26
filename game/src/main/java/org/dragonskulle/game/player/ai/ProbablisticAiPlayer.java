@@ -3,16 +3,11 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
@@ -33,23 +28,23 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
     /** Choose what to do with the building -- These 3 must sum to 1 */
     protected float mUpgradeBuilding = (float) 0.2;
+
     protected float mAttackBuilding = (float) 0.7;
     protected float mSellBuilding = (float) 0.1;
-    
-    
+
     /** A Constructor for an AI Player */
     public ProbablisticAiPlayer() {}
-    
+
     @Override
     public void onStart() {
-    	super.onStart();
+        super.onStart();
     }
 
     @Override
     protected void simulateInput() {
 
         // If only one building assumed that its capital
-        if (mPlayer.get().numberOfBuildings() == 1) { // TODO Refactor it so it's only done once
+        if (mPlayer.get().numberOfBuildings() == 1) {
 
             log.info(
                     "AI: I have "
@@ -240,7 +235,6 @@ public class ProbablisticAiPlayer extends AiPlayer {
                                 } // Can add extra checks here.
                                 else {
                                     hexTilesToExpand.add(hexTile);
-                                    
                                 }
                             }
                         });
@@ -255,7 +249,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
      * @return {@code true} if that hextile is valid to build in or {@code false} if it's not valid
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
-    	
+
         // Get a radius of tiles
         ArrayList<HexagonTile> hexTiles = mPlayer.get().getTilesInRadius(1, hexTile);
 
