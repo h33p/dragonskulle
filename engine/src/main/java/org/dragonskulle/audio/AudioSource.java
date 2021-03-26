@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 import org.dragonskulle.components.Component;
@@ -17,6 +18,7 @@ import org.dragonskulle.ui.UIButton;
  * @author Dragonskulle
  *     <p>Both filename and the SoundType channel are public fields which can be accessed
  */
+@Accessors(prefix = "m")
 @Log
 public class AudioSource extends Component {
 
