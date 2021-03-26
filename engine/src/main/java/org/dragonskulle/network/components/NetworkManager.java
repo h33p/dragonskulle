@@ -22,6 +22,10 @@ import org.dragonskulle.network.ServerClient;
 @Log
 public class NetworkManager extends Component implements INetworkUpdate {
 
+    public void recreateGameScene(Scene newScene) {
+        this.mGameScene = newScene;
+    }
+
     /** Simple client connection result handler */
     public static interface IConnectionResultEvent {
         void handle(NetworkManager manager, int netID);
@@ -37,12 +41,17 @@ public class NetworkManager extends Component implements INetworkUpdate {
         void handleSpawn(NetworkObject object);
     }
 
+    /** A registerable listener for when objects change owner */
+    public static interface IObjectOwnerModifiedEvent {
+        void handleModifyOwner(Reference<NetworkObject> object);
+    }
+
     /** Registered spawnable templates */
     @Getter(AccessLevel.PACKAGE)
     protected final TemplateManager mSpawnableTemplates;
     /** Target game scene */
-    @Getter(AccessLevel.PACKAGE)
-    private final Scene mGameScene;
+    @Getter(AccessLevel.PUBLIC)
+    private Scene mGameScene;
     /** Client manager. Exists when there is a client connection */
     @Getter private transient ClientNetworkManager mClientManager;
     /** Server manager. Exists when there is a server instance */

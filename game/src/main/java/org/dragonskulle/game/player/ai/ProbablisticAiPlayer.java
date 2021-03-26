@@ -117,7 +117,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
                     Building buildingToUpgrade =
                             mPlayer.get()
-                                    .getBuildings()
+                                    .getOwnedBuildingsAsStream()
                                     .filter(Reference::isValid)
                                     .map(Reference::get)
                                     .limit(upgradeID + 1) // limit to the random number
@@ -147,7 +147,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
                     // Will create a list of [attacker (your building), defender (building to
                     // attack)]
                     mPlayer.get()
-                            .getBuildings()
+                            .getOwnedBuildingsAsStream()
                             .filter(Reference::isValid)
                             .map(Reference::get)
                             .forEach(
@@ -192,7 +192,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
                         Building buildingToSell =
                                 mPlayer.get()
-                                        .getBuildings()
+                                        .getOwnedBuildingsAsStream()
                                         .filter(Reference::isValid)
                                         .map(Reference::get)
                                         .filter(b -> !b.isCapital())
@@ -223,7 +223,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
 
         mPlayer.get()
-                .getBuildings()
+                .getOwnedBuildingsAsStream()
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .forEach(
