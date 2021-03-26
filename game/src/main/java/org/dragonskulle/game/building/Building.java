@@ -8,6 +8,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
@@ -316,6 +317,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         return buildings;
     }
 
+    /**
+     * Get whether the target {@link Building} is within attackable range from the Building.
+     * @param target The Building to attack.
+     * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
+     */
     public boolean isBuildingAttackable(Building target) {
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         HexagonTile targetTile = target.getTile();
@@ -326,7 +332,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get the current axial coordinates of the building.
+     * Get the current axial coordinates of the building using the {@link GameObject}'s {@link TransformHex}.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building.
      */
