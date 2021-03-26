@@ -40,13 +40,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter
-    @Setter
-    private HexagonTile mHexChosen;
+    @Getter @Setter private HexagonTile mHexChosen;
 
-    @Getter
-    @Setter
-    private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -63,9 +59,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
 
-    /**
-     * The constructor for the human player
-     */
+    /** The constructor for the human player */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
         mNetID = netID;
@@ -88,8 +82,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {
-                });
+                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
 
         mZoomSlider =
                 // Creates a blank screen
@@ -133,8 +126,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -186,9 +178,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /**
-     * This will choose what to do when the user can see the full map
-     */
+    /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -339,9 +329,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * Marks visuals to update whenever a new object is spawned
-     */
+    /** Marks visuals to update whenever a new object is spawned */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
