@@ -240,9 +240,21 @@ public class GLTF implements NativeResource {
         }
     }
 
+    /**
+     * Describes a single glTF mesh primitive. We use a {@link Renderable} component per primitive
+     */
+    private static class GLTFPrimitive {
+        private PBRMaterial mMaterial;
+        private Mesh mMesh;
+    }
+
+    /** Describes a single glTF mesh. It is a list of {@link GLTFPrimitive} */
+    private static class GLTFMesh {
+        private List<GLTFPrimitive> mPrimitives = new ArrayList<>();
+    }
+
     private List<PBRMaterial> mMaterials = new ArrayList<>();
-    private List<Mesh> mMeshes = new ArrayList<>();
-    private List<Integer> mMatIndices = new ArrayList<>();
+    private List<GLTFMesh> mMeshes = new ArrayList<>();
     private int mDefaultScene = 0;
     private List<Scene> mScenes = new ArrayList<>();
     private List<Camera> mCameras = new ArrayList<>();
@@ -468,48 +480,56 @@ public class GLTF implements NativeResource {
                 Vertex[] vertices = null;
                 int[] indices = null;
                 Integer matIdx = null;
+
+                GLTFMesh outMesh = new GLTFMesh();
+
                 JSONArray submeshes = (JSONArray) mesh.get("primitives");
 
                 if (submeshes != null && submeshes.size() > 0) {
-                    JSONObject submesh = (JSONObject) submeshes.get(0);
+                    for (Object submeshObj : submeshes) {
+                        JSONObject submesh = (JSONObject) submeshObj;
 
-                    matIdx = parseInt(submesh, "material");
+                        matIdx = parseInt(submesh, "material");
 
-                    GLTFAccessor<?> indexAccessor = accessorList.get(parseInt(submesh, "indices"));
-                    indices = new int[indexAccessor.mCount];
+                        GLTFAccessor<?> indexAccessor =
+                                accessorList.get(parseInt(submesh, "indices"));
+                        indices = new int[indexAccessor.mCount];
 
-                    for (int i = 0; i < indices.length; i++) {
-                        indices[i] = parseIntFromScalar(indexAccessor.get(i));
-                    }
+                        for (int i = 0; i < indices.length; i++) {
+                            indices[i] = parseIntFromScalar(indexAccessor.get(i));
+                        }
 
-                    JSONObject attributes = (JSONObject) submesh.get("attributes");
-                    if (attributes != null) {
-                        GLTFAccessor<?> posAccessor =
-                                accessorList.get(parseInt(attributes, "POSITION"));
-                        GLTFAccessor<?> normAccessor =
-                                accessorList.get(parseInt(attributes, "NORMAL"));
-                        GLTFAccessor<?> uvAccessor =
-                                accessorList.get(parseInt(attributes, "TEXCOORD_0"));
-                        if (posAccessor.mCount == uvAccessor.mCount) {
-                            vertices = new Vertex[posAccessor.mCount];
+                        JSONObject attributes = (JSONObject) submesh.get("attributes");
+                        if (attributes != null) {
+                            GLTFAccessor<?> posAccessor =
+                                    accessorList.get(parseInt(attributes, "POSITION"));
+                            GLTFAccessor<?> normAccessor =
+                                    accessorList.get(parseInt(attributes, "NORMAL"));
+                            GLTFAccessor<?> uvAccessor =
+                                    accessorList.get(parseInt(attributes, "TEXCOORD_0"));
+                            if (posAccessor.mCount == uvAccessor.mCount) {
+                                vertices = new Vertex[posAccessor.mCount];
 
-                            for (int i = 0; i < vertices.length; i++) {
-                                Vector3f pos = (Vector3f) posAccessor.get(i);
-                                Vector3f norm = (Vector3f) normAccessor.get(i);
-                                Vector2f uv = (Vector2f) uvAccessor.get(i);
-                                vertices[i] = new Vertex();
-                                vertices[i].setPos(pos);
-                                vertices[i].setNormal(norm);
-                                vertices[i].setUv(uv);
+                                for (int i = 0; i < vertices.length; i++) {
+                                    Vector3f pos = (Vector3f) posAccessor.get(i);
+                                    Vector3f norm = (Vector3f) normAccessor.get(i);
+                                    Vector2f uv = (Vector2f) uvAccessor.get(i);
+                                    vertices[i] = new Vertex();
+                                    vertices[i].setPos(pos);
+                                    vertices[i].setNormal(norm);
+                                    vertices[i].setUv(uv);
+                                }
                             }
                         }
+
+                        GLTFPrimitive outPrimitive = new GLTFPrimitive();
+                        outPrimitive.mMesh = new Mesh(vertices, indices);
+                        outPrimitive.mMaterial = matIdx == null ? null : mMaterials.get(matIdx);
+                        outMesh.mPrimitives.add(outPrimitive);
                     }
                 }
 
-                mMatIndices.add(matIdx);
-
-                if (vertices != null && indices != null) mMeshes.add(new Mesh(vertices, indices));
-                else mMeshes.add(null);
+                mMeshes.add(outMesh);
             }
         }
 
@@ -638,15 +658,16 @@ public class GLTF implements NativeResource {
                             Integer mesh = parseInt(node, "mesh");
                             if (mesh != null) {
 
-                                Integer matIndex = mMatIndices.get(mesh);
+                                for (GLTFPrimitive primitive : mMeshes.get(mesh).mPrimitives) {
 
-                                IRefCountedMaterial mat =
-                                        matIndex == null
-                                                ? new PBRMaterial()
-                                                : mMaterials.get(matIndex).incRefCount();
+                                    IRefCountedMaterial mat =
+                                            primitive.mMaterial == null
+                                                    ? new PBRMaterial()
+                                                    : primitive.mMaterial.incRefCount();
 
-                                Renderable rend = new Renderable(mMeshes.get(mesh), mat);
-                                handle.addComponent(rend);
+                                    Renderable rend = new Renderable(primitive.mMesh, mat);
+                                    handle.addComponent(rend);
+                                }
                             }
 
                             Integer camera = parseInt(node, "camera");
