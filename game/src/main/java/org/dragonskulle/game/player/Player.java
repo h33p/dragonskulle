@@ -246,8 +246,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         map.storeBuilding(building, qPos, rPos);
         log.info("stored building on map tile");
-        if (building.getNetworkObject().isMine()) {
+        if (building.getNetworkObject().isMine()) {			//TODO THIS IS False COS can only be ran on the client! Maybe
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+        }
+        if (getNetworkObject().isServer()) {
+        	mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
 
         log.info(
@@ -273,10 +276,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         final HexagonTile buildingTile = building.getTile(); // TODO this will default to null
         map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
         log.info("stored building on map tile");
-        if (building.getNetworkObject().isMine()) {
+        if (building.getNetworkObject().isMine()) {		//TODO THIS IS False COS can only be ran on the client! Maybe
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
+        }
+        if (getNetworkObject().isServer()) {
+        	 mOwnedBuildings.put(
+                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
+                     building.getReference(Building.class));
         }
         log.info("added building into hash" + mOwnedBuildings.size());
         log.info("ownedBuilding size" + mOwnedBuildings.size());
