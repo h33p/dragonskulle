@@ -151,7 +151,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean addNewBuilding(int qPos, int rPos) {
 
-        // mNetworkManager = getNetworkObject().getNetworkManager();
         if (mNetworkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
 
@@ -159,7 +158,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         HexagonMap map = mMapComponent.get();
-
         Building buildingHere = map.getBuilding(qPos, rPos);
 
         if (buildingHere != null) {
@@ -173,40 +171,41 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
-
-        if (obj != null) {
-
-            GameObject buildingGO = obj.get().getGameObject();
-
-            buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
-
-            Building building = buildingGO.getComponent(Building.class).get();
-
-            if (building != null) {
-                log.info("Stored building");
-                map.storeBuilding(buildingGO.getComponent(Building.class).get(), qPos, rPos);
-
-                return true;
-            }
+        
+        if (obj == null) {
+        	log.warning("Could not create a Network Object");
+        	return false;
         }
-        log.warning("Couldn't create building");
-        return false;
-    }
 
+        GameObject buildingGO = obj.get().getGameObject();
+        buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        Building building = buildingGO.getComponent(Building.class).get();
+        
+        if (building == null) {
+        	log.warning("Could not create a building");
+        	return false;
+        }
+        
+        map.storeBuilding(buildingGO.getComponent(Building.class).get(), qPos, rPos);
+        log.info("Stored building");
+
+        return true;        
+    }
+    
     /**
-     * ?? (AURI/CRAIG)
+     * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
      *
-     * @return A HexagonMap ??
+     * @return The HexagonMap being used, otherwise {@code null}.
      */
     public HexagonMap getMapComponent() {
         return mMapComponent == null ? null : mMapComponent.get();
     }
 
     /**
-     * ?? (AURI/CRAIG)
+     * This gets the Player Object who owns that tile -- Will be changed
      *
-     * @param tile ??
-     * @return ??
+     * @param tile The tile to check who owns it
+     * @return Which player owns it
      */
     public Player getTileOwner(HexagonTile tile) {
         Building building = tile.getBuilding();
@@ -248,21 +247,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Gets the building from this tile
+     * This will get the building from this tile if you own that building
      *
      * @param tile The tile to get the building from
-     * @return The reference to a building
+     * @return The reference to a building if it yours
      */
-    public Reference<Building> getBuilding(HexagonTile tile) {
+    public Reference<Building> getOwnedBuilding(HexagonTile tile) {
         return mOwnedBuildings.get(tile);
     }
 
     /**
-     * ?? (AURI/CRAIG)
+     * This will return a {@code Stream} of values of buildings which are owned by the player
      *
-     * @return ??
+     * @return A stream containing references to the buildings the player owns
      */
-    public Stream<Reference<Building>> getBuildings() {
+    public Stream<Reference<Building>> getOwnedBuildings() {
         return mOwnedBuildings.values().stream();
     }
 
