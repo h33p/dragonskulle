@@ -190,10 +190,7 @@ public class App implements NativeResource {
         TemplateManager templates = new TemplateManager();
 
         templates.addAllObjects(
-                mNetworkTemplatesGLTF
-                        .get()
-                        .getDefaultScene()
-                        .getGameObjects()
+                mNetworkTemplatesGLTF.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
 
         Reference<NetworkManager> networkManager =

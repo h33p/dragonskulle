@@ -895,7 +895,7 @@ public class GLTF implements NativeResource {
     @Override
     public void free() {
         for (Scene scene : mScenes)
-            for (GameObject go : scene.getGameObjects().toArray(GameObject[]::new))
+            for (GameObject go : scene.getGameObjects().stream().toArray(GameObject[]::new))
                 scene.destroyRootObjectImmediate(go);
 
         for (PBRMaterial mat : mMaterials) mat.free();
