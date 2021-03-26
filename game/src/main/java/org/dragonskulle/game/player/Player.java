@@ -194,7 +194,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         map.storeBuilding(buildingGO.getComponent(Building.class).get(), qPos, rPos);
-        HexagonTile tile = map.getTile(qPos, rPos);
+        addBuilding(building);
         log.info("Stored building");
 
         return true;
