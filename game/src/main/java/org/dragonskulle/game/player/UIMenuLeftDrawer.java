@@ -106,6 +106,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setMargin(0f, 0f, 0f, 0f);
         tran.setPosition(-1.56f, 0f);
+        tran.setParentAnchor(0, 0);
         getGameObject().addComponent(drawer);
     }
 
