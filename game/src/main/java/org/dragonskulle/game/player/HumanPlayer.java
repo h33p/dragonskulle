@@ -19,8 +19,7 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.*;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
@@ -300,7 +299,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case ATTACK_SCREEN:
                 effects.highlightTiles(
                         (tile) -> {
-                            return HighlightSelection.ignored();
+                            return HighlightSelection.CLEARED;
                         });
                 break;
             case STAT_SCREEN:

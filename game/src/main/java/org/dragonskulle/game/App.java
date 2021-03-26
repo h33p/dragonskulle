@@ -158,14 +158,10 @@ public class App implements NativeResource {
         return mainScene;
     }
 
-    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
-
-        log.warning("We have got here " + asServer);
+    private static Scene createMainScene(
+            Reference<NetworkManager> networkManagerReference, boolean asServer) {
         Scene mainScene = createMainScene();
-
-        // asServer = true;
-        if (asServer) {
-            log.warning("I am the server");
+        if (networkManagerReference != null && networkManagerReference.isValid() && asServer) {
             GameObject hostGameUI =
                     new GameObject(
                             "hostGameUI",
@@ -195,19 +191,65 @@ public class App implements NativeResource {
                                                             (a, b) -> {
                                                                 System.out.println(
                                                                         "should fill with ai");
-                                                                networkManager
+                                                                networkManagerReference
+                                                                        .get()
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(
                                                                                 -1,
-                                                                                networkManager
+                                                                                networkManagerReference
+                                                                                        .get()
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
-
-                                                                log.warning("Created ai");
                                                             }));
                                         });
                             });
             mainScene.addRootObject(hostGameUI);
+        }
+        return mainScene;
+    }
+
+    private static Scene createMainMenu(Scene mainScene) {
+        Scene mainMenu = new Scene("mainMenu");
+
+        GameObject camera = new GameObject("mainCamera");
+        Transform3D tr = (Transform3D) camera.getTransform();
+        // Set where it's at
+        tr.setPosition(0f, 0f, 1.5f);
+        tr.rotateDeg(-30f, 0f, 70f);
+        tr.translateLocal(0f, -8f, 0f);
+        camera.addComponent(new Camera());
+        mainMenu.addRootObject(camera);
+
+        // Create a hexagon template
+        GameObject hexagon = new GameObject("hexagon");
+
+        // Add a renderable to it
+        hexagon.addComponent(new Renderable());
+        Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
+        hexRenderer.get().setMaterial(new VertexHighlightMaterial());
+        VertexHighlightMaterial hexMaterial =
+                hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
+        hexMaterial.setDistancePow(10f);
+        hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
+
+        // Add wobble components
+        hexagon.addComponent(new Wobbler());
+        Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
+
+        GameObject hexRoot = new GameObject("hexRoot");
+        hexRoot.addComponent(new Spinner(10, 10, 0.1f));
+
+        // Create instances, change up some parameters
+        for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
+            for (int r = -INSTANCE_COUNT_ROOT / 2; r <= INSTANCE_COUNT_ROOT / 2; r++) {
+                int idx = q * r % COLOURS.length;
+                if (idx < 0) idx += COLOURS.length;
+                hexWobbler
+                        .get()
+                        .setPhaseShift((Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) * 0.1f);
+                hexMaterial.getColour().set(COLOURS[idx]);
+                hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
+            }
         }
         return mainScene;
     }
@@ -352,12 +394,13 @@ public class App implements NativeResource {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join Game"),
-                                                (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    joinUI.setEnabled(true);
-                                                    hostUI.setEnabled(false);
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
-                                                });
+                                                refAudioButtonEffect
+                                                        .get()
+                                                        .audibleClick(
+                                                                (uiButton, __) -> {
+                                                                    mainUI.setEnabled(false);
+                                                                    joinUI.setEnabled(true);
+                                                                }));
                                 button.addComponent(newButton);
                             });
 
@@ -375,11 +418,13 @@ public class App implements NativeResource {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host Game"),
-                                                (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    hostUI.setEnabled(true);
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
-                                                });
+                                                refAudioButtonEffect
+                                                        .get()
+                                                        .audibleClick(
+                                                                (uiButton, __) -> {
+                                                                    mainUI.setEnabled(false);
+                                                                    hostUI.setEnabled(true);
+                                                                }));
                                 button.addComponent(newButton);
                             });
 
@@ -508,29 +553,41 @@ public class App implements NativeResource {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join (Temporary)"),
-                                                (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
-                                                    networkManager
-                                                            .get()
-                                                            .createClient(
-                                                                    sIP,
-                                                                    sPort,
-                                                                    (gameScene, manager, netID) -> {
-                                                                        if (netID >= 0) {
-                                                                            onConnectedClient(
-                                                                                    gameScene,
-                                                                                    manager, netID);
-                                                                        } else if (connectingTextRef
-                                                                                .isValid()) {
-                                                                            connectingTextRef
-                                                                                    .get()
-                                                                                    .setEnabled(
-                                                                                            false);
-                                                                        }
-                                                                    });
-                                                    if (connectingTextRef.isValid())
-                                                        connectingTextRef.get().setEnabled(true);
-                                                });
+                                                refAudioButtonEffect
+                                                        .get()
+                                                        .audibleClick(
+                                                                (uiButton, __) -> {
+                                                                    networkManager
+                                                                            .get()
+                                                                            .recreateGameScene(
+                                                                                    createMainScene(
+                                                                                            networkManager,
+                                                                                            false));
+                                                                    networkManager
+                                                                            .get()
+                                                                            .createClient(
+                                                                                    sIP,
+                                                                                    sPort,
+                                                                                    (manager,
+                                                                                            netID) -> {
+                                                                                        if (netID
+                                                                                                >= 0) {
+                                                                                            onConnectedClient(
+                                                                                                    manager,
+                                                                                                    netID);
+                                                                                        } else if (connectingTextRef
+                                                                                                .isValid()) {
+                                                                                            connectingTextRef
+                                                                                                    .get()
+                                                                                                    .setEnabled(
+                                                                                                            false);
+                                                                                        }
+                                                                                    });
+                                                                    if (connectingTextRef.isValid())
+                                                                        connectingTextRef
+                                                                                .get()
+                                                                                .setEnabled(true);
+                                                                }));
                                 button.addComponent(newButton);
                             });
 
@@ -580,13 +637,23 @@ public class App implements NativeResource {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host (Temporary)"),
-                                                (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
-                                                    networkManager
-                                                            .get()
-                                                            .createServer(
-                                                                    sPort, this::onClientConnected);
-                                                });
+                                                refAudioButtonEffect
+                                                        .get()
+                                                        .audibleClick(
+                                                                (uiButton, __) -> {
+                                                                    networkManager
+                                                                            .get()
+                                                                            .recreateGameScene(
+                                                                                    createMainScene(
+                                                                                            networkManager,
+                                                                                            true));
+                                                                    networkManager
+                                                                            .get()
+                                                                            .createServer(
+                                                                                    sPort,
+                                                                                    App
+                                                                                            ::onClientConnected);
+                                                                }));
                                 button.addComponent(newButton);
                             });
 
@@ -616,6 +683,8 @@ public class App implements NativeResource {
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
+
+        mainMenu.addRootObject(GameObject.instantiate(hexRoot));
 
         mainMenu.addRootObject(networkManagerObject);
 
@@ -675,7 +744,7 @@ public class App implements NativeResource {
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
+    private static void onConnectedClient(NetworkManager manager, int netID) {
         System.out.println("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
@@ -687,7 +756,7 @@ public class App implements NativeResource {
                                             manager.getReference(NetworkManager.class), netID));
                         });
 
-        gameScene.addRootObject(humanPlayer);
+        manager.getGameScene().addRootObject(humanPlayer);
     }
 
     private void onClientConnected(
