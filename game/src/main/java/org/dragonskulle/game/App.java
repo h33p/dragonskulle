@@ -58,7 +58,7 @@ public class App {
         new Vector4f(1.f, 0.f, 1.f, 1f),
     };
 
-    protected static Scene createMainScene() {
+    private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -156,7 +156,7 @@ public class App {
         return mainScene;
     }
 
-    protected static Scene createMainScene(
+    private static Scene createMainScene(
             Reference<NetworkManager> networkManagerReference, boolean asServer) {
         Scene mainScene = createMainScene();
         if (networkManagerReference != null && networkManagerReference.isValid() && asServer) {
