@@ -199,9 +199,9 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                     log.info("AI: Upgrading");
 
-                    Building buildingToUpgrade =
+                    Building buildingToUpgrade =  	//TODO This won't work due to mOwnedBuildings not being updated
                             mPlayer.get()
-                                    .getBuildings()
+                                    .getOwnedBuildings()
                                     .filter(Reference::isValid)
                                     .map(Reference::get)
                                     .limit(upgradeID + 1) // limit to the random number
@@ -231,7 +231,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     // Will create a list of [attacker (your building), defender (building to
                     // attack)]
                     mPlayer.get()
-                            .getBuildings()
+                            .getOwnedBuildings()  			//TODO This won't work due to mOwnedBuildings not being updated
                             .filter(Reference::isValid)
                             .map(Reference::get)
                             .forEach(
@@ -276,7 +276,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                         Building buildingToSell =
                                 mPlayer.get()
-                                        .getBuildings()
+                                        .getOwnedBuildings()			//TODO This won't work due to mOwnedBuildings not being updated
                                         .filter(Reference::isValid)
                                         .map(Reference::get)
                                         .filter(b -> !b.isCapital())
@@ -307,7 +307,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
 
         mPlayer.get()
-                .getBuildings()
+                .getOwnedBuildings()				//TODO This won't work due to mOwnedBuildings not being updated
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .forEach(

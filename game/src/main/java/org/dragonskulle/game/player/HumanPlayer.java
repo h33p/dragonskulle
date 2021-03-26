@@ -308,7 +308,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
         if (buildingToCheck == null || !buildingToCheck.isValid()) return false;
 
-        return mPlayer.get().getBuilding(buildingToCheck.get().getTile()) != null;
+        return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;			//TODO This won't work due to mOwnedBuildings not being updated
     }
 
     /**
