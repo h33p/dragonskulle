@@ -158,13 +158,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         HexagonMap map = mMapComponent.get();
-        
+
         HexagonTile tile = map.getTile(qPos, rPos);
         if (tile == null) {
-        	log.warning("Tile does not exist");
-        	return false;
+            log.warning("Tile does not exist");
+            return false;
         }
-        
+
         Building buildingHere = map.getBuilding(qPos, rPos);
 
         if (buildingHere != null) {
@@ -193,8 +193,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        map.storeBuilding(buildingGO.getComponent(Building.class).get(), qPos, rPos);
-        addBuilding(building);
+        addBuilding(building, qPos, rPos);
         log.info("Stored building");
 
         return true;
@@ -238,11 +237,40 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param building The building to add
      */
+    public void addBuilding(Building building, int qPos, int rPos) {
+        HexagonMap map = this.getMapComponent();
+        if (map != null) {
+            map.storeBuilding(building, qPos, rPos);
+            log.info("stored building on map tile");
+            if (building.getNetworkObject().isMine()) {
+                mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+            }
+            log.info("added building into hash" + mOwnedBuildings.size());
+            log.info("ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Added Building " + qPos + " " + rPos);
+        }
+    }
+
+    /**
+     * Add a building to the ones the player owns
+     *
+     * @param building The building to add
+     */
     public void addBuilding(Building building) {
-        mOwnedBuildings.put(building.getTile(), building.getReference(Building.class));
-        building.getTile().setBuilding(building);
-        log.info("Building size" + mOwnedBuildings.size());
-        log.info("Added Building " + building.getTile().getQ() + " " + building.getTile().getR());
+        HexagonMap map = this.getMapComponent();
+        if (map != null) {
+            final HexagonTile buildingTile = building.getTile();
+            map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
+            log.info("stored building on map tile");
+            if (building.getNetworkObject().isMine()) {
+                mOwnedBuildings.put(
+                        map.getTile(buildingTile.getQ(), buildingTile.getR()),
+                        building.getReference(Building.class));
+            }
+            log.info("added building into hash" + mOwnedBuildings.size());
+            log.info("ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
+        }
     }
 
     /**
