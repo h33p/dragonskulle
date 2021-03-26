@@ -172,7 +172,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
-        if (GameActions.LEFT_CLICK.isActivated() //                &&
+        if (mPlayer != null
+                && GameActions.LEFT_CLICK.isActivated() //                &&
                 // UIManager.getInstance().getHoveredObject() == null, this
                 // is breaking something
                 && mainCam != null) {
