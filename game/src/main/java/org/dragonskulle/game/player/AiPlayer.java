@@ -202,7 +202,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     Building buildingToUpgrade = // TODO This won't work due to mOwnedBuildings not
                             // being updated
                             mPlayer.get()
-                                    .getOwnedBuildings()
+                                    .getOwnedBuildingsAsStream()
                                     .filter(Reference::isValid)
                                     .map(Reference::get)
                                     .limit(upgradeID + 1) // limit to the random number
@@ -232,7 +232,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                     // Will create a list of [attacker (your building), defender (building to
                     // attack)]
                     mPlayer.get()
-                            .getOwnedBuildings() // TODO This won't work due to mOwnedBuildings not
+                            .getOwnedBuildingsAsStream() // TODO This won't work due to
+                            // mOwnedBuildings not
                             // being updated
                             .filter(Reference::isValid)
                             .map(Reference::get)
@@ -278,7 +279,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
                         Building buildingToSell =
                                 mPlayer.get()
-                                        .getOwnedBuildings() // TODO This won't work due to
+                                        .getOwnedBuildingsAsStream() // TODO This won't work due to
                                         // mOwnedBuildings not being updated
                                         .filter(Reference::isValid)
                                         .map(Reference::get)
@@ -310,7 +311,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
         List<HexagonTile> hexTilesToExpand = new ArrayList<HexagonTile>();
 
         mPlayer.get()
-                .getOwnedBuildings() // TODO This won't work due to mOwnedBuildings not being
+                .getOwnedBuildingsAsStream() // TODO This won't work due to mOwnedBuildings not
+                // being
                 // updated
                 .filter(Reference::isValid)
                 .map(Reference::get)

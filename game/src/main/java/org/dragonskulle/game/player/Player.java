@@ -43,6 +43,7 @@ import org.joml.Vector3fc;
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
     // List of Buildings -- stored & synced in HexagonMap
+    //    @Getter
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
     // The map component
     private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
@@ -297,8 +298,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @return A stream containing references to the buildings the player owns
      */
-    public Stream<Reference<Building>> getOwnedBuildings() {
+    public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
         return mOwnedBuildings.values().stream();
+    }
+
+    public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
+        if (buildingToRemove.isValid() && buildingToRemove.get().getTile() != null) {
+            return mOwnedBuildings.remove(buildingToRemove.get().getTile(), buildingToRemove);
+        }
+        return false;
     }
 
     /**
@@ -596,5 +604,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public void fixedUpdate(float deltaTime) {
 
         updateTokens(deltaTime);
+    }
+
+    public void addOwnership(Reference<Building> buildingReference) {
+        final HexagonTile tile = buildingReference.get().getTile();
+        if (tile != null) {
+            this.mOwnedBuildings.put(tile, buildingReference);
+        }
+    }
+
+    public boolean thinksOwnsBuilding(Reference<Building> buildingReference) {
+        final HexagonTile tile = buildingReference.get().getTile();
+        if (tile != null) {
+            final Reference<Building> foundBuilding = this.mOwnedBuildings.get(tile);
+            if (foundBuilding != null) {
+                return foundBuilding == buildingReference;
+            }
+        }
+        return false;
     }
 }
