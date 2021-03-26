@@ -171,27 +171,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
-        
+
         if (obj == null) {
-        	log.warning("Could not create a Network Object");
-        	return false;
+            log.warning("Could not create a Network Object");
+            return false;
         }
 
         GameObject buildingGO = obj.get().getGameObject();
         buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
         Building building = buildingGO.getComponent(Building.class).get();
-        
+
         if (building == null) {
-        	log.warning("Could not create a building");
-        	return false;
+            log.warning("Could not create a building");
+            return false;
         }
-        
+
         map.storeBuilding(buildingGO.getComponent(Building.class).get(), qPos, rPos);
         log.info("Stored building");
 
-        return true;        
+        return true;
     }
-    
+
     /**
      * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
      *
