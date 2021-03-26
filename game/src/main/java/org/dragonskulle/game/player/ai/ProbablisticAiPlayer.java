@@ -22,7 +22,7 @@ import org.dragonskulle.game.player.networkData.StatData;
 public class ProbablisticAiPlayer extends AiPlayer {
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 1;
+    protected float mTileProbability = (float) 0.2;
 
     protected float mBuildingProbability = 1 - mTileProbability;
 
