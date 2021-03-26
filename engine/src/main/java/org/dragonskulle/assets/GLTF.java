@@ -7,6 +7,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Resource;
@@ -47,6 +48,7 @@ import org.lwjgl.system.NativeResource;
  *     them.
  */
 @Accessors(prefix = "m")
+@Log
 public class GLTF implements NativeResource {
 
     /** Describes glTF buffer accessor */
@@ -687,6 +689,7 @@ public class GLTF implements NativeResource {
             try {
                 comp = (Component) type.getConstructor().newInstance();
             } catch (Exception e) {
+                log.warning("Failed to instantiate: " + className);
                 return;
             }
 
@@ -706,6 +709,7 @@ public class GLTF implements NativeResource {
 
             gameObject.addComponent(comp);
         } catch (ClassNotFoundException e) {
+            log.warning("Class not found: " + className);
             return;
         }
     }
@@ -752,6 +756,8 @@ public class GLTF implements NativeResource {
                         break;
                     }
                 }
+            } else if (String.class.isAssignableFrom(type)) {
+                f.set(obj, value.toString());
             } else if (Vector3f.class.isAssignableFrom(type)) {
                 Vector3f vec = (Vector3f) f.get(obj);
                 JSONArray values = (JSONArray) value;

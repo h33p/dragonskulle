@@ -29,7 +29,7 @@
     "scene" : 0,
     "scenes" : [
         {
-            "name" : "Scene",
+            "name" : "TestScene",
             "nodes" : [
                 1,
                 2,
@@ -83,11 +83,15 @@
                     "transform" : "org.dragonskulle.components.Transform3D",
                     "components" : [
                         {
-                            "class_name" : "org.dragonskulle.game.Spinner",
+                            "class_name" : "org.dragonskulle.ui.UIText",
                             "properties" : [
                                 {
-                                    "name" : "spinSpeed",
+                                    "name" : "mVerticalAlignment",
                                     "value" : 1337
+                                },
+                                {
+                                    "name" : "mText",
+                                    "value" : "Did you know that 3 billion devices run Java?"
                                 }
                             ]
                         }
