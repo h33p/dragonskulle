@@ -3,12 +3,12 @@ package org.dragonskulle.audio;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * This is a class which allows the game to play audio and to control the volume of the audio
@@ -17,13 +17,13 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *     <p>This is a singleton class so to use this use it as {@code
  *     AudioManager.getInstance().method()}
  */
+@Accessors(prefix = "m")
+@Log
 public class AudioManager {
 
     private static final AudioManager AUDIO_MANAGER_INSTANCE = new AudioManager();
     private Mixer mMixer;
     private DataLinePool[] mSounds;
-
-    public static final Logger LOGGER = Logger.getLogger("audiomanager");
 
     /** This constructor creates the AudioManager. If the Mixer is not created it is set to null. */
     private AudioManager() {
@@ -71,18 +71,15 @@ public class AudioManager {
                 mSounds[1].openStream(audio);
                 return true;
             } else {
-                LOGGER.log(Level.WARNING, "Mixer does not exist");
+                log.warning("Mixer does not exist");
                 return false;
             }
         } catch (UnsupportedAudioFileException e) {
-            LOGGER.log(
-                    Level.WARNING,
-                    "This is unable to be played becuase it used an unsupported Audio file");
+            log.warning("This is unable to be played becuase it used an unsupported Audio file");
             return false;
 
         } catch (IOException e) {
-            LOGGER.log(
-                    Level.WARNING,
+            log.warning(
                     "This is unable to be played becuase there is an IO exception.  Make sure the file is in the right directory");
             return false;
         }
@@ -103,7 +100,7 @@ public class AudioManager {
         } else if (mMixer != null && channel == SoundType.SFX) {
             mSounds[1].setMute(muteValue);
         } else {
-            LOGGER.log(Level.WARNING, "Error as no mixer");
+            log.warning("Error as no mixer");
         }
     }
 
@@ -118,10 +115,10 @@ public class AudioManager {
         // Gets the mute value
         if (mMixer != null && channel == SoundType.BACKGROUND) {
 
-            return mSounds[0].getMute();
+            return mSounds[0].isMasterMute();
 
         } else if (mMixer != null && channel == SoundType.SFX) {
-            return mSounds[1].getMute();
+            return mSounds[1].isMasterMute();
         }
         return false; // TODO any better way?
     }
@@ -151,10 +148,10 @@ public class AudioManager {
     public int getVolume(SoundType channel) {
 
         if (mMixer != null && channel == SoundType.BACKGROUND) {
-            return mSounds[0].getVolume();
+            return mSounds[0].getMasterVol();
 
         } else if (mMixer != null && channel == SoundType.SFX) {
-            return mSounds[1].getVolume();
+            return mSounds[1].getMasterVol();
         }
 
         return -1;

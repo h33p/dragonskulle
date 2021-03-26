@@ -5,6 +5,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -30,11 +31,13 @@ class VulkanMeshBuffer implements NativeResource {
     private VulkanBuffer mVertexBuffer;
     private VulkanBuffer mIndexBuffer;
 
-    private int mMaxVertexOffset;
-    private int mMaxIndexOffset;
+    @Getter private int mMaxVertexOffset;
+    @Getter private int mMaxIndexOffset;
 
     @Getter private boolean mDirty = false;
-    private Map<Mesh, MeshDescriptor> mLoadedMeshes = new HashMap<Mesh, MeshDescriptor>();
+    private Map<Mesh, Integer> mLoadedMeshes = new HashMap<Mesh, Integer>();
+
+    private ArrayList<MeshBufferEntry> mEntries = new ArrayList<>();
 
     private static final Logger LOGGER = Logger.getLogger("render");
 
@@ -45,6 +48,11 @@ class VulkanMeshBuffer implements NativeResource {
         private int mVertexOffset;
         private int mIndexOffset;
         private int mIndexCount;
+    }
+
+    private static class MeshBufferEntry {
+        private Mesh mMesh;
+        private MeshDescriptor mMeshDescriptor;
     }
 
     private VulkanMeshBuffer() {}
@@ -63,7 +71,8 @@ class VulkanMeshBuffer implements NativeResource {
     }
 
     public MeshDescriptor getMeshDescriptor(Mesh mesh) {
-        return mLoadedMeshes.get(mesh);
+        Integer idx = mLoadedMeshes.get(mesh);
+        return idx == null ? null : mEntries.get(idx).mMeshDescriptor;
     }
 
     /**
@@ -76,15 +85,20 @@ class VulkanMeshBuffer implements NativeResource {
      * @return descriptor of the offsets within mesh buffer for the mesh
      */
     public MeshDescriptor addMesh(Mesh mesh) {
-        MeshDescriptor ret = mLoadedMeshes.get(mesh);
-        if (ret == null) {
+        Integer idx = mLoadedMeshes.get(mesh);
+        if (idx == null) {
             mDirty = true;
-            ret = new MeshDescriptor(mMaxVertexOffset, mMaxIndexOffset, mesh.getIndices().length);
+            idx = mEntries.size();
+            MeshBufferEntry entry = new MeshBufferEntry();
+            entry.mMesh = mesh;
+            entry.mMeshDescriptor =
+                    new MeshDescriptor(mMaxVertexOffset, mMaxIndexOffset, mesh.getIndices().length);
             mMaxVertexOffset += mesh.getVertices().length * Vertex.SIZEOF;
             mMaxIndexOffset += mesh.getIndices().length * 4;
-            mLoadedMeshes.put(mesh, ret);
+            mEntries.add(entry);
+            mLoadedMeshes.put(mesh, idx);
         }
-        return ret;
+        return mEntries.get(idx).mMeshDescriptor;
     }
 
     /**
@@ -110,6 +124,7 @@ class VulkanMeshBuffer implements NativeResource {
             ret.mMaxIndexOffset = mMaxIndexOffset;
 
             ret.mLoadedMeshes = mLoadedMeshes;
+            ret.mEntries = mEntries;
             ret.mVertexBuffer = createVertexBuffer(graphicsQueue, commandPool);
             ret.mIndexBuffer = createIndexBuffer(graphicsQueue, commandPool);
 
@@ -119,7 +134,43 @@ class VulkanMeshBuffer implements NativeResource {
         }
     }
 
-    // TODO: remove mesh
+    /**
+     * Cleanup all unushed meshes
+     *
+     * <p>This method will walk the mesh buffer and find any meshes that are no longer used (have
+     * their refcount as 0), remove them from the buffer, and then compact all other meshes down.
+     */
+    public void cleanupUnusedMeshes() {
+        int curIdxSub = 0;
+        int curVertSub = 0;
+
+        for (MeshBufferEntry entry : mEntries) {
+            if (entry.mMesh.getRefCount() <= 0) {
+                mDirty = true;
+                curIdxSub += entry.mMeshDescriptor.mIndexCount * 4;
+                curVertSub += entry.mMesh.getVertices().length * Vertex.SIZEOF;
+            } else {
+                entry.mMeshDescriptor.mIndexOffset -= curIdxSub;
+                entry.mMeshDescriptor.mVertexOffset -= curVertSub;
+            }
+        }
+
+        if (mDirty) {
+            mEntries.removeIf(e -> e.mMesh.getRefCount() <= 0);
+
+            mLoadedMeshes.clear();
+
+            mMaxIndexOffset -= curIdxSub;
+            mMaxVertexOffset -= curVertSub;
+
+            int len = mEntries.size();
+
+            for (int i = 0; i < len; i++) {
+                MeshBufferEntry entry = mEntries.get(i);
+                mLoadedMeshes.put(entry.mMesh, i);
+            }
+        }
+    }
 
     @Override
     public void free() {
@@ -160,9 +211,9 @@ class VulkanMeshBuffer implements NativeResource {
                 PointerBuffer pData = stack.pointers(0);
                 vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
-                for (Map.Entry<Mesh, MeshDescriptor> mesh : mLoadedMeshes.entrySet()) {
-                    int voff = mesh.getValue().mVertexOffset;
-                    for (Vertex v : mesh.getKey().getVertices()) {
+                for (MeshBufferEntry entry : mEntries) {
+                    int voff = entry.mMeshDescriptor.mVertexOffset;
+                    for (Vertex v : entry.mMesh.getVertices()) {
                         v.copyTo(voff, byteBuffer);
                         voff += Vertex.SIZEOF;
                     }
@@ -210,9 +261,10 @@ class VulkanMeshBuffer implements NativeResource {
                 PointerBuffer pData = stack.pointers(0);
                 vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
-                for (Map.Entry<Mesh, MeshDescriptor> mesh : mLoadedMeshes.entrySet()) {
-                    ByteBuffer buf = (ByteBuffer) byteBuffer.position(mesh.getValue().mIndexOffset);
-                    for (int i : mesh.getKey().getIndices()) {
+                for (MeshBufferEntry entry : mEntries) {
+                    ByteBuffer buf =
+                            (ByteBuffer) byteBuffer.position(entry.mMeshDescriptor.mIndexOffset);
+                    for (int i : entry.mMesh.getIndices()) {
                         buf.putInt(i);
                     }
                     byteBuffer.rewind();

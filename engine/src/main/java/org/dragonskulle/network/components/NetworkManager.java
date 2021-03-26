@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.INetworkUpdate;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
@@ -24,12 +25,12 @@ public class NetworkManager extends Component implements INetworkUpdate {
 
     /** Simple client connection result handler */
     public static interface IConnectionResultEvent {
-        void handle(NetworkManager manager, int netID);
+        void handle(Scene gameScene, NetworkManager manager, int netID);
     }
 
     /** Simple server client connection handler interface. */
     public static interface IConnectedClientEvent {
-        void handle(NetworkManager manager, ServerClient client);
+        void handle(Scene gameScene, NetworkManager manager, ServerClient client);
     }
 
     /** A registerable listener for when objects are spawned */
@@ -37,29 +38,42 @@ public class NetworkManager extends Component implements INetworkUpdate {
         void handleSpawn(NetworkObject object);
     }
 
+    public static interface ISceneBuilder {
+        Scene buildScene(NetworkManager manager, boolean isServer);
+    }
+
     /** Registered spawnable templates */
     @Getter(AccessLevel.PACKAGE)
     protected final TemplateManager mSpawnableTemplates;
     /** Target game scene */
     @Getter(AccessLevel.PACKAGE)
-    private final Scene mGameScene;
+    private Scene mGameScene;
+
+    @Getter(AccessLevel.PACKAGE)
+    private final ISceneBuilder mGameSceneBuilder;
     /** Client manager. Exists when there is a client connection */
     @Getter private transient ClientNetworkManager mClientManager;
     /** Server manager. Exists when there is a server instance */
     @Getter private transient ServerNetworkManager mServerManager;
 
-    public NetworkManager(TemplateManager templates, Scene gameScene) {
+    public NetworkManager(TemplateManager templates, ISceneBuilder builder) {
         mSpawnableTemplates = templates;
-        mGameScene = gameScene;
+        mGameSceneBuilder = builder;
     }
 
     @Override
     public void networkUpdate() {
         Scene.getActiveScene().registerSingleton(this);
-        mGameScene.registerSingleton(this);
+
+        if (mGameScene != null) mGameScene.registerSingleton(this);
 
         if (mServerManager != null) mServerManager.networkUpdate();
         else if (mClientManager != null) mClientManager.networkUpdate();
+    }
+
+    public void createGameScene(boolean isServer) {
+        if (mGameScene != null) Engine.getInstance().unloadScene(mGameScene);
+        this.mGameScene = mGameSceneBuilder.buildScene(this, isServer);
     }
 
     /**
@@ -147,5 +161,7 @@ public class NetworkManager extends Component implements INetworkUpdate {
     protected void onDestroy() {
         if (mServerManager != null) mServerManager.destroy();
         if (mClientManager != null) mClientManager.disconnect();
+        if (mGameScene != null) Engine.getInstance().unloadScene(mGameScene);
+        mGameScene = null;
     }
 }

@@ -38,7 +38,7 @@ public class App implements NativeResource {
     private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
 
-    private Scene createMainScene() {
+    private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -118,7 +118,7 @@ public class App implements NativeResource {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            // refAudio.get().play();
+            refAudio.get().play();
         }
 
         mainScene.addRootObject(audioObject);
@@ -136,7 +136,55 @@ public class App implements NativeResource {
         return mainScene;
     }
 
-    private Scene createMainMenu(Scene mainScene) {
+    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
+        Scene mainScene = createMainScene();
+
+        if (asServer) {
+            GameObject hostGameUI =
+                    new GameObject(
+                            "hostGameUI",
+                            new TransformUI(false),
+                            (root) -> {
+                                root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                                root.getTransform(TransformUI.class).setParentAnchor(0f);
+                                root.buildChild(
+                                        "populate_with_ai",
+                                        new TransformUI(true),
+                                        (box) -> {
+                                            box.getTransform(TransformUI.class)
+                                                    .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
+                                            box.getTransform(TransformUI.class)
+                                                    .setMargin(0f, 0f, 0f, 0.07f);
+                                            box.addComponent(
+                                                    new UIRenderable(
+                                                            new SampledTexture(
+                                                                    "ui/wide_button.png")));
+                                            box.addComponent(
+                                                    new UIButton(
+                                                            new UIText(
+                                                                    new Vector3f(0f, 0f, 0f),
+                                                                    Font.getFontResource(
+                                                                            "Rise of Kingdom.ttf"),
+                                                                    "Fill game with AI"),
+                                                            (a, b) -> {
+                                                                System.out.println(
+                                                                        "should fill with ai");
+                                                                networkManager
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -1,
+                                                                                networkManager
+                                                                                        .findTemplateByName(
+                                                                                                "aiPlayer"));
+                                                            }));
+                                        });
+                            });
+            mainScene.addRootObject(hostGameUI);
+        }
+        return mainScene;
+    }
+
+    private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
 
         TemplateManager templates = new TemplateManager();
@@ -149,11 +197,12 @@ public class App implements NativeResource {
                         .toArray(GameObject[]::new));
 
         Reference<NetworkManager> networkManager =
-                new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
+                new NetworkManager(templates, App::createMainScene)
+                        .getReference(NetworkManager.class);
 
         GameObject networkManagerObject =
                 new GameObject(
-                        "client network manager",
+                        "network manager",
                         (handle) -> {
                             handle.addComponent(networkManager.get());
                         });
@@ -246,47 +295,6 @@ public class App implements NativeResource {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject hostGameUI =
-                new GameObject(
-                        "hostGameUI",
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                            root.buildChild(
-                                    "populate_with_ai",
-                                    new TransformUI(true),
-                                    (box) -> {
-                                        box.getTransform(TransformUI.class)
-                                                .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
-                                        box.getTransform(TransformUI.class)
-                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                        box.addComponent(
-                                                new UIRenderable(
-                                                        new SampledTexture("ui/wide_button.png")));
-                                        box.addComponent(
-                                                new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(0f, 0f, 0f),
-                                                                Font.getFontResource(
-                                                                        "Rise of Kingdom.ttf"),
-                                                                "Fill game with AI"),
-                                                        (a, b) -> {
-                                                            System.out.println(
-                                                                    "should fill with ai");
-                                                            networkManager
-                                                                    .get()
-                                                                    .getServerManager()
-                                                                    .spawnNetworkObject(
-                                                                            -1,
-                                                                            networkManager
-                                                                                    .get()
-                                                                                    .findTemplateByName(
-                                                                                            "aiPlayer"));
-                                                        }));
-                                    });
-                        });
-
         mainUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -315,7 +323,6 @@ public class App implements NativeResource {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     joinUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(false);
                                                                 }));
                                 button.addComponent(newButton);
                             });
@@ -340,7 +347,6 @@ public class App implements NativeResource {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     hostUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(true);
                                                                 }));
                                 button.addComponent(newButton);
                             });
@@ -406,6 +412,22 @@ public class App implements NativeResource {
 
                                 button.addComponent(newButton);
                             });
+                    bg.buildChild(
+                            "slider",
+                            new TransformUI(true),
+                            (slider) -> {
+                                slider.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
+                                slider.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UISlider newSlider =
+                                        new UISlider((uiSlider, val) -> System.out.println(val));
+
+                                newSlider.setRoundStep(0.1f);
+                                newSlider.setMaxValue(10f);
+
+                                slider.addComponent(newSlider);
+                            });
                 });
         joinUI.buildChild(
                 "bg",
@@ -459,12 +481,13 @@ public class App implements NativeResource {
                                                                             .createClient(
                                                                                     sIP,
                                                                                     sPort,
-                                                                                    (manager,
+                                                                                    (gameScene,
+                                                                                            manager,
                                                                                             netID) -> {
                                                                                         if (netID
                                                                                                 >= 0) {
                                                                                             onConnectedClient(
-                                                                                                    mainScene,
+                                                                                                    gameScene,
                                                                                                     manager,
                                                                                                     netID);
                                                                                         } else if (connectingTextRef
@@ -573,8 +596,6 @@ public class App implements NativeResource {
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
-        hostGameUI.setEnabled(false);
-        mainScene.addRootObject(hostGameUI);
 
         mainMenu.addRootObject(networkManagerObject);
 
@@ -603,14 +624,8 @@ public class App implements NativeResource {
     }
 
     private void run() {
-        // Create a scene
-        Scene mainScene = createMainScene();
-
         // Create the main menu
-        Scene mainMenu = createMainMenu(mainScene);
-
-        // Load the mainScene as an inactive scene
-        Engine.getInstance().loadScene(mainScene, false);
+        Scene mainMenu = createMainMenu();
 
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
@@ -640,7 +655,7 @@ public class App implements NativeResource {
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
         System.out.println("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
@@ -652,10 +667,11 @@ public class App implements NativeResource {
                                             manager.getReference(NetworkManager.class), netID));
                         });
 
-        mainScene.addRootObject(humanPlayer);
+        gameScene.addRootObject(humanPlayer);
     }
 
-    private void onClientConnected(NetworkManager manager, ServerClient networkClient) {
+    private void onClientConnected(
+            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
