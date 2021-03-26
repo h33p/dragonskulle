@@ -64,7 +64,6 @@ public class NetworkObject extends Component {
         if (mOwnerId < 0 && mIsServer) return true;
 
         ClientNetworkManager clientManager = mNetworkManager.getClientManager();
-
         return clientManager != null && clientManager.getNetID() == mOwnerId;
     }
 
@@ -174,8 +173,9 @@ public class NetworkObject extends Component {
      *
      * @param payload the payload
      * @throws IOException thrown if failed to read client streams
+     * @return the owner id of the network object
      */
-    public void updateFromBytes(byte[] payload) throws IOException {
+    public int updateFromBytes(byte[] payload) throws IOException {
         // TODO clear this up by using ByteStreams
         int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
 
@@ -211,6 +211,7 @@ public class NetworkObject extends Component {
                 mLogger.fine("Shouldn't update child");
             }
         }
+        return mOwnerId;
     }
 
     /**
