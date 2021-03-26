@@ -217,7 +217,7 @@ public class ClientNetworkManager {
                 .map(Reference::get)
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
-
+        mNetworkObjectReferences.clear();
         mManager.onClientDisconnect();
     }
 
