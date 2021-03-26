@@ -248,6 +248,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             if (building.getNetworkObject().isMine()) {
                 mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
             }
+            
+            log.warning(building.get)
+            
             log.info(
                     "added building into hash"
                             + map.getTile(qPos, rPos).getQ()
@@ -265,8 +268,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void addBuilding(Building building) {
         HexagonMap map = this.getMapComponent();
-        if (map != null) {
-            final HexagonTile buildingTile = building.getTile();
+        if (map == null) {
+        	log.warning("Map doesn't exist");
+        	return;
+        }
+        else {
+            final HexagonTile buildingTile = building.getTile();			//TODO this will default to null
             map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
             log.info("stored building on map tile");
             if (building.getNetworkObject().isMine()) {
