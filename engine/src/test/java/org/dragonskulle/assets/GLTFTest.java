@@ -10,7 +10,7 @@ import org.junit.Test;
 public class GLTFTest {
     @Test
     public void loadGLTF() {
-        try (Resource<GLTF> res = GLTF.getResource("presents")) {
+        try (Resource<GLTF> res = GLTF.getResource("testin")) {
             assertNotNull(res);
         }
     }

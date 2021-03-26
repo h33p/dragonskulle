@@ -31,16 +31,53 @@
         {
             "name" : "Scene",
             "nodes" : [
-                0,
                 1,
                 2,
                 3,
-                4
+                4,
+                5
             ]
         }
     ],
     "nodes" : [
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "properties" : [
+                                {
+                                    "name" : "mAxialCoordinate",
+                                    "value" : [
+                                        1,
+                                        2,
+                                        3
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "mesh" : 0,
+            "name" : "Sphere",
+            "scale" : [
+                2.5641026496887207,
+                1,
+                1
+            ],
+            "translation" : [
+                0,
+                0,
+                2
+            ]
+        },
+        {
+            "children" : [
+                0
+            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D",
@@ -50,14 +87,14 @@
                             "properties" : [
                                 {
                                     "name" : "spinSpeed",
-                                    "value" : 120.65998840332031
+                                    "value" : 1337
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "mesh" : 0,
+            "mesh" : 1,
             "name" : "Cube",
             "scale" : [
                 0.38999998569488525,
@@ -96,35 +133,15 @@
             },
             "name" : "Camera",
             "rotation" : [
-                0.493928462266922,
-                0.14486533403396606,
-                0.24129043519496918,
-                0.8226953744888306
+                0.6830127239227295,
+                0.1830127090215683,
+                0.1830127090215683,
+                0.6830126643180847
             ],
             "translation" : [
-                8.939144134521484,
-                -13.672107696533203,
-                8.447896003723145
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
-            "name" : "Suzanne",
-            "rotation" : [
-                0,
-                0,
-                0.4870976209640503,
-                0.8733475208282471
-            ],
-            "translation" : [
-                -3.2799999713897705,
-                -0.6200000047683716,
-                0
+                9.499999046325684,
+                -16.999998092651367,
+                1.499996304512024
             ]
         },
         {
@@ -134,6 +151,26 @@
                 }
             },
             "mesh" : 2,
+            "name" : "Suzanne",
+            "rotation" : [
+                0,
+                0,
+                0.4870976209640503,
+                0.8733475208282471
+            ],
+            "translation" : [
+                -1.5643258094787598,
+                -2.77799654006958,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 3,
             "name" : "Torus.001",
             "translation" : [
                 3.180000066757202,
@@ -169,7 +206,7 @@
     ],
     "meshes" : [
         {
-            "name" : "Cube",
+            "name" : "Sphere",
             "primitives" : [
                 {
                     "attributes" : {
@@ -177,7 +214,20 @@
                         "NORMAL" : 1,
                         "TEXCOORD_0" : 2
                     },
-                    "indices" : 3,
+                    "indices" : 3
+                }
+            ]
+        },
+        {
+            "name" : "Cube",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 4,
+                        "NORMAL" : 5,
+                        "TEXCOORD_0" : 6
+                    },
+                    "indices" : 7,
                     "material" : 0
                 }
             ]
@@ -187,11 +237,11 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 4,
-                        "NORMAL" : 5,
-                        "TEXCOORD_0" : 6
+                        "POSITION" : 8,
+                        "NORMAL" : 9,
+                        "TEXCOORD_0" : 10
                     },
-                    "indices" : 7
+                    "indices" : 11
                 }
             ]
         },
@@ -200,11 +250,11 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 8,
-                        "NORMAL" : 9,
-                        "TEXCOORD_0" : 10
+                        "POSITION" : 12,
+                        "NORMAL" : 13,
+                        "TEXCOORD_0" : 14
                     },
-                    "indices" : 11
+                    "indices" : 15
                 }
             ]
         }
@@ -218,13 +268,47 @@
     "images" : [
         {
             "mimeType" : "image/png",
-            "name" : "grasss",
-            "uri" : "../textures/gltf/testin/grasss.png"
+            "name" : "error",
+            "uri" : "../textures/gltf/testin/error.png"
         }
     ],
     "accessors" : [
         {
             "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 1984,
+            "max" : [
+                1.000000238418579,
+                1,
+                1
+            ],
+            "min" : [
+                -0.9999998211860657,
+                -1.0000003576278687,
+                -1
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 1984,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 1984,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 2880,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 4,
             "componentType" : 5126,
             "count" : 24,
             "max" : [
@@ -240,25 +324,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 1,
+            "bufferView" : 5,
             "componentType" : 5126,
             "count" : 24,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 2,
+            "bufferView" : 6,
             "componentType" : 5126,
             "count" : 24,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 3,
+            "bufferView" : 7,
             "componentType" : 5123,
             "count" : 36,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 4,
+            "bufferView" : 8,
             "componentType" : 5126,
             "count" : 1966,
             "max" : [
@@ -274,25 +358,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 5,
+            "bufferView" : 9,
             "componentType" : 5126,
             "count" : 1966,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 6,
+            "bufferView" : 10,
             "componentType" : 5126,
             "count" : 1966,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 7,
+            "bufferView" : 11,
             "componentType" : 5123,
             "count" : 2904,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 8,
+            "bufferView" : 12,
             "componentType" : 5126,
             "count" : 112,
             "max" : [
@@ -308,19 +392,19 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 9,
+            "bufferView" : 13,
             "componentType" : 5126,
             "count" : 112,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 10,
+            "bufferView" : 14,
             "componentType" : 5126,
             "count" : 112,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 11,
+            "bufferView" : 15,
             "componentType" : 5123,
             "count" : 546,
             "type" : "SCALAR"
@@ -329,63 +413,83 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 288,
+            "byteLength" : 23808,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
+            "byteLength" : 23808,
+            "byteOffset" : 23808
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 15872,
+            "byteOffset" : 47616
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 5760,
+            "byteOffset" : 63488
+        },
+        {
+            "buffer" : 0,
             "byteLength" : 288,
-            "byteOffset" : 288
+            "byteOffset" : 69248
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 288,
+            "byteOffset" : 69536
         },
         {
             "buffer" : 0,
             "byteLength" : 192,
-            "byteOffset" : 576
+            "byteOffset" : 69824
         },
         {
             "buffer" : 0,
             "byteLength" : 72,
-            "byteOffset" : 768
+            "byteOffset" : 70016
         },
         {
             "buffer" : 0,
             "byteLength" : 23592,
-            "byteOffset" : 840
+            "byteOffset" : 70088
         },
         {
             "buffer" : 0,
             "byteLength" : 23592,
-            "byteOffset" : 24432
+            "byteOffset" : 93680
         },
         {
             "buffer" : 0,
             "byteLength" : 15728,
-            "byteOffset" : 48024
+            "byteOffset" : 117272
         },
         {
             "buffer" : 0,
             "byteLength" : 5808,
-            "byteOffset" : 63752
+            "byteOffset" : 133000
         },
         {
             "buffer" : 0,
             "byteLength" : 1344,
-            "byteOffset" : 69560
+            "byteOffset" : 138808
         },
         {
             "buffer" : 0,
             "byteLength" : 1344,
-            "byteOffset" : 70904
+            "byteOffset" : 140152
         },
         {
             "buffer" : 0,
             "byteLength" : 896,
-            "byteOffset" : 72248
+            "byteOffset" : 141496
         },
         {
             "buffer" : 0,
             "byteLength" : 1092,
-            "byteOffset" : 73144
+            "byteOffset" : 142392
         }
     ],
     "samplers" : [
@@ -396,7 +500,7 @@
     ],
     "buffers" : [
         {
-            "byteLength" : 74236,
+            "byteLength" : 143484,
             "uri" : "testin.bin"
         }
     ]
