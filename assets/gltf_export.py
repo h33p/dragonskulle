@@ -10,7 +10,17 @@ try:
     else:
         argv = []
 
-    respath = argv[0]
+    if len(argv) > 0:
+        respath = argv[0]
+    else:
+        cwd = os.getcwd()
+        os.chdir(bpy.path.abspath("//"))
+        try:
+            git_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode(encoding='UTF-8').strip()
+        except:
+            git_root = os.path.join(bpy.path.abspath("//"), "../")
+        os.chdir(cwd)
+        respath = os.path.join(git_root, "game/src/main/resources/")
 
     scene_name = path.splitext(path.basename(bpy.data.filepath))[0]
 
@@ -29,5 +39,4 @@ try:
 
 except Exception as err:
     print(err, file=sys.stderr)
-    sys.exit(1)
 

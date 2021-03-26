@@ -191,7 +191,10 @@ def parse_components():
 
     cwd = os.getcwd()
     os.chdir(bpy.path.abspath("//"))
-    git_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode(encoding='UTF-8').strip()
+    try:
+        git_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode(encoding='UTF-8').strip()
+    except:
+        git_root = os.path.join(bpy.path.abspath("//"), "../")
     os.chdir(cwd)
 
     for root in java_roots:
