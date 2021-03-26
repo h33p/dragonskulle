@@ -247,34 +247,63 @@ public class GLTF implements NativeResource {
     private List<Scene> mScenes = new ArrayList<>();
     private List<Camera> mCameras = new ArrayList<>();
 
+    /**
+     * Parses a floating point variable from JSON object
+     *
+     * @param obj JSON to parse from
+     * @param key JSON key to read
+     * @param defaultValue default float value
+     * @return parsed float value (defaultValue if failed to parse).
+     */
     private static float parseFloat(JSONObject obj, String key, float defaultValue) {
         Object val = obj.get(key);
         if (val != null) return Float.parseFloat(val.toString());
         return defaultValue;
     }
 
+    /**
+     * Parses a floating point variable from JSON object
+     *
+     * @param obj object to parse from
+     * @return parsed float value or {@code null} if failed parsing
+     */
     private static Float parseFloat(Object val) {
         if (val != null) return Float.parseFloat(val.toString());
         return null;
     }
 
+    /**
+     * Parses a integer variable from JSON object
+     *
+     * @param obj JSON to parse from
+     * @param key JSON key to read
+     * @param defaultValue default int value
+     * @return parsed int value (defaultValue if failed to parse).
+     */
     private static int parseInt(JSONObject obj, String key, int defaultValue) {
         Object val = obj.get(key);
         if (val != null) return Integer.parseInt(val.toString());
         return defaultValue;
     }
 
+    /**
+     * Parses a integer point variable from JSON object
+     *
+     * @param obj object to parse from
+     * @return parsed int value or {@code null} if failed parsing
+     */
     private static Integer parseInt(JSONObject obj, String key) {
         Object val = obj.get(key);
         if (val != null) return Integer.parseInt(val.toString());
         return null;
     }
 
-    private static Integer parseInt(Object val) {
-        if (val != null) return Integer.parseInt(val.toString());
-        return null;
-    }
-
+    /**
+     * Parses a integer variable from a scalar
+     *
+     * @param obj object to parse from
+     * @return parsed int value, or {@code 0} if failed parsing
+     */
     private static int parseIntFromScalar(Object obj) {
         if (obj instanceof Integer) return (Integer) obj;
         else if (obj instanceof Long) return (int) (long) (Long) obj;
@@ -288,6 +317,7 @@ public class GLTF implements NativeResource {
     /**
      * Constructor for {@link GLTF}
      *
+     * @param data JSON string data to parse
      * @throws ParseException when parsing JSON fails
      */
     private GLTF(String data) throws ParseException {
@@ -644,7 +674,15 @@ public class GLTF implements NativeResource {
         return ret;
     }
 
-    /** Parse the object's transformation class and create it */
+    /**
+     * Parse the object's transformation class and create it
+     *
+     * @param name Transform class name
+     * @param position 3D position
+     * @param rotation 3D orientation
+     * @param scale 3D scale
+     * @return parsed transform. Defaults to {@code Transform3D} if it fails to parse.
+     */
     private Transform parseTransform(
             String name, Vector3f position, Quaternionf rotation, Vector3f scale) {
         Class<?> type = Transform3D.class;
@@ -670,7 +708,12 @@ public class GLTF implements NativeResource {
         return instance;
     }
 
-    /** Parse component from JSON and add it on the game object */
+    /**
+     * Parse component from JSON and add it on the game object
+     *
+     * @param gameObject game object to add the component on
+     * @param component JSON data describing the component
+     */
     private void parseComponent(GameObject gameObject, JSONObject component) {
         String className = (String) component.get("class_name");
 
@@ -714,7 +757,13 @@ public class GLTF implements NativeResource {
         }
     }
 
-    /** Assign value to variable by name */
+    /**
+     * Assign value to variable by name
+     *
+     * @param comp component to assign the variable to
+     * @param name name of the variable
+     * @param value string value of the variable
+     */
     private void assignComponentField(Component comp, String name, Object value) {
         Field f;
         try {
@@ -737,6 +786,10 @@ public class GLTF implements NativeResource {
      * Write a field into the object
      *
      * <p>This method will write into primitive fields, or recurse into vectors/syncvars
+     *
+     * @param obj object that has the field
+     * @param f field on the object
+     * @param value string value of the field
      */
     private void writeField(Object obj, Field f, Object value) throws IllegalAccessException {
         Class<?> type = f.getType();
@@ -769,7 +822,13 @@ public class GLTF implements NativeResource {
         }
     }
 
-    /** Write a primitive field into the object */
+    /**
+     * Write a primitive field into the object
+     *
+     * @param obj object containing the primitive field
+     * @param f the primitive field
+     * @param value string value of the primitive
+     */
     private void writePrimitiveField(Object obj, Field f, Object value)
             throws IllegalAccessException {
         Class<?> type = f.getType();
@@ -791,10 +850,32 @@ public class GLTF implements NativeResource {
         }
     }
 
+    /**
+     * Gets the default scene in this GLTF resource
+     *
+     * @return the default scene
+     */
     public Scene getDefaultScene() {
         return mScenes.get(mDefaultScene);
     }
 
+    /**
+     * Gets the scene by name
+     *
+     * @param name the name of the scene
+     * @return found scene, or {@code null}
+     */
+    public Scene getScene(String name) {
+        return mScenes.stream().filter(s -> s.getName().equals(name)).findFirst().orElse(null);
+    }
+
+    /**
+     * Load a GLTF resource
+     *
+     * @param name name of the glTF file. gltf subdirectory will be added, alongside the .gltf
+     *     extension.
+     * @return GLTF resource if successfully loaded, {@code null} otherwise
+     */
     public static Resource<GLTF> getResource(String name) {
         name = String.format("gltf/%s.gltf", name);
 
