@@ -15,6 +15,8 @@ target/*
 thunderclap.wav
 *.bin
 !**/gltf/*.bin
+game/src/main/resources/gltf/*.bin
+game/src/main/resources/textures/gltf/*.bin
 *.blend1
 *.blend2
 *.blend3
