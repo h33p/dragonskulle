@@ -520,10 +520,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             if (mMapComponent.isValid()
                     && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null
-                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID()
-                            == getNetworkObject().getOwnerId()) {
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getNetworkObject().isMine()) {
                 return true;
             }
+            
+            
         }
         return false;
     }
