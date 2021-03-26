@@ -105,15 +105,15 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         UIRenderable drawer = new UIRenderable(new SampledTexture("ui/drawer.png"));
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setMargin(0f, 0f, 0f, 0f);
-        tran.setPosition(-1.56f, 0f);
-        tran.setParentAnchor(0, 0);
+        tran.setPosition(-1.55f, 0f);
+        tran.setParentAnchor(0f, 0f);
         getGameObject().addComponent(drawer);
     }
 
     private UITextButtonFrame buildAttackButtonFrame() {
         return new UITextButtonFrame(
                 "attack_button",
-                "Attack buildingSelectedView",
+                "Attack Selected Building",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
 
