@@ -115,22 +115,77 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private void distributeCoordinates() {
 
-        float angleOfCircle = (float) 360 / (float) playersToPlay;
+    	double angleOfCircle = 360 / playersToPlay;
 
         // This says how many people have joined the server so far
         int playersOnlineNow = mPlayersOnline.size();
 
-        // This gives us the angle to find our coordinates
-        float angleToStart = playersOnlineNow * angleOfCircle;
-        float angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
-
+        // This gives us the angle to find our coordinates.  Stored in radians
+        double angleToStart = Math.toRadians(playersOnlineNow * angleOfCircle);
+        double angleToEnd = Math.toRadians((playersOnlineNow + 1) * angleOfCircle);
+        
+        double lineToStartM = Math.tan(angleToStart);  //LARGER Wait no.
+        double lineToEndM = Math.tan(angleToEnd);  //
+        
+        boolean foundSensibleCoord = false;
+        
+        Random random = new Random();
+        
+        while (!foundSensibleCoord) {
+        	int xCoord = random.nextInt();
+        	int yCoord = random.nextInt();
+        	
+        	if (Double.isNaN(lineToEndM) && Double.isNaN(lineToStartM)) {
+        		//TODO How they got here is beyond me It is literally impossible but just in case
+        		//TODO Both lines are x = 0
+        		
+        		log.warning("SOME BIZZARE MATHS HAS HAPPENED: " + angleToStart +" " + angleToEnd);
+        	}
+        	else if (Double.isNaN(lineToStartM)) {
+        		;//TODO lineStart X = 0 one another y = mx
+        		if (angleToStart == 90) {
+        			
+        			//ASSUMPTION that y > mx Must hold && x < 0
+        		}
+        		else {
+        			// angleToStart = 270 so y < mx Must hold && x > 0
+        		}
+        	}
+        	else if (Double.isNaN(lineToEndM)) {
+        		;//TODO lineEnd X = 0 one another y = mx
+        		if (angleToEnd == 90) {
+        			
+        			//ASSUMPTION that y > mx Must hold && x > 0
+        		}
+        		else {
+        			// angleToStart = 270 so y < mx Must hold && x < 0
+        		}
+        		
+        	}
+        	else {
+        		;//TODO 4 more if statements
+        		if (angleToStart > 90 && angleToStart < 270) {
+        			//Assumption y < mx must hold
+        		}
+        		else {
+        			//Assumption y > mx must hold
+        		}
+        		if (angleToEnd > 90 && angleToStart < 270) {
+        			//Assumption y > mx mustHold
+        		}
+        		else {
+        			//Assumption y < mx must hold
+        		}
+        	}
+        	
+        }
+              
         /* TODO NOTES
         Create a line from each of these angles.  Use Maths
         Then choose a pair of coordinates from between those lines
         Change to Axial
         Done????
         */
-        // boolean finished;
 
         int min = -10;
         int max = 10;
