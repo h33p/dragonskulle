@@ -1,10 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import static org.dragonskulle.utils.Env.*;
-
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Scanner;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -17,24 +13,18 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
-import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
-import org.dragonskulle.network.components.NetworkHexTransform;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.*;
-import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.dragonskulle.ui.*;
 import org.joml.*;
 import org.lwjgl.system.NativeResource;
@@ -43,8 +33,10 @@ public class App implements NativeResource {
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
+    private static boolean sReload = false;
 
     private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
+    private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
 
     private Scene createMainScene() {
         // Create a scene
@@ -150,44 +142,11 @@ public class App implements NativeResource {
         TemplateManager templates = new TemplateManager();
 
         templates.addAllObjects(
-                new GameObject(
-                        "cube",
-                        (handle) -> {
-                            UnlitMaterial mat = new UnlitMaterial();
-                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
-                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
-                        }),
-                new GameObject(
-                        "capital",
-                        (handle) -> {
-                            UnlitMaterial mat = new UnlitMaterial();
-
-                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
-                            handle.addComponent(new Renderable(Mesh.HEXAGON, mat));
-                        }),
-                new GameObject(
-                        "building",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            UnlitMaterial mat = new UnlitMaterial();
-                            mat.getColour().set(1, 0, 0, 1);
-                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
-                            handle.addComponent(new Building());
-                            handle.addComponent(new NetworkHexTransform());
-                        }),
-                new GameObject(
-                        "player",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            handle.addComponent(new Player());
-                        }),
-                new GameObject(
-                        "aiPlayer",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            handle.addComponent(new AiPlayer());
-                            handle.addComponent(new Player());
-                        }));
+                mNetworkTemplatesGLTF
+                        .get()
+                        .getDefaultScene()
+                        .getGameObjects()
+                        .toArray(GameObject[]::new));
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
@@ -421,8 +380,27 @@ public class App implements NativeResource {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Quit"),
+                                                (uiButton, __) -> Engine.getInstance().stop());
+
+                                button.addComponent(newButton);
+                            });
+
+                    bg.buildChild(
+                            "reloadButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Quick Reload"),
                                                 (uiButton, __) -> {
-                                                    sReload = false;
+                                                    sReload = true;
                                                     Engine.getInstance().stop();
                                                 });
 
@@ -608,31 +586,18 @@ public class App implements NativeResource {
         return mainMenu;
     }
 
-    public static boolean sReload = true;
-
     /**
      * Entrypoint of the program. Creates and runs one app instance
      *
      * @param args the input arguments
      */
     public static void main(String[] args) {
-
         do {
+            sReload = false;
             try (App app = new App()) {
                 app.run();
             }
         } while (sReload);
-
-        Map<Thread, StackTraceElement[]> activeThreads = Thread.getAllStackTraces();
-
-        for (Map.Entry<Thread, StackTraceElement[]> t : activeThreads.entrySet()) {
-            if (t.getKey() != Thread.currentThread()) {
-                System.out.println("THREAD:");
-                System.out.println(t.getKey().getName());
-                System.out.println(t.getKey().getId());
-                System.out.println(Arrays.toString(t.getValue()));
-            }
-        }
 
         System.exit(0);
     }
@@ -700,25 +665,6 @@ public class App implements NativeResource {
     @Override
     public void free() {
         mMainMenuGLTF.free();
+        mNetworkTemplatesGLTF.free();
     }
 }
-
-//        // Create a cube. This syntax is slightly different
-//        // This here, will allow you to "build" the cube in one go
-//        GameObject cube =
-//                new GameObject(
-//                        "cube",
-//                        new Transform3D(0f, 0f, 1.5f),
-//                        (go) -> {
-//                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-//                            go.getComponent(Renderable.class)
-//                                    .get()
-//                                    .getMaterial(IColouredMaterial.class)
-//                                    .setAlpha(1f);
-//                            // You spin me right round...
-//                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-//                        });
-//
-//        mainMenu.addRootObject(cube);
-//
-//        mainMenu.addRootObject(GameObject.instantiate(cube));
