@@ -499,7 +499,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("Too far");
             return;
         }
-        log.info("Checking 2 Fone");
 
         boolean addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
 
