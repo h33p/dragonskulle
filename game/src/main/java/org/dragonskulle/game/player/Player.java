@@ -158,13 +158,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         HexagonMap map = mMapComponent.get();
-        
+
         HexagonTile tile = map.getTile(qPos, rPos);
         if (tile == null) {
-        	log.warning("Tile does not exist");
-        	return false;
+            log.warning("Tile does not exist");
+            return false;
         }
-        
+
         Building buildingHere = map.getBuilding(qPos, rPos);
 
         if (buildingHere != null) {
