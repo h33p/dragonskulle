@@ -25,7 +25,7 @@ try:
     if not path.exists(gltf_dir):
         os.makedirs(gltf_dir)
 
-    bpy.ops.export_scene.gltf(export_format='GLTF_SEPARATE', filepath=out_path, export_texture_dir=tex_dir, export_cameras=True, export_yup=False, export_lights=True)
+    bpy.ops.export_scene.gltf(export_format='GLTF_SEPARATE', filepath=out_path, export_texture_dir=tex_dir, export_cameras=True, export_yup=False, export_apply=True, export_lights=True)
 
 except Exception as err:
     print(err, file=sys.stderr)

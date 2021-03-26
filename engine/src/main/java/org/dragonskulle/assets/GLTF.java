@@ -454,6 +454,8 @@ public class GLTF implements NativeResource {
                     if (attributes != null) {
                         GLTFAccessor<?> posAccessor =
                                 accessorList.get(parseInt(attributes, "POSITION"));
+                        GLTFAccessor<?> normAccessor =
+                                accessorList.get(parseInt(attributes, "NORMAL"));
                         GLTFAccessor<?> uvAccessor =
                                 accessorList.get(parseInt(attributes, "TEXCOORD_0"));
                         if (posAccessor.mCount == uvAccessor.mCount) {
@@ -461,9 +463,11 @@ public class GLTF implements NativeResource {
 
                             for (int i = 0; i < vertices.length; i++) {
                                 Vector3f pos = (Vector3f) posAccessor.get(i);
+                                Vector3f norm = (Vector3f) normAccessor.get(i);
                                 Vector2f uv = (Vector2f) uvAccessor.get(i);
                                 vertices[i] = new Vertex();
                                 vertices[i].setPos(pos);
+                                vertices[i].setNormal(norm);
                                 vertices[i].setUv(uv);
                             }
                         }
@@ -530,9 +534,11 @@ public class GLTF implements NativeResource {
                 Scene outScene = new Scene(name);
 
                 JSONArray sceneNodes = (JSONArray) scene.get("nodes");
-                for (Object nidxObj : sceneNodes) {
-                    int nodeIdx = parseIntFromScalar(nidxObj);
-                    outScene.addRootObject(parseNode(nodes, nodeIdx));
+                if (sceneNodes != null) {
+                    for (Object nidxObj : sceneNodes) {
+                        int nodeIdx = parseIntFromScalar(nidxObj);
+                        outScene.addRootObject(parseNode(nodes, nodeIdx));
+                    }
                 }
 
                 mScenes.add(outScene);
@@ -547,33 +553,56 @@ public class GLTF implements NativeResource {
         JSONObject node = (JSONObject) nodes.get(idx);
         String name = node.get("name").toString();
 
+        JSONArray translation = (JSONArray) node.get("translation");
+        Vector3f translationVec;
+
+        if (translation != null) {
+            translationVec =
+                    new Vector3f(
+                            parseFloat(translation.get(0)),
+                            parseFloat(translation.get(1)),
+                            parseFloat(translation.get(2)));
+        } else translationVec = new Vector3f();
+
+        JSONArray rotation = (JSONArray) node.get("rotation");
+        Quaternionf rotationQuat;
+
+        if (rotation != null) {
+            rotationQuat =
+                    new Quaternionf(
+                            parseFloat(rotation.get(0)),
+                            parseFloat(rotation.get(1)),
+                            parseFloat(rotation.get(2)),
+                            parseFloat(rotation.get(3)));
+        } else rotationQuat = new Quaternionf();
+
+        JSONArray scale = (JSONArray) node.get("scale");
+        Vector3f scaleVec;
+
+        if (scale != null) {
+            scaleVec =
+                    new Vector3f(
+                            parseFloat(scale.get(0)),
+                            parseFloat(scale.get(1)),
+                            parseFloat(scale.get(2)));
+        } else scaleVec = new Vector3f(1f);
+
+        JSONObject extensions = (JSONObject) node.get("extensions");
+        JSONObject gameObj;
+
+        if (extensions != null) {
+            gameObj = (JSONObject) extensions.get("DSKULLE_game_object");
+        } else gameObj = null;
+
+        String transformType = gameObj != null ? (String) gameObj.get("transform") : null;
+
+        Transform transform = parseTransform(transformType, translationVec, rotationQuat, scaleVec);
+
         GameObject ret =
                 new GameObject(
                         name,
+                        transform,
                         (handle) -> {
-                            JSONArray rotation = (JSONArray) node.get("rotation");
-                            if (rotation != null) {
-                                Quaternionf quat =
-                                        new Quaternionf(
-                                                parseFloat(rotation.get(0)),
-                                                parseFloat(rotation.get(1)),
-                                                parseFloat(rotation.get(2)),
-                                                parseFloat(rotation.get(3)));
-
-                                handle.getTransform(Transform3D.class).setRotation(quat);
-                            }
-
-                            JSONArray translation = (JSONArray) node.get("translation");
-                            if (translation != null) {
-                                Vector3f vec =
-                                        new Vector3f(
-                                                parseFloat(translation.get(0)),
-                                                parseFloat(translation.get(1)),
-                                                parseFloat(translation.get(2)));
-
-                                handle.getTransform(Transform3D.class).setPosition(vec);
-                            }
-
                             Integer mesh = parseInt(node, "mesh");
                             if (mesh != null) {
 
@@ -593,17 +622,11 @@ public class GLTF implements NativeResource {
 
                             // TODO: parse lights
 
-                            JSONObject extensions = (JSONObject) node.get("extensions");
-
-                            if (extensions != null) {
-                                JSONObject gameObj =
-                                        (JSONObject) extensions.get("DSKULLE_game_object");
-                                if (gameObj != null) {
-                                    JSONArray comps = (JSONArray) gameObj.get("components");
-                                    if (comps != null) {
-                                        for (Object comp : comps) {
-                                            parseComponent(handle, (JSONObject) comp);
-                                        }
+                            if (gameObj != null) {
+                                JSONArray comps = (JSONArray) gameObj.get("components");
+                                if (comps != null) {
+                                    for (Object comp : comps) {
+                                        parseComponent(handle, (JSONObject) comp);
                                     }
                                 }
                             }
@@ -619,9 +642,35 @@ public class GLTF implements NativeResource {
         return ret;
     }
 
+    /** Parse the object's transformation class and create it */
+    private Transform parseTransform(
+            String name, Vector3f position, Quaternionf rotation, Vector3f scale) {
+        Class<?> type = Transform3D.class;
+
+        if (name != null) {
+            try {
+                type = Class.forName(name);
+            } catch (ClassNotFoundException e) {
+            }
+        }
+
+        Transform instance;
+
+        try {
+            instance = (Transform) type.getConstructor().newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            instance = new Transform3D();
+        }
+
+        instance.setLocal3DTransformation(position, rotation, scale);
+
+        return instance;
+    }
+
     /** Parse component from JSON and add it on the game object */
     private void parseComponent(GameObject gameObject, JSONObject component) {
-        String className = (String) component.get("className");
+        String className = (String) component.get("class_name");
 
         if (className == null) return;
 
@@ -665,7 +714,7 @@ public class GLTF implements NativeResource {
     private void assignComponentField(Component comp, String name, Object value) {
         Field f;
         try {
-            f = comp.getClass().getField(name);
+            f = comp.getClass().getDeclaredField(name);
         } catch (Exception e) {
             e.printStackTrace();
             return;

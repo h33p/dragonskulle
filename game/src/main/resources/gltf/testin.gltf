@@ -43,13 +43,14 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
                     "components" : [
                         {
-                            "className" : "org.dragonskulle.game.Spinner",
+                            "class_name" : "org.dragonskulle.game.Spinner",
                             "properties" : [
                                 {
                                     "name" : "spinSpeed",
-                                    "value" : 264.17999267578125
+                                    "value" : 120.65998840332031
                                 }
                             ]
                         }
@@ -57,14 +58,21 @@
                 }
             },
             "mesh" : 0,
-            "name" : "Cube"
+            "name" : "Cube",
+            "scale" : [
+                0.38999998569488525,
+                1,
+                1
+            ]
         },
         {
             "extensions" : {
                 "KHR_lights_punctual" : {
                     "light" : 0
                 },
-                "DSKULLE_game_object" : {}
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
             },
             "name" : "Light",
             "rotation" : [
@@ -82,24 +90,28 @@
         {
             "camera" : 0,
             "extensions" : {
-                "DSKULLE_game_object" : {}
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
             },
             "name" : "Camera",
             "rotation" : [
-                0.483536034822464,
-                0.20870360732078552,
-                0.33687159419059753,
-                0.7804827094078064
+                0.493928462266922,
+                0.14486533403396606,
+                0.24129043519496918,
+                0.8226953744888306
             ],
             "translation" : [
-                7.358891487121582,
-                -6.925790786743164,
-                4.958309173583984
+                8.939144134521484,
+                -13.672107696533203,
+                8.447896003723145
             ]
         },
         {
             "extensions" : {
-                "DSKULLE_game_object" : {}
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
             },
             "mesh" : 1,
             "name" : "Suzanne",
@@ -117,7 +129,9 @@
         },
         {
             "extensions" : {
-                "DSKULLE_game_object" : {}
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
             },
             "mesh" : 2,
             "name" : "Torus.001",
@@ -280,7 +294,7 @@
         {
             "bufferView" : 8,
             "componentType" : 5126,
-            "count" : 364,
+            "count" : 112,
             "max" : [
                 1.309999942779541,
                 1.3004485368728638,
@@ -296,13 +310,13 @@
         {
             "bufferView" : 9,
             "componentType" : 5126,
-            "count" : 364,
+            "count" : 112,
             "type" : "VEC3"
         },
         {
             "bufferView" : 10,
             "componentType" : 5126,
-            "count" : 364,
+            "count" : 112,
             "type" : "VEC2"
         },
         {
@@ -355,23 +369,23 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 4368,
+            "byteLength" : 1344,
             "byteOffset" : 69560
         },
         {
             "buffer" : 0,
-            "byteLength" : 4368,
-            "byteOffset" : 73928
+            "byteLength" : 1344,
+            "byteOffset" : 70904
         },
         {
             "buffer" : 0,
-            "byteLength" : 2912,
-            "byteOffset" : 78296
+            "byteLength" : 896,
+            "byteOffset" : 72248
         },
         {
             "buffer" : 0,
             "byteLength" : 1092,
-            "byteOffset" : 81208
+            "byteOffset" : 73144
         }
     ],
     "samplers" : [
@@ -382,7 +396,7 @@
     ],
     "buffers" : [
         {
-            "byteLength" : 82300,
+            "byteLength" : 74236,
             "uri" : "testin.bin"
         }
     ]

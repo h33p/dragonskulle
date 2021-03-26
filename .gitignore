@@ -13,6 +13,7 @@ javadocs/
 target/*
 thunderclap.wav
 *.bin
+!**/gltf/*.bin
 *.blend1
 *.blend2
 *.blend3

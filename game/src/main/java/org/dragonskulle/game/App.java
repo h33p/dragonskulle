@@ -24,7 +24,6 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.Player;
@@ -38,31 +37,16 @@ import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.dragonskulle.ui.*;
 import org.joml.*;
-import org.joml.Math;
+import org.lwjgl.system.NativeResource;
 
-public class App {
-
-    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
-    private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
+public class App implements NativeResource {
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
 
-    private static final Vector4fc[] COLOURS = {
-        new Vector4f(1.f, 0.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 0.5f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.5f, 1f),
-        new Vector4f(0.5f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 1.f, 1f),
-        new Vector4f(1.f, 0.f, 1.f, 1f),
-    };
+    private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
 
-    private static final Resource<GLTF> GLTF_FILE = GLTF.getResource("testin");
-
-    private static Scene createMainScene() {
+    private Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -160,51 +144,8 @@ public class App {
         return mainScene;
     }
 
-    private static Scene createMainMenu(Scene mainScene) {
-        Scene mainMenu = new Scene("mainMenu");
-
-        GameObject camera = new GameObject("mainCamera");
-        Transform3D tr = (Transform3D) camera.getTransform();
-        // Set where it's at
-        tr.setPosition(0f, 0f, 1.5f);
-        tr.rotateDeg(-30f, 0f, 70f);
-        tr.translateLocal(0f, -8f, 0f);
-        camera.addComponent(new Camera());
-        mainMenu.addRootObject(camera);
-
-        // Create a hexagon template
-        GameObject hexagon = new GameObject("hexagon");
-
-        // Add a renderable to it
-        hexagon.addComponent(new Renderable());
-        Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
-        hexRenderer.get().setMaterial(new VertexHighlightMaterial());
-        VertexHighlightMaterial hexMaterial =
-                hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
-        hexMaterial.setDistancePow(10f);
-        hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
-
-        // Add wobble components
-        hexagon.addComponent(new Wobbler());
-        Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
-
-        GameObject hexRoot = new GameObject("hexRoot");
-        hexRoot.addComponent(new Spinner(10, 10, 0.1f));
-
-        // Create instances, change up some parameters
-        for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
-            for (int r = -INSTANCE_COUNT_ROOT / 2; r <= INSTANCE_COUNT_ROOT / 2; r++) {
-                int idx = q * r % COLOURS.length;
-                if (idx < 0) idx += COLOURS.length;
-                hexWobbler
-                        .get()
-                        .setPhaseShift((Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) * 0.1f);
-                hexMaterial.getColour().set(COLOURS[idx]);
-                hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
-            }
-        }
-
-        mainMenu.addRootObject(hexRoot);
+    private Scene createMainMenu(Scene mainScene) {
+        Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
 
         TemplateManager templates = new TemplateManager();
 
@@ -480,7 +421,10 @@ public class App {
                                                         new Vector3f(0f, 0f, 0f),
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Quit"),
-                                                (uiButton, __) -> Engine.getInstance().stop());
+                                                (uiButton, __) -> {
+                                                    sReload = false;
+                                                    Engine.getInstance().stop();
+                                                });
 
                                 button.addComponent(newButton);
                             });
@@ -617,7 +561,7 @@ public class App {
                                                                             .get()
                                                                             .createServer(
                                                                                     sPort,
-                                                                                    App
+                                                                                    this
                                                                                             ::onClientConnected);
                                                                 }));
                                 button.addComponent(newButton);
@@ -654,8 +598,6 @@ public class App {
         hostGameUI.setEnabled(false);
         mainScene.addRootObject(hostGameUI);
 
-        mainMenu.addRootObject(GameObject.instantiate(hexRoot));
-
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(hostUI);
@@ -666,12 +608,36 @@ public class App {
         return mainMenu;
     }
 
+    public static boolean sReload = true;
+
     /**
      * Entrypoint of the program. Creates and runs one app instance
      *
      * @param args the input arguments
      */
     public static void main(String[] args) {
+
+        do {
+            try (App app = new App()) {
+                app.run();
+            }
+        } while (sReload);
+
+        Map<Thread, StackTraceElement[]> activeThreads = Thread.getAllStackTraces();
+
+        for (Map.Entry<Thread, StackTraceElement[]> t : activeThreads.entrySet()) {
+            if (t.getKey() != Thread.currentThread()) {
+                System.out.println("THREAD:");
+                System.out.println(t.getKey().getName());
+                System.out.println(t.getKey().getId());
+                System.out.println(Arrays.toString(t.getValue()));
+            }
+        }
+
+        System.exit(0);
+    }
+
+    private void run() {
         // Create a scene
         Scene mainScene = createMainScene();
 
@@ -682,7 +648,7 @@ public class App {
         Engine.getInstance().loadScene(mainScene, false);
 
         // Load the mainMenu as the presentation scene
-        Engine.getInstance().loadPresentationScene(GLTF_FILE.get().getDefaultScene());
+        Engine.getInstance().loadPresentationScene(mainMenu);
 
         // Load dev console
         // TODO: actually make a fully fledged console
@@ -707,22 +673,9 @@ public class App {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
-
-        Map<Thread, StackTraceElement[]> activeThreads = Thread.getAllStackTraces();
-
-        for (Map.Entry<Thread, StackTraceElement[]> t : activeThreads.entrySet()) {
-            if (t.getKey() != Thread.currentThread()) {
-                System.out.println("THREAD:");
-                System.out.println(t.getKey().getName());
-                System.out.println(t.getKey().getId());
-                System.out.println(Arrays.toString(t.getValue()));
-            }
-        }
-
-        System.exit(0);
     }
 
-    private static void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
+    private void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
         System.out.println("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
@@ -737,11 +690,16 @@ public class App {
         mainScene.addRootObject(humanPlayer);
     }
 
-    private static void onClientConnected(NetworkManager manager, ServerClient networkClient) {
+    private void onClientConnected(NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+    }
+
+    @Override
+    public void free() {
+        mMainMenuGLTF.free();
     }
 }
 

@@ -18,14 +18,16 @@ import org.joml.Vector3fc;
  *     and rotation.
  */
 public class Transform3D extends Transform {
-    protected final Matrix4f mLocalMatrix;
-    protected Matrix4f mWorldMatrix;
+    private final Matrix4f mLocalMatrix = new Matrix4f();
+    protected final Matrix4f mWorldMatrix = new Matrix4f();
+
+    private final Vector3f mTmpForward = new Vector3f();
+    private final Vector3f mPosition = new Vector3f();
+    private final Quaternionf mRotation = new Quaternionf();
+    private final Vector3f mScale = new Vector3f(1f);
 
     /** Default constructor. mLocalMatrix is just the identity matrix */
-    public Transform3D() {
-        mLocalMatrix = new Matrix4f();
-        mWorldMatrix = new Matrix4f();
-    }
+    public Transform3D() {}
 
     /**
      * Constructor with initial position
@@ -33,7 +35,7 @@ public class Transform3D extends Transform {
      * @param position Starting position for the object
      */
     public Transform3D(Vector3fc position) {
-        this(position.x(), position.y(), position.z());
+        mPosition.set(position);
     }
 
     /**
@@ -44,8 +46,7 @@ public class Transform3D extends Transform {
      * @param z Z position axis
      */
     public Transform3D(float x, float y, float z) {
-        mLocalMatrix = new Matrix4f().translate(x, y, z);
-        mWorldMatrix = new Matrix4f();
+        mPosition.set(x, y, z);
     }
 
     /**
@@ -54,8 +55,9 @@ public class Transform3D extends Transform {
      * @param matrix Matrix to be used for mLocalMatrix
      */
     public Transform3D(Matrix4fc matrix) {
-        mLocalMatrix = new Matrix4f(matrix);
-        mWorldMatrix = new Matrix4f();
+        matrix.getTranslation(mPosition);
+        matrix.getNormalizedRotation(mRotation);
+        matrix.getScale(mScale);
     }
 
     /**
@@ -75,7 +77,7 @@ public class Transform3D extends Transform {
      * @param z Z coordinate of position
      */
     public void setPosition(float x, float y, float z) {
-        mLocalMatrix.setTranslation(x, y, z);
+        mPosition.set(x, y, z);
         setUpdateFlag();
     }
 
@@ -85,7 +87,7 @@ public class Transform3D extends Transform {
      * @param rotation {@link Quaternionfc} containing the desired quaternion rotation
      */
     public void setRotation(Quaternionfc rotation) {
-        mLocalMatrix.rotation(rotation);
+        mRotation.set(rotation);
         setUpdateFlag();
     }
 
@@ -116,7 +118,7 @@ public class Transform3D extends Transform {
      * @param z Z coordinate of rotation
      */
     public void setRotation(float x, float y, float z) {
-        mLocalMatrix.setRotationXYZ(x, y, z);
+        mRotation.identity().rotateXYZ(x, y, z);
         setUpdateFlag();
     }
 
@@ -148,7 +150,7 @@ public class Transform3D extends Transform {
      * @param z Rotation in Z-axis in radians
      */
     public void rotateRad(float x, float y, float z) {
-        mLocalMatrix.rotateXYZ(x, y, z);
+        mRotation.rotateXYZ(x, y, z);
         setUpdateFlag();
     }
 
@@ -160,7 +162,7 @@ public class Transform3D extends Transform {
      * @param z Rotation in Z-axis in degrees
      */
     public void rotateDeg(float x, float y, float z) {
-        mLocalMatrix.rotateXYZ(DEG_TO_RAD * x, DEG_TO_RAD * y, DEG_TO_RAD * z);
+        rotateRad(DEG_TO_RAD * x, DEG_TO_RAD * y, DEG_TO_RAD * z);
         setUpdateFlag();
     }
 
@@ -170,7 +172,7 @@ public class Transform3D extends Transform {
      * @param quaternion Quaternion to rotate object with
      */
     public void rotate(Quaternionfc quaternion) {
-        mLocalMatrix.rotate(quaternion);
+        mRotation.mul(quaternion);
         setUpdateFlag();
     }
 
@@ -180,7 +182,7 @@ public class Transform3D extends Transform {
      * @param translation Vector translation to perform
      */
     public void translate(Vector3fc translation) {
-        mLocalMatrix.translate(translation);
+        mPosition.add(translation);
         setUpdateFlag();
     }
 
@@ -192,7 +194,7 @@ public class Transform3D extends Transform {
      * @param z Translation in Z-axis
      */
     public void translate(float x, float y, float z) {
-        mLocalMatrix.translateLocal(x, y, z);
+        mPosition.add(x, y, z);
         setUpdateFlag();
     }
 
@@ -204,8 +206,18 @@ public class Transform3D extends Transform {
      * @param z Translation in Z-axis
      */
     public void translateLocal(float x, float y, float z) {
-        mLocalMatrix.translate(x, y, z);
+        mTmpForward.set(x, y, z).rotate(mRotation);
+        mPosition.add(mTmpForward);
         setUpdateFlag();
+    }
+
+    /**
+     * Retrieve the forward direction vector
+     *
+     * @return current forward direction
+     */
+    public Vector3fc getLocalForward() {
+        return mTmpForward.set(0, 1, 0).rotate(mRotation);
     }
 
     /**
@@ -214,7 +226,7 @@ public class Transform3D extends Transform {
      * @param scale Vector to scale object with
      */
     public void scale(Vector3fc scale) {
-        mLocalMatrix.scaleLocal(scale.x(), scale.y(), scale.z());
+        mScale.mul(scale);
         setUpdateFlag();
     }
 
@@ -226,7 +238,7 @@ public class Transform3D extends Transform {
      * @param z Scale in the Z-axis
      */
     public void scale(float x, float y, float z) {
-        mLocalMatrix.scale(x, y, z);
+        mScale.mul(x, y, z);
         setUpdateFlag();
     }
 
@@ -236,30 +248,7 @@ public class Transform3D extends Transform {
      * @return A constant reference to the local matrix
      */
     public Matrix4fc getLocalMatrix() {
-        return mLocalMatrix;
-    }
-
-    /**
-     * Get the transformation matrix relative to the parent transform (mutable version)
-     *
-     * <p>Calling this method will trigger transform update. Use only if you are going to modify the
-     * matrix.
-     *
-     * @return Mutable reference to the local matrix
-     */
-    public Matrix4f getLocalMatrixMut() {
-        setUpdateFlag();
-        return mLocalMatrix;
-    }
-
-    /**
-     * Set the transformation matrix relative to the parent transform
-     *
-     * @param from transformation matrix to set
-     */
-    public void setLocalMatrix(Matrix4fc from) {
-        mLocalMatrix.set(from);
-        setUpdateFlag();
+        return mLocalMatrix.identity().translate(mPosition).rotate(mRotation).scale(mScale);
     }
 
     /**
@@ -268,7 +257,7 @@ public class Transform3D extends Transform {
      * @param dest Matrix to store a copy of the local matrix
      */
     public void getLocalMatrix(Matrix4f dest) {
-        dest.set(mLocalMatrix);
+        dest.set(getLocalMatrix());
     }
 
     /**
@@ -276,10 +265,8 @@ public class Transform3D extends Transform {
      *
      * @return Rotation of the transform as Quaternion
      */
-    public Quaternionf getLocalRotation() {
-        Quaternionf rotation = new Quaternionf();
-        mLocalMatrix.getNormalizedRotation(rotation);
-        return rotation;
+    public Quaternionfc getLocalRotation() {
+        return mRotation;
     }
 
     /**
@@ -288,7 +275,7 @@ public class Transform3D extends Transform {
      * @param dest Quaternion to store the rotation
      */
     public void getLocalRotation(Quaternionf dest) {
-        mLocalMatrix.getNormalizedRotation(dest);
+        dest.set(mRotation);
     }
 
     /**
@@ -297,9 +284,7 @@ public class Transform3D extends Transform {
      * @return Rotation of the transform as AxisAngle
      */
     public AxisAngle4f getLocalRotationAngles() {
-        AxisAngle4f rotation = new AxisAngle4f();
-        mLocalMatrix.getRotation(rotation);
-        return rotation;
+        return new AxisAngle4f(mRotation);
     }
 
     /**
@@ -308,18 +293,16 @@ public class Transform3D extends Transform {
      * @param dest AxisAngle4f to store the rotation
      */
     public void getLocalRotationAngles(AxisAngle4f dest) {
-        mLocalMatrix.getRotation(dest);
+        dest.set(mRotation);
     }
 
     /**
      * Get the position of the transform
      *
-     * @return Vector3f containing the XYZ position of the object
+     * @return Vector3fc containing the XYZ position of the object
      */
-    public Vector3f getLocalPosition() {
-        Vector3f position = new Vector3f();
-        mLocalMatrix.getColumn(3, position);
-        return position;
+    public Vector3fc getLocalPosition() {
+        return mPosition;
     }
 
     /**
@@ -328,18 +311,16 @@ public class Transform3D extends Transform {
      * @param dest Vector3f to store the position
      */
     public void getLocalPosition(Vector3f dest) {
-        mLocalMatrix.getColumn(3, dest);
+        dest.set(mPosition);
     }
 
     /**
      * Get the scale of the transform
      *
-     * @return Vector3f containing the XYZ scale of the object
+     * @return Vector3fc containing the XYZ scale of the object
      */
-    public Vector3f getLocalScale() {
-        Vector3f scale = new Vector3f();
-        mLocalMatrix.getScale(scale);
-        return scale;
+    public Vector3fc getLocalScale() {
+        return mScale;
     }
 
     /**
@@ -348,7 +329,7 @@ public class Transform3D extends Transform {
      * @param dest Vector3f to store the scale
      */
     public void getLocalScale(Vector3f dest) {
-        mLocalMatrix.getScale(dest);
+        dest.set(mScale);
     }
 
     /**
@@ -362,7 +343,7 @@ public class Transform3D extends Transform {
         if (mShouldUpdate) {
             mShouldUpdate = false;
             if (mGameObject == null || mGameObject.isRootObject()) {
-                mWorldMatrix = mLocalMatrix;
+                mWorldMatrix.set(getLocalMatrix());
             } else {
                 // Multiply parent's world matrix by the local matrix
                 // Which gives us the matrix multiplication mLocalMatrix * parentWorldMatrix
@@ -372,10 +353,28 @@ public class Transform3D extends Transform {
                 mGameObject
                         .getParentTransform()
                         .getMatrixForChildren()
-                        .mul(mLocalMatrix, mWorldMatrix);
+                        .mul(getLocalMatrix(), mWorldMatrix);
             }
         }
         return mWorldMatrix;
+    }
+
+    /**
+     * Sets the local 3D transformation
+     *
+     * <p>This method sets the local transformation of the object to match the input data.
+     *
+     * @param position target local position to set
+     * @param rotation target local rotation to set
+     * @param scale target local scale to set
+     */
+    @Override
+    public void setLocal3DTransformation(
+            Vector3fc position, Quaternionfc rotation, Vector3fc scale) {
+        mPosition.set(position);
+        mRotation.set(rotation);
+        mScale.set(scale);
+        setUpdateFlag();
     }
 
     /**

@@ -37,9 +37,9 @@ java_to_internal = {
 parsed_components = {}
 
 # Removes all class packages, and puts spaces before capitalized words
-def display_name(className):
-    className = className.split('.')[-1]
-    regexed = re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', className)
+def display_name(class_name):
+    class_name = class_name.split('.')[-1]
+    regexed = re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', class_name)
     return regexed
 
 # Roughly parses a java class, we use basic heuristics for this
@@ -76,7 +76,7 @@ def parse_java_component(filepath):
 # Only SyncVars and vars with @Setter will be parsed
 def parse_class_variables(lines):
     parsed = []
-    parsedNames = {}
+    parsed_names = {}
 
     lines = re.sub(r'//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/', r'\1 ', lines)
 
@@ -116,9 +116,9 @@ def parse_class_variables(lines):
                     name = split[-1]
                     t = split[-2]
 
-                    if t in java_to_internal and not name in parsedNames:
-                        parsedNames[name] = {}
-                        parsed.append({'typeName': t, 'name': name})
+                    if t in java_to_internal and not name in parsed_names:
+                        parsed_names[name] = {}
+                        parsed.append({'type_name': t, 'name': name})
         except:
             pass
 
@@ -160,16 +160,16 @@ def is_supported_public(line):
 
 class ParsedComponent:
     name = ""
-    className = ""
+    class_name = ""
     fields = []
 
-    def __init__(self, name, className, fields):
+    def __init__(self, name, class_name, fields):
         self.name = name
-        self.className = className
+        self.class_name = class_name
         self.fields = fields
 
     def display(self):
-        return self.name + " (" + self.className + ")"
+        return self.name + " (" + self.class_name + ")"
 
 def get_component(inp):
     if inp is None or len(inp) < 1:
@@ -243,33 +243,33 @@ class DSKULLE_add_component(bpy.types.Operator):
     bl_label = 'Add Component'
     bl_options = {"REGISTER", "UNDO"}
 
-    parsedClass: bpy.props.StringProperty(name = "Class List")
+    parsed_class: bpy.props.StringProperty(name = "Class List")
     name: bpy.props.StringProperty(name = "Exact Class")
     parsed_comps: bpy.props.PointerProperty(type = ParsedComponents)
 
     def execute(self, context):
-        parsed_comp = get_component(self.parsedClass)
+        parsed_comp = get_component(self.parsed_class)
 
         if parsed_comp is not None:
             comp = context.object.dskulle_object.components.add()
-            comp.className = parsed_comp.className
+            comp.class_name = parsed_comp.class_name
         elif self.name != "":
             comp = context.object.dskulle_object.components.add()
-            comp.className = self.name
+            comp.class_name = self.name
 
         return {"FINISHED"}
 
     def invoke(self, context, event):
-        self.parsedClass = self.parsed_comps.prepare("")
+        self.parsed_class = self.parsed_comps.prepare("")
         self.name = ""
         return context.window_manager.invoke_props_dialog(self)
 
     def draw(self, context):
         layout = self.layout
-        layout.prop_search(self, "parsedClass", self.parsed_comps, "components")
-        comp = get_component(self.parsedClass)
+        layout.prop_search(self, "parsed_class", self.parsed_comps, "components")
+        comp = get_component(self.parsed_class)
         if comp is not None:
-            self.name = comp.className
+            self.name = comp.class_name
             layout.label(text = "Exact Class: " + self.name)
         else:
             layout.prop(self, "name", expand = True)
@@ -281,32 +281,32 @@ class DSKULLE_change_component_name(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     id: bpy.props.IntProperty(default=-1)
-    parsedClass: bpy.props.StringProperty(name = "Class List")
+    parsed_class: bpy.props.StringProperty(name = "Class List")
     name: bpy.props.StringProperty(name = "Exact Class")
     parsed_comps: bpy.props.PointerProperty(type = ParsedComponents)
 
     def execute(self, context):
         comp = context.object.dskulle_object.components[self.id]
-        parsed_comp = get_component(self.parsedClass)
+        parsed_comp = get_component(self.parsed_class)
 
         if parsed_comp is not None:
-            comp.className = parsed_comp.className
+            comp.class_name = parsed_comp.class_name
         elif self.name != "":
-            comp.className = self.name
+            comp.class_name = self.name
 
         return {"FINISHED"}
 
     def invoke(self, context, event):
-        self.parsedClass = self.parsed_comps.prepare(context.object.dskulle_object.components[self.id].className)
-        self.name = context.object.dskulle_object.components[self.id].className
+        self.parsed_class = self.parsed_comps.prepare(context.object.dskulle_object.components[self.id].class_name)
+        self.name = context.object.dskulle_object.components[self.id].class_name
         return context.window_manager.invoke_props_dialog(self)
 
     def draw(self, context):
         layout = self.layout
-        layout.prop_search(self, "parsedClass", self.parsed_comps, "components")
-        comp = get_component(self.parsedClass)
+        layout.prop_search(self, "parsed_class", self.parsed_comps, "components")
+        comp = get_component(self.parsed_class)
         if comp is not None:
-            self.name = comp.className
+            self.name = comp.class_name
             layout.label(text = "Exact Class: " + self.name)
         else:
             layout.prop(self, "name", expand = True)
@@ -349,10 +349,10 @@ class DSKULLE_add_component_property(bpy.types.Operator):
 
         comp = context.object.dskulle_object.components[self.id]
 
-        if not comp.className in parsed_components:
+        if not comp.class_name in parsed_components:
             return []
 
-        parsed_comp = parsed_components[comp.className]
+        parsed_comp = parsed_components[comp.class_name]
 
         cur_props = []
 
@@ -363,90 +363,92 @@ class DSKULLE_add_component_property(bpy.types.Operator):
 
         for f in parsed_comp.fields:
             if not f['name'] in cur_props:
-                add = f['typeName'] + " " + f['name']
+                add = f['type_name'] + " " + f['name']
                 ret.append((add, f['name'], add))
 
         return ret
 
     id: bpy.props.IntProperty(default=-1)
-    chooseType: bpy.props.EnumProperty(name = "Choose Type", items = (('LIST', 'List', 'Choose properties from parsed list'), ('TYPE', 'Type', 'Type in exact property')))
-    chosenVar: bpy.props.EnumProperty(name = "Name", items = chosen_var_callback)
-    varType: bpy.props.EnumProperty(name = "Type", items = (('int','int',''),('boolean','bool',''),('float','float',''),('Vector3f','vec3',''),('String','string','')))
-    varName: bpy.props.StringProperty(name = "Name")
+    choose_type: bpy.props.EnumProperty(name = "Choose Type", items = (('LIST', 'List', 'Choose properties from parsed list'), ('TYPE', 'Type', 'Type in exact property')))
+    chosen_var: bpy.props.EnumProperty(name = "Name", items = chosen_var_callback)
+    var_type: bpy.props.EnumProperty(name = "Type", items = (('int','int',''),('boolean','bool',''),('float','float',''),('Vector3f','vec3',''),('String','string','')))
+    var_name: bpy.props.StringProperty(name = "Name")
 
     def execute(self, context):
-        if self.chooseType == 'LIST':
-            split = self.chosenVar.split()
+        if self.choose_type == 'LIST':
+            split = self.chosen_var.split()
             if len(split) > 1:
                 prop = context.object.dskulle_object.components[self.id].properties.add()
-                prop.typeName = split[0]
+                prop.type_name = split[0]
                 prop.name = split[1]
-        elif self.chooseType == 'TYPE':
+        elif self.choose_type == 'TYPE':
             prop = context.object.dskulle_object.components[self.id].properties.add()
-            prop.typeName = self.varType
-            prop.name = self.varName
+            prop.type_name = self.var_type
+            prop.name = self.var_name
+            prop.obj = context.object
         return {"FINISHED"}
 
     def invoke(self, context, event):
-        self.chooseType = 'LIST'
+        self.choose_type = 'LIST'
         return context.window_manager.invoke_props_dialog(self)
 
     def draw(self, context):
         layout = self.layout
 
-        layout.prop(self, "chooseType", expand = True)
+        layout.prop(self, "choose_type", expand = True)
 
         box = layout.box()
 
-        if self.chooseType == "LIST":
-            box.prop(self, "chosenVar")
+        if self.choose_type == "LIST":
+            box.prop(self, "chosen_var")
         else:
-            box.prop(self, "varType")
-            box.prop(self, "varName")
+            box.prop(self, "var_type")
+            box.prop(self, "var_name")
 
 class ComponentProperty(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name = "Name")
-    typeName: bpy.props.StringProperty(name = "Type")
-    stringProp: bpy.props.StringProperty(name = "Value")
-    boolProp: bpy.props.BoolProperty(name = "Value")
-    intProp: bpy.props.IntProperty(name = "Value")
-    floatProp: bpy.props.FloatProperty(name = "Value")
-    floatProp1: bpy.props.FloatProperty(name = "X")
-    floatProp2: bpy.props.FloatProperty(name = "Y")
-    floatProp3: bpy.props.FloatProperty(name = "Z")
+    type_name: bpy.props.StringProperty(name = "Type")
+    string_prop: bpy.props.StringProperty(name = "Value")
+    bool_prop: bpy.props.BoolProperty(name = "Value")
+    int_prop: bpy.props.IntProperty(name = "Value")
+    float_prop: bpy.props.FloatProperty(name = "Value")
+    float_prop1: bpy.props.FloatProperty(name = "X")
+    float_prop2: bpy.props.FloatProperty(name = "Y")
+    float_prop3: bpy.props.FloatProperty(name = "Z")
+    obj: bpy.props.PointerProperty(type = bpy.types.Object)
 
     def java_to_internal_type(self):
-        if self.typeName in java_to_internal:
-            return java_to_internal[self.typeName]
+        if self.type_name in java_to_internal:
+            return java_to_internal[self.type_name]
         return "unknown"
 
     def get_properties(self):
         internal = self.java_to_internal_type()
         if internal == "int":
-            return ["intProp"]
+            return ["int_prop"]
         elif internal == "string":
-            return ["stringProp"]
+            return ["string_prop"]
         elif internal == "bool":
-            return ["boolProp"]
+            return ["bool_prop"]
         elif internal == "float":
-            return ["floatProp"]
+            return ["float_prop"]
         elif internal == "vec3":
-            return ["floatProp1", "floatProp2", "floatProp3"]
+            return ["float_prop1", "float_prop2", "float_prop3"]
         return []
 
     def serialize(self):
         internal = self.java_to_internal_type()
         ret = None
         if internal == "int":
-            ret = self.intProp
+            ret = self.int_prop
         elif internal == "string":
-            ret = self.stringProp
+            ret = self.string_prop
         elif internal == "bool":
-            ret = self.boolProp
+            ret = self.bool_prop
         elif internal == "float":
-            ret = self.floatProp
+            ret = self.float_prop
         elif internal == "vec3":
-            ret = [self.floatProp1, self.floatProp2, self.floatProp3]
+            ret = [self.float_prop1, self.float_prop2, self.float_prop3]
 
         if ret is None:
             return {}
@@ -456,7 +458,7 @@ class ComponentProperty(bpy.types.PropertyGroup):
 
 class Component(bpy.types.PropertyGroup):
     enabled: bpy.props.BoolProperty(name = "Enable", default = True, description = "Controls whether the component is enabled")
-    className: bpy.props.StringProperty(name = "Class Name")
+    class_name: bpy.props.StringProperty(name = "Class Name")
     properties: bpy.props.CollectionProperty(name = "Properties", type = ComponentProperty)
 
     def serialize(self):
@@ -465,19 +467,35 @@ class Component(bpy.types.PropertyGroup):
         for p in self.properties:
             properties.append(p.serialize())
 
-        return {"className": self.className, "properties": properties}
+        return {"class_name": self.class_name, "properties": properties}
 
 class GameObject(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name = "EPIC")
+    transform_type: bpy.props.EnumProperty(name = "Transform", items = (('org.dragonskulle.components.Transform3D', '3D', 'Use Transform3D'), ('org.dragonskulle.components.TransformHex', 'Hex', 'Use TransformHex')))
     components: bpy.props.CollectionProperty(name = "Components", type = Component)
 
-    def serialize(self):
+    def serialize(self, obj):
         components = []
 
         for c in self.components:
             components.append(c.serialize())
 
-        return {"components": components}
+        return { "transform": self.transform_type, "components": components}
+
+class DSKULLE_PT_transform(bpy.types.Panel):
+    bl_idname = "DSKULLE_PT_transform"
+    bl_category = "Game Object"
+    bl_label = "Transform"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None and context.active_object.dskulle_object is not None
+
+    def draw(self, context):
+        obj = context.active_object
+
+        self.layout.prop(obj.dskulle_object, "transform_type")
 
 class DSKULLE_PT_components(bpy.types.Panel):
     bl_idname = "DSKULLE_PT_components"
@@ -495,8 +513,8 @@ class DSKULLE_PT_components(bpy.types.Panel):
 
         for i, component in enumerate(obj.dskulle_object.components):
             box = self.layout.box()
-            row = box.row()#.split(factor = 0.8)
-            row.prop(component, "enabled", text = display_name(component.className))
+            row = box.row()
+            row.prop(component, "enabled", text = display_name(component.class_name))
             cn = row.operator(DSKULLE_change_component_name.bl_idname, icon = 'TEXT')
             cn.id = i
             rm = row.operator(DSKULLE_remove_component.bl_idname, icon = 'TRASH')
@@ -573,7 +591,7 @@ class glTF2ExportUserExtension:
 
         gltf2_node.extensions[glTF_extension_name] = self.Extension(
             name=glTF_extension_name,
-            extension = blender_object.dskulle_object.serialize(),
+            extension = blender_object.dskulle_object.serialize(blender_object),
             required=extension_is_required
         )
 
@@ -582,6 +600,7 @@ register_classes = [
     ParsedComponents,
     ComponentExportProperties,
     DSKULLE_PT_export,
+    DSKULLE_PT_transform,
     DSKULLE_PT_components,
     DSKULLE_add_component,
     DSKULLE_change_component_name,
