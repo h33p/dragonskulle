@@ -42,9 +42,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     @Override
     protected void simulateInput() {
+    	
+    	log.info("RUNNING CODE!!");
 
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfBuildings() == 1) {
+        	log.warning("Only have 1");
 
         	addBuilding();
         	return;
