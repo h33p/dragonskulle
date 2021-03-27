@@ -19,7 +19,7 @@ import org.dragonskulle.game.player.networkData.StatData;
  * @author DragonSkulle
  */
 @Log
-public class ProbablisticAiPlayer extends AiPlayer {
+public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** Will choose whether to place a building or to use the building. */
     protected float mTileProbability = (float) 0;
@@ -33,7 +33,7 @@ public class ProbablisticAiPlayer extends AiPlayer {
     protected float mSellBuilding = (float) 0;
 
     /** A Constructor for an AI Player */
-    public ProbablisticAiPlayer() {}
+    public ProbabilisticAiPlayer() {}
 
     @Override
     public void onStart() {
