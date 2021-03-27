@@ -104,9 +104,13 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
                 // Choose to upgrade a building
                 if (randomNumber <= mUpgradeBuilding) {
-                	
-                	log.warning("Number " + mPlayer.get().numberOfBuildings());			//TODO THIS IS 0 EVEN WHEN THERE ARE TWO. UGH
-                	
+
+                    log.warning(
+                            "Number "
+                                    + mPlayer.get()
+                                            .numberOfBuildings()); // TODO THIS IS 0 EVEN WHEN THERE
+                    // ARE TWO. UGH
+
                     int upgradeID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
 
                     log.info("AI: Upgrading");

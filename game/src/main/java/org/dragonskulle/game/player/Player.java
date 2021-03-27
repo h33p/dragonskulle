@@ -69,7 +69,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    private int playersToPlay =
+    private final int playersToPlay =
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
@@ -247,12 +247,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         map.storeBuilding(building, qPos, rPos);
         log.info("stored building on map tile");
         if (building.getNetworkObject().isMine()) {
-        	log.warning("Client adding");
+            log.warning("Client adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
         if (getNetworkObject().isServer()) {
-        	log.warning("Server adding");
-        	mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+            log.warning("Server adding");
+            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
 
         log.info(
@@ -278,17 +278,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         final HexagonTile buildingTile = building.getTile(); // TODO this will default to null
         map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
         log.info("stored building on map tile");
-        if (building.getNetworkObject().isMine()) {		//TODO THIS IS False COS can only be ran on the client! Maybe
-        	log.warning("Client adding");
+        if (building.getNetworkObject()
+                .isMine()) { // TODO THIS IS False COS can only be ran on the client! Maybe
+            log.warning("Client adding");
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
         }
         if (getNetworkObject().isServer()) {
-        	log.warning("Server adding");
-        	 mOwnedBuildings.put(
-                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
-                     building.getReference(Building.class));
+            log.warning("Server adding");
+            mOwnedBuildings.put(
+                    map.getTile(buildingTile.getQ(), buildingTile.getR()),
+                    building.getReference(Building.class));
         }
         log.info("added building into hash" + mOwnedBuildings.size());
         log.info("ownedBuilding size" + mOwnedBuildings.size());
@@ -442,7 +443,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // ATTACK!!! (Sorry...)
         boolean won = attackingBuilding.attack(defenderBuilding);
-        log.info("Attack is: " + Boolean.toString(won));
+        log.info("Attack is: " + won);
         mTokens.set(mTokens.get() - COST);
 
         // If you've won attack

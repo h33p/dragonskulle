@@ -7,7 +7,9 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.components.NetworkManager;
 
 @Log
 public abstract class AiPlayer extends Component implements IFixedUpdate, IOnStart {
@@ -21,6 +23,8 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     /** Will hold how long the AI player has to wait until playing */
     protected int mTimeToWait;
 
+    private boolean mServerSide = false;
+
     protected Random mRandom = new Random();
 
     protected Reference<Player> mPlayer;
@@ -29,6 +33,11 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
     @Override
     public void onStart() {
+
+        NetworkManager manager = Scene.getActiveScene().getSingleton(NetworkManager.class);
+        if (manager != null && manager.isServer()) {
+            mServerSide = true;
+        }
 
         // Sets up all unitialised variables
         mPlayer = getGameObject().getComponent(Player.class);
@@ -68,7 +77,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     public void fixedUpdate(float deltaTime) {
 
         // If you can play simulate the input
-        if (shouldPlayGame(deltaTime)) {
+        if (shouldPlayGame(deltaTime) && mServerSide) {
             log.info("Playing game");
             simulateInput();
         }
