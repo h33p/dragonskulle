@@ -23,10 +23,6 @@ import org.dragonskulle.network.ServerClient;
 @Log
 public class NetworkManager extends Component implements INetworkUpdate {
 
-    public void recreateGameScene(Scene newScene) {
-        this.mGameScene = newScene;
-    }
-
     /** Simple client connection result handler */
     public static interface IConnectionResultEvent {
         void handle(Scene gameScene, NetworkManager manager, int netID);
@@ -55,8 +51,11 @@ public class NetworkManager extends Component implements INetworkUpdate {
     @Getter(AccessLevel.PACKAGE)
     protected final TemplateManager mSpawnableTemplates;
     /** Target game scene */
-    @Getter(AccessLevel.PUBLIC)
+    @Getter(AccessLevel.PACKAGE)
     private Scene mGameScene;
+
+    @Getter(AccessLevel.PACKAGE)
+    private final ISceneBuilder mGameSceneBuilder;
     /** Client manager. Exists when there is a client connection */
     @Getter private transient ClientNetworkManager mClientManager;
     /** Server manager. Exists when there is a server instance */

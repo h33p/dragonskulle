@@ -2,7 +2,6 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
-import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
@@ -30,13 +29,7 @@ import org.dragonskulle.ui.*;
 import org.joml.*;
 import org.lwjgl.system.NativeResource;
 
-@Log
 public class App implements NativeResource {
-
-    private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
-    private static final int BGM2_ID =
-            AudioManager.getInstance().loadSound("country_background_short.wav");
-    private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-10.wav");
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
@@ -105,24 +98,18 @@ public class App implements NativeResource {
                             t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
                             t.setMargin(0f, 0.1f, 0f, 0.2f);
 
-                            //                            root.addComponent(
-                            //                                    new UIButton(
-                            //                                            new UIText(
-                            //                                                    new Vector3f(0f,
-                            // 0f, 0f),
-                            //
-                            // Font.getFontResource("Rise of Kingdom.ttf"),
-                            //                                                    "Mute/Unmute"),
-                            //                                            (uiButton, __) -> {
-                            //
-                            // AudioManager.getInstance()
-                            //
-                            // .toggleMute(SoundType.BACKGROUND);
-                            //
-                            // AudioManager.getInstance()
-                            //
-                            // .toggleMute(SoundType.SFX);
-                            //                                            }));
+                            root.addComponent(
+                                    new UIButton(
+                                            new UIText(
+                                                    new Vector3f(0f, 0f, 0f),
+                                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                                    "Mute/Unmute"),
+                                            (uiButton, __) -> {
+                                                AudioManager.getInstance()
+                                                        .toggleMute(SoundType.BACKGROUND);
+                                                AudioManager.getInstance()
+                                                        .toggleMute(SoundType.SFX);
+                                            }));
                         });
         GameObject audioButtonEffect =
                 new GameObject(
@@ -140,7 +127,7 @@ public class App implements NativeResource {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            //            refAudio.get().play();
+            refAudio.get().play();
         }
 
         mainScene.addRootObject(audioObject);
@@ -158,10 +145,10 @@ public class App implements NativeResource {
         return mainScene;
     }
 
-    private static Scene createMainScene(
-            Reference<NetworkManager> networkManagerReference, boolean asServer) {
+    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
         Scene mainScene = createMainScene();
-        if (networkManagerReference != null && networkManagerReference.isValid() && asServer) {
+
+        if (asServer) {
             GameObject hostGameUI =
                     new GameObject(
                             "hostGameUI",
@@ -191,65 +178,17 @@ public class App implements NativeResource {
                                                             (a, b) -> {
                                                                 System.out.println(
                                                                         "should fill with ai");
-                                                                networkManagerReference
-                                                                        .get()
+                                                                networkManager
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(
                                                                                 -1,
-                                                                                networkManagerReference
-                                                                                        .get()
+                                                                                networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
                                                             }));
                                         });
                             });
             mainScene.addRootObject(hostGameUI);
-        }
-        return mainScene;
-    }
-
-    private static Scene createMainMenu(Scene mainScene) {
-        Scene mainMenu = new Scene("mainMenu");
-
-        GameObject camera = new GameObject("mainCamera");
-        Transform3D tr = (Transform3D) camera.getTransform();
-        // Set where it's at
-        tr.setPosition(0f, 0f, 1.5f);
-        tr.rotateDeg(-30f, 0f, 70f);
-        tr.translateLocal(0f, -8f, 0f);
-        camera.addComponent(new Camera());
-        mainMenu.addRootObject(camera);
-
-        // Create a hexagon template
-        GameObject hexagon = new GameObject("hexagon");
-
-        // Add a renderable to it
-        hexagon.addComponent(new Renderable());
-        Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
-        hexRenderer.get().setMaterial(new VertexHighlightMaterial());
-        VertexHighlightMaterial hexMaterial =
-                hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
-        hexMaterial.setDistancePow(10f);
-        hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
-
-        // Add wobble components
-        hexagon.addComponent(new Wobbler());
-        Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
-
-        GameObject hexRoot = new GameObject("hexRoot");
-        hexRoot.addComponent(new Spinner(10, 10, 0.1f));
-
-        // Create instances, change up some parameters
-        for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
-            for (int r = -INSTANCE_COUNT_ROOT / 2; r <= INSTANCE_COUNT_ROOT / 2; r++) {
-                int idx = q * r % COLOURS.length;
-                if (idx < 0) idx += COLOURS.length;
-                hexWobbler
-                        .get()
-                        .setPhaseShift((Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) * 0.1f);
-                hexMaterial.getColour().set(COLOURS[idx]);
-                hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
-            }
         }
         return mainScene;
     }
@@ -324,7 +263,7 @@ public class App implements NativeResource {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            //            refAudio.get().play();
+            // refAudio.get().play();
         }
 
         GameObject gameTitle =
@@ -486,7 +425,6 @@ public class App implements NativeResource {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Quick Reload"),
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     sReload = true;
                                                     Engine.getInstance().stop();
                                                 });
@@ -559,20 +497,16 @@ public class App implements NativeResource {
                                                                 (uiButton, __) -> {
                                                                     networkManager
                                                                             .get()
-                                                                            .recreateGameScene(
-                                                                                    createMainScene(
-                                                                                            networkManager,
-                                                                                            false));
-                                                                    networkManager
-                                                                            .get()
                                                                             .createClient(
                                                                                     sIP,
                                                                                     sPort,
-                                                                                    (manager,
+                                                                                    (gameScene,
+                                                                                            manager,
                                                                                             netID) -> {
                                                                                         if (netID
                                                                                                 >= 0) {
                                                                                             onConnectedClient(
+                                                                                                    gameScene,
                                                                                                     manager,
                                                                                                     netID);
                                                                                         } else if (connectingTextRef
@@ -643,15 +577,9 @@ public class App implements NativeResource {
                                                                 (uiButton, __) -> {
                                                                     networkManager
                                                                             .get()
-                                                                            .recreateGameScene(
-                                                                                    createMainScene(
-                                                                                            networkManager,
-                                                                                            true));
-                                                                    networkManager
-                                                                            .get()
                                                                             .createServer(
                                                                                     sPort,
-                                                                                    App
+                                                                                    this
                                                                                             ::onClientConnected);
                                                                 }));
                                 button.addComponent(newButton);
@@ -684,8 +612,6 @@ public class App implements NativeResource {
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
 
-        mainMenu.addRootObject(GameObject.instantiate(hexRoot));
-
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(hostUI);
@@ -708,7 +634,6 @@ public class App implements NativeResource {
             }
         } while (sReload);
 
-        AudioManager.getInstance().cleanup();
         System.exit(0);
     }
 
@@ -744,7 +669,7 @@ public class App implements NativeResource {
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private static void onConnectedClient(NetworkManager manager, int netID) {
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
         System.out.println("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
@@ -756,7 +681,7 @@ public class App implements NativeResource {
                                             manager.getReference(NetworkManager.class), netID));
                         });
 
-        manager.getGameScene().addRootObject(humanPlayer);
+        gameScene.addRootObject(humanPlayer);
     }
 
     private void onClientConnected(

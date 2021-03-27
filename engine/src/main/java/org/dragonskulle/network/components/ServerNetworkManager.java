@@ -180,7 +180,7 @@ public class ServerNetworkManager {
     void startGame() {
         Engine engine = Engine.getInstance();
 
-        mManager.createGameScene(true);
+        mManager.createGameScene(false);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());

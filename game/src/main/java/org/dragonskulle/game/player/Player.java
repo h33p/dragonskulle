@@ -70,12 +70,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    private final int playersToPlay =
+    private int playersToPlay =
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
     NetworkManager mNetworkManager;
-    NetworkObject mNetworkObject;
 
     /** The base constructor for player */
     public Player() {}
@@ -97,11 +96,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
 
-        mNetworkObject = getNetworkObject();
+        mNetworkManager = getNetworkObject().getNetworkManager();
 
-        mNetworkManager = mNetworkObject.getNetworkManager();
-
-        if (mNetworkObject.isServer()) {
+        if (getNetworkObject().isServer()) {
             distributeCoordinates();
         }
 
@@ -142,11 +139,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int posX = min + (int) (Math.random() * ((max - min) + 1));
         int posY = min + (int) (Math.random() * ((max - min) + 1));
         // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
-        Building buildingToBecomeCapital = addNewBuilding(posX, posY);
-        if (buildingToBecomeCapital == null) {
-            log.severe("Unable to place an initial capital building.");
-            return;
-        }
+        addNewBuilding(posX, posY);
+        Building buildingToBecomeCapital = mMapComponent.get().getBuilding(posX, posY);
         buildingToBecomeCapital.setCapital(true);
     }
 
@@ -157,7 +151,73 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param rPos The r position of the building
      * @return true if it succeeds false if not
      */
-    private Building addNewBuilding(int qPos, int rPos) {
+    private boolean addNewBuilding(int qPos, int rPos) {
+
+        if (mNetworkManager.getServerManager() == null) {
+            log.warning("Server manager is null.");
+
+            return false;
+        }
+
+        HexagonMap map = mMapComponent.get();
+
+        HexagonTile tile = map.getTile(qPos, rPos);
+        if (tile == null) {
+            log.warning("Tile does not exist");
+            return false;
+        }
+
+        Building buildingHere = map.getBuilding(qPos, rPos);
+
+        if (buildingHere != null) {
+            log.warning("Building already here");
+            return false;
+        }
+
+        Reference<NetworkObject> obj =
+                mNetworkManager
+                        .getServerManager()
+                        .spawnNetworkObject(
+                                getNetworkObject().getOwnerId(),
+                                mNetworkManager.findTemplateByName("building"));
+
+        if (obj == null) {
+            log.warning("Could not create a Network Object");
+            return false;
+        }
+
+        GameObject buildingGO = obj.get().getGameObject();
+        buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        Building building = buildingGO.getComponent(Building.class).get();
+
+        if (building == null) {
+            log.warning("Could not create a building");
+            return false;
+        }
+
+        addBuilding(building, qPos, rPos);
+        log.info("Stored building");
+
+        return true;
+    }
+
+    /**
+     * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
+     *
+     * @return The HexagonMap being used, otherwise {@code null}.
+     */
+    public HexagonMap getMapComponent() {
+        return mMapComponent == null ? null : mMapComponent.get();
+    }
+
+    /**
+     * This gets the Player Object who owns that tile -- Will be changed
+     *
+     * @param tile The tile to check who owns it
+     * @return Which player owns it
+     */
+    public Player getTileOwner(HexagonTile tile) {
+        Building building = tile.getBuilding();
 
         if (mNetworkManager.getServerManager() == null) {
             log.warning("Server manager is null.");
@@ -208,28 +268,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
      *
-     * @return The HexagonMap being used, otherwise {@code null}.
-     */
-    public HexagonMap getMapComponent() {
-        return mMapComponent == null ? null : mMapComponent.get();
-    }
-
-    /**
-     * @deprecated Use {@link HexagonTile#getClaimant()}.
-     *     <p>This gets the Player Object who owns that tile -- Will be changed
-     * @param tile The tile to check who owns it
-     * @return Which player owns it
-     */
-    public Player getTileOwner(HexagonTile tile) {
-        return tile.getClaimant();
-    }
-
-    /**
-     * @deprecated Now inside {@link Building#onStart()}.
-     *     <p>Add a building to the ones the player owns
-     * @param building The building to add.
-     * @param qPos The q coordinate.
-     * @param rPos The r coordinate.
+     * @param building The building to add
      */
     public void addBuilding(Building building, int qPos, int rPos) {
         HexagonMap map = this.getMapComponent();
@@ -238,32 +277,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
         map.storeBuilding(building, qPos, rPos);
-        if (mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
-            log.warning("Client adding");
+        log.info("stored building on map tile");
+        if (building.getNetworkObject().isMine()) {
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
-            log.info(
-                    "Client added building into hash"
-                            + map.getTile(qPos, rPos).getQ()
-                            + " "
-                            + map.getTile(qPos, rPos).getR());
-            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Client Added Building " + qPos + " " + rPos);
-        } else if (mNetworkObject.isServer()) {
-            log.warning("Server adding");
-            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
-            log.info(
-                    "Server added building into hash"
-                            + map.getTile(qPos, rPos).getQ()
-                            + " "
-                            + map.getTile(qPos, rPos).getR());
-            log.info("Server ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Server Added Building " + qPos + " " + rPos);
         }
+
+        log.info(
+                "added building into hash"
+                        + map.getTile(qPos, rPos).getQ()
+                        + " "
+                        + map.getTile(qPos, rPos).getR());
+        log.info("ownedBuilding size" + mOwnedBuildings.size());
+        log.info("Added Building " + qPos + " " + rPos);
     }
 
     /**
-     * @deprecated Now inside {@link Building#onStart()}.
-     *     <p>Add a building to the ones the player owns
+     * Add a building to the ones the player owns
+     *
      * @param building The building to add
      */
     public void addBuilding(Building building) {
@@ -274,30 +304,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         final HexagonTile buildingTile = building.getTile(); // TODO this will default to null
         map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
-        if (building.getNetworkObject()
-                .isMine()) { // TODO THIS IS False COS can only be ran on the client! Maybe
-            log.warning("Client adding");
+        log.info("stored building on map tile");
+        if (building.getNetworkObject().isMine()) {
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
-            log.info("Client added building into hash" + mOwnedBuildings.size());
-            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
-        } else if (mNetworkObject.isServer()) {
-            log.warning("Server adding");
-            mOwnedBuildings.put(
-                    map.getTile(buildingTile.getQ(), buildingTile.getR()),
-                    building.getReference(Building.class));
-
-            log.info("Server added building into hash" + mOwnedBuildings.size());
-            log.info("Server ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Server Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
         }
+        log.info("added building into hash" + mOwnedBuildings.size());
+        log.info("ownedBuilding size" + mOwnedBuildings.size());
+        log.info("Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
     }
 
     /**
-     * @deprecated Use {@link Player#removeFromOwnedBuildings(Reference)}.
-     *     <p>Will remove a building from the buildings you own
+     * Will remove a building from the buildings you own
+     *
      * @param buildingToRemove The building to remove
      */
     public void removeBuilding(Building buildingToRemove) {
@@ -321,6 +341,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
         return mOwnedBuildings.values().stream();
+    }
+
+    public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
+        if (buildingToRemove.isValid() && buildingToRemove.get().getTile() != null) {
+            return mOwnedBuildings.remove(buildingToRemove.get().getTile(), buildingToRemove);
+        }
+        return false;
     }
 
     /**
@@ -535,9 +562,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         log.info("Checking 2 Fone");
 
-        Building addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
+        boolean addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
 
-        if (addedNewBuilding != null) {
+        if (addedNewBuilding) {
             mTokens.set(mTokens.get() - COST);
             log.info("Building added");
         }
@@ -553,8 +580,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         for (HexagonTile tile : tiles) {
 
             if (mMapComponent.isValid()
-                    && tile.hasBuilding()
-                    && tile.getBuilding().getOwnerID() == getNetworkObject().getOwnerId()) {
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID()
+                            == getNetworkObject().getOwnerId()) {
                 return true;
             }
         }
@@ -570,7 +598,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
 
-            if (mMapComponent.isValid() && tile.hasBuilding()) {
+            if (mMapComponent.isValid()
+                    && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return true;
             }
         }
