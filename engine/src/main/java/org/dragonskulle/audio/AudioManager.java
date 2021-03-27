@@ -43,7 +43,7 @@ public class AudioManager {
     private long mALDev = -1;
     private long mALCtx = -1;
 
-    private float mMasterVolume;
+    @Getter private float mMasterVolume;
 
     @Getter private boolean mInitialized = false;
 
@@ -74,7 +74,7 @@ public class AudioManager {
         AL.setCurrentProcess(alCapabilities);
 
         // Set the distance model that will be used
-        AL11.alDistanceModel(AL11.AL_LINEAR_DISTANCE_CLAMPED);
+        AL11.alDistanceModel(AL11.AL_INVERSE_DISTANCE);
 
         mALDev = device;
         mALCtx = ctx;
@@ -222,9 +222,19 @@ public class AudioManager {
         for (int i = 0; i < mAudioSources.size(); i++) {
             AudioSource audioSource = mAudioSources.get(i).get();
 
-            // TODO: Distance check
+            // Get the distance of the source from the listener
+            float distance = 100000f;
+            if (mAudioListener != null && mAudioListener.isValid()) {
+                distance = mAudioListener.get().getPosition().distance(audioSource.getPosition());
+            }
 
-            if (audioSource.getSound() == null || audioSource.getTimeLeft() < 0f) {
+            // Don't attach a source if the AudioSource:
+            //      Has no sound
+            //      Has finished playing it's sound
+            //      Is out of range of the listener
+            if (audioSource.getSound() == null
+                    || audioSource.getTimeLeft() < 0f
+                    || distance > audioSource.getRadius()) {
                 mAudioSources.remove(i);
                 audioSource.detachSource();
                 i--;
@@ -262,6 +272,11 @@ public class AudioManager {
         }
     }
 
+    /**
+     * Set the master volume for the game
+     *
+     * @param volume Value between 0f and 1f
+     */
     public void setMasterVolume(float volume) {
         volume = Math.max(0f, volume);
         volume = Math.min(volume, 1f);

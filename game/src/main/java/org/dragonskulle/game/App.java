@@ -97,83 +97,14 @@ public class App {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
+
+                                                    AudioListener listener = new AudioListener();
+                                                    camera.addComponent(listener);
                                                 });
                                     });
-
-                            rig.buildChild(
-                                    "audioListener",
-                                    (al) -> {
-                                        AudioListener listener = new AudioListener();
-
-                                        al.addComponent(listener);
-                                        mainScene.registerSingleton(listener);
-                                    });
-
-                            /*rig.buildChild(
-                                    "bgm",
-                                    (bgm) -> {
-                                        AudioSource bgSource = new AudioSource();
-
-                                        bgm.addComponent(bgSource);
-
-                                        // TODO: Keep reference to this so that we can change
-                                        // volume and stuff on the go
-                                        bgSource.setLooping(true);
-                                        bgSource.setVolume(0.1f);
-                                        bgSource.playSound(BGM_ID);
-                                    });*/
                         });
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
-
-        /*
-        GameObject audioObject =
-                new GameObject(
-                        "audioObject",
-                        new TransformUI(true),
-                        (root) -> {
-                            root.addComponent(new AudioSource());
-
-                            TransformUI t = root.getTransform(TransformUI.class);
-                            t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
-                            t.setMargin(0f, 0.1f, 0f, 0.2f);
-
-                            root.addComponent(
-                                    new UIButton(
-                                            new UIText(
-                                                    new Vector3f(0f, 0f, 0f),
-                                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "Mute/Unmute"),
-                                            (uiButton, __) -> {
-                                                AudioManager.getInstance()
-                                                       .toggleMute(SoundType.BACKGROUND);
-                                                AudioManager.getInstance()
-                                                       .toggleMute(SoundType.SFX);
-                                            }));
-                        });
-
-        GameObject audioButtonEffect =
-                new GameObject(
-                        "audioObject",
-                        (root) -> {
-                            //root.addComponent(new AudioSource());
-                        });
-
-        Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
-        Reference<AudioSource> refAudioButtonEffect =
-                audioButtonEffect.getComponent(AudioSource.class);
-
-        if (refAudio.isValid()) {
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 70);
-            AudioManager.getInstance().setVolume(SoundType.SFX, 60);
-            refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
-            refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
-        }
-
-
-        mainScene.addRootObject(audioObject);
-        */
 
         GameObject hexagonMap =
                 new GameObject(
@@ -194,13 +125,12 @@ public class App {
 
                             AudioSource source = new AudioSource();
 
-                            source.setVolume(0.1f);
-                            source.setRadius(0.1f);
+                            source.setVolume(0.5f);
+                            source.setRadius(30f);
                             source.setLooping(true);
+                            source.playSound(BGM_ID);
 
                             obj.addComponent(source);
-
-                            source.playSound(BGM_ID);
                         });
 
         mainScene.addRootObject(cube);
@@ -227,7 +157,6 @@ public class App {
                 "listener",
                 (l) -> {
                     AudioListener listener = new AudioListener();
-                    mainMenu.registerSingleton(listener);
                     l.addComponent(listener);
                 });
 
@@ -340,50 +269,6 @@ public class App {
                             handle.addComponent(networkManager.get());
                         });
 
-        /*
-        GameObject audioObject =
-                new GameObject(
-                        "audioObject",
-                        new TransformUI(true),
-                        (root) -> {
-                            root.addComponent(new AudioSource());
-
-                            TransformUI t = root.getTransform(TransformUI.class);
-                            t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
-                            t.setMargin(0f, 0.1f, 0f, 0.2f);
-
-                            root.addComponent(
-                                    new UIButton(
-                                            new UIText(
-                                                    new Vector3f(0f, 0f, 0f),
-                                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "Mute/Unmute"),
-                                            (uiButton, __) -> {
-                                                AudioManager.getInstance()
-                                                        .toggleMute(SoundType.BACKGROUND);
-                                                AudioManager.getInstance()
-                                                        .toggleMute(SoundType.SFX);
-                                            }));
-                        });
-
-        GameObject audioButtonEffect =
-                new GameObject(
-                        "audioObject",
-                        (root) -> {
-                            root.addComponent(new AudioSource());
-                        });
-
-        Reference<AudioSource> refAudio = audioObject.getComponent(AudioSource.class);
-        Reference<AudioSource> refAudioButtonEffect =
-                audioButtonEffect.getComponent(AudioSource.class);
-        if (refAudio.isValid()) {
-            AudioManager.getInstance().setVolume(SoundType.BACKGROUND, 70);
-            AudioManager.getInstance().setVolume(SoundType.SFX, 60);
-            refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
-            refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
-        }
-        */
         GameObject gameTitle =
                 new GameObject(
                         "title",
@@ -830,23 +715,3 @@ public class App {
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 }
-
-//        // Create a cube. This syntax is slightly different
-//        // This here, will allow you to "build" the cube in one go
-//        GameObject cube =
-//                new GameObject(
-//                        "cube",
-//                        new Transform3D(0f, 0f, 1.5f),
-//                        (go) -> {
-//                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-//                            go.getComponent(Renderable.class)
-//                                    .get()
-//                                    .getMaterial(IColouredMaterial.class)
-//                                    .setAlpha(1f);
-//                            // You spin me right round...
-//                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-//                        });
-//
-//        mainMenu.addRootObject(cube);
-//
-//        mainMenu.addRootObject(GameObject.instantiate(cube));

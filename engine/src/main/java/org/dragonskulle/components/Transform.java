@@ -153,7 +153,7 @@ public abstract class Transform extends Component {
      */
     public Vector3f getRightVector() {
         Vector3f right = new Vector3f();
-        getWorldMatrix().getColumn(0, right);
+        getWorldMatrix().normalizedPositiveX(right);
         return right;
     }
 
@@ -163,7 +163,7 @@ public abstract class Transform extends Component {
      * @param dest Vector3f to store the right direction
      */
     public void getRightVector(Vector3f dest) {
-        getWorldMatrix().getColumn(0, dest);
+        getWorldMatrix().normalizedPositiveX(dest);
     }
 
     /**
@@ -173,7 +173,7 @@ public abstract class Transform extends Component {
      */
     public Vector3f getUpVector() {
         Vector3f up = new Vector3f();
-        getWorldMatrix().getColumn(1, up);
+        getWorldMatrix().normalizedPositiveZ(up);
         return up;
     }
 
@@ -183,7 +183,7 @@ public abstract class Transform extends Component {
      * @param dest Vector3f to store the up direction
      */
     public void getUpVector(Vector3f dest) {
-        getWorldMatrix().getColumn(1, dest);
+        getWorldMatrix().normalizedPositiveZ(dest);
     }
 
     /**
@@ -193,7 +193,7 @@ public abstract class Transform extends Component {
      */
     public Vector3f getForwardVector() {
         Vector3f forward = new Vector3f();
-        getWorldMatrix().getColumn(1, forward);
+        getWorldMatrix().normalizedPositiveY(forward);
         return forward;
     }
 
@@ -203,6 +203,6 @@ public abstract class Transform extends Component {
      * @param dest Vector3f to store the forward direction
      */
     public void getForwardVector(Vector3f dest) {
-        getWorldMatrix().getColumn(1, dest);
+        getWorldMatrix().normalizedPositiveY(dest);
     }
 }

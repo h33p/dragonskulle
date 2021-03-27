@@ -21,6 +21,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
 
     private static final Logger LOGGER = Logger.getLogger("audio");
     private final Reference<AudioSource> mReference = getReference(AudioSource.class);
+    @Getter private final Vector3f mPosition = new Vector3f();
 
     @Getter private WaveSound mSound = null;
     @Getter private Source mSource = null;
@@ -36,8 +37,9 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
             return;
         }
 
-        Vector3f pos = mGameObject.getTransform().getPosition();
-        AL11.alSource3f(mSource.getSource(), AL11.AL_POSITION, pos.x, pos.y, pos.z);
+        mGameObject.getTransform().getPosition(mPosition);
+        AL11.alSource3f(
+                mSource.getSource(), AL11.AL_POSITION, mPosition.x, mPosition.y, mPosition.z);
     }
 
     /**
@@ -67,7 +69,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         updatePosition();
 
         AL11.alSourcePlay(s);
-        LOGGER.fine("Attached source " + mSource.getSource());
+        LOGGER.info("Attached source " + mSource.getSource());
     }
 
     /** Detach the Source from this AudioSource if there is one */
@@ -82,7 +84,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         AL11.alSourceStop(source);
         AL11.alSourcei(source, AL11.AL_BUFFER, 0);
 
-        LOGGER.fine("Detached source " + mSource.getSource());
+        LOGGER.info("Detached source " + mSource.getSource());
         mSource.setInUse(false);
         mSource = null;
     }
@@ -116,7 +118,8 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Set the sound of this AudioSource and play it
+     * Set the sound of this AudioSource. It will be played as soon as the AudioSource is given a
+     * source by the AudioManager
      *
      * @param soundID ID that the desired sound was loaded with
      */
