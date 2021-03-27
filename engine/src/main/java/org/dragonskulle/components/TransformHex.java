@@ -3,9 +3,11 @@ package org.dragonskulle.components;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.joml.AxisAngle4f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -38,6 +40,9 @@ public class TransformHex extends Transform {
     private Vector3f mCartesianPosition = new Vector3f();
     private Matrix4f mWorldMatrix = new Matrix4f();
     private Matrix4f mLocalMatrix = new Matrix4f();
+
+    /** Default constructor for TransformHex */
+    public TransformHex() {}
 
     /**
      * Create a new Transform from Hex coordinates. This can be used for instantiating GameObjects
@@ -192,6 +197,30 @@ public class TransformHex extends Transform {
         }
 
         return mWorldMatrix;
+    }
+
+    /**
+     * Sets the local 3D transformation
+     *
+     * <p>This method sets the local transformation of the object to roughly match the input data.
+     *
+     * <p>Rotation will be projected and only Z axis is going to be preserved.
+     *
+     * <p>Scaling is going to be fully ignored.
+     *
+     * @param position target local position to set
+     * @param rotation target local rotation to set
+     * @param scale target local scale to set
+     */
+    @Override
+    public void setLocal3DTransformation(
+            Vector3fc position, Quaternionfc rotation, Vector3fc scale) {
+        mPosition.set(position);
+        cartesianToAxial(mPosition);
+        mHeight = position.z();
+        AxisAngle4f rotAxis = rotation.get(new AxisAngle4f());
+        mRotation = rotAxis.z * rotAxis.angle;
+        setUpdateFlag();
     }
 
     @Override

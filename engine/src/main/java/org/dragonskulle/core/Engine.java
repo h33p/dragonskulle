@@ -414,6 +414,15 @@ public class Engine {
         // Destroy all game objects that need to be destroyed
         for (GameObject object : mDestroyedObjects) {
             object.engineDestroy();
+
+            if (object.isRootObject()) {
+                for (Scene s : mActiveScenes) {
+                    s.removeRootObject(object);
+                }
+                for (Scene s : mInactiveScenes) {
+                    s.removeRootObject(object);
+                }
+            }
         }
         mDestroyedObjects.clear();
 

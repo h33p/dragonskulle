@@ -65,7 +65,7 @@ public class NetworkClient {
             mClientThread.start();
         } catch (Exception exception) {
             mOpen = false;
-            exception.printStackTrace();
+            mLogger.severe(exception.getMessage());
         }
     }
 
@@ -117,7 +117,7 @@ public class NetworkClient {
                 }
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            mLogger.severe(exception.getMessage());
         }
     }
 
@@ -252,7 +252,7 @@ public class NetworkClient {
             NetworkMessage.parse(bytes, this);
         } catch (Exception e) {
             mLogger.fine("error parsing bytes");
-            e.printStackTrace();
+            mLogger.severe(e.getMessage());
         }
     }
 
@@ -263,16 +263,18 @@ public class NetworkClient {
         try {
             if (mSocket != null) {
                 mSocket.close();
+                mSocket = null;
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            mLogger.severe(exception.getMessage());
         }
         try {
             if (mDOut != null) {
                 mDOut.close();
+                mDOut = null;
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            mLogger.severe(exception.getMessage());
         }
     }
 }

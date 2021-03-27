@@ -54,9 +54,20 @@ public class Scene {
      *
      * @param object The GameObject to be removed from the scene
      */
-    public void destroyRootObject(GameObject object) {
+    public void removeRootObject(GameObject object) {
+        mGameObjects.remove(object);
+    }
+
+    /**
+     * Remove a single game object from the scene, and destroy it (immediately)
+     *
+     * <p>Try not to call this while in update loop :)
+     *
+     * @param object The GameObject to be removed from the scene
+     */
+    public void destroyRootObjectImmediate(GameObject object) {
         if (mGameObjects.remove(object)) {
-            object.destroy();
+            object.engineDestroy();
         }
     }
 
