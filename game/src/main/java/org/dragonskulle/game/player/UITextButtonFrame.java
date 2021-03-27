@@ -11,10 +11,13 @@ public class UITextButtonFrame {
     @Getter private final String mText;
     @Getter private final UIButton.IButtonEvent mOnClick;
     @Getter private final String mId;
+    @Getter private final boolean mStartEnabled;
 
-    UITextButtonFrame(String id, String mText, UIButton.IButtonEvent mOnClick) {
+    UITextButtonFrame(
+            String id, String mText, UIButton.IButtonEvent mOnClick, boolean startEnabled) {
         this.mId = id;
         this.mText = mText;
         this.mOnClick = mOnClick;
+        this.mStartEnabled = startEnabled;
     }
 }

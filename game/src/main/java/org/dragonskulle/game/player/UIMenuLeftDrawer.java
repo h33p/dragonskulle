@@ -4,6 +4,7 @@ package org.dragonskulle.game.player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
@@ -31,7 +32,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
     private final ISetHexChosen mSetHexChosen;
     private final INotifyScreenChange mNotifyScreenChange;
     private final IGetPlayer mGetPlayer;
-    private HashMap<String, Reference<GameObject>> mButtonReferences;
+    @Getter private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
     private final float offsetToTop = 0.46f;
 
     public interface INotifyScreenChange {
@@ -154,7 +155,8 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     mSetHexChosen.set(null);
                     mSetBuildingChosen.set(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                });
+                },
+                false);
     }
 
     private UITextButtonFrame buildDeselectButtonFrame() {
@@ -165,7 +167,8 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     mSetHexChosen.set(null);
                     mSetBuildingChosen.set(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                });
+                },
+                true);
     }
 
     private UITextButtonFrame buildPlaceButtonFrame() {
@@ -174,18 +177,21 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 "Place Building",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
-                    System.out.println("Running place button lambda");
-                    Reference<Player> player = mGetPlayer.get();
-                    if (player != null && player.isValid()) {
-                        player.get()
-                                .getClientBuildRequest()
-                                .invoke(new BuildData(mGetHexChosen.get()));
-                    }
+                    if (mGetHexChosen.get() != null) {
+                        System.out.println("Running place button lambda");
+                        Reference<Player> player = mGetPlayer.get();
+                        if (player != null && player.isValid()) {
+                            player.get()
+                                    .getClientBuildRequest()
+                                    .invoke(new BuildData(mGetHexChosen.get()));
+                        }
 
-                    mSetHexChosen.set(null);
-                    mSetBuildingChosen.set(null);
-                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                });
+                        mSetHexChosen.set(null);
+                        mSetBuildingChosen.set(null);
+                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                    }
+                },
+                true);
     }
 
     private UITextButtonFrame buildUpgradeButtonFrame() {
@@ -198,7 +204,8 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     // buildingSelectedView stats.  Will leave
                     // until after prototype
                     mNotifyScreenChange.call(Screen.STAT_SCREEN);
-                });
+                },
+                false);
     }
 
     private UITextButtonFrame buildSellButtonFrame() {
@@ -222,7 +229,8 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     mSetHexChosen.set(null);
                     mSetBuildingChosen.set(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                });
+                },
+                false);
     }
 
     private HashMap<String, Reference<GameObject>> buildMenu(
@@ -271,7 +279,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                                                                                     mButtonChild
                                                                                             .getText()),
                                                                             mButtonChild
-                                                                                    .getOnClick());
+                                                                                    .getOnClick(),
+                                                                            mButtonChild
+                                                                                    .isStartEnabled());
                                                             self.addComponent(button);
                                                         });
 
@@ -286,13 +296,13 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         Reference<GameObject> button;
         switch (mScreenOn) {
             case BUILDING_SELECTED_SCREEN:
-                button = mButtonReferences.get("select_button");
+                button = mButtonReferences.get("place_button");
                 if (button != null && button.isValid()) {
                     // should disable button
                 }
                 break;
             case TILE_SCREEN:
-                button = mButtonReferences.get("select_button");
+                button = mButtonReferences.get("sell_button");
                 if (button != null && button.isValid()) {
                     // should disable button
                 }
@@ -304,7 +314,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 }
                 break;
             case STAT_SCREEN:
-                button = mButtonReferences.get("stats_button");
+                button = mButtonReferences.get("upgrade_button");
                 if (button != null && button.isValid()) {
                     // should disable button
                 }
