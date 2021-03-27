@@ -109,7 +109,7 @@ public class App {
                                         mainScene.registerSingleton(listener);
                                     });
 
-                            rig.buildChild(
+                            /*rig.buildChild(
                                     "bgm",
                                     (bgm) -> {
                                         AudioSource bgSource = new AudioSource();
@@ -121,7 +121,7 @@ public class App {
                                         bgSource.setLooping(true);
                                         bgSource.setVolume(0.1f);
                                         bgSource.playSound(BGM_ID);
-                                    });
+                                    });*/
                         });
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
@@ -183,6 +183,27 @@ public class App {
                             map.addComponent(new HexagonMap(51));
                         });
 
+        GameObject cube =
+                new GameObject(
+                        "cube",
+                        new Transform3D(),
+                        (obj) -> {
+                            UnlitMaterial mat = new UnlitMaterial();
+                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
+                            obj.addComponent(new Renderable(Mesh.CUBE, mat));
+
+                            AudioSource source = new AudioSource();
+
+                            source.setVolume(0.1f);
+                            source.setRadius(0.1f);
+                            source.setLooping(true);
+
+                            obj.addComponent(source);
+
+                            source.playSound(BGM_ID);
+                        });
+
+        mainScene.addRootObject(cube);
         mainScene.addRootObject(hexagonMap);
 
         return mainScene;

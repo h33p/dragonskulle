@@ -252,7 +252,7 @@ public class AudioManager {
         mAudioSources.add(audioSource);
     }
 
-    /** Get the AudioListner from the current scene */
+    /** Get the AudioListener from the current scene */
     public void setAudioListener() {
         AudioListener listener = Scene.getActiveScene().getSingleton(AudioListener.class);
         if (listener == null) {
