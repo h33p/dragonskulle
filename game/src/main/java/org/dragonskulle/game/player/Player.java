@@ -296,6 +296,32 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param building The building to add
      */
+    public void addBuilding(Building building, int qPos, int rPos) {
+        HexagonMap map = this.getMapComponent();
+        if (map == null) {
+            log.warning("Map doesn't exist");
+            return;
+        }
+        map.storeBuilding(building, qPos, rPos);
+        log.info("stored building on map tile");
+        if (building.getNetworkObject().isMine()) {
+            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+        }
+
+        log.info(
+                "added building into hash"
+                        + map.getTile(qPos, rPos).getQ()
+                        + " "
+                        + map.getTile(qPos, rPos).getR());
+        log.info("ownedBuilding size" + mOwnedBuildings.size());
+        log.info("Added Building " + qPos + " " + rPos);
+    }
+
+    /**
+     * Add a building to the ones the player owns
+     *
+     * @param building The building to add
+     */
     public void addBuilding(Building building) {
         HexagonMap map = this.getMapComponent();
         if (map == null) {
@@ -341,28 +367,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
         return mOwnedBuildings.values().stream();
-    }
-
-    public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
-        if (buildingToRemove.isValid() && buildingToRemove.get().getTile() != null) {
-            return mOwnedBuildings.remove(buildingToRemove.get().getTile(), buildingToRemove);
-        }
-        return false;
-    }
-
-    /**
-     * Add a {@link Building} the the list of owned buildings.
-     *
-     * @param building The building to add to {@link #mOwnedBuildings}.
-     */
-    public void addOwnedBuilding(Building building) {
-        if (building == null) return;
-
-        // Get the tile the building is on.
-        HexagonTile tile = building.getTile();
-
-        // Add the building at the relevant position.
-        mOwnedBuildings.put(tile, building.getReference(Building.class));
     }
 
     public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
