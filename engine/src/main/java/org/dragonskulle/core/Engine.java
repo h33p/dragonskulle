@@ -526,7 +526,6 @@ public class Engine {
         // TODO: Release all resources that are still used at the time of shutdown here
 
         destroyAllObjects();
-        AudioManager.getInstance().cleanup();
         mGLFWState.free();
     }
 

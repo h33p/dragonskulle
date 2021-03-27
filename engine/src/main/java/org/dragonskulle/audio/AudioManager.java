@@ -43,7 +43,8 @@ public class AudioManager {
     private long mALDev = -1;
     private long mALCtx = -1;
 
-    @Getter private float mMasterVolume;
+    @Getter private float mMasterVolume = 1f;
+    @Getter private boolean mMasterMuted = false;
 
     @Getter private boolean mInitialized = false;
 
@@ -53,38 +54,7 @@ public class AudioManager {
      * to MAX_SOURCES sources
      */
     private AudioManager() {
-        // TODO: For now I'm just using the "best" device available, I have made AudioDevices.java
-        //       which can be used to enumerate devices so we can allow user to choose in the future
-        long device = ALC11.alcOpenDevice((ByteBuffer) null);
-        if (device == 0L) {
-            LOGGER.severe("Failed to open default OpenAL device, no audio will be available");
-            return;
-        }
-
-        long ctx = ALC11.alcCreateContext(device, (IntBuffer) null);
-        if (!ALC11.alcMakeContextCurrent(ctx)) {
-            LOGGER.severe("Failed to set OpenAL context, no audio will be available");
-            ALC11.alcCloseDevice(device);
-            return;
-        }
-
-        // Get and set OpenAL capabilities
-        ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
-        ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
-        AL.setCurrentProcess(alCapabilities);
-
-        // Set the distance model that will be used
-        AL11.alDistanceModel(AL11.AL_INVERSE_DISTANCE);
-
-        mALDev = device;
-        mALCtx = ctx;
-
-        setupSources();
-        setMasterVolume(0.5f);
-
-        mInitialized = true;
-
-        LOGGER.info("Initialize AudioManager: " + mSources.size() + " sources available");
+        initAudioManager();
     }
 
     /** Attempt to create MAX_SOURCES sources */
@@ -145,6 +115,45 @@ public class AudioManager {
         for (Reference<AudioSource> ref : audioSources) {
             ref.get().detachSource();
         }
+    }
+
+    public void initAudioManager() {
+        if (mALDev != -1 || mALCtx != -1) {
+            return;
+        }
+
+        // TODO: For now I'm just using the "best" device available, I have made AudioDevices.java
+        //       which can be used to enumerate devices so we can allow user to choose in the future
+        long device = ALC11.alcOpenDevice((ByteBuffer) null);
+        if (device == 0L) {
+            LOGGER.severe("Failed to open default OpenAL device, no audio will be available");
+            return;
+        }
+
+        long ctx = ALC11.alcCreateContext(device, (IntBuffer) null);
+        if (!ALC11.alcMakeContextCurrent(ctx)) {
+            LOGGER.severe("Failed to set OpenAL context, no audio will be available");
+            ALC11.alcCloseDevice(device);
+            return;
+        }
+
+        // Get and set OpenAL capabilities
+        ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
+        ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
+        AL.setCurrentProcess(alCapabilities);
+
+        // Set the distance model that will be used
+        AL11.alDistanceModel(AL11.AL_INVERSE_DISTANCE);
+
+        mALDev = device;
+        mALCtx = ctx;
+
+        setupSources();
+        setMasterVolume(0.5f);
+
+        mInitialized = true;
+
+        LOGGER.info("Initialize AudioManager: " + mSources.size() + " sources available");
     }
 
     /**
@@ -283,6 +292,20 @@ public class AudioManager {
 
         mMasterVolume = volume;
         AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
+    }
+
+    public void setMasterMute(boolean muted) {
+        if (muted) {
+            mMasterMuted = true;
+            AL11.alListenerf(AL11.AL_GAIN, 0f);
+        } else {
+            mMasterMuted = false;
+            AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
+        }
+    }
+
+    public void toggleMasterMute() {
+        setMasterMute(!mMasterMuted);
     }
 
     /** Cleanup all resources still in use */
