@@ -109,12 +109,12 @@ public class TransformUI extends Transform {
 
             if (targetHeight < curHeight) {
                 float heightDiff = curHeight - targetHeight;
-                float halfHeight = heightDiff * 0.5f;
-                mScaledLocalCorners.add(0f, halfHeight, 0f, -halfHeight);
+                mScaledLocalCorners.add(
+                        0f, heightDiff * mPivotOffset.x, 0f, -heightDiff * (1f - mPivotOffset.x));
             } else {
                 float widthDiff = curWidth - targetWidth;
-                float halfWidth = widthDiff * 0.5f;
-                mScaledLocalCorners.add(halfWidth, 0f, -halfWidth, 0f);
+                mScaledLocalCorners.add(
+                        widthDiff * mPivotOffset.x, 0f, -widthDiff * (1f - mPivotOffset.x), 0f);
             }
         }
     }
@@ -251,6 +251,12 @@ public class TransformUI extends Transform {
         mScale.mul(x, y);
         setUpdateFlag();
     }*/
+
+    /** Set the pivot offset */
+    public void setPivotOffset(float x, float y) {
+        mPivotOffset.set(x, y);
+        setUpdateFlag();
+    }
 
     /** Set parent anchor position */
     public void setParentAnchor(float offset) {
