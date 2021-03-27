@@ -203,14 +203,6 @@ public class App implements NativeResource {
         templates.addAllObjects(
                 mNetworkTemplatesGLTF.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
-        
-        templates.addObject(new GameObject(
-                "aiPlayer",
-                new TransformHex(0, 0, 1),
-                (handle) -> {
-                    handle.addComponent(new Player());
-                    handle.addComponent(new ProbabilisticAiPlayer());
-                }));
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, App::createMainScene)

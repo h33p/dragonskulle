@@ -146,7 +146,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.25980764627456665
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -221,7 +221,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.25980764627456665
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -261,7 +261,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.2598075866699219
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -301,7 +301,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.2598075866699219
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -341,7 +341,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.25980764627456665
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -381,7 +381,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.2598074972629547
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -421,7 +421,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.45000001788139343
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -461,7 +461,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.45000001788139343
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -501,7 +501,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -541,7 +541,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -581,7 +581,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -621,7 +621,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -661,7 +661,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196149945259094
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -701,7 +701,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196149945259094
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -741,7 +741,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196152925491333
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -781,7 +781,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196151733398438
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -821,7 +821,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196152925491333
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -861,7 +861,7 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196151733398438
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "wobbleRange",
