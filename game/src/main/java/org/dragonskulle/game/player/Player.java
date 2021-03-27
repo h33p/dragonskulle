@@ -245,23 +245,28 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
         map.storeBuilding(building, qPos, rPos);
-        log.info("stored building on map tile");
         if (building.getNetworkObject().isMine()) {
             log.warning("Client adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+            log.info(
+                    "Client added building into hash"
+                            + map.getTile(qPos, rPos).getQ()
+                            + " "
+                            + map.getTile(qPos, rPos).getR());
+            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Client Added Building " + qPos + " " + rPos);
         }
         if (getNetworkObject().isServer()) {
             log.warning("Server adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
+            log.info(
+                    "Server added building into hash"
+                            + map.getTile(qPos, rPos).getQ()
+                            + " "
+                            + map.getTile(qPos, rPos).getR());
+            log.info("Server ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Server Added Building " + qPos + " " + rPos);
         }
-
-        log.info(
-                "added building into hash"
-                        + map.getTile(qPos, rPos).getQ()
-                        + " "
-                        + map.getTile(qPos, rPos).getR());
-        log.info("ownedBuilding size" + mOwnedBuildings.size());
-        log.info("Added Building " + qPos + " " + rPos);
     }
 
     /**
@@ -277,23 +282,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         final HexagonTile buildingTile = building.getTile(); // TODO this will default to null
         map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
-        log.info("stored building on map tile");
         if (building.getNetworkObject()
                 .isMine()) { // TODO THIS IS False COS can only be ran on the client! Maybe
             log.warning("Client adding");
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
+            log.info("Client added building into hash" + mOwnedBuildings.size());
+            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
         }
         if (getNetworkObject().isServer()) {
             log.warning("Server adding");
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
+            
+            log.info("Server added building into hash" + mOwnedBuildings.size());
+            log.info("Server ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Server Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
         }
-        log.info("added building into hash" + mOwnedBuildings.size());
-        log.info("ownedBuilding size" + mOwnedBuildings.size());
-        log.info("Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
+        
     }
 
     /**

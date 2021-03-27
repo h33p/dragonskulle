@@ -186,7 +186,8 @@ public class App implements NativeResource {
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
-                                                            }));
+                                                            
+                                                            	log.warning("Created ai");}));
                                         });
                             });
             mainScene.addRootObject(hostGameUI);
@@ -207,8 +208,8 @@ public class App implements NativeResource {
                 "aiPlayer",
                 new TransformHex(0, 0, 1),
                 (handle) -> {
-                    handle.addComponent(new ProbabilisticAiPlayer());
                     handle.addComponent(new Player());
+                    handle.addComponent(new ProbabilisticAiPlayer());
                 }));
 
         Reference<NetworkManager> networkManager =

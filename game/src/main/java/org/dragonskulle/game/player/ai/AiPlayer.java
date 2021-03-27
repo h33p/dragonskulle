@@ -34,6 +34,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     @Override
     public void onStart() {
 
+    	log.warning("Created an AI player");
         NetworkManager manager = Scene.getActiveScene().getSingleton(NetworkManager.class);
         if (manager != null && manager.isServer()) {
             mServerSide = true;
@@ -43,6 +44,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         mPlayer = getGameObject().getComponent(Player.class);
         mTimeSinceStart = 0;
         createNewRandomTime();
+        
     }
 
     /**
