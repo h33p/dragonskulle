@@ -22,15 +22,15 @@ import org.dragonskulle.game.player.networkData.StatData;
 public class ProbablisticAiPlayer extends AiPlayer {
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 0.2;
+    protected float mTileProbability = (float) 0;
 
     protected float mBuildingProbability = 1 - mTileProbability;
 
     /** Choose what to do with the building -- These 3 must sum to 1 */
-    protected float mUpgradeBuilding = (float) 0.2;
+    protected float mUpgradeBuilding = (float) 1;
 
-    protected float mAttackBuilding = (float) 0.7;
-    protected float mSellBuilding = (float) 0.1;
+    protected float mAttackBuilding = (float) 0;
+    protected float mSellBuilding = (float) 0;
 
     /** A Constructor for an AI Player */
     public ProbablisticAiPlayer() {}
@@ -104,7 +104,9 @@ public class ProbablisticAiPlayer extends AiPlayer {
 
                 // Choose to upgrade a building
                 if (randomNumber <= mUpgradeBuilding) {
-
+                	
+                	log.warning("Number " + mPlayer.get().numberOfBuildings());			//TODO THIS IS 0 EVEN WHEN THERE ARE TWO. UGH
+                	
                     int upgradeID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
 
                     log.info("AI: Upgrading");

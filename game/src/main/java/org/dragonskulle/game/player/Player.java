@@ -246,10 +246,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         map.storeBuilding(building, qPos, rPos);
         log.info("stored building on map tile");
-        if (building.getNetworkObject().isMine()) {			//TODO THIS IS False COS can only be ran on the client! Maybe
+        if (building.getNetworkObject().isMine()) {
+        	log.warning("Client adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
         if (getNetworkObject().isServer()) {
+        	log.warning("Server adding");
         	mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
 
@@ -277,11 +279,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
         log.info("stored building on map tile");
         if (building.getNetworkObject().isMine()) {		//TODO THIS IS False COS can only be ran on the client! Maybe
+        	log.warning("Client adding");
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
         }
         if (getNetworkObject().isServer()) {
+        	log.warning("Server adding");
         	 mOwnedBuildings.put(
                      map.getTile(buildingTile.getQ(), buildingTile.getR()),
                      building.getReference(Building.class));
