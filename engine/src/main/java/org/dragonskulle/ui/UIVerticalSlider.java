@@ -22,7 +22,7 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
     /** Simple interface describing slider callback events */
     public interface ISliderValueEvent {
         /**
-         * Method for handling the event
+         * Method for handling the eventH
          *
          * @param slider calling slider
          * @param value the new value of the slider

@@ -2,6 +2,7 @@
 package org.dragonskulle.game.map;
 
 import java.util.HashMap;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
@@ -18,17 +19,20 @@ import org.joml.Vector4f;
 
 /**
  * @author Aurimas Blažulionis
- *     <p>This component provides client sided effects for the map, such as selecting tiles, marking
- *     valid, and invalid tiles, and so on.
+ * <p>This component provides client sided effects for the map, such as selecting tiles, marking
+ * valid, and invalid tiles, and so on.
  */
 @Accessors(prefix = "m")
 public class MapEffects extends Component implements IOnStart {
 
-    /** Describes tile highlight option */
+    /**
+     * Describes tile highlight option
+     */
     public static enum StandardHighlightType {
         VALID(0),
         INVALID(1),
-        PLAIN(2);
+        PLAIN(2),
+        ATTACK(3);
 
         @Accessors(prefix = "m")
         @Getter
@@ -46,6 +50,8 @@ public class MapEffects extends Component implements IOnStart {
                     return INVALID_MATERIAL;
                 case PLAIN:
                     return PLAIN_MATERIAL;
+                case ATTACK:
+                    return ATTACK_MATERIAL;
                 default:
                     return null;
             }
@@ -56,14 +62,17 @@ public class MapEffects extends Component implements IOnStart {
         }
     }
 
-    /** A class describing a sleection. Value of null means ignoring */
+    /**
+     * A class describing a sleection. Value of null means ignoring
+     */
     public static class HighlightSelection {
         private boolean mClear;
         private IRefCountedMaterial mMaterial;
 
         public static final HighlightSelection CLEARED = cleared();
 
-        private HighlightSelection() {}
+        private HighlightSelection() {
+        }
 
         public static HighlightSelection ignored() {
             return null;
@@ -82,7 +91,9 @@ public class MapEffects extends Component implements IOnStart {
         }
     }
 
-    /** A simple tile highlight selection interface */
+    /**
+     * A simple tile highlight selection interface
+     */
     public static interface IHighlightSelector {
         public HighlightSelection handleTile(HexagonTile tile);
     }
@@ -93,6 +104,8 @@ public class MapEffects extends Component implements IOnStart {
             highlightMaterialFromColour(1f, 0.08f, 0f);
     public static final IRefCountedMaterial PLAIN_MATERIAL =
             highlightMaterialFromColour(0.7f, 0.94f, 0.98f);
+    public static final IRefCountedMaterial ATTACK_MATERIAL =
+            highlightMaterialFromColour(0.9f, 0.3f, 0.3f);
 
     private HashMap<HexagonTile, GameObject> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
@@ -108,7 +121,7 @@ public class MapEffects extends Component implements IOnStart {
     /**
      * Select a single tile, overriding previous selection
      *
-     * @param tile tile to select
+     * @param tile      tile to select
      * @param selection type of highlight to use
      */
     public void highlightTile(HexagonTile tile, HighlightSelection selection) {
