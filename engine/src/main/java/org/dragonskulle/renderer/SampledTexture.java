@@ -63,6 +63,10 @@ public class SampledTexture implements NativeResource, Serializable {
         this(textureName, new TextureMapping());
     }
 
+    public SampledTexture clone() {
+        return new SampledTexture(mTexture == null ? null : mTexture.clone(), mMapping);
+    }
+
     @Override
     public void free() {
         mTexture.free();

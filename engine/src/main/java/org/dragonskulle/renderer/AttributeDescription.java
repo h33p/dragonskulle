@@ -39,11 +39,11 @@ public class AttributeDescription {
         for (int i = 0; i < 4; i++)
             ret[i] =
                     new AttributeDescription(
-                            1, i + 3, VK_FORMAT_R32G32B32A32_SFLOAT, i * MATRIX_ROW_SIZE);
+                            1, i + 4, VK_FORMAT_R32G32B32A32_SFLOAT, i * MATRIX_ROW_SIZE);
         for (int i = 0; i < descriptions.length; i++)
             ret[i + 4] =
                     new AttributeDescription(
-                            1, i + 7, descriptions[i].format, MATRIX_SIZE + descriptions[i].offset);
+                            1, i + 8, descriptions[i].format, MATRIX_SIZE + descriptions[i].offset);
         return ret;
     }
 }
