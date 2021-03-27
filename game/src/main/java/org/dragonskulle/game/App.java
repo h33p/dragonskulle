@@ -19,14 +19,10 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
-<<<<<<< HEAD
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
-=======
-import org.dragonskulle.game.player.HumanPlayer;
->>>>>>> main
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
