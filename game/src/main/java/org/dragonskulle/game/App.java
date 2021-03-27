@@ -142,7 +142,7 @@ public class App implements NativeResource {
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
         Scene mainScene = createMainScene();
 
-        if (asServer) {
+        if (networkManagerReference != null && networkManagerReference.isValid() &&asServer) {
             GameObject hostGameUI =
                     new GameObject(
                             "hostGameUI",
@@ -195,6 +195,14 @@ public class App implements NativeResource {
         templates.addAllObjects(
                 mNetworkTemplatesGLTF.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
+        
+        templates.addObject(new GameObject(
+                "aiPlayer",
+                new TransformHex(0, 0, 1),
+                (handle) -> {
+                    handle.addComponent(new ProbabilisticAiPlayer());
+                    handle.addComponent(new Player());
+                }));
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, App::createMainScene)
