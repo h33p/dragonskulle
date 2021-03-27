@@ -252,10 +252,12 @@ public class ClientNetworkManager {
                 switch (nextState) {
                     case CONNECTED:
                         joinGame();
-                        if (mConnectionHandler != null) mConnectionHandler.handle(mManager, mNetID);
+                        if (mConnectionHandler != null)
+                            mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetID);
                         break;
                     case CONNECTION_ERROR:
-                        if (mConnectionHandler != null) mConnectionHandler.handle(mManager, -1);
+                        if (mConnectionHandler != null)
+                            mConnectionHandler.handle(mManager.getGameScene(), mManager, -1);
                         disconnect();
                         break;
                     default:
@@ -285,6 +287,8 @@ public class ClientNetworkManager {
     /** Join the game map */
     private void joinGame() {
         Engine engine = Engine.getInstance();
+
+        mManager.createGameScene(false);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());

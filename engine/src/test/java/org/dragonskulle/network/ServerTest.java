@@ -25,15 +25,13 @@ public class ServerTest {
     private static final long TIMEOUT = 8;
 
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
-    private static final Scene CLIENT_TEST_SCENE = new Scene("client_net_test");
     private static final Scene CLIENT_NETMAN_SCENE = new Scene("client_netman_test");
     private static final NetworkManager CLIENT_NETWORK_MANAGER =
-            new NetworkManager(TEMPLATE_MANAGER, CLIENT_TEST_SCENE);
+            new NetworkManager(TEMPLATE_MANAGER, (__1, __2) -> new Scene("client_net_test"));
 
-    private static final Scene SERVER_TEST_SCENE = new Scene("server_net_test");
     private static final Scene SERVER_NETMAN_SCENE = new Scene("server_netman_test");
     private static final NetworkManager SERVER_NETWORK_MANAGER =
-            new NetworkManager(TEMPLATE_MANAGER, SERVER_TEST_SCENE);
+            new NetworkManager(TEMPLATE_MANAGER, (__1, __2) -> new Scene("server_net_test"));
 
     static {
         TEMPLATE_MANAGER.addAllObjects(
@@ -104,7 +102,7 @@ public class ServerTest {
 
             SERVER_NETWORK_MANAGER.createServer(
                     mPort,
-                    (man, id) -> {
+                    (__, man, id) -> {
                         mLogger.info("CONNECTED");
                         man.getServerManager()
                                 .spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
@@ -115,15 +113,13 @@ public class ServerTest {
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
                     mPort,
-                    (__, netid) -> {
+                    (__1, __2, netid) -> {
                         mLogger.info("CONNECTED CLIENT");
                         assertTrue(netid >= 0);
                     });
 
             mTestThread.start();
 
-            Engine.getInstance().loadScene(CLIENT_TEST_SCENE, false);
-            Engine.getInstance().loadScene(SERVER_TEST_SCENE, false);
             Engine.getInstance().loadScene(CLIENT_NETMAN_SCENE, true);
             Engine.getInstance().loadScene(SERVER_NETMAN_SCENE, true);
             Engine.getInstance().startFixedDebug(this::shouldExit);
