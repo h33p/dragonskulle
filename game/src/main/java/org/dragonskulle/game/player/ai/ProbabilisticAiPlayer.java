@@ -45,17 +45,17 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfBuildings() == 1) {
-        	log.warning("Only have 1");
+            log.warning("Only have 1");
 
-        	addBuilding();
-        	return;
-        	
+            addBuilding();
+            return;
+
         } else {
             log.info(
                     "AI: I have "
                             + mPlayer.get().numberOfBuildings()
                             + " buildings. Should be  more than  one");
-            
+
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
 
@@ -65,7 +65,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 addBuilding();
                 return;
 
-            // Choose to do something with a building
+                // Choose to do something with a building
             } else {
                 // Pick a random number to choose whether to place a building or to use a building
                 randomNumber = mRandom.nextFloat();
@@ -76,14 +76,14 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                     upgradeBuilding();
                     return;
 
-                // Choose to attack
+                    // Choose to attack
                 } else if (randomNumber > mUpgradeBuilding
                         && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
 
-                	attack();
-                	return;
+                    attack();
+                    return;
 
-                // Choose to sell a building
+                    // Choose to sell a building
                 } else {
                     sell();
                     return;
@@ -147,13 +147,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         return true;
     }
-    
-    /**
-     * This will add a building for the AiPlayer
-     */
+
+    /** This will add a building for the AiPlayer */
     private void addBuilding() {
-    	
-    	// Gets all the tiles it can expand to
+
+        // Gets all the tiles it can expand to
         log.info("Placing Building");
         List<HexagonTile> tilesToUse = hexTilesToExpand();
 
@@ -165,21 +163,16 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             // Send to server
             mPlayer.get().handleEvent(new BuildData(tileToExpandTo));
-            
+
             return;
         } else {
             return; // end
         }
     }
-    
-    /**
-     * This will upgrade a building for the AiPlayer
-     */
+
+    /** This will upgrade a building for the AiPlayer */
     private void upgradeBuilding() {
-    	log.warning(
-                "Number "
-                        + mPlayer.get()
-                                .numberOfBuildings());
+        log.warning("Number " + mPlayer.get().numberOfBuildings());
         int upgradeID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
 
         log.info("AI: Upgrading");
@@ -206,12 +199,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         mPlayer.get().handleEvent(new StatData(buildingToUpgrade, statToUpgrade));
         return;
     }
-    
-    /**
-     * This will attack a building
-     */
+
+    /** This will attack a building */
     private void attack() {
-    	log.info("AI: Attacking");
+        log.info("AI: Attacking");
         ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
 
         // Will create a list of [attacker (your building), defender (building to
@@ -222,13 +213,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 .map(Reference::get)
                 .forEach(
                         b -> {
-                            List<Building> attackableBuildings =
-                                    b.getAttackableBuildings();
-                            for (Building buildingWhichCouldBeAttacked :
-                                    attackableBuildings) {
-                                Building[] listToAdd = {
-                                    b, buildingWhichCouldBeAttacked
-                                };
+                            List<Building> attackableBuildings = b.getAttackableBuildings();
+                            for (Building buildingWhichCouldBeAttacked : attackableBuildings) {
+                                Building[] listToAdd = {b, buildingWhichCouldBeAttacked};
 
                                 buildingsToAttack.add(listToAdd);
                             }
@@ -244,21 +231,17 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             Building[] buildingToAttack =
                     buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
             // Send to server
-            mPlayer.get()
-                    .handleEvent(
-                            new AttackData(buildingToAttack[0], buildingToAttack[1]));
+            mPlayer.get().handleEvent(new AttackData(buildingToAttack[0], buildingToAttack[1]));
 
             return;
         } else {
             return;
         }
     }
-    
-    /**
-     * This will sell a building
-     */
+
+    /** This will sell a building */
     private void sell() {
-    	log.info("AI: Selling");
+        log.info("AI: Selling");
         if (mPlayer.get().numberOfBuildings() > 1) {
 
             int sellID = mRandom.nextInt(mPlayer.get().numberOfBuildings());

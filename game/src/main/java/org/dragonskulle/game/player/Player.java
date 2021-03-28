@@ -297,12 +297,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
                     building.getReference(Building.class));
-            
+
             log.info("Server added building into hash" + mOwnedBuildings.size());
             log.info("Server ownedBuilding size" + mOwnedBuildings.size());
             log.info("Server Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
         }
-        
     }
 
     /**

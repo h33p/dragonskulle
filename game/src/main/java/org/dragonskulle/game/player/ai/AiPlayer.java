@@ -43,7 +43,6 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         mPlayer = getGameObject().getComponent(Player.class);
         mTimeSinceStart = 0;
         createNewRandomTime();
-        
     }
 
     /**

@@ -2,6 +2,7 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
+import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
@@ -19,10 +20,7 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.game.player.Player;
-import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
@@ -31,8 +29,6 @@ import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.ui.*;
 import org.joml.*;
 import org.lwjgl.system.NativeResource;
-
-import lombok.extern.java.Log;
 
 @Log
 public class App implements NativeResource {
@@ -143,13 +139,13 @@ public class App implements NativeResource {
     }
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
-    	
-    	log.warning("We have got here " + asServer);
+
+        log.warning("We have got here " + asServer);
         Scene mainScene = createMainScene();
 
-        //asServer = true;
+        // asServer = true;
         if (asServer) {
-        	log.warning("I am the server");
+            log.warning("I am the server");
             GameObject hostGameUI =
                     new GameObject(
                             "hostGameUI",
@@ -186,8 +182,9 @@ public class App implements NativeResource {
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
-                                                            
-                                                            	log.warning("Created ai");}));
+
+                                                                log.warning("Created ai");
+                                                            }));
                                         });
                             });
             mainScene.addRootObject(hostGameUI);
