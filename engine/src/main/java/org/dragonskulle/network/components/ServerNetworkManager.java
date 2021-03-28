@@ -210,7 +210,6 @@ public class ServerNetworkManager {
 
         NetworkObject networkObject = new NetworkObject(netId, ownerId, true, mManager);
         GameObject object = mManager.getSpawnableTemplates().instantiate(templateId);
-        log.warning("Num " +templateId);
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
 
