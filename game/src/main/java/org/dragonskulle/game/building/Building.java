@@ -407,6 +407,25 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mIsCapital.set(isCapital);
     }
 
+    /**
+     * Remove this building from the {@link Player} who owns the building and references to it in any {@link HexagonTile}s.
+     */
+    public void remove(){
+    	
+    	// Remove any claims.
+    	for (HexagonTile hexagonTile : mClaimedTiles) {
+			hexagonTile.setClaimedBy(null);
+		}
+    	
+    	// Reset the list of claimed, viewable and attackable tiles.
+    	mClaimedTiles = new ArrayList<HexagonTile>();
+    	mViewableTiles = new ArrayList<HexagonTile>();
+    	mAttackableTiles = new ArrayList<HexagonTile>();
+    	
+    	// TODO: Request that the building should be destroyed.
+    	// destroy();
+    }
+    
     @Override
     protected void onDestroy() {}
     

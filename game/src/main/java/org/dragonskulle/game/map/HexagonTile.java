@@ -121,7 +121,7 @@ public class HexagonTile {
     public boolean setClaimedBy(Building building) {
 		if(isClaimed()) return false;
     	
-		mClaimedBy = new Reference<Building>(building);
+		mClaimedBy = building.getReference(Building.class);
 		return true;
     }
     
