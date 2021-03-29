@@ -74,6 +74,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     // game
 
     NetworkManager mNetworkManager;
+    NetworkObject mNetworkObject;
 
     /** The base constructor for player */
     public Player() {}
@@ -95,9 +96,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getSingleton(HexagonMap.class)
                         .getReference(HexagonMap.class);
 
-        mNetworkManager = getNetworkObject().getNetworkManager();
+        mNetworkObject = getNetworkObject();
+        
+        mNetworkManager = mNetworkObject.getNetworkManager();
 
-        if (getNetworkObject().isServer()) {
+        if (mNetworkObject.isServer()) {
             distributeCoordinates();
         }
 
@@ -177,7 +180,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 mNetworkManager
                         .getServerManager()
                         .spawnNetworkObject(
-                                getNetworkObject().getOwnerId(),
+                        		mNetworkObject.getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
 
         if (obj == null) {
@@ -245,7 +248,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
         map.storeBuilding(building, qPos, rPos);
-        if (building.getNetworkObject().isMine()) {
+        if(mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
             log.warning("Client adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
             log.info(
@@ -255,7 +258,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             + map.getTile(qPos, rPos).getR());
             log.info("Client ownedBuilding size" + mOwnedBuildings.size());
             log.info("Client Added Building " + qPos + " " + rPos);
-        } else if (getNetworkObject().isServer()) {
+        } else if (mNetworkObject.isServer()) {
             log.warning("Server adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
             log.info(
@@ -290,7 +293,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("Client added building into hash" + mOwnedBuildings.size());
             log.info("Client ownedBuilding size" + mOwnedBuildings.size());
             log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
-        } else if (getNetworkObject().isServer()) {
+        } else if (mNetworkObject.isServer()) {
             log.warning("Server adding");
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
@@ -354,7 +357,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void updateTokens(float time) {
         // Checks if server
-        if (getNetworkObject().isServer()) {
+        if (mNetworkObject.isServer()) {
             mLastTokenUpdate += time;
             // Checks to see how long its been since lastTokenUpdate
             if (mLastTokenUpdate >= UPDATE_TIME) {
@@ -540,7 +543,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             if (mMapComponent.isValid()
                     && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()) != null
                     && mMapComponent.get().getBuilding(tile.getQ(), tile.getR()).getOwnerID()
-                            == getNetworkObject().getOwnerId()) {
+                            == mNetworkObject.getOwnerId()) {
                 return true;
             }
         }
