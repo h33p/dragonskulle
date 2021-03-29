@@ -202,28 +202,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             log.info("Human:Got the Hexagon to enter");
 
-            if(mHexChosen != null) {
-            	if(mHexChosen.hasBuilding()) {
-            		Building building = mHexChosen.getBuilding();
-            		
-            		if(hasPlayerGotBuilding(building.getReference(Building.class))) {
-            			mBuildingChosen = building.getReference(Building.class);
+            if (mHexChosen != null) {
+                if (mHexChosen.hasBuilding()) {
+                    Building building = mHexChosen.getBuilding();
+
+                    if (hasPlayerGotBuilding(building.getReference(Building.class))) {
+                        mBuildingChosen = building.getReference(Building.class);
                         setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-            		}
-            	} else {
-            		// Checks if cannot build here            		
-            		if (mPlayer.get()
+                    }
+                } else {
+                    // Checks if cannot build here
+                    if (mPlayer.get()
                             .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
                         System.out.println("Human:Cannot build");
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
                     } else {
-                    	// If you can build
-                    	System.out.println("Human:Change Screen");
+                        // If you can build
+                        System.out.println("Human:Change Screen");
                         setScreenOn(Screen.TILE_SCREEN);
                     }
-            	}
+                }
             }
         }
     }
@@ -448,9 +448,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                         // Gets the buildingSelectedView to attackView
                                         // from and stored
-                                    	if(mHexChosen != null && mHexChosen.hasBuilding()) {
-                                    		mBuildingChosen = mHexChosen.getBuilding().getReference(Building.class);
-                                    	}
+                                        if (mHexChosen != null && mHexChosen.hasBuilding()) {
+                                            mBuildingChosen =
+                                                    mHexChosen
+                                                            .getBuilding()
+                                                            .getReference(Building.class);
+                                        }
                                         setScreenOn(Screen.ATTACK_SCREEN);
                                     }));
                 });

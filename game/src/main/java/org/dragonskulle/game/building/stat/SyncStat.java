@@ -5,7 +5,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import lombok.experimental.Accessors;
-
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -25,13 +24,13 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     public static final int LEVEL_MIN = 0;
     /** The highest level possible. */
     public static final int LEVEL_MAX = 5;
-    
+
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
     public SyncStat(Building building) {
-		this.mBuilding = new Reference<Building>(building);
-	}
-    
+        this.mBuilding = new Reference<Building>(building);
+    }
+
     /**
      * Set the level, and calculate and the new value.
      *
@@ -77,13 +76,13 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
      * @return The value of the stat.
      */
     public abstract T getValue();
-    
+
     @Override
     public void deserialize(DataInputStream in) throws IOException {
-    	super.deserialize(in);
-    	
-    	// The stats have changed, so call the building's afterStatChange.
-    	if(mBuilding == null || mBuilding.isValid() == false) return;
-		mBuilding.get().afterStatChange();
+        super.deserialize(in);
+
+        // The stats have changed, so call the building's afterStatChange.
+        if (mBuilding == null || mBuilding.isValid() == false) return;
+        mBuilding.get().afterStatChange();
     }
 }

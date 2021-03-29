@@ -11,10 +11,10 @@ import org.dragonskulle.game.building.Building;
 public class SyncAttackDistanceStat extends SyncStat<Integer> {
 
     public SyncAttackDistanceStat(Building building) {
-    	super(building);
-	}
+        super(building);
+    }
 
-	@Override
+    @Override
     public Integer getValue() {
         return 2;
     }

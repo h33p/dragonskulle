@@ -48,7 +48,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** Stores the defence strength of the building. */
     @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat(this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
+    @Getter
+    public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
     /** Stores the view range of the building. */
     @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
     /** Stores the attack range of the building. */
@@ -56,16 +57,18 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Whether the building is a capital. */
     public final SyncBool mIsCapital = new SyncBool(false);
-    
+
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
-    
+
     /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
     @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
-    
-    /** The tiles the building can currently attack (within the current {@link #mAttackDistance}). */
+
+    /**
+     * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
+     */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
-    
+
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
@@ -81,83 +84,83 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
-        
+
         // Add the Building to the owner's mOwnedBuildings.
-    	Player owningPlayer = getOwner();
+        Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addOwnedBuilding(this);
-        
+
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
     }
 
     @Override
     public void onStart() {
-        
-        
+
         // Generate the list of tiles that have been claimed by the Building.
         generateClaimTiles();
-        // Generate the lists of tiles that are influenced by the Stats of the Building. 
+        // Generate the lists of tiles that are influenced by the Stats of the Building.
         repopulateLists();
     }
-    
+
     /**
      * Regenerate the stored lists of tiles that relate to the stats.
+     *
      * <p>
+     *
      * <ul>
-     * <li>{@link #mAttackDistance} relates to {@link #mAttackableTiles}. 
-     * <li>{@link #mViewDistance} relates to {@link #mViewableTiles}.
-     * <p>
-     * <b>Needs to be called after a stat is altered.</b>
+     *   <li>{@link #mAttackDistance} relates to {@link #mAttackableTiles}.
+     *   <li>{@link #mViewDistance} relates to {@link #mViewableTiles}.
+     *       <p><b>Needs to be called after a stat is altered.</b>
      */
-    private void repopulateLists(){
-    	generateViewTiles();
+    private void repopulateLists() {
+        generateViewTiles();
         generateAttackableTiles();
     }
-    
+
     public void afterStatChange() {
-    	log.info("Repopulating lists related to Stats.");
-    	log.info("Attack level: " + getAttack().get());
-    	repopulateLists();
+        log.info("Repopulating lists related to Stats.");
+        log.info("Attack level: " + getAttack().get());
+        repopulateLists();
     }
-    
-    /**
-     * Claim the tiles around the building and the tile the building is on.
-     */
+
+    /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
-    	// Claim the tiles around the building.
-    	mClaimedTiles = getTilesInRadius(1);
+        // Claim the tiles around the building.
+        mClaimedTiles = getTilesInRadius(1);
         // Claim the tile the building is on.
-    	mClaimedTiles.add(getTile());
-        
-    	// Allow each hexagon tile to store the claim.
+        mClaimedTiles.add(getTile());
+
+        // Allow each hexagon tile to store the claim.
         for (HexagonTile hexagonTile : mClaimedTiles) {
-			hexagonTile.setClaimedBy(this);
-		}
+            hexagonTile.setClaimedBy(this);
+        }
     }
-    
+
     /**
-     * Store the tiles that can be viewed around the building, including the tile the building is on.
+     * Store the tiles that can be viewed around the building, including the tile the building is
+     * on.
      */
     private void generateViewTiles() {
-    	// Get the current view distance.
+        // Get the current view distance.
         int distance = mViewDistance.getValue();
-        
+
         // Get the tiles within the view distance.
         mViewableTiles = getTilesInRadius(distance);
         // View the tile the building is on.
-    	mViewableTiles.add(getTile());
+        mViewableTiles.add(getTile());
     }
-    
+
     /**
-     * Store the tiles that can be attacked around the building, excluding the tile the building is on.
+     * Store the tiles that can be attacked around the building, excluding the tile the building is
+     * on.
      */
     private void generateAttackableTiles() {
-    	 // Get the current attack distance.
+        // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
         mAttackableTiles = getTilesInRadius(distance);
     }
-    
+
     public Player getOwner() {
         return getNetworkObject()
                 .getNetworkManager()
@@ -320,6 +323,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /**
      * Get whether the target {@link Building} is within attackable range from the Building.
+     *
      * @param target The Building to attack.
      * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
      */
@@ -333,7 +337,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get the current axial coordinates of the building using the {@link GameObject}'s {@link TransformHex}.
+     * Get the current axial coordinates of the building using the {@link GameObject}'s {@link
+     * TransformHex}.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building.
      */
@@ -409,25 +414,25 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Remove this building from the {@link Player} who owns the building and references to it in any {@link HexagonTile}s.
+     * Remove this building from the {@link Player} who owns the building and references to it in
+     * any {@link HexagonTile}s.
      */
-    public void remove(){
-    	
-    	// Remove any claims.
-    	for (HexagonTile hexagonTile : mClaimedTiles) {
-			hexagonTile.setClaimedBy(null);
-		}
-    	
-    	// Reset the list of claimed, viewable and attackable tiles.
-    	mClaimedTiles = new ArrayList<HexagonTile>();
-    	mViewableTiles = new ArrayList<HexagonTile>();
-    	mAttackableTiles = new ArrayList<HexagonTile>();
-    	
-    	// TODO: Request that the building should be destroyed.
-    	// destroy();
+    public void remove() {
+
+        // Remove any claims.
+        for (HexagonTile hexagonTile : mClaimedTiles) {
+            hexagonTile.setClaimedBy(null);
+        }
+
+        // Reset the list of claimed, viewable and attackable tiles.
+        mClaimedTiles = new ArrayList<HexagonTile>();
+        mViewableTiles = new ArrayList<HexagonTile>();
+        mAttackableTiles = new ArrayList<HexagonTile>();
+
+        // TODO: Request that the building should be destroyed.
+        // destroy();
     }
-    
+
     @Override
     protected void onDestroy() {}
-    
 }
