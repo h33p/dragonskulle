@@ -22,15 +22,15 @@ import org.dragonskulle.game.player.networkData.StatData;
 public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 0.5;
+    protected float mTileProbability = 0.5f;
 
     protected float mBuildingProbability = 1 - mTileProbability;
 
     /** Choose what to do with the building -- These 3 must sum to 1 */
-    protected float mUpgradeBuilding = (float) 0.2;
+    protected float mUpgradeBuilding = 0.2f;
 
-    protected float mAttackBuilding = (float) 0.7;
-    protected float mSellBuilding = (float) 0.1;
+    protected float mAttackBuilding = 0.7f;
+    protected float mSellBuilding = 0.1f;
 
     /** A Constructor for an AI Player */
     public ProbabilisticAiPlayer() {}

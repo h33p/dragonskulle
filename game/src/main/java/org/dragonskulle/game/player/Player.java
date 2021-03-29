@@ -256,7 +256,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("Client ownedBuilding size" + mOwnedBuildings.size());
             log.info("Client Added Building " + qPos + " " + rPos);
         }
-        if (getNetworkObject().isServer()) {
+        else if (getNetworkObject().isServer()) {
             log.warning("Server adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
             log.info(
@@ -292,7 +292,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("Client ownedBuilding size" + mOwnedBuildings.size());
             log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
         }
-        if (getNetworkObject().isServer()) {
+        else if (getNetworkObject().isServer()) {
             log.warning("Server adding");
             mOwnedBuildings.put(
                     map.getTile(buildingTile.getQ(), buildingTile.getR()),
