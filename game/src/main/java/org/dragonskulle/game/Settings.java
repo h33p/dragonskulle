@@ -1,33 +1,27 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.*;
+import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
-import java.io.*;
-import java.util.HashMap;
-
-/**
- * @author Oscar L
- * For loading in any settings from the settings.json file.
- */
+/** @author Oscar L For loading in any settings from the settings.json file. */
 @Accessors(prefix = "m")
 @Log
 public class Settings {
     @Getter(AccessLevel.PROTECTED)
     private static final Settings mInstance = new Settings();
+
     private static boolean mIsLoaded = false;
     private HashMap mSettings = new HashMap<>();
 
-    private Settings() {
-    }
+    private Settings() {}
 
-    /**
-     * Loads settings from the default location.
-     * root/settings.json
-     */
+    /** Loads settings from the default location. root/settings.json */
     public void loadSettings() {
         loadSettings("settings.json");
     }
@@ -53,9 +47,11 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return null.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return null.
      *
-     * @param name the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the float setting value.
      */
     @SuppressWarnings("unchecked")
@@ -74,10 +70,12 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the float setting value.
      */
     @SuppressWarnings("unchecked")
@@ -87,9 +85,11 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return null.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return null.
      *
-     * @param name the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the string setting value.
      */
     @SuppressWarnings("unchecked")
@@ -108,10 +108,12 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the String setting value.
      */
     public String retrieveString(String name, String defaultValue) {
@@ -120,9 +122,11 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return null.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return null.
      *
-     * @param name the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the double setting value.
      */
     @SuppressWarnings("unchecked")
@@ -141,10 +145,12 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the double setting value.
      */
     public Double retrieveDouble(String name, Double defaultValue) {
@@ -153,9 +159,11 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return null.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return null.
      *
-     * @param name the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the long setting value.
      */
     @SuppressWarnings("unchecked")
@@ -173,12 +181,13 @@ public class Settings {
         }
     }
 
-
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the long setting value.
      */
     public Long retrieveLong(String name, Long defaultValue) {
@@ -187,9 +196,11 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return null.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return null.
      *
-     * @param name the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the boolean setting value.
      */
     @SuppressWarnings("unchecked")
@@ -207,12 +218,13 @@ public class Settings {
         }
     }
 
-
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the boolean setting value.
      */
     public Boolean retrieveBoolean(String name, Boolean defaultValue) {
@@ -221,9 +233,11 @@ public class Settings {
     }
 
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
-     * @param name the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the integer setting value.
      */
     @SuppressWarnings("unchecked")
@@ -241,12 +255,13 @@ public class Settings {
         }
     }
 
-
     /**
-     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't exist then will return default value.
+     * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
+     * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the integer setting value.
      */
     public Integer retrieveInteger(String name, Integer defaultValue) {

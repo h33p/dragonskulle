@@ -2,7 +2,6 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
-
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
@@ -365,8 +364,7 @@ public class App implements NativeResource {
                                                         "Settings"),
                                                 refAudioButtonEffect
                                                         .get()
-                                                        .audibleClick((uiButton, __) -> {
-                                                        }));
+                                                        .audibleClick((uiButton, __) -> {}));
 
                                 button.addComponent(newButton);
                             });
@@ -422,7 +420,9 @@ public class App implements NativeResource {
                                 UISlider newSlider =
                                         new UISlider((uiSlider, val) -> System.out.println(val));
 
-                                newSlider.setValue(Settings.getInstance().retrieveFloat("sliderDefaultValue", 0.5f));
+                                newSlider.setValue(
+                                        Settings.getInstance()
+                                                .retrieveFloat("sliderDefaultValue", 0.5f));
                                 newSlider.setRoundStep(0.1f);
                                 newSlider.setMaxValue(10f);
 
@@ -482,8 +482,8 @@ public class App implements NativeResource {
                                                                                     sIP,
                                                                                     sPort,
                                                                                     (gameScene,
-                                                                                     manager,
-                                                                                     netID) -> {
+                                                                                            manager,
+                                                                                            netID) -> {
                                                                                         if (netID
                                                                                                 >= 0) {
                                                                                             onConnectedClient(
@@ -635,21 +635,21 @@ public class App implements NativeResource {
         // TODO: actually make a fully fledged console
         // TODO: join it at the end
         new Thread(
-                () -> {
-                    Scanner in = new Scanner(System.in);
+                        () -> {
+                            Scanner in = new Scanner(System.in);
 
-                    String line;
+                            String line;
 
-                    while ((line = in.nextLine()) != null) {
-                        try {
-                            sPort = in.nextInt();
-                            sIP = line.trim();
-                            System.out.println("Address set successfully!");
-                        } catch (Exception e) {
-                            System.out.println("Failed to set IP and port!");
-                        }
-                    }
-                })
+                            while ((line = in.nextLine()) != null) {
+                                try {
+                                    sPort = in.nextInt();
+                                    sIP = line.trim();
+                                    System.out.println("Address set successfully!");
+                                } catch (Exception e) {
+                                    System.out.println("Failed to set IP and port!");
+                                }
+                            }
+                        })
                 .start();
 
         // Run the game
