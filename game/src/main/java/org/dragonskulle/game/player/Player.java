@@ -221,7 +221,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * @deprecated Now inside {@link Building#onStart()}.
      *     <p>Add a building to the ones the player owns
-     * @param building The building to add
+     * @param building The building to add.
+     * @param qPos The q coordinate.
+     * @param rPos The r coordinate.
      */
     public void addBuilding(Building building, int qPos, int rPos) {
         HexagonMap map = this.getMapComponent();

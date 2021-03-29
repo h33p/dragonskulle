@@ -63,7 +63,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<MapEffects> mMapEffects;
     private boolean mVisualsNeedUpdate;
 
-    /** The constructor for the human player */
+    /**
+     * Create a {@link HumanPlayer}.
+     * @param networkManager
+     * @param netID
+     */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
         mNetID = netID;
