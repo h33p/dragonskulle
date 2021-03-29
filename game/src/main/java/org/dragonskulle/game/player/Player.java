@@ -564,10 +564,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Get Stat
         // Upgrade
 
-    	// TODO: Replace with actual logic.
-    	// Used for testing:
+        // TODO: Replace with actual logic.
+        // Used for testing:
         HexagonMap map = mMapComponent.get();
-        Building building = data.getBuilding(map);        
+        Building building = data.getBuilding(map);
         if (building.getAttack().get() + 1 > SyncStat.LEVEL_MAX) {
             building.getAttack().setLevel(0);
         } else {
