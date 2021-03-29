@@ -137,8 +137,7 @@ public class HexagonTile {
      * @return Whether the tile is claimed by a building.
      */
     public boolean isClaimed() {
-        if (mClaimedBy == null || mClaimedBy.isValid() == false) return false;
-        return true;
+        return (mClaimedBy != null && mClaimedBy.isValid());
     }
 
     /**
