@@ -140,7 +140,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int posY = min + (int) (Math.random() * ((max - min) + 1));
         // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
         Building buildingToBecomeCapital = addNewBuilding(posX, posY);
-        // Building buildingToBecomeCapital = mMapComponent.get().getBuilding(posX, posY);
+        if (buildingToBecomeCapital == null) {
+            log.severe("Unable to place an initial capital building.");
+            return;
+        }
         buildingToBecomeCapital.setCapital(true);
     }
 
@@ -194,7 +197,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // addBuilding(building, qPos, rPos);
-        log.info("Stored building");
+        // log.info("Stored building");
 
         return building;
     }
