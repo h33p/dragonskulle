@@ -70,11 +70,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    private int playersToPlay =
+    private final int playersToPlay =
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
-    NetworkManager mNetworkManager;
+    NetworkManager mNetworkMana    NetworkObject mNetworkObject;
+ger;
 
     /** The base constructor for player */
     public Player() {}
@@ -94,9 +95,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mMapComponent =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
+                           mNetworkObject = getNetworkObject();
 
-        mNetworkManager = getNetworkObject().getNetworkManager();
+        mNetworkManag        if (mNetworkObject.isServer()) {
+etworkObject().getNetworkManager();
 
         if (getNetworkObject().isServer()) {
             distributeCoordinates();
@@ -177,8 +179,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         Reference<NetworkObject> obj =
                 mNetworkManager
-                        .getServerManager()
-                        .spawnNetworkObject(
+                                          mNetworkObject.getOwnerId(),
+etworkObject(
                                 getNetworkObject().getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
 
@@ -232,10 +234,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         HexagonMap map = this.getMapComponent();
         if (map == null) {
             log.warning("Map doesn't exist");
-            return;
-        }
-        map.storeBuilding(building, qPos, rPos);
-        log.info("stored building on map tile");
+             if (mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
+            log.warning("Client adding");
+            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReferen           d Building " + qPos + " " + rPos);
+ce(Building.class));
+            log.info(
+                    "Client added building into hash"
+                            + map.getTile(qPos, rPos).getQ()
+                            + " "
+                            + map.getTile(qPos, rPos).getR());
+            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Client Added Building " + qPos + " " + rPos);
+        } else if (mNetworkObject.isServer()) {
+            log.warning("Server adding");
+uilding on map tile");
         if (building.getNetworkObject().isMine()) {
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
@@ -244,9 +256,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 "added building into hash"
                         + map.getTile(qPos, rPos).getQ()
                         + " "
-                        + map.getTile(qPos, rPos).getR());
-        log.info("ownedBuilding size" + mOwnedBuildings.size());
-        log.info("Added Building " + qPos + " " + rPos);
+                        + map.getT        if (building.getNetworkObject()
+                .isMine()) { // TODO THIS IS False COS can only be ran on the client! Maybe
+            log.warning("Client adding");
+            mOwnedBuildings.put(
+                    map.getTile(buildingTile.getQ(), buildingTi
+          buildingTile.getR());
+le.getR()),
+                    building.getReference(Building.class));
+            log.info("Client added building into hash" + mOwnedBuildings.size());
+            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
+            log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
+        } else if (mNetworkObject.isServer()) {
+            log.warning("Server adding");
+.info("Added Building " + qPos + " " + rPos);
     }
 
     /**
@@ -299,10 +322,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
         return mOwnedBuildings.values().stream();
-    }
-
-    /**
-     * Add a {@link Building} the the list of owned buildings.
+           if (mNetworkObject.isServer()) {
+he the list of owned buildings.
      *
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
@@ -366,8 +387,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     protected void onNetworkInitialize() {
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
+        mClientBuildRequest = new ClientReques        /* int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
+tatData(), this::handleEvent);
 
         if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
@@ -405,7 +426,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * How this component will react to an attack event.
      *
-     * @param data attack event being executed on the server.
+        log.info("Attack is: " + won);
+er.
      */
     public void handleEvent(AttackData data) {
 
@@ -424,7 +446,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (attackingBuilding == null
                 || defenderBuilding == null
                 || attackingBuilding.getNetworkObject().getOwnerId()
-                        != getNetworkObject().getOwnerId()) {
+                        != getNetwork        return;*/
+Id()) {
             log.info("Invalid building selection!");
             return;
         }
