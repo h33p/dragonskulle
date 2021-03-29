@@ -416,7 +416,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public void handleEvent(AttackData data) {
 
-        int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
+       /* int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
 
         // Checks if there is enough tokens for this
         if (mTokens.get() < COST) {
@@ -468,7 +468,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         log.info("Done");
 
-        return;
+        return;*/
     }
 
     // Building is handled below

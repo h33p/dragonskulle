@@ -231,6 +231,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             Building[] buildingToAttack =
                     buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
             // Send to server
+            
+            if (buildingToAttack == null || buildingToAttack[0] == null || buildingToAttack[1] == null) {  
+            	//Check in case accidentally a null slipped in
+            	return;
+            }
             mPlayer.get().handleEvent(new AttackData(buildingToAttack[0], buildingToAttack[1]));
 
             return;
