@@ -146,4 +146,12 @@ public class HexagonTile {
     	}
     	return mClaimedBy.get().getOwner();
     }
+    
+    /**
+     * Get whether there is a {@link Building} on this tile.
+     * @return Whether there is a building on this tile.
+     */
+    public boolean hasBuilding() {
+    	return mBuilding != null;
+    }
 }

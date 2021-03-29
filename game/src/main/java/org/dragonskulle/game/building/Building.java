@@ -82,16 +82,17 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
         
+        // Add the Building to the owner's mOwnedBuildings.
+    	Player owningPlayer = getOwner();
+        if (owningPlayer != null) owningPlayer.addOwnedBuilding(this);
+        
+        // Add the building to the relevant HexagonTile.
+        getTile().setBuilding(this);
     }
 
     @Override
     public void onStart() {
-        // Add the Building to the owner's mOwnedBuildings.
-    	Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.addBuilding(this);
         
-        // Add the building to the relevant HexagonTile.
-        getTile().setBuilding(this);
         
         // Generate the list of tiles that have been claimed by the Building.
         generateClaimTiles();
@@ -301,7 +302,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         for (HexagonTile tile : attackTiles) {
             // Get the building on an attackable tile, if it exists.
-            Building building = map.getBuilding(tile.getQ(), tile.getR());
+            Building building = tile.getBuilding();
             if (building == null) continue;
 
             // Ensure the building is not owned by the owner of this building.

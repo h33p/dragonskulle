@@ -347,7 +347,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
         // Check if building there
         for (HexagonTile tile : hexTiles) {
-            if (mPlayer.get().getMapComponent().getBuilding(tile.getQ(), tile.getR()) != null) {
+            if (tile.getBuilding() != null) {
                 return false;
             }
         }
