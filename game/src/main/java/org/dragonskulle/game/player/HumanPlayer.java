@@ -16,7 +16,6 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
-import org.dragonskulle.game.player.networkData.StatData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.Font;
@@ -69,6 +68,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mNetworkManager = networkManager;
         mNetID = netID;
         mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
+        mNetworkManager
+                .get()
+                .getClientManager()
+                .registerOwnershipModificationListener(this::onOwnerModifiedObject);
     }
 
     @Override
@@ -83,14 +86,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject()
-                        .buildChild(
-                                "map screen",
-                                new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(
-                                            new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
-                                });
+                getGameObject().buildChild("map screen", new TransformUI(), this::mapScreenView);
 
         // Get the screen for confirming placing a buildingSelectedView
         mPlaceScreen =
@@ -112,88 +108,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild("attackView screen", new TransformUI(), this::buildAttackView);
 
         // To upgrade stats
-        mShowStat =
-                getGameObject()
-                        .buildChild(
-                                "Stat screen",
-                                new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(
-                                            new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+        mShowStat = getGameObject().buildChild("Stat screen", new TransformUI(), this::statView);
 
-                                    ; // TODO will add stuff for Stats AFTER prototype
-
-                                    go.buildChild(
-                                            "Go Back",
-                                            new TransformUI(true),
-                                            (box) -> {
-                                                box.addComponent(
-                                                        new UIRenderable(
-                                                                new SampledTexture(
-                                                                        "ui/wide_button.png")));
-                                                box.addComponent(
-                                                        new UIButton(
-                                                                new UIText(
-                                                                        new Vector3f(0f, 0f, 0f),
-                                                                        Font.getFontResource(
-                                                                                "Rise of Kingdom.ttf"),
-                                                                        "Go Back"),
-                                                                (handle, __) -> {
-
-                                                                	if(mBuildingChosen != null){
-	                                                                	// Send stats to server
-	                                                                    mPlayer.get()
-	                                                                            .getClientStatRequest()
-	                                                                            .invoke(
-	                                                                                    new StatData(
-	                                                                                            mBuildingChosen.get(), null)); // TODO Send
-                                                                	}
-                                                                	
-                                                                	mHexChosen = null;
-                                                                    mBuildingChosen = null;
-                                                                    setScreenOn(Screen.MAP_SCREEN);
-                                                                }));
-                                            });
-                                });
-
-        mTokenBanner =
-                getGameObject()
-                        .buildChild(
-                                "token_view",
-                                new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
-
-                                    ; // TODO will add stuff for Stats AFTER prototype
-
-                                    Reference<GameObject> tmp_ref =
-                                            go.buildChild(
-                                                    "token_count",
-                                                    new TransformUI(true),
-                                                    (box) -> {
-                                                        box.getTransform(TransformUI.class)
-                                                                .setParentAnchor(
-                                                                        0f, 0.01f, 0.5f, 0.01f);
-                                                        box.getTransform(TransformUI.class)
-                                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                                        box.addComponent(
-                                                                new UIRenderable(
-                                                                        new SampledTexture(
-                                                                                "ui/wide_button.png")));
-                                                        box.addComponent(
-                                                                new UIButton(
-                                                                        new UIText(
-                                                                                new Vector3f(
-                                                                                        0f, 0f, 0f),
-                                                                                Font
-                                                                                        .getFontResource(
-                                                                                                "Rise of Kingdom.ttf"),
-                                                                                "Tokens: "
-                                                                                        + mLocalTokens)));
-                                                    });
-
-                                    mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
-                                });
+        mTokenBanner = getGameObject().buildChild("token_view", new TransformUI(), this::tokenView);
         mTokenBanner.get().setEnabled(true);
     }
 
@@ -255,7 +172,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Checks that its clicking something
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
-        if (GameActions.LEFT_CLICK.isActivated() //                &&
+        if (mPlayer != null
+                && GameActions.LEFT_CLICK.isActivated() //                &&
                 // UIManager.getInstance().getHoveredObject() == null, this
                 // is breaking something
                 && mainCam != null) {
@@ -320,6 +238,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
+    /** AURI!! This updates what the user can see */
     private void updateVisuals() {
         mVisualsNeedUpdate = false;
 
@@ -375,6 +294,26 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
+    /** Marks visuals to update whenever a new object is spawned */
+    private void onOwnerModifiedObject(Reference<NetworkObject> obj) {
+        // remove from self as owned if exists, then we need to check if we are the owner again
+        if (obj.isValid()) {
+            final Reference<Building> buildingReference =
+                    obj.get().getGameObject().getComponent(Building.class);
+            if (obj.get().isMine()) {
+                mPlayer.get().addOwnership(buildingReference);
+            } else if (buildingReference != null
+                    && mPlayer.get().thinksOwnsBuilding(buildingReference)) {
+                mPlayer.get().removeFromOwnedBuildings(buildingReference);
+            }
+        }
+    }
+
+    /**
+     * AURI!!!
+     *
+     * @param newScreen
+     */
     private void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn)) mVisualsNeedUpdate = true;
         mScreenOn = newScreen;
@@ -389,13 +328,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
         if (buildingToCheck == null || !buildingToCheck.isValid()) return false;
 
-        return mPlayer.get().getBuilding(buildingToCheck.get().getTile()) != null;
+        return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;
     }
 
     /**
      * This is a function which outputs what the user should see on a map
      *
-     * @param go The game object
+     * @param go The {@code GameObject} to build off
      */
     private void buildAttackView(GameObject go) {
 
@@ -467,6 +406,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
+    /**
+     * This will create the screen which gives the actions of what a player can do once they have
+     * clicked a building
+     *
+     * @param go The {@code GameObject} to build off
+     */
     private void buildBuildingSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
         // Choose to upgrade the buildingSelectedView
@@ -576,6 +521,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
+    /**
+     * This will create the screen which you can build a building offf
+     *
+     * @param go The {@code GameObject} to build off
+     */
     private void buildPlaceSelectedView(GameObject go) {
         go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
         // Will build a box to confirm
@@ -623,5 +573,72 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         setScreenOn(Screen.MAP_SCREEN);
                                     }));
                 });
+    }
+
+    /**
+     * This screen allows the user to interact with the map
+     *
+     * @param go The {@code GameObject} to build off
+     */
+    private void mapScreenView(GameObject go) {
+
+        go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+    }
+
+    /**
+     * This will allow the user to upgrade stats
+     *
+     * @param go The {@code GameObject} to build off
+     */
+    private void statView(GameObject go) {
+
+        go.addComponent(new UIRenderable(new Vector4f(0.3f, 0.3f, 0.3f, 0.3f)));
+
+        ; // TODO will add stuff for Stats AFTER prototype
+
+        go.buildChild(
+                "Go Back",
+                new TransformUI(true),
+                (box) -> {
+                    box.addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
+                    box.addComponent(
+                            new UIButton(
+                                    new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "Go Back"),
+                                    (handle, __) -> {
+                                        mHexChosen = null;
+                                        mBuildingChosen = null;
+                                        setScreenOn(Screen.MAP_SCREEN);
+                                    }));
+                });
+    }
+
+    private void tokenView(GameObject go) {
+
+        go.addComponent(new UIRenderable(new Vector4f(0f, 0f, 0f, 0f)));
+
+        ; // TODO will add stuff for Stats AFTER prototype
+
+        Reference<GameObject> tmp_ref =
+                go.buildChild(
+                        "token_count",
+                        new TransformUI(true),
+                        (box) -> {
+                            box.getTransform(TransformUI.class)
+                                    .setParentAnchor(0f, 0.01f, 0.5f, 0.01f);
+                            box.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                            box.addComponent(
+                                    new UIRenderable(new SampledTexture("ui/wide_button.png")));
+                            box.addComponent(
+                                    new UIButton(
+                                            new UIText(
+                                                    new Vector3f(0f, 0f, 0f),
+                                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                                    "Tokens: " + mLocalTokens)));
+                        });
+
+        mTokenBannerButton = tmp_ref.get().getComponent(UIButton.class);
     }
 }
