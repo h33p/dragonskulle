@@ -1,11 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import static org.dragonskulle.utils.Env.*;
-
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Scanner;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.AudioSource;
 import org.dragonskulle.audio.SoundType;
@@ -13,50 +10,33 @@ import org.dragonskulle.components.*;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
-import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.materials.VertexHighlightMaterial;
-import org.dragonskulle.game.player.AiPlayer;
 import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
-import org.dragonskulle.network.components.NetworkHexTransform;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.*;
-import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.dragonskulle.ui.*;
 import org.joml.*;
-import org.joml.Math;
+import org.lwjgl.system.NativeResource;
 
-public class App {
-
-    private static final int INSTANCE_COUNT = envInt("INSTANCE_COUNT", 50);
-    private static final int INSTANCE_COUNT_ROOT = Math.max((int) Math.sqrt(INSTANCE_COUNT), 1);
+public class App implements NativeResource {
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
+    private static boolean sReload = false;
 
-    private static final Vector4fc[] COLOURS = {
-        new Vector4f(1.f, 0.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 0.5f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 0.5f, 1f),
-        new Vector4f(0.5f, 0.f, 1.f, 1f),
-        new Vector4f(1.f, 1.f, 0.f, 1f),
-        new Vector4f(0.f, 1.f, 1.f, 1f),
-        new Vector4f(1.f, 0.f, 1.f, 1f),
-    };
+    private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
+    private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
 
     private static Scene createMainScene() {
         // Create a scene
@@ -156,100 +136,70 @@ public class App {
         return mainScene;
     }
 
-    private static Scene createMainMenu(Scene mainScene) {
-        Scene mainMenu = new Scene("mainMenu");
+    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
+        Scene mainScene = createMainScene();
 
-        GameObject camera = new GameObject("mainCamera");
-        Transform3D tr = (Transform3D) camera.getTransform();
-        // Set where it's at
-        tr.setPosition(0f, 0f, 1.5f);
-        tr.rotateDeg(-30f, 0f, 70f);
-        tr.translateLocal(0f, -8f, 0f);
-        camera.addComponent(new Camera());
-        mainMenu.addRootObject(camera);
-
-        // Create a hexagon template
-        GameObject hexagon = new GameObject("hexagon");
-
-        // Add a renderable to it
-        hexagon.addComponent(new Renderable());
-        Reference<Renderable> hexRenderer = hexagon.getComponent(Renderable.class);
-        hexRenderer.get().setMaterial(new VertexHighlightMaterial());
-        VertexHighlightMaterial hexMaterial =
-                hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
-        hexMaterial.setDistancePow(10f);
-        hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
-
-        // Add wobble components
-        hexagon.addComponent(new Wobbler());
-        Reference<Wobbler> hexWobbler = hexagon.getComponent(Wobbler.class);
-
-        GameObject hexRoot = new GameObject("hexRoot");
-        hexRoot.addComponent(new Spinner(10, 10, 0.1f));
-
-        // Create instances, change up some parameters
-        for (int q = -INSTANCE_COUNT_ROOT / 2; q <= INSTANCE_COUNT_ROOT / 2; q++) {
-            for (int r = -INSTANCE_COUNT_ROOT / 2; r <= INSTANCE_COUNT_ROOT / 2; r++) {
-                int idx = q * r % COLOURS.length;
-                if (idx < 0) idx += COLOURS.length;
-                hexWobbler
-                        .get()
-                        .setPhaseShift((Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) * 0.1f);
-                hexMaterial.getColour().set(COLOURS[idx]);
-                hexRoot.addChild(GameObject.instantiate(hexagon, new TransformHex(q, r)));
-            }
+        if (asServer) {
+            GameObject hostGameUI =
+                    new GameObject(
+                            "hostGameUI",
+                            new TransformUI(false),
+                            (root) -> {
+                                root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                                root.getTransform(TransformUI.class).setParentAnchor(0f);
+                                root.buildChild(
+                                        "populate_with_ai",
+                                        new TransformUI(true),
+                                        (box) -> {
+                                            box.getTransform(TransformUI.class)
+                                                    .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
+                                            box.getTransform(TransformUI.class)
+                                                    .setMargin(0f, 0f, 0f, 0.07f);
+                                            box.addComponent(
+                                                    new UIRenderable(
+                                                            new SampledTexture(
+                                                                    "ui/wide_button.png")));
+                                            box.addComponent(
+                                                    new UIButton(
+                                                            new UIText(
+                                                                    new Vector3f(0f, 0f, 0f),
+                                                                    Font.getFontResource(
+                                                                            "Rise of Kingdom.ttf"),
+                                                                    "Fill game with AI"),
+                                                            (a, b) -> {
+                                                                System.out.println(
+                                                                        "should fill with ai");
+                                                                networkManager
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -1,
+                                                                                networkManager
+                                                                                        .findTemplateByName(
+                                                                                                "aiPlayer"));
+                                                            }));
+                                        });
+                            });
+            mainScene.addRootObject(hostGameUI);
         }
+        return mainScene;
+    }
 
-        mainMenu.addRootObject(hexRoot);
+    private Scene createMainMenu() {
+        Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
 
         TemplateManager templates = new TemplateManager();
 
         templates.addAllObjects(
-                new GameObject(
-                        "cube",
-                        (handle) -> {
-                            UnlitMaterial mat = new UnlitMaterial();
-                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
-                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
-                        }),
-                new GameObject(
-                        "capital",
-                        (handle) -> {
-                            UnlitMaterial mat = new UnlitMaterial();
-
-                            mat.getFragmentTextures()[0] = new SampledTexture("cat_material.jpg");
-                            handle.addComponent(new Renderable(Mesh.HEXAGON, mat));
-                        }),
-                new GameObject(
-                        "building",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            UnlitMaterial mat = new UnlitMaterial();
-                            mat.getColour().set(1, 0, 0, 1);
-                            handle.addComponent(new Renderable(Mesh.CUBE, mat));
-                            handle.addComponent(new Building());
-                            handle.addComponent(new NetworkHexTransform());
-                        }),
-                new GameObject(
-                        "player",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            handle.addComponent(new Player());
-                        }),
-                new GameObject(
-                        "aiPlayer",
-                        new TransformHex(0, 0, 1),
-                        (handle) -> {
-                            handle.addComponent(new AiPlayer());
-                            handle.addComponent(new Player());
-                        }));
+                mNetworkTemplatesGLTF.get().getDefaultScene().getGameObjects().stream()
+                        .toArray(GameObject[]::new));
 
         Reference<NetworkManager> networkManager =
-                new NetworkManager(templates, mainScene).getReference(NetworkManager.class);
+                new NetworkManager(templates, App::createMainScene)
+                        .getReference(NetworkManager.class);
 
         GameObject networkManagerObject =
                 new GameObject(
-                        "client network manager",
+                        "network manager",
                         (handle) -> {
                             handle.addComponent(networkManager.get());
                         });
@@ -294,7 +244,7 @@ public class App {
             AudioManager.getInstance().setVolume(SoundType.SFX, 60);
             refAudio.get().loadAudio("game_background.wav", SoundType.BACKGROUND);
             refAudioButtonEffect.get().loadAudio("button-10.wav", SoundType.SFX);
-            refAudio.get().play();
+            // refAudio.get().play();
         }
 
         GameObject gameTitle =
@@ -342,47 +292,6 @@ public class App {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject hostGameUI =
-                new GameObject(
-                        "hostGameUI",
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                            root.buildChild(
-                                    "populate_with_ai",
-                                    new TransformUI(true),
-                                    (box) -> {
-                                        box.getTransform(TransformUI.class)
-                                                .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
-                                        box.getTransform(TransformUI.class)
-                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                        box.addComponent(
-                                                new UIRenderable(
-                                                        new SampledTexture("ui/wide_button.png")));
-                                        box.addComponent(
-                                                new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(0f, 0f, 0f),
-                                                                Font.getFontResource(
-                                                                        "Rise of Kingdom.ttf"),
-                                                                "Fill game with AI"),
-                                                        (a, b) -> {
-                                                            System.out.println(
-                                                                    "should fill with ai");
-                                                            networkManager
-                                                                    .get()
-                                                                    .getServerManager()
-                                                                    .spawnNetworkObject(
-                                                                            -1,
-                                                                            networkManager
-                                                                                    .get()
-                                                                                    .findTemplateByName(
-                                                                                            "aiPlayer"));
-                                                        }));
-                                    });
-                        });
-
         mainUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -411,7 +320,6 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     joinUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(false);
                                                                 }));
                                 button.addComponent(newButton);
                             });
@@ -436,7 +344,6 @@ public class App {
                                                                 (uiButton, __) -> {
                                                                     mainUI.setEnabled(false);
                                                                     hostUI.setEnabled(true);
-                                                                    hostGameUI.setEnabled(true);
                                                                 }));
                                 button.addComponent(newButton);
                             });
@@ -481,6 +388,27 @@ public class App {
                                 button.addComponent(newButton);
                             });
 
+                    bg.buildChild(
+                            "reloadButton",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIButton newButton =
+                                        new UIButton(
+                                                new UIText(
+                                                        new Vector3f(0f, 0f, 0f),
+                                                        Font.getFontResource("Rise of Kingdom.ttf"),
+                                                        "Quick Reload"),
+                                                (uiButton, __) -> {
+                                                    sReload = true;
+                                                    Engine.getInstance().stop();
+                                                });
+
+                                button.addComponent(newButton);
+                            });
                     bg.buildChild(
                             "slider",
                             new TransformUI(true),
@@ -550,12 +478,13 @@ public class App {
                                                                             .createClient(
                                                                                     sIP,
                                                                                     sPort,
-                                                                                    (manager,
+                                                                                    (gameScene,
+                                                                                            manager,
                                                                                             netID) -> {
                                                                                         if (netID
                                                                                                 >= 0) {
                                                                                             onConnectedClient(
-                                                                                                    mainScene,
+                                                                                                    gameScene,
                                                                                                     manager,
                                                                                                     netID);
                                                                                         } else if (connectingTextRef
@@ -630,7 +559,7 @@ public class App {
                                                                             .get()
                                                                             .createServer(
                                                                                     sPort,
-                                                                                    App
+                                                                                    this
                                                                                             ::onClientConnected);
                                                                 }));
                                 button.addComponent(newButton);
@@ -664,10 +593,6 @@ public class App {
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
-        hostGameUI.setEnabled(false);
-        mainScene.addRootObject(hostGameUI);
-
-        mainMenu.addRootObject(GameObject.instantiate(hexRoot));
 
         mainMenu.addRootObject(networkManagerObject);
 
@@ -685,14 +610,19 @@ public class App {
      * @param args the input arguments
      */
     public static void main(String[] args) {
-        // Create a scene
-        Scene mainScene = createMainScene();
+        do {
+            sReload = false;
+            try (App app = new App()) {
+                app.run();
+            }
+        } while (sReload);
 
+        System.exit(0);
+    }
+
+    private void run() {
         // Create the main menu
-        Scene mainMenu = createMainMenu(mainScene);
-
-        // Load the mainScene as an inactive scene
-        Engine.getInstance().loadScene(mainScene, false);
+        Scene mainMenu = createMainMenu();
 
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
@@ -720,22 +650,9 @@ public class App {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
-
-        Map<Thread, StackTraceElement[]> activeThreads = Thread.getAllStackTraces();
-
-        for (Map.Entry<Thread, StackTraceElement[]> t : activeThreads.entrySet()) {
-            if (t.getKey() != Thread.currentThread()) {
-                System.out.println("THREAD:");
-                System.out.println(t.getKey().getName());
-                System.out.println(t.getKey().getId());
-                System.out.println(Arrays.toString(t.getValue()));
-            }
-        }
-
-        System.exit(0);
     }
 
-    private static void onConnectedClient(Scene mainScene, NetworkManager manager, int netID) {
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
         System.out.println("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
@@ -747,33 +664,20 @@ public class App {
                                             manager.getReference(NetworkManager.class), netID));
                         });
 
-        mainScene.addRootObject(humanPlayer);
+        gameScene.addRootObject(humanPlayer);
     }
 
-    private static void onClientConnected(NetworkManager manager, ServerClient networkClient) {
+    private void onClientConnected(
+            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
-}
 
-//        // Create a cube. This syntax is slightly different
-//        // This here, will allow you to "build" the cube in one go
-//        GameObject cube =
-//                new GameObject(
-//                        "cube",
-//                        new Transform3D(0f, 0f, 1.5f),
-//                        (go) -> {
-//                            go.addComponent(new Renderable(Mesh.CUBE, new UnlitMaterial()));
-//                            go.getComponent(Renderable.class)
-//                                    .get()
-//                                    .getMaterial(IColouredMaterial.class)
-//                                    .setAlpha(1f);
-//                            // You spin me right round...
-//                            go.addComponent(new Spinner(-180.f, 1000.f, 0.1f));
-//                        });
-//
-//        mainMenu.addRootObject(cube);
-//
-//        mainMenu.addRootObject(GameObject.instantiate(cube));
+    @Override
+    public void free() {
+        mMainMenuGLTF.free();
+        mNetworkTemplatesGLTF.free();
+    }
+}

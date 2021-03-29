@@ -42,6 +42,11 @@ public class UIText extends Renderable implements IOnAwake {
         setText(mText);
     }
 
+    /** Constructor for UIText */
+    public UIText() {
+        this(new Vector4f(1f));
+    }
+
     /**
      * Constructor for UIText
      *
@@ -125,11 +130,9 @@ public class UIText extends Renderable implements IOnAwake {
      * @param text new text value
      */
     public void setText(String text) {
-        if (mText.equals(text) && mMesh != null) return;
+        if (mText.equals(text) && getMesh() != null) return;
         mText = text;
-        // TODO: probably mark the old mesh as freed or smth so that renderer can know that it
-        // should be removed from mesh buffer
-        mMesh = buildMesh();
+        setMesh(buildMesh());
 
         TransformUI transform = getGameObject().getTransform(TransformUI.class);
         if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);

@@ -47,6 +47,19 @@ public class TextureMapping implements Serializable {
         private TextureFiltering(int value) {
             this.value = value;
         }
+
+        public static TextureFiltering fromGLTF(Integer value) {
+            if (value == null) return LINEAR;
+
+            switch (value) {
+                case 9728: // NEAREST
+                case 9986: // NEAREST_MIPMAP_LINEAR
+                case 9984: // NEAREST_MIPMAP_NEAREST
+                    return NEAREST;
+                default:
+                    return LINEAR;
+            }
+        }
     }
 
     public static enum TextureWrapping {
@@ -59,6 +72,20 @@ public class TextureMapping implements Serializable {
 
         private TextureWrapping(int value) {
             this.value = value;
+        }
+
+        public static TextureWrapping fromGLTF(Integer value) {
+            if (value == null) return CLAMP;
+
+            // There is no CLAMP_BORDER value
+            switch (value) {
+                case 33648: // MIRRORED_REPEAT
+                    return MIRROR;
+                case 10497: // REPEAT
+                    return REPEAT;
+                default:
+                    return CLAMP;
+            }
         }
     }
 

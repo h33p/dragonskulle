@@ -27,6 +27,10 @@ import org.dragonskulle.renderer.materials.IColouredMaterial;
 @Log
 @Accessors(prefix = "m")
 public class HexagonTile {
+
+    // A variable which changes the colour of the hex tiles to make them easier to see
+    private static final boolean DEBUG = false;
+
     /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
             new GameObject(
@@ -38,9 +42,18 @@ public class HexagonTile {
                                         "map/grass.png",
                                         new TextureMapping(
                                                 TextureFiltering.LINEAR, TextureWrapping.REPEAT));
+
                         IColouredMaterial mat = new VertexHighlightMaterial(texture);
                         mat.getColour().set(0f, 1f, 0f, 1f);
                         go.addComponent(new Renderable(mesh, mat));
+
+                        if (DEBUG) {
+                            Reference<Renderable> hexRenderer = go.getComponent(Renderable.class);
+                            VertexHighlightMaterial hexMaterial =
+                                    hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
+                            hexMaterial.setDistancePow(20f);
+                            hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
+                        }
                     });
 
     /** This is the axial storage system for each tile */
