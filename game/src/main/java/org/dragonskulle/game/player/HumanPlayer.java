@@ -202,34 +202,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             log.info("Human:Got the Hexagon to enter");
 
-            // When chosen a hexagon
-            if (mHexChosen != null && mHexChosen.hasBuilding()) {
-
-                // Gets reference to buildingSelectedView
-                Reference<Building> buildingOnTile = mHexChosen.getBuilding().getReference(Building.class);
-
-                // If there is a buildingSelectedView there
-                if (buildingOnTile.get() == null) {
-
-                    // Checks if cannot build here
-                    if (mPlayer.get()
+            if(mHexChosen != null) {
+            	if(mHexChosen.hasBuilding()) {
+            		Building building = mHexChosen.getBuilding();
+            		
+            		if(hasPlayerGotBuilding(building.getReference(Building.class))) {
+            			mBuildingChosen = building.getReference(Building.class);
+                        setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+            		}
+            	} else {
+            		// Checks if cannot build here            		
+            		if (mPlayer.get()
                             .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
                         System.out.println("Human:Cannot build");
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
-                        // If you can build
                     } else {
-                        System.out.println("Human:Change Screen");
+                    	// If you can build
+                    	System.out.println("Human:Change Screen");
                         setScreenOn(Screen.TILE_SCREEN);
                     }
-                    // Checks if the player owns the buildingSelectedView
-                } else if (hasPlayerGotBuilding(buildingOnTile)) {
-                    mBuildingChosen = buildingOnTile;
-                    setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                } else {
-                    return;
-                }
+            	}
             }
         }
     }
