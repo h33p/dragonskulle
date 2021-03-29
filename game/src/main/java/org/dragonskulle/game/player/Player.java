@@ -97,7 +97,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .getReference(HexagonMap.class);
 
         mNetworkObject = getNetworkObject();
-        
+
         mNetworkManager = mNetworkObject.getNetworkManager();
 
         if (mNetworkObject.isServer()) {
@@ -180,7 +180,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 mNetworkManager
                         .getServerManager()
                         .spawnNetworkObject(
-                        		mNetworkObject.getOwnerId(),
+                                mNetworkObject.getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
 
         if (obj == null) {
@@ -248,7 +248,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
         map.storeBuilding(building, qPos, rPos);
-        if(mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
+        if (mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
             log.warning("Client adding");
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
             log.info(
