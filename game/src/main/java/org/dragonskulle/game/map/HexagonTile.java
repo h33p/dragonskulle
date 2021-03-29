@@ -96,7 +96,11 @@ public class HexagonTile {
         }
     }
 
-    /** The length of the tile from the origin */
+    /**
+     * The length of the tile from the origin.
+     *
+     * @return The length of the tile from the origin.
+     */
     public int length() {
         return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
     }

@@ -65,8 +65,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /**
      * Create a {@link HumanPlayer}.
-     * @param networkManager
-     * @param netID
+     *
+     * @param networkManager The network manager.
+     * @param netID The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
