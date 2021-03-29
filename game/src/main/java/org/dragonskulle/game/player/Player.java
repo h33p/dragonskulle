@@ -4,6 +4,7 @@ package org.dragonskulle.game.player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -119,6 +120,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // This says how many people have joined the server so far
         int playersOnlineNow = mPlayersOnline.size();
+        playersOnlineNow = playersOnline();
 
         // This gives us the angle to find our coordinates.  Stored in radians
         double angleToStart = Math.toRadians(playersOnlineNow * angleOfCircle);
@@ -127,13 +129,28 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         double lineToStartM = Math.tan(angleToStart);  //LARGER Wait no.
         double lineToEndM = Math.tan(angleToEnd);  //
         
-        boolean foundSensibleCoord = false;
+        boolean foundSensibleCoordStart = false;
+        boolean foundSensibleCoordEnd = false;
         
         Random random = new Random();
         
-        while (!foundSensibleCoord) {
-        	int xCoord = random.nextInt();
-        	int yCoord = random.nextInt();
+        int xCoord = 0;
+        int yCoord = 0;
+        
+        while (!foundSensibleCoordStart && !foundSensibleCoordEnd) {
+        	foundSensibleCoordStart = false;
+            foundSensibleCoordEnd = false;
+        	xCoord = random.nextInt(52);
+        	yCoord = random.nextInt(52);
+        	
+        	// This makes sure the number could be negative
+        	if (random.nextInt(2) == 1) {
+        		xCoord *= -1;
+        		
+        	}
+        	if (random.nextInt(2) == 1) {
+        		yCoord *= -1;
+        	}
         	
         	if (Double.isNaN(lineToEndM) && Double.isNaN(lineToStartM)) {
         		//TODO How they got here is beyond me It is literally impossible but just in case
@@ -166,27 +183,46 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		;//TODO 4 more if statements
         		if (angleToStart > 90 && angleToStart < 270) {
         			//Assumption y < mx must hold
+        			double mx = lineToStartM * xCoord;
+        			if (mx < yCoord ) {
+        				foundSensibleCoordStart = true;
+        			}
+        			
         		}
         		else {
         			//Assumption y > mx must hold
+        			double mx = lineToStartM * xCoord;
+        			if (mx > yCoord) {
+        				foundSensibleCoordStart = true;
+        			}
         		}
+        		
         		if (angleToEnd > 90 && angleToStart < 270) {
         			//Assumption y > mx mustHold
+        			double mx = lineToEndM * xCoord;
+        			if (mx > yCoord) {
+        				foundSensibleCoordEnd = true;
+        			}
         		}
         		else {
         			//Assumption y < mx must hold
+        			double mx = lineToEndM * xCoord;
+        			if (mx < yCoord) {
+        				foundSensibleCoordEnd = true;
+        			}
         		}
         	}
         	
         }
               
+        log.severe("X = " + xCoord + " Y = " + yCoord + " angle from origin start = " + Math.toDegrees(angleToStart) + " angle from origin end = " + Math.toDegrees(angleToEnd) + " angle to add " + angleOfCircle + " number of players = " + playersOnlineNow);
         /* TODO NOTES
         Create a line from each of these angles.  Use Maths
         Then choose a pair of coordinates from between those lines
         Change to Axial
         Done????
         */
-
+        
         int min = -10;
         int max = 10;
 
@@ -196,8 +232,29 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         addNewBuilding(posX, posY);
         Building buildingToBecomeCapital = mMapComponent.get().getBuilding(posX, posY);
         buildingToBecomeCapital.setCapital(true);
+        
     }
 
+    
+    private int playersOnline() {
+    	
+    	
+    	int numOfPlayers = 0;
+    	
+    	int sizeMap = mMapComponent.get().getSize();
+    	
+    	for (int i = 0; i < sizeMap + 1; i++) {
+    		for (int j = 0; j < sizeMap; j++) {
+    			if (mMapComponent.get().getBuilding(i, j) != null) {
+    				log.severe("FOUND");
+    				numOfPlayers++;
+    			}
+    		}
+    	}
+    	//Stream<HexagonTile> a = mMapComponent.getAllTiles();
+    	
+    	return numOfPlayers;
+    }
     /**
      * This will add a building in a specific location
      *

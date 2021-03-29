@@ -39,15 +39,15 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
     protected Random mRandom = new Random();
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 1.0;
+    protected float mTileProbability = (float) 0;
 
     protected float mBuildingProbability = 1 - mTileProbability;
 
     /** Choose what to do with the building -- These 3 must sum to 1 */
-    protected float mUpgradeBuilding = (float) 0.2;
+    protected float mUpgradeBuilding = (float) 0;
 
-    protected float mAttackBuilding = (float) 0.7;
-    protected float mSellBuilding = (float) 0.1;
+    protected float mAttackBuilding = (float) 0;
+    protected float mSellBuilding = (float) 0;
 
     /** A Constructor for an AI Player */
     public AiPlayer() {}
@@ -105,7 +105,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
      */
     private void simulateInput() {
 
-        if (mPlayer.get().numberOfBuildings() == 0) {
+        /*if (mPlayer.get().numberOfBuildings() == 0) {
             log.info("AI: I have " + mPlayer.get().numberOfBuildings() + " buildings.");
 
             int min = -10;
@@ -158,8 +158,8 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
             } else {
                 return; // end
             }
-
-        } else {
+	
+        } else {*/
             log.info(
                     "AI: I have "
                             + mPlayer.get().numberOfBuildings()
@@ -291,7 +291,7 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
                         return;
                     } else {
                         return;
-                    }
+                    //}
                 }
             }
         }
