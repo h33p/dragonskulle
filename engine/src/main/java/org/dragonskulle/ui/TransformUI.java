@@ -7,9 +7,12 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.components.Camera;
+import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.joml.Quaternionfc;
 import org.joml.Vector2f;
+import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -201,6 +204,31 @@ public class TransformUI extends Transform {
         }
 
         return mBoxMatrix;
+    }
+
+    /**
+     * Sets the local 3D transformation
+     *
+     * <p>This method sets the local transformation of the object to roughly match the input data.
+     *
+     * <p>Only 2D positioning is going to take place
+     *
+     * <p>Rotation will be projected and only Z axis is going to be preserved.
+     *
+     * <p>Only 2D scaling is going to be preserved
+     *
+     * @param position target local position to set
+     * @param rotation target local rotation to set
+     * @param scale target local scale to set
+     */
+    @Override
+    public void setLocal3DTransformation(
+            Vector3fc position, Quaternionfc rotation, Vector3fc scale) {
+        mPosition.set(position.x(), position.y());
+        AxisAngle4f rotAxis = rotation.get(new AxisAngle4f());
+        mRotation = rotAxis.z * rotAxis.angle;
+        mScale.set(scale.x(), scale.y());
+        setUpdateFlag();
     }
 
     public Vector4fc getLocalCorners() {

@@ -40,7 +40,7 @@ public abstract class Component implements Serializable {
     public final void engineDestroy() {
         onDestroy();
 
-        mGameObject.removeComponent(this);
+        if (mGameObject != null) mGameObject.removeComponent(this);
         mGameObject = null;
         mReference.clear();
     }

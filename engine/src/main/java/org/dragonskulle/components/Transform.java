@@ -6,7 +6,9 @@ import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Base Transform class
@@ -145,4 +147,21 @@ public abstract class Transform extends Component {
     public void getScale(Vector3f dest) {
         getWorldMatrix().getScale(dest);
     }
+
+    /**
+     * Sets the local 3D transformation
+     *
+     * <p>This method sets the local transformation of the object to roughly match the input data.
+     *
+     * <p>Note that not all classes support full 3D transformation, the implementation may truncate
+     * some axis to fit it roughly. Full 3D positioning is supported at least in {@link
+     * Transform3D}, and {@link TransformHex}. Only {@link Transform3D} supports full 3D
+     * transformation
+     *
+     * @param position target local position to set
+     * @param rotation target local rotation to set
+     * @param scale target local scale to set
+     */
+    public abstract void setLocal3DTransformation(
+            Vector3fc position, Quaternionfc rotation, Vector3fc scale);
 }
