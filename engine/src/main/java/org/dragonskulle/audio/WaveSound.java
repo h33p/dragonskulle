@@ -14,6 +14,15 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.lwjgl.openal.AL11;
 
+/**
+ * This class is used to load .wav files and create OpenAL buffers with them
+ *
+ * @author Harry Stoltz
+ *     <p>Wave files are loaded by calling the static method loadWave and passing in a File that is
+ *     to be parsed. If the file is of the correct format and can be read, a new WaveSound object is
+ *     created and all of the fields will be filled in. The audio bytes will be read, processed and
+ *     then buffered using alBufferData.
+ */
 public class WaveSound implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger("audio");
@@ -81,7 +90,7 @@ public class WaveSound implements Serializable {
      * @param file .wav File to parse
      * @return A WaveSound object if file could be parsed, null otherwise
      */
-    public static WaveSound loadWav(File file) {
+    public static WaveSound loadWave(File file) {
         try {
             AudioInputStream audioInputStream = new WaveFileReader().getAudioInputStream(file);
 

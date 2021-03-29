@@ -61,7 +61,19 @@ public class AudioManager {
     private void setupSources() {
         for (int i = 0; i < MAX_SOURCES; i++) {
             int source = AL11.alGenSources();
-            if (AL11.alGetError() != AL11.AL_NO_ERROR) {
+            int error = AL11.alGetError();
+            if (error != AL11.AL_NO_ERROR) {
+                switch (error) {
+                    case AL11.AL_OUT_OF_MEMORY:
+                        LOGGER.warning("Error whilst creating sources (AL_OUT_OF_MEMORY)");
+                        break;
+                    case AL11.AL_INVALID_VALUE:
+                        LOGGER.warning("Error whilst creating sources (AL_INVALID_VALUE)");
+                        break;
+                    case AL11.AL_INVALID_OPERATION:
+                        LOGGER.warning("Error whilst creating sources (AL_INVALID_OPERATION)");
+                        break;
+                }
                 break;
             }
 
@@ -99,7 +111,9 @@ public class AudioManager {
 
             if (audioSource.getSource() == null) {
                 Source source = getAvailableSource();
-                assert source != null;
+                if (source == null) {
+                    break;
+                }
 
                 audioSource.attachSource(source);
             }
@@ -188,7 +202,7 @@ public class AudioManager {
             return -1;
         }
 
-        WaveSound sound = WaveSound.loadWav(file);
+        WaveSound sound = WaveSound.loadWave(file);
 
         if (sound == null) {
             return -1;
@@ -271,8 +285,11 @@ public class AudioManager {
         mAudioSources.add(audioSource);
     }
 
-    /** Get the AudioListener from the current scene */
-    public void setAudioListener() {
+    /**
+     * Get the singleton AudioListener component from the currently active scene and set it as the
+     * active AudioListener
+     */
+    public void updateAudioListener() {
         AudioListener listener = Scene.getActiveScene().getSingleton(AudioListener.class);
         if (listener == null) {
             mAudioListener = null;

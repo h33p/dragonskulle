@@ -273,7 +273,7 @@ public class Engine {
 
             Scene.setActiveScene(mPresentationScene);
             UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
-            AudioManager.getInstance().setAudioListener();
+            AudioManager.getInstance().updateAudioListener();
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
