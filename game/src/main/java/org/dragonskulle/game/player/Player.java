@@ -70,12 +70,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    private final int playersToPlay =
+    private int playersToPlay =
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
-    NetworkManager mNetworkMana    NetworkObject mNetworkObject;
-ger;
+    NetworkManager mNetworkManager;
 
     /** The base constructor for player */
     public Player() {}
@@ -95,10 +94,9 @@ ger;
         mMapComponent =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
-                           mNetworkObject = getNetworkObject();
+                        .getReference(HexagonMap.class);
 
-        mNetworkManag        if (mNetworkObject.isServer()) {
-etworkObject().getNetworkManager();
+        mNetworkManager = getNetworkObject().getNetworkManager();
 
         if (getNetworkObject().isServer()) {
             distributeCoordinates();
@@ -179,8 +177,8 @@ etworkObject().getNetworkManager();
 
         Reference<NetworkObject> obj =
                 mNetworkManager
-                                          mNetworkObject.getOwnerId(),
-etworkObject(
+                        .getServerManager()
+                        .spawnNetworkObject(
                                 getNetworkObject().getOwnerId(),
                                 mNetworkManager.findTemplateByName("building"));
 
@@ -234,20 +232,10 @@ etworkObject(
         HexagonMap map = this.getMapComponent();
         if (map == null) {
             log.warning("Map doesn't exist");
-             if (mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
-            log.warning("Client adding");
-            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReferen           d Building " + qPos + " " + rPos);
-ce(Building.class));
-            log.info(
-                    "Client added building into hash"
-                            + map.getTile(qPos, rPos).getQ()
-                            + " "
-                            + map.getTile(qPos, rPos).getR());
-            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Client Added Building " + qPos + " " + rPos);
-        } else if (mNetworkObject.isServer()) {
-            log.warning("Server adding");
-uilding on map tile");
+            return;
+        }
+        map.storeBuilding(building, qPos, rPos);
+        log.info("stored building on map tile");
         if (building.getNetworkObject().isMine()) {
             mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
         }
@@ -256,20 +244,9 @@ uilding on map tile");
                 "added building into hash"
                         + map.getTile(qPos, rPos).getQ()
                         + " "
-                        + map.getT        if (building.getNetworkObject()
-                .isMine()) { // TODO THIS IS False COS can only be ran on the client! Maybe
-            log.warning("Client adding");
-            mOwnedBuildings.put(
-                    map.getTile(buildingTile.getQ(), buildingTi
-          buildingTile.getR());
-le.getR()),
-                    building.getReference(Building.class));
-            log.info("Client added building into hash" + mOwnedBuildings.size());
-            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
-        } else if (mNetworkObject.isServer()) {
-            log.warning("Server adding");
-.info("Added Building " + qPos + " " + rPos);
+                        + map.getTile(qPos, rPos).getR());
+        log.info("ownedBuilding size" + mOwnedBuildings.size());
+        log.info("Added Building " + qPos + " " + rPos);
     }
 
     /**
@@ -322,8 +299,10 @@ le.getR()),
      */
     public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
         return mOwnedBuildings.values().stream();
-           if (mNetworkObject.isServer()) {
-he the list of owned buildings.
+    }
+
+    /**
+     * Add a {@link Building} the the list of owned buildings.
      *
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
@@ -387,8 +366,8 @@ he the list of owned buildings.
     protected void onNetworkInitialize() {
         mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
-        mClientBuildRequest = new ClientReques        /* int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
-tatData(), this::handleEvent);
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
 
         if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
@@ -426,8 +405,7 @@ tatData(), this::handleEvent);
     /**
      * How this component will react to an attack event.
      *
-        log.info("Attack is: " + won);
-er.
+     * @param data attack event being executed on the server.
      */
     public void handleEvent(AttackData data) {
 
@@ -446,8 +424,7 @@ er.
         if (attackingBuilding == null
                 || defenderBuilding == null
                 || attackingBuilding.getNetworkObject().getOwnerId()
-                        != getNetwork        return;*/
-Id()) {
+                        != getNetworkObject().getOwnerId()) {
             log.info("Invalid building selection!");
             return;
         }
