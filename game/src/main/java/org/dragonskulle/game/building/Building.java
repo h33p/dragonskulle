@@ -84,17 +84,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mTokenGeneration.setLevel(5);
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
+    }
 
+    @Override
+    public void onStart() {
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addOwnedBuilding(this);
 
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
-    }
-
-    @Override
-    public void onStart() {
 
         // Generate the list of tiles that have been claimed by the Building.
         generateClaimTiles();
