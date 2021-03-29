@@ -297,9 +297,8 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         switch (mScreenOn) {
             case BUILDING_SELECTED_SCREEN:
                 button = mButtonReferences.get("place_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
+                if (button != null && button.isValid()) {}
+
                 break;
             case TILE_SCREEN:
                 button = mButtonReferences.get("sell_button");

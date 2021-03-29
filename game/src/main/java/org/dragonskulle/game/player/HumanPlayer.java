@@ -301,15 +301,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case BUILDING_SELECTED_SCREEN:
                 if (mMenuDrawer.isValid()) {
                     if (attack_button != null && attack_button.isValid()) {
+                        attack_button.get().setEnabled(true);
                         attack_button.get().getComponent(UIButton.class).get().enable();
                     }
                     if (sell_button != null && sell_button.isValid()) {
+                        sell_button.get().setEnabled(true);
                         sell_button.get().getComponent(UIButton.class).get().enable();
                     }
                     if (place_button != null && place_button.isValid()) {
+                        place_button.get().setEnabled(false);
                         place_button.get().getComponent(UIButton.class).get().disable();
                     }
                     if (upgrade_button != null && upgrade_button.isValid()) {
+                        upgrade_button.get().setEnabled(true);
                         upgrade_button.get().getComponent(UIButton.class).get().enable();
                     }
                 }
@@ -319,15 +323,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case TILE_SCREEN:
                 if (mMenuDrawer.isValid()) {
                     if (attack_button != null && attack_button.isValid()) {
+                        attack_button.get().setEnabled(false);
                         attack_button.get().getComponent(UIButton.class).get().disable();
                     }
                     if (sell_button != null && sell_button.isValid()) {
+                        sell_button.get().setEnabled(false);
                         sell_button.get().getComponent(UIButton.class).get().disable();
                     }
                     if (place_button != null && place_button.isValid()) {
+                        place_button.get().setEnabled(true);
                         place_button.get().getComponent(UIButton.class).get().enable();
                     }
                     if (upgrade_button != null && upgrade_button.isValid()) {
+                        upgrade_button.get().setEnabled(false);
                         upgrade_button.get().getComponent(UIButton.class).get().disable();
                     }
                 }
@@ -337,15 +345,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case ATTACK_SCREEN:
                 if (mMenuDrawer.isValid()) {
                     if (attack_button != null && attack_button.isValid()) {
+                        attack_button.get().setEnabled(true);
                         attack_button.get().getComponent(UIButton.class).get().enable();
                     }
                     if (sell_button != null && sell_button.isValid()) {
+                        sell_button.get().setEnabled(false);
                         sell_button.get().getComponent(UIButton.class).get().disable();
                     }
                     if (place_button != null && place_button.isValid()) {
+                        place_button.get().setEnabled(false);
                         place_button.get().getComponent(UIButton.class).get().disable();
                     }
                     if (upgrade_button != null && upgrade_button.isValid()) {
+                        upgrade_button.get().setEnabled(false);
                         upgrade_button.get().getComponent(UIButton.class).get().disable();
                     }
                 }
