@@ -95,31 +95,30 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
 
-        // Generate the list of tiles that have been claimed by the Building.
+        // Generate the list of tiles that have been claimed by the Building. This is always a set
+        // radius so only needs to be generated once.
         generateClaimTiles();
         // Generate the lists of tiles that are influenced by the Stats of the Building.
-        repopulateLists();
+        generateTileLists();
     }
 
-    /**
-     * Regenerate the stored lists of tiles that relate to the stats.
-     *
-     * <p>
-     *
-     * <ul>
-     *   <li>{@link #mAttackDistance} relates to {@link #mAttackableTiles}.
-     *   <li>{@link #mViewDistance} relates to {@link #mViewableTiles}.
-     *       <p><b>Needs to be called after a stat is altered.</b>
-     */
-    private void repopulateLists() {
+    /** Generate the stored lists of {@link HexagonTile}s. */
+    private void generateTileLists() {
         generateViewTiles();
         generateAttackableTiles();
     }
 
+    /**
+     * Ensures that changes to stats are reflected in the building.
+     *
+     * <ul>
+     *   <li><b>Needs to manually be called on the server</b> after stats have been changed.
+     *   <li>Automatically called on the client via {@link SyncStat}s.
+     * </ul>
+     */
     public void afterStatChange() {
-        log.info("Repopulating lists related to Stats.");
-        log.info("Attack level: " + getAttack().get());
-        repopulateLists();
+        log.info("After stats change.");
+        generateTileLists();
     }
 
     /** Claim the tiles around the building and the tile the building is on. */
@@ -413,10 +412,17 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Remove this building from the {@link Player} who owns the building and references to it in
+     * // TODO: Ensure this is correct.
+     *
+     * <p>Remove this building from the {@link Player} who owns the building and references to it in
      * any {@link HexagonTile}s.
      */
     public void remove() {
+        // Remove the current owner.
+        getNetworkObject().setOwnerId(-1);
+
+        // Remove the building from the tile.
+        getTile().setBuilding(null);
 
         // Remove any claims.
         for (HexagonTile hexagonTile : mClaimedTiles) {

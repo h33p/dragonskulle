@@ -16,6 +16,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
@@ -388,7 +389,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // TODO: Remove.
         Building building = data.getBuilding(getMapComponent());
         log.info("Removing building.");
-        building.remove();
+        if (building != null) {
+            building.remove();
+        }
     }
 
     // attacking of buildings is handled below
@@ -561,6 +564,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Get Stat
         // Upgrade
 
+    	// TODO: Replace with actual logic.
+    	// Used for testing:
+        HexagonMap map = mMapComponent.get();
+        Building building = data.getBuilding(map);        
+        if (building.getAttack().get() + 1 > SyncStat.LEVEL_MAX) {
+            building.getAttack().setLevel(0);
+        } else {
+            building.getAttack().increaseLevel();
+        }
+
+        // Update the building on the server.
+        building.afterStatChange();
     }
 
     /**

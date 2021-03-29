@@ -28,7 +28,7 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
     public SyncStat(Building building) {
-        this.mBuilding = new Reference<Building>(building);
+        this.mBuilding = building.getReference(Building.class);
     }
 
     /**

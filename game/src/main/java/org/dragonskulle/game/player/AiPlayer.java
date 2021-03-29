@@ -39,15 +39,15 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
     protected Random mRandom = new Random();
 
     /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = (float) 1.0;
+    protected float mTileProbability = (float) 0.5;
 
-    protected float mBuildingProbability = 1 - mTileProbability;
+    // protected float mBuildingProbability = 0.1f;
 
     /** Choose what to do with the building -- These 3 must sum to 1 */
-    protected float mUpgradeBuilding = (float) 0.2;
+    protected float mUpgradeBuilding = (float) 0.5;
 
-    protected float mAttackBuilding = (float) 0.7;
-    protected float mSellBuilding = (float) 0.1;
+    protected float mAttackBuilding = (float) 0.0;
+    protected float mSellBuilding = (float) 0.0;
 
     /** A Constructor for an AI Player */
     public AiPlayer() {}
