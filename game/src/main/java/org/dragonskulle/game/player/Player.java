@@ -74,7 +74,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     // game
 
     NetworkManager mNetworkManager;
-    NetworkObject mNetworkObject;
 
     /** The base constructor for player */
     public Player() {}
@@ -91,11 +90,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
-        mNetworkObject = getNetworkObject();
+    	if(getMap() == null) {
+    		log.severe("Player has no HexagonMap.");
+    	}
 
-        mNetworkManager = mNetworkObject.getNetworkManager();
+        mNetworkManager = getNetworkObject().getNetworkManager();
 
-        if (mNetworkObject.isServer()) {
+        if (getNetworkObject().isServer()) {
             distributeCoordinates();
         }
 
@@ -181,7 +182,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        int playerId = mNetworkObject.getId();
+        int playerId = getNetworkObject().getId();
         int template = mNetworkManager.findTemplateByName("building");
         Reference<NetworkObject> networkObject = mNetworkManager.getServerManager().spawnNetworkObject(playerId, template);
 
