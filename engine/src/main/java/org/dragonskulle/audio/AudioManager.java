@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.core.Reference;
@@ -28,8 +30,8 @@ import org.lwjgl.openal.ALCapabilities;
  *     a pool of sources that can be used by AudioSources to play the sounds back
  */
 @Accessors(prefix = "m")
+@Log
 public class AudioManager {
-    private static final Logger LOGGER = Logger.getLogger("audio");
     private static final AudioManager AUDIO_MANAGER = new AudioManager();
 
     // TODO: Decide how many simultaneous audio sources we want to support
@@ -65,13 +67,13 @@ public class AudioManager {
             if (error != AL11.AL_NO_ERROR) {
                 switch (error) {
                     case AL11.AL_OUT_OF_MEMORY:
-                        LOGGER.warning("Error whilst creating sources (AL_OUT_OF_MEMORY)");
+                        log.warning("Error whilst creating sources (AL_OUT_OF_MEMORY)");
                         break;
                     case AL11.AL_INVALID_VALUE:
-                        LOGGER.warning("Error whilst creating sources (AL_INVALID_VALUE)");
+                        log.warning("Error whilst creating sources (AL_INVALID_VALUE)");
                         break;
                     case AL11.AL_INVALID_OPERATION:
-                        LOGGER.warning("Error whilst creating sources (AL_INVALID_OPERATION)");
+                        log.warning("Error whilst creating sources (AL_INVALID_OPERATION)");
                         break;
                 }
                 break;
@@ -140,13 +142,13 @@ public class AudioManager {
         //       which can be used to enumerate devices so we can allow user to choose in the future
         long device = ALC11.alcOpenDevice((ByteBuffer) null);
         if (device == 0L) {
-            LOGGER.severe("Failed to open default OpenAL device, no audio will be available");
+            log.severe("Failed to open default OpenAL device, no audio will be available");
             return;
         }
 
         long ctx = ALC11.alcCreateContext(device, (IntBuffer) null);
         if (!ALC11.alcMakeContextCurrent(ctx)) {
-            LOGGER.severe("Failed to set OpenAL context, no audio will be available");
+            log.severe("Failed to set OpenAL context, no audio will be available");
             ALC11.alcCloseDevice(device);
             return;
         }
@@ -167,7 +169,7 @@ public class AudioManager {
 
         mInitialized = true;
 
-        LOGGER.info("Initialize AudioManager: " + mSources.size() + " sources available");
+        log.info("Initialize AudioManager: " + mSources.size() + " sources available");
     }
 
     /**

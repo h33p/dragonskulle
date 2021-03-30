@@ -2,6 +2,9 @@
 package org.dragonskulle.audio;
 
 import com.sun.media.sound.WaveFileReader;
+
+import lombok.extern.java.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -23,9 +26,8 @@ import org.lwjgl.openal.AL11;
  *     created and all of the fields will be filled in. The audio bytes will be read, processed and
  *     then buffered using alBufferData.
  */
+@Log
 public class WaveSound implements Serializable {
-
-    private static final Logger LOGGER = Logger.getLogger("audio");
 
     public int buffer;
     public int sampleRate;
@@ -110,7 +112,7 @@ public class WaveSound implements Serializable {
             // TODO: Probably isn't the best way to do this
             int bytesRead = audioInputStream.read(audioBytes);
             if (audioLength != bytesRead) {
-                LOGGER.warning("Failed to read in expected number of audio bytes");
+                log.warning("Failed to read in expected number of audio bytes");
                 return null;
             }
 
@@ -128,9 +130,9 @@ public class WaveSound implements Serializable {
 
             return sound;
         } catch (UnsupportedAudioFileException e) {
-            LOGGER.warning("Attempted to load unsupported audio file");
+            log.warning("Attempted to load unsupported audio file");
         } catch (IOException e) {
-            LOGGER.warning("Attempted to load file that doesn't exist");
+            log.warning("Attempted to load file that doesn't exist");
         }
         return null;
     }
