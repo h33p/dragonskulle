@@ -661,6 +661,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	// TODO: Add stat increase logic.
     	log.info("INCREASE SPECIFIC STAT HERE.");
     	
+    	// Update the building on the server.
+        building.afterStatChange();
+    	
     	return true;
     }
     
