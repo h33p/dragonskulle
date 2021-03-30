@@ -63,15 +63,15 @@ public class SyncVector3 implements ISyncVar, Serializable {
      *
      * @param data the data
      */
-    public void set(Vector3f data) {
+    public void set(Vector3fc data) {
         if (mOnUpdate != null) {
-            if (data != this.mData) {
+            if (!data.equals(this.mData)) {
                 this.mOnUpdate
                         .call(); // onUpdate callback is to set the mask bit on modification to the
                 // field
             }
         }
-        this.mData = data;
+        this.mData.set(data);
     }
 
     /**

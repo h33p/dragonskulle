@@ -42,6 +42,11 @@ public class UIText extends Renderable implements IOnAwake {
         setText(mText);
     }
 
+    /** Constructor for UIText */
+    public UIText() {
+        this(new Vector4f(1f));
+    }
+
     /**
      * Constructor for UIText
      *

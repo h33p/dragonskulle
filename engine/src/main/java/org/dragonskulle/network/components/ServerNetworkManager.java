@@ -45,7 +45,8 @@ public class ServerNetworkManager {
 
         @Override
         public void clientActivated(ServerClient client) {
-            if (mConnectedClientHandler != null) mConnectedClientHandler.handle(mManager, client);
+            if (mConnectedClientHandler != null)
+                mConnectedClientHandler.handle(mManager.getGameScene(), mManager, client);
         }
 
         /**
@@ -178,6 +179,8 @@ public class ServerNetworkManager {
     /** Start the game, load game scene */
     void startGame() {
         Engine engine = Engine.getInstance();
+
+        mManager.createGameScene(true);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
