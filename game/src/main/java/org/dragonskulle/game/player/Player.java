@@ -102,7 +102,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     protected void onNetworkInitialize() {
     	mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
-    	mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
+    	mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
     	mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
     	mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
         
@@ -382,18 +382,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
     
     /**
-     * Process an event in which the <b>client</b> player wishes to place a {@link Building}.
+     * Process and parse an event in which the <b>client</b> player wishes to place a {@link Building}.
      * <p>
      * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #buildAttempt(HexagonTile)}.
      *
-     * @param data The build data sent by the human client.
+     * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-    	HexagonTile tile = buildParse(data);
-    	if(tile == null) {
-    		log.info("Unable to pass parsing.");
-    		return;
-    	}        
+    	
+    	HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Unable to parse BuildData: Map is null.");
+        	return;
+        }
+    	
+    	HexagonTile tile = data.getTile(map);
+        if(tile == null) {
+        	log.warning("Unable to parse BuildData: Tile from BuildData is null.");
+        	return;
+        }
         
     	// Try to place the building on the tile.
     	buildAttempt(tile);
@@ -425,28 +432,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     	log.info("Added building.");
     	return true;
-    }
-    
-    /**
-     * Get the {@link HexagonTile} from the {@link BuildData}. 
-     * 
-     * @param data The {@link BuildData}.
-     * @return The HexagonTile, otherwise {@code null}.
-     */
-    public HexagonTile buildParse(BuildData data) {
-        HexagonMap map = getMap();
-        if(map == null) {
-        	log.warning("Unable to parse BuildData: Map is null.");
-        	return null;
-        }
-    	
-    	HexagonTile tile = data.getTile(map);
-        if(tile == null) {
-        	log.warning("Unable to parse BuildData: Tile from BuildData is null.");
-        	return null;
-        }
-    	
-    	return tile;
     }
     
     /**
@@ -495,10 +480,81 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	return true;
     }
     
+    /**
+     * Process and parse an event in which the <b>client</b> player wishes to attack a {@link Building} from another Building.
+     * <p>
+     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #attackAttempt(HexagonTile)}.
+     *
+     * @param data The {@link BuildData} sent by the client.
+     */
+    void attackEvent(AttackData data) {
+    	
+    	HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Unable to parse AttackData: Map is null.");
+        	return;
+        }
+    	
+    	Building attacker = data.getAttacker(map);        
+    	if(attacker == null) {
+        	log.warning("Unable to parse AttackData: attacking building is null.");
+        	return;
+        }
+    	
+    	Building defender = data.getDefender(map);
+    	if(defender == null) {
+        	log.warning("Unable to parse AttackData: defending building is null.");
+        	return;
+        }
+    	
+    	// Try to run an attack.
+    	attackAttempt(attacker, defender);
+    }
     
+    /**
+     * Attempt to attack an opponent {@link Building} from a player owned Building.
+     * <p>
+     * This first checks the buildings can attack each other before any attack happens.
+     * 
+     * @param attacker The attacking building.
+     * @param defender The defending building.
+     * @return Whether the attempt to attack was successful.
+     */
+    public boolean attackAttempt(Building attacker, Building defender) {
+    	if(attackCheck(attacker, defender) == false) {
+    		log.info("Unable to pass attack check.");
+    		return false;
+    	}
+
+    	// TODO: Write actual attack logic.
+    	log.info("ATTACK HERE.");
+    	
+    	return true;
+    }
     
-    
-    
+    /**
+     * Ensure that the attacker and defender are valid and can actually attack each other.
+     * 
+     * @param attacker The attacking building.
+     * @param defender The defending building.
+     * @return {@code true} if the attack is eligible, otherwise {@code false}.
+     */
+    public boolean attackCheck(Building attacker, Building defender) {
+
+    	if(attacker == null) {
+    		log.info("Attacker is null.");
+    		return false;
+    	}
+    	
+    	if(defender == null) {
+    		log.info("Defender is null.");
+    		return false;
+    	}
+    	
+    	// TODO: Write all checks.
+    	
+    	return true;
+    }
     
     
     
@@ -570,7 +626,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * How this component will react to an attack event.
      *
      * @param data attack event being executed on the server.
-     */
+     *
     public void handleEvent(AttackData data) {
 
         /* int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
@@ -625,9 +681,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
         log.info("Done");
 
-        return;*/
+        return;*
     }
-
+	*/
     // Building is handled below
     
 
