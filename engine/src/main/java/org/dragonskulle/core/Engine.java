@@ -273,6 +273,7 @@ public class Engine {
 
             Scene.setActiveScene(mPresentationScene);
             UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
+            AudioManager.getInstance().updateAudioListener();
 
             // Call FrameUpdate on the presentation scene
             frameUpdate(deltaTime);
@@ -291,6 +292,8 @@ public class Engine {
             Scene.setActiveScene(mPresentationScene);
             // Call LateFrameUpdate on the presentation scene
             lateFrameUpdate(deltaTime);
+
+            AudioManager.getInstance().update();
 
             renderFrame();
             instancedDrawCalls += mGLFWState.getRenderer().getInstancedCalls();
@@ -523,8 +526,6 @@ public class Engine {
         // TODO: Release all resources that are still used at the time of shutdown here
 
         destroyAllObjects();
-
-        AudioManager.getInstance().cleanup();
         mGLFWState.free();
     }
 
