@@ -160,49 +160,51 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private Building createBuilding(int qPos, int rPos) {
 
         if (mNetworkManager.getServerManager() == null) {
-            log.warning("Server manager is null.");
-
+            log.warning("Unable to create building: Server manager is null.");
             return null;
         }
 
-        HexagonMap map = mMapComponent.get();
-
-        HexagonTile tile = map.getTile(qPos, rPos);
+        if(mMapComponent == null || mMapComponent.isValid() == false) {
+        	log.warning("Unable to create building: mMapComponent is not specified.");
+            return null;
+        }
+        
+        // Get the HexagonTile.
+        HexagonTile tile = mMapComponent.get().getTile(qPos, rPos);
         if (tile == null) {
-            log.warning("Tile does not exist");
+            log.warning("Unable to create building: Tile does not exist.");
             return null;
         }
-
+        
+        if(tile.isClaimed()) {
+        	log.warning("Unable to create building: Tile is already claimed by a Building.");
+            return null;
+        }
+        
         if (tile.hasBuilding()) {
-            log.warning("Building already here");
+            log.warning("Unable to create building: Tile already has Building.");
             return null;
         }
 
-        Reference<NetworkObject> obj =
-                mNetworkManager
-                        .getServerManager()
-                        .spawnNetworkObject(
-                                mNetworkObject.getOwnerId(),
-                                mNetworkManager.findTemplateByName("building"));
+        int playerId = mNetworkObject.getOwnerId(); // TODO: Should this be getId()?
+        int template = mNetworkManager.findTemplateByName("building");
+        Reference<NetworkObject> networkObject = mNetworkManager.getServerManager().spawnNetworkObject(playerId, template);
 
-        if (obj == null) {
-            log.warning("Could not create a Network Object");
+        if (networkObject == null || networkObject.isValid() == false) {
+            log.warning("Unable to create building: Could not create a Network Object.");
             return null;
         }
 
-        GameObject buildingGO = obj.get().getGameObject();
-        buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
-        Building building = buildingGO.getComponent(Building.class).get();
+        GameObject gameObject = networkObject.get().getGameObject();
+        gameObject.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        Reference<Building> building = gameObject.getComponent(Building.class);
 
-        if (building == null) {
-            log.warning("Could not create a building");
+        if (building == null || building.isValid() == false) {
+            log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
 
-        // addBuilding(building, qPos, rPos);
-        // log.info("Stored building");
-
-        return building;
+        return building.get();
     }
 
     /**
