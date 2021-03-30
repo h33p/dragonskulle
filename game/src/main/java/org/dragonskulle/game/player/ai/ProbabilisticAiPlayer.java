@@ -7,6 +7,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
@@ -141,8 +142,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
 
+    	HexagonMap map = mPlayer.get().getMap();
+    	if(map == null) return false;
+    	
         // Get a radius of tiles
-        ArrayList<HexagonTile> hexTiles = mPlayer.get().getTilesInRadius(1, hexTile);
+        ArrayList<HexagonTile> hexTiles = map.getTilesInRadius(hexTile, 1);
 
         // Check if building there
         for (HexagonTile tile : hexTiles) {

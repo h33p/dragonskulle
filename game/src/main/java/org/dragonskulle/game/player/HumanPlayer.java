@@ -217,8 +217,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 } else {
                     // Checks if cannot build here
-                    if (mPlayer.get()
-                            .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
+                	HexagonMap map = mPlayer.get().getMap();
+                	if (map == null || mPlayer.get().containsOwnedBuilding(map.getTilesInRadius(mHexChosen, 3)) == false) {
                         System.out.println("Human:Cannot build");
                         mHexChosen = null;
                         mBuildingChosen = null;

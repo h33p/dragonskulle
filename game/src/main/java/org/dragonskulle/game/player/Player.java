@@ -287,7 +287,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return The HexagonMap being used, otherwise {@code null}.
      */
     public HexagonMap getMap() {        
-        // The ActiveScene may not contain the hexagon map.
+        // The currently active scene may not contain the hexagon map, so check all active scenes.
         ArrayList<Scene> scenes = Engine.getInstance().getActiveScenes();
         for (Scene scene : scenes) {
 			HexagonMap map = scene.getSingleton(HexagonMap.class);
@@ -299,12 +299,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return null;
     }
     
-    
-    
-    
-    
-    
-    
+    public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
+    	for (HexagonTile tile : tiles) {
+			if(tile.hasBuilding() && tile.getBuilding().getOwnerID() == getNetworkObject().getOwnerId()) {
+				return true;
+			}
+		}
+    	return false;
+    }
     
     
     
@@ -491,35 +493,35 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Gets the actual tile
         HexagonMap map = getMap();
-        
         if(map == null) {
         	log.warning("Map is null.");
         	return;
         }
+        
         HexagonTile tile = data.getTile(map);
-
-        if (tile.getBuilding()
-                != null) { // TODO Craig says the next two checks will be done by tile
-            log.info("Building already exists!");
+        if(tile == null) {
+        	log.warning("Tile from BuildData is null.");
+        	return;
+        }
+        
+        if(tile.isClaimed()) {
+        	log.info("Tile already claimed.");
             return;
         }
-
-        log.info("Got the map & tile");
-        if (buildingWithinRadius(
-                getTilesInRadius(
-                        1,
-                        tile))) { // TODO Merge into one function -- Craig says this will be done by
-            // tile
-            log.info("Trying to build too close to another building");
+        
+        if(tile.hasBuilding()) {
+        	log.info("Building already on tile.");
             return;
         }
-
-        log.info("Checking");
-        if (!buildingWithinRadiusYours(getTilesInRadius(3, tile))) { // TODO KEEP
-            log.info("Too far");
+        
+        // Ensure the building is placed within a set radius of an owned building.
+        final int radius = 3;
+        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
+        
+        if (containsOwnedBuilding(tiles) == false) {
+            log.info("Building is placed too far away from preexisting buildings.");
             return;
         }
-        log.info("Checking 2 Fone");
 
         Building addedNewBuilding = createBuilding(tile.getQ(), tile.getR());
 
@@ -527,39 +529,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             mTokens.set(mTokens.get() - COST);
             log.info("Building added");
         }
-    }
-
-    /**
-     * This checks if a building is within a certain radius and whether it is your own building
-     *
-     * @param tiles The tiles to check
-     * @return true if it is within radius false if not
-     */
-    public boolean buildingWithinRadiusYours(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-
-            if (tile.hasBuilding()
-                    && tile.getBuilding().getOwnerID() == getNetworkObject().getOwnerId()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * This checks if a building is within a certain radius
-     *
-     * @param tiles The tiles to check
-     * @return true if it is within radius false if not
-     */
-    public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-
-            if (tile.hasBuilding()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // Upgrading Stats is handled below
@@ -588,54 +557,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Update the building on the server.
         building.afterStatChange();
-    }
-
-    /**
-     * This will return all hex tiles within a radius except the one in the tile
-     *
-     * @param radius The radius to check
-     * @param tile the tile to check
-     * @return A list of tiles
-     */
-    public ArrayList<HexagonTile> getTilesInRadius(
-            int radius,
-            HexagonTile
-                    tile) { // TODO Repeated code from building need to move in more sensible place
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonMap map = getMap();
-        if (tile == null || map == null) return tiles;
-
-        // Get the current q and r coordinates.
-        int qCentre = tile.getQ();
-        int rCentre = tile.getR();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
-        }
-
-        // log.info("Number of tiles in range: " + tiles.size());
-
-        return tiles;
     }
 
     @Override
