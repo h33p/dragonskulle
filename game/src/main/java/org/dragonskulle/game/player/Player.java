@@ -186,7 +186,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        int playerId = getNetworkObject().getId(); //TODO: Change
+        int playerId = getNetworkObject().getOwnerId(); //TODO: Change to getID?
         int template = getNetworkManager().findTemplateByName("building");
         Reference<NetworkObject> networkObject = getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
