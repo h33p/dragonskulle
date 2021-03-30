@@ -96,6 +96,7 @@ class VulkanImage implements NativeResource {
 
     public VulkanImage(
             Texture texture,
+            boolean linearData,
             VkCommandBuffer commandBuffer,
             VkDevice device,
             PhysicalDevice physicalDevice) {
@@ -105,7 +106,7 @@ class VulkanImage implements NativeResource {
                 physicalDevice,
                 texture.getWidth(),
                 texture.getHeight(),
-                VK_FORMAT_R8G8B8A8_SRGB,
+                linearData ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB,
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT

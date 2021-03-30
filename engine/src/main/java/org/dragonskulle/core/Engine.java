@@ -15,6 +15,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.ui.UIManager;
 
@@ -53,6 +54,7 @@ public class Engine {
     @Getter private GLFWState mGLFWState = null;
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
+    private final ArrayList<Light> mTmpLights = new ArrayList<>();
 
     public interface IEngineExitCondition {
         boolean shouldExit();
@@ -432,15 +434,20 @@ public class Engine {
 
     private void renderFrame() {
         mTmpRenderables.clear();
+        mTmpLights.clear();
+
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof Renderable) {
                 mTmpRenderables.add((Renderable) component);
+            } else if (component instanceof Light) {
+                mTmpLights.add((Light) component);
             }
         }
 
         Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
-        if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
+        if (mainCamera != null)
+            mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
     }
 
     /**

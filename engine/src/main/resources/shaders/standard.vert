@@ -1,6 +1,8 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+const int NUM_LIGHTS = 4;
+
 layout(push_constant) uniform PushConsts {
 	mat4 view;
 	mat4 proj;
@@ -13,14 +15,49 @@ layout(location = 3) in vec2 inUV;
 
 layout(location = 4) in mat4 model;
 layout(location = 8) in vec4 instColor;
+layout(location = 9) in vec3 inCam;
+layout(location = 10) in float alphaCutoff;
+layout(location = 11) in float metallic;
+layout(location = 12) in float roughness;
+layout(location = 13) in float normal;
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec3 fragNormal;
-layout(location = 2) out vec2 fragUV;
+layout(location = 1) out vec2 fragUV;
+layout(location = 2) out vec3 fragNormal;
+layout(location = 3) out vec3 fragCam;
+layout(location = 4) out vec3 fragPos;
+
+layout(location = 5) out float fragAlphaCutoff;
+layout(location = 6) out float fragMetallic;
+layout(location = 7) out float fragRoughness;
+layout(location = 8) out float fragNormalMul;
+
+layout(location = 10) out vec3 lightDir[NUM_LIGHTS];
+layout(location = 10 + NUM_LIGHTS) out vec3 lightCol[NUM_LIGHTS];
 
 void main() {
-	gl_Position = consts.proj * consts.view * model * vec4(inPosition, 1.0);
+	fragCam = inCam;
+	vec4 pos = model * vec4(inPosition, 1.0);
+	fragPos = pos.xyz;
+	gl_Position = consts.proj * consts.view * pos;
 	fragColor = vec4(inColor, 1.0) * instColor;
-	fragNormal = inNormal;
+	fragNormal = normalize(transpose(inverse(mat3(model))) * inNormal);
 	fragUV = inUV;
+
+	fragAlphaCutoff = alphaCutoff;
+	fragMetallic = metallic;
+	fragRoughness = roughness;
+	fragNormalMul = normal;
+
+	vec3 lDir = vec3(-0.5, 0.0, -1.0);
+	float lIntensity = 30.0;
+	vec3 lColor = vec3(1.0);
+
+	lightDir[0] = normalize(lDir);
+	lightCol[0] = lIntensity * lColor;
+
+	for (int i = 1; i < NUM_LIGHTS; i++) {
+		lightDir[i] = vec3(1, 0, 0);
+		lightCol[i] = vec3(1) * 0;
+	}
 }

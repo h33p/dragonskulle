@@ -341,6 +341,7 @@ public class GLTF implements NativeResource {
         if (images != null) {
             for (Object image : images) {
                 String uri = (String) ((JSONObject) image).get("uri");
+                if (uri.startsWith("../textures/")) uri = uri.replaceFirst("../textures/", "");
                 loadedImages.add(Texture.getResource(uri));
             }
         }
@@ -419,7 +420,10 @@ public class GLTF implements NativeResource {
 
                 PBRMaterial pbrMat = new PBRMaterial(baseColor);
                 if (baseSampled != null) pbrMat.getFragmentTextures()[0] = baseSampled.clone();
-                if (normalSampled != null) pbrMat.getFragmentTextures()[1] = normalSampled.clone();
+                if (normalSampled != null) {
+                    pbrMat.getFragmentTextures()[1] = normalSampled.clone();
+                    pbrMat.getFragmentTextures()[1].setLinear(true);
+                }
                 pbrMat.setMetallic(metallic);
                 pbrMat.setRoughness(roughness);
                 pbrMat.setNormal(normal);

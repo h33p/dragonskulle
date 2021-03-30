@@ -30,6 +30,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.DrawCallState.DrawData;
 import org.dragonskulle.renderer.DrawCallState.NonInstancedDraw;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
@@ -221,8 +222,9 @@ public class Renderer implements NativeResource {
      *
      * @param camera object from where the renderer should render
      * @param objects list of objects that should be rendered
+     * @param lights list of lights to light the objects with
      */
-    public void render(Camera camera, List<Renderable> objects) {
+    public void render(Camera camera, List<Renderable> objects, List<Light> lights) {
         if (mImageContexts == null) recreateSwapchain();
 
         if (mImageContexts == null) return;

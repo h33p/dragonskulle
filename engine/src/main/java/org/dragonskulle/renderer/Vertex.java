@@ -19,11 +19,12 @@ import org.joml.*;
 @Accessors(prefix = "m")
 @EqualsAndHashCode
 public class Vertex implements Serializable {
-    public static int SIZEOF = (3 + 3 + 3 + 2) * 4;
     public static int POS_OFFSET = 0;
     public static int NORMAL_OFFSET = POS_OFFSET + 3 * 4;
     public static int COL_OFFSET = NORMAL_OFFSET + 3 * 4;
     public static int UV_OFFSET = COL_OFFSET + 3 * 4;
+
+    public static int SIZEOF = UV_OFFSET + 3 * 4;
 
     /** Binding descriptor for vertex buffer */
     public static final BindingDescription BINDING_DESCRIPTION =

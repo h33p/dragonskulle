@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.AttributeDescription;
 import org.dragonskulle.renderer.BindingDescription;
 import org.dragonskulle.renderer.SampledTexture;
@@ -17,6 +18,7 @@ import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.components.Camera;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
@@ -31,16 +33,24 @@ import org.joml.Vector4f;
 @Accessors(prefix = "m")
 public class PBRMaterial
         implements IMaterial, IColouredMaterial, IRefCountedMaterial, Serializable {
+
     public static class StandardShaderSet extends ShaderSet {
         public StandardShaderSet() {
             mVertexShader = ShaderBuf.getResource("standard", ShaderKind.VERTEX_SHADER);
             mFragmentShader = ShaderBuf.getResource("standard", ShaderKind.FRAGMENT_SHADER);
 
-            mVertexBindingDescription = BindingDescription.instancedWithMatrix(4 * 4);
+            mVertexBindingDescription = BindingDescription.instancedWithMatrix(NORMAL_OFFSET + 4);
             mVertexAttributeDescriptions =
                     AttributeDescription.withMatrix(
-                            new AttributeDescription(1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 0));
-            mNumFragmentTextures = 1;
+                            new AttributeDescription(
+                                    1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
+                            new AttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
+                            new AttributeDescription(
+                                    1, 2, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
+                            new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
+                            new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
+                            new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET));
+            mNumFragmentTextures = 2;
         }
 
         public StandardShaderSet enableAlpha() {
@@ -52,6 +62,13 @@ public class PBRMaterial
         }
     }
 
+    private static final int COL_OFFSET = 0;
+    private static final int CAM_OFFSET = COL_OFFSET + 4 * 4;
+    private static final int ALPHA_CUTOFF_OFFSET = CAM_OFFSET + 3 * 4;
+    private static final int METALLIC_OFFSET = ALPHA_CUTOFF_OFFSET + 4;
+    private static final int ROUGHNESS_OFFSET = METALLIC_OFFSET + 4;
+    private static final int NORMAL_OFFSET = ROUGHNESS_OFFSET + 4;
+
     private static final StandardShaderSet OPAQUE_SET = new StandardShaderSet();
     private static final StandardShaderSet TRANSPARENT_SET = new StandardShaderSet().enableAlpha();
 
@@ -60,8 +77,9 @@ public class PBRMaterial
                 Texture.getResource("white.bmp"),
                 new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT)),
         new SampledTexture(
-                Texture.getResource("white.bmp"),
-                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT)),
+                Texture.getResource("normal.bmp"),
+                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT),
+                true),
     };
 
     /** Base colour of the surface. It will multiply the texture's colour */
@@ -116,7 +134,18 @@ public class PBRMaterial
 
     public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
-        mColour.get(offset, buffer);
+        Scene.getActiveScene()
+                .getSingleton(Camera.class)
+                .getGameObject()
+                .getTransform()
+                .getPosition()
+                .get(offset + CAM_OFFSET, buffer);
+        mColour.get(offset + COL_OFFSET, buffer);
+        ByteBuffer buf = buffer.position(offset + ALPHA_CUTOFF_OFFSET);
+        buf.putFloat(mAlphaCutoff);
+        buf.putFloat(mMetallic);
+        buf.putFloat(mRoughness);
+        buf.putFloat(mNormal);
     }
 
     public SampledTexture[] getFragmentTextures() {
