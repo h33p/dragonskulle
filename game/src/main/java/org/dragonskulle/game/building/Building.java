@@ -25,6 +25,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.lwjgl.system.CallbackI.B;
 
 /**
  * A Building component.
@@ -90,7 +91,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public void onStart() {
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.addOwnedBuilding(this);
+        if (owningPlayer != null) owningPlayer.addOwnership(this);
 
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
@@ -273,16 +274,17 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Will return the tile which the building currently sits on
+     * Get the {@link HexagonTile} the {@link Building} is on.
      *
-     * @return The {@link HexagonTile} which the building rests
+     * @return The tile the building is on, or {@code null}.
      */
     public HexagonTile getTile() {
         HexagonMap map = getMap();
         if (map == null) return null;
 
         Vector3i position = getPosition();
-
+        if(position == null) return null;
+        
         return map.getTile(position.x(), position.y());
     }
 
@@ -338,23 +340,22 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * Get the current axial coordinates of the building using the {@link GameObject}'s {@link
      * TransformHex}.
      *
-     * @return A 3d-vector of integers containing the x, y and z position of the building.
+     * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code null}.
      */
     private Vector3i getPosition() {
-        Vector3f floatPosition = new Vector3f();
-
         TransformHex tranform = getGameObject().getTransform(TransformHex.class);
 
         if (tranform == null) {
-            return new Vector3i(0, 0, 0);
+            return null;
         }
-
+        
+        Vector3f floatPosition = new Vector3f();
         tranform.getLocalPosition(floatPosition);
 
-        Vector3i position = new Vector3i();
-        position.set((int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
+        Vector3i integerPosition = new Vector3i();
+        integerPosition.set((int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
 
-        return position;
+        return integerPosition;
     }
 
     /**

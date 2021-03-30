@@ -44,7 +44,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     protected void simulateInput() {
 
         // If only one building assumed that its capital
-        if (mPlayer.get().numberOfBuildings() == 1) {
+        if (mPlayer.get().numberOfOwnedBuildings() == 1) {
             log.warning("Only have 1");
 
             addBuilding();
@@ -53,7 +53,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         } else {
             log.info(
                     "AI: I have "
-                            + mPlayer.get().numberOfBuildings()
+                            + mPlayer.get().numberOfOwnedBuildings()
                             + " buildings. Should be  more than  one");
 
             // Pick a random number to choose whether to place a building or to use a building
@@ -172,8 +172,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** This will upgrade a building for the AiPlayer */
     private void upgradeBuilding() {
-        log.warning("Number " + mPlayer.get().numberOfBuildings());
-        int upgradeID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
+        log.warning("Number " + mPlayer.get().numberOfOwnedBuildings());
+        int upgradeID = mRandom.nextInt(mPlayer.get().numberOfOwnedBuildings());
 
         log.info("AI: Upgrading");
 
@@ -249,9 +249,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** This will sell a building */
     private void sell() {
         log.info("AI: Selling");
-        if (mPlayer.get().numberOfBuildings() > 1) {
+        if (mPlayer.get().numberOfOwnedBuildings() > 1) {
 
-            int sellID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
+            int sellID = mRandom.nextInt(mPlayer.get().numberOfOwnedBuildings());
 
             Building buildingToSell =
                     mPlayer.get()

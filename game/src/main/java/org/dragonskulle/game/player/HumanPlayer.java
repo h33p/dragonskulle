@@ -296,10 +296,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             final Reference<Building> buildingReference =
                     obj.get().getGameObject().getComponent(Building.class);
             if (obj.get().isMine()) {
-                mPlayer.get().addOwnership(buildingReference);
+                mPlayer.get().addOwnership(buildingReference.get());
             } else if (buildingReference != null
-                    && mPlayer.get().thinksOwnsBuilding(buildingReference)) {
-                mPlayer.get().removeFromOwnedBuildings(buildingReference);
+                    && mPlayer.get().checkBuildingOwnership(buildingReference.get())) {
+                mPlayer.get().removeOwnership(buildingReference.get());
             }
         }
     }

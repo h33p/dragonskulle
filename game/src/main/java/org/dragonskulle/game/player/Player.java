@@ -3,6 +3,7 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -186,7 +187,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        int playerId = mNetworkObject.getOwnerId(); // TODO: Should this be getId()?
+        int playerId = mNetworkObject.getId();
         int template = mNetworkManager.findTemplateByName("building");
         Reference<NetworkObject> networkObject = mNetworkManager.getServerManager().spawnNetworkObject(playerId, template);
 
@@ -208,6 +209,126 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
+     * Add a {@link Building} the the list of owned buildings.
+     *
+     * @param building The building to add to {@link #mOwnedBuildings}.
+     */
+    public void addOwnership(Building building) {
+        if (building == null) return;
+
+        // Get the tile the building is on.
+        HexagonTile tile = building.getTile();
+
+        if(tile == null) {
+        	log.warning("Unable to add Building to list of owned tiles as the Building's HexagonTile is null.");
+        	return;
+        }
+        
+        // Add the building at the relevant position.
+        mOwnedBuildings.put(tile, building.getReference(Building.class));
+    }
+    
+    /**
+     * Remove a {@link Building} from the {@link List} of owned buildings.
+     * 
+     * @param building The {@link Building} to remove.
+     * @return {@code true} on success, otherwise {@code false}.
+     */
+    public boolean removeOwnership(Building building) {
+        if(building == null) return false;
+    	
+        HexagonTile tile = building.getTile();
+        if(tile == null) return false;
+    	
+        Reference<Building> removed = mOwnedBuildings.remove(tile);
+        return (removed != null); 
+    }
+    
+    /**
+     * Get the {@link Building}, that is on the specified {@link HexagonTile}, from {@link #mOwnedBuildings}
+     *
+     * @param tile The tile to get the building from.
+     * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise {@code null}.
+     */
+    public Reference<Building> getOwnedBuilding(HexagonTile tile) {
+        return mOwnedBuildings.get(tile);
+    }
+
+    /**
+     * This will return a {@link Stream} of {@link Reference}s to {@link Building}s which are owned by the player.
+     *
+     * @return A stream containing references to the buildings the player owns.
+     */
+    public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
+        return mOwnedBuildings.values().stream();
+    }
+    
+    /**
+     * The number of {@link Building}s the player owns (the number of buildings in {@link #mOwnedBuildings}).
+     *
+     * @return The number of buildings the player currently owns.
+     */
+    public int numberOfOwnedBuildings() {
+        return mOwnedBuildings.size();
+    }
+    
+    /**
+     * Check if the {@link Building}'s owner is the player.
+     * 
+     * @param building The building to check.
+     * @return {@code true} if the player owns the building, otherwise {@code false}.
+     */
+    public boolean checkBuildingOwnership(Building building) {
+    	return building.getOwner().equals(this);
+    }
+    
+    /**
+     * @deprecated Use {@link #checkBuildingOwnership(Building)}
+     * @param buildingReference
+     * @return
+     */
+    public boolean thinksOwnsBuilding(Reference<Building> buildingReference) {
+        final HexagonTile tile = buildingReference.get().getTile();
+        if (tile != null) {
+            final Reference<Building> foundBuilding = this.mOwnedBuildings.get(tile);
+            if (foundBuilding != null) {
+                return foundBuilding == buildingReference;
+            }
+        }
+        return false;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /**
      * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
      *
      * @return The HexagonMap being used, otherwise {@code null}.
@@ -216,55 +337,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return mMapComponent == null ? null : mMapComponent.get();
     }
 
-    /**
-     * This will get the building from this tile if you own that building
-     *
-     * @param tile The tile to get the building from
-     * @return The reference to a building if it yours
-     */
-    public Reference<Building> getOwnedBuilding(HexagonTile tile) {
-        return mOwnedBuildings.get(tile);
-    }
+    
 
-    /**
-     * This will return a {@code Stream} of values of buildings which are owned by the player
-     *
-     * @return A stream containing references to the buildings the player owns
-     */
-    public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
-        return mOwnedBuildings.values().stream();
-    }
+    
 
-    /**
-     * Add a {@link Building} the the list of owned buildings.
-     *
-     * @param building The building to add to {@link #mOwnedBuildings}.
-     */
-    public void addOwnedBuilding(Building building) {
-        if (building == null) return;
-
-        // Get the tile the building is on.
-        HexagonTile tile = building.getTile();
-
-        // Add the building at the relevant position.
-        mOwnedBuildings.put(tile, building.getReference(Building.class));
-    }
-
-    public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
-        if (buildingToRemove.isValid() && buildingToRemove.get().getTile() != null) {
-            return mOwnedBuildings.remove(buildingToRemove.get().getTile(), buildingToRemove);
-        }
-        return false;
-    }
-
-    /**
-     * The number of buildings the player has
-     *
-     * @return The number of buildings
-     */
-    public int numberOfBuildings() {
-        return mOwnedBuildings.size();
-    }
+    
 
     /**
      * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
@@ -466,7 +543,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             if (mMapComponent.isValid()
                     && tile.hasBuilding()
-                    && tile.getBuilding().getOwnerID() == getNetworkObject().getOwnerId()) {
+                    && tile.getBuilding().getOwnerID() == getNetworkObject().getId()) {
                 return true;
             }
         }
@@ -569,23 +646,5 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public void fixedUpdate(float deltaTime) {
 
         updateTokens(deltaTime);
-    }
-
-    public void addOwnership(Reference<Building> buildingReference) {
-        final HexagonTile tile = buildingReference.get().getTile();
-        if (tile != null) {
-            this.mOwnedBuildings.put(tile, buildingReference);
-        }
-    }
-
-    public boolean thinksOwnsBuilding(Reference<Building> buildingReference) {
-        final HexagonTile tile = buildingReference.get().getTile();
-        if (tile != null) {
-            final Reference<Building> foundBuilding = this.mOwnedBuildings.get(tile);
-            if (foundBuilding != null) {
-                return foundBuilding == buildingReference;
-            }
-        }
-        return false;
     }
 }
