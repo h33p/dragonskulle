@@ -101,11 +101,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** We need to initialise client requests here, since java does not like to serialise lambdas. */
     @Override
     protected void onNetworkInitialize() {
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
-        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
-
+    	mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
+    	mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
+    	mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
+    	mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
+        
         if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
     
@@ -381,11 +381,119 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	return false;
     }
     
+    /**
+     * Process an event in which the <b>client</b> player wishes to place a {@link Building}.
+     * <p>
+     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #buildAttempt(HexagonTile)}.
+     *
+     * @param data The build data sent by the human client.
+     */
+    void buildEvent(BuildData data) {
+    	HexagonTile tile = buildParse(data);
+    	if(tile == null) {
+    		log.info("Unable to pass parsing.");
+    		return;
+    	}        
+        
+    	// Try to place the building on the tile.
+    	buildAttempt(tile);
+    }
     
+    /**
+     * Attempt to place a building on a specific tile.
+     * <p>
+     * This first checks the tile to make sure it is fully eligible before any placement happens.
+     * 
+     * @param tile The tile to place a building on.
+     * @return Whether the attempt to build was successful.
+     */
+    public boolean buildAttempt(HexagonTile tile) {
+    	if(buildCheck(tile) == false) {
+    		log.info("Unable to pass build check.");
+    		return false;
+    	}
+    	
+    	Building building = createBuilding(tile.getQ(), tile.getR());
+
+    	if(building == null) {
+    		log.info("Unable to add building.");
+    		return false;
+    	}
+    	
+    	// Subtract the cost.
+    	mTokens.add(-Building.BUY_PRICE);
+
+    	log.info("Added building.");
+    	return true;
+    }
     
+    /**
+     * Get the {@link HexagonTile} from the {@link BuildData}. 
+     * 
+     * @param data The {@link BuildData}.
+     * @return The HexagonTile, otherwise {@code null}.
+     */
+    public HexagonTile buildParse(BuildData data) {
+        HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Unable to parse BuildData: Map is null.");
+        	return null;
+        }
+    	
+    	HexagonTile tile = data.getTile(map);
+        if(tile == null) {
+        	log.warning("Unable to parse BuildData: Tile from BuildData is null.");
+        	return null;
+        }
+    	
+    	return tile;
+    }
     
-    
-    
+    /**
+     * Ensure that the {@link HexagonTile} is eligible to have a {@link Building} placed on it.
+     * 
+     * @param tile The tile to put a building on.
+     * @return {@code true} if the tile is eligible, otherwise {@code false}.
+     */
+    public boolean buildCheck(HexagonTile tile) {
+
+    	if(tile == null) {
+        	log.warning("Tile is null.");
+        	return false;
+        }
+    	
+        if (mTokens.get() < Building.BUY_PRICE) {
+            log.info("Not enough tokens to buy building.");
+            return false;
+        }
+        
+        HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Map is null.");
+        	return false;
+        }
+        
+        if(tile.isClaimed()) {
+        	log.info("Tile already claimed.");
+            return false;
+        }
+        
+        if(tile.hasBuilding()) {
+        	log.info("Building already on tile.");
+            return false;
+        }
+        
+        // Ensure the building is placed within a set radius of an owned building.
+        final int radius = 3;
+        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
+        
+        if (containsOwnedBuilding(tiles) == false) {
+            log.info("Building is placed too far away from preexisting buildings.");
+            return false;
+        }
+        
+    	return true;
+    }
     
     
     
@@ -527,7 +635,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * How this component will react to a Build event.
      *
      * @param data attack event being executed on the server.
-     */
+     *
     public void handleEvent(BuildData data) {
         // TODO implement
         // get Hexagon to build on
@@ -581,7 +689,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("Building added");
         }
     }
-
+     */
+    
     // Upgrading Stats is handled below
     
 

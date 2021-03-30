@@ -65,11 +65,14 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
     @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
 
-    /**
-     * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
-     */
+    /** The tiles the building can currently attack (within the current {@link #mAttackDistance}). */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
+    /** The cost to buy a {@link Building}. */
+    public static final int BUY_PRICE = 10;
+    /** The reimbursement from selling a {@link Building}. */
+    public static final int SELL_PRICE = 2;
+    
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.

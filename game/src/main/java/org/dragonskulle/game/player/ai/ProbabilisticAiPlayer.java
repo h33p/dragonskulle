@@ -172,7 +172,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
 
             // Send to server
-            mPlayer.get().handleEvent(new BuildData(tileToExpandTo));
+            mPlayer.get().buildAttempt(tileToExpandTo);
 
             return;
         } else {
