@@ -138,6 +138,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         Random random = new Random();
         
+        //TODO make AI not have -1 as ID each Human Player gets Id from 0..n
+        
         int xCoord = 0;
         int yCoord = 0;
         
