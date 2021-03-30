@@ -12,6 +12,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.VertexHighlightMaterial;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.renderer.*;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
@@ -74,6 +75,9 @@ public class HexagonTile {
     /** Building that is on the tile */
     @Getter @Setter private Building mBuilding;
 
+    /** A reference to the building that claims the tile, or {@code null}. */
+    private Reference<Building> mClaimedBy = new Reference<Building>(null);
+
     /**
      * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
      * 0.
@@ -92,7 +96,11 @@ public class HexagonTile {
         }
     }
 
-    /** The length of the tile from the origin */
+    /**
+     * The length of the tile from the origin.
+     *
+     * @return The length of the tile from the origin.
+     */
     public int length() {
         return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
     }
@@ -106,5 +114,51 @@ public class HexagonTile {
     @Override
     public String toString() {
         return Arrays.toString(new int[] {this.mQ, this.mR, this.mS});
+    }
+
+    /**
+     * Set which {@link Building} claims the tile. Do not claim the tile if another building already
+     * claimed it.
+     *
+     * @param building The building which claimed the tile.
+     * @return {@code true} if the claim was successful, otherwise {@code false} if the tile is
+     *     already claimed.
+     */
+    public boolean setClaimedBy(Building building) {
+        if (isClaimed()) return false;
+
+        mClaimedBy = building.getReference(Building.class);
+        return true;
+    }
+
+    /**
+     * Whether the tile is claimed by a building.
+     *
+     * @return Whether the tile is claimed by a building.
+     */
+    public boolean isClaimed() {
+        return (mClaimedBy != null && mClaimedBy.isValid());
+    }
+
+    /**
+     * Get the {@link Player} who has claimed this tile (either because there is a building on it or
+     * because it is adjacent to a building).
+     *
+     * @return The Player who has claimed this tile, or {@code null} if no Player claims it.
+     */
+    public Player getClaimant() {
+        if (!isClaimed()) {
+            return null;
+        }
+        return mClaimedBy.get().getOwner();
+    }
+
+    /**
+     * Get whether there is a {@link Building} on this tile.
+     *
+     * @return Whether there is a building on this tile.
+     */
+    public boolean hasBuilding() {
+        return mBuilding != null;
     }
 }

@@ -164,4 +164,64 @@ public abstract class Transform extends Component {
      */
     public abstract void setLocal3DTransformation(
             Vector3fc position, Quaternionfc rotation, Vector3fc scale);
+
+    /**
+     * Get the right direction vector
+     *
+     * @return Vector3f containing the right direction
+     */
+    public Vector3f getRightVector() {
+        Vector3f right = new Vector3f();
+        getWorldMatrix().normalizedPositiveX(right);
+        return right;
+    }
+
+    /**
+     * Get the right direction vector
+     *
+     * @param dest Vector3f to store the right direction
+     */
+    public void getRightVector(Vector3f dest) {
+        getWorldMatrix().normalizedPositiveX(dest);
+    }
+
+    /**
+     * Get the up direction vector
+     *
+     * @return Vector3f containing the up direction
+     */
+    public Vector3f getUpVector() {
+        Vector3f up = new Vector3f();
+        getWorldMatrix().normalizedPositiveZ(up);
+        return up;
+    }
+
+    /**
+     * Get the up direction vector
+     *
+     * @param dest Vector3f to store the up direction
+     */
+    public void getUpVector(Vector3f dest) {
+        getWorldMatrix().normalizedPositiveZ(dest);
+    }
+
+    /**
+     * Get the forward direction vector
+     *
+     * @return Vector3f containing the forward direction
+     */
+    public Vector3f getForwardVector() {
+        Vector3f forward = new Vector3f();
+        getWorldMatrix().normalizedPositiveY(forward);
+        return forward;
+    }
+
+    /**
+     * Get the forward direction vector
+     *
+     * @param dest Vector3f to store the forward direction
+     */
+    public void getForwardVector(Vector3f dest) {
+        getWorldMatrix().normalizedPositiveY(dest);
+    }
 }
