@@ -8,12 +8,10 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

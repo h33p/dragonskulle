@@ -6,13 +6,11 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 import org.lwjgl.vulkan.VkDevice;
-
-import lombok.extern.java.Log;
 
 /**
  * Create and manage texture sampler layouts for a device

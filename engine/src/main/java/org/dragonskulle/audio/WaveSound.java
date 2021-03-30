@@ -2,19 +2,16 @@
 package org.dragonskulle.audio;
 
 import com.sun.media.sound.WaveFileReader;
-
-import lombok.extern.java.Log;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import lombok.extern.java.Log;
 import org.lwjgl.openal.AL11;
 
 /**

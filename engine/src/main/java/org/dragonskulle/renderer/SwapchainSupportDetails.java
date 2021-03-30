@@ -8,12 +8,10 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-
-import lombok.extern.java.Log;
 
 @Log
 class SwapchainSupportDetails {

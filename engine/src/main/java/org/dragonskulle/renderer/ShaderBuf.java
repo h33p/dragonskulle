@@ -5,11 +5,9 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.util.shaderc.Shaderc.*;
 
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.lwjgl.system.MemoryUtil;

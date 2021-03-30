@@ -5,9 +5,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-import org.dragonskulle.utils.IOUtils;
-
 import lombok.extern.java.Log;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * @author Oscar L

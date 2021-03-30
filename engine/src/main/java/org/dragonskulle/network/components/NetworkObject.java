@@ -5,11 +5,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkConfig;
@@ -27,7 +25,6 @@ import org.dragonskulle.utils.IOUtils;
 @Log
 public class NetworkObject extends Component {
 
-    
     /** true if the component is on the server. */
     @Getter private final boolean mIsServer;
     /** The id of the object. */

@@ -21,14 +21,12 @@ import java.nio.LongBuffer;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.renderer.DrawCallState.DrawData;
 import org.dragonskulle.renderer.DrawCallState.NonInstancedDraw;
 import org.dragonskulle.renderer.components.Camera;

@@ -7,11 +7,9 @@ import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;

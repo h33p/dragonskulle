@@ -142,8 +142,7 @@ public class App implements NativeResource {
                                                                             "Rise of Kingdom.ttf"),
                                                                     "Fill game with AI"),
                                                             (a, b) -> {
-                                                                log.info(
-                                                                        "should fill with ai");
+                                                                log.info("should fill with ai");
                                                                 networkManager
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(

@@ -1,11 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio.components;
 
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.Source;
 import org.dragonskulle.audio.WaveSound;

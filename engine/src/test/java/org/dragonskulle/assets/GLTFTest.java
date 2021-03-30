@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
@@ -16,8 +17,6 @@ import org.dragonskulle.network.components.NetworkHexTransform;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 import org.junit.Test;
-
-import lombok.extern.java.Log;
 
 /** Unit tests for {@link GLTF} files. */
 @Log

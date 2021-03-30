@@ -5,13 +5,11 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;

@@ -6,7 +6,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Engine;
@@ -18,8 +18,6 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.junit.*;
 import org.lwjgl.system.NativeResource;
-
-import lombok.extern.java.Log;
 
 /** @author Oscar L */
 @Log

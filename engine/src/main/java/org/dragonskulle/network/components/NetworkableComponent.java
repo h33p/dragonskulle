@@ -8,11 +8,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkMessage;
@@ -25,7 +23,7 @@ import org.dragonskulle.network.components.sync.ISyncVar;
 @Accessors(prefix = "m")
 @Log
 public abstract class NetworkableComponent extends Component {
-    
+
     /** A reference to itself. */
     private final Reference<NetworkableComponent> mReference = new Reference<>(this);
 

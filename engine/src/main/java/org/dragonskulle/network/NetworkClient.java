@@ -7,10 +7,9 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.exceptions.DecodingException;
-
-import lombok.extern.java.Log;
 
 /**
  * @author Oscar L
@@ -89,8 +88,7 @@ public class NetworkClient {
                 mClientListener.spawnNetworkObject(payload);
                 break;
             default:
-                log.info(
-                        "unsure of what to do with message as unknown type byte " + messageType);
+                log.info("unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
         return messageType;
