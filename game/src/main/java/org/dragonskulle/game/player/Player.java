@@ -13,6 +13,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -26,7 +27,6 @@ import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.game.player.networkData.StatData;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
@@ -72,7 +72,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final int playersToPlay =
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
-
+    
     /** The base constructor for player */
     public Player() {}
 
@@ -99,7 +99,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	if(getMap() == null) {
     		log.severe("Player has no HexagonMap.");
     	}
-
+    	
         if (getNetworkObject().isServer()) {
             distributeCoordinates();
         }
@@ -281,44 +281,53 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	return building.getOwnerID() == getNetworkObject().getOwnerId();
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     /**
-     * Gets the {@link HexagonMap}.
+     * Gets the {@link HexagonMap} by iterating though all active scenes.
      *
      * @return The HexagonMap being used, otherwise {@code null}.
      */
-    public HexagonMap getMap() {
-        return Scene.getActiveScene().getSingleton(HexagonMap.class);
+    public HexagonMap getMap() {        
+        // The ActiveScene may not contain the hexagon map.
+        ArrayList<Scene> scenes = Engine.getInstance().getActiveScenes();
+        for (Scene scene : scenes) {
+			HexagonMap map = scene.getSingleton(HexagonMap.class);
+			if(map != null) {
+				return map;
+			}
+		}
+        
+        return null;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     
 
@@ -482,6 +491,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Gets the actual tile
         HexagonMap map = getMap();
+        
+        if(map == null) {
+        	log.warning("Map is null.");
+        	return;
+        }
         HexagonTile tile = data.getTile(map);
 
         if (tile.getBuilding()
