@@ -69,9 +69,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    private final int playersToPlay =
-            6; // TODO this needs to be set dynamically -- specifies how many players will play this
-    // game
+    // TODO this needs to be set dynamically -- specifies how many players will play this game
+    private final int playersToPlay = 6;
+    
+    /** Used by the client to request that a building be placed by the server. */
+    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
+    /** Used by the client to request that a building attack another building. */
+    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
+    /** Used by the client to request that a building's stats be increased. */
+    @Getter private transient ClientRequest<StatData> mClientStatRequest;
+    /** Used by the client to request that a building be sold. */
+    @Getter private transient ClientRequest<SellData> mClientSellRequest;
     
     /** The base constructor for player */
     public Player() {}
@@ -85,6 +93,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
+    /** We need to initialise client requests here, since java does not like to serialise lambdas. */
+    @Override
+    protected void onNetworkInitialize() {
+        mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
+        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
+
+        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
+    }
+    
     @Override
     public void onStart() {
 
@@ -372,22 +391,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
-    /** We need to initialize requests here, since java does not like to serialize lambdas */
-    @Override
-    protected void onNetworkInitialize() {
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
-        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
-
-        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
-    }
 
     @Override
     protected void onDestroy() {}
 
     // Selling of buildings is handled below
-    @Getter private transient ClientRequest<SellData> mClientSellRequest;
+    
 
     /**
      * How this component will react to an sell event.
@@ -411,7 +420,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     // attacking of buildings is handled below
-    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
+    
 
     /**
      * How this component will react to an attack event.
@@ -476,7 +485,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     // Building is handled below
-    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
+    
 
     /**
      * How this component will react to a Build event.
@@ -538,7 +547,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     // Upgrading Stats is handled below
-    @Getter private transient ClientRequest<StatData> mClientStatRequest;
+    
 
     /**
      * How this component will react to an upgrade event.
