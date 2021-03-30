@@ -44,13 +44,15 @@ import org.joml.Vector3fc;
 @Log
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
-    // List of Buildings -- stored & synced in HexagonMap
-    //    @Getter
+    /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
+    /** The number of tokens the player has, synchronised from server to client. */
     @Getter public SyncInt mTokens = new SyncInt(0);
+    
+    /** The colour of the player. */
     @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
     @Getter private HighlightSelection mPlayerHighlightSelection;
 
@@ -65,9 +67,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         new Vector3f(0f, 0f, 0f)
     };
 
+    /** The base rate of tokens which will always be added. */
     private final int TOKEN_RATE = 5;
-    private final float UPDATE_TIME = 1;
-    private float mLastTokenUpdate = 0;
+    /** How frequently the tokens should be added. */
+    private final float TOKEN_TIME = 1f;
+    /** The total amount of time passed since the last time tokens where added. */
+    private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
     private final int playersToPlay = 6;
@@ -129,9 +134,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
-        updateTokens(UPDATE_TIME);
+        updateTokens(TOKEN_TIME);
     }
 
+    @Override
+    public void fixedUpdate(float deltaTime) {
+    	// Update the token count.
+        updateTokens(deltaTime);
+    }
+    
+    @Override
+    protected void onDestroy() {}
+    
     /**
      * This will randomly place a capital using an angle so each person is within their own slice
      */
@@ -168,6 +182,40 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         buildingToBecomeCapital.setCapital(true);
     }
 
+    /**
+     * This method will update the amount of tokens the user has per {@link #TOKEN_TIME}. Goes through all
+     * owned {@link Building}s to check if need to update tokens. Should only be ran on the server.
+     *
+     * @param time The time since the last update.
+     */
+    private void updateTokens(float time) {
+        // Only the server should add tokens.
+        if (getNetworkObject().isServer()) {
+            // Increase the total amount of time since tokens where last added.
+        	mCumulativeTokenTime += time;
+            
+            // Check to see if enough time has passed.
+            if (mCumulativeTokenTime >= TOKEN_TIME) {
+
+            	// Add tokens for each building.
+            	getOwnedBuildingsAsStream()
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .forEach(
+                                building ->
+                                        mTokens.add(building.getTokenGeneration().getValue()));
+
+            	// Add a base amount of tokens.
+                mTokens.add(TOKEN_RATE);
+                
+                // Reduce the cumulative time by the TOKEN_TIME.
+                mCumulativeTokenTime -= TOKEN_TIME;
+                
+                log.info("Tokens at: " + mTokens.get());
+            }
+        }
+    }
+    
     /**
      * This will create a new {@link GameObject} with a {@link Building} component. 
      *
@@ -362,39 +410,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     
 
-    /**
-     * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
-     * owned buildings to check if need to update tokens. Should only be ran on the server
-     *
-     * @param time The time since the last update
-     */
-    public void updateTokens(float time) {
-        // Checks if server
-        if (getNetworkObject().isServer()) {
-            mLastTokenUpdate += time;
-            // Checks to see how long its been since lastTokenUpdate
-            if (mLastTokenUpdate >= UPDATE_TIME) {
-
-                // Add tokens for each building
-                mOwnedBuildings.values().stream()
-                        .filter(Reference::isValid)
-                        .map(Reference::get)
-                        .forEach(
-                                b ->
-                                        mTokens.set(
-                                                mTokens.get() + b.getTokenGeneration().getValue()));
-
-                mTokens.set(mTokens.get() + TOKEN_RATE);
-                mLastTokenUpdate = 0;
-                log.info("Tokens at: " + mTokens.get());
-            }
-        }
-    }
+    
 
 
-    @Override
-    protected void onDestroy() {}
+    
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     // Selling of buildings is handled below
     
 
@@ -574,9 +610,5 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.afterStatChange();
     }
 
-    @Override
-    public void fixedUpdate(float deltaTime) {
-
-        updateTokens(deltaTime);
-    }
+    
 }

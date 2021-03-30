@@ -43,6 +43,15 @@ public class SyncInt implements ISyncVar, Serializable {
     }
 
     /**
+     * Add a value to the current data.
+     * 
+     * @param value The value to add.
+     */
+    public void add(int value) {
+    	set(get() + value);
+    }
+    
+    /**
      * Get integer value.
      *
      * @return the value
@@ -50,7 +59,7 @@ public class SyncInt implements ISyncVar, Serializable {
     public int get() {
         return mData;
     }
-
+    
     /**
      * Serialize bytes.
      *
