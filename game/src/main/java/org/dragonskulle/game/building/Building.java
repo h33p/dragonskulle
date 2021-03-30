@@ -25,7 +25,6 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import org.lwjgl.system.CallbackI.B;
 
 /**
  * A Building component.
@@ -65,14 +64,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
     @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
 
-    /** The tiles the building can currently attack (within the current {@link #mAttackDistance}). */
+    /**
+     * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
+     */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
-    
+
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
@@ -286,8 +287,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         if (map == null) return null;
 
         Vector3i position = getPosition();
-        if(position == null) return null;
-        
+        if (position == null) return null;
+
         return map.getTile(position.x(), position.y());
     }
 
@@ -343,7 +344,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * Get the current axial coordinates of the building using the {@link GameObject}'s {@link
      * TransformHex}.
      *
-     * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code null}.
+     * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code
+     *     null}.
      */
     private Vector3i getPosition() {
         TransformHex tranform = getGameObject().getTransform(TransformHex.class);
@@ -351,12 +353,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         if (tranform == null) {
             return null;
         }
-        
+
         Vector3f floatPosition = new Vector3f();
         tranform.getLocalPosition(floatPosition);
 
         Vector3i integerPosition = new Vector3i();
-        integerPosition.set((int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
+        integerPosition.set(
+                (int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
 
         return integerPosition;
     }

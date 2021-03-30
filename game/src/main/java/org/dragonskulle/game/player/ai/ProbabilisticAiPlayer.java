@@ -9,10 +9,6 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.game.player.networkData.AttackData;
-import org.dragonskulle.game.player.networkData.BuildData;
-import org.dragonskulle.game.player.networkData.SellData;
-import org.dragonskulle.game.player.networkData.StatData;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
@@ -44,12 +40,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     @Override
     protected void simulateInput() {
 
-    	// TODO: Remove/formailise this.
-    	if(mPlayer.get().numberOfOwnedBuildings() == 0) {
-    		log.info("AI player has no buildings... Ending turn.");
-    		return;
-    	}
-    	
+        // TODO: Remove/formailise this.
+        if (mPlayer.get().numberOfOwnedBuildings() == 0) {
+            log.info("AI player has no buildings... Ending turn.");
+            return;
+        }
+
         // If only one building assumed that its capital
         if (mPlayer.get().numberOfOwnedBuildings() == 1) {
             log.warning("Only have 1");
@@ -142,9 +138,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean checkCloseBuildings(HexagonTile hexTile) {
 
-    	HexagonMap map = mPlayer.get().getMap();
-    	if(map == null) return false;
-    	
+        HexagonMap map = mPlayer.get().getMap();
+        if (map == null) return false;
+
         // Get a radius of tiles
         ArrayList<HexagonTile> hexTiles = map.getTilesInRadius(hexTile, 1);
 
