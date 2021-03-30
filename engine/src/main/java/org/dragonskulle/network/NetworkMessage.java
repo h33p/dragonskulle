@@ -7,6 +7,8 @@ import java.lang.reflect.Array;
 import java.util.*;
 import org.dragonskulle.utils.IOUtils;
 
+import lombok.extern.java.Log;
+
 /**
  * @author Oscar L
  *     <p>The Network message structure which is sent. It will follow the format below. 0 : Print
@@ -14,6 +16,7 @@ import org.dragonskulle.utils.IOUtils;
  *     <p>// schema // ::S:: (5bytes) // messageType (1Byte) // payloadSize (4 bytes) // payload (n
  *     bytes) // ::E:: (5 bytes)
  */
+@Log
 public class NetworkMessage {
     /** The constant START_SIGNATURE. */
     private static final byte[] START_SIGNATURE = {58, 58, 83, 58, 58};
@@ -56,15 +59,15 @@ public class NetworkMessage {
             boolean consumedMessage = verifyMessageEnd(i, buff);
             if (consumedMessage) {
                 if (messageType == (byte) 0) { // debug type
-                    System.out.println("\nValid Message");
-                    System.out.println("Type : " + messageType);
-                    System.out.println("Payload : " + Arrays.toString(payload));
+                    log.info("\nValid Message");
+                    log.info("Type : " + messageType);
+                    log.info("Payload : " + Arrays.toString(payload));
                 } else {
                     return client.executeBytes(messageType, payload);
                 }
             }
         } else {
-            System.out.println("invalid message start");
+            log.info("invalid message start");
         }
         return (byte) -1;
     }

@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -25,6 +27,7 @@ import org.lwjgl.vulkan.*;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
+@Log
 class VulkanMeshBuffer implements NativeResource {
     private VkDevice mDevice;
     private PhysicalDevice mPhysicalDevice;
@@ -38,8 +41,6 @@ class VulkanMeshBuffer implements NativeResource {
     private Map<Mesh, Integer> mLoadedMeshes = new HashMap<Mesh, Integer>();
 
     private ArrayList<MeshBufferEntry> mEntries = new ArrayList<>();
-
-    private static final Logger LOGGER = Logger.getLogger("render");
 
     /** Description where mesh data resides in */
     @Builder
@@ -187,7 +188,7 @@ class VulkanMeshBuffer implements NativeResource {
      * <p>As the name implies, this buffer holds vertices
      */
     private VulkanBuffer createVertexBuffer(VkQueue graphicsQueue, long commandPool) {
-        LOGGER.fine("Create vertex buffer");
+        log.fine("Create vertex buffer");
 
         int vertexCount = 0;
 
@@ -237,7 +238,7 @@ class VulkanMeshBuffer implements NativeResource {
      * <p>This buffer holds indices of the vertices to render in multiples of 3.
      */
     private VulkanBuffer createIndexBuffer(VkQueue graphicsQueue, long commandPool) {
-        LOGGER.fine("Setup index buffer");
+        log.fine("Setup index buffer");
 
         int indexCount = 0;
 

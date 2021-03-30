@@ -12,6 +12,8 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 import org.lwjgl.vulkan.VkDevice;
 
+import lombok.extern.java.Log;
+
 /**
  * Create and manage texture sampler layouts for a device
  *
@@ -19,12 +21,11 @@ import org.lwjgl.vulkan.VkDevice;
  *
  * @author Aurimas Blažulionis
  */
+@Log
 class TextureSetLayoutFactory implements NativeResource {
     private VkDevice mDevice;
 
     private HashMap<Integer, Long> mLayouts = new HashMap<>();
-
-    public static final Logger LOGGER = Logger.getLogger("render");
 
     public TextureSetLayoutFactory(VkDevice device) {
         mDevice = device;
@@ -59,7 +60,7 @@ class TextureSetLayoutFactory implements NativeResource {
      * has.
      */
     private long createDescriptorSetLayout(int textureCount) {
-        LOGGER.fine("Create texture descriptor set layout");
+        log.fine("Create texture descriptor set layout");
 
         try (MemoryStack stack = stackPush()) {
             VkDescriptorSetLayoutBinding.Buffer layoutBindings =

@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.lwjgl.system.MemoryUtil;
@@ -18,14 +20,13 @@ import org.lwjgl.system.NativeResource;
  *
  * @author Aurimas Blažulionis
  */
+@Log
 public class ShaderBuf implements NativeResource {
     private long mHandle;
 
     @Accessors(prefix = "m")
     @Getter
     private ByteBuffer mBuffer;
-
-    private static final Logger LOGGER = Logger.getLogger("render");
 
     /**
      * Load a shader resource
@@ -68,17 +69,17 @@ public class ShaderBuf implements NativeResource {
      * @return compiled shader, null if there was an error
      */
     public static ShaderBuf compileShader(String name, String data, ShaderKind shaderKind) {
-        LOGGER.fine("Compiling " + name);
+        log.fine("Compiling " + name);
 
         if (data == null) {
-            LOGGER.warning("Failed to find resource named: " + name);
+            log.warning("Failed to find resource named: " + name);
             return null;
         }
 
         long compiler = shaderc_compiler_initialize();
 
         if (compiler == NULL) {
-            LOGGER.warning("Failed to create shader compiler!");
+            log.warning("Failed to create shader compiler!");
             return null;
         }
 
@@ -86,7 +87,7 @@ public class ShaderBuf implements NativeResource {
                 shaderc_compile_into_spv(compiler, data, shaderKind.getKind(), name, "main", NULL);
 
         if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success) {
-            LOGGER.warning(
+            log.warning(
                     "Failed to compile shader "
                             + name
                             + ": "

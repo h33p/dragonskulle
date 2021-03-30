@@ -8,6 +8,8 @@ import java.nio.LongBuffer;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.core.Resource;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -19,14 +21,13 @@ import org.lwjgl.vulkan.*;
  * @author Aurimas Blažulionis
  *     <p>TODO: Turn this into a factory?
  */
+@Log
 public class Shader implements NativeResource {
     private VkDevice mDevice;
 
     @Accessors(prefix = "m")
     @Getter
     private long mModule;
-
-    private static final Logger LOGGER = Logger.getLogger("render");
 
     public static Shader getShader(ShaderBuf shader, VkDevice device) {
         try (MemoryStack stack = stackPush()) {
@@ -49,7 +50,7 @@ public class Shader implements NativeResource {
     }
 
     public static Shader getShader(String name, ShaderKind kind, VkDevice device) {
-        LOGGER.fine("Get shader... " + name);
+        log.fine("Get shader... " + name);
 
         try (Resource<ShaderBuf> resource = ShaderBuf.getResource(name, kind)) {
             return resource == null ? null : getShader(resource.get(), device);

@@ -17,7 +17,10 @@ import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 import org.junit.Test;
 
+import lombok.extern.java.Log;
+
 /** Unit tests for {@link GLTF} files. */
+@Log
 public class GLTFTest {
     @Test
     public void loadGLTF() {

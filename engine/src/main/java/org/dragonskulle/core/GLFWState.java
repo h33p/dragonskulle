@@ -10,6 +10,8 @@ import java.nio.IntBuffer;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
@@ -23,6 +25,7 @@ import org.lwjgl.system.NativeResource;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
+@Log
 public class GLFWState implements NativeResource {
     private long mWindow;
     /** Window size in screen coordinates */
@@ -31,7 +34,6 @@ public class GLFWState implements NativeResource {
     @Getter private Renderer mRenderer;
     private boolean mFramebufferResized = false;
 
-    private static final Logger LOGGER = Logger.getLogger("GLFW");
     public static final boolean DEBUG_MODE = envBool("DEBUG_GLFW", false);
 
     /**
@@ -85,7 +87,7 @@ public class GLFWState implements NativeResource {
 
     /** Creates a GLFW window */
     private void initWindow(int width, int height, String appName) {
-        LOGGER.info("Initialize GLFW window");
+        log.info("Initialize GLFW window");
 
         if (!glfwInit()) {
             throw new RuntimeException("Cannot initialize GLFW");

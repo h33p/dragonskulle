@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
@@ -20,6 +22,7 @@ import org.lwjgl.vulkan.*;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
+@Log
 class TextureSet implements NativeResource {
 
     @Getter private VulkanSampledTexture[] mTextures;
@@ -32,8 +35,6 @@ class TextureSet implements NativeResource {
     @Getter private long mSetLayout;
 
     private long[] mDescriptorSets;
-
-    public static final Logger LOGGER = Logger.getLogger("render");
 
     /**
      * Create a new TextureSet
@@ -125,7 +126,7 @@ class TextureSet implements NativeResource {
      * @return the created descriptor pool
      */
     private long createDescriptorPool(int textureCount, int descriptorSetCount) {
-        LOGGER.fine("Setup texture descriptor pool");
+        log.fine("Setup texture descriptor pool");
 
         try (MemoryStack stack = stackPush()) {
 

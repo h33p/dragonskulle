@@ -11,6 +11,8 @@ import java.util.*;
 import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkMessage;
@@ -21,8 +23,9 @@ import org.dragonskulle.network.components.sync.ISyncVar;
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
 @Accessors(prefix = "m")
+@Log
 public abstract class NetworkableComponent extends Component {
-    private static final Logger mLogger = Logger.getLogger(NetworkableComponent.class.getName());
+    
     /** A reference to itself. */
     private final Reference<NetworkableComponent> mReference = new Reference<>(this);
 
@@ -80,7 +83,7 @@ public abstract class NetworkableComponent extends Component {
 
     /** Connect sync vars. Only should be ran on server */
     private void connectSyncVars() {
-        mLogger.info("Connecting sync vars for component");
+        log.info("Connecting sync vars for component");
         mFieldsMask = new boolean[mFields.length];
         int i = 0;
         for (Field f : mFields) {
@@ -206,7 +209,7 @@ public abstract class NetworkableComponent extends Component {
     public boolean hasBeenModified() {
         boolean hasTrueInMask = false;
         if (mFields == null) {
-            mLogger.info("mFields is not set yet, the component hasn't connected");
+            log.info("mFields is not set yet, the component hasn't connected");
         } else {
             for (boolean b : mFieldsMask) {
                 if (b) {
@@ -261,7 +264,7 @@ public abstract class NetworkableComponent extends Component {
                     ISyncVar obj = (ISyncVar) field.get(this);
                     obj.deserialize(stream);
                 } catch (Exception e) {
-                    mLogger.fine("Failed to deserialize " + this.mFields[i].getName());
+                    log.fine("Failed to deserialize " + this.mFields[i].getName());
                     e.printStackTrace();
                 }
             }

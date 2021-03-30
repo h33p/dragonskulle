@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -26,6 +28,7 @@ import org.dragonskulle.ui.UIManager;
  *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
+@Log
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -305,11 +308,11 @@ public class Engine {
                 // One second has elapsed so frames contains the FPS
 
                 // Have no use for this currently besides printing it to console
-                System.out.println("FPS:" + frames);
-                System.out.println("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
-                System.out.println("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
-                System.out.println("IB Size:" + mGLFWState.getRenderer().getInstanceBufferSize());
-                System.out.println(
+                log.info("FPS:" + frames);
+                log.info("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
+                log.info("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
+                log.info("IB Size:" + mGLFWState.getRenderer().getInstanceBufferSize());
+                log.info(
                         "MB Size:"
                                 + mGLFWState.getRenderer().getVertexBufferSize()
                                 + ":"
