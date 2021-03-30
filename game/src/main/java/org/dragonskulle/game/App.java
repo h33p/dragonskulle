@@ -2,6 +2,7 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
+import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
@@ -29,6 +30,7 @@ import org.dragonskulle.ui.*;
 import org.joml.*;
 import org.lwjgl.system.NativeResource;
 
+@Log
 public class App implements NativeResource {
 
     private static String sIP = "127.0.0.1";
@@ -146,9 +148,13 @@ public class App implements NativeResource {
     }
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
+
+        log.warning("We have got here " + asServer);
         Scene mainScene = createMainScene();
 
+        // asServer = true;
         if (asServer) {
+            log.warning("I am the server");
             GameObject hostGameUI =
                     new GameObject(
                             "hostGameUI",
@@ -185,6 +191,8 @@ public class App implements NativeResource {
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
+
+                                                                log.warning("Created ai");
                                                             }));
                                         });
                             });

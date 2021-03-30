@@ -29,7 +29,7 @@ import org.dragonskulle.renderer.materials.IColouredMaterial;
 public class HexagonTile {
 
     // A variable which changes the colour of the hex tiles to make them easier to see
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
