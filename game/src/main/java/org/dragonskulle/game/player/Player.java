@@ -299,9 +299,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return null;
     }
     
+    /**
+     * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
+     * 
+     * @param tiles The tiles to check.
+     * @return {@code true} if the list of tiles contains at least one building that the player owns; otherwise {@code false}.
+     */
     public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
     	for (HexagonTile tile : tiles) {
-			if(tile.hasBuilding() && tile.getBuilding().getOwnerID() == getNetworkObject().getOwnerId()) {
+			if(tile.hasBuilding() && checkBuildingOwnership(tile.getBuilding())) {
 				return true;
 			}
 		}
