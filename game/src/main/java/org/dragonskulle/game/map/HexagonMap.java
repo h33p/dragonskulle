@@ -118,32 +118,37 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * Get all of the {@link HexagonTile}s in a radius around the selected tile. If {@code includeTile} is {@code true}, the selected tile will be included in the list. 
-     * 
+     * Get all of the {@link HexagonTile}s in a radius around the selected tile. If {@code
+     * includeTile} is {@code true}, the selected tile will be included in the list.
+     *
      * @param tile The selected tile.
      * @param radius The radius around the selected tile.
-     * @param includeTile Whether or not to include the selected tile in the resultant {@link ArrayList}.
+     * @param includeTile Whether or not to include the selected tile in the resultant {@link
+     *     ArrayList}.
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius, boolean includeTile){
-    	ArrayList<HexagonTile> tiles = getTilesInRadius(tile, radius);
-    	if(tile != null && includeTile) {
-    		tiles.add(tile);
-    	}
-    	return tiles;
+    public ArrayList<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int radius, boolean includeTile) {
+        ArrayList<HexagonTile> tiles = getTilesInRadius(tile, radius);
+        if (tile != null && includeTile) {
+            tiles.add(tile);
+        }
+        return tiles;
     }
-    
+
     /**
-     * Get all of the {@link HexagonTile}s in a radius around the selected tile, not including the tile.
-     * 
+     * Get all of the {@link HexagonTile}s in a radius around the selected tile, not including the
+     * tile.
+     *
      * @param tile The selected tile.
      * @param radius The radius around the selected tile.
-     * @return An {@link ArrayList} of tiles around, but not including, the selected tile; otherwise an empty ArrayList.
+     * @return An {@link ArrayList} of tiles around, but not including, the selected tile; otherwise
+     *     an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius){
+    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius) {
         ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
         if (tile == null) return tiles;
-        
+
         // Get the tile's q and r coordinates.
         int qCentre = tile.getQ();
         int rCentre = tile.getR();
@@ -169,7 +174,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
 
         return tiles;
     }
-    
+
     @Override
     public void onDestroy() {}
 

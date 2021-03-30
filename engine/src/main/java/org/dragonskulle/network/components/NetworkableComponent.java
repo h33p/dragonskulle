@@ -276,13 +276,14 @@ public abstract class NetworkableComponent extends Component {
     public Reference<NetworkableComponent> getNetReference() {
         return this.mReference;
     }
-    
+
     /**
      * Get the {@link NetworkObject}'s {@link NetworkManager}, if the NetworkObject exists.
+     *
      * @return The NetworkManager, or {@code null}.
      */
     public NetworkManager getNetworkManager() {
-		if(mNetworkObject == null) return null;
-    	return mNetworkObject.getNetworkManager();
+        if (mNetworkObject == null) return null;
+        return mNetworkObject.getNetworkManager();
     }
 }
