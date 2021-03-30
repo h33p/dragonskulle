@@ -103,7 +103,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     protected void onNetworkInitialize() {
     	mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
     	mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
-    	mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
+    	mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
     	mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
         
         if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
@@ -485,7 +485,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * <p>
      * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #attackAttempt(Building, Building)}.
      *
-     * @param data The {@link BuildData} sent by the client.
+     * @param data The {@link AttackData} sent by the client.
      */
     void attackEvent(AttackData data) {
     	
@@ -556,17 +556,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	return true;
     }
     
-    
-    
-    
-    
-    
     /**
      * Process and parse an event in which the <b>client</b> player wishes to sell a {@link Building}.
      * <p>
-     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #sellAttempt(HexagonTile)}.
+     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #sellAttempt(Building)}.
      *
-     * @param data The {@link BuildData} sent by the client.
+     * @param data The {@link SellData} sent by the client.
      */
     void sellEvent(SellData data) {
     	
@@ -621,22 +616,72 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // TODO: Write all checks.
         
     	return true;
+    }    
+
+    /**
+     * Process and parse an event in which the <b>client</b> player wishes to increase the stats of a {@link Building}.
+     * <p>
+     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #statAttempt(Building)}.
+     *
+     * @param data The {@link StatData} sent by the client.
+     */
+    void statEvent(StatData data) {
+    	
+    	HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Unable to parse StatData: Map is null.");
+        	return;
+        }
+    	
+        Building building = data.getBuilding(map);
+        if(building == null) {
+        	log.warning("Unable to parse StatData: Building from StatData is null.");
+        	return;
+        }
+        
+        // TODO: Pass through the stat to be changed.
+    	// Try to change the stats of the building.
+        statAttempt(building);
     }
     
+    /**
+     * Attempt to increase a specific stat of a {@link Building}.
+     * <p>
+     * This first checks the building and stat to make sure that they are fully eligible before any stat changes happen.
+     * 
+     * @param building The building whose stats will be changed.
+     * @return Whether the attempt to change the stats where successful.
+     */
+    public boolean statAttempt(Building building) {
+    	if(statCheck(building) == false) {
+    		log.info("Unable to pass stat check.");
+    		return false;
+    	}
+    	
+    	// TODO: Add stat increase logic.
+    	log.info("INCREASE SPECIFIC STAT HERE.");
+    	
+    	return true;
+    }
     
-    
-    
-    
-
-    
-
-    
-
-    
-
-    
-
-
+    /**
+     * Ensure that the {@link HexagonTile} is eligible to have a {@link Building} placed on it.
+     * 
+     * @param building The building to have its stats increased.
+     * @return {@code true} if the tile is eligible, otherwise {@code false}.
+     */
+    public boolean statCheck(Building building) {
+    	
+    	if(building == null) {
+        	log.warning("Building is null.");
+        	return false;
+        }
+    	
+    	// TODO: Write all checks.
+    	// TODO: Also check the desired stat.
+        
+    	return true;
+    }
     
 
     
