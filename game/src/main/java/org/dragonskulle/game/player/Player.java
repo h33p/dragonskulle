@@ -104,7 +104,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     	mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
     	mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
     	mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
-    	mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
+    	mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
         
         if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
@@ -483,7 +483,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Process and parse an event in which the <b>client</b> player wishes to attack a {@link Building} from another Building.
      * <p>
-     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #attackAttempt(HexagonTile)}.
+     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #attackAttempt(Building, Building)}.
      *
      * @param data The {@link BuildData} sent by the client.
      */
@@ -561,7 +561,67 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     
     
     
+    /**
+     * Process and parse an event in which the <b>client</b> player wishes to sell a {@link Building}.
+     * <p>
+     * Players that run on the <b>server</b> do not need to do this- they can simply run {@link #sellAttempt(HexagonTile)}.
+     *
+     * @param data The {@link BuildData} sent by the client.
+     */
+    void sellEvent(SellData data) {
+    	
+    	HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Unable to parse StatData: Map is null.");
+        	return;
+        }
+    	
+        Building building = data.getBuilding(map);
+        if(building == null) {
+        	log.warning("Unable to parse StatData: Building from StatData is null.");
+        	return;
+        }
+        
+    	// Try to sell the building on the tile.
+    	sellAttempt(building);
+    }
     
+    /**
+     * Attempt to sell a specified building.
+     * <p>
+     * This first checks the building is fully eligible before any selling happens.
+     * 
+     * @param building The building to sell.
+     * @return Whether the attempt to sell the building was successful.
+     */
+    public boolean sellAttempt(Building building) {
+    	if(sellCheck(building) == false) {
+    		log.info("Unable to pass sell check.");
+    		return false;
+    	}
+    	
+    	// TODO: Add sell logic.
+    	log.info("SELL HERE.");
+    	return true;
+    }
+    
+    /**
+     * Ensure that the {@link Building} is eligible to be sold.
+     * 
+     * @param building The building to sell.
+     * @return {@code true} if the building can be sold, otherwise {@code false}.
+     */
+    public boolean sellCheck(Building building) {
+
+    	if(building == null) {
+        	log.warning("building is null.");
+        	return false;
+        }
+    	
+        // TODO: Write all checks.
+        
+    	return true;
+    }
     
     
     
@@ -602,7 +662,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * How this component will react to an sell event.
      *
      * @param data sell event being executed on the server.
-     */
+     *
     public void handleEvent(SellData data) {
         // TODO implement
         // get building
@@ -618,7 +678,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             building.remove();
         }
     }
-
+     */
+    
     // attacking of buildings is handled below
     
 
@@ -684,68 +745,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return;*
     }
 	*/
-    // Building is handled below
-    
-
-    /**
-     * How this component will react to a Build event.
-     *
-     * @param data attack event being executed on the server.
-     *
-    public void handleEvent(BuildData data) {
-        // TODO implement
-        // get Hexagon to build on
-        // Add to the HexagonMap
-        // Take tokens off
-
-        // TODO: Move to Building.
-        int COST = 5;
-
-        if (mTokens.get() < COST) {
-            log.info("Not enough tokens for building");
-            return;
-        }
-
-        // Gets the actual tile
-        HexagonMap map = getMap();
-        if(map == null) {
-        	log.warning("Map is null.");
-        	return;
-        }
-        
-        HexagonTile tile = data.getTile(map);
-        if(tile == null) {
-        	log.warning("Tile from BuildData is null.");
-        	return;
-        }
-        
-        if(tile.isClaimed()) {
-        	log.info("Tile already claimed.");
-            return;
-        }
-        
-        if(tile.hasBuilding()) {
-        	log.info("Building already on tile.");
-            return;
-        }
-        
-        // Ensure the building is placed within a set radius of an owned building.
-        final int radius = 3;
-        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
-        
-        if (containsOwnedBuilding(tiles) == false) {
-            log.info("Building is placed too far away from preexisting buildings.");
-            return;
-        }
-
-        Building addedNewBuilding = createBuilding(tile.getQ(), tile.getR());
-
-        if (addedNewBuilding != null) {
-            mTokens.set(mTokens.get() - COST);
-            log.info("Building added");
-        }
-    }
-     */
     
     // Upgrading Stats is handled below
     
@@ -754,7 +753,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * How this component will react to an upgrade event.
      *
      * @param data attack event being executed on the server.
-     */
+     *
     public void handleEvent(StatData data) {
         // TODO implement
         // Get Building
@@ -774,6 +773,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Update the building on the server.
         building.afterStatChange();
     }
-
+	*/
     
 }
