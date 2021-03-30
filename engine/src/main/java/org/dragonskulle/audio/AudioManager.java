@@ -2,13 +2,23 @@
 package org.dragonskulle.audio;
 
 import java.io.File;
-import java.io.IOException;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
+import org.dragonskulle.audio.components.AudioListener;
+import org.dragonskulle.audio.components.AudioSource;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC11;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.ALCapabilities;
 
 /**
  * The manager for the engine's audio system
@@ -18,7 +28,6 @@ import lombok.extern.java.Log;
  *     a pool of sources that can be used by AudioSources to play the sounds back
  */
 @Accessors(prefix = "m")
-@Log
 public class AudioManager {
     private static final Logger LOGGER = Logger.getLogger("audio");
     private static final AudioManager AUDIO_MANAGER = new AudioManager();
@@ -26,7 +35,24 @@ public class AudioManager {
     // TODO: Decide how many simultaneous audio sources we want to support
     private static final int MAX_SOURCES = 32;
 
-    /** This constructor creates the AudioManager. If the Mixer is not created it is set to null. */
+    private final ArrayList<WaveSound> mSounds = new ArrayList<>();
+    private final ArrayList<Source> mSources = new ArrayList<>();
+    private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
+
+    @Getter private Reference<AudioListener> mAudioListener;
+    private long mALDev = -1;
+    private long mALCtx = -1;
+
+    @Getter private float mMasterVolume = 1f;
+    @Getter private boolean mMasterMuted = false;
+
+    @Getter private boolean mInitialized = false;
+
+    /**
+     * Constructor for AudioManager. It's private as AudioManager is designed as a singleton. Opens
+     * an OpenAL device and creates and sets the context for the process. Also attempts to create up
+     * to MAX_SOURCES sources
+     */
     private AudioManager() {
         initAudioManager();
     }
@@ -65,36 +91,32 @@ public class AudioManager {
      *
      * @return An inactive Source, or null if none were available
      */
-    public boolean play(SoundType channel, String fileName) {
-
-        try {
-
-            String filePath = "engine/src/main/resources/audio/";
-
-            // Creates the audio file
-            AudioInputStream audio =
-                    AudioSystem.getAudioInputStream(
-                            new File(filePath + fileName).getAbsoluteFile());
-
-            // Plays the file on the right channel
-            if (mMixer != null && channel == SoundType.BACKGROUND) {
-                mSounds[0].openStream(audio);
-                return true;
-            } else if (mMixer != null && channel == SoundType.SFX) {
-                mSounds[1].openStream(audio);
-                return true;
-            } else {
-                log.warning("Mixer does not exist");
-                return false;
+    private Source getAvailableSource() {
+        for (Source s : mSources) {
+            if (!s.isInUse()) {
+                return s;
             }
-        } catch (UnsupportedAudioFileException e) {
-            log.warning("This is unable to be played becuase it used an unsupported Audio file");
-            return false;
+        }
+        return null;
+    }
 
-        } catch (IOException e) {
-            log.warning(
-                    "This is unable to be played becuase there is an IO exception.  Make sure the file is in the right directory");
-            return false;
+    /**
+     * Attach an OpenAL source to all AudioSources in the list
+     *
+     * @param audioSources List of AudioSources to attach a source to
+     */
+    private void attachSources(List<Reference<AudioSource>> audioSources) {
+        for (Reference<AudioSource> ref : audioSources) {
+            AudioSource audioSource = ref.get();
+
+            if (audioSource.getSource() == null) {
+                Source source = getAvailableSource();
+                if (source == null) {
+                    break;
+                }
+
+                audioSource.attachSource(source);
+            }
         }
     }
 
@@ -114,12 +136,70 @@ public class AudioManager {
             return;
         }
 
-        if (mMixer != null && channel == SoundType.BACKGROUND) {
-            mSounds[0].setMute(muteValue);
-        } else if (mMixer != null && channel == SoundType.SFX) {
-            mSounds[1].setMute(muteValue);
-        } else {
-            log.warning("Error as no mixer");
+        // TODO: For now I'm just using the "best" device available, I have made AudioDevices.java
+        //       which can be used to enumerate devices so we can allow user to choose in the future
+        long device = ALC11.alcOpenDevice((ByteBuffer) null);
+        if (device == 0L) {
+            LOGGER.severe("Failed to open default OpenAL device, no audio will be available");
+            return;
+        }
+
+        long ctx = ALC11.alcCreateContext(device, (IntBuffer) null);
+        if (!ALC11.alcMakeContextCurrent(ctx)) {
+            LOGGER.severe("Failed to set OpenAL context, no audio will be available");
+            ALC11.alcCloseDevice(device);
+            return;
+        }
+
+        // Get and set OpenAL capabilities
+        ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
+        ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
+        AL.setCurrentProcess(alCapabilities);
+
+        // Set the distance model that will be used
+        AL11.alDistanceModel(AL11.AL_INVERSE_DISTANCE);
+
+        mALDev = device;
+        mALCtx = ctx;
+
+        setupSources();
+        setMasterVolume(0.5f);
+
+        mInitialized = true;
+
+        LOGGER.info("Initialize AudioManager: " + mSources.size() + " sources available");
+    }
+
+    /**
+     * Load a sound and give it an ID
+     *
+     * @param file .wav File to be loaded
+     * @return The id of the loaded sound, or -1 if there was an error loading
+     */
+    public int loadSound(String file) {
+
+        String[] searchPaths = {
+            "engine/src/main/resources/audio/", "game/src/main/resources/audio/"
+        };
+
+        for (String p : searchPaths) {
+            File f = new File(p + file).getAbsoluteFile();
+            if (f.exists()) {
+                return loadSound(f);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Load a sound and give it an ID
+     *
+     * @param file .wav File to be loaded
+     * @return The id of the loaded sound, or -1 if there was an error loading
+     */
+    public int loadSound(File file) {
+        if (mALDev == -1) {
+            return -1;
         }
 
         WaveSound sound = WaveSound.loadWave(file);
@@ -171,10 +251,26 @@ public class AudioManager {
                 distance = mAudioListener.get().getPosition().distance(audioSource.getPosition());
             }
 
-            return mSounds[0].isMasterMute();
+            // Don't attach a source if the AudioSource:
+            //      Has no sound
+            //      Has finished playing it's sound
+            //      Is out of range of the listener
+            if (audioSource.getSound() == null
+                    || audioSource.getTimeLeft() < 0f
+                    || distance > audioSource.getRadius()) {
+                mAudioSources.remove(i);
+                audioSource.detachSource();
+                i--;
+            }
+        }
 
-        } else if (mMixer != null && channel == SoundType.SFX) {
-            return mSounds[1].isMasterMute();
+        // List is not sorted by priority for now but will be in the future so
+        // detach all sources from index mSources.size() onwards
+        if (mAudioSources.size() > mSources.size()) {
+            detachSources(mAudioSources.subList(mSources.size(), mAudioSources.size()));
+            attachSources(mAudioSources.subList(0, mSources.size()));
+        } else {
+            attachSources(mAudioSources);
         }
 
         mAudioSources.clear();
@@ -211,11 +307,17 @@ public class AudioManager {
         volume = Math.max(0f, volume);
         volume = Math.min(volume, 1f);
 
-        if (mMixer != null && channel == SoundType.BACKGROUND) {
-            return mSounds[0].getMasterVol();
+        mMasterVolume = volume;
+        AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
+    }
 
-        } else if (mMixer != null && channel == SoundType.SFX) {
-            return mSounds[1].getMasterVol();
+    public void setMasterMute(boolean muted) {
+        if (muted) {
+            mMasterMuted = true;
+            AL11.alListenerf(AL11.AL_GAIN, 0f);
+        } else {
+            mMasterMuted = false;
+            AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
         }
     }
 

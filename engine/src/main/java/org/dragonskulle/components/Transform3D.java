@@ -108,7 +108,9 @@ public class Transform3D extends Transform {
      */
     public void setRotationDeg(Vector3fc rotation) {
         setRotation(
-                rotation.x() * MathUtils.DEG_TO_RAD, rotation.y() * MathUtils.DEG_TO_RAD, rotation.z() * MathUtils.DEG_TO_RAD);
+                rotation.x() * MathUtils.DEG_TO_RAD,
+                rotation.y() * MathUtils.DEG_TO_RAD,
+                rotation.z() * MathUtils.DEG_TO_RAD);
     }
 
     /**
@@ -163,7 +165,8 @@ public class Transform3D extends Transform {
      * @param z Rotation in Z-axis in degrees
      */
     public void rotateDeg(float x, float y, float z) {
-        mLocalMatrix.rotateXYZ(MathUtils.DEG_TO_RAD * x, MathUtils.DEG_TO_RAD * y, MathUtils.DEG_TO_RAD * z);
+        mLocalMatrix.rotateXYZ(
+                MathUtils.DEG_TO_RAD * x, MathUtils.DEG_TO_RAD * y, MathUtils.DEG_TO_RAD * z);
         setUpdateFlag();
     }
 
