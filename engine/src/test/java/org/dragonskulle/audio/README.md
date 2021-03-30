@@ -1,1 +1,0 @@
-This holds the parts of testing which can be automated.  This does not hold the parts which cannot.  Please check the Google Drive to see that
