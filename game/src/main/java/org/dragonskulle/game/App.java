@@ -142,7 +142,7 @@ public class App implements NativeResource {
                                                                             "Rise of Kingdom.ttf"),
                                                                     "Fill game with AI"),
                                                             (a, b) -> {
-                                                                System.out.println(
+                                                                log.info(
                                                                         "should fill with ai");
                                                                 networkManager
                                                                         .getServerManager()
@@ -603,9 +603,9 @@ public class App implements NativeResource {
                                 try {
                                     sPort = in.nextInt();
                                     sIP = line.trim();
-                                    System.out.println("Address set successfully!");
+                                    log.info("Address set successfully!");
                                 } catch (Exception e) {
-                                    System.out.println("Failed to set IP and port!");
+                                    log.info("Failed to set IP and port!");
                                 }
                             }
                         })
@@ -616,7 +616,7 @@ public class App implements NativeResource {
     }
 
     private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
-        System.out.println("CONNECTED ID " + netID);
+        log.info("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
                 new GameObject(

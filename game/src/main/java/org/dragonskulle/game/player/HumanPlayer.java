@@ -219,13 +219,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     // Checks if cannot build here
                     if (mPlayer.get()
                             .buildingWithinRadius(mPlayer.get().getTilesInRadius(1, mHexChosen))) {
-                        System.out.println("Human:Cannot build");
+                        log.info("Human:Cannot build");
                         mHexChosen = null;
                         mBuildingChosen = null;
                         return;
                     } else {
                         // If you can build
-                        System.out.println("Human:Change Screen");
+                        log.info("Human:Change Screen");
                         setScreenOn(Screen.TILE_SCREEN);
                     }
                 }

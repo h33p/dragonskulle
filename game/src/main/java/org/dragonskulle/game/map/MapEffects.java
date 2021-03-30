@@ -4,6 +4,8 @@ package org.dragonskulle.game.map;
 import java.util.HashMap;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
@@ -22,6 +24,7 @@ import org.joml.Vector4f;
  *     valid, and invalid tiles, and so on.
  */
 @Accessors(prefix = "m")
+@Log
 public class MapEffects extends Component implements IOnStart {
 
     /** Describes tile highlight option */
