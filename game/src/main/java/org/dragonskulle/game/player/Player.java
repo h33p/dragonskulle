@@ -73,8 +73,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
-    NetworkManager mNetworkManager;
-
     /** The base constructor for player */
     public Player() {}
 
@@ -90,11 +88,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
+    	if(getNetworkObject() == null) {
+    		log.severe("Player has no NetworkObject.");
+    	}
+    	
+    	if(getNetworkManager() == null) {
+    		log.severe("Player has no NetworkManager.");
+    	}
+    	
     	if(getMap() == null) {
     		log.severe("Player has no HexagonMap.");
     	}
-
-        mNetworkManager = getNetworkObject().getNetworkManager();
 
         if (getNetworkObject().isServer()) {
             distributeCoordinates();
@@ -154,7 +158,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private Building createBuilding(int qPos, int rPos) {
 
-        if (mNetworkManager.getServerManager() == null) {
+        if (getNetworkManager().getServerManager() == null) {
             log.warning("Unable to create building: Server manager is null.");
             return null;
         }
@@ -182,9 +186,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        int playerId = getNetworkObject().getId();
-        int template = mNetworkManager.findTemplateByName("building");
-        Reference<NetworkObject> networkObject = mNetworkManager.getServerManager().spawnNetworkObject(playerId, template);
+        int playerId = getNetworkObject().getId(); //TODO: Change
+        int template = getNetworkManager().findTemplateByName("building");
+        Reference<NetworkObject> networkObject = getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
         if (networkObject == null || networkObject.isValid() == false) {
             log.warning("Unable to create building: Could not create a Network Object.");
@@ -209,7 +213,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
     public void addOwnership(Building building) {
-        if (building == null) return;
+    	if (building == null) return;
 
         // Get the tile the building is on.
         HexagonTile tile = building.getTile();
