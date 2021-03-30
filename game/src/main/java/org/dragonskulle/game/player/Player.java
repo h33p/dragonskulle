@@ -47,8 +47,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     // List of Buildings -- stored & synced in HexagonMap
     //    @Getter
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
-    // The map component
-    private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
@@ -92,11 +90,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void onStart() {
-
-        mMapComponent =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
 
         mNetworkObject = getNetworkObject();
 
@@ -165,13 +158,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        if(mMapComponent == null || mMapComponent.isValid() == false) {
-        	log.warning("Unable to create building: mMapComponent is not specified.");
+        HexagonMap map = getMap();
+        if(map == null) {
+        	log.warning("Unable to create building: no HexagonMap.");
             return null;
         }
         
         // Get the HexagonTile.
-        HexagonTile tile = mMapComponent.get().getTile(qPos, rPos);
+        HexagonTile tile = map.getTile(qPos, rPos);
         if (tile == null) {
             log.warning("Unable to create building: Tile does not exist.");
             return null;
@@ -313,12 +307,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     
     
     /**
-     * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
+     * Gets the {@link HexagonMap}.
      *
      * @return The HexagonMap being used, otherwise {@code null}.
      */
-    public HexagonMap getMapComponent() {
-        return mMapComponent == null ? null : mMapComponent.get();
+    public HexagonMap getMap() {
+        return Scene.getActiveScene().getSingleton(HexagonMap.class);
     }
 
     
@@ -387,7 +381,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // reimburse player with tokens
 
         // TODO: Remove.
-        Building building = data.getBuilding(getMapComponent());
+        Building building = data.getBuilding(getMap());
         log.info("Removing building.");
         if (building != null) {
             building.remove();
@@ -482,7 +476,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Gets the actual tile
-        HexagonMap map = mMapComponent.get();
+        HexagonMap map = getMap();
         HexagonTile tile = data.getTile(map);
 
         if (tile.getBuilding()
@@ -525,8 +519,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean buildingWithinRadiusYours(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
 
-            if (mMapComponent.isValid()
-                    && tile.hasBuilding()
+            if (tile.hasBuilding()
                     && tile.getBuilding().getOwnerID() == getNetworkObject().getId()) {
                 return true;
             }
@@ -543,7 +536,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
 
-            if (mMapComponent.isValid() && tile.hasBuilding()) {
+            if (tile.hasBuilding()) {
                 return true;
             }
         }
@@ -566,7 +559,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // TODO: Replace with actual logic.
         // Used for testing:
-        HexagonMap map = mMapComponent.get();
+        HexagonMap map = getMap();
         Building building = data.getBuilding(map);
         if (building.getAttack().get() + 1 > SyncStat.LEVEL_MAX) {
             building.getAttack().setLevel(0);
@@ -592,7 +585,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
 
         // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonMap map = mMapComponent.get();
+        HexagonMap map = getMap();
         if (tile == null || map == null) return tiles;
 
         // Get the current q and r coordinates.

@@ -187,7 +187,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             // Convert those coordinates to local coordinates within the map
             Vector3f pos =
                     mainCam.screenToPlane(
-                            mPlayer.get().getMapComponent().getGameObject().getTransform(),
+                            mPlayer.get().getMap().getGameObject().getTransform(),
                             screenPos.x(),
                             screenPos.y(),
                             new Vector3f());
@@ -199,7 +199,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             // And then select the tile
             Player player = mPlayer.get();
             if (player != null) {
-                HexagonMap component = player.getMapComponent();
+                HexagonMap component = player.getMap();
                 if (component != null) {
                     mHexChosen = component.getTile((int) pos.x, (int) pos.y);
                 }

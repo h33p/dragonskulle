@@ -140,7 +140,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         // Check if building there
         for (HexagonTile tile : hexTiles) {
-            if (mPlayer.get().getMapComponent().getBuilding(tile.getQ(), tile.getR()) != null) {
+            if (mPlayer.get().getMap().getBuilding(tile.getQ(), tile.getR()) != null) {
                 return false;
             }
         }
