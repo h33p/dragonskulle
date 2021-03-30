@@ -14,9 +14,12 @@ import lombok.extern.java.Log;
 @Log
 public class Settings {
     @Getter(AccessLevel.PROTECTED)
-    private static final Settings mInstance = new Settings();
+    @Accessors(prefix = "s")
+    private static final Settings sInstance = new Settings();
 
-    private static boolean mIsLoaded = false;
+    @Accessors(prefix = "s")
+    private static boolean sIsLoaded = false;
+
     private HashMap mSettings = new HashMap<>();
 
     private Settings() {}
@@ -37,12 +40,12 @@ public class Settings {
             if (sFile.exists()) {
                 mSettings = new ObjectMapper().readValue(sFile, HashMap.class);
                 log.info("Loaded Settings");
-                mIsLoaded = true;
+                sIsLoaded = true;
             } else {
                 log.warning("failed to load settings file");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warning("failed to load settings file, reason: " + e.getMessage());
         }
     }
 
@@ -57,7 +60,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     public Float retrieveFloat(String name) {
         try {
-            if (mIsLoaded) {
+            if (sIsLoaded) {
                 return Float.parseFloat((String) mSettings.getOrDefault(name, null));
             } else {
                 log.warning("Failed to read setting as not loaded.");
@@ -95,7 +98,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     public String retrieveString(String name) {
         try {
-            if (mIsLoaded) {
+            if (sIsLoaded) {
                 return (String) mSettings.getOrDefault(name, null);
             } else {
                 log.warning("Failed to read setting as not loaded.");
@@ -132,7 +135,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     public Double retrieveDouble(String name) {
         try {
-            if (mIsLoaded) {
+            if (sIsLoaded) {
                 return Double.parseDouble((String) mSettings.getOrDefault(name, null));
             } else {
                 log.warning("Failed to read setting as not loaded.");
@@ -169,7 +172,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     public Long retrieveLong(String name) {
         try {
-            if (mIsLoaded) {
+            if (sIsLoaded) {
                 return Long.parseLong((String) mSettings.getOrDefault(name, null));
             } else {
                 log.warning("Failed to read setting as not loaded.");
@@ -206,7 +209,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     public Boolean retrieveBoolean(String name) {
         try {
-            if (mIsLoaded) {
+            if (sIsLoaded) {
                 return Boolean.parseBoolean((String) mSettings.getOrDefault(name, null));
             } else {
                 log.warning("Failed to read setting as not loaded.");
@@ -243,7 +246,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     public Integer retrieveInteger(String name) {
         try {
-            if (mIsLoaded) {
+            if (sIsLoaded) {
                 return Integer.parseInt((String) mSettings.getOrDefault(name, null));
             } else {
                 log.warning("Failed to read setting as not loaded.");
