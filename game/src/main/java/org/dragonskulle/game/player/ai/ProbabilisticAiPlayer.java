@@ -206,7 +206,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
 
         // Send to server
-        mPlayer.get().handleEvent(new StatData(buildingToUpgrade, statToUpgrade));
+        mPlayer.get().statAttempt(buildingToUpgrade, statToUpgrade);
         return;
     }
 
@@ -248,7 +248,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 // Check in case accidentally a null slipped in
                 return;
             }
-            mPlayer.get().handleEvent(new AttackData(buildingToAttack[0], buildingToAttack[1]));
+            mPlayer.get().attackAttempt(buildingToAttack[0], buildingToAttack[1]);
 
             return;
         } else {
@@ -275,7 +275,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             // Now have building to sell
             if (buildingToSell != null) {
-                mPlayer.get().handleEvent(new SellData(buildingToSell));
+                mPlayer.get().sellAttempt(buildingToSell);
             }
             return;
         } else {

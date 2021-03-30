@@ -639,9 +639,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         	return;
         }
         
-        // TODO: Pass through the stat to be changed.
     	// Try to change the stats of the building.
-        statAttempt(building);
+        statAttempt(building, null); // TODO: Pass through the stat to be changed.
     }
     
     /**
@@ -650,9 +649,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This first checks the building and stat to make sure that they are fully eligible before any stat changes happen.
      * 
      * @param building The building whose stats will be changed.
+     * @param stat The stat to increase.
      * @return Whether the attempt to change the stats where successful.
      */
-    public boolean statAttempt(Building building) {
+    public boolean statAttempt(Building building, SyncStat<?> stat) {
     	if(statCheck(building) == false) {
     		log.info("Unable to pass stat check.");
     		return false;
