@@ -160,7 +160,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             float angleOfCircle = 360f / MAX_PLAYERS;
 
             // The number of players online
-            int playersOnlineNow = mNetworkObject.getOwnerId() % MAX_PLAYERS;
+            int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
             if (playersOnlineNow < 0) {
                 playersOnlineNow += MAX_PLAYERS; // handle AI Players
             }
