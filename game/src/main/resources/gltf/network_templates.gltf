@@ -128,7 +128,7 @@
                     "transform" : "org.dragonskulle.components.TransformHex",
                     "components" : [
                         {
-                            "class_name" : "org.dragonskulle.game.player.AiPlayer"
+                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer"
                         },
                         {
                             "class_name" : "org.dragonskulle.game.player.Player"
