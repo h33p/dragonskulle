@@ -179,6 +179,7 @@ public class App implements NativeResource {
                                                                         networkManager
                                                                                 .findTemplateByName(
                                                                                         "aiPlayer"));
+                                                                
                                                                 networkManager
                                                                 .getServerManager()
                                                                 .spawnNetworkObject(
