@@ -425,9 +425,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * any {@link HexagonTile}s.
      */
     public void remove() {
-        // Remove the current owner.
-        getNetworkObject().setOwnerId(-1);
-
         // Remove the building from the tile.
         getTile().setBuilding(null);
 
