@@ -456,7 +456,7 @@ public class App implements NativeResource {
                                                                     sIP,
                                                                     sPort,
                                                                     (gameScene, manager, netID) -> {
-                                                                    	if (netID >= 0) {
+                                                                        if (netID >= 0) {
                                                                             onConnectedClient(
                                                                                     gameScene,
                                                                                     manager, netID);

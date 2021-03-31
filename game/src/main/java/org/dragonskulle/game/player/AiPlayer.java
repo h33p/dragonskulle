@@ -158,140 +158,136 @@ public class AiPlayer extends Component implements IFixedUpdate, IOnStart {
             } else {
                 return; // end
             }
-	
+
         } else {*/
-            log.info(
-                    "AI: I have "
-                            + mPlayer.get().numberOfBuildings()
-                            + " buildings. Shoudl be  more than  one");
+        log.info(
+                "AI: I have "
+                        + mPlayer.get().numberOfBuildings()
+                        + " buildings. Shoudl be  more than  one");
+        // Pick a random number to choose whether to place a building or to use a building
+        float randomNumber = mRandom.nextFloat();
+
+        // Choose to place a building
+        if (randomNumber <= mTileProbability) {
+
+            // Gets all the tiles it can expand to
+            log.info("Placing Building");
+            List<HexagonTile> tilesToUse = hexTilesToExpand();
+
+            // Checks if there are tiles
+            if (tilesToUse.size() != 0) {
+                // Picks a random number thus a random tile
+                int randomIndex = mRandom.nextInt(tilesToUse.size());
+                HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+
+                // Send to server
+                mPlayer.get().handleEvent(new BuildData(tileToExpandTo));
+                return;
+            } else {
+                return; // end
+            }
+
+            // Choose to do something with a building
+        } else {
             // Pick a random number to choose whether to place a building or to use a building
-            float randomNumber = mRandom.nextFloat();
+            randomNumber = mRandom.nextFloat();
 
-            // Choose to place a building
-            if (randomNumber <= mTileProbability) {
+            // Choose to upgrade a building
+            if (randomNumber <= mUpgradeBuilding) {
 
-                // Gets all the tiles it can expand to
-                log.info("Placing Building");
-                List<HexagonTile> tilesToUse = hexTilesToExpand();
+                int upgradeID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
 
-                // Checks if there are tiles
-                if (tilesToUse.size() != 0) {
-                    // Picks a random number thus a random tile
-                    int randomIndex = mRandom.nextInt(tilesToUse.size());
-                    HexagonTile tileToExpandTo = tilesToUse.get(randomIndex);
+                log.info("AI: Upgrading");
 
-                    // Send to server
-                    mPlayer.get().handleEvent(new BuildData(tileToExpandTo));
+                Building buildingToUpgrade =
+                        mPlayer.get()
+                                .getOwnedBuildingsAsStream()
+                                .filter(Reference::isValid)
+                                .map(Reference::get)
+                                .limit(upgradeID + 1) // limit to the random number
+                                .reduce((__, second) -> second) // take the last
+                                .orElse(null);
+
+                if (buildingToUpgrade == null) {
+                    log.info("AI: could not get building to upgrade.");
                     return;
-                } else {
-                    return; // end
                 }
 
-                // Choose to do something with a building
+                // Get Stat to upgrade
+                ArrayList<SyncStat<?>> statsArray = buildingToUpgrade.getStats();
+                SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
+
+                // Send to server
+                mPlayer.get().handleEvent(new StatData(buildingToUpgrade, statToUpgrade));
+                return;
+
+                // Choose to attack
+            } else if (randomNumber > mUpgradeBuilding
+                    && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
+
+                log.info("AI: Attacking");
+                ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
+
+                // Will create a list of [attacker (your building), defender (building to
+                // attack)]
+                mPlayer.get()
+                        .getOwnedBuildingsAsStream()
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .forEach(
+                                b -> {
+                                    List<Building> attackableBuildings = b.getAttackableBuildings();
+                                    for (Building buildingWhichCouldBeAttacked :
+                                            attackableBuildings) {
+                                        Building[] listToAdd = {b, buildingWhichCouldBeAttacked};
+
+                                        buildingsToAttack.add(listToAdd);
+                                    }
+                                });
+
+                // Checks if you can attack
+                if (buildingsToAttack.size() != 0) {
+
+                    // getting a random building to
+                    // {attackFrom, and attackTo}
+                    // Chosen building to attack in form [buildingToAttackFrom,
+                    // buildingToAttack]
+                    Building[] buildingToAttack =
+                            buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
+                    // Send to server
+                    mPlayer.get()
+                            .handleEvent(new AttackData(buildingToAttack[0], buildingToAttack[1]));
+
+                    return;
+                } else {
+                    return;
+                }
+
+                // Choose to sell a building
             } else {
-                // Pick a random number to choose whether to place a building or to use a building
-                randomNumber = mRandom.nextFloat();
+                log.info("AI: Selling");
+                if (mPlayer.get().numberOfBuildings() > 1) {
 
-                // Choose to upgrade a building
-                if (randomNumber <= mUpgradeBuilding) {
+                    int sellID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
 
-                    int upgradeID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
-
-                    log.info("AI: Upgrading");
-
-                    Building buildingToUpgrade =
+                    Building buildingToSell =
                             mPlayer.get()
                                     .getOwnedBuildingsAsStream()
                                     .filter(Reference::isValid)
                                     .map(Reference::get)
-                                    .limit(upgradeID + 1) // limit to the random number
+                                    .filter(b -> !b.isCapital())
+                                    .limit(sellID + 1) // limit to the random number
                                     .reduce((__, second) -> second) // take the last
                                     .orElse(null);
 
-                    if (buildingToUpgrade == null) {
-                        log.info("AI: could not get building to upgrade.");
-                        return;
+                    // Now have building to sell
+                    if (buildingToSell != null) {
+                        mPlayer.get().handleEvent(new SellData(buildingToSell));
                     }
-
-                    // Get Stat to upgrade
-                    ArrayList<SyncStat<?>> statsArray = buildingToUpgrade.getStats();
-                    SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
-
-                    // Send to server
-                    mPlayer.get().handleEvent(new StatData(buildingToUpgrade, statToUpgrade));
                     return;
-
-                    // Choose to attack
-                } else if (randomNumber > mUpgradeBuilding
-                        && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
-
-                    log.info("AI: Attacking");
-                    ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
-
-                    // Will create a list of [attacker (your building), defender (building to
-                    // attack)]
-                    mPlayer.get()
-                            .getOwnedBuildingsAsStream()
-                            .filter(Reference::isValid)
-                            .map(Reference::get)
-                            .forEach(
-                                    b -> {
-                                        List<Building> attackableBuildings =
-                                                b.getAttackableBuildings();
-                                        for (Building buildingWhichCouldBeAttacked :
-                                                attackableBuildings) {
-                                            Building[] listToAdd = {
-                                                b, buildingWhichCouldBeAttacked
-                                            };
-
-                                            buildingsToAttack.add(listToAdd);
-                                        }
-                                    });
-
-                    // Checks if you can attack
-                    if (buildingsToAttack.size() != 0) {
-
-                        // getting a random building to
-                        // {attackFrom, and attackTo}
-                        // Chosen building to attack in form [buildingToAttackFrom,
-                        // buildingToAttack]
-                        Building[] buildingToAttack =
-                                buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
-                        // Send to server
-                        mPlayer.get()
-                                .handleEvent(
-                                        new AttackData(buildingToAttack[0], buildingToAttack[1]));
-
-                        return;
-                    } else {
-                        return;
-                    }
-
-                    // Choose to sell a building
                 } else {
-                    log.info("AI: Selling");
-                    if (mPlayer.get().numberOfBuildings() > 1) {
-
-                        int sellID = mRandom.nextInt(mPlayer.get().numberOfBuildings());
-
-                        Building buildingToSell =
-                                mPlayer.get()
-                                        .getOwnedBuildingsAsStream()
-                                        .filter(Reference::isValid)
-                                        .map(Reference::get)
-                                        .filter(b -> !b.isCapital())
-                                        .limit(sellID + 1) // limit to the random number
-                                        .reduce((__, second) -> second) // take the last
-                                        .orElse(null);
-
-                        // Now have building to sell
-                        if (buildingToSell != null) {
-                            mPlayer.get().handleEvent(new SellData(buildingToSell));
-                        }
-                        return;
-                    } else {
-                        return;
-                    //}
+                    return;
+                    // }
                 }
             }
         }

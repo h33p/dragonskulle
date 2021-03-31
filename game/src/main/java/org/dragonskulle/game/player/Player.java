@@ -119,183 +119,198 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will randomly place a capital using an angle so each person is within their own slice
      */
     private void distributeCoordinates() {
-    	boolean completed = false;
-    	while (!completed) {
-    	float angleOfCircle = 360f / MAX_PLAYERS;
+        boolean completed = false;
+        while (!completed) {
+            float angleOfCircle = 360f / MAX_PLAYERS;
 
-        // This says how many people have joined the server so far
-        int playersOnlineNow = mPlayersOnline.size();
-        playersOnlineNow = mNetworkObject.getOwnerId() % MAX_PLAYERS;
-        if (playersOnlineNow < 0) {
-        	playersOnlineNow += MAX_PLAYERS; // handle AI Players
+            // This says how many people have joined the server so far
+            int playersOnlineNow = mPlayersOnline.size();
+            playersOnlineNow = mNetworkObject.getOwnerId() % MAX_PLAYERS;
+            if (playersOnlineNow < 0) {
+                playersOnlineNow += MAX_PLAYERS; // handle AI Players
+            }
+
+            // This gives us the angle to find our coordinates.  Stored in radians
+            float angleToStart = (playersOnlineNow * angleOfCircle);
+            float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);
+
+            double lineToStartM = Math.tan(Math.toRadians(angleToStart)); // LARGER Wait no.
+            double lineToEndM = Math.tan(Math.toRadians(angleToEnd)); //
+
+            boolean foundSensibleCoordStart = false;
+            boolean foundSensibleCoordEnd = false;
+
+            Random random = new Random();
+
+            int xCoord = 0;
+            int yCoord = 0;
+            boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
+
+            log.severe("Size is: " + mMapComponent.get().getSize());
+
+            while (bothTogether) {
+                // log.severe("We started loop");
+                foundSensibleCoordStart = false;
+                foundSensibleCoordEnd = false;
+
+                xCoord =
+                        random.nextInt(
+                                (int) Math.floor((double) (mMapComponent.get().getSize() / 2)));
+                yCoord =
+                        random.nextInt(
+                                (int) Math.floor((double) (mMapComponent.get().getSize() / 2)));
+
+                // This makes sure the number could be negative
+                if (random.nextInt(2) == 1) {
+                    xCoord *= -1;
+                }
+                if (random.nextInt(2) == 1) {
+                    yCoord *= -1;
+                }
+
+                if (Double.isNaN(lineToEndM) && Double.isNaN(lineToStartM)) {
+                    // TODO How they got here is beyond me It is literally impossible but just in
+                    // case
+                    // TODO Both lines are x = 0
+
+                    log.warning(
+                            "SOME BIZZARE MATHS HAS HAPPENED: " + angleToStart + " " + angleToEnd);
+                } else if (Double.isNaN(lineToStartM)) {; // TODO lineStart X = 0 one another y = mx
+                    if (angleToStart == 90) {
+
+                        // ASSUMPTION that y > mx Must hold && x < 0
+                        double mx = lineToEndM * xCoord;
+                        if (xCoord < 0 && yCoord > mx) {
+                            foundSensibleCoordStart = true;
+                            foundSensibleCoordEnd = true;
+                        }
+                    } else {
+                        // angleToStart = 270 so y < mx Must hold && x > 0
+                        double mx = lineToEndM * xCoord;
+                        if (xCoord > 0 && yCoord < mx) {
+                            foundSensibleCoordStart = true;
+                            foundSensibleCoordEnd = true;
+                        }
+                    }
+                } else if (Double.isNaN(lineToEndM)) {; // TODO lineEnd X = 0 one another y = mx
+                    if (angleToEnd == 90) {
+
+                        // ASSUMPTION that y > mx Must hold && x > 0
+                        double mx = lineToEndM * xCoord;
+                        if (xCoord > 0 && yCoord > mx) {
+                            foundSensibleCoordStart = true;
+                            foundSensibleCoordEnd = true;
+                        }
+                    } else {
+                        // angleToStart = 270 so y < mx Must hold && x < 0
+                        double mx = lineToEndM * xCoord;
+                        if (xCoord < 0 && yCoord < mx) {
+                            foundSensibleCoordStart = true;
+                            foundSensibleCoordEnd = true;
+                        }
+                    }
+
+                } else {
+                    // TODO 4 more if statements
+                    if (angleToStart > 90 && angleToStart < 270) {
+                        // Assumption y < mx must hold
+                        double mx = lineToStartM * xCoord;
+                        // log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord +
+                        // " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " +
+                        // mx + " y < mx");
+                        if (yCoord < mx) {
+                            foundSensibleCoordStart = true;
+                        }
+
+                    } else {
+                        // Assumption y > mx must hold
+                        double mx = lineToStartM * xCoord;
+                        // log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord +
+                        // " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " +
+                        // mx + " y > mx");
+                        if (yCoord > mx) {
+                            foundSensibleCoordStart = true;
+                        }
+                    }
+
+                    if (angleToEnd > 90 && angleToEnd < 270) {
+                        // Assumption y > mx mustHold
+                        double mx = lineToEndM * xCoord;
+                        // log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord +
+                        // " y coord = " + yCoord + " lineToEndtM = " + lineToEndM + " mx = " + mx +
+                        // " y > mx");
+                        if (yCoord > mx) {
+                            foundSensibleCoordEnd = true;
+                        }
+                    } else {
+                        // Assumption y < mx must hold
+                        double mx = lineToEndM * xCoord;
+                        // log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord +
+                        // " y coord = " + yCoord + " lineToEndM = " + lineToEndM + " mx = " + mx +
+                        // " y < mx");
+                        if (yCoord < mx) {
+                            foundSensibleCoordEnd = true;
+                        }
+                    }
+                }
+                bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
+                // log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd +
+                // " both together " + bothTogether);
+            }
+
+            log.severe(
+                    "X = "
+                            + xCoord
+                            + " Y = "
+                            + yCoord
+                            + " angle from origin start = "
+                            + angleToStart
+                            + " angle from origin end = "
+                            + angleToEnd
+                            + " angle to add "
+                            + angleOfCircle
+                            + " number of players = "
+                            + playersOnlineNow);
+            /* TODO NOTES
+            Create a line from each of these angles.  Use Maths
+            Then choose a pair of coordinates from between those lines
+            Change to Axial
+            Done????
+            */
+
+            Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
+            if (buildingToBecomeCapital == null) {
+                log.severe(
+                        "Unable to place an initial capital building.  X = "
+                                + xCoord
+                                + " Y = "
+                                + yCoord);
+
+                // return;
+            } else {
+                buildingToBecomeCapital.setCapital(true);
+                completed = true;
+            }
         }
-        
-        // This gives us the angle to find our coordinates.  Stored in radians
-        float angleToStart = (playersOnlineNow * angleOfCircle);
-        float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);
-        
-        double lineToStartM = Math.tan(Math.toRadians(angleToStart));  //LARGER Wait no.
-        double lineToEndM = Math.tan(Math.toRadians(angleToEnd));  //
-        
-        boolean foundSensibleCoordStart = false;
-        boolean foundSensibleCoordEnd = false;
-        
-        Random random = new Random();
-        
-        int xCoord = 0;
-        int yCoord = 0;
-        boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
-        
-        log.severe("Size is: " + mMapComponent.get().getSize());
-        
-        while (bothTogether) {
-        	//log.severe("We started loop");
-        	foundSensibleCoordStart = false;
-            foundSensibleCoordEnd = false;
-            
-            
-        	xCoord = random.nextInt((int) Math.floor((double)(mMapComponent.get().getSize() / 2)));
-        	yCoord = random.nextInt((int) Math.floor((double)(mMapComponent.get().getSize() / 2)));
-        	
-        	// This makes sure the number could be negative
-        	if (random.nextInt(2) == 1) {
-        		xCoord *= -1;
-        		
-        	}
-        	if (random.nextInt(2) == 1) {
-        		yCoord *= -1;
-        	}
-        	
-        	if (Double.isNaN(lineToEndM) && Double.isNaN(lineToStartM)) {
-        		//TODO How they got here is beyond me It is literally impossible but just in case
-        		//TODO Both lines are x = 0
-        		
-        		log.warning("SOME BIZZARE MATHS HAS HAPPENED: " + angleToStart +" " + angleToEnd);
-        	}
-        	else if (Double.isNaN(lineToStartM)) {
-        		;//TODO lineStart X = 0 one another y = mx
-        		if (angleToStart == 90) {
-        			
-        			//ASSUMPTION that y > mx Must hold && x < 0
-        			double mx = lineToEndM * xCoord;
-        			if (xCoord < 0 && yCoord > mx) {
-        				foundSensibleCoordStart = true;
-        	            foundSensibleCoordEnd = true;
-        			}
-        		}
-        		else {
-        			// angleToStart = 270 so y < mx Must hold && x > 0
-        			double mx = lineToEndM * xCoord;
-        			if (xCoord > 0 && yCoord < mx) {
-        				foundSensibleCoordStart = true;
-        	            foundSensibleCoordEnd = true;
-        			}
-        		}
-        	}
-        	else if (Double.isNaN(lineToEndM)) {
-        		;//TODO lineEnd X = 0 one another y = mx
-        		if (angleToEnd == 90) {
-        			
-        			//ASSUMPTION that y > mx Must hold && x > 0
-        			double mx = lineToEndM * xCoord;
-        			if (xCoord > 0 && yCoord > mx) {
-        				foundSensibleCoordStart = true;
-        	            foundSensibleCoordEnd = true;
-        			}
-        		}
-        		else {
-        			// angleToStart = 270 so y < mx Must hold && x < 0
-        			double mx = lineToEndM * xCoord;
-        			if (xCoord < 0 && yCoord < mx) {
-        				foundSensibleCoordStart = true;
-        	            foundSensibleCoordEnd = true;
-        			}
-        		}
-        		
-        	}
-        	else {
-        		//TODO 4 more if statements
-        		if (angleToStart > 90 && angleToStart < 270) {
-        			//Assumption y < mx must hold
-        			double mx = lineToStartM * xCoord;
-        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y < mx");
-        			if (yCoord < mx ) {
-        				foundSensibleCoordStart = true;
-        			}
-        			
-        		}
-        		else {
-        			//Assumption y > mx must hold
-        			double mx = lineToStartM * xCoord;
-        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y > mx");
-        			if (yCoord > mx) {
-        				foundSensibleCoordStart = true;
-        			}
-        		}
-        		
-        		if (angleToEnd > 90 && angleToEnd < 270) {
-        			//Assumption y > mx mustHold
-        			double mx = lineToEndM * xCoord;
-        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndtM = " + lineToEndM + " mx = " + mx + " y > mx");
-        			if (yCoord > mx) {
-        				foundSensibleCoordEnd = true;
-        			}
-        		}
-        		else {
-        			//Assumption y < mx must hold
-        			double mx = lineToEndM * xCoord;
-        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndM = " + lineToEndM + " mx = " + mx + " y < mx");
-        			if (yCoord < mx) {
-        				foundSensibleCoordEnd = true;
-        			}
-        		}
-        	}
-        	bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
-        	//log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd + " both together " + bothTogether);
-        }
-        
-        
-        log.severe("X = " + xCoord + " Y = " + yCoord + " angle from origin start = " + angleToStart + " angle from origin end = " + angleToEnd + " angle to add " + angleOfCircle + " number of players = " + playersOnlineNow);
-        /* TODO NOTES
-        Create a line from each of these angles.  Use Maths
-        Then choose a pair of coordinates from between those lines
-        Change to Axial
-        Done????
-        */
-        
-        Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
-        if (buildingToBecomeCapital == null) {
-            log.severe("Unable to place an initial capital building.  X = " + xCoord + " Y = " + yCoord);
-            
-            //return;
-        }
-        else {
-        	buildingToBecomeCapital.setCapital(true);
-        	completed = true;
-        }
-    	}
-        
     }
 
-    
     private int playersOnline() {
-    	
-    	
-    	int numOfPlayers = 0;
-    	
-    	int sizeMap = mMapComponent.get().getSize();
-    	
-    	for (int i = 0; i < sizeMap + 1; i++) {
-    		for (int j = 0; j < sizeMap; j++) {
-    			if (mMapComponent.get().getBuilding(i, j) != null) {
-    				log.severe("FOUND");
-    				numOfPlayers++;
-    			}
-    		}
-    	}
-    	//Stream<HexagonTile> a = mMapComponent.getAllTiles();
-    	
-    	return numOfPlayers;
+
+        int numOfPlayers = 0;
+
+        int sizeMap = mMapComponent.get().getSize();
+
+        for (int i = 0; i < sizeMap + 1; i++) {
+            for (int j = 0; j < sizeMap; j++) {
+                if (mMapComponent.get().getBuilding(i, j) != null) {
+                    log.severe("FOUND");
+                    numOfPlayers++;
+                }
+            }
+        }
+        // Stream<HexagonTile> a = mMapComponent.getAllTiles();
+
+        return numOfPlayers;
     }
     /**
      * This will add a building in a specific location
