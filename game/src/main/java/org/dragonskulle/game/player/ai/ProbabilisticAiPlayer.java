@@ -19,13 +19,13 @@ import org.dragonskulle.game.player.Player;
 public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** Probability of placing a new {@link Building}. */
-    private float mBuildProbability = 0.65f;
+    protected float mBuildProbability = 0.65f;
     /** Probability of upgrading an owned {@link Building}. */
-    private float mUpgradeProbability = 0.15f;
+    protected float mUpgradeProbability = 0.15f;
     /** Probability of attacking an opponent {@link Building}. */
-    private float mAttackProbability = 0.15f;
+    protected float mAttackProbability = 0.15f;
     /** Probability of selling an owned {@link Building}. */
-    private float mSellProbability = 0.05f;
+    protected float mSellProbability = 0.05f;
 
     /** A Constructor for an AI Player */
     public ProbabilisticAiPlayer() {}

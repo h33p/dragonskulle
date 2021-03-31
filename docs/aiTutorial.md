@@ -6,8 +6,8 @@ This guide will teach you how to add a probablistic AI into the game
 
 1) Create a new class within the aiPlayer package and give it a name ProbabilisticAiPlayer(Whatever).java.
 2) Make this new class extend `ProbabilisticAiPlayer`.
-3) Set the values of `mBuildProbability`, `mAttackProbability`, `mUpgradeProbability` & `mSellProbability`  Make sure they all sum to 1. (They all need to be floats).
-4) If you would like to change how often the AiPlayer works change `mLowerBoundTime` and `mUpperBoundTime` as well withing `onStart()`.
+3) Set the values of `mBuildProbability`, `mAttackProbability`, `mUpgradeProbability` and `mSellProbability` in `onStart`. Make sure they all sum to 1.
+4) If you would like to change how often the AiPlayer works change `mLowerBoundTime` and `mUpperBoundTime` as well within `onStart()`.
 5) At the end of `onStart()` run the command `super.onStart()`.  
 6) Then you need to create a template.  This needs to be done in the blender GLTF thingy. Basically open network_templates.blend and create a new thing in Collection.  Give it a name.  Then add 2 components.  The Player Class and your AI Player.  If you're stuck tell Nat, I will don't mind helping!
 7) Voila you have created a new AI player.  This can be used by the player to give them a different challenge
