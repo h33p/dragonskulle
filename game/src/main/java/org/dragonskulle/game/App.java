@@ -671,8 +671,6 @@ public class App implements NativeResource {
     private void onClientConnected(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 

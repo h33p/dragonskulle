@@ -28,23 +28,9 @@ public class HexagonTile {
     /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
             TEMPLATES.get().getDefaultScene().getGameObjects().stream()
-                    .filter(go -> go.getName().equals("Hex"))
+                    .filter(go -> go.getName().equals("Land Hex"))
                     .findFirst()
                     .orElseThrow();
-    /*new GameObject(
-    "land",
-    (go) -> {
-        Mesh mesh = Mesh.HEXAGON;
-        SampledTexture texture =
-                new SampledTexture(
-                        "map/grass.png",
-                        new TextureMapping(
-                                TextureFiltering.LINEAR, TextureWrapping.REPEAT));
-
-        IColouredMaterial mat = new PBRMaterial(texture);
-        //mat.getColour().set(0f, 1f, 0f, 1f);
-        go.addComponent(new Renderable(mesh, mat));
-    })*/ ;
 
     /** This is the axial storage system for each tile */
     @Getter private final int mQ;
