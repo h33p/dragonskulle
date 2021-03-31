@@ -119,7 +119,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will randomly place a capital using an angle so each person is within their own slice
      */
     private void distributeCoordinates() {
-
+    	boolean completed = false;
+    	while (!completed) {
     	float angleOfCircle = 360f / MAX_PLAYERS;
 
         // This says how many people have joined the server so far
@@ -145,16 +146,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int yCoord = 0;
         boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
         
-        if (playersOnlineNow ==4) {
-        	boolean a = true;
-        }
+        double aSquaredPlusBSquared = Math.pow(Math.floor((double)(mMapComponent.get().getSize() / 2)), 2.0) * 2;
+        int size = (int) Math.floor(Math.sqrt(aSquaredPlusBSquared));
+        log.severe("Size is: " + mMapComponent.get().getSize() + " the coordinate most possible is this: " + size);
         
         while (bothTogether) {
         	//log.severe("We started loop");
         	foundSensibleCoordStart = false;
             foundSensibleCoordEnd = false;
-        	xCoord = random.nextInt(52);
-        	yCoord = random.nextInt(52);
+            
+            
+        	xCoord = random.nextInt((int) Math.floor((double)(mMapComponent.get().getSize() / 2)));
+        	yCoord = random.nextInt((int) Math.floor((double)(mMapComponent.get().getSize() / 2)));
         	
         	// This makes sure the number could be negative
         	if (random.nextInt(2) == 1) {
@@ -242,18 +245,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Done????
         */
         
-        int min = -10;
+       /* int min = -10;
         int max = 10;
 
         int posX = min + (int) (Math.random() * ((max - min) + 1));
         int posY = min + (int) (Math.random() * ((max - min) + 1));
-        // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
-        Building buildingToBecomeCapital = addNewBuilding(posX, posY);
+        // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);*/
+        Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
         if (buildingToBecomeCapital == null) {
-            log.severe("Unable to place an initial capital building.");
-            return;
+            log.severe("Unable to place an initial capital building.  X = " + xCoord + " Y = " + yCoord);
+            
+            //return;
         }
-        buildingToBecomeCapital.setCapital(true);
+        else {
+        	buildingToBecomeCapital.setCapital(true);
+        	completed = true;
+        }
+    	}
         
     }
 
