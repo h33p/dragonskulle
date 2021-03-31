@@ -50,7 +50,7 @@ public class PBRMaterial
                             new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
                             new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
                             new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET));
-            mNumFragmentTextures = 2;
+            mNumFragmentTextures = 3;
         }
 
         public StandardShaderSet enableAlpha() {
@@ -78,6 +78,10 @@ public class PBRMaterial
                 new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT)),
         new SampledTexture(
                 Texture.getResource("normal.bmp"),
+                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT),
+                true),
+        new SampledTexture(
+                Texture.getResource("white.bmp"),
                 new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT),
                 true),
     };

@@ -82,8 +82,16 @@ public class ShaderBuf implements NativeResource {
             return null;
         }
 
+        long options = shaderc_compile_options_initialize();
+
+        shaderc_compile_options_set_optimization_level(
+                options, shaderc_optimization_level_performance);
+
         long result =
-                shaderc_compile_into_spv(compiler, data, shaderKind.getKind(), name, "main", NULL);
+                shaderc_compile_into_spv(
+                        compiler, data, shaderKind.getKind(), name, "main", options);
+
+        shaderc_compile_options_release(options);
 
         if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success) {
             LOGGER.warning(

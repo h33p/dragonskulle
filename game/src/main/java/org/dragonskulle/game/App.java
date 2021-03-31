@@ -145,7 +145,8 @@ public class App implements NativeResource {
                             "hostGameUI",
                             new TransformUI(false),
                             (root) -> {
-                                root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                                // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
+                                // 0.1f)));
                                 root.getTransform(TransformUI.class).setParentAnchor(0f);
                                 root.buildChild(
                                         "populate_with_ai",

@@ -273,7 +273,7 @@
         {
             "mimeType" : "image/png",
             "name" : "error",
-            "uri" : "../textures/gltf/testin/error.png"
+            "uri" : "../textures/gltf/error.png"
         }
     ],
     "accessors" : [

@@ -387,6 +387,7 @@ public class GLTF implements NativeResource {
                 float roughness = 1f;
                 baseColor.set(1f);
                 SampledTexture baseSampled = null;
+                SampledTexture metallicSampled = null;
 
                 JSONObject rough = (JSONObject) mat.get("pbrMetallicRoughness");
                 if (rough != null) {
@@ -402,6 +403,13 @@ public class GLTF implements NativeResource {
                     if (baseTex != null) {
                         Integer texIdx = parseInt(baseTex, "index");
                         if (texIdx != null) baseSampled = texs.get(texIdx);
+                    }
+
+                    JSONObject metalTex = (JSONObject) rough.get("metallicRoughnessTexture");
+
+                    if (metalTex != null) {
+                        Integer texIdx = parseInt(metalTex, "index");
+                        if (texIdx != null) metallicSampled = texs.get(texIdx);
                     }
 
                     metallic = parseFloat(rough, "metallicFactor", 1f);
@@ -423,6 +431,10 @@ public class GLTF implements NativeResource {
                 if (normalSampled != null) {
                     pbrMat.getFragmentTextures()[1] = normalSampled.clone();
                     pbrMat.getFragmentTextures()[1].setLinear(true);
+                }
+                if (metallicSampled != null) {
+                    pbrMat.getFragmentTextures()[2] = metallicSampled.clone();
+                    pbrMat.getFragmentTextures()[2].setLinear(true);
                 }
                 pbrMat.setMetallic(metallic);
                 pbrMat.setRoughness(roughness);

@@ -19,8 +19,8 @@
                         1,
                         1
                     ],
-                    "intensity" : 1000,
-                    "type" : "point",
+                    "intensity" : 10,
+                    "type" : "directional",
                     "name" : "Light"
                 }
             ]
@@ -217,8 +217,7 @@
                     0.015137717127799988,
                     1
                 ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.5
+                "roughnessFactor" : 0.13970589637756348
             }
         }
     ],
@@ -285,7 +284,7 @@
         {
             "mimeType" : "image/jpeg",
             "name" : "cat_material",
-            "uri" : "../textures/gltf/network_templates/cat_material.jpg"
+            "uri" : "../textures/gltf/cat_material.jpg"
         }
     ],
     "accessors" : [
