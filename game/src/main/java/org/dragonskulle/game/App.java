@@ -151,6 +151,41 @@ public class App implements NativeResource {
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
+                                                                networkManager
+                                                                .getServerManager()
+                                                                .spawnNetworkObject(
+                                                                        -2,
+                                                                        networkManager
+                                                                                .findTemplateByName(
+                                                                                        "aiPlayer"));
+                                                                networkManager
+                                                                .getServerManager()
+                                                                .spawnNetworkObject(
+                                                                        -3,
+                                                                        networkManager
+                                                                                .findTemplateByName(
+                                                                                        "aiPlayer"));
+                                                                networkManager
+                                                                .getServerManager()
+                                                                .spawnNetworkObject(
+                                                                        -4,
+                                                                        networkManager
+                                                                                .findTemplateByName(
+                                                                                        "aiPlayer"));
+                                                                networkManager
+                                                                .getServerManager()
+                                                                .spawnNetworkObject(
+                                                                        -5,
+                                                                        networkManager
+                                                                                .findTemplateByName(
+                                                                                        "aiPlayer"));
+                                                                networkManager
+                                                                .getServerManager()
+                                                                .spawnNetworkObject(
+                                                                        -6,
+                                                                        networkManager
+                                                                                .findTemplateByName(
+                                                                                        "aiPlayer"));
 
                                                                 log.warning("Created ai");
                                                             }));
@@ -456,7 +491,7 @@ public class App implements NativeResource {
                                                                     sIP,
                                                                     sPort,
                                                                     (gameScene, manager, netID) -> {
-                                                                        if (netID >= 0) {
+                                                                    	if (netID >= 0) {
                                                                             onConnectedClient(
                                                                                     gameScene,
                                                                                     manager, netID);

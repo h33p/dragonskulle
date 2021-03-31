@@ -71,7 +71,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final float UPDATE_TIME = 1;
     private float mLastTokenUpdate = 0;
 
-    private final int playersToPlay =
+    private final int MAX_PLAYERS =
             6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
@@ -120,18 +120,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private void distributeCoordinates() {
 
-    	double angleOfCircle = 360 / playersToPlay;
+    	float angleOfCircle = 360f / MAX_PLAYERS;
 
         // This says how many people have joined the server so far
         int playersOnlineNow = mPlayersOnline.size();
-        playersOnlineNow = playersOnline();
-
-        // This gives us the angle to find our coordinates.  Stored in radians
-        double angleToStart = Math.toRadians(playersOnlineNow * angleOfCircle);
-        double angleToEnd = Math.toRadians((playersOnlineNow + 1) * angleOfCircle);
+        playersOnlineNow = mNetworkObject.getOwnerId() % MAX_PLAYERS;
+        if (playersOnlineNow < 0) {
+        	playersOnlineNow += MAX_PLAYERS; // handle AI Players
+        }
         
-        double lineToStartM = Math.tan(angleToStart);  //LARGER Wait no.
-        double lineToEndM = Math.tan(angleToEnd);  //
+        // This gives us the angle to find our coordinates.  Stored in radians
+        float angleToStart = (playersOnlineNow * angleOfCircle);
+        float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);
+        
+        double lineToStartM = Math.tan(Math.toRadians(angleToStart));  //LARGER Wait no.
+        double lineToEndM = Math.tan(Math.toRadians(angleToEnd));  //
         
         boolean foundSensibleCoordStart = false;
         boolean foundSensibleCoordEnd = false;
@@ -143,7 +146,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int xCoord = 0;
         int yCoord = 0;
         
-        while (!foundSensibleCoordStart && !foundSensibleCoordEnd) {
+        while ((!foundSensibleCoordStart && !foundSensibleCoordEnd)) {
+        	log.severe("We started loop");
         	foundSensibleCoordStart = false;
             foundSensibleCoordEnd = false;
         	xCoord = random.nextInt(52);
@@ -186,11 +190,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		
         	}
         	else {
-        		;//TODO 4 more if statements
+        		//TODO 4 more if statements
         		if (angleToStart > 90 && angleToStart < 270) {
         			//Assumption y < mx must hold
         			double mx = lineToStartM * xCoord;
-        			if (mx < yCoord ) {
+        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y < mx");
+        			if (yCoord < mx ) {
+        				log.severe("This is true");
         				foundSensibleCoordStart = true;
         			}
         			
@@ -198,7 +204,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		else {
         			//Assumption y > mx must hold
         			double mx = lineToStartM * xCoord;
-        			if (mx > yCoord) {
+        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y > mx");
+        			if (yCoord > mx) {
+        				log.severe("This is true");
         				foundSensibleCoordStart = true;
         			}
         		}
@@ -206,22 +214,28 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		if (angleToEnd > 90 && angleToStart < 270) {
         			//Assumption y > mx mustHold
         			double mx = lineToEndM * xCoord;
-        			if (mx > yCoord) {
+        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndtM = " + lineToEndM + " mx = " + mx + " y > mx");
+        			if (yCoord > mx) {
+        				log.severe("This is true");
         				foundSensibleCoordEnd = true;
         			}
         		}
         		else {
         			//Assumption y < mx must hold
         			double mx = lineToEndM * xCoord;
-        			if (mx < yCoord) {
+        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndM = " + lineToEndM + " mx = " + mx + " y < mx");
+        			if (yCoord < mx) {
+        				log.severe("This is true");
         				foundSensibleCoordEnd = true;
         			}
         		}
         	}
-        	
+        	boolean bothTogetherDebug = (!foundSensibleCoordStart && !foundSensibleCoordEnd);
+        	log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd + " both together " + bothTogetherDebug);
         }
-              
-        log.severe("X = " + xCoord + " Y = " + yCoord + " angle from origin start = " + Math.toDegrees(angleToStart) + " angle from origin end = " + Math.toDegrees(angleToEnd) + " angle to add " + angleOfCircle + " number of players = " + playersOnlineNow);
+        
+        
+        log.severe("X = " + xCoord + " Y = " + yCoord + " angle from origin start = " + angleToStart + " angle from origin end = " + angleToEnd + " angle to add " + angleOfCircle + " number of players = " + playersOnlineNow);
         /* TODO NOTES
         Create a line from each of these angles.  Use Maths
         Then choose a pair of coordinates from between those lines
