@@ -146,8 +146,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int yCoord = 0;
         boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
         
-        double aSquaredPlusBSquared = Math.pow(Math.floor((double)(mMapComponent.get().getSize() / 2)), 2.0) * 2;
-        int size = (int) Math.floor(Math.sqrt(aSquaredPlusBSquared));
         log.severe("Size is: " + mMapComponent.get().getSize() + " the coordinate most possible is this: " + size);
         
         while (bothTogether) {
