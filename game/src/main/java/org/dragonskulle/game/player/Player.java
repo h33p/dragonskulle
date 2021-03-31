@@ -79,7 +79,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private final int MAX_PLAYERS= 6;
+    private final int MAX_PLAYERS = 6;
 
     /** Used by the client to request that a building be placed by the server. */
     @Getter private transient ClientRequest<BuildData> mClientBuildRequest;

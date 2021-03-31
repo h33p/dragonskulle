@@ -75,7 +75,6 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 log.info("AI probabilites do not sum to one- no action performed.");
             }
         }
-        
     }
 
     /**
