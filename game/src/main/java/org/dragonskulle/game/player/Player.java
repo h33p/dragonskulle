@@ -187,10 +187,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 xCoord =
                         random.nextInt(
-                                (int) Math.floor((double) (mMapComponent.get().getSize() / 2)));
+                                (int) Math.floor((double) (getMap().getSize() / 2)));
                 yCoord =
                         random.nextInt(
-                                (int) Math.floor((double) (mMapComponent.get().getSize() / 2)));
+                                (int) Math.floor((double) (getMap().getSize() / 2)));
 
                 // This makes sure the number could be negative
                 if (random.nextInt(2) == 1) {
@@ -296,7 +296,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             + " number of players = "
                             + playersOnlineNow);
 
-            Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
+            Building buildingToBecomeCapital = createBuilding(xCoord, yCoord);
             if (buildingToBecomeCapital == null) {
                 log.severe(
                         "Unable to place an initial capital building.  X = "
