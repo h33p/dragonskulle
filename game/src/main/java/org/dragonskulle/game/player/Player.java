@@ -343,7 +343,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @return The number of buildings the player currently owns.
      */
-    public int numberOfOwnedBuildings() {
+    public int getNumberOfOwnedBuildings() {
         return mOwnedBuildings.size();
     }
 
