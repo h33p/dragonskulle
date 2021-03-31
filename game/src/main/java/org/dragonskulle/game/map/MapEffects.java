@@ -28,7 +28,8 @@ public class MapEffects extends Component implements IOnStart {
     public static enum StandardHighlightType {
         VALID(0),
         INVALID(1),
-        PLAIN(2);
+        PLAIN(2),
+        ATTACK(3);
 
         @Accessors(prefix = "m")
         @Getter
@@ -46,6 +47,8 @@ public class MapEffects extends Component implements IOnStart {
                     return INVALID_MATERIAL;
                 case PLAIN:
                     return PLAIN_MATERIAL;
+                case ATTACK:
+                    return ATTACK_MATERIAL;
                 default:
                     return null;
             }
@@ -93,6 +96,8 @@ public class MapEffects extends Component implements IOnStart {
             highlightMaterialFromColour(1f, 0.08f, 0f);
     public static final IRefCountedMaterial PLAIN_MATERIAL =
             highlightMaterialFromColour(0.7f, 0.94f, 0.98f);
+    public static final IRefCountedMaterial ATTACK_MATERIAL =
+            highlightMaterialFromColour(0.9f, 0.3f, 0.3f);
 
     private HashMap<HexagonTile, GameObject> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
