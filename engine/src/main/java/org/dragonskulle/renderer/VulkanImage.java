@@ -44,7 +44,8 @@ class VulkanImage implements NativeResource {
             VkDevice device,
             PhysicalDevice physicalDevice,
             int width,
-            int height) {
+            int height,
+            int numSamples) {
         return new VulkanImage(
                 commandBuffer,
                 device,
@@ -52,6 +53,7 @@ class VulkanImage implements NativeResource {
                 width,
                 height,
                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                numSamples,
                 physicalDevice.findDepthFormat(),
                 VK_IMAGE_ASPECT_DEPTH_BIT,
                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -77,6 +79,7 @@ class VulkanImage implements NativeResource {
             int width,
             int height,
             int usage,
+            int numSamples,
             int format,
             int aspectMask,
             int targetLayout) {
@@ -87,6 +90,7 @@ class VulkanImage implements NativeResource {
                 height,
                 format,
                 aspectMask,
+                numSamples,
                 VK_IMAGE_TILING_OPTIMAL,
                 usage,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -108,6 +112,7 @@ class VulkanImage implements NativeResource {
                 texture.getHeight(),
                 linearData ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB,
                 VK_IMAGE_ASPECT_COLOR_BIT,
+                VK_SAMPLE_COUNT_1_BIT,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT
                         | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
@@ -251,6 +256,7 @@ class VulkanImage implements NativeResource {
             int height,
             int format,
             int aspectMask,
+            int numSamples,
             int tiling,
             int usage,
             int properties) {
@@ -276,7 +282,7 @@ class VulkanImage implements NativeResource {
             imageInfo.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
             imageInfo.usage(usage);
             imageInfo.sharingMode(VK_SHARING_MODE_EXCLUSIVE);
-            imageInfo.samples(VK_SAMPLE_COUNT_1_BIT);
+            imageInfo.samples(numSamples);
 
             LongBuffer pImage = stack.longs(0);
 
@@ -430,6 +436,14 @@ class VulkanImage implements NativeResource {
 
                 srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+
+            } else if (mImageLayout == VK_IMAGE_LAYOUT_UNDEFINED
+                    && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+                barrier.srcAccessMask(0);
+                barrier.dstAccessMask(
+                        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
             } else {
                 throw new RuntimeException("Unsupported layout transition!");
             }

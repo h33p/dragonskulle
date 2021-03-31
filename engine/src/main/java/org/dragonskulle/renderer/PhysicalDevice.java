@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.utils.MathUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -57,6 +58,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         float maxAnisotropy;
         boolean geometryShaders;
         boolean optimalLinearTiling;
+        int msaaSamples;
 
         static final int[] REQUIRED_TILED_FORMATS = {VK_FORMAT_R8G8B8A8_SRGB};
 
@@ -88,6 +90,9 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                                     VK_IMAGE_TILING_OPTIMAL,
                                     VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
                             != -1;
+            this.mFeatureSupport.msaaSamples =
+                    properties.limits().framebufferColorSampleCounts()
+                            & properties.limits().framebufferDepthSampleCounts();
 
             this.mScore = 0;
 
@@ -138,6 +143,35 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 DEPTH_FORMATS,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    }
+
+    /**
+     * Finds the highest suitable MSAA sample count
+     *
+     * @param sampleCount wanted sample count
+     * @return highest supported sample count that is no larger than {@code sampleCount}
+     */
+    public int findSuitableMSAACount(int sampleCount) {
+        sampleCount = MathUtils.roundDownToPow2(sampleCount);
+        if (sampleCount < 1) sampleCount = 1;
+
+        if (sampleCount >= 64 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_64_BIT) != 0) {
+            return VK_SAMPLE_COUNT_64_BIT;
+        } else if (sampleCount >= 32
+                && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_32_BIT) != 0) {
+            return VK_SAMPLE_COUNT_32_BIT;
+        } else if (sampleCount >= 16
+                && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_16_BIT) != 0) {
+            return VK_SAMPLE_COUNT_16_BIT;
+        } else if (sampleCount >= 8 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_8_BIT) != 0) {
+            return VK_SAMPLE_COUNT_8_BIT;
+        } else if (sampleCount >= 4 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_4_BIT) != 0) {
+            return VK_SAMPLE_COUNT_4_BIT;
+        } else if (sampleCount >= 2 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_2_BIT) != 0) {
+            return VK_SAMPLE_COUNT_2_BIT;
+        }
+
+        return VK_SAMPLE_COUNT_1_BIT;
     }
 
     private int findSupportedFormat(int[] candidates, int tiling, int features) {

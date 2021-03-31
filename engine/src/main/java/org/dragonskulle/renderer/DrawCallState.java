@@ -192,6 +192,7 @@ class DrawCallState implements NativeResource {
                 renderer.getTextureSetFactory(),
                 renderer.getTextureFactory(),
                 imageCount,
+                renderer.getMSAASamples(),
                 key.mShaderSet);
     }
 
@@ -204,6 +205,7 @@ class DrawCallState implements NativeResource {
             TextureSetFactory textureSetFactory,
             VulkanSampledTextureFactory textureFactory,
             int imageCount,
+            int msaaCount,
             ShaderSet shaderSet) {
         mDevice = device;
         mDescriptorPool =
@@ -220,7 +222,14 @@ class DrawCallState implements NativeResource {
                                 ? null
                                 : layoutFactory.getLayout(shaderSet.getNumFragmentTextures()));
 
-        mPipeline = new VulkanPipeline(shaderSet, descriptorSetLayouts, device, extent, renderPass);
+        mPipeline =
+                new VulkanPipeline(
+                        shaderSet,
+                        descriptorSetLayouts,
+                        device,
+                        extent,
+                        renderPass,
+                        physicalDevice.findSuitableMSAACount(msaaCount));
     }
 
     public Collection<DrawData> getDrawData() {
