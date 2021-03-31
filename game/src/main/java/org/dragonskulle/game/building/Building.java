@@ -128,8 +128,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
-        // Claim the tiles around the building.
-        mClaimedTiles = getTilesInRadius(1);
+    	// Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+    	
+    	// Claim the tiles around the building.
+        mClaimedTiles = map.getTilesInRadius(getTile(), 1);
         // Claim the tile the building is on.
         mClaimedTiles.add(getTile());
 
@@ -144,11 +148,15 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * on.
      */
     private void generateViewTiles() {
-        // Get the current view distance.
+    	// Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+    	
+    	// Get the current view distance.
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
-        mViewableTiles = getTilesInRadius(distance);
+        mViewableTiles = map.getTilesInRadius(getTile(), distance);
         // View the tile the building is on.
         mViewableTiles.add(getTile());
     }
@@ -158,12 +166,20 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * on.
      */
     private void generateAttackableTiles() {
-        // Get the current attack distance.
+    	// Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+        
+    	// Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = getTilesInRadius(distance);
+        mAttackableTiles = map.getTilesInRadius(getTile(), distance);
     }
 
+    /**
+     * Get the {@link Player} which owns the {@link Building}.
+     * @return The owning player, or {@code null}.
+     */
     public Player getOwner() {
         return getNetworkObject()
                 .getNetworkManager()
@@ -228,53 +244,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         } else {
             return false;
         }
-    }
-
-    /**
-     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a
-     * set radius.
-     *
-     * @param radius The radius.
-     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
-     */
-    private ArrayList<HexagonTile> getTilesInRadius(int radius) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Get the map.
-        HexagonMap map = getMap();
-        if (map == null) return tiles;
-        // Get the current position.
-        Vector3i position = getPosition();
-
-        // Get the current q and r coordinates.
-        int qCentre = position.x();
-        int rCentre = position.y();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
-        }
-
-        // log.info("Number of tiles in range: " + tiles.size());
-
-        return tiles;
     }
 
     /**
