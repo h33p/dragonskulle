@@ -703,7 +703,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Ensure that the {@link HexagonTile} is eligible to have a {@link Building} placed on it.
+     * Ensure that the {@link Building} is eligible to have its stats changed.
      *
      * @param building The building to have its stats increased.
      * @return {@code true} if the tile is eligible, otherwise {@code false}.
