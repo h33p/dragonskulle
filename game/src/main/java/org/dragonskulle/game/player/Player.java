@@ -123,7 +123,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         while (!completed) {
             float angleOfCircle = 360f / MAX_PLAYERS;
 
-            // The number of players online 
+            // The number of players online
             int playersOnlineNow = mNetworkObject.getOwnerId() % MAX_PLAYERS;
             if (playersOnlineNow < 0) {
                 playersOnlineNow += MAX_PLAYERS; // handle AI Players
@@ -133,8 +133,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             float angleToStart = (playersOnlineNow * angleOfCircle);
             float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);
 
-            double lineToStartM = Math.tan(Math.toRadians(angleToStart)); 
-            double lineToEndM = Math.tan(Math.toRadians(angleToEnd)); 
+            double lineToStartM = Math.tan(Math.toRadians(angleToStart));
+            double lineToEndM = Math.tan(Math.toRadians(angleToEnd));
 
             boolean foundSensibleCoordStart = false;
             boolean foundSensibleCoordEnd = false;
@@ -145,7 +145,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             int yCoord = 0;
 
             while ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd)) {
-                
+
                 foundSensibleCoordStart = false;
                 foundSensibleCoordEnd = false;
 
@@ -171,9 +171,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                     log.warning(
                             "SOME BIZZARE MATHS HAS HAPPENED: " + angleToStart + " " + angleToEnd);
-                } else if (Double.isNaN(lineToStartM)) { 
-                	
-                	// lineStart X = 0 one another y = mx
+                } else if (Double.isNaN(lineToStartM)) {
+
+                    // lineStart X = 0 one another y = mx
                     if (angleToStart == 90) {
 
                         // ASSUMPTION that y > mx Must hold && x < 0
@@ -191,7 +191,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         }
                     }
                 } else if (Double.isNaN(lineToEndM)) {
-                	// TODO lineEnd X = 0 one another y = mx
+                    // TODO lineEnd X = 0 one another y = mx
                     if (angleToEnd == 90) {
 
                         // ASSUMPTION that y > mx Must hold && x > 0
@@ -210,11 +210,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                     }
 
                 } else {
-                    
+
                     if (angleToStart > 90 && angleToStart < 270) {
                         // Assumption y < mx must hold
                         double mx = lineToStartM * xCoord;
-                        
+
                         if (yCoord < mx) {
                             foundSensibleCoordStart = true;
                         }
@@ -222,7 +222,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                     } else {
                         // Assumption y > mx must hold
                         double mx = lineToStartM * xCoord;
-                        
+
                         if (yCoord > mx) {
                             foundSensibleCoordStart = true;
                         }
@@ -231,20 +231,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                     if (angleToEnd > 90 && angleToEnd < 270) {
                         // Assumption y > mx mustHold
                         double mx = lineToEndM * xCoord;
-                        
+
                         if (yCoord > mx) {
                             foundSensibleCoordEnd = true;
                         }
                     } else {
                         // Assumption y < mx must hold
                         double mx = lineToEndM * xCoord;
-                        
+
                         if (yCoord < mx) {
                             foundSensibleCoordEnd = true;
                         }
                     }
                 }
-                           }
+            }
 
             log.info(
                     "X = "
@@ -259,7 +259,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             + angleOfCircle
                             + " number of players = "
                             + playersOnlineNow);
-            
 
             Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
             if (buildingToBecomeCapital == null) {
@@ -269,7 +268,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                 + " Y = "
                                 + yCoord);
 
-                
             } else {
                 buildingToBecomeCapital.setCapital(true);
                 completed = true;
