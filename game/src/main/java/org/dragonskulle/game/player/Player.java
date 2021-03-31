@@ -177,9 +177,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		if (angleToStart == 90) {
         			
         			//ASSUMPTION that y > mx Must hold && x < 0
+        			double mx = lineToEndM * xCoord;
+        			if (xCoord < 0 && yCoord > mx) {
+        				foundSensibleCoordStart = true;
+        	            foundSensibleCoordEnd = true;
+        			}
         		}
         		else {
         			// angleToStart = 270 so y < mx Must hold && x > 0
+        			double mx = lineToEndM * xCoord;
+        			if (xCoord > 0 && yCoord < mx) {
+        				foundSensibleCoordStart = true;
+        	            foundSensibleCoordEnd = true;
+        			}
         		}
         	}
         	else if (Double.isNaN(lineToEndM)) {
@@ -187,9 +197,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		if (angleToEnd == 90) {
         			
         			//ASSUMPTION that y > mx Must hold && x > 0
+        			double mx = lineToEndM * xCoord;
+        			if (xCoord > 0 && yCoord > mx) {
+        				foundSensibleCoordStart = true;
+        	            foundSensibleCoordEnd = true;
+        			}
         		}
         		else {
         			// angleToStart = 270 so y < mx Must hold && x < 0
+        			double mx = lineToEndM * xCoord;
+        			if (xCoord < 0 && yCoord < mx) {
+        				foundSensibleCoordStart = true;
+        	            foundSensibleCoordEnd = true;
+        			}
         		}
         		
         	}
@@ -243,13 +263,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Done????
         */
         
-       /* int min = -10;
-        int max = 10;
-
-        int posX = min + (int) (Math.random() * ((max - min) + 1));
-        int posY = min + (int) (Math.random() * ((max - min) + 1));
-        // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);*/
-        Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
+        buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
         if (buildingToBecomeCapital == null) {
             log.severe("Unable to place an initial capital building.  X = " + xCoord + " Y = " + yCoord);
             
