@@ -231,12 +231,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         }
                     } else {
                         // Checks if cannot build here
-                        if (mPlayer.get()
-                                        .containsOwnedBuilding(
-                                                mPlayer.get()
-                                                        .getMap()
-                                                        .getTilesInRadius(mHexChosen, 1))
-                                == false) {
+                        if (mHexChosen.isClaimed()) {
                             System.out.println("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
