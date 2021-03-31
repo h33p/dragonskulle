@@ -147,7 +147,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         return false;
     }
 
-    /** This will upgrade a building for the AiPlayer */
+    /**
+     * Pick a {@link Building} and attempt to upgrade one of its stats.
+     * 
+     * @return Whether the attempt to upgrade a building's stats was successful.
+     */
     private boolean upgradeBuilding() {
     	log.info("AI: Upgrading");
     	
@@ -165,7 +169,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         // Get the Building.
         Building building = buildingReference.get();
         
-        // Get Stat to upgrade
+        // Get Stat to upgrade.
         ArrayList<SyncStat<?>> stats = building.getStats();
         SyncStat<?> stat = stats.get(mRandom.nextInt(stats.size()));
 
