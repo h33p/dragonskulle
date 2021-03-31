@@ -165,8 +165,7 @@ public class Transform3D extends Transform {
      * @param z Rotation in Z-axis in degrees
      */
     public void rotateDeg(float x, float y, float z) {
-        mLocalMatrix.rotateXYZ(
-                MathUtils.DEG_TO_RAD * x, MathUtils.DEG_TO_RAD * y, MathUtils.DEG_TO_RAD * z);
+        rotateRad(MathUtils.DEG_TO_RAD * x, MathUtils.DEG_TO_RAD * y, MathUtils.DEG_TO_RAD * z);
         setUpdateFlag();
     }
 

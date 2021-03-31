@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.ArrayList;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -114,6 +115,64 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         tile.setBuilding(null);
 
         return true;
+    }
+
+    /**
+     * Get all of the {@link HexagonTile}s in a radius around the selected tile. If {@code
+     * includeTile} is {@code true}, the selected tile will be included in the list.
+     *
+     * @param tile The selected tile.
+     * @param radius The radius around the selected tile.
+     * @param includeTile Whether or not to include the selected tile in the resultant {@link
+     *     ArrayList}.
+     * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
+     */
+    public ArrayList<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int radius, boolean includeTile) {
+        ArrayList<HexagonTile> tiles = getTilesInRadius(tile, radius);
+        if (tile != null && includeTile) {
+            tiles.add(tile);
+        }
+        return tiles;
+    }
+
+    /**
+     * Get all of the {@link HexagonTile}s in a radius around the selected tile, not including the
+     * tile.
+     *
+     * @param tile The selected tile.
+     * @param radius The radius around the selected tile.
+     * @return An {@link ArrayList} of tiles around, but not including, the selected tile; otherwise
+     *     an empty ArrayList.
+     */
+    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius) {
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+        if (tile == null) return tiles;
+
+        // Get the tile's q and r coordinates.
+        int qCentre = tile.getQ();
+        int rCentre = tile.getR();
+
+        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
+
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
+                // Do not include the building's HexagonTile.
+                if (qOffset == 0 && rOffset == 0) continue;
+
+                // Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = getTile(qCentre + qOffset, rCentre + rOffset);
+                if (selectedTile == null) continue;
+
+                // Add the tile to the list.
+                tiles.add(selectedTile);
+            }
+        }
+
+        return tiles;
     }
 
     @Override

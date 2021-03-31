@@ -3,6 +3,7 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -26,7 +27,6 @@ import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.game.player.networkData.StatData;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
@@ -44,17 +44,21 @@ import org.joml.Vector3fc;
 @Log
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
-    // List of Buildings -- stored & synced in HexagonMap
-    //    @Getter
+    /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
-    // The map component
-    private Reference<HexagonMap> mMapComponent; // This should be synced.  Where who knows!
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
+    /** The number of tokens the player has, synchronised from server to client. */
     @Getter public SyncInt mTokens = new SyncInt(0);
+
+    /** The colour of the player. */
     @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
+
     @Getter private HighlightSelection mPlayerHighlightSelection;
+
+    /** Reference to the HexagonMap being used by the Player. */
+    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -67,16 +71,24 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         new Vector3f(0f, 0f, 0f)
     };
 
+    /** The base rate of tokens which will always be added. */
     private final int TOKEN_RATE = 5;
-    private final float UPDATE_TIME = 1;
-    private float mLastTokenUpdate = 0;
+    /** How frequently the tokens should be added. */
+    private final float TOKEN_TIME = 1f;
+    /** The total amount of time passed since the last time tokens where added. */
+    private float mCumulativeTokenTime = 0f;
 
-    private final int MAX_PLAYERS =
-            6; // TODO this needs to be set dynamically -- specifies how many players will play this
-    // game
+    // TODO this needs to be set dynamically -- specifies how many players will play this game
+    private final int MAX_PLAYERS= 6;
 
-    NetworkManager mNetworkManager;
-    NetworkObject mNetworkObject;
+    /** Used by the client to request that a building be placed by the server. */
+    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
+    /** Used by the client to request that a building attack another building. */
+    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
+    /** Used by the client to request that a building's stats be increased. */
+    @Getter private transient ClientRequest<StatData> mClientStatRequest;
+    /** Used by the client to request that a building be sold. */
+    @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
     /** The base constructor for player */
     public Player() {}
@@ -90,19 +102,35 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
+    /**
+     * We need to initialise client requests here, since java does not like to serialise lambdas.
+     */
+    @Override
+    protected void onNetworkInitialize() {
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
+        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
+        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
+
+        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
+    }
+
     @Override
     public void onStart() {
 
-        mMapComponent =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
+        if (getNetworkObject() == null) {
+            log.severe("Player has no NetworkObject.");
+        }
 
-        mNetworkObject = getNetworkObject();
+        if (getNetworkManager() == null) {
+            log.severe("Player has no NetworkManager.");
+        }
 
-        mNetworkManager = mNetworkObject.getNetworkManager();
+        if (assignMap() == false) {
+            log.severe("Player has no HexagonMap.");
+        }
 
-        if (mNetworkObject.isServer()) {
+        if (getNetworkObject().isServer()) {
             distributeCoordinates();
         }
 
@@ -110,10 +138,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mPlayerHighlightSelection =
                 MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
 
-        // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
-        updateTokens(UPDATE_TIME);
+        updateTokens(TOKEN_TIME);
     }
+
+    @Override
+    public void fixedUpdate(float deltaTime) {
+        // Update the token count.
+        updateTokens(deltaTime);
+    }
+
+    @Override
+    protected void onDestroy() {}
 
     /**
      * This will randomly place a capital using an angle so each person is within their own slice
@@ -276,176 +312,95 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This will add a building in a specific location
+     * This method will update the amount of tokens the user has per {@link #TOKEN_TIME}. Goes
+     * through all owned {@link Building}s to check if need to update tokens. Should only be ran on
+     * the server.
      *
-     * @param qPos The q Position of the building
-     * @param rPos The r position of the building
-     * @return true if it succeeds false if not
+     * @param time The time since the last update.
      */
-    private Building addNewBuilding(int qPos, int rPos) {
+    private void updateTokens(float time) {
+        // Only the server should add tokens.
+        if (getNetworkObject().isServer()) {
+            // Increase the total amount of time since tokens where last added.
+            mCumulativeTokenTime += time;
 
-        if (mNetworkManager.getServerManager() == null) {
-            log.warning("Server manager is null.");
+            // Check to see if enough time has passed.
+            if (mCumulativeTokenTime >= TOKEN_TIME) {
 
+                // Add tokens for each building.
+                getOwnedBuildingsAsStream()
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .forEach(building -> mTokens.add(building.getTokenGeneration().getValue()));
+
+                // Add a base amount of tokens.
+                mTokens.add(TOKEN_RATE);
+
+                // Reduce the cumulative time by the TOKEN_TIME.
+                mCumulativeTokenTime -= TOKEN_TIME;
+
+                log.info("Tokens at: " + mTokens.get());
+            }
+        }
+    }
+
+    /**
+     * This will create a new {@link GameObject} with a {@link Building} component.
+     *
+     * @param qPos The q position of the building.
+     * @param rPos The r position of the building.
+     * @return {@code true} a new building is created, otherwise {@code false}.
+     */
+    private Building createBuilding(int qPos, int rPos) {
+
+        if (getNetworkManager().getServerManager() == null) {
+            log.warning("Unable to create building: Server manager is null.");
             return null;
         }
 
-        HexagonMap map = mMapComponent.get();
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to create building: no HexagonMap.");
+            return null;
+        }
 
+        // Get the HexagonTile.
         HexagonTile tile = map.getTile(qPos, rPos);
         if (tile == null) {
-            log.warning("Tile does not exist");
+            log.warning("Unable to create building: Tile does not exist.");
+            return null;
+        }
+
+        if (tile.isClaimed()) {
+            log.warning("Unable to create building: Tile is already claimed by a Building.");
             return null;
         }
 
         if (tile.hasBuilding()) {
-            log.warning("Building already here");
+            log.warning("Unable to create building: Tile already has Building.");
             return null;
         }
 
-        Reference<NetworkObject> obj =
-                mNetworkManager
-                        .getServerManager()
-                        .spawnNetworkObject(
-                                mNetworkObject.getOwnerId(),
-                                mNetworkManager.findTemplateByName("building"));
+        int playerId = getNetworkObject().getOwnerId();
+        int template = getNetworkManager().findTemplateByName("building");
+        Reference<NetworkObject> networkObject =
+                getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
-        if (obj == null) {
-            log.warning("Could not create a Network Object");
+        if (networkObject == null || networkObject.isValid() == false) {
+            log.warning("Unable to create building: Could not create a Network Object.");
             return null;
         }
 
-        GameObject buildingGO = obj.get().getGameObject();
-        buildingGO.getTransform(TransformHex.class).setPosition(qPos, rPos);
-        Building building = buildingGO.getComponent(Building.class).get();
+        GameObject gameObject = networkObject.get().getGameObject();
+        gameObject.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        Reference<Building> building = gameObject.getComponent(Building.class);
 
-        if (building == null) {
-            log.warning("Could not create a building");
+        if (building == null || building.isValid() == false) {
+            log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
 
-        // addBuilding(building, qPos, rPos);
-        // log.info("Stored building");
-
-        return building;
-    }
-
-    /**
-     * Gets the {@link HexagonMap} stored in {@link #mMapComponent}.
-     *
-     * @return The HexagonMap being used, otherwise {@code null}.
-     */
-    public HexagonMap getMapComponent() {
-        return mMapComponent == null ? null : mMapComponent.get();
-    }
-
-    /**
-     * @deprecated Use {@link HexagonTile#getClaimant()}.
-     *     <p>This gets the Player Object who owns that tile -- Will be changed
-     * @param tile The tile to check who owns it
-     * @return Which player owns it
-     */
-    public Player getTileOwner(HexagonTile tile) {
-        return tile.getClaimant();
-    }
-
-    /**
-     * @deprecated Now inside {@link Building#onStart()}.
-     *     <p>Add a building to the ones the player owns
-     * @param building The building to add.
-     * @param qPos The q coordinate.
-     * @param rPos The r coordinate.
-     */
-    public void addBuilding(Building building, int qPos, int rPos) {
-        HexagonMap map = this.getMapComponent();
-        if (map == null) {
-            log.warning("Map doesn't exist");
-            return;
-        }
-        map.storeBuilding(building, qPos, rPos);
-        if (mNetworkObject.isServer() && building.getNetworkObject().isMine()) {
-            log.warning("Client adding");
-            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
-            log.info(
-                    "Client added building into hash"
-                            + map.getTile(qPos, rPos).getQ()
-                            + " "
-                            + map.getTile(qPos, rPos).getR());
-            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Client Added Building " + qPos + " " + rPos);
-        } else if (mNetworkObject.isServer()) {
-            log.warning("Server adding");
-            mOwnedBuildings.put(map.getTile(qPos, rPos), building.getReference(Building.class));
-            log.info(
-                    "Server added building into hash"
-                            + map.getTile(qPos, rPos).getQ()
-                            + " "
-                            + map.getTile(qPos, rPos).getR());
-            log.info("Server ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Server Added Building " + qPos + " " + rPos);
-        }
-    }
-
-    /**
-     * @deprecated Now inside {@link Building#onStart()}.
-     *     <p>Add a building to the ones the player owns
-     * @param building The building to add
-     */
-    public void addBuilding(Building building) {
-        HexagonMap map = this.getMapComponent();
-        if (map == null) {
-            log.warning("Map doesn't exist");
-            return;
-        }
-        final HexagonTile buildingTile = building.getTile(); // TODO this will default to null
-        map.storeBuilding(building, buildingTile.getQ(), buildingTile.getR());
-        if (building.getNetworkObject()
-                .isMine()) { // TODO THIS IS False COS can only be ran on the client! Maybe
-            log.warning("Client adding");
-            mOwnedBuildings.put(
-                    map.getTile(buildingTile.getQ(), buildingTile.getR()),
-                    building.getReference(Building.class));
-            log.info("Client added building into hash" + mOwnedBuildings.size());
-            log.info("Client ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Client Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
-        } else if (mNetworkObject.isServer()) {
-            log.warning("Server adding");
-            mOwnedBuildings.put(
-                    map.getTile(buildingTile.getQ(), buildingTile.getR()),
-                    building.getReference(Building.class));
-
-            log.info("Server added building into hash" + mOwnedBuildings.size());
-            log.info("Server ownedBuilding size" + mOwnedBuildings.size());
-            log.info("Server Added Building " + buildingTile.getQ() + " " + buildingTile.getR());
-        }
-    }
-
-    /**
-     * @deprecated Use {@link Player#removeFromOwnedBuildings(Reference)}.
-     *     <p>Will remove a building from the buildings you own
-     * @param buildingToRemove The building to remove
-     */
-    public void removeBuilding(Building buildingToRemove) {
-        mOwnedBuildings.remove(buildingToRemove.getTile());
-    }
-
-    /**
-     * This will get the building from this tile if you own that building
-     *
-     * @param tile The tile to get the building from
-     * @return The reference to a building if it yours
-     */
-    public Reference<Building> getOwnedBuilding(HexagonTile tile) {
-        return mOwnedBuildings.get(tile);
-    }
-
-    /**
-     * This will return a {@code Stream} of values of buildings which are owned by the player
-     *
-     * @return A stream containing references to the buildings the player owns
-     */
-    public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
-        return mOwnedBuildings.values().stream();
+        return building.get();
     }
 
     /**
@@ -453,352 +408,441 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
-    public void addOwnedBuilding(Building building) {
+    public void addOwnership(Building building) {
         if (building == null) return;
 
         // Get the tile the building is on.
         HexagonTile tile = building.getTile();
 
+        if (tile == null) {
+            log.warning(
+                    "Unable to add Building to list of owned tiles as the Building's HexagonTile is null.");
+            return;
+        }
+
         // Add the building at the relevant position.
         mOwnedBuildings.put(tile, building.getReference(Building.class));
     }
 
-    public boolean removeFromOwnedBuildings(Reference<Building> buildingToRemove) {
-        if (buildingToRemove.isValid() && buildingToRemove.get().getTile() != null) {
-            return mOwnedBuildings.remove(buildingToRemove.get().getTile(), buildingToRemove);
-        }
-        return false;
+    /**
+     * Remove a {@link Building} from the {@link List} of owned buildings.
+     *
+     * @param building The {@link Building} to remove.
+     * @return {@code true} on success, otherwise {@code false}.
+     */
+    public boolean removeOwnership(Building building) {
+        if (building == null) return false;
+
+        HexagonTile tile = building.getTile();
+        if (tile == null) return false;
+
+        Reference<Building> removed = mOwnedBuildings.remove(tile);
+        return (removed != null);
     }
 
     /**
-     * The number of buildings the player has
+     * Get the {@link Building}, that is on the specified {@link HexagonTile}, from {@link
+     * #mOwnedBuildings}
      *
-     * @return The number of buildings
+     * @param tile The tile to get the building from.
+     * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
+     *     {@code null}.
      */
-    public int numberOfBuildings() {
+    public Reference<Building> getOwnedBuilding(HexagonTile tile) {
+        return mOwnedBuildings.get(tile);
+    }
+
+    /**
+     * Get the {@link #mOwnedBuildings} as an {@link ArrayList}.
+     *
+     * @return The Buildings the player owns, as an ArrayList.
+     */
+    public ArrayList<Reference<Building>> getOwnedBuildings() {
+        return new ArrayList<Reference<Building>>(mOwnedBuildings.values());
+    }
+
+    /**
+     * This will return a {@link Stream} of {@link Reference}s to {@link Building}s which are owned
+     * by the player.
+     *
+     * @return A stream containing references to the buildings the player owns.
+     */
+    public Stream<Reference<Building>> getOwnedBuildingsAsStream() {
+        return mOwnedBuildings.values().stream();
+    }
+
+    /**
+     * The number of {@link Building}s the player owns (the number of buildings in {@link
+     * #mOwnedBuildings}).
+     *
+     * @return The number of buildings the player currently owns.
+     */
+    public int getNumberOfOwnedBuildings() {
         return mOwnedBuildings.size();
     }
 
     /**
-     * This method will update the amount of tokens the user has per UPDATE_TIME. Goes through all
-     * owned buildings to check if need to update tokens. Should only be ran on the server
+     * Check if the {@link Building}'s owner is the player.
      *
-     * @param time The time since the last update
+     * @param building The building to check.
+     * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
-    public void updateTokens(float time) {
-        // Checks if server
-        if (getNetworkObject().isServer()) {
-            mLastTokenUpdate += time;
-            // Checks to see how long its been since lastTokenUpdate
-            if (mLastTokenUpdate >= UPDATE_TIME) {
+    public boolean checkBuildingOwnership(Building building) {
+        return building.getOwnerID() == getNetworkObject().getOwnerId();
+    }
 
-                // Add tokens for each building
-                mOwnedBuildings.values().stream()
-                        .filter(Reference::isValid)
-                        .map(Reference::get)
-                        .forEach(
-                                b ->
-                                        mTokens.set(
-                                                mTokens.get() + b.getTokenGeneration().getValue()));
-
-                mTokens.set(mTokens.get() + TOKEN_RATE);
-                mLastTokenUpdate = 0;
-                log.info("Tokens at: " + mTokens.get());
+    /**
+     * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
+     *
+     * @param tiles The tiles to check.
+     * @return {@code true} if the list of tiles contains at least one building that the player
+     *     owns; otherwise {@code false}.
+     */
+    public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
+        for (HexagonTile tile : tiles) {
+            if (tile.hasBuilding() && checkBuildingOwnership(tile.getBuilding())) {
+                return true;
             }
         }
+        return false;
     }
-
-    /** We need to initialize requests here, since java does not like to serialize lambdas */
-    @Override
-    protected void onNetworkInitialize() {
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::handleEvent);
-        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::handleEvent);
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::handleEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::handleEvent);
-
-        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
-    }
-
-    @Override
-    protected void onDestroy() {}
-
-    // Selling of buildings is handled below
-    @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
     /**
-     * How this component will react to an sell event.
+     * Assign a reference to the current {@link HexagonMap} to {@link #mMap}.
      *
-     * @param data sell event being executed on the server.
+     * <p>This assumes that the current active scene contains the HexagonMap.
+     *
+     * @return Whether the assignment was successful.
      */
-    public void handleEvent(SellData data) {
-        // TODO implement
-        // get building
-        // verify the sender owns the building
-        // remove from owned buildings
-        // remove from map
-        // reimburse player with tokens
+    private boolean assignMap() {
+        HexagonMap map = Scene.getActiveScene().getSingleton(HexagonMap.class);
+        if (map == null) return false;
 
-        // TODO: Remove.
-        Building building = data.getBuilding(getMapComponent());
-        log.info("Removing building.");
-        if (building != null) {
-            building.remove();
-        }
+        mMap = map.getReference(HexagonMap.class);
+        if (mMap == null || mMap.isValid() == false) return false;
+        return true;
     }
 
-    // attacking of buildings is handled below
-    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
-
     /**
-     * How this component will react to an attack event.
+     * Get the {@link HexagonMap} being used by the Player, as stored in {@link #mMap}.
      *
-     * @param data attack event being executed on the server.
+     * @return The HexagonMap.
      */
-    public void handleEvent(AttackData data) {
-
-        /* int COST = 5; // 	TODO MOVE TO BUILDING OR ATTACK.  BASICALLY A BETTER PLACE THAN THIS
-
-        // Checks if there is enough tokens for this
-        if (mTokens.get() < COST) {
-            log.info("Do not have enough for attack");
-            return;
-        }
-
-        // Get the hexagon tiles
-        Building attackingBuilding = data.getAttackingFrom(null);
-        Building defenderBuilding = data.getAttackingTo(null);
-
-        if (attackingBuilding == null
-                || defenderBuilding == null
-                || attackingBuilding.getNetworkObject().getOwnerId()
-                        != getNetworkObject().getOwnerId()) {
-            log.info("Invalid building selection!");
-            return;
-        }
-
-        if (!attackingBuilding.isBuildingAttackable(defenderBuilding)) {
-            log.info("Player passed a non-attackable building!");
-            return;
-        }
-
-        // Checks building is correct
-        if (defenderBuilding.getOwnerID() == attackingBuilding.getOwnerID()) {
-            log.info("ITS YOUR BUILDING DUMMY");
-            return;
-        }
-
-        // ATTACK!!! (Sorry...)
-        boolean won = attackingBuilding.attack(defenderBuilding);
-        log.info("Attack is: " + won);
-        mTokens.set(mTokens.get() - COST);
-
-        // If you've won attack
-        if (won) {
-            Reference<Player> player = mPlayersOnline.get(defenderBuilding.getOwnerID());
-
-            if (player != null && player.isValid()) {
-                player.get().mOwnedBuildings.remove(defenderBuilding.getTile());
-            } else {
-                log.warning("Player not found!");
-            }
-
-            mOwnedBuildings.put(
-                    defenderBuilding.getTile(), defenderBuilding.getReference(Building.class));
-            defenderBuilding.getNetworkObject().setOwnerId(attackingBuilding.getOwnerID());
-        }
-        log.info("Done");
-
-        return;*/
+    public HexagonMap getMap() {
+        return mMap.get();
     }
 
-    // Building is handled below
-    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
-
     /**
-     * How this component will react to a Build event.
+     * Process and parse an event in which the <b>client</b> player wishes to place a {@link
+     * Building}.
      *
-     * @param data attack event being executed on the server.
+     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
+     * #buildAttempt(HexagonTile)}.
+     *
+     * @param data The {@link BuildData} sent by the client.
      */
-    public void handleEvent(BuildData data) {
-        // TODO implement
-        // get Hexagon to build on
-        // Add to the HexagonMap
-        // Take tokens off
+    void buildEvent(BuildData data) {
 
-        // TODO: Move to Building.
-        int COST = 5;
-
-        if (mTokens.get() < COST) {
-            log.info("Not enough tokens for building");
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse BuildData: Map is null.");
             return;
         }
 
-        // Gets the actual tile
-        HexagonMap map = mMapComponent.get();
         HexagonTile tile = data.getTile(map);
-
-        if (tile.getBuilding()
-                != null) { // TODO Craig says the next two checks will be done by tile
-            log.info("Building already exists!");
+        if (tile == null) {
+            log.warning("Unable to parse BuildData: Tile from BuildData is null.");
             return;
         }
 
-        log.info("Got the map & tile");
-        if (buildingWithinRadius(
-                getTilesInRadius(
-                        1,
-                        tile))) { // TODO Merge into one function -- Craig says this will be done by
-            // tile
-            log.info("Trying to build too close to another building");
+        // Try to place the building on the tile.
+        buildAttempt(tile);
+    }
+
+    /**
+     * Attempt to place a building on a specific tile.
+     *
+     * <p>This first checks the tile to make sure it is fully eligible before any placement happens.
+     *
+     * @param tile The tile to place a building on.
+     * @return Whether the attempt to build was successful.
+     */
+    public boolean buildAttempt(HexagonTile tile) {
+        if (buildCheck(tile) == false) {
+            log.info("Unable to pass build check.");
+            return false;
+        }
+
+        Building building = createBuilding(tile.getQ(), tile.getR());
+
+        if (building == null) {
+            log.info("Unable to add building.");
+            return false;
+        }
+
+        // Subtract the cost.
+        mTokens.add(-Building.BUY_PRICE);
+
+        log.info("Added building.");
+        return true;
+    }
+
+    /**
+     * Ensure that the {@link HexagonTile} is eligible to have a {@link Building} placed on it.
+     *
+     * @param tile The tile to put a building on.
+     * @return {@code true} if the tile is eligible, otherwise {@code false}.
+     */
+    public boolean buildCheck(HexagonTile tile) {
+
+        if (tile == null) {
+            log.warning("Tile is null.");
+            return false;
+        }
+
+        if (mTokens.get() < Building.BUY_PRICE) {
+            log.info("Not enough tokens to buy building.");
+            return false;
+        }
+
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (tile.isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (tile.hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        // Ensure the building is placed within a set radius of an owned building.
+        final int radius = 3;
+        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
+
+        if (containsOwnedBuilding(tiles) == false) {
+            log.info("Building is placed too far away from preexisting buildings.");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Process and parse an event in which the <b>client</b> player wishes to attack a {@link
+     * Building} from another Building.
+     *
+     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
+     * #attackAttempt(Building, Building)}.
+     *
+     * @param data The {@link AttackData} sent by the client.
+     */
+    void attackEvent(AttackData data) {
+
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse AttackData: Map is null.");
             return;
         }
 
-        log.info("Checking");
-        if (!buildingWithinRadiusYours(getTilesInRadius(3, tile))) { // TODO KEEP
-            log.info("Too far");
+        Building attacker = data.getAttacker(map);
+        if (attacker == null) {
+            log.warning("Unable to parse AttackData: attacking building is null.");
             return;
         }
-        log.info("Checking 2 Fone");
 
-        Building addedNewBuilding = addNewBuilding(tile.getQ(), tile.getR());
-
-        if (addedNewBuilding != null) {
-            mTokens.set(mTokens.get() - COST);
-            log.info("Building added");
+        Building defender = data.getDefender(map);
+        if (defender == null) {
+            log.warning("Unable to parse AttackData: defending building is null.");
+            return;
         }
+
+        // Try to run an attack.
+        attackAttempt(attacker, defender);
     }
 
     /**
-     * This checks if a building is within a certain radius and whether it is your own building
+     * Attempt to attack an opponent {@link Building} from a player owned Building.
      *
-     * @param tiles The tiles to check
-     * @return true if it is within radius false if not
+     * <p>This first checks the buildings can attack each other before any attack happens.
+     *
+     * @param attacker The attacking building.
+     * @param defender The defending building.
+     * @return Whether the attempt to attack was successful.
      */
-    public boolean buildingWithinRadiusYours(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-
-            if (mMapComponent.isValid()
-                    && tile.hasBuilding()
-                    && tile.getBuilding().getOwnerID() == getNetworkObject().getOwnerId()) {
-                return true;
-            }
+    public boolean attackAttempt(Building attacker, Building defender) {
+        if (attackCheck(attacker, defender) == false) {
+            log.info("Unable to pass attack check.");
+            return false;
         }
-        return false;
+
+        // TODO: Write actual attack logic.
+        log.info("ATTACK HERE.");
+
+        return true;
     }
 
     /**
-     * This checks if a building is within a certain radius
+     * Ensure that the attacker and defender are valid and can actually attack each other.
      *
-     * @param tiles The tiles to check
-     * @return true if it is within radius false if not
+     * @param attacker The attacking building.
+     * @param defender The defending building.
+     * @return {@code true} if the attack is eligible, otherwise {@code false}.
      */
-    public boolean buildingWithinRadius(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
+    public boolean attackCheck(Building attacker, Building defender) {
 
-            if (mMapComponent.isValid() && tile.hasBuilding()) {
-                return true;
-            }
+        if (attacker == null) {
+            log.info("Attacker is null.");
+            return false;
         }
-        return false;
+
+        if (defender == null) {
+            log.info("Defender is null.");
+            return false;
+        }
+
+        // TODO: Write all checks.
+
+        return true;
     }
 
-    // Upgrading Stats is handled below
-    @Getter private transient ClientRequest<StatData> mClientStatRequest;
-
     /**
-     * How this component will react to an upgrade event.
+     * Process and parse an event in which the <b>client</b> player wishes to sell a {@link
+     * Building}.
      *
-     * @param data attack event being executed on the server.
+     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
+     * #sellAttempt(Building)}.
+     *
+     * @param data The {@link SellData} sent by the client.
      */
-    public void handleEvent(StatData data) {
-        // TODO implement
-        // Get Building
-        // Get Stat
-        // Upgrade
+    void sellEvent(SellData data) {
 
-        // TODO: Replace with actual logic.
-        // Used for testing:
-        HexagonMap map = mMapComponent.get();
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse StatData: Map is null.");
+            return;
+        }
+
         Building building = data.getBuilding(map);
-        if (building.getAttack().get() + 1 > SyncStat.LEVEL_MAX) {
-            building.getAttack().setLevel(0);
-        } else {
-            building.getAttack().increaseLevel();
+        if (building == null) {
+            log.warning("Unable to parse StatData: Building from StatData is null.");
+            return;
         }
+
+        // Try to sell the building on the tile.
+        sellAttempt(building);
+    }
+
+    /**
+     * Attempt to sell a specified building.
+     *
+     * <p>This first checks the building is fully eligible before any selling happens.
+     *
+     * @param building The building to sell.
+     * @return Whether the attempt to sell the building was successful.
+     */
+    public boolean sellAttempt(Building building) {
+        if (sellCheck(building) == false) {
+            log.info("Unable to pass sell check.");
+            return false;
+        }
+
+        // TODO: Add sell logic.
+        log.info("SELL HERE.");
+        return true;
+    }
+
+    /**
+     * Ensure that the {@link Building} is eligible to be sold.
+     *
+     * @param building The building to sell.
+     * @return {@code true} if the building can be sold, otherwise {@code false}.
+     */
+    public boolean sellCheck(Building building) {
+
+        if (building == null) {
+            log.warning("building is null.");
+            return false;
+        }
+
+        // TODO: Write all checks.
+
+        return true;
+    }
+
+    /**
+     * Process and parse an event in which the <b>client</b> player wishes to increase the stats of
+     * a {@link Building}.
+     *
+     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
+     * #statAttempt(Building)}.
+     *
+     * @param data The {@link StatData} sent by the client.
+     */
+    void statEvent(StatData data) {
+
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse StatData: Map is null.");
+            return;
+        }
+
+        Building building = data.getBuilding(map);
+        if (building == null) {
+            log.warning("Unable to parse StatData: Building from StatData is null.");
+            return;
+        }
+
+        // Try to change the stats of the building.
+        statAttempt(building, null); // TODO: Pass through the stat to be changed.
+    }
+
+    /**
+     * Attempt to increase a specific stat of a {@link Building}.
+     *
+     * <p>This first checks the building and stat to make sure that they are fully eligible before
+     * any stat changes happen.
+     *
+     * @param building The building whose stats will be changed.
+     * @param stat The stat to increase.
+     * @return Whether the attempt to change the stats where successful.
+     */
+    public boolean statAttempt(Building building, SyncStat<?> stat) {
+        if (statCheck(building) == false) {
+            log.info("Unable to pass stat check.");
+            return false;
+        }
+
+        // TODO: Add stat increase logic.
+        log.info("INCREASE SPECIFIC STAT HERE.");
 
         // Update the building on the server.
         building.afterStatChange();
+
+        return true;
     }
 
     /**
-     * This will return all hex tiles within a radius except the one in the tile
+     * Ensure that the {@link Building} is eligible to have its stats changed.
      *
-     * @param radius The radius to check
-     * @param tile the tile to check
-     * @return A list of tiles
+     * @param building The building to have its stats increased.
+     * @return {@code true} if the tile is eligible, otherwise {@code false}.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(
-            int radius,
-            HexagonTile
-                    tile) { // TODO Repeated code from building need to move in more sensible place
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+    public boolean statCheck(Building building) {
 
-        // Attempt to get the current HexagonTile and HexagonMap.
-        HexagonMap map = mMapComponent.get();
-        if (tile == null || map == null) return tiles;
-
-        // Get the current q and r coordinates.
-        int qCentre = tile.getQ();
-        int rCentre = tile.getR();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
+        if (building == null) {
+            log.warning("Building is null.");
+            return false;
         }
 
-        // log.info("Number of tiles in range: " + tiles.size());
+        // TODO: Write all checks.
+        // TODO: Also check the desired stat.
 
-        return tiles;
-    }
-
-    @Override
-    public void fixedUpdate(float deltaTime) {
-
-        updateTokens(deltaTime);
-    }
-
-    public void addOwnership(Reference<Building> buildingReference) {
-        final HexagonTile tile = buildingReference.get().getTile();
-        if (tile != null) {
-            this.mOwnedBuildings.put(tile, buildingReference);
-        }
-    }
-
-    public boolean thinksOwnsBuilding(Reference<Building> buildingReference) {
-        final HexagonTile tile = buildingReference.get().getTile();
-        if (tile != null) {
-            final Reference<Building> foundBuilding = this.mOwnedBuildings.get(tile);
-            if (foundBuilding != null) {
-                return foundBuilding == buildingReference;
-            }
-        }
-        return false;
+        return true;
     }
 }
