@@ -185,12 +185,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 foundSensibleCoordStart = false;
                 foundSensibleCoordEnd = false;
 
-                xCoord =
-                        random.nextInt(
-                                (int) Math.floor((double) (getMap().getSize() / 2)));
-                yCoord =
-                        random.nextInt(
-                                (int) Math.floor((double) (getMap().getSize() / 2)));
+                xCoord = random.nextInt((int) Math.floor((double) (getMap().getSize() / 2)));
+                yCoord = random.nextInt((int) Math.floor((double) (getMap().getSize() / 2)));
 
                 // This makes sure the number could be negative
                 if (random.nextInt(2) == 1) {
