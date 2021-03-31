@@ -224,12 +224,7 @@ class DrawCallState implements NativeResource {
 
         mPipeline =
                 new VulkanPipeline(
-                        shaderSet,
-                        descriptorSetLayouts,
-                        device,
-                        extent,
-                        renderPass,
-                        physicalDevice.findSuitableMSAACount(msaaCount));
+                        shaderSet, descriptorSetLayouts, device, extent, renderPass, msaaCount);
     }
 
     public Collection<DrawData> getDrawData() {

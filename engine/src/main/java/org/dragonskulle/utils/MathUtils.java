@@ -38,7 +38,6 @@ public class MathUtils {
      * @return rounded down number
      */
     public static int roundDownToPow2(int n) {
-        n--;
         n |= n >> 1;
         n |= n >> 2;
         n |= n >> 4;
