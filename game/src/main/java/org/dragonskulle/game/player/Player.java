@@ -277,24 +277,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
-    private int playersOnline() {
-
-        int numOfPlayers = 0;
-
-        int sizeMap = mMapComponent.get().getSize();
-
-        for (int i = 0; i < sizeMap + 1; i++) {
-            for (int j = 0; j < sizeMap; j++) {
-                if (mMapComponent.get().getBuilding(i, j) != null) {
-                    log.severe("FOUND");
-                    numOfPlayers++;
-                }
-            }
-        }
-        // Stream<HexagonTile> a = mMapComponent.getAllTiles();
-
-        return numOfPlayers;
-    }
     /**
      * This will add a building in a specific location
      *
