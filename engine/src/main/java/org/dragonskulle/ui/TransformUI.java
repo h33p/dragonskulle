@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -109,12 +110,12 @@ public class TransformUI extends Transform {
 
             if (targetHeight < curHeight) {
                 float heightDiff = curHeight - targetHeight;
-                float halfHeight = heightDiff * 0.5f;
-                mScaledLocalCorners.add(0f, halfHeight, 0f, -halfHeight);
+                mScaledLocalCorners.add(
+                        0f, heightDiff * mPivotOffset.x, 0f, -heightDiff * (1f - mPivotOffset.x));
             } else {
                 float widthDiff = curWidth - targetWidth;
-                float halfWidth = widthDiff * 0.5f;
-                mScaledLocalCorners.add(halfWidth, 0f, -halfWidth, 0f);
+                mScaledLocalCorners.add(
+                        widthDiff * mPivotOffset.x, 0f, -widthDiff * (1f - mPivotOffset.x), 0f);
             }
         }
     }
@@ -252,6 +253,12 @@ public class TransformUI extends Transform {
         setUpdateFlag();
     }*/
 
+    /** Set the pivot offset */
+    public void setPivotOffset(float x, float y) {
+        mPivotOffset.set(x, y);
+        setUpdateFlag();
+    }
+
     /** Set parent anchor position */
     public void setParentAnchor(float offset) {
         mParentAnchor.set(offset, offset, 1f - offset, 1f - offset);
@@ -284,7 +291,7 @@ public class TransformUI extends Transform {
     }
 
     public void rotateDeg(float deg) {
-        mRotation += deg * Transform.DEG_TO_RAD;
+        mRotation += deg * MathUtils.DEG_TO_RAD;
         setUpdateFlag();
     }
 
