@@ -64,8 +64,9 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * Get the building at the specified position, or {@code null} if the building does not exist.
-     *
+     * @deprecated Use {@link HexagonTile}{@code .getBuilding()} instead.
+     *     <p>Get the building at the specified position, or {@code null} if the building does not
+     *     exist.
      * @param q The q coordinate.
      * @param r The r coordinate.
      * @return The building, or {@code null} if there is no building at that position.
@@ -79,8 +80,8 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * Store a reference to the {@link Building} at the specified position.
-     *
+     * @deprecated This is now done within each {@link Building}.
+     *     <p>Store a reference to the {@link Building} at the specified position.
      * @param building The Building to be stored.
      * @param q The q coordinate.
      * @param r The r coordinate.
@@ -98,10 +99,9 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * Stop storing the reference to the Building at the specified position.
-     *
-     * <p>Stores {@code null} at the position instead.
-     *
+     * @deprecated This should be done directly via {@link Building#remove()}.
+     *     <p>Stop storing the reference to the Building at the specified position.
+     *     <p>Stores {@code null} at the position instead.
      * @param q The q coordinate.
      * @param r The r coordinate.
      * @return {@code true} if tile was valid, {@code false} otherwise.

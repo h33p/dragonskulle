@@ -4,8 +4,11 @@ package org.dragonskulle.game.player.networkData;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
+import org.dragonskulle.game.map.HexagonMap;
+import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
@@ -13,33 +16,41 @@ import org.dragonskulle.network.components.sync.INetSerializable;
  *
  * @author low101043
  */
+@Accessors(prefix = "m")
 public class StatData implements INetSerializable {
 
-    private Building mBuilding;
     private SyncStat<?> mStat;
+
+    private int mQ;
+    private int mR;
 
     public StatData() {}
 
-    /**
-     * The Constructor
-     *
-     * @param building The building to upgrade
-     * @param stat The stat to upgrade
-     */
     public StatData(Building building, SyncStat<?> stat) {
-        mBuilding = building;
-        mStat = stat;
+        if (building == null) return;
+
+        mQ = building.getTile().getQ();
+        mR = building.getTile().getR();
     }
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
-        stream.writeInt(mBuilding.getTile().getQ());
-        stream.writeInt(mBuilding.getTile().getR());
-        stream.writeInt(mBuilding.getTile().getS());
+        stream.writeInt(mQ);
+        stream.writeInt(mR);
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
-        // TODO Auto-generated method stub
+        mQ = stream.readInt();
+        mR = stream.readInt();
+    }
+
+    public HexagonTile getTile(HexagonMap map) {
+        return map.getTile(mQ, mR);
+    }
+
+    public Building getBuilding(HexagonMap map) {
+        if (getTile(map) == null) return null;
+        return getTile(map).getBuilding();
     }
 }
