@@ -145,8 +145,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         int xCoord = 0;
         int yCoord = 0;
+        boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
         
-        while ((!foundSensibleCoordStart && !foundSensibleCoordEnd)) {
+        while (bothTogether) {
         	log.severe("We started loop");
         	foundSensibleCoordStart = false;
             foundSensibleCoordEnd = false;
@@ -230,8 +231,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         			}
         		}
         	}
-        	boolean bothTogetherDebug = (!foundSensibleCoordStart && !foundSensibleCoordEnd);
-        	log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd + " both together " + bothTogetherDebug);
+        	bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
+        	log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd + " both together " + bothTogether);
         }
         
         
