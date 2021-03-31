@@ -141,7 +141,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             int randomIndex = mRandom.nextInt(tilesToUse.size());
             HexagonTile tileToBuildOn = tilesToUse.get(randomIndex);
             
-            return mPlayer.get().buildAttempt(tileToBuildOn);
+            return getPlayer().buildAttempt(tileToBuildOn);
         }
         
         return false;
@@ -149,36 +149,27 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** This will upgrade a building for the AiPlayer */
     private boolean upgradeBuilding() {
-        
+    	log.info("AI: Upgrading");
+    	
     	if(getPlayer().getNumberOfOwnedBuildings() == 0) {
     		return false;
     	}
     	
-    	int upgradeID = mRandom.nextInt(mPlayer.get().getNumberOfOwnedBuildings());
-
-        log.info("AI: Upgrading");
-
-        Building buildingToUpgrade =
-                mPlayer.get()
-                        .getOwnedBuildingsAsStream()
-                        .filter(Reference::isValid)
-                        .map(Reference::get)
-                        .limit(upgradeID + 1) // limit to the random number
-                        .reduce((__, second) -> second) // take the last
-                        .orElse(null);
-
-        if (buildingToUpgrade == null) {
-            log.info("AI: could not get building to upgrade.");
-            return false;
+    	int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+    	Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
+        if(buildingReference == null || buildingReference.isValid() == false) {
+        	log.info("AI: could not get building to upgrade.");
+        	return false;
         }
-
+        
+        // Get the Building.
+        Building building = buildingReference.get();
+        
         // Get Stat to upgrade
-        ArrayList<SyncStat<?>> statsArray = buildingToUpgrade.getStats();
-        SyncStat<?> statToUpgrade = statsArray.get(mRandom.nextInt(statsArray.size()));
+        ArrayList<SyncStat<?>> stats = building.getStats();
+        SyncStat<?> stat = stats.get(mRandom.nextInt(stats.size()));
 
-        // Send to server
-        mPlayer.get().statAttempt(buildingToUpgrade, statToUpgrade);
-        return false;
+        return getPlayer().statAttempt(building, stat);
     }
 
     /** This will attack a building */
