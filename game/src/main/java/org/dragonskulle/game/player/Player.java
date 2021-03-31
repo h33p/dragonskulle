@@ -72,7 +72,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private float mLastTokenUpdate = 0;
 
     private final int MAX_PLAYERS =
-            6; // TODO this needs to be set dynamically -- specifies how many players will play this
+            10; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
     NetworkManager mNetworkManager;
@@ -146,7 +146,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         int yCoord = 0;
         boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
         
-        log.severe("Size is: " + mMapComponent.get().getSize() + " the coordinate most possible is this: " + size);
+        log.severe("Size is: " + mMapComponent.get().getSize());
         
         while (bothTogether) {
         	//log.severe("We started loop");
@@ -263,7 +263,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Done????
         */
         
-        buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
+        Building buildingToBecomeCapital = addNewBuilding(xCoord, yCoord);
         if (buildingToBecomeCapital == null) {
             log.severe("Unable to place an initial capital building.  X = " + xCoord + " Y = " + yCoord);
             
