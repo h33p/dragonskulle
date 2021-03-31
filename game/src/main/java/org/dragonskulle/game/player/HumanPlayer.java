@@ -39,9 +39,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter @Setter private HexagonTile mHexChosen;
+    @Getter
+    @Setter
+    private HexagonTile mHexChosen;
 
-    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter
+    @Setter
+    private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -61,12 +65,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<GameObject> sell_button;
     private Reference<GameObject> upgrade_button;
     private Reference<GameObject> place_button;
+    private Reference<UIShopSection> mShop;
 
     /**
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netID The human player's network ID.
+     * @param netID          The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
@@ -90,7 +95,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
+                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {
+                });
 
         mZoomSlider =
                 // Creates a blank screen
@@ -117,14 +123,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                 new UITokenCounter();
                                                         self.addComponent(tokenCounter);
                                                     });
-                                    go.addComponent(
-                                            new UIMenuLeftDrawer(
-                                                    this::getBuildingChosen,
-                                                    this::setBuildingChosen,
-                                                    this::getHexChosen,
-                                                    this::setHexChosen,
-                                                    this::setScreenOn,
-                                                    this::getPlayer));
+                                    go.addComponent(new UIMenuLeftDrawer(
+                                            this::getBuildingChosen,
+                                            this::setBuildingChosen,
+                                            this::getHexChosen,
+                                            this::setHexChosen,
+                                            this::setScreenOn,
+                                            this::getPlayer));
+
+
+
                                 });
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
@@ -136,7 +144,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -188,7 +197,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -261,7 +272,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** AURI!! This updates what the user can see */
+    /**
+     * AURI!! This updates what the user can see
+     */
     private void updateVisuals() {
         mVisualsNeedUpdate = false;
 
@@ -390,12 +403,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onOwnerModifiedObject(Reference<NetworkObject> obj) {
         // remove from self as owned if exists, then we need to check if we are the owner again
         if (obj.isValid()) {

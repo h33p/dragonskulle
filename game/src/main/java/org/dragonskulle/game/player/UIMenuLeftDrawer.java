@@ -4,10 +4,10 @@ package org.dragonskulle.game.player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -23,17 +23,22 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Accessors(prefix = "m")
-public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStart {
+public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetBuildingChosen mGetBuildingChosen;
     private final ISetBuildingChosen mSetBuildingChosen;
     private final IGetHexChosen mGetHexChosen;
     private final ISetHexChosen mSetHexChosen;
     private final INotifyScreenChange mNotifyScreenChange;
     private final IGetPlayer mGetPlayer;
-    @Getter private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
+    @Getter
+    private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
     private final float offsetToTop = 0.46f;
+    private final ArrayList<UITextButtonFrame> mAdditionalItems = new ArrayList<>();
+    private Reference<UIShopSection> mShop;
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -75,18 +80,18 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
-    @Override
-    protected void onDestroy() {}
+
+    public void addMenuItem(UITextButtonFrame frame) {
+        this.mAdditionalItems.add(frame);
+    }
 
     /**
-     * Frame Update is called every single render frame, before any fixed updates. There can be
-     * multiple, or none, fixed updates between calls to frameUpdate.
-     *
-     * @param deltaTime Approximate time since last call to frameUpdate
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
      */
     @Override
-    public void frameUpdate(float deltaTime) {}
+    protected void onDestroy() {
+    }
+
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -101,7 +106,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         menuButtons.add(buildSellButtonFrame());
         menuButtons.add(buildDeselectButtonFrame());
 
+        buildShop();
         mButtonReferences = buildMenu(menuButtons);
+        mShop = getGameObject().getComponent(UIShopSection.class);
 
         UIRenderable drawer = new UIRenderable(new SampledTexture("ui/drawer.png"));
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
@@ -236,13 +243,14 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
     private HashMap<String, Reference<GameObject>> buildMenu(
             List<UITextButtonFrame> mButtonChildren) {
         HashMap<String, Reference<GameObject>> buttonMap = new HashMap<>();
+        mButtonChildren.addAll(this.mAdditionalItems);
         getGameObject()
                 .buildChild(
                         "auto_built_children",
                         (menu) -> {
                             for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-                                    i < mButtonChildrenSize;
-                                    i++) {
+                                 i < mButtonChildrenSize;
+                                 i++) {
                                 UITextButtonFrame mButtonChild = mButtonChildren.get(i);
                                 int finalI = i;
                                 Reference<GameObject> button_reference =
@@ -255,9 +263,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                                                                     .setPosition(
                                                                             0f,
                                                                             (0.8f
-                                                                                            * finalI
-                                                                                            / mButtonChildrenSize
-                                                                                            * 1.3f)
+                                                                                    * finalI
+                                                                                    / mButtonChildrenSize
+                                                                                    * 1.3f)
                                                                                     - offsetToTop);
                                                             self.getTransform(TransformUI.class)
                                                                     .setMargin(
@@ -292,12 +300,29 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         return buttonMap;
     }
 
+    private void buildShop() {
+        getGameObject().addComponent(new UIShopSection());
+
+        this.addMenuItem(new UITextButtonFrame("alter_shop", "Alter Shop", (button, __) -> {
+            if (mShop != null && mShop.isValid()) {
+                mShop.get().setRandomState();
+            } else {
+                mShop = getGameObject().getComponent(UIShopSection.class);
+                if (mShop != null && mShop.isValid()) {
+                    mShop.get().setRandomState();
+                }
+            }
+        }, true));
+
+    }
+
     public void setMenu(Screen mScreenOn) {
         Reference<GameObject> button;
         switch (mScreenOn) {
             case BUILDING_SELECTED_SCREEN:
                 button = mButtonReferences.get("place_button");
-                if (button != null && button.isValid()) {}
+                if (button != null && button.isValid()) {
+                }
 
                 break;
             case TILE_SCREEN:
