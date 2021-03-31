@@ -69,6 +69,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
+    /** The cost to buy a {@link Building}. */
+    public static final int BUY_PRICE = 10;
+    /** The reimbursement from selling a {@link Building}. */
+    public static final int SELL_PRICE = 2;
+
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
@@ -90,7 +95,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public void onStart() {
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.addOwnedBuilding(this);
+        if (owningPlayer != null) owningPlayer.addOwnership(this);
 
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
@@ -123,8 +128,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
+        // Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+
         // Claim the tiles around the building.
-        mClaimedTiles = getTilesInRadius(1);
+        mClaimedTiles = map.getTilesInRadius(getTile(), 1);
         // Claim the tile the building is on.
         mClaimedTiles.add(getTile());
 
@@ -139,11 +148,15 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * on.
      */
     private void generateViewTiles() {
+        // Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+
         // Get the current view distance.
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
-        mViewableTiles = getTilesInRadius(distance);
+        mViewableTiles = map.getTilesInRadius(getTile(), distance);
         // View the tile the building is on.
         mViewableTiles.add(getTile());
     }
@@ -153,23 +166,14 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * on.
      */
     private void generateAttackableTiles() {
+        // Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = getTilesInRadius(distance);
-    }
-
-    public Player getOwner() {
-        return getNetworkObject()
-                .getNetworkManager()
-                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
-                .map(NetworkObject::getGameObject)
-                .map(go -> go.getComponent(Player.class))
-                .filter(ref -> ref != null)
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .findFirst()
-                .orElse(null);
+        mAttackableTiles = map.getTilesInRadius(getTile(), distance);
     }
 
     /**
@@ -226,67 +230,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an ArrayList of all {@link HexagonTile}s, excluding the building's HexagonTile, within a
-     * set radius.
-     *
-     * @param radius The radius.
-     * @return An ArrayList of HexgaonTiles, otherwise an empty ArrayList.
-     */
-    private ArrayList<HexagonTile> getTilesInRadius(int radius) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Get the map.
-        HexagonMap map = getMap();
-        if (map == null) return tiles;
-        // Get the current position.
-        Vector3i position = getPosition();
-
-        // Get the current q and r coordinates.
-        int qCentre = position.x();
-        int rCentre = position.y();
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
-
-                // log.info(String.format("qOffset = %d, rOffset = %d, s = %d ", qOffset, rOffset,
-                // s));
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = map.getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
-
-                // Add the tile to the list.
-                tiles.add(selectedTile);
-            }
-        }
-
-        // log.info("Number of tiles in range: " + tiles.size());
-
-        return tiles;
-    }
-
-    /**
-     * Will return the tile which the building currently sits on
-     *
-     * @return The {@link HexagonTile} which the building rests
-     */
-    public HexagonTile getTile() {
-        HexagonMap map = getMap();
-        if (map == null) return null;
-
-        Vector3i position = getPosition();
-
-        return map.getTile(position.x(), position.y());
-    }
-
-    /**
      * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
      * #mAttackDistance}.
      *
@@ -335,26 +278,42 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
+     * Get the {@link HexagonTile} the {@link Building} is on.
+     *
+     * @return The tile the building is on, or {@code null}.
+     */
+    public HexagonTile getTile() {
+        HexagonMap map = getMap();
+        if (map == null) return null;
+
+        Vector3i position = getPosition();
+        if (position == null) return null;
+
+        return map.getTile(position.x(), position.y());
+    }
+
+    /**
      * Get the current axial coordinates of the building using the {@link GameObject}'s {@link
      * TransformHex}.
      *
-     * @return A 3d-vector of integers containing the x, y and z position of the building.
+     * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code
+     *     null}.
      */
     private Vector3i getPosition() {
-        Vector3f floatPosition = new Vector3f();
-
         TransformHex tranform = getGameObject().getTransform(TransformHex.class);
 
         if (tranform == null) {
-            return new Vector3i(0, 0, 0);
+            return null;
         }
 
+        Vector3f floatPosition = new Vector3f();
         tranform.getLocalPosition(floatPosition);
 
-        Vector3i position = new Vector3i();
-        position.set((int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
+        Vector3i integerPosition = new Vector3i();
+        integerPosition.set(
+                (int) floatPosition.x(), (int) floatPosition.y(), (int) floatPosition.z());
 
-        return position;
+        return integerPosition;
     }
 
     /**
@@ -392,6 +351,24 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
+     * Get the {@link Player} which owns the {@link Building}.
+     *
+     * @return The owning player, or {@code null}.
+     */
+    public Player getOwner() {
+        return getNetworkObject()
+                .getNetworkManager()
+                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                .map(NetworkObject::getGameObject)
+                .map(go -> go.getComponent(Player.class))
+                .filter(ref -> ref != null)
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Get whether the building is a capital.
      *
      * @return Whether the building is a capital.
@@ -418,9 +395,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * any {@link HexagonTile}s.
      */
     public void remove() {
-        // Remove the current owner.
-        getNetworkObject().setOwnerId(-1);
-
         // Remove the building from the tile.
         getTile().setBuilding(null);
 

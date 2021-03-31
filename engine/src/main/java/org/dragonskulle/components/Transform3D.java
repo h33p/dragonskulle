@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
+import org.dragonskulle.utils.MathUtils;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -107,7 +108,9 @@ public class Transform3D extends Transform {
      */
     public void setRotationDeg(Vector3fc rotation) {
         setRotation(
-                rotation.x() * DEG_TO_RAD, rotation.y() * DEG_TO_RAD, rotation.z() * DEG_TO_RAD);
+                rotation.x() * MathUtils.DEG_TO_RAD,
+                rotation.y() * MathUtils.DEG_TO_RAD,
+                rotation.z() * MathUtils.DEG_TO_RAD);
     }
 
     /**
@@ -130,7 +133,7 @@ public class Transform3D extends Transform {
      * @param z Z coordinate of rotation
      */
     public void setRotationDeg(float x, float y, float z) {
-        setRotation(x * DEG_TO_RAD, y * DEG_TO_RAD, z * DEG_TO_RAD);
+        setRotation(x * MathUtils.DEG_TO_RAD, y * MathUtils.DEG_TO_RAD, z * MathUtils.DEG_TO_RAD);
     }
 
     /**
@@ -162,7 +165,7 @@ public class Transform3D extends Transform {
      * @param z Rotation in Z-axis in degrees
      */
     public void rotateDeg(float x, float y, float z) {
-        rotateRad(DEG_TO_RAD * x, DEG_TO_RAD * y, DEG_TO_RAD * z);
+        rotateRad(MathUtils.DEG_TO_RAD * x, MathUtils.DEG_TO_RAD * y, MathUtils.DEG_TO_RAD * z);
         setUpdateFlag();
     }
 

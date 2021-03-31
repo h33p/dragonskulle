@@ -399,6 +399,9 @@ public class App implements NativeResource {
                                 UISlider newSlider =
                                         new UISlider((uiSlider, val) -> System.out.println(val));
 
+                                newSlider.setValue(
+                                        Settings.getInstance()
+                                                .retrieveFloat("sliderDefaultValue", 0.5f));
                                 newSlider.setRoundStep(0.1f);
                                 newSlider.setMaxValue(10f);
 
@@ -574,6 +577,7 @@ public class App implements NativeResource {
     public static void main(String[] args) {
         do {
             sReload = false;
+            Settings.getInstance().loadSettings();
             try (App app = new App()) {
                 app.run();
             }
