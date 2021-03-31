@@ -141,14 +141,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         
         Random random = new Random();
         
-        //TODO make AI not have -1 as ID each Human Player gets Id from 0..n
-        
         int xCoord = 0;
         int yCoord = 0;
         boolean bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
         
+        if (playersOnlineNow ==4) {
+        	boolean a = true;
+        }
+        
         while (bothTogether) {
-        	log.severe("We started loop");
+        	//log.severe("We started loop");
         	foundSensibleCoordStart = false;
             foundSensibleCoordEnd = false;
         	xCoord = random.nextInt(52);
@@ -195,9 +197,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		if (angleToStart > 90 && angleToStart < 270) {
         			//Assumption y < mx must hold
         			double mx = lineToStartM * xCoord;
-        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y < mx");
+        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y < mx");
         			if (yCoord < mx ) {
-        				log.severe("This is true");
         				foundSensibleCoordStart = true;
         			}
         			
@@ -205,34 +206,31 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         		else {
         			//Assumption y > mx must hold
         			double mx = lineToStartM * xCoord;
-        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y > mx");
+        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToStartM = " + lineToStartM + " mx = " + mx + " y > mx");
         			if (yCoord > mx) {
-        				log.severe("This is true");
         				foundSensibleCoordStart = true;
         			}
         		}
         		
-        		if (angleToEnd > 90 && angleToStart < 270) {
+        		if (angleToEnd > 90 && angleToEnd < 270) {
         			//Assumption y > mx mustHold
         			double mx = lineToEndM * xCoord;
-        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndtM = " + lineToEndM + " mx = " + mx + " y > mx");
+        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndtM = " + lineToEndM + " mx = " + mx + " y > mx");
         			if (yCoord > mx) {
-        				log.severe("This is true");
         				foundSensibleCoordEnd = true;
         			}
         		}
         		else {
         			//Assumption y < mx must hold
         			double mx = lineToEndM * xCoord;
-        			log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndM = " + lineToEndM + " mx = " + mx + " y < mx");
+        			//log.severe("Player Num = " + playersOnlineNow + " X coord = " + xCoord + " y coord = " + yCoord + " lineToEndM = " + lineToEndM + " mx = " + mx + " y < mx");
         			if (yCoord < mx) {
-        				log.severe("This is true");
         				foundSensibleCoordEnd = true;
         			}
         		}
         	}
         	bothTogether = ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd));
-        	log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd + " both together " + bothTogether);
+        	//log.severe("Start " + foundSensibleCoordStart + " End " + foundSensibleCoordEnd + " both together " + bothTogether);
         }
         
         
