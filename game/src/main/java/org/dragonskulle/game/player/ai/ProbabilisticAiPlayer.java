@@ -19,24 +19,17 @@ import org.dragonskulle.game.player.Player;
 @Log
 public class ProbabilisticAiPlayer extends AiPlayer {
 
-    /** Will choose whether to place a building or to use the building. */
-    protected float mTileProbability = 0.5f;
-
-    protected float mBuildingProbability = 1 - mTileProbability;
-
-    /** Choose what to do with the building -- These 3 must sum to 1 */
-    protected float mUpgradeBuilding = 0.2f;
-
-    protected float mAttackBuilding = 0.7f;
-    protected float mSellBuilding = 0.1f;
+    /** Probability of placing a new {@link Building}. */
+    private float mBuildProbability = 0.65f;
+    /** Probability of upgrading an owned {@link Building}. */
+    private float mUpgradeProbability = 0.15f;
+    /** Probability of attacking an opponent {@link Building}. */
+    private float mAttackProbability = 0.15f;
+    /** Probability of selling an owned {@link Building}. */
+    private float mSellProbability = 0.5f;
 
     /** A Constructor for an AI Player */
     public ProbabilisticAiPlayer() {}
-
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
 
     @Override
     protected void simulateInput() {
@@ -65,34 +58,16 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             float randomNumber = mRandom.nextFloat();
 
             // Choose to place a building
-            if (randomNumber <= mTileProbability) {
-
+            if (randomNumber <= mBuildProbability) {
                 addBuilding();
-                return;
-
-                // Choose to do something with a building
+            } else if (randomNumber <= mBuildProbability + mUpgradeProbability) {
+                upgradeBuilding();
+            } else if (randomNumber <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
+                attack();
+            } else if(randomNumber <= mBuildProbability + mUpgradeProbability + mAttackProbability + mSellProbability) {
+                sell();
             } else {
-                // Pick a random number to choose whether to place a building or to use a building
-                randomNumber = mRandom.nextFloat();
-
-                // Choose to upgrade a building
-                if (randomNumber <= mUpgradeBuilding) {
-
-                    upgradeBuilding();
-                    return;
-
-                    // Choose to attack
-                } else if (randomNumber > mUpgradeBuilding
-                        && randomNumber <= mAttackBuilding + mUpgradeBuilding) {
-
-                    attack();
-                    return;
-
-                    // Choose to sell a building
-                } else {
-                    sell();
-                    return;
-                }
+            	log.info("AI probabilites do not sum to one- no action performed.");
             }
         }
     }
