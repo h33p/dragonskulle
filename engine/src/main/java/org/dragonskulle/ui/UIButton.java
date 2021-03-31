@@ -62,6 +62,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private boolean mHadReleasedHover = true;
     private boolean mPressedDown = false;
 
+    /** Default Constructor for UIButton. */
     public UIButton() {}
 
     /**
@@ -73,6 +74,11 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mLabelTextComp = label;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(boolean startEnabled) {
         mIsEnabled = startEnabled;
     }
@@ -81,6 +87,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * Constructor for UIButton
      *
      * @param label a text label to render inside the button
+     * @param startEnabled true if the button should react to clicks onStart.
      */
     public UIButton(UIText label, boolean startEnabled) {
         mIsEnabled = startEnabled;
@@ -98,6 +105,13 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mOnClick = onClick;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param label a text label to render inside the button
+     * @param onClick callback to be called when the button is clicked
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(UIText label, IButtonEvent onClick, boolean startEnabled) {
         mIsEnabled = startEnabled;
         mLabelTextComp = label;
@@ -113,6 +127,12 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mOnClick = onClick;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param onClick callback to be called when the button is clicked
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(IButtonEvent onClick, boolean startEnabled) {
         mIsEnabled = startEnabled;
         mOnClick = onClick;
@@ -131,6 +151,14 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mOnRelease = onRelease;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param onClick callback to be called when the button is clicked
+     * @param onPressDown callback to be called when the button gets pressed down
+     * @param onRelease callback to be called when the button gets released
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(
             IButtonEvent onClick,
             IButtonEvent onPressDown,
@@ -157,6 +185,15 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mOnRelease = onRelease;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param label a text label to render inside the button
+     * @param onClick callback to be called when the button is clicked
+     * @param onPressDown callback to be called when the button gets pressed down
+     * @param onRelease callback to be called when the button gets released
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(
             UIText label,
             IButtonEvent onClick,
@@ -191,6 +228,17 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mOffHover = offHover;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param label a text label to render inside the button
+     * @param onClick callback to be called when the button is clicked
+     * @param onPressDown callback to be called when the button gets pressed down
+     * @param onRelease callback to be called when the button gets released
+     * @param onHover callback to be called once the button is hovered by the cursor
+     * @param offHover callback to be called once the button is no longer hovered by the cursor
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(
             UIText label,
             IButtonEvent onClick,
@@ -228,6 +276,18 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mWhileHover = whileHover;
     }
 
+    /**
+     * Constructor for UIButton
+     *
+     * @param label a text label to render inside the button
+     * @param onClick callback to be called when the button is clicked
+     * @param onPressDown callback to be called when the button gets pressed down
+     * @param onRelease callback to be called when the button gets released
+     * @param onHover callback to be called once the button is hovered by the cursor
+     * @param offHover callback to be called once the button is no longer hovered by the cursor
+     * @param whileHover callback to be called every frame while the button is hovered
+     * @param startEnabled true if the button should react to clicks onStart.
+     */
     public UIButton(
             UIText label,
             IButtonEvent onClick,
@@ -242,6 +302,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mWhileHover = whileHover;
     }
 
+    /** Enables the button - allows it to be clicked and removes the disabled colour. */
     public void enable() {
         mIsEnabled = true;
         if (mMaterial != null) {
@@ -249,6 +310,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
+    /** Disables the button from running on clicks - also adds a disabled overlay colour */
     public void disable() {
         mIsEnabled = false;
         if (mMaterial != null) {
