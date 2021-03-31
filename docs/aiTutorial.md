@@ -33,8 +33,7 @@ Here are what all the variables which you need to worry about are set at
 	- `mLowerBoundTime` = 1
 	- `mUpperBoundTime` = 2
 - **ProbabilisticAiPlayer** 
-	- `mTileProbability` = 0.5
-		- By this definition `mBuildingProbability` = 0.5
-	- `mAttackBuilding` = 0.5
-	- `mUpgradeBuilding` = 0.2
-	- `mSellBuilding` = 0.1
+	- `mBuildingProbability` = 0.65
+	- `mAttackProbability` = 0.15
+	- `mUpgradeProbability` = 0.15
+	- `mSellProbability` = 0.05

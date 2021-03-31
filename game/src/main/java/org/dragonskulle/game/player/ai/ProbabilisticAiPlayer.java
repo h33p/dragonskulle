@@ -26,7 +26,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of attacking an opponent {@link Building}. */
     private float mAttackProbability = 0.15f;
     /** Probability of selling an owned {@link Building}. */
-    private float mSellProbability = 0.5f;
+    private float mSellProbability = 0.05f;
 
     /** A Constructor for an AI Player */
     public ProbabilisticAiPlayer() {}
