@@ -128,11 +128,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
-    	// Get the map.
+        // Get the map.
         HexagonMap map = getMap();
         if (map == null) return;
-    	
-    	// Claim the tiles around the building.
+
+        // Claim the tiles around the building.
         mClaimedTiles = map.getTilesInRadius(getTile(), 1);
         // Claim the tile the building is on.
         mClaimedTiles.add(getTile());
@@ -148,11 +148,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * on.
      */
     private void generateViewTiles() {
-    	// Get the map.
+        // Get the map.
         HexagonMap map = getMap();
         if (map == null) return;
-    	
-    	// Get the current view distance.
+
+        // Get the current view distance.
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
@@ -166,31 +166,14 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * on.
      */
     private void generateAttackableTiles() {
-    	// Get the map.
+        // Get the map.
         HexagonMap map = getMap();
         if (map == null) return;
-        
-    	// Get the current attack distance.
+
+        // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
         mAttackableTiles = map.getTilesInRadius(getTile(), distance);
-    }
-
-    /**
-     * Get the {@link Player} which owns the {@link Building}.
-     * @return The owning player, or {@code null}.
-     */
-    public Player getOwner() {
-        return getNetworkObject()
-                .getNetworkManager()
-                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
-                .map(NetworkObject::getGameObject)
-                .map(go -> go.getComponent(Player.class))
-                .filter(ref -> ref != null)
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .findFirst()
-                .orElse(null);
     }
 
     /**
@@ -247,21 +230,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get the {@link HexagonTile} the {@link Building} is on.
-     *
-     * @return The tile the building is on, or {@code null}.
-     */
-    public HexagonTile getTile() {
-        HexagonMap map = getMap();
-        if (map == null) return null;
-
-        Vector3i position = getPosition();
-        if (position == null) return null;
-
-        return map.getTile(position.x(), position.y());
-    }
-
-    /**
      * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
      * #mAttackDistance}.
      *
@@ -307,6 +275,21 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             if (tile.equals(targetTile)) return true;
         }
         return false;
+    }
+
+    /**
+     * Get the {@link HexagonTile} the {@link Building} is on.
+     *
+     * @return The tile the building is on, or {@code null}.
+     */
+    public HexagonTile getTile() {
+        HexagonMap map = getMap();
+        if (map == null) return null;
+
+        Vector3i position = getPosition();
+        if (position == null) return null;
+
+        return map.getTile(position.x(), position.y());
     }
 
     /**
@@ -365,6 +348,24 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     public int getOwnerID() {
         return getNetworkObject().getOwnerId();
+    }
+
+    /**
+     * Get the {@link Player} which owns the {@link Building}.
+     *
+     * @return The owning player, or {@code null}.
+     */
+    public Player getOwner() {
+        return getNetworkObject()
+                .getNetworkManager()
+                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                .map(NetworkObject::getGameObject)
+                .map(go -> go.getComponent(Player.class))
+                .filter(ref -> ref != null)
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
