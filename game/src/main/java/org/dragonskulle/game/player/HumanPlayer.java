@@ -200,7 +200,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
-                                mPlayer.get().getMapComponent().getGameObject().getTransform(),
+                                mPlayer.get().getMap().getGameObject().getTransform(),
                                 screenPos.x(),
                                 screenPos.y(),
                                 new Vector3f());
@@ -224,7 +224,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 if (mHexChosen != null) {
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
-                      
+
                         if (hasPlayerGotBuilding(building.getReference(Building.class))) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
@@ -232,8 +232,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     } else {
                         // Checks if cannot build here
                         if (mPlayer.get()
-                                .buildingWithinRadius(
-                                        mPlayer.get().getTilesInRadius(1, mHexChosen))) {
+                                        .containsOwnedBuilding(
+                                                mPlayer.get()
+                                                        .getMap()
+                                                        .getTilesInRadius(mHexChosen, 1))
+                                == false) {
                             System.out.println("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
@@ -250,7 +253,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
-                                mPlayer.get().getMapComponent().getGameObject().getTransform(),
+                                mPlayer.get().getMap().getGameObject().getTransform(),
                                 screenPos.x(),
                                 screenPos.y(),
                                 new Vector3f());
@@ -378,7 +381,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void undoLastHighlight() {
         MapEffects effects = mMapEffects.get();
         if (effects != null && mLastHexChosen != null) {
-            final Player lastTileOwner = mPlayer.get().getTileOwner(mLastHexChosen);
+            final Player lastTileOwner = mLastHexChosen.getClaimant();
             if (lastTileOwner != null) {
                 effects.highlightTile(
                         mLastHexChosen,
