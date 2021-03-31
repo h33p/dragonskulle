@@ -13,7 +13,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
-import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -56,6 +55,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
 
     @Getter private HighlightSelection mPlayerHighlightSelection;
+
+    /** Reference to the HexagonMap being used by the Player. */
+    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -123,7 +125,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.severe("Player has no NetworkManager.");
         }
 
-        if (getMap() == null) {
+        if (assignMap() == false) {
             log.severe("Player has no HexagonMap.");
         }
 
@@ -135,7 +137,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mPlayerHighlightSelection =
                 MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
 
-        // mOwnedBuildings.add(capital);
         // TODO Get all Players & add to list
         updateTokens(TOKEN_TIME);
     }
@@ -255,7 +256,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        int playerId = getNetworkObject().getOwnerId(); // TODO: Change to getID?
+        int playerId = getNetworkObject().getOwnerId();
         int template = getNetworkManager().findTemplateByName("building");
         Reference<NetworkObject> networkObject =
                 getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
@@ -357,24 +358,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Gets the {@link HexagonMap} by iterating though all active scenes.
-     *
-     * @return The HexagonMap being used, otherwise {@code null}.
-     */
-    public HexagonMap getMap() {
-        // The currently active scene may not contain the hexagon map, so check all active scenes.
-        ArrayList<Scene> scenes = Engine.getInstance().getActiveScenes();
-        for (Scene scene : scenes) {
-            HexagonMap map = scene.getSingleton(HexagonMap.class);
-            if (map != null) {
-                return map;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
      *
      * @param tiles The tiles to check.
@@ -388,6 +371,31 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
         return false;
+    }
+
+    /**
+     * Assign a reference to the current {@link HexagonMap} to {@link #mMap}.
+     *
+     * <p>This assumes that the current active scene contains the HexagonMap.
+     *
+     * @return Whether the assignment was successful.
+     */
+    private boolean assignMap() {
+        HexagonMap map = Scene.getActiveScene().getSingleton(HexagonMap.class);
+        if (map == null) return false;
+
+        mMap = map.getReference(HexagonMap.class);
+        if (mMap == null || mMap.isValid() == false) return false;
+        return true;
+    }
+
+    /**
+     * Get the {@link HexagonMap} being used by the Player, as stored in {@link #mMap}.
+     *
+     * @return The HexagonMap.
+     */
+    public HexagonMap getMap() {
+        return mMap.get();
     }
 
     /**
