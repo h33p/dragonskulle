@@ -329,12 +329,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Get the {@link #mOwnedBuildings} as an {@link ArrayList}.
+     *
      * @return The Buildings the player owns, as an ArrayList.
      */
     public ArrayList<Reference<Building>> getOwnedBuildings() {
         return new ArrayList<Reference<Building>>(mOwnedBuildings.values());
     }
-    
+
     /**
      * This will return a {@link Stream} of {@link Reference}s to {@link Building}s which are owned
      * by the player.

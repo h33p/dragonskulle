@@ -7,7 +7,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
-import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 
@@ -42,8 +41,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         // If only one building assumed that its capital
         if (getPlayer().getNumberOfOwnedBuildings() == 1) {
-            // TODO: What if there are no valid places to put a building? Should it attack/upgrade instead?
-        	log.info("AI Player has 1 building. Placing another building.");
+            // TODO: What if there are no valid places to put a building? Should it attack/upgrade
+            // instead?
+            log.info("AI Player has 1 building. Placing another building.");
 
             addBuilding();
             return;
@@ -57,17 +57,22 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
 
-            // Choose to place a building
+            // Choose an action to take.
             if (randomNumber <= mBuildProbability) {
                 addBuilding();
             } else if (randomNumber <= mBuildProbability + mUpgradeProbability) {
                 upgradeBuilding();
-            } else if (randomNumber <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
+            } else if (randomNumber
+                    <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
                 attack();
-            } else if(randomNumber <= mBuildProbability + mUpgradeProbability + mAttackProbability + mSellProbability) {
+            } else if (randomNumber
+                    <= mBuildProbability
+                            + mUpgradeProbability
+                            + mAttackProbability
+                            + mSellProbability) {
                 sell();
             } else {
-            	log.info("AI probabilites do not sum to one- no action performed.");
+                log.info("AI probabilites do not sum to one- no action performed.");
             }
         }
     }
@@ -90,9 +95,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                             List<HexagonTile> visibleTiles = building.getViewableTiles();
                             // Check each tile is valid.
                             for (HexagonTile tile : visibleTiles) {
-                            	if(tile.isClaimed() == false && tile.hasBuilding() == false) {
-                            		buildableTiles.add(tile);
-                            	}
+                                if (tile.isClaimed() == false && tile.hasBuilding() == false) {
+                                    buildableTiles.add(tile);
+                                }
                             }
                         });
 
@@ -101,13 +106,13 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /**
      * Pick and attempt to place a {@link Building}.
-     * 
+     *
      * @return Whether the attempt to pick and add a building was successful.
      */
     private boolean addBuilding() {
-    	log.info("Placing Building");
+        log.info("Placing Building");
 
-    	// Gets all the tiles it can expand to
+        // Gets all the tiles it can expand to
         List<HexagonTile> tilesToUse = getBuildableTiles();
 
         // Checks if there are tiles
@@ -115,35 +120,35 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             // Picks a random number and thus a random tile.
             int randomIndex = mRandom.nextInt(tilesToUse.size());
             HexagonTile tileToBuildOn = tilesToUse.get(randomIndex);
-            
+
             return getPlayer().buildAttempt(tileToBuildOn);
         }
-        
+
         return false;
     }
 
     /**
      * Pick a {@link Building} and attempt to upgrade one of its stats.
-     * 
+     *
      * @return Whether the attempt to upgrade a building's stats was successful.
      */
     private boolean upgradeBuilding() {
-    	log.info("AI: Upgrading");
-    	
-    	if(getPlayer().getNumberOfOwnedBuildings() == 0) {
-    		return false;
-    	}
-    	
-    	int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-    	Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
-        if(buildingReference == null || buildingReference.isValid() == false) {
-        	log.info("AI: could not get building to upgrade.");
-        	return false;
+        log.info("AI: Upgrading");
+
+        if (getPlayer().getNumberOfOwnedBuildings() == 0) {
+            return false;
         }
-        
+
+        int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+        Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
+        if (buildingReference == null || buildingReference.isValid() == false) {
+            log.info("AI: could not get building to upgrade.");
+            return false;
+        }
+
         // Get the Building.
         Building building = buildingReference.get();
-        
+
         // Get Stat to upgrade.
         ArrayList<SyncStat<?>> stats = building.getStats();
         SyncStat<?> stat = stats.get(mRandom.nextInt(stats.size()));
@@ -153,7 +158,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /**
      * Attack an opponent {@link Building} from an owned Building.
-     * 
+     *
      * @return Whether the attempt to attack an opponent was successful.
      */
     private boolean attack() {
@@ -195,13 +200,13 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             }
             return getPlayer().attackAttempt(buildingToAttack[0], buildingToAttack[1]);
         }
-        
+
         return false;
     }
 
     /**
      * Pick a {@link Building} and sell it.
-     * 
+     *
      * @return Whether the attempt to sell a building was successful.
      */
     private boolean sell() {
@@ -209,25 +214,26 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         if (getPlayer().getNumberOfOwnedBuildings() > 1) {
 
             int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-        	Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
-            if(buildingReference == null || buildingReference.isValid() == false) {
-            	log.info("AI: could not get building to sell.");
-            	return false;
+            Reference<Building> buildingReference =
+                    getPlayer().getOwnedBuildings().get(buildingIndex);
+            if (buildingReference == null || buildingReference.isValid() == false) {
+                log.info("AI: could not get building to sell.");
+                return false;
             }
-            
+
             // Get the Building.
             Building building = buildingReference.get();
             return getPlayer().sellAttempt(building);
         }
-        
+
         return false;
     }
-    
+
     private Player getPlayer() {
-    	Player player = mPlayer.get();
-    	if(player == null) {
-    		log.severe("Reference to mPlayer is null!");
-    	}
-    	return player;
+        Player player = mPlayer.get();
+        if (player == null) {
+            log.severe("Reference to mPlayer is null!");
+        }
+        return player;
     }
 }
