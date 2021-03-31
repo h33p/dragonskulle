@@ -31,7 +31,7 @@ public class HexagonTile {
             TEMPLATES.get().getDefaultScene().getGameObjects().stream()
                     .filter(go -> go.getName().equals("Land Hex"))
                     .findFirst()
-                    .orElseThrow();
+                    .orElse(null);
 
     /** This is the axial storage system for each tile */
     @Getter private final int mQ;

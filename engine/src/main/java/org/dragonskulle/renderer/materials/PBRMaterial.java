@@ -145,7 +145,7 @@ public class PBRMaterial
                 .getPosition()
                 .get(offset + CAM_OFFSET, buffer);
         mColour.get(offset + COL_OFFSET, buffer);
-        ByteBuffer buf = buffer.position(offset + ALPHA_CUTOFF_OFFSET);
+        ByteBuffer buf = (ByteBuffer) buffer.position(offset + ALPHA_CUTOFF_OFFSET);
         buf.putFloat(mAlphaCutoff);
         buf.putFloat(mMetallic);
         buf.putFloat(mRoughness);
