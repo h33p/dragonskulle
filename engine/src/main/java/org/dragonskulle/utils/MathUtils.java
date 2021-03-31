@@ -8,6 +8,7 @@ package org.dragonskulle.utils;
  */
 public class MathUtils {
 
+    public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
     /**
      * Interpolate a float value between start and end with time
      *
@@ -29,5 +30,22 @@ public class MathUtils {
      */
     public static int log(int val, int base) {
         return (int) (Math.log(val) / Math.log(base));
+    }
+
+    public static double mapOneRangeToAnother(
+            double sourceNumber,
+            double fromA,
+            double fromB,
+            double toA,
+            double toB,
+            int decimalPrecision) {
+        double deltaA = fromB - fromA;
+        double deltaB = toB - toA;
+        double scale = deltaB / deltaA;
+        double negA = -1 * fromA;
+        double offset = (negA * scale) + toA;
+        double finalNumber = (sourceNumber * scale) + offset;
+        int calcScale = (int) Math.pow(10, decimalPrecision);
+        return (double) Math.round(finalNumber * calcScale) / calcScale;
     }
 }
