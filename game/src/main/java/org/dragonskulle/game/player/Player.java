@@ -559,7 +559,31 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // TODO: Write actual attack logic.
         log.info("ATTACK HERE.");
 
-        return true;
+        // ATTACK!!! (Sorry...)
+        int COST = 10;		//The cost of an attack -- TODO Add this to Building and use the different stats change how much it costs to attack 
+        
+        boolean won = attacker.attack(defender);
+        log.info("Attack is: " + won);
+        mTokens.set(mTokens.get() - COST);
+
+        /*	TODO Sort this out.  Need to change owners.
+        // If you've won attack
+        if (won) {
+            Player player = defender.getOwner();
+
+            if (player != null) {
+                player.mOwnedBuildings.remove(defenderBuilding.getTile());
+            } else {
+                log.warning("Player not found!");
+            }
+
+            mOwnedBuildings.put(
+                    defenderBuilding.getTile(), defenderBuilding.getReference(Building.class));
+            defenderBuilding.getNetworkObject().setOwnerId(attackingBuilding.getOwnerID());
+        }*/
+        log.info("Done");
+
+        return;
     }
 
     /**
