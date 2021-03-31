@@ -176,14 +176,18 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         return getPlayer().statAttempt(building, stat);
     }
 
-    /** This will attack a building */
-    private void attack() {
+    /**
+     * Attack an opponent {@link Building} from an owned Building.
+     * 
+     * @return Whether the attempt to attack an opponent was successful.
+     */
+    private boolean attack() {
         log.info("AI: Attacking");
         ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
 
         // Will create a list of [attacker (your building), defender (building to
         // attack)]
-        mPlayer.get()
+        getPlayer()
                 .getOwnedBuildingsAsStream()
                 .filter(Reference::isValid)
                 .map(Reference::get)
@@ -212,41 +216,36 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                     || buildingToAttack[0] == null
                     || buildingToAttack[1] == null) {
                 // Check in case accidentally a null slipped in
-                return;
+                return false;
             }
-            mPlayer.get().attackAttempt(buildingToAttack[0], buildingToAttack[1]);
-
-            return;
-        } else {
-            return;
+            return getPlayer().attackAttempt(buildingToAttack[0], buildingToAttack[1]);
         }
+        
+        return false;
     }
 
-    /** This will sell a building */
-    private void sell() {
+    /**
+     * Pick a {@link Building} and sell it.
+     * 
+     * @return Whether the attempt to sell a building was successful.
+     */
+    private boolean sell() {
         log.info("AI: Selling");
-        if (mPlayer.get().getNumberOfOwnedBuildings() > 1) {
+        if (getPlayer().getNumberOfOwnedBuildings() > 1) {
 
-            int sellID = mRandom.nextInt(mPlayer.get().getNumberOfOwnedBuildings());
-
-            Building buildingToSell =
-                    mPlayer.get()
-                            .getOwnedBuildingsAsStream()
-                            .filter(Reference::isValid)
-                            .map(Reference::get)
-                            .filter(b -> !b.isCapital())
-                            .limit(sellID + 1) // limit to the random number
-                            .reduce((__, second) -> second) // take the last
-                            .orElse(null);
-
-            // Now have building to sell
-            if (buildingToSell != null) {
-                mPlayer.get().sellAttempt(buildingToSell);
+            int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+        	Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
+            if(buildingReference == null || buildingReference.isValid() == false) {
+            	log.info("AI: could not get building to sell.");
+            	return false;
             }
-            return;
-        } else {
-            return;
+            
+            // Get the Building.
+            Building building = buildingReference.get();
+            return getPlayer().sellAttempt(building);
         }
+        
+        return false;
     }
     
     private Player getPlayer() {
