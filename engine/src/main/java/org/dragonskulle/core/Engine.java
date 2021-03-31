@@ -310,15 +310,20 @@ public class Engine {
                 // One second has elapsed so frames contains the FPS
 
                 // Have no use for this currently besides printing it to console
-                log.info("FPS:" + frames);
-                log.info("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
-                log.info("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
-                log.info("IB Size:" + mGLFWState.getRenderer().getInstanceBufferSize());
                 log.info(
-                        "MB Size:"
-                                + mGLFWState.getRenderer().getVertexBufferSize()
-                                + ":"
-                                + mGLFWState.getRenderer().getIndexBufferSize());
+                        String.format(
+                                "\tFPS: %d"
+                                        + "\n\tInstanced Draws: %d"
+                                        + "\n\tSlow Draws: %d"
+                                        + "\n\tIB Size: %d"
+                                        + "\n\tMB Size: %d:%d",
+                                frames,
+                                (instancedDrawCalls + frames / 2) / frames,
+                                (slowDrawCalls + frames / 2) / frames,
+                                mGLFWState.getRenderer().getInstanceBufferSize(),
+                                mGLFWState.getRenderer().getVertexBufferSize(),
+                                mGLFWState.getRenderer().getIndexBufferSize()));
+
                 instancedDrawCalls = 0;
                 slowDrawCalls = 0;
                 secondTimer -= 1.0;
