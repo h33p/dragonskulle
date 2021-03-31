@@ -72,7 +72,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private float mLastTokenUpdate = 0;
 
     private final int MAX_PLAYERS =
-            10; // TODO this needs to be set dynamically -- specifies how many players will play this
+            6; // TODO this needs to be set dynamically -- specifies how many players will play this
     // game
 
     NetworkManager mNetworkManager;

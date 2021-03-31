@@ -151,42 +151,6 @@ public class App implements NativeResource {
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
-                                                                networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -2,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aiPlayer"));
-                                                                networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -3,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aiPlayer"));
-                                                                networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -4,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aiPlayer"));
-                                                                networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -5,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aiPlayer"));
-                                                                
-                                                                networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -6,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aiPlayer"));
 
                                                                 log.warning("Created ai");
                                                             }));
