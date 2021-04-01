@@ -570,15 +570,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Write actual attack logic.
-        log.info("ATTACK HERE.");
+        log.info("Attacking");
 
         // ATTACK!!! (Sorry...)
-        int COST = 10;		//The cost of an attack -- TODO Add this to Building and use the different stats change how much it costs to attack 
-        
+        mTokens.set(mTokens.get() - defender.attackCost());
         boolean won = attacker.attack(defender);
         log.info("Attack is: " + won);
-        mTokens.set(mTokens.get() - COST);
+       
 
        	//TODO Sort this out.  Need to change owners.
         // If you've won attack

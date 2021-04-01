@@ -420,6 +420,24 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         // TODO: Request that the building should be destroyed.
         // destroy();
     }
+    
+    public int attackCost() {
+    	
+    	//Base cost
+    	int cost = 20;
+    	
+    	cost += (mDefence.get() * 3);
+    	cost += (mAttack.get() * 2);
+    	cost += (mTokenGeneration.get());
+    	cost += (mViewDistance.get());
+    	cost += (mAttackDistance.get());
+    	
+    	if (isCapital()) {
+    		cost += 10;
+    	}
+    	
+    	return cost;
+    }
 
     @Override
     protected void onDestroy() {}
