@@ -2,6 +2,9 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -575,6 +578,7 @@ public class App implements NativeResource {
      * @param args the input arguments
      */
     public static void main(String[] args) {
+        //        setLogLevel(Level.FINE);
         do {
             sReload = false;
             Settings.getInstance().loadSettings();
@@ -585,6 +589,14 @@ public class App implements NativeResource {
 
         AudioManager.getInstance().cleanup();
         System.exit(0);
+    }
+
+    private static void setLogLevel(Level level) {
+        Logger root = Logger.getLogger("");
+        root.setLevel(level);
+        for (Handler handler : root.getHandlers()) {
+            handler.setLevel(level);
+        }
     }
 
     private void run() {

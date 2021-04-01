@@ -2,11 +2,11 @@
 package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
@@ -23,9 +23,8 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
+@Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetBuildingChosen mGetBuildingChosen;
@@ -34,11 +33,17 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final ISetHexChosen mSetHexChosen;
     private final INotifyScreenChange mNotifyScreenChange;
     private final IGetPlayer mGetPlayer;
-    @Getter
-    private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
-    private final float offsetToTop = 0.46f;
+
+    private final float mOffsetToTop = 0.46f;
     private final ArrayList<UITextButtonFrame> mAdditionalItems = new ArrayList<>();
-    private Reference<UIShopSection> mShop;
+    @Getter private Reference<UIShopSection> mShop;
+    private Reference<GameObject> mBuildScreenMenu;
+    private Reference<GameObject> mAttackScreenMenu;
+    private Reference<GameObject> mStatScreenMenu;
+    private Reference<GameObject> mMapScreenMenu;
+    private Reference<GameObject> mTileSelectedMenu;
+
+    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -80,18 +85,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = mGetPlayer;
     }
 
-
-    public void addMenuItem(UITextButtonFrame frame) {
-        this.mAdditionalItems.add(frame);
-    }
-
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
-
+    protected void onDestroy() {}
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -99,16 +95,35 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      */
     @Override
     public void onStart() {
-        ArrayList<UITextButtonFrame> menuButtons = new ArrayList<>();
-        menuButtons.add(buildAttackButtonFrame());
-        menuButtons.add(buildPlaceButtonFrame());
-        menuButtons.add(buildUpgradeButtonFrame());
-        menuButtons.add(buildSellButtonFrame());
-        menuButtons.add(buildDeselectButtonFrame());
+        ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
+        ArrayList<UITextButtonFrame> buildingSelectedScreenMenuItems = new ArrayList<>();
+        ArrayList<UITextButtonFrame> statScreenMenuItems = new ArrayList<>();
+        ArrayList<UITextButtonFrame> mapScreenMenuItems = new ArrayList<>();
+        ArrayList<UITextButtonFrame> tileSelectedScreenMenuItems = new ArrayList<>();
 
-        buildShop();
-        mButtonReferences = buildMenu(menuButtons);
-        mShop = getGameObject().getComponent(UIShopSection.class);
+        attackScreenMenuItems.add(buildAttackButtonFrame());
+        attackScreenMenuItems.add(buildDeselectButtonFrame());
+        mAttackScreenMenu = buildMenu(attackScreenMenuItems);
+
+        buildingSelectedScreenMenuItems.add(buildAttackButtonFrame());
+        buildingSelectedScreenMenuItems.add(buildSellButtonFrame());
+        buildingSelectedScreenMenuItems.add(buildUpgradeButtonFrame());
+        buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
+        mBuildScreenMenu = buildMenu(buildingSelectedScreenMenuItems);
+
+        tileSelectedScreenMenuItems.add(buildPlaceButtonFrame());
+        tileSelectedScreenMenuItems.add(buildDeselectButtonFrame());
+        mTileSelectedMenu = buildMenu(tileSelectedScreenMenuItems);
+
+        statScreenMenuItems.add(buildDeselectButtonFrame());
+        mStatScreenMenu = buildMenu(statScreenMenuItems);
+
+        mapScreenMenuItems.add(buildPlaceButtonFrame());
+        mapScreenMenuItems.add(buildDeselectButtonFrame());
+        mMapScreenMenu = buildMenu(mapScreenMenuItems);
+
+        setVisibleScreen(Screen.MAP_SCREEN);
+        mShop = buildShop();
 
         UIRenderable drawer = new UIRenderable(new SampledTexture("ui/drawer.png"));
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
@@ -116,6 +131,47 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         tran.setPivotOffset(0f, 0f);
         tran.setParentAnchor(0f, 0f);
         getGameObject().addComponent(drawer);
+    }
+
+    public void setVisibleScreen(Screen screen) {
+        Reference<GameObject> newScreen;
+        switch (screen) {
+            case MAP_SCREEN:
+                newScreen = mMapScreenMenu;
+                setShopState(UIShopSection.ShopState.CLOSED);
+                break;
+            case BUILDING_SELECTED_SCREEN:
+                newScreen = mBuildScreenMenu;
+                setShopState(UIShopSection.ShopState.BUILDING_SELECTED);
+                break;
+            case BUILD_TILE_SCREEN:
+                newScreen = mTileSelectedMenu;
+                setShopState(UIShopSection.ShopState.BUILDING_NEW);
+                break;
+            case ATTACK_SCREEN:
+                newScreen = mAttackScreenMenu;
+                setShopState(UIShopSection.ShopState.CLOSED);
+                break;
+            case UPGRADE_SCREEN:
+                newScreen = mStatScreenMenu;
+                setShopState(UIShopSection.ShopState.UPGRADE);
+                break;
+            default:
+                log.warning("Menu hasn't been updated to reflect this screen yet");
+                newScreen = mMapScreenMenu;
+                setShopState(UIShopSection.ShopState.CLOSED);
+        }
+        if (mCurrentScreen.isValid()) {
+            mCurrentScreen.get().setEnabled(false);
+        }
+        mCurrentScreen = newScreen;
+        mCurrentScreen.get().setEnabled(true);
+    }
+
+    private void setShopState(UIShopSection.ShopState shopState) {
+        if (mShop != null && getShop().isValid()) {
+            getShop().get().setState(shopState);
+        }
     }
 
     private UITextButtonFrame buildAttackButtonFrame() {
@@ -163,7 +219,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     mSetBuildingChosen.set(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
                 },
-                false);
+                true);
     }
 
     private UITextButtonFrame buildDeselectButtonFrame() {
@@ -210,9 +266,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     // show options to upgrade
                     // buildingSelectedView stats.  Will leave
                     // until after prototype
-                    mNotifyScreenChange.call(Screen.STAT_SCREEN);
+                    mNotifyScreenChange.call(Screen.UPGRADE_SCREEN);
                 },
-                false);
+                true);
     }
 
     private UITextButtonFrame buildSellButtonFrame() {
@@ -237,107 +293,74 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     mSetBuildingChosen.set(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
                 },
-                false);
+                true);
     }
 
-    private HashMap<String, Reference<GameObject>> buildMenu(
-            List<UITextButtonFrame> mButtonChildren) {
-        HashMap<String, Reference<GameObject>> buttonMap = new HashMap<>();
+    /**
+     * Build a menu, it is disabled by default.
+     *
+     * @param mButtonChildren the buttons to be built
+     * @return reference to the built menu.
+     */
+    private Reference<GameObject> buildMenu(List<UITextButtonFrame> mButtonChildren) {
         mButtonChildren.addAll(this.mAdditionalItems);
 
-        for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-             i < mButtonChildrenSize;
-             i++) {
-            UITextButtonFrame mButtonChild = mButtonChildren.get(i);
-            int finalI = i;
-            Reference<GameObject> button_reference =
-                    getGameObject()
-                            .buildChild(
-                                    "drawer_child_" + i,
-                                    new TransformUI(true),
-                                    (self) -> {
-                                        self.getTransform(TransformUI.class)
-                                                .setPosition(
-                                                        0f,
-                                                        (0.8f
-                                                                * finalI
-                                                                / mButtonChildrenSize
-                                                                * 1.3f)
-                                                                - offsetToTop);
-                                        self.getTransform(TransformUI.class)
-                                                .setMargin(
-                                                        0.075f, 0f, -0.075f,
-                                                        0f);
-                                        self.addComponent(
-                                                new UIRenderable(
-                                                        new SampledTexture(
-                                                                "ui/wide_button_new.png")));
-                                        UIButton button =
-                                                new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(
-                                                                        0f, 0f,
-                                                                        0f),
-                                                                Font
-                                                                        .getFontResource(
-                                                                                "Rise of Kingdom.ttf"),
-                                                                mButtonChild
-                                                                        .getText()),
-                                                        mButtonChild
-                                                                .getOnClick(),
-                                                        mButtonChild
-                                                                .isStartEnabled());
-                                        self.addComponent(button);
-                                    });
-
-            buttonMap.put(mButtonChild.getId(), button_reference);
-        }
-        return buttonMap;
+        Reference<GameObject> ref =
+                getGameObject()
+                        .buildChild(
+                                "built_menu",
+                                new TransformUI(),
+                                (root) -> {
+                                    for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
+                                            i < mButtonChildrenSize;
+                                            i++) {
+                                        UITextButtonFrame mButtonChild = mButtonChildren.get(i);
+                                        int finalI = i;
+                                        root.buildChild(
+                                                "drawer_child_" + i,
+                                                new TransformUI(true),
+                                                (self) -> {
+                                                    self.getTransform(TransformUI.class)
+                                                            .setPosition(
+                                                                    0f,
+                                                                    (0.8f
+                                                                                    * finalI
+                                                                                    / mButtonChildrenSize
+                                                                                    * 1.3f)
+                                                                            - mOffsetToTop);
+                                                    self.getTransform(TransformUI.class)
+                                                            .setMargin(0.075f, 0f, -0.075f, 0f);
+                                                    self.addComponent(
+                                                            new UIRenderable(
+                                                                    new SampledTexture(
+                                                                            "ui/wide_button_new.png")));
+                                                    UIButton button =
+                                                            new UIButton(
+                                                                    new UIText(
+                                                                            new Vector3f(
+                                                                                    0f, 0f, 0f),
+                                                                            Font.getFontResource(
+                                                                                    "Rise of Kingdom.ttf"),
+                                                                            mButtonChild.getText()),
+                                                                    mButtonChild.getOnClick(),
+                                                                    mButtonChild.isStartEnabled());
+                                                    self.addComponent(button);
+                                                });
+                                    }
+                                });
+        ref.get().setEnabled(false);
+        return ref;
     }
 
-    private void buildShop() {
-        getGameObject().addComponent(new UIShopSection());
-
-        this.addMenuItem(new UITextButtonFrame("alter_shop", "Alter Shop", (button, __) -> {
-            if (mShop != null && mShop.isValid()) {
-                mShop.get().setRandomState();
-            } else {
-                mShop = getGameObject().getComponent(UIShopSection.class);
-                if (mShop != null && mShop.isValid()) {
-                    mShop.get().setRandomState();
-                }
-            }
-        }, true));
-
-    }
-
-    public void setMenu(Screen mScreenOn) {
-        Reference<GameObject> button;
-        switch (mScreenOn) {
-            case BUILDING_SELECTED_SCREEN:
-                button = mButtonReferences.get("place_button");
-                if (button != null && button.isValid()) {
-                }
-
-                break;
-            case TILE_SCREEN:
-                button = mButtonReferences.get("sell_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
-                break;
-            case ATTACK_SCREEN:
-                button = mButtonReferences.get("attack_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
-                break;
-            case STAT_SCREEN:
-                button = mButtonReferences.get("upgrade_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
-                break;
+    private Reference<UIShopSection> buildShop() {
+        getGameObject()
+                .buildChild(
+                        "shop", new TransformUI(), (go) -> go.addComponent(new UIShopSection()));
+        ArrayList<Reference<UIShopSection>> shops = new ArrayList<>();
+        getGameObject().getComponentsInChildren(UIShopSection.class, shops);
+        if (shops.size() != 0) {
+            mShop = shops.get(0);
         }
+        return mShop;
     }
 }

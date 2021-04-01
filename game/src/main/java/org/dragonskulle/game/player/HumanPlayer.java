@@ -39,13 +39,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter
-    @Setter
-    private HexagonTile mHexChosen;
+    @Getter @Setter private HexagonTile mHexChosen;
 
-    @Getter
-    @Setter
-    private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -61,17 +57,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
-    private Reference<GameObject> attack_button;
-    private Reference<GameObject> sell_button;
-    private Reference<GameObject> upgrade_button;
-    private Reference<GameObject> place_button;
-    private Reference<UIShopSection> mShop;
 
     /**
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netID          The human player's network ID.
+     * @param netID The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
@@ -95,8 +86,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Get the screen for map
         mMapScreen =
                 // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {
-                });
+                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
 
         mZoomSlider =
                 // Creates a blank screen
@@ -123,20 +113,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                                 new UITokenCounter();
                                                         self.addComponent(tokenCounter);
                                                     });
-                                    go.addComponent(new UIMenuLeftDrawer(
-                                            this::getBuildingChosen,
-                                            this::setBuildingChosen,
-                                            this::getHexChosen,
-                                            this::setHexChosen,
-                                            this::setScreenOn,
-                                            this::getPlayer));
-
-
-
+                                    go.addComponent(
+                                            new UIMenuLeftDrawer(
+                                                    this::getBuildingChosen,
+                                                    this::setBuildingChosen,
+                                                    this::getHexChosen,
+                                                    this::setHexChosen,
+                                                    this::setScreenOn,
+                                                    this::getPlayer));
                                 });
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
+        //        mShop =
     }
 
     private Reference<Player> getPlayer() {
@@ -144,8 +133,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -187,19 +175,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
-
-        if (mMenuDrawer != null && mMenuDrawer.isValid()) {
-            mMenuDrawer.get().setMenu(mScreenOn);
-        }
-
         mapScreen();
 
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /**
-     * This will choose what to do when the user can see the full map
-     */
+    /** This will choose what to do when the user can see the full map */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -250,7 +231,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         } else {
                             // If you can build
                             System.out.println("Human:Change Screen");
-                            setScreenOn(Screen.TILE_SCREEN);
+                            setScreenOn(Screen.BUILD_TILE_SCREEN);
                         }
                     }
                 }
@@ -270,9 +251,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * AURI!! This updates what the user can see
-     */
+    /** AURI!! This updates what the user can see */
     private void updateVisuals() {
         mVisualsNeedUpdate = false;
 
@@ -282,16 +261,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (player == null) return;
 
-        if (attack_button == null)
-            attack_button = mMenuDrawer.get().getButtonReferences().get("attack_button");
-        if (sell_button == null)
-            sell_button = mMenuDrawer.get().getButtonReferences().get("sell_button");
-        if (upgrade_button == null)
-            upgrade_button = mMenuDrawer.get().getButtonReferences().get("upgrade_button");
-        if (place_button == null)
-            place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
-
         MapEffects effects = mMapEffects.get();
+        if (mMenuDrawer.isValid()) {
+            mMenuDrawer.get().setVisibleScreen(mScreenOn);
+        }
         switch (mScreenOn) {
             case MAP_SCREEN:
                 log.info("UPDATE MAP SCREEN");
@@ -305,68 +278,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(true);
-                        attack_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(true);
-                        sell_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(false);
-                        place_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(true);
-                        upgrade_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                }
                 undoLastHighlight();
                 highlightSelectedTile(StandardHighlightType.VALID);
                 break;
-            case TILE_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(false);
-                        attack_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(false);
-                        sell_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(true);
-                        place_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(false);
-                        upgrade_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                }
+            case BUILD_TILE_SCREEN:
                 undoLastHighlight();
                 highlightSelectedTile(StandardHighlightType.PLAIN);
                 break;
             case ATTACK_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(true);
-                        attack_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(false);
-                        sell_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(false);
-                        place_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(false);
-                        upgrade_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                }
                 highlightSelectedTile(StandardHighlightType.VALID);
                 for (Building attackableBuilding :
                         mHexChosen.getBuilding().getAttackableBuildings()) {
@@ -375,7 +294,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             StandardHighlightType.ATTACK.asSelection());
                 }
                 break;
-            case STAT_SCREEN:
+            case UPGRADE_SCREEN:
                 break;
         }
     }
@@ -401,16 +320,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * Marks visuals to update whenever a new object is spawned
-     */
+    /** Marks visuals to update whenever a new object is spawned */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
-    /**
-     * Marks visuals to update whenever a new object is spawned
-     */
+    /** Marks visuals to update whenever a new object is spawned */
     private void onOwnerModifiedObject(Reference<NetworkObject> obj) {
         // remove from self as owned if exists, then we need to check if we are the owner again
         if (obj.isValid()) {
