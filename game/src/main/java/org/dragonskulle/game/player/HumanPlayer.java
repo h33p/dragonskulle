@@ -57,10 +57,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
-    private Reference<GameObject> attack_button;
-    private Reference<GameObject> sell_button;
-    private Reference<GameObject> upgrade_button;
-    private Reference<GameObject> place_button;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -129,6 +125,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
+        //        mShop =
     }
 
     private Reference<Player> getPlayer() {
@@ -178,11 +175,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
-
-        if (mMenuDrawer != null && mMenuDrawer.isValid()) {
-            mMenuDrawer.get().setMenu(mScreenOn);
-        }
-
         mapScreen();
 
         if (mVisualsNeedUpdate) updateVisuals();
@@ -239,7 +231,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         } else {
                             // If you can build
                             System.out.println("Human:Change Screen");
-                            setScreenOn(Screen.TILE_SCREEN);
+                            setScreenOn(Screen.BUILD_TILE_SCREEN);
                         }
                     }
                 }
@@ -269,16 +261,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (player == null) return;
 
-        if (attack_button == null)
-            attack_button = mMenuDrawer.get().getButtonReferences().get("attack_button");
-        if (sell_button == null)
-            sell_button = mMenuDrawer.get().getButtonReferences().get("sell_button");
-        if (upgrade_button == null)
-            upgrade_button = mMenuDrawer.get().getButtonReferences().get("upgrade_button");
-        if (place_button == null)
-            place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
-
         MapEffects effects = mMapEffects.get();
+        if (mMenuDrawer.isValid()) {
+            mMenuDrawer.get().setVisibleScreen(mScreenOn);
+        }
         switch (mScreenOn) {
             case MAP_SCREEN:
                 log.info("UPDATE MAP SCREEN");
@@ -292,68 +278,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(true);
-                        attack_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(true);
-                        sell_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(false);
-                        place_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(true);
-                        upgrade_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                }
                 undoLastHighlight();
                 highlightSelectedTile(StandardHighlightType.VALID);
                 break;
-            case TILE_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(false);
-                        attack_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(false);
-                        sell_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(true);
-                        place_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(false);
-                        upgrade_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                }
+            case BUILD_TILE_SCREEN:
                 undoLastHighlight();
                 highlightSelectedTile(StandardHighlightType.PLAIN);
                 break;
             case ATTACK_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(true);
-                        attack_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(false);
-                        sell_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(false);
-                        place_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(false);
-                        upgrade_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                }
                 highlightSelectedTile(StandardHighlightType.VALID);
                 for (Building attackableBuilding :
                         mHexChosen.getBuilding().getAttackableBuildings()) {
@@ -362,7 +294,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             StandardHighlightType.ATTACK.asSelection());
                 }
                 break;
-            case STAT_SCREEN:
+            case UPGRADE_SCREEN:
                 break;
         }
     }
