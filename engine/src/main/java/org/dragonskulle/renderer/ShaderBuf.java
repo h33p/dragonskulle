@@ -70,8 +70,10 @@ public class ShaderBuf implements NativeResource {
      * @param kind kind of the shader (vertex, fragment, geometry)
      * @return shader resource if loaded, null otherwise
      */
-    public static Resource<ShaderBuf> getResource(String name, ShaderKind kind) {
-        return ResourceManager.getResource(ShaderBuf.class, name, new ShaderBufLoadArgs(kind));
+    public static Resource<ShaderBuf> getResource(
+            String name, ShaderKind kind, MacroDefinition... macros) {
+        return ResourceManager.getResource(
+                ShaderBuf.class, name, new ShaderBufLoadArgs(kind, macros));
     }
 
     /**

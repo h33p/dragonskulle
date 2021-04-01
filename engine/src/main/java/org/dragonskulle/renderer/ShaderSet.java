@@ -102,6 +102,9 @@ public class ShaderSet implements NativeResource {
     /** Should we update the fragment uniform buffer? */
     @Getter protected boolean mFragmentUniformDataDirty = false;
 
+    /** Number of lights used by the shader */
+    @Getter protected int mLightCount = 0;
+
     /**
      * Sets how many textures are used by the shader.
      *

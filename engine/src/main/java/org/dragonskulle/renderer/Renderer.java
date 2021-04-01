@@ -1201,6 +1201,14 @@ public class Renderer implements NativeResource {
             state.addObject(renderable);
         }
 
+        mDrawInstances
+                .entrySet()
+                .removeIf(
+                        e -> {
+                            e.getValue().entrySet().removeIf(e2 -> e2.getValue().shouldCleanup());
+                            return e.getValue().isEmpty();
+                        });
+
         int instanceBufferSize = 0;
 
         for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {

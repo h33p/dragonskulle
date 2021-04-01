@@ -243,6 +243,11 @@ class DrawCallState implements NativeResource {
         for (DrawData d : mDrawData.values()) d.endDrawData(imageIndex, descriptorSet);
     }
 
+    public boolean shouldCleanup() {
+        mDrawData.entrySet().removeIf(e -> e.getValue().mObjects.isEmpty());
+        return mDrawData.isEmpty();
+    }
+
     public void addObject(Renderable object) {
         IMaterial material = object.getMaterial();
         mTmpDrawDataHashKey.setData(material, object);
@@ -262,8 +267,10 @@ class DrawCallState implements NativeResource {
                 }
 
                 drawData.mTextureSet = mTextureSetFactory.getSet(textures, mTextureFactory);
-                drawData.mMesh = object.getMesh();
             }
+
+            drawData.mMesh = object.getMesh();
+
             mDrawData.put(new DrawDataHashKey(material, object), drawData);
         }
         drawData.mObjects.add(object);

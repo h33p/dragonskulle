@@ -5,6 +5,11 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -13,11 +18,9 @@ import org.dragonskulle.renderer.AttributeDescription;
 import org.dragonskulle.renderer.BindingDescription;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.ShaderBuf;
+import org.dragonskulle.renderer.ShaderBuf.MacroDefinition;
 import org.dragonskulle.renderer.ShaderKind;
 import org.dragonskulle.renderer.ShaderSet;
-import org.dragonskulle.renderer.Texture;
-import org.dragonskulle.renderer.TextureMapping;
-import org.dragonskulle.renderer.TextureMapping.*;
 import org.dragonskulle.renderer.components.Camera;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -31,13 +34,56 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class PBRMaterial
-        implements IMaterial, IColouredMaterial, IRefCountedMaterial, Serializable {
+public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Serializable {
+
+    private static final Map<Integer, ShaderSet> sShaderSets = new TreeMap<Integer, ShaderSet>();
 
     public static class StandardShaderSet extends ShaderSet {
-        public StandardShaderSet() {
-            mVertexShader = ShaderBuf.getResource("standard", ShaderKind.VERTEX_SHADER);
-            mFragmentShader = ShaderBuf.getResource("standard", ShaderKind.FRAGMENT_SHADER);
+        public StandardShaderSet(PBRMaterial mat) {
+
+            int textureCount = 0;
+            List<MacroDefinition> fragMacroDefs = new ArrayList<>();
+            List<MacroDefinition> vertMacroDefs = new ArrayList<>();
+            if (mat.mAlbedoMap != null) {
+                fragMacroDefs.add(
+                        new MacroDefinition("ALBEDO_BINDING", Integer.toString(textureCount++)));
+            }
+            if (mat.mNormalMap != null) {
+                fragMacroDefs.add(
+                        new MacroDefinition("NORMAL_BINDING", Integer.toString(textureCount++)));
+            }
+            if (mat.mMetalnessRoughnessMap != null) {
+                fragMacroDefs.add(
+                        new MacroDefinition(
+                                "METALNESS_ROUGHNESS_BINDING", Integer.toString(textureCount++)));
+            }
+
+            mNumFragmentTextures = textureCount;
+
+            mLightCount = 2;
+
+            MacroDefinition lights =
+                    new MacroDefinition("NUM_LIGHTS", Integer.toString(mLightCount));
+            fragMacroDefs.add(lights);
+            vertMacroDefs.add(lights);
+
+            if (mat.mAlphaBlend) {
+                mRenderOrder = ShaderSet.RenderOrder.TRANSPARENT.getValue();
+                mAlphaBlend = true;
+                mPreSort = true;
+                fragMacroDefs.add(new MacroDefinition("ALPHA_BLEND", "1"));
+            }
+
+            mVertexShader =
+                    ShaderBuf.getResource(
+                            "standard",
+                            ShaderKind.VERTEX_SHADER,
+                            vertMacroDefs.stream().toArray(MacroDefinition[]::new));
+            mFragmentShader =
+                    ShaderBuf.getResource(
+                            "standard",
+                            ShaderKind.FRAGMENT_SHADER,
+                            fragMacroDefs.stream().toArray(MacroDefinition[]::new));
 
             mVertexBindingDescription = BindingDescription.instancedWithMatrix(NORMAL_OFFSET + 4);
             mVertexAttributeDescriptions =
@@ -50,16 +96,19 @@ public class PBRMaterial
                             new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
                             new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
                             new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET));
-            mNumFragmentTextures = 3;
         }
+    }
 
-        public StandardShaderSet enableAlpha() {
-            // TODO: add order independent transparency
-            mRenderOrder = ShaderSet.RenderOrder.TRANSPARENT.getValue();
-            mAlphaBlend = true;
-            mPreSort = true;
-            return this;
-        }
+    private int hashShaderSet() {
+        int ret = 0;
+        ret |= mAlbedoMap != null ? 1 : 0;
+        ret <<= 1;
+        ret |= mNormalMap != null ? 1 : 0;
+        ret <<= 1;
+        ret |= mMetalnessRoughnessMap != null ? 1 : 0;
+        ret <<= 1;
+        ret |= mAlphaBlend ? 1 : 0;
+        return ret;
     }
 
     private static final int COL_OFFSET = 0;
@@ -69,22 +118,11 @@ public class PBRMaterial
     private static final int ROUGHNESS_OFFSET = METALLIC_OFFSET + 4;
     private static final int NORMAL_OFFSET = ROUGHNESS_OFFSET + 4;
 
-    private static final StandardShaderSet OPAQUE_SET = new StandardShaderSet();
-    private static final StandardShaderSet TRANSPARENT_SET = new StandardShaderSet().enableAlpha();
+    @Getter protected SampledTexture mAlbedoMap;
+    @Getter protected SampledTexture mNormalMap;
+    @Getter protected SampledTexture mMetalnessRoughnessMap;
 
-    protected SampledTexture[] mFragmentTextures = {
-        new SampledTexture(
-                Texture.getResource("white.bmp"),
-                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT)),
-        new SampledTexture(
-                Texture.getResource("normal.bmp"),
-                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT),
-                true),
-        new SampledTexture(
-                Texture.getResource("white.bmp"),
-                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT),
-                true),
-    };
+    protected SampledTexture[] mFragmentTextures;
 
     /** Base colour of the surface. It will multiply the texture's colour */
     @Getter private final Vector4f mColour = new Vector4f(1.f);
@@ -96,6 +134,8 @@ public class PBRMaterial
     @Getter @Setter private float mRoughness = 1f;
     /** Normal map multiplier */
     @Getter @Setter private float mNormal = 1f;
+    /** Have transparency */
+    @Getter @Setter private boolean mAlphaBlend = false;
 
     private int mRefCount = 0;
 
@@ -108,7 +148,7 @@ public class PBRMaterial
      * @param texture initial texture of the object
      */
     public PBRMaterial(SampledTexture texture) {
-        mFragmentTextures[0] = texture;
+        mAlbedoMap = texture;
     }
 
     /**
@@ -117,8 +157,8 @@ public class PBRMaterial
      * @param texture initial texture of the object
      * @param colour colour of the material
      */
-    public PBRMaterial(SampledTexture texture, Vector4f colour) {
-        mFragmentTextures[0] = texture;
+    public PBRMaterial(SampledTexture albedoMap, Vector4f colour) {
+        mAlbedoMap = albedoMap;
         mColour.set(colour);
     }
 
@@ -131,9 +171,56 @@ public class PBRMaterial
         mColour.set(colour);
     }
 
+    public void setAlbedoMap(SampledTexture tex) {
+        if (equalTexs(tex, mAlbedoMap)) return;
+
+        if (mAlbedoMap != null) mAlbedoMap.free();
+        mAlbedoMap = tex != null ? tex.clone() : null;
+        mFragmentTextures = null;
+    }
+
+    public void setNormaMap(SampledTexture tex) {
+        if (equalTexs(tex, mNormalMap)) return;
+
+        if (mNormalMap != null) mNormalMap.free();
+
+        if (tex != null) {
+            mNormalMap = tex.clone();
+            mNormalMap.setLinear(true);
+            mFragmentTextures = null;
+        } else if (mNormalMap != null) {
+            mNormalMap = null;
+            mFragmentTextures = null;
+        }
+    }
+
+    public void setMetalnessRoughnessMap(SampledTexture tex) {
+        if (equalTexs(tex, mMetalnessRoughnessMap)) return;
+
+        if (mMetalnessRoughnessMap != null) mMetalnessRoughnessMap.free();
+
+        if (tex != null) {
+            mMetalnessRoughnessMap = tex.clone();
+            mMetalnessRoughnessMap.setLinear(true);
+            mFragmentTextures = null;
+        } else if (mMetalnessRoughnessMap != null) {
+            mMetalnessRoughnessMap = null;
+            mFragmentTextures = null;
+        }
+    }
+
     public ShaderSet getShaderSet() {
-        if (mColour.w < 1f) return TRANSPARENT_SET;
-        return OPAQUE_SET;
+        Integer hash = hashShaderSet();
+
+        ShaderSet ret = sShaderSets.get(hash);
+
+        if (ret == null) {
+            System.out.println("ALLOC NEW SHADER SET! " + (int) hash);
+            ret = new StandardShaderSet(this);
+            sShaderSets.put(hash, ret);
+        }
+
+        return ret;
     }
 
     public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
@@ -153,6 +240,13 @@ public class PBRMaterial
     }
 
     public SampledTexture[] getFragmentTextures() {
+        if (mFragmentTextures == null) {
+            mFragmentTextures =
+                    Stream.of(mAlbedoMap, mNormalMap, mMetalnessRoughnessMap)
+                            .filter(e -> e != null)
+                            .toArray(SampledTexture[]::new);
+        }
+
         return mFragmentTextures;
     }
 
@@ -162,6 +256,18 @@ public class PBRMaterial
     }
 
     public void free() {
-        if (--mRefCount < 0) for (SampledTexture tex : mFragmentTextures) tex.free();
+        if (--mRefCount < 0) {
+            if (mAlbedoMap != null) mAlbedoMap.free();
+            if (mNormalMap != null) mNormalMap.free();
+            if (mMetalnessRoughnessMap != null) {
+                mMetalnessRoughnessMap.free();
+            }
+        }
+    }
+
+    private boolean equalTexs(SampledTexture a, SampledTexture b) {
+        if ((a == null) != (b == null)) return false;
+        if (a != null) return a.equals(b);
+        return true;
     }
 }

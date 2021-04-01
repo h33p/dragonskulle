@@ -1,7 +1,9 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-const int NUM_LIGHTS = 1;
+#ifndef NUM_LIGHTS
+#define NUM_LIGHTS 1
+#endif
 
 layout(push_constant) uniform PushConsts {
 	mat4 view;

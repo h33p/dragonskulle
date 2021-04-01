@@ -446,14 +446,10 @@ public class GLTF implements NativeResource {
                 }
 
                 PBRMaterial pbrMat = new PBRMaterial(baseColor);
-                if (baseSampled != null) pbrMat.getFragmentTextures()[0] = baseSampled.clone();
-                if (normalSampled != null) {
-                    pbrMat.getFragmentTextures()[1] = normalSampled.clone();
-                    pbrMat.getFragmentTextures()[1].setLinear(true);
-                }
+                if (baseSampled != null) pbrMat.setAlbedoMap(baseSampled);
+                if (normalSampled != null) pbrMat.setNormaMap(normalSampled);
                 if (metallicSampled != null) {
-                    pbrMat.getFragmentTextures()[2] = metallicSampled.clone();
-                    pbrMat.getFragmentTextures()[2].setLinear(true);
+                    pbrMat.setMetalnessRoughnessMap(metallicSampled);
                 }
                 pbrMat.setMetallic(metallic);
                 pbrMat.setRoughness(roughness);

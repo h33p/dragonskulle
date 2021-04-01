@@ -199,14 +199,14 @@ public class Engine {
 
     /** Debug loop of the engine */
     private void debugLoop(IEngineExitCondition exitCondition) {
-        float mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getTimeInSeconds();
 
-        float cumulativeTime = 0;
+        double cumulativeTime = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            float mCurTime = Time.getTimeInSeconds();
-            float deltaTime = mCurTime - mPrevTime;
+            double mCurTime = Time.getTimeInSeconds();
+            double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
             cumulativeTime += deltaTime;
@@ -240,20 +240,20 @@ public class Engine {
     /** Main loop of the engine */
     private void mainLoop(IEngineExitCondition exitCondition) {
 
-        float mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getTimeInSeconds();
 
         // Basic frame counter
         int frames = 0;
-        float secondTimer = 0;
-        float cumulativeTime = 0;
+        double secondTimer = 0;
+        double cumulativeTime = 0;
 
         int instancedDrawCalls = 0;
         int slowDrawCalls = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            float mCurTime = Time.getTimeInSeconds();
-            float deltaTime = mCurTime - mPrevTime;
+            double mCurTime = Time.getTimeInSeconds();
+            double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
             cumulativeTime += deltaTime;
@@ -278,7 +278,7 @@ public class Engine {
             AudioManager.getInstance().updateAudioListener();
 
             // Call FrameUpdate on the presentation scene
-            frameUpdate(deltaTime);
+            frameUpdate((float) deltaTime);
             Scene.setActiveScene(null);
 
             if (cumulativeTime > UPDATE_TIME) {
@@ -293,7 +293,7 @@ public class Engine {
 
             Scene.setActiveScene(mPresentationScene);
             // Call LateFrameUpdate on the presentation scene
-            lateFrameUpdate(deltaTime);
+            lateFrameUpdate((float) deltaTime);
 
             AudioManager.getInstance().update();
 

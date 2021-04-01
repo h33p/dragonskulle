@@ -85,6 +85,7 @@ class VulkanMeshBuffer implements NativeResource {
      * @return descriptor of the offsets within mesh buffer for the mesh
      */
     public MeshDescriptor addMesh(Mesh mesh) {
+
         Integer idx = mLoadedMeshes.get(mesh);
         if (idx == null) {
             mDirty = true;

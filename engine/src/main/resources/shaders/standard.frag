@@ -7,7 +7,9 @@
 // https://github.com/Nadrin/PBR
 // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
 
-const int NUM_LIGHTS = 1;
+#ifndef NUM_LIGHTS
+#define NUM_LIGHTS 1
+#endif
 
 const float EPSILON = 1e-16;
 const float PI = 3.14159265358979323846;
@@ -18,9 +20,15 @@ const float PI = 3.14159265358979323846;
 // those big brain math equations, you dummy.
 const float MAGIC = pow(PI, 5) / sqrt(2);
 
-layout(binding = 0) uniform sampler2D albedo;
-layout(binding = 1) uniform sampler2D normal;
-layout(binding = 2) uniform sampler2D metallicRoughness;
+#ifdef ALBEDO_BINDING
+layout(binding = ALBEDO_BINDING) uniform sampler2D albedo;
+#endif
+#ifdef NORMAL_BINDING
+layout(binding = NORMAL_BINDING) uniform sampler2D normal;
+#endif
+#ifdef METALLIC_BINDING
+layout(binding = METALLIC_BINDING) uniform sampler2D metalnessRoughness;
+#endif
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragUV;
@@ -125,7 +133,12 @@ mat3 getTBN(vec3 normal, vec3 worldVec, vec2 uv) {
 
 void main() {
 
-	vec4 albedoTex = texture(albedo, fragUV);
+	vec4 albedoTex =
+#ifdef ALBEDO_BINDING
+		texture(albedo, fragUV);
+#else
+		vec4(1.0);
+#endif
 
 	float alpha = fragColor.a * albedoTex.a;
 
@@ -135,13 +148,15 @@ void main() {
 
 	vec3 albedo = albedoTex.rgb * fragColor.rgb;
 
-	vec3 normalVec = fragNormal;
+	vec3 normalVec = vec3(0.0, 0.0, 1.0);
 
 	mat3 tbn = getTBN(fragNormal, fragPos, fragUV);
 
+#ifdef NORMAL_BINDING
 	vec4 normalTex = texture(normal, fragUV);
 	normalVec = (normalTex.rgb - vec3(0.5)) * 2.0;
 	normalVec.xy *= fragNormalMul;
+#endif
 
 	normalVec = normalize(tbn * normalVec);
 
@@ -150,10 +165,12 @@ void main() {
 	float roughness = fragRoughness;
 	float metalness = fragMetallic;
 
-	vec4 metallicRoughnessTex = texture(metallicRoughness, fragUV);
+#ifdef METALNESS_ROUGHNESS_BINDING
+	vec4 metalnessRoughnessTex = texture(metalnessRoughness, fragUV);
 
-	roughness *= metallicRoughnessTex.g;
-	metalness *= metallicRoughnessTex.b;
+	roughness *= metalnessRoughnessTex.g;
+	metalness *= metalnessRoughnessTex.b;
+#endif
 
 	vec3 baseReflectivity = mix(vec3(0.04), albedo, metalness);
 
@@ -180,5 +197,10 @@ void main() {
 	// TODO: Do this in post-processing effect
 	color = color / (color + vec3(1.0));
 
-	outColor = vec4(color * alpha, alpha);
+	outColor =
+#ifdef ALPHA_BLEND
+		vec4(color * alpha, alpha);
+#else
+		vec4(color, 1.0);
+#endif
 }
