@@ -57,7 +57,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Whether the building is a capital. */
     public final SyncBool mIsCapital = new SyncBool(false);
-
+    
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
 
@@ -74,6 +74,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
+    /** Store the {@link HexagonMap} that the {@link Building} is on. */
+    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+    
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
@@ -93,7 +96,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
-        // Add the Building to the owner's mOwnedBuildings.
+    	// Store the map.
+    	mMap = Scene.getActiveScene().getSingleton(HexagonMap.class).getReference(HexagonMap.class);
+    	if(mMap == null || mMap.isValid() == false) {
+    		log.severe("Map is null.");
+    	}
+    	
+    	// Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addOwnership(this);
 
@@ -327,7 +336,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The map.
      */
     private HexagonMap getMap() {
-        return Scene.getActiveScene().getSingleton(HexagonMap.class);
+        return mMap.get();
     }
 
     /**
