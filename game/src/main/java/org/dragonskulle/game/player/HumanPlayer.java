@@ -239,15 +239,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
                         }
                         else if (mScreenOn == Screen.ATTACKING_SCREEN) {
+                        	
+                        	// Get the defending building
                         	Reference<Building> defendingBuilding = building.getReference(Building.class);
                         	
-                        	log.info("Attacking Building " + mBuildingChosen.get().getOwnerID() + " Defending Building " + defendingBuilding.get().getOwnerID());
-                        	
+                        	// Checks the building can be attacked
                         	List<Building> attackableBuildings = mBuildingChosen.get().getAttackableBuildings();
-                        	
                         	for (Building buildingToAttack : attackableBuildings) {
                         		if (buildingToAttack.getNetworkObject().getId() == defendingBuilding.get().getNetworkObject().getId()) {
-                        			log.info("FOUND ");
+                        			
                         			player
                                      .getClientAttackRequest()
                                      .invoke(new AttackData(mBuildingChosen.get(), defendingBuilding.get())); // Send Data

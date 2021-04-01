@@ -120,14 +120,10 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 "Attack Selected Building",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
-                	log.severe("In attacking stuff");
-
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
                     if (buildingChosen != null && buildingChosen.isValid()) {
-                    	log.severe("Got attacking building " + buildingChosen.get().getOwnerID());
-                    	// TODO Change tiles which can be attacked
-
                     	
+                    	// TODO Change tiles which can be attacked
                     	mSetHexChosen.set(null);
                     	mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
                     }

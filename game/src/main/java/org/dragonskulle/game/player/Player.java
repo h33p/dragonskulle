@@ -566,6 +566,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to attack was successful.
      */
     public boolean attackAttempt(Building attacker, Building defender) {
+    	
         if (attackCheck(attacker, defender) == false) {
             log.info("Unable to pass attack check.");
             return false;
@@ -579,9 +580,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attack is: " + won);
        
 
-       	//TODO Sort this out.  Need to change owners.
+       	
         // If you've won attack
         if (won) {
+        	
+        	// Special checks for Capital
             if (defender.isCapital()) {
             	defender.setCapital(false);
             	
@@ -593,11 +596,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             	defender.afterStatChange();
             }
             
+            //Change ownership
             Player oldOwner = defender.getOwner();
             oldOwner.removeOwnership(defender);
             addOwnership(defender);
 
-           defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
+            defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
             
         }
         log.info("Done");
@@ -614,11 +618,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean attackCheck(Building attacker, Building defender) {
     	
+    	// Checks if you have capital
     	if (!stillHaveCapital()) {
     		log.warning("You have lost your capital");
     		return false;
     	}
     	
+    	//Checks if you're in cooldown
     	if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
     		log.warning("Still in cooldown");
     		return false;
@@ -636,25 +642,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        // Checks you own the building
         if (attacker.getNetworkObject().getOwnerId()
                         != getNetworkObject().getOwnerId()) {
             log.info("It's not your building");
             return false;
         }
         
+        // Checks if you have passed an attackable building
         if (!attacker.isBuildingAttackable(defender)) {
             log.info("Player passed a non-attackable building!");
             return false;
         }
         
-     // Checks building is correct
+        // Checks you're not attacking your own building
         if (defender.getOwnerID() == attacker.getOwnerID()) {
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }
         
-        
-        // TODO: Write all checks.
 
         return true;
     }
@@ -815,7 +821,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void updateHaveCapital() {
     	if (getNetworkObject().isServer()) {
     	if (mCapital.get() == null) {
-    		log.warning("This is null");
+    		log.warning("The Capital is null");
     	}
     	mHaveCapital.set(mCapital.get().isCapital());}
     }
