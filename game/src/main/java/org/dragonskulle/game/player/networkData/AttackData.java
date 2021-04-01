@@ -6,7 +6,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;

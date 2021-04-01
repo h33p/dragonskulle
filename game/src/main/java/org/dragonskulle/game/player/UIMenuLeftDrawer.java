@@ -7,7 +7,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -122,15 +121,14 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
                     if (buildingChosen != null && buildingChosen.isValid()) {
-                    	
-                    	// TODO Change tiles which can be attacked
-                    	mSetHexChosen.set(null);
-                    	mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
-                    }
-                    else {
-                    	mSetHexChosen.set(null);
-                    	mSetBuildingChosen.set(null);
-                    	mNotifyScreenChange.call(Screen.MAP_SCREEN);
+
+                        // TODO Change tiles which can be attacked
+                        mSetHexChosen.set(null);
+                        mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
+                    } else {
+                        mSetHexChosen.set(null);
+                        mSetBuildingChosen.set(null);
+                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
                     }
                 },
                 false);

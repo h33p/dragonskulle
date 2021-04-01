@@ -1,13 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
-import java.util.List;
-
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -20,7 +18,6 @@ import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
-import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
@@ -166,8 +163,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mPlayer == null) return;
 
         if (!mPlayer.get().stillHaveCapital()) {
-        	log.warning("You've lost your capital");
-        	return;
+            log.warning("You've lost your capital");
+            return;
         }
         // Update token
         if (mPlayer.isValid()) {
@@ -234,28 +231,32 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class)) && mScreenOn != Screen.ATTACKING_SCREEN) {
+                        if (hasPlayerGotBuilding(building.getReference(Building.class))
+                                && mScreenOn != Screen.ATTACKING_SCREEN) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                        }
-                        else if (mScreenOn == Screen.ATTACKING_SCREEN) {
-                        	
-                        	// Get the defending building
-                        	Reference<Building> defendingBuilding = building.getReference(Building.class);
-                        	
-                        	// Checks the building can be attacked
-                        	List<Building> attackableBuildings = mBuildingChosen.get().getAttackableBuildings();
-                        	for (Building buildingToAttack : attackableBuildings) {
-                        		if (buildingToAttack.getNetworkObject().getId() == defendingBuilding.get().getNetworkObject().getId()) {
-                        			
-                        			player
-                                     .getClientAttackRequest()
-                                     .invoke(new AttackData(mBuildingChosen.get(), defendingBuilding.get())); // Send Data
-                        		}
-                        	}
-                        	setScreenOn(Screen.MAP_SCREEN);
-                        	mBuildingChosen = null;
-                        	
+                        } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
+
+                            // Get the defending building
+                            Reference<Building> defendingBuilding =
+                                    building.getReference(Building.class);
+
+                            // Checks the building can be attacked
+                            List<Building> attackableBuildings =
+                                    mBuildingChosen.get().getAttackableBuildings();
+                            for (Building buildingToAttack : attackableBuildings) {
+                                if (buildingToAttack.getNetworkObject().getId()
+                                        == defendingBuilding.get().getNetworkObject().getId()) {
+
+                                    player.getClientAttackRequest()
+                                            .invoke(
+                                                    new AttackData(
+                                                            mBuildingChosen.get(),
+                                                            defendingBuilding.get())); // Send Data
+                                }
+                            }
+                            setScreenOn(Screen.MAP_SCREEN);
+                            mBuildingChosen = null;
                         }
                     } else {
                         // Checks if cannot build here

@@ -60,13 +60,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
-    
+
     private Reference<Building> mCapital = new Reference<Building>(null);
     private SyncBool mHaveCapital = new SyncBool(true);
-    
+
     private final float ATTACK_COOLDOWN = 20f;
     private float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
-    
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -152,10 +151,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-    	updateHaveCapital();
-    	if (stillHaveCapital()) {
-        // Update the token count.
-        updateTokens(deltaTime);}
+        updateHaveCapital();
+        if (stillHaveCapital()) {
+            // Update the token count.
+            updateTokens(deltaTime);
+        }
     }
 
     @Override
@@ -429,10 +429,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-    	if (!stillHaveCapital()) {
-    		log.warning("Lost Capital");
-    		return;
-    	}
+        if (!stillHaveCapital()) {
+            log.warning("Lost Capital");
+            return;
+        }
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse BuildData: Map is null.");
@@ -533,7 +533,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link AttackData} sent by the client.
      */
     void attackEvent(AttackData data) {
-    	
+
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse AttackData: Map is null.");
@@ -566,7 +566,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to attack was successful.
      */
     public boolean attackAttempt(Building attacker, Building defender) {
-    	
+
         if (attackCheck(attacker, defender) == false) {
             log.info("Unable to pass attack check.");
             return false;
@@ -578,31 +578,28 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mTokens.set(mTokens.get() - defender.attackCost());
         boolean won = attacker.attack(defender);
         log.info("Attack is: " + won);
-       
 
-       	
         // If you've won attack
         if (won) {
-        	
-        	// Special checks for Capital
+
+            // Special checks for Capital
             if (defender.isCapital()) {
-            	defender.setCapital(false);
-            	
-            	// Update stats
-            	ArrayList<SyncStat<?>> stats = defender.getStats();
-            	for (SyncStat<?> stat : stats) {
-            		stat.set(0);
-            	}
-            	defender.afterStatChange();
+                defender.setCapital(false);
+
+                // Update stats
+                ArrayList<SyncStat<?>> stats = defender.getStats();
+                for (SyncStat<?> stat : stats) {
+                    stat.set(0);
+                }
+                defender.afterStatChange();
             }
-            
-            //Change ownership
+
+            // Change ownership
             Player oldOwner = defender.getOwner();
             oldOwner.removeOwnership(defender);
             addOwnership(defender);
 
             defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
-            
         }
         log.info("Done");
 
@@ -617,20 +614,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the attack is eligible, otherwise {@code false}.
      */
     public boolean attackCheck(Building attacker, Building defender) {
-    	
-    	// Checks if you have capital
-    	if (!stillHaveCapital()) {
-    		log.warning("You have lost your capital");
-    		return false;
-    	}
-    	
-    	//Checks if you're in cooldown
-    	if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
-    		log.warning("Still in cooldown");
-    		return false;
-    	}
-    	
-    	lastAttack = Time.getTimeInSeconds();
+
+        // Checks if you have capital
+        if (!stillHaveCapital()) {
+            log.warning("You have lost your capital");
+            return false;
+        }
+
+        // Checks if you're in cooldown
+        if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
+            log.warning("Still in cooldown");
+            return false;
+        }
+
+        lastAttack = Time.getTimeInSeconds();
 
         if (attacker == null) {
             log.info("Attacker is null.");
@@ -643,24 +640,22 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (attacker.getNetworkObject().getOwnerId()
-                        != getNetworkObject().getOwnerId()) {
+        if (attacker.getNetworkObject().getOwnerId() != getNetworkObject().getOwnerId()) {
             log.info("It's not your building");
             return false;
         }
-        
+
         // Checks if you have passed an attackable building
         if (!attacker.isBuildingAttackable(defender)) {
             log.info("Player passed a non-attackable building!");
             return false;
         }
-        
+
         // Checks you're not attacking your own building
         if (defender.getOwnerID() == attacker.getOwnerID()) {
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }
-        
 
         return true;
     }
@@ -675,11 +670,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link SellData} sent by the client.
      */
     void sellEvent(SellData data) {
-    	
-    	if (!stillHaveCapital()) {
-    		log.warning("You have lost your capital");
-    		return;
-    	}
+
+        if (!stillHaveCapital()) {
+            log.warning("You have lost your capital");
+            return;
+        }
 
         HexagonMap map = getMap();
         if (map == null) {
@@ -744,11 +739,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link StatData} sent by the client.
      */
     void statEvent(StatData data) {
-    	
-    	if (!stillHaveCapital()) {
-    		log.warning("You have lost your capital");
-    		return;
-    	}
+
+        if (!stillHaveCapital()) {
+            log.warning("You have lost your capital");
+            return;
+        }
 
         HexagonMap map = getMap();
         if (map == null) {
@@ -809,20 +804,22 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         return true;
     }
-    
+
     /**
      * This will return whether the player still has their capital
+     *
      * @return {@code true} if they have there capital {@code false} if not
      */
     public boolean stillHaveCapital() {
-    	return mHaveCapital.get();
+        return mHaveCapital.get();
     }
-    
+
     private void updateHaveCapital() {
-    	if (getNetworkObject().isServer()) {
-    	if (mCapital.get() == null) {
-    		log.warning("The Capital is null");
-    	}
-    	mHaveCapital.set(mCapital.get().isCapital());}
+        if (getNetworkObject().isServer()) {
+            if (mCapital.get() == null) {
+                log.warning("The Capital is null");
+            }
+            mHaveCapital.set(mCapital.get().isCapital());
+        }
     }
 }
