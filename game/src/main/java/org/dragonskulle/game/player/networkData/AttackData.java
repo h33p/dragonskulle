@@ -5,6 +5,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -16,6 +18,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
+@Log
 public class AttackData implements INetSerializable {
     private int mFromQ;
     private int mFromR;
@@ -62,7 +65,10 @@ public class AttackData implements INetSerializable {
     }
 
     public Building getDefender(HexagonMap map) {
-        HexagonTile tile = map.getTile(mFromQ, mFromR);
+        HexagonTile tile = map.getTile(mToQ, mToR);
+        if (tile.getBuilding().getTile() == null) {
+        	log.severe("SOmethings broken");
+        }
         return tile == null ? null : tile.getBuilding();
     }
 }
