@@ -244,59 +244,54 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
             List<UITextButtonFrame> mButtonChildren) {
         HashMap<String, Reference<GameObject>> buttonMap = new HashMap<>();
         mButtonChildren.addAll(this.mAdditionalItems);
-        getGameObject()
-                .buildChild(
-                        "auto_built_children",
-                        (menu) -> {
-                            for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-                                 i < mButtonChildrenSize;
-                                 i++) {
-                                UITextButtonFrame mButtonChild = mButtonChildren.get(i);
-                                int finalI = i;
-                                Reference<GameObject> button_reference =
-                                        getGameObject()
-                                                .buildChild(
-                                                        "drawer_child_" + i,
-                                                        new TransformUI(true),
-                                                        (self) -> {
-                                                            self.getTransform(TransformUI.class)
-                                                                    .setPosition(
-                                                                            0f,
-                                                                            (0.8f
-                                                                                    * finalI
-                                                                                    / mButtonChildrenSize
-                                                                                    * 1.3f)
-                                                                                    - offsetToTop);
-                                                            self.getTransform(TransformUI.class)
-                                                                    .setMargin(
-                                                                            0.075f, 0f, -0.075f,
-                                                                            0f);
-                                                            self.addComponent(
-                                                                    new UIRenderable(
-                                                                            new SampledTexture(
-                                                                                    "ui/wide_button_new.png")));
-                                                            UIButton button =
-                                                                    new UIButton(
-                                                                            new UIText(
-                                                                                    new Vector3f(
-                                                                                            0f, 0f,
-                                                                                            0f),
-                                                                                    Font
-                                                                                            .getFontResource(
-                                                                                                    "Rise of Kingdom.ttf"),
-                                                                                    mButtonChild
-                                                                                            .getText()),
-                                                                            mButtonChild
-                                                                                    .getOnClick(),
-                                                                            mButtonChild
-                                                                                    .isStartEnabled());
-                                                            self.addComponent(button);
-                                                        });
 
-                                buttonMap.put(mButtonChild.getId(), button_reference);
-                            }
-                        });
+        for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
+             i < mButtonChildrenSize;
+             i++) {
+            UITextButtonFrame mButtonChild = mButtonChildren.get(i);
+            int finalI = i;
+            Reference<GameObject> button_reference =
+                    getGameObject()
+                            .buildChild(
+                                    "drawer_child_" + i,
+                                    new TransformUI(true),
+                                    (self) -> {
+                                        self.getTransform(TransformUI.class)
+                                                .setPosition(
+                                                        0f,
+                                                        (0.8f
+                                                                * finalI
+                                                                / mButtonChildrenSize
+                                                                * 1.3f)
+                                                                - offsetToTop);
+                                        self.getTransform(TransformUI.class)
+                                                .setMargin(
+                                                        0.075f, 0f, -0.075f,
+                                                        0f);
+                                        self.addComponent(
+                                                new UIRenderable(
+                                                        new SampledTexture(
+                                                                "ui/wide_button_new.png")));
+                                        UIButton button =
+                                                new UIButton(
+                                                        new UIText(
+                                                                new Vector3f(
+                                                                        0f, 0f,
+                                                                        0f),
+                                                                Font
+                                                                        .getFontResource(
+                                                                                "Rise of Kingdom.ttf"),
+                                                                mButtonChild
+                                                                        .getText()),
+                                                        mButtonChild
+                                                                .getOnClick(),
+                                                        mButtonChild
+                                                                .isStartEnabled());
+                                        self.addComponent(button);
+                                    });
 
+            buttonMap.put(mButtonChild.getId(), button_reference);
+        }
         return buttonMap;
     }
 
