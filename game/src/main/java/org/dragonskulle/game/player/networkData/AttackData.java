@@ -66,9 +66,6 @@ public class AttackData implements INetSerializable {
 
     public Building getDefender(HexagonMap map) {
         HexagonTile tile = map.getTile(mToQ, mToR);
-        if (tile.getBuilding().getTile() == null) {
-        	log.severe("SOmethings broken");
-        }
         return tile == null ? null : tile.getBuilding();
     }
 }

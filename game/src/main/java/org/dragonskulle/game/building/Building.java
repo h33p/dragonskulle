@@ -280,12 +280,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public boolean isBuildingAttackable(Building target) {
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         HexagonTile targetTile = target.getTile();
-        if (targetTile == null) {
-        	log.severe("Its null");
-        }
-        log.severe("Q value " + targetTile.getQ() + " R value " + targetTile.getR());
         for (HexagonTile tile : attackTiles) {
-        	log.severe("Q value tile " + tile.getQ() + " R value tile " + tile.getR());
             if (tile.equals(targetTile)) return true;
         }
         return false;

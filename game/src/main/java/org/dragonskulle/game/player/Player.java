@@ -536,13 +536,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.warning("Unable to parse AttackData: defending building is null.");
             return;
         }
-        
-        if (attacker.getTile() == null) {
-        	log.warning("Cannot get its tile");
-        }
 
-        /*Building actualAttacker = map.getTile(attacker.getQ(), attacker.getR()).getBuilding();
-        Building actualDefender = map.getTile(defender.getQ(), defender.getR()).getBuilding();*/
         // Try to run an attack.
         attackAttempt(attacker, defender);
     }
