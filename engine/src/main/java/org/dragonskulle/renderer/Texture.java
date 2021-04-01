@@ -3,7 +3,6 @@ package org.dragonskulle.renderer;
 
 import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -24,30 +23,35 @@ public class Texture implements NativeResource {
     protected ByteBuffer mBuffer;
     protected String mName;
 
-    public static Resource<Texture> getResource(String inName) {
-        String name = String.format("textures/%s", inName);
-
-        return ResourceManager.getResource(
+    static {
+        ResourceManager.registerResource(
                 Texture.class,
-                (buffer) -> {
-                    Texture ret = new Texture();
-                    ByteBuffer buf = MemoryUtil.memAlloc(buffer.length);
-                    buf.put(buffer);
-                    buf.rewind();
-                    try (MemoryStack stack = stackPush()) {
-                        IntBuffer pX = stack.ints(0);
-                        IntBuffer pY = stack.ints(0);
-                        IntBuffer pC = stack.ints(0);
-                        ret.mBuffer = stbi_load_from_memory(buf, pX, pY, pC, STBI_rgb_alpha);
-                        ret.mWidth = pX.get(0);
-                        ret.mHeight = pY.get(0);
-                        ret.mChannels = STBI_rgb_alpha;
-                        ret.mName = inName;
-                    }
-                    MemoryUtil.memFree(buf);
-                    return ret;
-                },
-                name);
+                Object.class,
+                (args) -> String.format("textures/%s", args.getName()),
+                (buffer, args) -> loadTexture(buffer, args.getName()));
+    }
+
+    public static Resource<Texture> getResource(String name) {
+        return ResourceManager.getResource(Texture.class, name);
+    }
+
+    private static Texture loadTexture(byte[] buffer, String name) {
+        Texture ret = new Texture();
+        ByteBuffer buf = MemoryUtil.memAlloc(buffer.length);
+        buf.put(buffer);
+        buf.rewind();
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer pX = stack.ints(0);
+            IntBuffer pY = stack.ints(0);
+            IntBuffer pC = stack.ints(0);
+            ret.mBuffer = stbi_load_from_memory(buf, pX, pY, pC, STBI_rgb_alpha);
+            ret.mWidth = pX.get(0);
+            ret.mHeight = pY.get(0);
+            ret.mChannels = STBI_rgb_alpha;
+            ret.mName = name;
+        }
+        MemoryUtil.memFree(buf);
+        return ret;
     }
 
     @Override

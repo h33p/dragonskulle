@@ -42,12 +42,11 @@ public class Resource<T> implements NativeResource {
     /**
      * Try reloading the underlying resource object
      *
-     * @param loader loader to reload the resource with.
      * @return {@code true} if reload was successful. On false, the underlying object is left
      *     unchanged.
      */
-    public boolean reload(IResourceLoader<T> loader) {
-        return instance.reload(loader);
+    public boolean reload() {
+        return instance.reload();
     }
 
     @Override

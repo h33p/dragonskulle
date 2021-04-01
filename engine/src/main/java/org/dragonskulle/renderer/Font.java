@@ -97,129 +97,123 @@ public final class Font extends Texture {
     private static final int ATLAS_SIZE = 2048;
     public static final int LINE_HEIGHT = 128;
 
-    public static Resource<Font> getFontResource(String inName) {
-        String name = String.format("fonts/%s", inName);
-
-        return ResourceManager.getResource(
+    static {
+        ResourceManager.registerResource(
                 Font.class,
-                (buffer) -> {
-                    try {
+                Object.class,
+                (a) -> String.format("fonts/%s", a.getName()),
+                (buffer, __) -> {
+                    Font ret = new Font();
+                    ByteBuffer buf = MemoryUtil.memAlloc(buffer.length);
+                    buf.put(buffer);
+                    buf.rewind();
+                    try (MemoryStack stack = stackPush()) {
 
-                        Font ret = new Font();
-                        ByteBuffer buf = MemoryUtil.memAlloc(buffer.length);
-                        buf.put(buffer);
-                        buf.rewind();
-                        try (MemoryStack stack = stackPush()) {
+                        STBTTFontinfo info = STBTTFontinfo.callocStack(stack);
 
-                            STBTTFontinfo info = STBTTFontinfo.callocStack(stack);
-
-                            if (!stbtt_InitFont(info, buf, 0)) {
-                                MemoryUtil.memFree(buf);
-                                return null;
-                            }
-
-                            float scale = stbtt_ScaleForPixelHeight(info, (float) LINE_HEIGHT);
-
-                            IntBuffer pAscent = stack.ints(0);
-                            IntBuffer pDescent = stack.ints(0);
-                            IntBuffer pLineGap = stack.ints(0);
-                            stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
-
-                            ret.nextLineOffset =
-                                    (int) ((pAscent.get(0) - pDescent.get(0)) * scale)
-                                            + LINE_HEIGHT;
-
-                            IntBuffer pOffsetToNext = stack.ints(0);
-                            IntBuffer pOffsetToStart = stack.ints(0);
-
-                            IntBuffer pSX = stack.ints(0);
-                            IntBuffer pSY = stack.ints(0);
-                            IntBuffer pEX = stack.ints(0);
-                            IntBuffer pEY = stack.ints(0);
-
-                            ret.mBuffer = MemoryUtil.memCalloc(ATLAS_SIZE * ATLAS_SIZE * 4);
-                            ret.mWidth = ATLAS_SIZE;
-                            ret.mHeight = ATLAS_SIZE;
-                            ret.mChannels = 4;
-
-                            ByteBuffer tmpBuffer =
-                                    MemoryUtil.memCalloc(LINE_HEIGHT * 2 * LINE_HEIGHT * 2);
-
-                            BoxPacker<Glyph> packer = new BoxPacker<>(ret.mWidth, ret.mHeight);
-
-                            ArrayList<Glyph> glyphList = new ArrayList<>();
-
-                            for (int[] range : GLYPH_RANGES) {
-                                int start = range[0];
-                                int end = range[1];
-
-                                for (int i = start; i <= end; i++) {
-                                    stbtt_GetCodepointHMetrics(
-                                            info, i, pOffsetToNext, pOffsetToStart);
-                                    stbtt_GetCodepointBitmapBox(
-                                            info, i, scale, scale, pSX, pSY, pEX, pEY);
-
-                                    glyphList.add(
-                                            new Glyph(
-                                                    pEX.get(0) - pSX.get(0),
-                                                    pEY.get(0) - pSY.get(0),
-                                                    pEY.get(0),
-                                                    (int) (pOffsetToStart.get(0) * scale),
-                                                    (int) (pOffsetToNext.get(0) * scale),
-                                                    i));
-                                }
-                            }
-
-                            glyphList.sort(
-                                    (a, b) ->
-                                            -Integer.compare(
-                                                    a.getWidth() * a.getHeight(),
-                                                    b.getWidth() * b.getHeight()));
-
-                            for (Glyph glyph : glyphList) {
-                                BoxPacker.BoxNode<Glyph> packedGlyph = packer.pack(glyph, 1);
-
-                                ret.mBuffer.rewind();
-                                tmpBuffer.rewind();
-                                stbtt_MakeCodepointBitmap(
-                                        info,
-                                        tmpBuffer,
-                                        glyph.getWidth(),
-                                        glyph.getHeight(),
-                                        LINE_HEIGHT * 2,
-                                        scale,
-                                        scale,
-                                        glyph.mCode);
-                                tmpBuffer.rewind();
-
-                                for (int i = 0; i < glyph.mHeight; i++) {
-                                    for (int o = 0; o < glyph.mWidth; o++) {
-                                        ret.mBuffer.position(
-                                                ((packedGlyph.getX() + o)
-                                                                + (packedGlyph.getY() + i)
-                                                                        * ret.mWidth)
-                                                        * 4);
-                                        ret.mBuffer.put((byte) 255);
-                                        ret.mBuffer.put((byte) 255);
-                                        ret.mBuffer.put((byte) 255);
-                                        byte alpha = tmpBuffer.get(i * LINE_HEIGHT * 2 + o);
-                                        ret.mBuffer.put(alpha);
-                                        ret.mBuffer.rewind();
-                                    }
-                                }
-
-                                ret.mCharToGlyph.put(glyph.mCode, packedGlyph);
-                            }
-                            MemoryUtil.memFree(tmpBuffer);
+                        if (!stbtt_InitFont(info, buf, 0)) {
+                            MemoryUtil.memFree(buf);
+                            return null;
                         }
-                        MemoryUtil.memFree(buf);
-                        return ret;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
+
+                        float scale = stbtt_ScaleForPixelHeight(info, (float) LINE_HEIGHT);
+
+                        IntBuffer pAscent = stack.ints(0);
+                        IntBuffer pDescent = stack.ints(0);
+                        IntBuffer pLineGap = stack.ints(0);
+                        stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
+
+                        ret.nextLineOffset =
+                                (int) ((pAscent.get(0) - pDescent.get(0)) * scale) + LINE_HEIGHT;
+
+                        IntBuffer pOffsetToNext = stack.ints(0);
+                        IntBuffer pOffsetToStart = stack.ints(0);
+
+                        IntBuffer pSX = stack.ints(0);
+                        IntBuffer pSY = stack.ints(0);
+                        IntBuffer pEX = stack.ints(0);
+                        IntBuffer pEY = stack.ints(0);
+
+                        ret.mBuffer = MemoryUtil.memCalloc(ATLAS_SIZE * ATLAS_SIZE * 4);
+                        ret.mWidth = ATLAS_SIZE;
+                        ret.mHeight = ATLAS_SIZE;
+                        ret.mChannels = 4;
+
+                        ByteBuffer tmpBuffer =
+                                MemoryUtil.memCalloc(LINE_HEIGHT * 2 * LINE_HEIGHT * 2);
+
+                        BoxPacker<Glyph> packer = new BoxPacker<>(ret.mWidth, ret.mHeight);
+
+                        ArrayList<Glyph> glyphList = new ArrayList<>();
+
+                        for (int[] range : GLYPH_RANGES) {
+                            int start = range[0];
+                            int end = range[1];
+
+                            for (int i = start; i <= end; i++) {
+                                stbtt_GetCodepointHMetrics(info, i, pOffsetToNext, pOffsetToStart);
+                                stbtt_GetCodepointBitmapBox(
+                                        info, i, scale, scale, pSX, pSY, pEX, pEY);
+
+                                glyphList.add(
+                                        new Glyph(
+                                                pEX.get(0) - pSX.get(0),
+                                                pEY.get(0) - pSY.get(0),
+                                                pEY.get(0),
+                                                (int) (pOffsetToStart.get(0) * scale),
+                                                (int) (pOffsetToNext.get(0) * scale),
+                                                i));
+                            }
+                        }
+
+                        glyphList.sort(
+                                (a, b) ->
+                                        -Integer.compare(
+                                                a.getWidth() * a.getHeight(),
+                                                b.getWidth() * b.getHeight()));
+
+                        for (Glyph glyph : glyphList) {
+                            BoxPacker.BoxNode<Glyph> packedGlyph = packer.pack(glyph, 1);
+
+                            ret.mBuffer.rewind();
+                            tmpBuffer.rewind();
+                            stbtt_MakeCodepointBitmap(
+                                    info,
+                                    tmpBuffer,
+                                    glyph.getWidth(),
+                                    glyph.getHeight(),
+                                    LINE_HEIGHT * 2,
+                                    scale,
+                                    scale,
+                                    glyph.mCode);
+                            tmpBuffer.rewind();
+
+                            for (int i = 0; i < glyph.mHeight; i++) {
+                                for (int o = 0; o < glyph.mWidth; o++) {
+                                    ret.mBuffer.position(
+                                            ((packedGlyph.getX() + o)
+                                                            + (packedGlyph.getY() + i) * ret.mWidth)
+                                                    * 4);
+                                    ret.mBuffer.put((byte) 255);
+                                    ret.mBuffer.put((byte) 255);
+                                    ret.mBuffer.put((byte) 255);
+                                    byte alpha = tmpBuffer.get(i * LINE_HEIGHT * 2 + o);
+                                    ret.mBuffer.put(alpha);
+                                    ret.mBuffer.rewind();
+                                }
+                            }
+
+                            ret.mCharToGlyph.put(glyph.mCode, packedGlyph);
+                        }
+                        MemoryUtil.memFree(tmpBuffer);
                     }
-                },
-                name);
+                    MemoryUtil.memFree(buf);
+                    return ret;
+                });
+    }
+
+    public static Resource<Font> getFontResource(String name) {
+        return ResourceManager.getResource(Font.class, name);
     }
 
     @Override

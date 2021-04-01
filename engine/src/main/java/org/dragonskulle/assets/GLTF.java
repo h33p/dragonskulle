@@ -259,6 +259,25 @@ public class GLTF implements NativeResource {
     private List<Scene> mScenes = new ArrayList<>();
     private List<Camera> mCameras = new ArrayList<>();
 
+    static {
+        ResourceManager.registerResource(
+                GLTF.class,
+                Object.class,
+                (args) -> String.format("gltf/%s.gltf", args.getName()),
+                (buffer, __) -> new GLTF(new String(buffer)));
+    }
+
+    /**
+     * Load a GLTF resource
+     *
+     * @param name name of the glTF file. gltf subdirectory will be added, alongside the .gltf
+     *     extension.
+     * @return GLTF resource if successfully loaded, {@code null} otherwise
+     */
+    public static Resource<GLTF> getResource(String name) {
+        return ResourceManager.getResource(GLTF.class, name);
+    }
+
     /**
      * Parses a floating point variable from JSON object
      *
@@ -452,7 +471,7 @@ public class GLTF implements NativeResource {
                 JSONObject buf = (JSONObject) obj;
                 bufferList.add(
                         ResourceManager.getResource(
-                                byte[].class, (b) -> b, "gltf/" + (String) buf.get("uri")));
+                                byte[].class, "gltf/" + (String) buf.get("uri")));
             }
         }
 
@@ -904,29 +923,6 @@ public class GLTF implements NativeResource {
      */
     public Scene getScene(String name) {
         return mScenes.stream().filter(s -> s.getName().equals(name)).findFirst().orElse(null);
-    }
-
-    /**
-     * Load a GLTF resource
-     *
-     * @param name name of the glTF file. gltf subdirectory will be added, alongside the .gltf
-     *     extension.
-     * @return GLTF resource if successfully loaded, {@code null} otherwise
-     */
-    public static Resource<GLTF> getResource(String name) {
-        name = String.format("gltf/%s.gltf", name);
-
-        return ResourceManager.getResource(
-                GLTF.class,
-                (buffer) -> {
-                    try {
-                        return new GLTF(new String(buffer));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                },
-                name);
     }
 
     @Override
