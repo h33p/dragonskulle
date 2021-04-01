@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+
+import java.util.List;
+
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -16,6 +19,8 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
+import org.dragonskulle.game.player.networkData.AttackData;
+import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
@@ -225,9 +230,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class))) {
+                        if (hasPlayerGotBuilding(building.getReference(Building.class)) && mScreenOn != Screen.ATTACKING_SCREEN) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+                        }
+                        else if (mScreenOn == Screen.ATTACKING_SCREEN) {
+                        	Reference<Building> defendingBuilding = building.getReference(Building.class);
+                        	
+                        	log.info("Attacking Building " + mBuildingChosen.get().getOwnerID() + " Defending Building " + defendingBuilding.get().getOwnerID());
+                        	
+                        	List<Building> attackableBuildings = mBuildingChosen.get().getAttackableBuildings();
+                        	
+                        	for (Building buildingToAttack : attackableBuildings) {
+                        		if (buildingToAttack.getNetworkObject().getId() == defendingBuilding.get().getNetworkObject().getId()) {
+                        			log.info("FOUND ");
+                        			player
+                                     .getClientAttackRequest()
+                                     .invoke(new AttackData(mBuildingChosen.get(), defendingBuilding.get())); // Send Data
+                        		}
+                        	}
+                        	setScreenOn(Screen.MAP_SCREEN);
+                        	mBuildingChosen = null;
+                        	
                         }
                     } else {
                         // Checks if cannot build here

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -25,6 +27,7 @@ import org.joml.Vector3f;
 
 /** @author Oscar L */
 @Accessors(prefix = "m")
+@Log
 public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStart {
     private final IGetBuildingChosen mGetBuildingChosen;
     private final ISetBuildingChosen mSetBuildingChosen;
@@ -117,44 +120,22 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 "Attack Selected Building",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
+                	log.severe("In attacking stuff");
 
-                    // Send attackView to server
-                    //            mPlayer.get()
-                    //                    .getClientAttackRequest()
-                    //                    .invoke(
-                    //                            new AttackData(
-                    //                                    mBuildingChosen.get(),
-                    //                                    attackableBuilding));
-                    // for (Building attackableBuilding :
-                    // mBuildingChosen.get().getAttackableBuildings()) {
-                    //                attackBuildingsButton.add(
-                    //                        new UITextButtonFrame("Attack buildingSelectedView",
-                    // (handle, __) -> {
-                    //                            // -- Need way to show different
-                    // buildingSelectedView
-                    //
-                    //                            // Send attackView to server
-                    //                            mPlayer.get()
-                    //                                    .getClientAttackRequest()
-                    //                                    .invoke(
-                    //                                            new AttackData(
-                    //                                                    mBuildingChosen.get(),
-                    //                                                    attackableBuilding)); //
-                    // TODO Send
-                    //                            setHexChosen.set(null);
-                    //                            mBuildingChosen = null;
-                    //                            notifyScreenChange.call(Screen.MAP_SCREEN);
-                    //                        })
-                    //                );
-                    //            }
-                    //
-                    //
-                    //
-                    // TODO change so this button will display the attackable buildings, then if the
-                    // user clicks on one it will show a prompt to confirm.
-                    mSetHexChosen.set(null);
-                    mSetBuildingChosen.set(null);
-                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                    Reference<Building> buildingChosen = mGetBuildingChosen.get();
+                    if (buildingChosen != null && buildingChosen.isValid()) {
+                    	log.severe("Got attacking building " + buildingChosen.get().getOwnerID());
+                    	// TODO Change tiles which can be attacked
+
+                    	
+                    	mSetHexChosen.set(null);
+                    	mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
+                    }
+                    else {
+                    	mSetHexChosen.set(null);
+                    	mSetBuildingChosen.set(null);
+                    	mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                    }
                 },
                 false);
     }
