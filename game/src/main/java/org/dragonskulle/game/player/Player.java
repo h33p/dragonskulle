@@ -16,6 +16,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Time;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -62,6 +63,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     
     private Reference<Building> mCapital = new Reference<Building>(null);
     private SyncBool mHaveCapital = new SyncBool(true);
+    
+    private final float ATTACK_COOLDOWN = 20f;
+    private float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
+    
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -528,11 +533,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link AttackData} sent by the client.
      */
     void attackEvent(AttackData data) {
-
-    	if (!stillHaveCapital()) {
-    		log.warning("You have lost your capital");
-    		return;
-    	}
+    	
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse AttackData: Map is null.");
@@ -612,6 +613,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the attack is eligible, otherwise {@code false}.
      */
     public boolean attackCheck(Building attacker, Building defender) {
+    	
+    	if (!stillHaveCapital()) {
+    		log.warning("You have lost your capital");
+    		return false;
+    	}
+    	
+    	if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
+    		log.warning("Still in cooldown");
+    		return false;
+    	}
+    	
+    	lastAttack = Time.getTimeInSeconds();
 
         if (attacker == null) {
             log.info("Attacker is null.");
