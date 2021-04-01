@@ -192,7 +192,7 @@ public class MapEffects extends Component implements IOnStart {
     public void onStart() {
         Scene.getActiveScene().registerSingleton(this);
         ensureMapReference();
-        System.out.println(mMapReference);
+        log.info(mMapReference.toString());
     }
 
     @Override

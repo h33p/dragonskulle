@@ -396,7 +396,7 @@ public class App implements NativeResource {
                                 slider.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
 
                                 UISlider newSlider =
-                                        new UISlider((uiSlider, val) -> System.out.println(val));
+                                        new UISlider((uiSlider, val) -> log.info("Value " + val));
 
                                 newSlider.setValue(
                                         Settings.getInstance()
