@@ -165,6 +165,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (mPlayer == null) return;
 
+        if (!mPlayer.get().stillHaveCapital()) {
+        	log.warning("You've lost your capital");
+        	return;
+        }
         // Update token
         if (mPlayer.isValid()) {
             updateVisibleTokens();
@@ -316,7 +320,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                if (mMenuDrawer.isValid()) {
+                if (mMenuDrawer.isValid() && mPlayer.get().stillHaveCapital()) {
                     if (attack_button != null && attack_button.isValid()) {
                         attack_button.get().setEnabled(true);
                         attack_button.get().getComponent(UIButton.class).get().enable();
@@ -338,7 +342,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 highlightSelectedTile(StandardHighlightType.VALID);
                 break;
             case TILE_SCREEN:
-                if (mMenuDrawer.isValid()) {
+                if (mMenuDrawer.isValid() && mPlayer.get().stillHaveCapital()) {
                     if (attack_button != null && attack_button.isValid()) {
                         attack_button.get().setEnabled(false);
                         attack_button.get().getComponent(UIButton.class).get().disable();
@@ -360,7 +364,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 highlightSelectedTile(StandardHighlightType.PLAIN);
                 break;
             case ATTACK_SCREEN:
-                if (mMenuDrawer.isValid()) {
+                if (mMenuDrawer.isValid() && mPlayer.get().stillHaveCapital()) {
                     if (attack_button != null && attack_button.isValid()) {
                         attack_button.get().setEnabled(true);
                         attack_button.get().getComponent(UIButton.class).get().enable();

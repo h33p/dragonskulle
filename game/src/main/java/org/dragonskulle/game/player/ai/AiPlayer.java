@@ -76,7 +76,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     @Override
     public void fixedUpdate(float deltaTime) {
         // If you can play simulate the input
-        if (shouldPlayGame(deltaTime) && mServerSide) {
+        if (shouldPlayGame(deltaTime) && mServerSide && mPlayer.get().stillHaveCapital()) {
             log.info("Playing game");
             simulateInput();
         }

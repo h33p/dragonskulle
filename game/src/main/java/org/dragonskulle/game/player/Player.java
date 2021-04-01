@@ -29,6 +29,7 @@ import org.dragonskulle.game.player.networkData.StatData;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
@@ -58,6 +59,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+    
+    private Reference<Building> mCapital = new Reference<Building>(null);
+    private SyncBool mHaveCapital = new SyncBool(true);
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -143,8 +147,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
+    	updateHaveCapital();
+    	if (stillHaveCapital()) {
         // Update the token count.
-        updateTokens(deltaTime);
+        updateTokens(deltaTime);}
     }
 
     @Override
@@ -184,6 +190,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
         buildingToBecomeCapital.setCapital(true);
+        mCapital = buildingToBecomeCapital.getReference(Building.class);
     }
 
     /**
@@ -417,7 +424,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-
+    	if (!stillHaveCapital()) {
+    		log.warning("Lost Capital");
+    		return;
+    	}
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse BuildData: Map is null.");
@@ -519,6 +529,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void attackEvent(AttackData data) {
 
+    	if (!stillHaveCapital()) {
+    		log.warning("You have lost your capital");
+    		return;
+    	}
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse AttackData: Map is null.");
@@ -644,6 +658,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link SellData} sent by the client.
      */
     void sellEvent(SellData data) {
+    	
+    	if (!stillHaveCapital()) {
+    		log.warning("You have lost your capital");
+    		return;
+    	}
 
         HexagonMap map = getMap();
         if (map == null) {
@@ -708,6 +727,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link StatData} sent by the client.
      */
     void statEvent(StatData data) {
+    	
+    	if (!stillHaveCapital()) {
+    		log.warning("You have lost your capital");
+    		return;
+    	}
 
         HexagonMap map = getMap();
         if (map == null) {
@@ -767,5 +791,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // TODO: Also check the desired stat.
 
         return true;
+    }
+    
+    /**
+     * This will return whether the player still has their capital
+     * @return {@code true} if they have there capital {@code false} if not
+     */
+    public boolean stillHaveCapital() {
+    	return mHaveCapital.get();
+    }
+    
+    private void updateHaveCapital() {
+    	if (getNetworkObject().isServer()) {
+    	if (mCapital.get() == null) {
+    		log.warning("This is null");
+    	}
+    	mHaveCapital.set(mCapital.get().isCapital());}
     }
 }
