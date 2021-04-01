@@ -566,24 +566,30 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attack is: " + won);
         mTokens.set(mTokens.get() - COST);
 
-        /*	TODO Sort this out.  Need to change owners.
+       	//TODO Sort this out.  Need to change owners.
         // If you've won attack
         if (won) {
-            Player player = defender.getOwner();
-
-            if (player != null) {
-                player.mOwnedBuildings.remove(defenderBuilding.getTile());
-            } else {
-                log.warning("Player not found!");
+            if (defender.isCapital()) {
+            	defender.setCapital(false);
+            	
+            	// Update stats
+            	ArrayList<SyncStat<?>> stats = defender.getStats();
+            	for (SyncStat<?> stat : stats) {
+            		stat.set(0);
+            	}
+            	defender.afterStatChange();
             }
+            
+            Player oldOwner = defender.getOwner();
+            oldOwner.removeOwnership(defender);
+            addOwnership(defender);
 
-            mOwnedBuildings.put(
-                    defenderBuilding.getTile(), defenderBuilding.getReference(Building.class));
-            defenderBuilding.getNetworkObject().setOwnerId(attackingBuilding.getOwnerID());
-        }*/
+           defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
+            
+        }
         log.info("Done");
 
-        return true;
+        return won;
     }
 
     /**
