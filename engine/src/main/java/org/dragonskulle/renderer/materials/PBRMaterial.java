@@ -22,6 +22,7 @@ import org.dragonskulle.renderer.ShaderBuf.MacroDefinition;
 import org.dragonskulle.renderer.ShaderKind;
 import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
@@ -85,17 +86,24 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
                             ShaderKind.FRAGMENT_SHADER,
                             fragMacroDefs.stream().toArray(MacroDefinition[]::new));
 
-            mVertexBindingDescription = BindingDescription.instancedWithMatrix(NORMAL_OFFSET + 4);
+            mVertexBindingDescription =
+                    BindingDescription.instancedWithMatrixAndLights(NORMAL_OFFSET + 4, mLightCount);
             mVertexAttributeDescriptions =
                     AttributeDescription.withMatrix(
-                            new AttributeDescription(
-                                    1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
-                            new AttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
-                            new AttributeDescription(
-                                    1, 2, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
-                            new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
-                            new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
-                            new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET));
+                            AttributeDescription.withLights(
+                                    mLightCount,
+                                    new AttributeDescription(
+                                            1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
+                                    new AttributeDescription(
+                                            1, 1, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
+                                    new AttributeDescription(
+                                            1, 2, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
+                                    new AttributeDescription(
+                                            1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
+                                    new AttributeDescription(
+                                            1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
+                                    new AttributeDescription(
+                                            1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET)));
         }
     }
 
@@ -215,7 +223,6 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
         ShaderSet ret = sShaderSets.get(hash);
 
         if (ret == null) {
-            System.out.println("ALLOC NEW SHADER SET! " + (int) hash);
             ret = new StandardShaderSet(this);
             sShaderSets.put(hash, ret);
         }
@@ -223,8 +230,10 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
         return ret;
     }
 
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
+    public void writeVertexInstanceData(
+            int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
+        offset = Light.writeLights(offset, buffer, lights, getShaderSet().getLightCount());
         Scene.getActiveScene()
                 .getSingleton(Camera.class)
                 .getGameObject()

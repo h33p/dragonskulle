@@ -14,6 +14,7 @@ import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.lwjgl.PointerBuffer;
@@ -113,16 +114,17 @@ class DrawCallState implements NativeResource {
 
         List<Renderable> mObjects = new ArrayList<>();
 
-        public void updateInstanceBuffer(ShaderSet shaderSet, ByteBuffer buffer) {
+        public void updateInstanceBuffer(
+                ShaderSet shaderSet, ByteBuffer buffer, List<Light> lights) {
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
-                object.writeVertexInstanceData(cur_off, buffer);
+                object.writeVertexInstanceData(cur_off, buffer, lights);
                 cur_off += shaderSet.getVertexBindingDescription().size;
             }
         }
 
         public void slowUpdateInstanceBuffer(
-                ShaderSet shaderSet, PointerBuffer pData, long memory) {
+                ShaderSet shaderSet, PointerBuffer pData, long memory, List<Light> lights) {
             int shaderSetSize = shaderSet.getVertexBindingDescription().size;
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
@@ -137,7 +139,7 @@ class DrawCallState implements NativeResource {
 
                 ByteBuffer byteBuffer = pData.getByteBuffer(shaderSetSize);
 
-                object.writeVertexInstanceData(0, byteBuffer);
+                object.writeVertexInstanceData(0, byteBuffer, lights);
 
                 vkUnmapMemory(mDevice, memory);
 
@@ -287,12 +289,13 @@ class DrawCallState implements NativeResource {
         return offset;
     }
 
-    public void updateInstanceBuffer(ByteBuffer buffer) {
-        for (DrawData d : mDrawData.values()) d.updateInstanceBuffer(mShaderSet, buffer);
+    public void updateInstanceBuffer(ByteBuffer buffer, List<Light> lights) {
+        for (DrawData d : mDrawData.values()) d.updateInstanceBuffer(mShaderSet, buffer, lights);
     }
 
-    public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory) {
-        for (DrawData d : mDrawData.values()) d.slowUpdateInstanceBuffer(mShaderSet, pData, memory);
+    public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory, List<Light> lights) {
+        for (DrawData d : mDrawData.values())
+            d.slowUpdateInstanceBuffer(mShaderSet, pData, memory, lights);
     }
 
     @Override

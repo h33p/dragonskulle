@@ -88,10 +88,12 @@
                     "transform" : "org.dragonskulle.components.TransformHex",
                     "components" : [
                         {
-                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform"
+                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "enabled" : true
                         },
                         {
-                            "class_name" : "org.dragonskulle.game.building.Building"
+                            "class_name" : "org.dragonskulle.game.building.Building",
+                            "enabled" : true
                         }
                     ]
                 }
@@ -110,7 +112,8 @@
                     "transform" : "org.dragonskulle.components.TransformHex",
                     "components" : [
                         {
-                            "class_name" : "org.dragonskulle.game.player.Player"
+                            "class_name" : "org.dragonskulle.game.player.Player",
+                            "enabled" : true
                         }
                     ]
                 }
@@ -128,10 +131,12 @@
                     "transform" : "org.dragonskulle.components.TransformHex",
                     "components" : [
                         {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer"
+                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
+                            "enabled" : true
                         },
                         {
-                            "class_name" : "org.dragonskulle.game.player.Player"
+                            "class_name" : "org.dragonskulle.game.player.Player",
+                            "enabled" : true
                         }
                     ]
                 }

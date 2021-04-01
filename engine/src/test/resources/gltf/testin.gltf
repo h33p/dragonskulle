@@ -47,6 +47,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mAxialCoordinate",
@@ -84,6 +85,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.ui.UIText",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mVerticalAlignment",

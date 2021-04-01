@@ -67,6 +67,14 @@ public class App implements NativeResource {
 
         addDebugUI(mainScene);
 
+        mainScene.addRootObject(
+                new GameObject(
+                        "light",
+                        (light) -> {
+                            light.addComponent(new Light());
+                            light.getTransform(Transform3D.class).setRotation(45f, 0f, 45f);
+                        }));
+
         GameObject cameraRig =
                 new GameObject(
                         "mainCamera",

@@ -69,6 +69,9 @@ class VulkanPipeline implements NativeResource {
                 descOut.location(descIn.location);
                 descOut.format(descIn.format);
                 descOut.offset(descIn.offset);
+
+                // Implicitly shift location for per-instance data.
+                if (descIn.bindingID != 0) descOut.location(descOut.location() + 4);
             }
         }
 

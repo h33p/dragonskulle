@@ -19,8 +19,8 @@
                         1,
                         1
                     ],
-                    "intensity" : 1000,
-                    "type" : "point",
+                    "intensity" : 100,
+                    "type" : "directional",
                     "name" : "Light"
                 }
             ]
@@ -55,10 +55,10 @@
             },
             "name" : "Light",
             "rotation" : [
-                0.16907575726509094,
-                0.27217137813568115,
-                0.7558803558349609,
-                0.570947527885437
+                0.5174001455307007,
+                0.16679821908473969,
+                0.2575298547744751,
+                0.7988453507423401
             ],
             "translation" : [
                 4.076245307922363,
@@ -93,6 +93,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Spinner",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "sineSpeed",
@@ -143,6 +144,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -183,6 +185,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -218,6 +221,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -258,6 +262,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -298,6 +303,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -338,6 +344,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -378,6 +385,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -418,6 +426,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -458,6 +467,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -498,6 +508,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -538,6 +549,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -578,6 +590,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -618,6 +631,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -658,6 +672,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -698,6 +713,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -738,6 +754,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -778,6 +795,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -818,6 +836,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -858,6 +877,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -908,6 +928,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Spinner",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "spinSpeed",

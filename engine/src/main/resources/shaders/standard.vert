@@ -5,6 +5,8 @@
 #define NUM_LIGHTS 1
 #endif
 
+#define DNUM_LIGHTS (2 * NUM_LIGHTS)
+
 layout(push_constant) uniform PushConsts {
 	mat4 view;
 	mat4 proj;
@@ -16,12 +18,17 @@ layout(location = 2) in vec3 inColor;
 layout(location = 3) in vec2 inUV;
 
 layout(location = 4) in mat4 model;
-layout(location = 8) in vec4 instColor;
-layout(location = 9) in vec3 inCam;
-layout(location = 10) in float alphaCutoff;
-layout(location = 11) in float metallic;
-layout(location = 12) in float roughness;
-layout(location = 13) in float normal;
+
+layout(location = 8) in vec3 inLightDir[NUM_LIGHTS];
+layout(location = 8 + NUM_LIGHTS) in vec3 inLightCol[NUM_LIGHTS];
+
+layout(location = 8 + DNUM_LIGHTS) in vec4 instColor;
+layout(location = 9 + DNUM_LIGHTS) in vec3 inCam;
+
+layout(location = 10 + DNUM_LIGHTS) in float alphaCutoff;
+layout(location = 11 + DNUM_LIGHTS) in float metallic;
+layout(location = 12 + DNUM_LIGHTS) in float roughness;
+layout(location = 13 + DNUM_LIGHTS) in float normalMul;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragUV;
@@ -34,8 +41,8 @@ layout(location = 6) out float fragMetallic;
 layout(location = 7) out float fragRoughness;
 layout(location = 8) out float fragNormalMul;
 
-layout(location = 10) out vec3 lightDir[NUM_LIGHTS];
-layout(location = 10 + NUM_LIGHTS) out vec3 lightCol[NUM_LIGHTS];
+layout(location = 10) out vec3 fragLightDir[NUM_LIGHTS];
+layout(location = 10 + NUM_LIGHTS) out vec3 fragLightCol[NUM_LIGHTS];
 
 const float PI = 3.14159265358979323846;
 const float INV_PI = 1.0 / PI;
@@ -52,17 +59,14 @@ void main() {
 	fragAlphaCutoff = alphaCutoff;
 	fragMetallic = metallic;
 	fragRoughness = roughness;
-	fragNormalMul = normal;
+	fragNormalMul = normalMul;
 
-	vec3 lDir = vec3(-0.5, 0.7, -1.0);
+	/*vec3 lDir = vec3(-0.5, 0.7, -1.0);
 	float lIntensity = 10.0;
-	vec3 lColor = vec3(1.0);
+	vec3 lColor = vec3(1.0);*/
 
-	lightDir[0] = normalize(lDir);
-	lightCol[0] = lIntensity * lColor * INV_PI;
-
-	for (int i = 1; i < NUM_LIGHTS; i++) {
-		lightDir[i] = vec3(1, 0, 0);
-		lightCol[i] = vec3(1) * 0;
+	for (int i = 0; i < NUM_LIGHTS; i++) {
+		fragLightDir[i] = inLightDir[i];
+		fragLightCol[i] = inLightCol[i];
 	}
 }

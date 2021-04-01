@@ -286,6 +286,20 @@ public class GLTF implements NativeResource {
      * @param defaultValue default float value
      * @return parsed float value (defaultValue if failed to parse).
      */
+    private static boolean parseBool(JSONObject obj, String key, boolean defaultValue) {
+        Object val = obj.get(key);
+        if (val != null) return Boolean.parseBoolean(val.toString());
+        return defaultValue;
+    }
+
+    /**
+     * Parses a floating point variable from JSON object
+     *
+     * @param obj JSON to parse from
+     * @param key JSON key to read
+     * @param defaultValue default float value
+     * @return parsed float value (defaultValue if failed to parse).
+     */
     private static float parseFloat(JSONObject obj, String key, float defaultValue) {
         Object val = obj.get(key);
         if (val != null) return Float.parseFloat(val.toString());
@@ -801,6 +815,10 @@ public class GLTF implements NativeResource {
                     assignComponentField(comp, name, value);
                 }
             }
+
+            boolean enabled = parseBool(component, "enabled", true);
+
+            comp.setEnabled(enabled);
 
             gameObject.addComponent(comp);
         } catch (ClassNotFoundException e) {

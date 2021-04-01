@@ -271,7 +271,7 @@ public class Renderer implements NativeResource {
 
             if (discardedBuffer != null) discardedBuffer.free();
 
-            updateInstanceBuffer(image, objects);
+            updateInstanceBuffer(image, objects, lights);
             recordCommandBuffer(image, camera);
 
             VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
@@ -1164,7 +1164,7 @@ public class Renderer implements NativeResource {
     private TreeMap<Integer, List<DrawCallState>> mToPresort = new TreeMap<>();
     private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
 
-    void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables) {
+    void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables, List<Light> lights) {
 
         mToPresort.clear();
 
@@ -1256,7 +1256,7 @@ public class Renderer implements NativeResource {
 
                 for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
-                        state.updateInstanceBuffer(byteBuffer);
+                        state.updateInstanceBuffer(byteBuffer, lights);
                         state.endDrawData(ctx.imageIndex);
                     }
                 }
@@ -1265,7 +1265,7 @@ public class Renderer implements NativeResource {
             } else {
                 for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
-                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory);
+                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory, lights);
                         state.endDrawData(ctx.imageIndex);
                     }
                 }
