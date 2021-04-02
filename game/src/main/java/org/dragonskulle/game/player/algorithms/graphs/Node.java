@@ -2,6 +2,9 @@ package org.dragonskulle.game.player.algorithms.graphs;
 
 import java.util.ArrayList;
 
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.map.HexagonTile;
+
 /**
  * This is a class which contains all the info needed for a Node
  * 
@@ -13,6 +16,7 @@ public class Node {
 	private int nodeNum; // The node number
 	private double extraInfo; // The extra info for that node
 	private ArrayList<Connection> connections; // The Connections from that node
+	private Reference<HexagonTile> tile;
 
 	/**
 	 * This constructor assumes you know the extra info you want to be set
