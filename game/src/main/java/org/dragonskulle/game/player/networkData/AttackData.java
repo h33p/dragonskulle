@@ -56,12 +56,12 @@ public class AttackData implements INetSerializable {
         mToR = toTile.getR();
     }
 
-    public Building getAttackingFrom(HexagonMap map) {
+    public Building getAttacker(HexagonMap map) {
         HexagonTile tile = map.getTile(mFromQ, mFromR);
         return tile == null ? null : tile.getBuilding();
     }
 
-    public Building getAttackingTo(HexagonMap map) {
+    public Building getDefender(HexagonMap map) {
         HexagonTile tile = map.getTile(mFromQ, mFromR);
         return tile == null ? null : tile.getBuilding();
     }

@@ -200,7 +200,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
-                                mPlayer.get().getMapComponent().getGameObject().getTransform(),
+                                mPlayer.get().getMap().getGameObject().getTransform(),
                                 screenPos.x(),
                                 screenPos.y(),
                                 new Vector3f());
@@ -212,7 +212,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 // And then select the tile
                 Player player = mPlayer.get();
                 if (player != null) {
-                    HexagonMap component = player.getMapComponent();
+                    HexagonMap component = player.getMap();
                     if (component != null) {
                         mLastHexChosen = mHexChosen;
                         mHexChosen = component.getTile((int) pos.x, (int) pos.y);
@@ -231,9 +231,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         }
                     } else {
                         // Checks if cannot build here
-                        if (mPlayer.get()
-                                .buildingWithinRadius(
-                                        mPlayer.get().getTilesInRadius(1, mHexChosen))) {
+                        if (mHexChosen.isClaimed()) {
                             System.out.println("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
@@ -250,7 +248,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
-                                mPlayer.get().getMapComponent().getGameObject().getTransform(),
+                                mPlayer.get().getMap().getGameObject().getTransform(),
                                 screenPos.x(),
                                 screenPos.y(),
                                 new Vector3f());
@@ -378,7 +376,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void undoLastHighlight() {
         MapEffects effects = mMapEffects.get();
         if (effects != null && mLastHexChosen != null) {
-            final Player lastTileOwner = mPlayer.get().getTileOwner(mLastHexChosen);
+            final Player lastTileOwner = mLastHexChosen.getClaimant();
             if (lastTileOwner != null) {
                 effects.highlightTile(
                         mLastHexChosen,
@@ -402,10 +400,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             final Reference<Building> buildingReference =
                     obj.get().getGameObject().getComponent(Building.class);
             if (obj.get().isMine()) {
-                mPlayer.get().addOwnership(buildingReference);
+                mPlayer.get().addOwnership(buildingReference.get());
             } else if (buildingReference != null
-                    && mPlayer.get().thinksOwnsBuilding(buildingReference)) {
-                mPlayer.get().removeFromOwnedBuildings(buildingReference);
+                    && mPlayer.get().checkBuildingOwnership(buildingReference.get())) {
+                mPlayer.get().removeOwnership(buildingReference.get());
             }
         }
     }
