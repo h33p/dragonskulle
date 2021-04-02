@@ -1,7 +1,7 @@
-package com.natlowis.ai.search;
+package org.dragonskulle.game.player.ai.algorithms;
 
-import com.natlowis.ai.exceptions.GraphNodeException;
-import com.natlowis.ai.graphs.Connection;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
+import org.dragonskulle.game.player.algorithms.graphs.Connection;
 
 /**
  * An interface which is what a search algorithm should be like

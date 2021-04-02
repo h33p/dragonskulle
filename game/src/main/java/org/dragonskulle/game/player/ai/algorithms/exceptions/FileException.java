@@ -1,4 +1,4 @@
-package com.natlowis.ai.exceptions;
+package org.dragonskulle.game.player.ai.algorithms.exceptions;
 
 /**
  * An exception for files

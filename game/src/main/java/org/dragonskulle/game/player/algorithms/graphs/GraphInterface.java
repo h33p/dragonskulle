@@ -1,9 +1,9 @@
-package com.natlowis.ai.graphs;
+package org.dragonskulle.game.player.algorithms.graphs;
 
 import java.util.ArrayList;
 
-import com.natlowis.ai.exceptions.GraphException;
-import com.natlowis.ai.exceptions.GraphNodeException;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
 /**
  * This interface will specify the methods a graph will have.

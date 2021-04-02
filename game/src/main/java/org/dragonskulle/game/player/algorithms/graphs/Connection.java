@@ -1,4 +1,4 @@
-package com.natlowis.ai.graphs;
+package org.dragonskulle.game.player.algorithms.graphs;
 
 /**
  * The class which holds the information for a connection and provides access to

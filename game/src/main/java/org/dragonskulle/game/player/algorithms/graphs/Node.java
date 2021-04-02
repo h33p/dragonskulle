@@ -1,4 +1,4 @@
-package com.natlowis.ai.graphs;
+package org.dragonskulle.game.player.algorithms.graphs;
 
 import java.util.ArrayList;
 

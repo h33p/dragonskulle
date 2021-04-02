@@ -1,4 +1,4 @@
-package com.natlowis.ai.search.informed;
+package org.dragonskulle.game.player.ai.algorithms;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -7,11 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
-import com.natlowis.ai.exceptions.GraphNodeException;
-import com.natlowis.ai.graphs.Connection;
-import com.natlowis.ai.graphs.Graph;
-import com.natlowis.ai.search.SearchAlgorithm;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
+import org.dragonskulle.game.player.algorithms.graphs.Connection;
+import org.dragonskulle.game.player.algorithms.graphs.Graph;
 
 /**
  * Class which performs the A* Algorithm

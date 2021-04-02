@@ -1,4 +1,4 @@
-package com.natlowis.ai.graphs;
+package org.dragonskulle.game.player.algorithms.graphs;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -6,8 +6,8 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.natlowis.ai.exceptions.GraphException;
-import com.natlowis.ai.exceptions.GraphNodeException;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
 /**
  * 
