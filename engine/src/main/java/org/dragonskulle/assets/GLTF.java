@@ -258,6 +258,7 @@ public class GLTF implements NativeResource {
     private int mDefaultScene = 0;
     private List<Scene> mScenes = new ArrayList<>();
     private List<Camera> mCameras = new ArrayList<>();
+    private List<Light> mLights = new ArrayList<>();
 
     static {
         ResourceManager.registerResource(
@@ -619,6 +620,42 @@ public class GLTF implements NativeResource {
             }
         }
 
+        JSONObject extensions = (JSONObject) decoded.get("extensions");
+        if (extensions != null) {
+            JSONObject khrLights = (JSONObject) extensions.get("KHR_lights_punctual");
+            if (khrLights != null) {
+                JSONArray lights = (JSONArray) khrLights.get("lights");
+                if (lights != null) {
+                    for (Object obj : lights) {
+                        JSONObject light = (JSONObject) obj;
+
+                        Light addLight = new Light();
+
+                        addLight.setIntensity(parseFloat(light, "intensity", 1f));
+
+                        String type = (String) light.get("type");
+
+                        switch (type) {
+                            default:
+                                break;
+                        }
+
+                        JSONArray col = (JSONArray) light.get("color");
+
+                        if (col != null) {
+                            addLight.getColour()
+                                    .set(
+                                            parseFloat(col.get(0)),
+                                            parseFloat(col.get(1)),
+                                            parseFloat(col.get(2)));
+                        }
+
+                        mLights.add(addLight);
+                    }
+                }
+            }
+        }
+
         JSONArray nodes = (JSONArray) decoded.get("nodes");
 
         mDefaultScene = parseInt(decoded, "scene", 0);
@@ -686,10 +723,15 @@ public class GLTF implements NativeResource {
 
         JSONObject extensions = (JSONObject) node.get("extensions");
         JSONObject gameObj;
+        JSONObject lights;
 
         if (extensions != null) {
             gameObj = (JSONObject) extensions.get("DSKULLE_game_object");
-        } else gameObj = null;
+            lights = (JSONObject) extensions.get("KHR_lights_punctual");
+        } else {
+            gameObj = null;
+            lights = null;
+        }
 
         String transformType = gameObj != null ? (String) gameObj.get("transform") : null;
 
@@ -718,7 +760,12 @@ public class GLTF implements NativeResource {
                             Integer camera = parseInt(node, "camera");
                             if (camera != null) handle.addComponent(mCameras.get(camera));
 
-                            // TODO: parse lights
+                            if (lights != null) {
+                                Integer lidx = parseInt(lights, "light");
+                                if (lidx != null && lidx >= 0 && mLights.size() > lidx) {
+                                    handle.addComponent(mLights.get(lidx));
+                                }
+                            }
 
                             if (gameObj != null) {
                                 JSONArray comps = (JSONArray) gameObj.get("components");
