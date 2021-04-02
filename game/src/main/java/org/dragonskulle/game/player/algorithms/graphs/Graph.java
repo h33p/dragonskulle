@@ -28,11 +28,52 @@ public class Graph {
 	public Graph() {
 		graph = new HashMap<Integer, Node>();
 	}
-
+	
 	public Graph(HexagonMap map) {
-		;
+		
 	}
 
+	/**
+	 * This one assumes it takes data from a file
+	 * 
+	 * @param data
+	 * @throws GraphNodeException
+	 */
+	public Graph(ArrayList<ArrayList<String>> data) throws NumberFormatException, GraphException, GraphNodeException {
+
+		graph = new HashMap<Integer, Node>();
+
+		for (ArrayList<String> list : data) { // For each line in the arraylist will add it as a connection
+
+			addConnection(Integer.parseInt(list.get(0)), Integer.parseInt(list.get(1)),
+					Double.parseDouble(list.get(2)));
+		}
+	}
+
+	/**
+	 * Used if the data has special info for each node
+	 * 
+	 * @param dataNodes       The nodes to add with the special info
+	 * @param dataConnections The connections for the graph
+	 */
+	public Graph(ArrayList<ArrayList<String>> dataNodes, ArrayList<ArrayList<String>> dataConnections)
+			throws NumberFormatException, GraphException, GraphNodeException {
+
+		graph = new HashMap<Integer, Node>();
+
+		for (ArrayList<String> list : dataNodes) { // WIll add all the nodes with the special info
+			addNode(Integer.parseInt(list.get(0)));
+			setNodeSpecial(Integer.parseInt(list.get(0)), Double.parseDouble(list.get(1)));
+		}
+
+		for (ArrayList<String> list : dataConnections) { // For each line in the arraylist will add it as a connection
+
+			addConnection(Integer.parseInt(list.get(0)), Integer.parseInt(list.get(1)),
+					Double.parseDouble(list.get(2)));
+		}
+	}
+
+	
 	public void addNode(int nodeToAdd) throws GraphNodeException {
 
 		Node node = graph.get(nodeToAdd); // Gets the connection if in the graph. If not there gets null
@@ -47,6 +88,7 @@ public class Graph {
 
 	}
 
+	
 	public void addConnection(int originNode, int destinationNode, double weight)
 			throws GraphException, GraphNodeException {
 
@@ -72,6 +114,7 @@ public class Graph {
 		}
 	}
 
+	
 	public void removeNode(int nodeToRemove) throws GraphNodeException {
 
 		Deque<Integer> keys = new ArrayDeque<Integer>(); // WIll hold all the keys and nodes
@@ -106,6 +149,7 @@ public class Graph {
 
 	}
 
+	
 	public Object[][] getConnections() {
 
 		ArrayList<Object[]> connections = new ArrayList<>(); // The object which will have all the connections
@@ -122,6 +166,7 @@ public class Graph {
 		return connections.toArray(new Object[0][0]);
 	}
 
+	
 	public void removeConnection(int originNode, int destinationNode) throws GraphNodeException {
 
 		Node origin = graph.get(originNode); // Gets the node
@@ -135,11 +180,13 @@ public class Graph {
 
 	}
 
+	
 	public int getNumberOfNodes() {
 
 		return graph.size();
 	}
 
+	
 	public ArrayList<Connection> getConnection(int nodeNum) throws GraphNodeException {
 
 		Node node = graph.get(nodeNum);
@@ -221,6 +268,7 @@ public class Graph {
 		return null;
 	}
 
+	
 	public boolean inGraph(int node) {
 		return graph.containsKey(node);
 	}
