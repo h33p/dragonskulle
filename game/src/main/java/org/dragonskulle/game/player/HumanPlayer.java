@@ -162,8 +162,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (mPlayer == null) return;
 
-        if (!mPlayer.get().stillHaveCapital()) {
+        if (!mPlayer.get().hasCapital()) {
             log.warning("You've lost your capital");
+            setEnabled(false);
             return;
         }
         // Update token
@@ -308,6 +309,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
 
         MapEffects effects = mMapEffects.get();
+        if (mPlayer.get().hasCapital()) {
         switch (mScreenOn) {
             case MAP_SCREEN:
                 log.info("UPDATE MAP SCREEN");
@@ -321,8 +323,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                if (mMenuDrawer.isValid() && mPlayer.get().stillHaveCapital()) {
-                    if (attack_button != null && attack_button.isValid()) {
+                if (mMenuDrawer.isValid()) {
+                    if (attack_button != null) {
                         attack_button.get().setEnabled(true);
                         attack_button.get().getComponent(UIButton.class).get().enable();
                     }
@@ -343,7 +345,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 highlightSelectedTile(StandardHighlightType.VALID);
                 break;
             case TILE_SCREEN:
-                if (mMenuDrawer.isValid() && mPlayer.get().stillHaveCapital()) {
+                if (mMenuDrawer.isValid()) {
                     if (attack_button != null && attack_button.isValid()) {
                         attack_button.get().setEnabled(false);
                         attack_button.get().getComponent(UIButton.class).get().disable();
@@ -365,7 +367,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 highlightSelectedTile(StandardHighlightType.PLAIN);
                 break;
             case ATTACK_SCREEN:
-                if (mMenuDrawer.isValid() && mPlayer.get().stillHaveCapital()) {
+                if (mMenuDrawer.isValid()) {
                     if (attack_button != null && attack_button.isValid()) {
                         attack_button.get().setEnabled(true);
                         attack_button.get().getComponent(UIButton.class).get().enable();
@@ -393,7 +395,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 break;
             case STAT_SCREEN:
                 break;
-        }
+        }}
     }
 
     private void highlightSelectedTile(StandardHighlightType highlight) {

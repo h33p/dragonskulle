@@ -152,7 +152,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void fixedUpdate(float deltaTime) {
         updateHaveCapital();
-        if (stillHaveCapital()) {
+        if (hasCapital()) {
             // Update the token count.
             updateTokens(deltaTime);
         }
@@ -429,7 +429,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-        if (!stillHaveCapital()) {
+        if (!hasCapital()) {
             log.warning("Lost Capital");
             return;
         }
@@ -616,7 +616,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean attackCheck(Building attacker, Building defender) {
 
         // Checks if you have capital
-        if (!stillHaveCapital()) {
+        if (!hasCapital()) {
             log.warning("You have lost your capital");
             return false;
         }
@@ -671,7 +671,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void sellEvent(SellData data) {
 
-        if (!stillHaveCapital()) {
+        if (!hasCapital()) {
             log.warning("You have lost your capital");
             return;
         }
@@ -740,7 +740,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void statEvent(StatData data) {
 
-        if (!stillHaveCapital()) {
+        if (!hasCapital()) {
             log.warning("You have lost your capital");
             return;
         }
@@ -810,7 +810,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @return {@code true} if they have there capital {@code false} if not
      */
-    public boolean stillHaveCapital() {
+    public boolean hasCapital() {
         return mHaveCapital.get();
     }
 
