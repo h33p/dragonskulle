@@ -116,7 +116,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
     private UITextButtonFrame buildAttackButtonFrame() {
         return new UITextButtonFrame(
                 "attack_button",
-                "Attack Selected Building",
+                "Attack From Here",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
