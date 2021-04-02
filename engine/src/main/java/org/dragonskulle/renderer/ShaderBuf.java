@@ -60,7 +60,10 @@ public class ShaderBuf implements NativeResource {
                                 args.getName(), args.getAdditionalArgs().mKind.toString()),
                 (buffer, args) ->
                         compileShader(
-                                new String(buffer), args.getName(), args.getAdditionalArgs()));
+                                new String(buffer),
+                                args.getName(),
+                                args.getAdditionalArgs().mKind,
+                                args.getAdditionalArgs().mDefinitions));
     }
 
     /**
@@ -79,15 +82,14 @@ public class ShaderBuf implements NativeResource {
     /**
      * Compile a shader directly
      *
-     * @param name name of the shader
      * @param data shader bytecode
+     * @param name name of the shader
      * @param shaderKind shader kind (vertex, fragment, geometry)
+     * @param macros custom macro definitions
      * @return compiled shader, null if there was an error
      */
-    public static ShaderBuf compileShader(String data, String name, ShaderBufLoadArgs args) {
-        ShaderKind shaderKind = args.mKind;
-        MacroDefinition[] macros = args.mDefinitions;
-
+    public static ShaderBuf compileShader(
+            String data, String name, ShaderKind shaderKind, MacroDefinition[] macros) {
         LOGGER.fine("Compiling " + name);
 
         if (data == null) {

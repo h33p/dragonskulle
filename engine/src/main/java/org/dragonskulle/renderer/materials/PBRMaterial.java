@@ -153,16 +153,16 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     /**
      * Constructor for StandardMaterial
      *
-     * @param texture initial texture of the object
+     * @param albedoMap initial albedo/diffuse texture of the object
      */
-    public PBRMaterial(SampledTexture texture) {
-        mAlbedoMap = texture;
+    public PBRMaterial(SampledTexture albedoMap) {
+        mAlbedoMap = albedoMap;
     }
 
     /**
      * Constructor for StandardMaterial
      *
-     * @param texture initial texture of the object
+     * @param albedoMap initial texture of the object
      * @param colour colour of the material
      */
     public PBRMaterial(SampledTexture albedoMap, Vector4f colour) {

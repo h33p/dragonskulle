@@ -192,7 +192,8 @@ public class ResourceManager {
      * cached.
      *
      * @param type class of {@code T}. Usually {@code T.class}.
-     * @param arguments arguments used for loading
+     * @param name name of the resource to load
+     * @param additionalArgs additional arguments to load with
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
      *     {@code null} is returned if the object type does not match the input {@code name}
      */
@@ -207,7 +208,7 @@ public class ResourceManager {
      * cached.
      *
      * @param type class of {@code T}. Usually {@code T.class}.
-     * @param arguments arguments used for loading
+     * @param name name of the resource to load.
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
      *     {@code null} is returned if the object type does not match the input {@code name}
      */
@@ -221,7 +222,7 @@ public class ResourceManager {
      * <p>Use this method if you want to preemptively remove a resource from cache. Useful when
      * reloading is needed, but active references should not be mutated.
      *
-     * @param name name of the resource to unlink.
+     * @param args full arguments that were used to load the resource with
      */
     public static void unlinkResource(ResourceArguments<?, ?> args) {
         CountedResource<?> res = sLoadedResources.remove(args);
@@ -234,6 +235,7 @@ public class ResourceManager {
      * <p>Use this method if you want to preemptively remove a resource from cache. Useful when
      * reloading is needed, but active references should not be mutated.
      *
+     * @param type type of the resource
      * @param name name of the resource to unlink.
      */
     public static void unlinkResource(Class<?> type, String name) {
@@ -245,7 +247,7 @@ public class ResourceManager {
      *
      * <p>This method loads a resource from file, and simply returns it. No caching occurs.
      *
-     * @param loader mapper from {@code byte[]} to {@code T}. Can be a lambda.
+     * @param arguments arguments to load the resource with, including class, name, and custom args.
      * @return loaded object object, or {@code null}, if there was an error.
      */
     @SuppressWarnings("unchecked")
