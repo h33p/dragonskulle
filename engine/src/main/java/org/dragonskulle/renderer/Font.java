@@ -173,7 +173,7 @@ public final class Font extends Texture {
                                                 b.getWidth() * b.getHeight()));
 
                         for (Glyph glyph : glyphList) {
-                            BoxPacker.BoxNode<Glyph> packedGlyph = packer.pack(glyph, 1);
+                            BoxPacker.BoxNode<Glyph> packedGlyph = packer.pack(glyph, 8);
 
                             ret.mBuffer.rewind();
                             tmpBuffer.rewind();
