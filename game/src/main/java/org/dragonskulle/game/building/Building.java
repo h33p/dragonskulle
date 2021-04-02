@@ -100,13 +100,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         // Store the map.
         HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
         if (checkingMapExists == null) {
-            log.severe("Map is null");
+            log.severe("Scene Map is null");
         } else {
             Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
-            if (mMap == null || mMap.isValid() == false) {
-                log.severe("Map is null.");
-            } else {
+            if (mapCheck != null && mapCheck.isValid()) {
                 mMap = mapCheck;
+            } else {
+                log.severe("mapCheck is null.");
             }
         }
 

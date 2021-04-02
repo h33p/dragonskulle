@@ -62,7 +62,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     private Reference<Building> mCapital = new Reference<Building>(null);
-    private SyncBool mHaveCapital = new SyncBool(true);
+    public SyncBool mHaveCapital = new SyncBool(true);
 
     private final float ATTACK_COOLDOWN = 20f;
     private float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
