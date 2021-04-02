@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
@@ -20,6 +21,12 @@ import org.joml.Vector3f;
 public class UIShopSection extends Component implements IOnStart {
     @Getter private ShopState mState = ShopState.BUILDING_SELECTED;
     private Reference<UIText> mWindowTextRef;
+    private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
+    private UIBuildingOptions mBuildingOptions;
+
+    public UIShopSection(UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
+        this.mGetPlayer = mGetPlayer;
+    }
 
     public void setRandomState() {
         final ShopState[] values = ShopState.values();
@@ -42,6 +49,7 @@ public class UIShopSection extends Component implements IOnStart {
                 getGameObject().setEnabled(false);
                 break;
             case BUILDING_NEW:
+                mBuildingOptions.setEnabled(true);
                 if (mWindowTextRef != null && mWindowTextRef.isValid()) {
                     mWindowTextRef.get().setText("NEW BUILDING SHOP");
                 }
@@ -78,17 +86,43 @@ public class UIShopSection extends Component implements IOnStart {
     @Override
     public void onStart() {
         UIRenderable mWindow = new UIRenderable(new SampledTexture("white.bmp"));
-        UIText mWindowText =
-                new UIText(
-                        new Vector3f(0f, 0f, 0f),
-                        Font.getFontResource("Rise of Kingdom.ttf"),
-                        "PLACEHOLDER SHOP TEXT");
+
+        Reference<GameObject> buildingOptionsGO =
+                getGameObject()
+                        .buildChild(
+                                "building_new_options",
+                                new TransformUI(true),
+                                (self) -> {
+                                    mBuildingOptions = new UIBuildingOptions(mGetPlayer);
+                                    mBuildingOptions.setEnabled(false);
+                                    self.addComponent(mBuildingOptions);
+                                    TransformUI tran =
+                                            getGameObject().getTransform(TransformUI.class);
+                                    tran.setParentAnchor(0.08f, 0.8f, 1 - 0.08f, 1 - 0.04f);
+                                    ;
+                                });
+
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        //        tran.setMargin(0f, 0.2f, 0f, -0.2f);
         tran.setParentAnchor(0.08f, 0.73f, 1 - 0.08f, 1 - 0.03f);
         getGameObject().addComponent(mWindow);
-        getGameObject().addComponent(mWindowText);
+        Reference<GameObject> textObj =
+                getGameObject()
+                        .buildChild(
+                                "main_shop_text",
+                                new TransformUI(true),
+                                (self) -> {
+                                    UIText mWindowText =
+                                            new UIText(
+                                                    new Vector3f(0f, 0f, 0f),
+                                                    Font.getFontResource("Rise of Kingdom.ttf"),
+                                                    "PLACEHOLDER SHOP TEXT");
+                                    self.addComponent(mWindowText);
+                                    mWindowTextRef = mWindowText.getReference(UIText.class);
+                                });
+        getGameObject().addComponent(mBuildingOptions);
 
-        mWindowTextRef = getGameObject().getComponent(UIText.class);
+        TransformUI textTransform = textObj.get().getTransform(TransformUI.class);
+        textTransform.setParentAnchor(0.05f, 0f);
+        textTransform.translate(0, -0.18f);
     }
 }

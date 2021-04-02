@@ -355,7 +355,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private Reference<UIShopSection> buildShop() {
         getGameObject()
                 .buildChild(
-                        "shop", new TransformUI(), (go) -> go.addComponent(new UIShopSection()));
+                        "shop",
+                        new TransformUI(),
+                        (go) -> go.addComponent(new UIShopSection(mGetPlayer)));
         ArrayList<Reference<UIShopSection>> shops = new ArrayList<>();
         getGameObject().getComponentsInChildren(UIShopSection.class, shops);
         if (shops.size() != 0) {

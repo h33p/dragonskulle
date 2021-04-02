@@ -112,12 +112,10 @@ public class App implements NativeResource {
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
-        log.warning("We have got here " + asServer);
         Scene mainScene = createMainScene();
-
         // asServer = true;
         if (asServer) {
-            log.warning("I am the server");
+            log.info("I am the server");
             GameObject hostGameUI =
                     new GameObject(
                             "hostGameUI",
@@ -145,8 +143,7 @@ public class App implements NativeResource {
                                                                             "Rise of Kingdom.ttf"),
                                                                     "Fill game with AI"),
                                                             (a, b) -> {
-                                                                System.out.println(
-                                                                        "should fill with ai");
+                                                                log.info("should fill with ai");
                                                                 networkManager
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(
@@ -155,7 +152,7 @@ public class App implements NativeResource {
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
 
-                                                                log.warning("Created ai");
+                                                                log.info("Created ai");
                                                             }));
                                         });
                             });
