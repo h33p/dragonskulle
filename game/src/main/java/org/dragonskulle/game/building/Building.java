@@ -233,7 +233,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         for (int i = 1; i < defence; i++) {
             int value = (int) (Math.random() * (maxValue) + 1);
             // Store the highest value achieved.
-            if (value > defence) {
+            if (value > highestDefence) {
                 highestDefence = value;
             }
         }
