@@ -8,7 +8,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.renderer.AttributeDescription;
-import org.joml.*;
+import org.joml.Vector3f;
+import java.lang.Math;
 
 /**
  * Class describing various forms of light
