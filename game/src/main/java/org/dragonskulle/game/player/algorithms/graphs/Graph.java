@@ -245,28 +245,6 @@ public class Graph implements GraphInterface {
 	}
 
 	/**
-	 * Will set the special info for a connection
-	 * 
-	 * @param originNode      The origin node for the connection
-	 * @param destinationNode The destination node for the connection
-	 * @param newSpecial      The new special info needed
-	 * @throws GraphNodeException
-	 */
-	public void setSpecial(int originNode, int destinationNode, double newSpecial) throws GraphNodeException {
-
-		ArrayList<Connection> connections = this.getConnection(originNode);
-		Connection connectionToFind = null;
-
-		for (Connection connection : connections) { // Finds the connections
-			if (connection.getDestinationNode() == destinationNode) {
-				connectionToFind = connection;
-			}
-		}
-		connectionToFind.setSpecial(newSpecial);
-
-	}
-
-	/**
 	 * This will find a specific connection
 	 * 
 	 * @param node        The node to start with

@@ -24,8 +24,6 @@ public class AStar implements SearchAlgorithm {
 	private Deque<Integer> answerOfNodes; // This hold the solution of which nodes to visit
 	private Deque<Connection> answerOfConnections; // This holds the connections which need to be visited
 
-	private static Logger logger = Logger.getLogger(AStar.class);
-
 	/**
 	 * The constructor which allows you to make the object.
 	 * 
@@ -129,8 +127,6 @@ public class AStar implements SearchAlgorithm {
 	public Connection[] solutionActions() {
 
 		Integer[] answer = nodesToVisit(); // Gets the nodes to visit
-
-		logger.debug(answer.length);
 
 		for (int i = 1; i < answer.length; i++) {
 
