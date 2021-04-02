@@ -589,7 +589,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 for (SyncStat<?> stat : stats) {
                     stat.set(0);
                 }
-                
+
                 defender.getOwner().setCapital(false);
                 defender.afterStatChange();
             }
@@ -648,7 +648,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }
-        
+
         // Checks if you're in cooldown
         if (Time.getTimeInSeconds() < lastAttack.get() + ATTACK_COOLDOWN) {
             log.warning("Still in cooldown");
@@ -815,6 +815,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     public void setCapital(boolean hasCapital) {
-    	mOwnsCapital.set(hasCapital);
+        mOwnsCapital.set(hasCapital);
     }
 }
