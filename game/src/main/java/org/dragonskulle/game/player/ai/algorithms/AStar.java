@@ -39,8 +39,7 @@ public class AStar implements SearchAlgorithm {
 
 	}
 
-	@Override
-	public void algorithmToImplement(int currentNode, int endNode) throws GraphNodeException { 
+	public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException { 
 																								
 																								
 
@@ -117,13 +116,11 @@ public class AStar implements SearchAlgorithm {
 		}
 	}
 
-	@Override
 	public Integer[] nodesToVisit() {
 
 		return answerOfNodes.toArray(new Integer[0]);
 	}
 
-	@Override
 	public Connection[] solutionActions() {
 
 		Integer[] answer = nodesToVisit(); // Gets the nodes to visit

@@ -6,6 +6,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
@@ -17,7 +18,7 @@ import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
  * @author low101043
  *
  */
-public class Graph implements GraphInterface {
+public class Graph {
 
 	protected Map<Integer, Node> graph; // The hash map which will have the integer to the Node
 
@@ -28,47 +29,10 @@ public class Graph implements GraphInterface {
 		graph = new HashMap<Integer, Node>();
 	}
 
-	/**
-	 * This one assumes it takes data from a file
-	 * 
-	 * @param data
-	 * @throws GraphNodeException
-	 */
-	public Graph(ArrayList<ArrayList<String>> data) throws NumberFormatException, GraphException, GraphNodeException {
-
-		graph = new HashMap<Integer, Node>();
-
-		for (ArrayList<String> list : data) { // For each line in the arraylist will add it as a connection
-
-			addConnection(Integer.parseInt(list.get(0)), Integer.parseInt(list.get(1)),
-					Double.parseDouble(list.get(2)));
-		}
+	public Graph(HexagonMap map) {
+		;
 	}
 
-	/**
-	 * Used if the data has special info for each node
-	 * 
-	 * @param dataNodes       The nodes to add with the special info
-	 * @param dataConnections The connections for the graph
-	 */
-	public Graph(ArrayList<ArrayList<String>> dataNodes, ArrayList<ArrayList<String>> dataConnections)
-			throws NumberFormatException, GraphException, GraphNodeException {
-
-		graph = new HashMap<Integer, Node>();
-
-		for (ArrayList<String> list : dataNodes) { // WIll add all the nodes with the special info
-			addNode(Integer.parseInt(list.get(0)));
-			setNodeSpecial(Integer.parseInt(list.get(0)), Double.parseDouble(list.get(1)));
-		}
-
-		for (ArrayList<String> list : dataConnections) { // For each line in the arraylist will add it as a connection
-
-			addConnection(Integer.parseInt(list.get(0)), Integer.parseInt(list.get(1)),
-					Double.parseDouble(list.get(2)));
-		}
-	}
-
-	@Override
 	public void addNode(int nodeToAdd) throws GraphNodeException {
 
 		Node node = graph.get(nodeToAdd); // Gets the connection if in the graph. If not there gets null
@@ -83,7 +47,6 @@ public class Graph implements GraphInterface {
 
 	}
 
-	@Override
 	public void addConnection(int originNode, int destinationNode, double weight)
 			throws GraphException, GraphNodeException {
 
@@ -109,7 +72,6 @@ public class Graph implements GraphInterface {
 		}
 	}
 
-	@Override
 	public void removeNode(int nodeToRemove) throws GraphNodeException {
 
 		Deque<Integer> keys = new ArrayDeque<Integer>(); // WIll hold all the keys and nodes
@@ -144,7 +106,6 @@ public class Graph implements GraphInterface {
 
 	}
 
-	@Override
 	public Object[][] getConnections() {
 
 		ArrayList<Object[]> connections = new ArrayList<>(); // The object which will have all the connections
@@ -161,7 +122,6 @@ public class Graph implements GraphInterface {
 		return connections.toArray(new Object[0][0]);
 	}
 
-	@Override
 	public void removeConnection(int originNode, int destinationNode) throws GraphNodeException {
 
 		Node origin = graph.get(originNode); // Gets the node
@@ -175,13 +135,11 @@ public class Graph implements GraphInterface {
 
 	}
 
-	@Override
 	public int getNumberOfNodes() {
 
 		return graph.size();
 	}
 
-	@Override
 	public ArrayList<Connection> getConnection(int nodeNum) throws GraphNodeException {
 
 		Node node = graph.get(nodeNum);
@@ -263,7 +221,6 @@ public class Graph implements GraphInterface {
 		return null;
 	}
 
-	@Override
 	public boolean inGraph(int node) {
 		return graph.containsKey(node);
 	}
