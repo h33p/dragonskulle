@@ -17,15 +17,15 @@ import lombok.experimental.Accessors;
  *     types.
  *     <p>example declaring a custom resource:
  *     <pre>{@code
- * public static Resource<ShaderBuf> getResource(String name) {
+ * static {
+ *     ResourceManager.registerResource(GLTF.class, Object.class, (a) -> "gltf/" + a + ".gltf", (b, __) -> new GLTF(b));
+ * }
+ *
+ * public static Resource<GLTF> getResource(String name) {
  *     return ResourceManager.getResource(
- *         ShaderBuf.class,
- *         (buf) -> {
- *             ShaderResource ret = new ShaderResource();
- *             ret.buffer = buf;
- *             return ret;
- *         }
- *     )
+ *         GLTF.class,
+ *         name
+ *      );
  * }
  * }</pre>
  */
