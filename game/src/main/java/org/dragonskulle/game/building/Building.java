@@ -96,22 +96,19 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
-    	
-    	// Store the map.
-    	HexagonMap checkingMapExists = Scene.getActiveScene()
-                .getSingleton(HexagonMap.class); 
-    	if (checkingMapExists == null) {
-    		log.severe("Map is null");
-    	}
-    	else {
-        Reference<HexagonMap> mapCheck =
-                		checkingMapExists
-                        .getReference(HexagonMap.class);
-        if (mMap == null || mMap.isValid() == false) {
-            log.severe("Map is null.");
+
+        // Store the map.
+        HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
+        if (checkingMapExists == null) {
+            log.severe("Map is null");
         } else {
-            mMap = mapCheck;
-        }}
+            Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
+            if (mMap == null || mMap.isValid() == false) {
+                log.severe("Map is null.");
+            } else {
+                mMap = mapCheck;
+            }
+        }
 
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
