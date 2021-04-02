@@ -31,6 +31,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
@@ -61,11 +62,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
-    private Reference<Building> mCapital = new Reference<Building>(null);
-    public SyncBool mHaveCapital = new SyncBool(true);
+    public SyncBool mOwnsCapital = new SyncBool(true);
 
     private final float ATTACK_COOLDOWN = 20f;
-    private float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
+    public SyncFloat lastAttack = new SyncFloat(Time.getTimeInSeconds() - ATTACK_COOLDOWN);
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -151,8 +151,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        updateHaveCapital();
-        if (hasCapital()) {
+        if (hasLost()) {
             // Update the token count.
             updateTokens(deltaTime);
         }
@@ -195,7 +194,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
         buildingToBecomeCapital.setCapital(true);
-        mCapital = buildingToBecomeCapital.getReference(Building.class);
     }
 
     /**
@@ -429,7 +427,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-        if (!hasCapital()) {
+        if (!hasLost()) {
             log.warning("Lost Capital");
             return;
         }
@@ -575,7 +573,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attacking");
 
         // ATTACK!!! (Sorry...)
-        mTokens.set(mTokens.get() - defender.attackCost());
+        mTokens.set(mTokens.get() - defender.getAttackCost());
         boolean won = attacker.attack(defender);
         log.info("Attack is: " + won);
 
@@ -591,6 +589,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 for (SyncStat<?> stat : stats) {
                     stat.set(0);
                 }
+                
+                defender.getOwner().setCapital(false);
                 defender.afterStatChange();
             }
 
@@ -616,18 +616,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean attackCheck(Building attacker, Building defender) {
 
         // Checks if you have capital
-        if (!hasCapital()) {
+        if (!hasLost()) {
             log.warning("You have lost your capital");
             return false;
         }
-
-        // Checks if you're in cooldown
-        if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
-            log.warning("Still in cooldown");
-            return false;
-        }
-
-        lastAttack = Time.getTimeInSeconds();
 
         if (attacker == null) {
             log.info("Attacker is null.");
@@ -656,6 +648,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }
+        
+        // Checks if you're in cooldown
+        if (Time.getTimeInSeconds() < lastAttack.get() + ATTACK_COOLDOWN) {
+            log.warning("Still in cooldown");
+            return false;
+        }
+
+        lastAttack.set(Time.getTimeInSeconds());
 
         return true;
     }
@@ -671,7 +671,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void sellEvent(SellData data) {
 
-        if (!hasCapital()) {
+        if (!hasLost()) {
             log.warning("You have lost your capital");
             return;
         }
@@ -740,7 +740,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void statEvent(StatData data) {
 
-        if (!hasCapital()) {
+        if (!hasLost()) {
             log.warning("You have lost your capital");
             return;
         }
@@ -810,16 +810,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @return {@code true} if they have there capital {@code false} if not
      */
-    public boolean hasCapital() {
-        return mHaveCapital.get();
+    public boolean hasLost() {
+        return mOwnsCapital.get();
     }
 
-    private void updateHaveCapital() {
-        if (getNetworkObject().isServer()) {
-            if (mCapital.get() == null) {
-                log.warning("The Capital is null");
-            }
-            mHaveCapital.set(mCapital.get().isCapital());
-        }
+    public void setCapital(boolean hasCapital) {
+    	mOwnsCapital.set(hasCapital);
     }
 }

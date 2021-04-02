@@ -162,7 +162,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (mPlayer == null) return;
 
-        if (!mPlayer.get().hasCapital()) {
+        if (!mPlayer.get().hasLost()) {
             log.warning("You've lost your capital");
             setEnabled(false);
             return;
@@ -309,7 +309,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
 
         MapEffects effects = mMapEffects.get();
-        if (mPlayer.get().hasCapital()) {
+        if (mPlayer.get().hasLost()) {
             switch (mScreenOn) {
                 case MAP_SCREEN:
                     log.info("UPDATE MAP SCREEN");

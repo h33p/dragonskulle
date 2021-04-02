@@ -434,7 +434,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      *
      * @return The cost for attacking
      */
-    public int attackCost() {
+    public int getAttackCost() {
 
         // Base cost
         int cost = 20;
