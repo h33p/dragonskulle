@@ -4,7 +4,7 @@ package org.dragonskulle.game.player.algorithms.graphs;
  * The class which holds the information for a connection and provides access to
  * this data
  * 
- * @author low101043
+ * @author Dragonskulle
  */
 public class Connection {
 

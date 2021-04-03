@@ -13,8 +13,8 @@ import org.dragonskulle.game.player.ai.algorithms.AStar;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
 /**
- * A class which will aim for a capital of a player.
- * @author low101043
+ * An AI player which will aim for a capital of a player.
+ * @author Dragonskulle
  *
  */
 public class CapitalAimer extends AiPlayer {

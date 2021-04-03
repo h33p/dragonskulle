@@ -8,7 +8,7 @@ import org.dragonskulle.game.map.HexagonTile;
 /**
  * This is a class which contains all the info needed for a Node
  * 
- * @author low101043
+ * @author Dragonskulle
  *
  */
 public class Node {
@@ -117,6 +117,10 @@ public class Node {
 		return connections;
 	}
 	
+	/**
+	 * Returns a reference to the hexagon tile this node corresponds to
+	 * @return The hexagon tile this node corresponds to
+	 */
 	public Reference<HexagonTile> getHexTile(){
 		return tile;
 	}

@@ -3,15 +3,10 @@ package org.dragonskulle.game.player.ai.algorithms.exceptions;
 /**
  * An exception for nodes in a graph
  * 
- * @author low101043
+ * @author Dragonskulle
  *
  */
 public class GraphNodeException extends Exception {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	public GraphNodeException() {
 		super();

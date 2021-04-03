@@ -13,7 +13,7 @@ import org.dragonskulle.game.player.algorithms.graphs.Graph;
 
 /**
  * Class which performs the A* Algorithm
- * @author low101043
+ * @author DragonSkulle
  *
  */
 public class AStar {
@@ -39,6 +39,12 @@ public class AStar {
 
 	}
 
+	/**
+	 * This will perform the A* Search
+	 * @param currentNode The node to start from
+	 * @param endNode The goal node
+	 * @throws GraphNodeException If there is a problem with the graph
+	 */
 	public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException { 
 																								
 																								
@@ -116,11 +122,19 @@ public class AStar {
 		}
 	}
 
+	/**
+	 * This will return the nodes which need to be visited
+	 * @return An Integer Array of length 0 if there is no path otherwise the nodes to get to the answer
+	 */
 	public Integer[] nodesToVisit() {
 
 		return answerOfNodes.toArray(new Integer[0]);
 	}
 
+	/**
+	 * This will return a Connection Array with the connections for the solution
+	 * @return A arrya of length 0 if it does not exist else a Connection array
+	 */
 	public Connection[] solutionActions() {
 
 		Integer[] answer = nodesToVisit(); // Gets the nodes to visit

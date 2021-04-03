@@ -17,7 +17,7 @@ import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
  * Graph which implements {@code GraphInterface}. Will implement a directed
  * Graph data structure
  *
- * @author low101043
+ * @author Dragonskulle
  *
  */
 public class Graph {
@@ -76,7 +76,12 @@ public class Graph {
 		}
 	}
 
-	
+
+	/**
+	 * This will add a node to a graph with no connections
+	 * @param nodeToAdd The node number
+	 * @throws GraphNodeException If the node already exists
+	 */
 	public void addNode(int nodeToAdd) throws GraphNodeException {
 
 		Node node = graph.get(nodeToAdd); // Gets the connection if in the graph. If not there gets null
@@ -91,7 +96,14 @@ public class Graph {
 
 	}
 
-	
+	/**
+	 * Adds a connection between two nodes
+	 * @param originNode The origin node
+	 * @param destinationNode the end node
+	 * @param weight The weight between the nodes
+	 * @throws GraphException If a connection already exists between them
+	 * @throws GraphNodeException If the node already exists -- shouldn't happen
+	 */
 	public void addConnection(int originNode, int destinationNode, double weight)
 			throws GraphException, GraphNodeException {
 
@@ -117,7 +129,11 @@ public class Graph {
 		}
 	}
 
-	
+	/**
+	 * Removes a node from the graph
+	 * @param nodeToRemove the node to remove
+	 * @throws GraphNodeException If the node does not exist
+	 */
 	public void removeNode(int nodeToRemove) throws GraphNodeException {
 
 		Deque<Integer> keys = new ArrayDeque<Integer>(); // WIll hold all the keys and nodes
@@ -152,7 +168,10 @@ public class Graph {
 
 	}
 
-	
+	/**
+	 * Returns the connections as originNode, Destination node and weight
+	 * @return A 2D Object Array with the origin node, the destination node and the weight between them
+	 */
 	public Object[][] getConnections() {
 
 		ArrayList<Object[]> connections = new ArrayList<>(); // The object which will have all the connections
@@ -170,6 +189,12 @@ public class Graph {
 	}
 
 	
+	/**
+	 * Removes a connection between nodes
+	 * @param originNode The origin node
+	 * @param destinationNode The destination node
+	 * @throws GraphNodeException If the origin does not exist
+	 */
 	public void removeConnection(int originNode, int destinationNode) throws GraphNodeException {
 
 		Node origin = graph.get(originNode); // Gets the node
@@ -183,13 +208,21 @@ public class Graph {
 
 	}
 
-	
+	/**
+	 * The number of nodes in the graph
+	 * @return the size of the graph
+	 */
 	public int getNumberOfNodes() {
 
 		return graph.size();
 	}
 
-	
+	/**
+	 * Returns the connections of that node	
+	 * @param nodeNum The node to find
+	 * @return The connections
+	 * @throws GraphNodeException If the node does not exist
+	 */
 	public ArrayList<Connection> getConnection(int nodeNum) throws GraphNodeException {
 
 		Node node = graph.get(nodeNum);
@@ -271,11 +304,20 @@ public class Graph {
 		return null;
 	}
 
-	
+	/**
+	 * If the graph contains that node
+	 * @param node The node to look for
+	 * @return True if the node is in the graph false if not
+	 */
 	public boolean inGraph(int node) {
 		return graph.containsKey(node);
 	}
 	
+	/**
+	 * Returns a node 
+	 * @param node The node to find
+	 * @return The actual {@code Node}
+	 */
 	public Node getNode(Integer node) {
 		return graph.get(node);
 	}

@@ -3,15 +3,10 @@ package org.dragonskulle.game.player.ai.algorithms.exceptions;
 /**
  * An exception for graphs
  * 
- * @author low101043
+ * @author Dragonskulle
  *
  */
 public class GraphException extends Exception {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	public GraphException() {
 		super();
