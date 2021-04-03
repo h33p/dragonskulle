@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.dragonskulle.game.map.HexagonMap;
+import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
@@ -30,6 +32,7 @@ public class Graph {
 	}
 	
 	public Graph(HexagonMap map) {
+		Stream<HexagonTile> tiles = map.getAllTiles();
 		
 	}
 
