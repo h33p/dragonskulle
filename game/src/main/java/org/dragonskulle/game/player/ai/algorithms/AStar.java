@@ -16,7 +16,7 @@ import org.dragonskulle.game.player.algorithms.graphs.Graph;
  * @author low101043
  *
  */
-public class AStar implements SearchAlgorithm {
+public class AStar {
 
 	private ArrayList<double[]> frontier; // This will hold the nodes to be visited
 	private Set<Integer> visited; // This will hold the nodes which has been visited

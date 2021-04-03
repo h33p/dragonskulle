@@ -116,4 +116,8 @@ public class Node {
 
 		return connections;
 	}
+	
+	public Reference<HexagonTile> getHexTile(){
+		return tile;
+	}
 }

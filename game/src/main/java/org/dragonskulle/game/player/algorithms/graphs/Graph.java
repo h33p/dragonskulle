@@ -272,5 +272,9 @@ public class Graph {
 	public boolean inGraph(int node) {
 		return graph.containsKey(node);
 	}
+	
+	public Node getNode(Integer node) {
+		return graph.get(node);
+	}
 
 }
