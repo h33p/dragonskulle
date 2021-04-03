@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import lombok.extern.java.Log;
+
 /**
  * An action that can either be activated or deactivated.
  *
@@ -8,6 +10,7 @@ package org.dragonskulle.input;
  *
  * @author Craig Wilbourne
  */
+@Log
 public class Action {
 
     /** A name used for display purposes only. */
@@ -16,6 +19,9 @@ public class Action {
     /** Whether the action is currently activated. */
     private Boolean mActivated = false;
 
+    /** Whether the action has been activated this frame. */
+    private Boolean mJustActivated = false;
+    
     /** Create a new (unnamed) action. */
     public Action() {}
 
@@ -44,9 +50,32 @@ public class Action {
      * @param activated Whether the action should be activated.
      */
     void setActivated(boolean activated) {
-        mActivated = activated;
+        // If the action is currently false and it will become true, this shows the action has just been activated.
+    	if(mActivated == false && activated == true){
+        	setJustActivated(true);
+        }
+    	
+    	mActivated = activated;
     }
 
+    /**
+     * Set whether the action has just been activated this frame.
+     * 
+     * @param activated Whether the action has been activated this frame.
+     */
+    private void setJustActivated(boolean activated) {
+    	mJustActivated = activated;
+    }
+    
+    /**
+     * Get whether the action has been activated this frame.
+     * 
+     * @return {@code true} if the action was activated this frame, otherwise {@code false}.
+     */
+    public boolean isJustActivated() {
+    	return mJustActivated;
+    }
+    
     @Override
     public String toString() {
         // If no name is available, display the action name as blank.
