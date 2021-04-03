@@ -245,8 +245,8 @@ public class ClientNetworkManager {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
         if (nextState != null) {
-            System.out.println(nextState.toString());
-            System.out.println(mConnectionState.toString());
+            log.info(nextState.toString());
+            log.info(mConnectionState.toString());
 
             if (mConnectionState == ConnectionState.CONNECTING) {
                 switch (nextState) {

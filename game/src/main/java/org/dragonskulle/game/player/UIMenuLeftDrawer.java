@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -25,6 +26,7 @@ import org.joml.Vector3f;
 
 /** @author Oscar L */
 @Accessors(prefix = "m")
+@Log
 public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStart {
     private final IGetBuildingChosen mGetBuildingChosen;
     private final ISetBuildingChosen mSetBuildingChosen;
@@ -178,7 +180,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     if (mGetHexChosen.get() != null) {
-                        System.out.println("Running place button lambda");
+                        log.info("Running place button lambda");
                         Reference<Player> player = mGetPlayer.get();
                         if (player != null && player.isValid()) {
                             player.get()

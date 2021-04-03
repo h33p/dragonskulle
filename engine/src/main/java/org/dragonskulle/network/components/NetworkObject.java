@@ -5,9 +5,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkConfig;
@@ -22,9 +22,9 @@ import org.dragonskulle.utils.IOUtils;
  * @author Oscar L The NetworkObject deals with any networked variables.
  */
 @Accessors(prefix = "m")
+@Log
 public class NetworkObject extends Component {
 
-    private static final Logger mLogger = Logger.getLogger(NetworkObject.class.getName());
     /** true if the component is on the server. */
     @Getter private final boolean mIsServer;
     /** The id of the object. */
@@ -192,14 +192,14 @@ public class NetworkObject extends Component {
         for (int i = 0; i < masks.length; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
-                mLogger.fine(
+                log.fine(
                         "Parent id of child to update is :"
                                 + ownerId
                                 + "\nComponent id of children bytes to update is : "
                                 + i);
                 if (i < mNetworkableComponentsSize) {
                     NetworkableComponent noc = mNetworkableComponents.get(i).get();
-                    mLogger.fine("Did i manage to find the component? " + (noc == null));
+                    log.fine("Did i manage to find the component? " + (noc == null));
                     if (noc == null) {
                         throw new IOException(String.format("Can't find component %d", i));
                     } else {
@@ -208,7 +208,7 @@ public class NetworkObject extends Component {
                 }
                 j++;
             } else {
-                mLogger.fine("Shouldn't update child");
+                log.fine("Shouldn't update child");
             }
         }
         return mOwnerId;
@@ -287,7 +287,7 @@ public class NetworkObject extends Component {
         // write 4 byte size of each child, then write child bytes.
         boolean shouldBroadcast = false;
         boolean[] didChildUpdateMask = new boolean[mNetworkableComponents.size()];
-        mLogger.fine("Networkable Object has n components : " + mNetworkableComponents.size());
+        log.fine("Networkable Object has n components : " + mNetworkableComponents.size());
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (forceUpdate || mNetworkableComponents.get(i).get().hasBeenModified()) {
                 didChildUpdateMask[i] = true;
@@ -298,7 +298,7 @@ public class NetworkObject extends Component {
         }
         if (shouldBroadcast) {
             byte[] bytes = generateUpdateBytes(didChildUpdateMask, forceUpdate);
-            mLogger.fine(
+            log.fine(
                     "Update update size for client "
                             + client.getNetworkID()
                             + ":: "
@@ -315,7 +315,7 @@ public class NetworkObject extends Component {
      * @return the bytes to be broadcasted
      */
     private byte[] generateUpdateBytes(boolean[] didChildUpdateMask, boolean forceUpdate) {
-        //        mLogger.fine("generating broadcast update bytes");
+        //        log.fine("generating broadcast update bytes");
         ArrayList<Byte> bytes = new ArrayList<>();
 
         byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4

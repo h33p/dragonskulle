@@ -8,10 +8,10 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -23,12 +23,12 @@ import org.lwjgl.vulkan.*;
  */
 @Accessors(prefix = "m")
 @Getter
+@Log
 class PhysicalDevice implements Comparable<PhysicalDevice> {
     private VkPhysicalDevice mDevice;
     private SwapchainSupportDetails mSwapchainSupport;
     private FeatureSupportDetails mFeatureSupport;
     private String mDeviceName;
-    private static final Logger LOGGER = Logger.getLogger("render");
 
     private int mScore;
     private QueueFamilyIndices mIndices;
@@ -193,9 +193,9 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             }
         }
 
-        LOGGER.severe("Failed to find suitable physical device!");
-        LOGGER.info("Valid devices:");
-        for (PhysicalDevice d : devices) LOGGER.info(d.mDeviceName);
+        log.severe("Failed to find suitable physical device!");
+        log.info("Valid devices:");
+        for (PhysicalDevice d : devices) log.info(d.mDeviceName);
 
         return null;
     }
