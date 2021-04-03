@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
-import lombok.extern.java.Log;
-
 /**
  * An action that can either be activated or deactivated.
  *
@@ -10,7 +8,6 @@ import lombok.extern.java.Log;
  *
  * @author Craig Wilbourne
  */
-@Log
 public class Action {
 
     /** A name used for display purposes only. */
