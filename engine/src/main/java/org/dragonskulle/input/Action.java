@@ -63,7 +63,10 @@ public class Action {
      * 
      * @param activated Whether the action has been activated this frame.
      */
-    private void setJustActivated(boolean activated) {
+    void setJustActivated(boolean activated) {
+    	if(activated == true) {
+    		Actions.addJustActivated(this);
+    	}
     	mJustActivated = activated;
     }
     

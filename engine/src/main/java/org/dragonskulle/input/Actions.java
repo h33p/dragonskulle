@@ -1,8 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import java.util.ArrayList;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * Used to access all actions and input related values. Extended to add actions (that can be
@@ -23,6 +26,7 @@ import lombok.experimental.Accessors;
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "s")
+@Log
 public abstract class Actions {
     /**
      * When actiavted, TRIGGER_DRAG will cause {@link #sCursor} to start detecting cursor movement
@@ -37,6 +41,9 @@ public abstract class Actions {
     /** Stores everything to do with mouse wheel scrolling. */
     @Getter private static Scroll sScroll;
 
+    /** A list of {@link Action}s that have been activated this frame. */
+    private static ArrayList<Action> mJustActivated = new ArrayList<Action>();
+    
     /**
      * Refresh select values back to their defaults, ready for their new values.
      *
@@ -46,8 +53,22 @@ public abstract class Actions {
         if (sScroll != null) {
             sScroll.reset();
         }
+        
+        // The frame has been complete, so the actions have no longer just been activated.
+        for (Action action : mJustActivated) {
+			action.setJustActivated(false);
+		}
+        mJustActivated.clear();
     }
 
+    /**
+     * Add an {@link Action} to the list of actions that have been activated this frame.
+     * @param action The action that has been activated this frame.
+     */
+    static void addJustActivated(Action action) {
+    	mJustActivated.add(action);
+    }
+    
     /**
      * Set the cursor.
      *
