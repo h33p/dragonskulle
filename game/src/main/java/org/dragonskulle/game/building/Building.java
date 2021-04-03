@@ -210,8 +210,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         final int maxValue = 1000;
 
         // Get the attacker and defender's stats.
-        int attack = mAttack.getValue();
-        int defence = opponent.mDefence.getValue();
+        int attack = getAttack().getValue();
+        int defence = opponent.getDefence().getValue();
 
         // Stores the highest result of rolling a dice a set number of times, defined by the attack
         // stat.

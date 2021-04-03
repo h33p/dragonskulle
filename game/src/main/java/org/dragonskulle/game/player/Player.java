@@ -61,9 +61,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
+    /** Whether they own the building */
     public SyncBool mOwnsCapital = new SyncBool(true);
 
+    /**	This Is how often a player can attack*/
     private final float ATTACK_COOLDOWN = 20f;
+    /** When the last time a player attacked */
     public float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
 
     private static final Vector3f[] COLOURS = {
@@ -594,7 +597,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                     stat.set(0);
                 }
 
-                defender.getOwner().setCapital(false);
+                defender.getOwner().setOwnsCapital(false);
                 defender.afterStatChange();
             }
 
@@ -819,7 +822,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return !mOwnsCapital.get();
     }
 
-    public void setCapital(boolean hasCapital) {
+    public void setOwnsCapital(boolean hasCapital) {
         mOwnsCapital.set(hasCapital);
     }
 }
