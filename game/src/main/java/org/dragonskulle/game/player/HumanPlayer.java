@@ -239,23 +239,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
 
                             // Get the defending building
-                            Reference<Building> defendingBuilding =
-                                    building.getReference(Building.class);
+                            Building defendingBuilding =
+                                    building;
 
                             // Checks the building can be attacked
-                            List<Building> attackableBuildings =
-                                    mBuildingChosen.get().getAttackableBuildings();
-                            for (Building buildingToAttack : attackableBuildings) {
-                                if (buildingToAttack.getNetworkObject().getId()
-                                        == defendingBuilding.get().getNetworkObject().getId()) {
-
-                                    player.getClientAttackRequest()
-                                            .invoke(
-                                                    new AttackData(
-                                                            mBuildingChosen.get(),
-                                                            defendingBuilding.get())); // Send Data
-                                }
+                            boolean canAttack = mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
+                            if (canAttack) {
+                            	 player.getClientAttackRequest()
+                                 .invoke(
+                                         new AttackData(
+                                                 mBuildingChosen.get(),
+                                                 defendingBuilding)); // Send Data
                             }
+                            
                             setScreenOn(Screen.MAP_SCREEN);
                             mBuildingChosen = null;
                         }
@@ -312,7 +308,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (!mPlayer.get().hasLost()) {
             switch (mScreenOn) {
                 case MAP_SCREEN:
-                    log.info("UPDATE MAP SCREEN");
                     effects.highlightTiles(
                             (tile) -> {
                                 Player owner = tile.getClaimant();

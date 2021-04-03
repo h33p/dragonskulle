@@ -65,7 +65,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public SyncBool mOwnsCapital = new SyncBool(true);
 
     private final float ATTACK_COOLDOWN = 20f;
-    public SyncFloat lastAttack = new SyncFloat(Time.getTimeInSeconds() - ATTACK_COOLDOWN);
+    public float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -656,12 +656,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks if you're in cooldown
-        if (Time.getTimeInSeconds() < lastAttack.get() + ATTACK_COOLDOWN) {
+        if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
             log.warning("Still in cooldown");
             return false;
         }
 
-        lastAttack.set(Time.getTimeInSeconds());
+        lastAttack = Time.getTimeInSeconds();
 
         return true;
     }
