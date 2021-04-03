@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -239,19 +238,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
 
                             // Get the defending building
-                            Building defendingBuilding =
-                                    building;
+                            Building defendingBuilding = building;
 
                             // Checks the building can be attacked
-                            boolean canAttack = mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
+                            boolean canAttack =
+                                    mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
                             if (canAttack) {
-                            	 player.getClientAttackRequest()
-                                 .invoke(
-                                         new AttackData(
-                                                 mBuildingChosen.get(),
-                                                 defendingBuilding)); // Send Data
+                                player.getClientAttackRequest()
+                                        .invoke(
+                                                new AttackData(
+                                                        mBuildingChosen.get(),
+                                                        defendingBuilding)); // Send Data
                             }
-                            
+
                             setScreenOn(Screen.MAP_SCREEN);
                             mBuildingChosen = null;
                         }

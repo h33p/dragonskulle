@@ -31,7 +31,6 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
-import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
@@ -576,10 +575,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mTokens.set(mTokens.get() - defender.getAttackCost());
         boolean won;
         if (defender.getOwner().hasLost()) {
-        	won = true;
-        }
-        else {
-        	won = attacker.attack(defender);
+            won = true;
+        } else {
+            won = attacker.attack(defender);
         }
         log.info("Attack is: " + won);
 
@@ -814,7 +812,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This will return whether the player has lost their capital and thus the game
      *
-     * @return {@code true} if they have they have lost there capital and thus the game {@code false} if not
+     * @return {@code true} if they have they have lost there capital and thus the game {@code
+     *     false} if not
      */
     public boolean hasLost() {
         return !mOwnsCapital.get();
