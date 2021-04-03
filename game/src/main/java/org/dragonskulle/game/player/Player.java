@@ -64,7 +64,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Whether they own the building */
     public SyncBool mOwnsCapital = new SyncBool(true);
 
-    /**	This Is how often a player can attack*/
+    /** This Is how often a player can attack */
     private final float ATTACK_COOLDOWN = 20f;
     /** When the last time a player attacked */
     public float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
