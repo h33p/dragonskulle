@@ -1,14 +1,14 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai.algorithms.exceptions;
 
 /**
  * An exception for nodes in a graph
- * 
- * @author Dragonskulle
  *
+ * @author Dragonskulle
  */
 public class GraphNodeException extends Exception {
 
-	public GraphNodeException() {
-		super();
-	}
+    public GraphNodeException() {
+        super();
+    }
 }

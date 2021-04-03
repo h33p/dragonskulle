@@ -1,14 +1,14 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai.algorithms.exceptions;
 
 /**
  * An exception for graphs
- * 
- * @author Dragonskulle
  *
+ * @author Dragonskulle
  */
 public class GraphException extends Exception {
 
-	public GraphException() {
-		super();
-	}
+    public GraphException() {
+        super();
+    }
 }
