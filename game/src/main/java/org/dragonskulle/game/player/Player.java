@@ -574,7 +574,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // ATTACK!!! (Sorry...)
         mTokens.set(mTokens.get() - defender.getAttackCost());
-        boolean won = attacker.attack(defender);
+        boolean won;
+        if (defender.getOwner().hasLost()) {
+        	won = true;
+        }
+        else {
+        	won = attacker.attack(defender);
+        }
         log.info("Attack is: " + won);
 
         // If you've won attack
