@@ -2,7 +2,6 @@
 package org.dragonskulle.input;
 
 import java.util.ArrayList;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -43,32 +42,29 @@ public abstract class Actions {
 
     /** A list of {@link Action}s that have been activated this frame. */
     private static ArrayList<Action> mJustActivated = new ArrayList<Action>();
-    
-    /**
-     * Refresh select values back to their defaults, ready for their new values.
-     *
-     * <p>Currently only used for resetting {@link #sScroll}.
-     */
+
+    /** Refresh select values back to their defaults, ready for their new values. */
     static void refresh() {
         if (sScroll != null) {
             sScroll.reset();
         }
-        
+
         // The frame has been complete, so the actions have no longer just been activated.
         for (Action action : mJustActivated) {
-			action.setJustActivated(false);
-		}
+            action.setJustActivated(false);
+        }
         mJustActivated.clear();
     }
 
     /**
      * Add an {@link Action} to the list of actions that have been activated this frame.
+     *
      * @param action The action that has been activated this frame.
      */
     static void addJustActivated(Action action) {
-    	mJustActivated.add(action);
+        mJustActivated.add(action);
     }
-    
+
     /**
      * Set the cursor.
      *
