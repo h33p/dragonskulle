@@ -151,7 +151,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (hasLost()) {
+        if (!hasLost()) {
             // Update the token count.
             updateTokens(deltaTime);
         }
@@ -427,7 +427,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-        if (!hasLost()) {
+        if (hasLost()) {
             log.warning("Lost Capital");
             return;
         }
@@ -616,7 +616,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean attackCheck(Building attacker, Building defender) {
 
         // Checks if you have capital
-        if (!hasLost()) {
+        if (hasLost()) {
             log.warning("You have lost your capital");
             return false;
         }
@@ -671,7 +671,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void sellEvent(SellData data) {
 
-        if (!hasLost()) {
+        if (hasLost()) {
             log.warning("You have lost your capital");
             return;
         }
@@ -740,7 +740,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void statEvent(StatData data) {
 
-        if (!hasLost()) {
+        if (hasLost()) {
             log.warning("You have lost your capital");
             return;
         }
@@ -806,12 +806,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This will return whether the player still has their capital
+     * This will return whether the player has lost their capital and thus the game
      *
-     * @return {@code true} if they have there capital {@code false} if not
+     * @return {@code true} if they have they have lost there capital and thus the game {@code false} if not
      */
     public boolean hasLost() {
-        return mOwnsCapital.get();
+        return !mOwnsCapital.get();
     }
 
     public void setCapital(boolean hasCapital) {
