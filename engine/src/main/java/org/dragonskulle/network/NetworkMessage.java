@@ -307,12 +307,9 @@ public class NetworkMessage {
      * Gets mask from bytes.
      *
      * @param buff the buff
-     * @param maskLength the mask length
-     * @param offset the offset
      * @return the mask from bytes
      */
-    public static boolean[] getMaskFromBytes(byte[] buff, int maskLength, int offset) {
-        byte[] maskBytes = Arrays.copyOfRange(buff, offset, maskLength + offset);
+    public static boolean[] getMaskFromBytes(byte[] maskBytes) {
         boolean[] out = new boolean[maskBytes.length];
         int idx = 0;
         for (byte maskByte : maskBytes) {
@@ -326,12 +323,11 @@ public class NetworkMessage {
      *
      * @param bools the array of booleans
      * @return the bytes from booleans
-     * @deprecated This method is not used properly implemented yet, and might not be
      */
-    @Deprecated
     public static byte[] convertBoolArrayToBytes(boolean[] bools) {
         ArrayList<Byte> out = new ArrayList<>();
-        int bitCounter = 0;
+        for (boolean b : bools) out.add(b ? (byte) 1 : (byte) 0);
+        /*int bitCounter = 0;
         byte mask = 0;
         for (boolean b : bools) {
             if (b) {
@@ -347,7 +343,7 @@ public class NetworkMessage {
         }
         if (mask != 0) {
             out.add(mask);
-        }
+        }*/
         return toByteArray(out);
     }
 }

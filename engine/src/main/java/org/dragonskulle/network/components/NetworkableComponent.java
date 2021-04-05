@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -122,75 +120,77 @@ public abstract class NetworkableComponent extends Component {
     /**
      * Serialize component.
      *
+     * @param stream the stream to write to
      * @param force whether to write all fields in
-     * @return the bytes of the component
      */
-    public byte[] serialize(boolean force) {
+    public void serialize(DataOutputStream stream, boolean force) throws IOException {
         int maskLength = this.mFields.length; // 1byte
-        ArrayList<Byte> mask = new ArrayList<>(maskLength);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            DataOutputStream stream = new DataOutputStream(bos);
-            for (int i = 0; i < this.mFields.length; i++) {
-                boolean didVarChange = this.mFieldsMask[i];
-                Field f = this.mFields[i];
-                if (didVarChange || force) {
-                    try {
-                        mask.add((byte) 1);
-                        ((ISyncVar) f.get(this)).serialize(stream);
-                    } catch (IllegalAccessException | IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    mask.add((byte) 0);
+        boolean[] mask = new boolean[maskLength];
+
+        for (int i = 0; i < mFields.length; i++) {
+            mask[i] = force || mFieldsMask[i];
+        }
+
+        byte[] byteMask = NetworkMessage.convertBoolArrayToBytes(mask);
+
+        stream.writeByte(byteMask.length);
+
+        for (byte b : byteMask) stream.writeByte(b);
+
+        for (int i = 0; i < this.mFields.length; i++) {
+            Field f = this.mFields[i];
+            if (mask[i]) {
+                try {
+                    ((ISyncVar) f.get(this)).serialize(stream);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
             }
-            stream.flush();
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-        ArrayList<Byte> payload = new ArrayList<>();
-        payload.add((byte) maskLength);
-        payload.addAll(mask);
-
-        for (byte b : bos.toByteArray()) {
-            payload.add(b);
-        }
-
-        return NetworkMessage.toByteArray(payload);
     }
 
     /**
      * Serialize component.
      *
-     * @return the bytes of the component
+     * @param stream the stream to write to
      */
-    public byte[] serialize() {
-        return serialize(false);
+    public void serialize(DataOutputStream stream) throws IOException {
+        serialize(stream, false);
     }
 
     /**
      * Serialize fully byte, is this ran on spawn when the whole component needs creating.
      *
-     * @return the bytes
+     * @param stream the stream to write to
      */
-    public byte[] serializeFully() {
-        return serialize(true);
+    public void serializeFully(DataOutputStream stream) throws IOException {
+        serialize(stream, true);
     }
 
     /**
-     * Update fields from bytes.
+     * Update fields from a stream.
      *
-     * @param payload the payload
+     * @param stream stream containing the payload
      * @throws IOException the io exception
      */
-    public void updateFromBytes(byte[] payload) throws IOException {
-        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
+    public void updateFromStream(DataInputStream stream) throws IOException {
+        int maskLength = stream.readByte();
         // cast to one byte
-        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, MASK_OFFSET);
-        updateSyncVarsFromBytes(masks, payload, MASK_OFFSET + maskLength);
+        boolean[] mask = NetworkMessage.getMaskFromBytes(stream.readNBytes(maskLength));
+
+        for (int i = 0; i < mask.length && i < mFields.length; i++) {
+            if (mask[i]) {
+                try {
+                    Field field = this.mFields[i];
+                    ISyncVar obj = (ISyncVar) field.get(this);
+                    obj.deserialize(stream);
+                } catch (Exception e) {
+                    log.fine("Failed to deserialize " + this.mFields[i].getName());
+                    e.printStackTrace();
+                }
+            }
+        }
+
         afterNetUpdate();
     }
 
@@ -241,36 +241,6 @@ public abstract class NetworkableComponent extends Component {
                 + ", fields="
                 + fieldsString
                 + '}';
-    }
-
-    /**
-     * Gets contents from bytes.
-     *
-     * @param mask the mask
-     * @param buff the buff
-     * @param offset the offset
-     * @throws IOException the io exception
-     */
-    private void updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
-            throws IOException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        final long didSkip = bis.skip(offset);
-
-        DataInputStream stream = new DataInputStream(bis);
-
-        if (didSkip != offset) return;
-        for (int i = 0; i < mask.length && i < mFields.length; i++) {
-            if (mask[i]) {
-                try {
-                    Field field = this.mFields[i];
-                    ISyncVar obj = (ISyncVar) field.get(this);
-                    obj.deserialize(stream);
-                } catch (Exception e) {
-                    log.fine("Failed to deserialize " + this.mFields[i].getName());
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     /**

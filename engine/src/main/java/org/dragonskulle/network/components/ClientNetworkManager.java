@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,16 +79,18 @@ public class ClientNetworkManager {
          */
         @Override
         public void updateNetworkObject(byte[] payload) {
-            // 4 bytes will be allocated for the id
-            int idToUpdate = NetworkObject.getIdFromBytes(payload);
-            ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
-            if (entry == null) {
-                log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
-                return;
-            }
+            ByteArrayInputStream bis = new ByteArrayInputStream(payload);
+            DataInputStream stream = new DataInputStream(bis);
+
             try {
+                int idToUpdate = stream.readInt();
+                ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
+                if (entry == null) {
+                    log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
+                    return;
+                }
                 int oldOwner = entry.mNetworkObject.get().getOwnerId();
-                int newOwner = entry.mNetworkObject.get().updateFromBytes(payload);
+                int newOwner = entry.mNetworkObject.get().updateFromBytes(stream);
                 if (oldOwner != newOwner) { // ownership has changed
                     updateOwnershipLink(entry.mNetworkObject);
                 }
