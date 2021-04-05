@@ -18,8 +18,8 @@ public class Time {
     public static double getPreciseTimeInSeconds() {
         return ((double) System.nanoTime()) / NS_PER_S;
     }
-    
+
     public static float getTimeInSeconds() {
-    	return (float)getPreciseTimeInSeconds();
+        return (float) getPreciseTimeInSeconds();
     }
 }
