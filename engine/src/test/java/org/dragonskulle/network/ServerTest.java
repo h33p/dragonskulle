@@ -6,7 +6,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Engine;
@@ -20,8 +20,8 @@ import org.junit.*;
 import org.lwjgl.system.NativeResource;
 
 /** @author Oscar L */
+@Log
 public class ServerTest {
-    private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
     private static final long TIMEOUT = 8;
 
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
@@ -55,12 +55,12 @@ public class ServerTest {
     private static ReentrantLock mEngineLock = new ReentrantLock();
 
     private static void cleanupNetmans() {
-        mLogger.info("Cleanup netmans");
+        log.info("Cleanup netmans");
         if (CLIENT_NETWORK_MANAGER.getClientManager() != null)
             CLIENT_NETWORK_MANAGER.getClientManager().disconnect();
         if (SERVER_NETWORK_MANAGER.getServerManager() != null)
             SERVER_NETWORK_MANAGER.getServerManager().destroy();
-        mLogger.info("CLEANED UP");
+        log.info("CLEANED UP");
     }
 
     private static class LambdaOnStart extends Component implements IOnStart {
@@ -103,7 +103,7 @@ public class ServerTest {
             SERVER_NETWORK_MANAGER.createServer(
                     mPort,
                     (__, man, id) -> {
-                        mLogger.info("CONNECTED");
+                        log.info("CONNECTED");
                         man.getServerManager()
                                 .spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
                         man.getServerManager()
@@ -114,7 +114,7 @@ public class ServerTest {
                     "127.0.0.1",
                     mPort,
                     (__1, __2, netid) -> {
-                        mLogger.info("CONNECTED CLIENT");
+                        log.info("CONNECTED CLIENT");
                         assertTrue(netid >= 0);
                     });
 
@@ -187,10 +187,10 @@ public class ServerTest {
 
             mEngineLock.lock();
             int capitalId = clientCapital.get().getNetworkObject().getId();
-            mLogger.info(
+            log.info(
                     "\t-----> " + capitalId + " " + serverCapital.get().getNetworkObject().getId());
             assertEquals(capitalId, serverCapital.get().getNetworkObject().getId());
-            mLogger.info("\t-----> " + capitalId);
+            log.info("\t-----> " + capitalId);
             assert (serverCapital.get().getSyncMe().get() == false);
             assert (serverCapital.get().getSyncMeAlso().get().equals("Hello World"));
             mEngineLock.unlock();

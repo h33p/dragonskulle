@@ -1,21 +1,60 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.4.40",
+        "generator" : "Khronos glTF Blender I/O v1.5.17",
         "version" : "2.0"
     },
     "extensionsUsed" : [
+        "KHR_lights_punctual",
         "DSKULLE_game_object"
     ],
+    "extensionsRequired" : [
+        "KHR_lights_punctual"
+    ],
+    "extensions" : {
+        "KHR_lights_punctual" : {
+            "lights" : [
+                {
+                    "color" : [
+                        1,
+                        1,
+                        1
+                    ],
+                    "intensity" : 1,
+                    "type" : "directional",
+                    "name" : "Sun"
+                }
+            ]
+        }
+    },
     "scene" : 0,
     "scenes" : [
         {
             "name" : "Scene",
             "nodes" : [
-                0
+                0,
+                1,
+                2
             ]
         }
     ],
     "nodes" : [
+        {
+            "extensions" : {
+                "KHR_lights_punctual" : {
+                    "light" : 0
+                },
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "name" : "Sun",
+            "rotation" : [
+                0,
+                -0.25375795364379883,
+                0,
+                0.9672677516937256
+            ]
+        },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -24,6 +63,15 @@
             },
             "mesh" : 0,
             "name" : "Hex"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 1,
+            "name" : "Land Hex"
         }
     ],
     "materials" : [
@@ -37,8 +85,21 @@
                     0.06823772937059402,
                     1
                 ],
+                "roughnessFactor" : 0.19117647409439087
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "MenuHex.001",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0,
+                    1,
+                    0.1957247406244278,
+                    1
+                ],
                 "metallicFactor" : 0,
-                "roughnessFactor" : 0.5
+                "roughnessFactor" : 0.19117647409439087
             }
         }
     ],
@@ -54,6 +115,20 @@
                     },
                     "indices" : 3,
                     "material" : 0
+                }
+            ]
+        },
+        {
+            "name" : "Circle.001",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 4,
+                        "NORMAL" : 5,
+                        "TEXCOORD_0" : 6
+                    },
+                    "indices" : 7,
+                    "material" : 1
                 }
             ]
         }
@@ -92,6 +167,40 @@
             "componentType" : 5123,
             "count" : 498,
             "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 125,
+            "max" : [
+                0.866025447845459,
+                0.9895658493041992,
+                0
+            ],
+            "min" : [
+                -0.866025447845459,
+                -0.9895658493041992,
+                -0.5641555786132812
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 125,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 6,
+            "componentType" : 5126,
+            "count" : 125,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 7,
+            "componentType" : 5123,
+            "count" : 300,
+            "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
@@ -114,11 +223,31 @@
             "buffer" : 0,
             "byteLength" : 996,
             "byteOffset" : 4032
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1500,
+            "byteOffset" : 5028
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1500,
+            "byteOffset" : 6528
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1000,
+            "byteOffset" : 8028
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 600,
+            "byteOffset" : 9028
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 5028,
+            "byteLength" : 9628,
             "uri" : "templates.bin"
         }
     ]

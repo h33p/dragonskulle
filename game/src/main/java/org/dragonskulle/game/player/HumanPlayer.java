@@ -16,6 +16,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
+import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
@@ -158,8 +159,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .orElse(null);
         }
 
-        if (mPlayer == null) return;
+        if (mPlayer == null || !mPlayer.isValid()) return;
 
+        if (mPlayer.get().hasLost()) {
+            log.warning("You've lost your capital");
+            setEnabled(false);
+            return;
+        }
         // Update token
         if (mPlayer.isValid()) {
             updateVisibleTokens();
@@ -225,20 +231,39 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class))) {
+                        if (hasPlayerGotBuilding(building.getReference(Building.class))
+                                && mScreenOn != Screen.ATTACKING_SCREEN) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+                        } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
+
+                            // Get the defending building
+                            Building defendingBuilding = building;
+
+                            // Checks the building can be attacked
+                            boolean canAttack =
+                                    mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
+                            if (canAttack) {
+                                player.getClientAttackRequest()
+                                        .invoke(
+                                                new AttackData(
+                                                        mBuildingChosen.get(),
+                                                        defendingBuilding)); // Send Data
+                            }
+
+                            setScreenOn(Screen.MAP_SCREEN);
+                            mBuildingChosen = null;
                         }
                     } else {
                         // Checks if cannot build here
                         if (mHexChosen.isClaimed()) {
-                            System.out.println("Human:Cannot build");
+                            log.info("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
                             return;
                         } else {
                             // If you can build
-                            System.out.println("Human:Change Screen");
+                            log.info("Human:Change Screen");
                             setScreenOn(Screen.TILE_SCREEN);
                         }
                     }
@@ -253,8 +278,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 screenPos.y(),
                                 new Vector3f());
 
-                System.out.println("[DEBUG] RCL Position : " + screenPos.toString());
-                System.out.println("[DEBUG] RCL Position From Camera : " + pos.toString());
+                log.info("[DEBUG] RCL Position : " + screenPos.toString());
+                log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
             }
         }
     }
@@ -279,91 +304,92 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
 
         MapEffects effects = mMapEffects.get();
-        switch (mScreenOn) {
-            case MAP_SCREEN:
-                log.info("UPDATE MAP SCREEN");
-                effects.highlightTiles(
-                        (tile) -> {
-                            Player owner = tile.getClaimant();
-                            if (owner != null) {
-                                return owner.getPlayerHighlightSelection();
-                            }
-                            return HighlightSelection.CLEARED;
-                        });
-                break;
-            case BUILDING_SELECTED_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(true);
-                        attack_button.get().getComponent(UIButton.class).get().enable();
+        if (!mPlayer.get().hasLost()) {
+            switch (mScreenOn) {
+                case MAP_SCREEN:
+                    effects.highlightTiles(
+                            (tile) -> {
+                                Player owner = tile.getClaimant();
+                                if (owner != null) {
+                                    return owner.getPlayerHighlightSelection();
+                                }
+                                return HighlightSelection.CLEARED;
+                            });
+                    break;
+                case BUILDING_SELECTED_SCREEN:
+                    if (mMenuDrawer.isValid()) {
+                        if (attack_button != null) {
+                            attack_button.get().setEnabled(true);
+                            attack_button.get().getComponent(UIButton.class).get().enable();
+                        }
+                        if (sell_button != null && sell_button.isValid()) {
+                            sell_button.get().setEnabled(true);
+                            sell_button.get().getComponent(UIButton.class).get().enable();
+                        }
+                        if (place_button != null && place_button.isValid()) {
+                            place_button.get().setEnabled(false);
+                            place_button.get().getComponent(UIButton.class).get().disable();
+                        }
+                        if (upgrade_button != null && upgrade_button.isValid()) {
+                            upgrade_button.get().setEnabled(true);
+                            upgrade_button.get().getComponent(UIButton.class).get().enable();
+                        }
                     }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(true);
-                        sell_button.get().getComponent(UIButton.class).get().enable();
+                    undoLastHighlight();
+                    highlightSelectedTile(StandardHighlightType.VALID);
+                    break;
+                case TILE_SCREEN:
+                    if (mMenuDrawer.isValid()) {
+                        if (attack_button != null && attack_button.isValid()) {
+                            attack_button.get().setEnabled(false);
+                            attack_button.get().getComponent(UIButton.class).get().disable();
+                        }
+                        if (sell_button != null && sell_button.isValid()) {
+                            sell_button.get().setEnabled(false);
+                            sell_button.get().getComponent(UIButton.class).get().disable();
+                        }
+                        if (place_button != null && place_button.isValid()) {
+                            place_button.get().setEnabled(true);
+                            place_button.get().getComponent(UIButton.class).get().enable();
+                        }
+                        if (upgrade_button != null && upgrade_button.isValid()) {
+                            upgrade_button.get().setEnabled(false);
+                            upgrade_button.get().getComponent(UIButton.class).get().disable();
+                        }
                     }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(false);
-                        place_button.get().getComponent(UIButton.class).get().disable();
+                    undoLastHighlight();
+                    highlightSelectedTile(StandardHighlightType.PLAIN);
+                    break;
+                case ATTACK_SCREEN:
+                    if (mMenuDrawer.isValid()) {
+                        if (attack_button != null && attack_button.isValid()) {
+                            attack_button.get().setEnabled(true);
+                            attack_button.get().getComponent(UIButton.class).get().enable();
+                        }
+                        if (sell_button != null && sell_button.isValid()) {
+                            sell_button.get().setEnabled(false);
+                            sell_button.get().getComponent(UIButton.class).get().disable();
+                        }
+                        if (place_button != null && place_button.isValid()) {
+                            place_button.get().setEnabled(false);
+                            place_button.get().getComponent(UIButton.class).get().disable();
+                        }
+                        if (upgrade_button != null && upgrade_button.isValid()) {
+                            upgrade_button.get().setEnabled(false);
+                            upgrade_button.get().getComponent(UIButton.class).get().disable();
+                        }
                     }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(true);
-                        upgrade_button.get().getComponent(UIButton.class).get().enable();
+                    highlightSelectedTile(StandardHighlightType.VALID);
+                    for (Building attackableBuilding :
+                            mHexChosen.getBuilding().getAttackableBuildings()) {
+                        effects.highlightTile(
+                                attackableBuilding.getTile(),
+                                StandardHighlightType.ATTACK.asSelection());
                     }
-                }
-                undoLastHighlight();
-                highlightSelectedTile(StandardHighlightType.VALID);
-                break;
-            case TILE_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(false);
-                        attack_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(false);
-                        sell_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(true);
-                        place_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(false);
-                        upgrade_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                }
-                undoLastHighlight();
-                highlightSelectedTile(StandardHighlightType.PLAIN);
-                break;
-            case ATTACK_SCREEN:
-                if (mMenuDrawer.isValid()) {
-                    if (attack_button != null && attack_button.isValid()) {
-                        attack_button.get().setEnabled(true);
-                        attack_button.get().getComponent(UIButton.class).get().enable();
-                    }
-                    if (sell_button != null && sell_button.isValid()) {
-                        sell_button.get().setEnabled(false);
-                        sell_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (place_button != null && place_button.isValid()) {
-                        place_button.get().setEnabled(false);
-                        place_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                    if (upgrade_button != null && upgrade_button.isValid()) {
-                        upgrade_button.get().setEnabled(false);
-                        upgrade_button.get().getComponent(UIButton.class).get().disable();
-                    }
-                }
-                highlightSelectedTile(StandardHighlightType.VALID);
-                for (Building attackableBuilding :
-                        mHexChosen.getBuilding().getAttackableBuildings()) {
-                    effects.highlightTile(
-                            attackableBuilding.getTile(),
-                            StandardHighlightType.ATTACK.asSelection());
-                }
-                break;
-            case STAT_SCREEN:
-                break;
+                    break;
+                case STAT_SCREEN:
+                    break;
+            }
         }
     }
 

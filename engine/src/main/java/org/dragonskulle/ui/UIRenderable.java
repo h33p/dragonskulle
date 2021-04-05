@@ -2,6 +2,7 @@
 package org.dragonskulle.ui;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -93,9 +94,9 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     @Override
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
+    public void writeVertexInstanceData(int offset, ByteBuffer buffer, List<Light> lights) {
         mMaterial.writeVertexInstanceData(
-                offset, buffer, getGameObject().getTransform().getWorldMatrix());
+                offset, buffer, getGameObject().getTransform().getWorldMatrix(), lights);
     }
 
     @Override

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.HashMap;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * Shared resource manager
@@ -16,52 +17,59 @@ import lombok.Getter;
  *     types.
  *     <p>example declaring a custom resource:
  *     <pre>{@code
- * public static Resource<ShaderBuf> getResource(String name) {
+ * static {
+ *     ResourceManager.registerResource(GLTF.class, (a) -> "gltf/" + a + ".gltf", (b, __) -> new GLTF(b));
+ * }
+ *
+ * public static Resource<GLTF> getResource(String name) {
  *     return ResourceManager.getResource(
- *         ShaderBuf.class,
- *         (buf) -> {
- *             ShaderResource ret = new ShaderResource();
- *             ret.buffer = buf;
- *             return ret;
- *         }
- *     )
+ *         GLTF.class,
+ *         name
+ *      );
  * }
  * }</pre>
  */
 public class ResourceManager {
     private static final ClassLoader CLASS_LOADER = ResourceManager.class.getClassLoader();
-    private static HashMap<String, CountedResource<?>> loadedResources =
-            new HashMap<String, CountedResource<?>>();
+    private static HashMap<ResourceArguments<?, ?>, CountedResource<?>> sLoadedResources =
+            new HashMap<>();
+    private static HashMap<Class<?>, IResourceLoader<?, ?>> sLoaders = new HashMap<>();
+
+    static {
+        registerResource(byte[].class, (a) -> a.getName(), (b, __) -> b);
+        registerResource(String.class, (a) -> a.getName(), (b, __) -> new String(b));
+    }
 
     /** Reference counts the accesses */
+    @Accessors(prefix = "m")
     static class CountedResource<T> {
-        @Getter private String name;
-        @Getter T resource;
-        private int refcount;
-        private boolean linked;
+        @Getter private ResourceArguments<T, ?> mArgs;
+        @Getter T mResource;
+        private int mRefcount;
+        private boolean mLinked;
 
-        CountedResource(String name, T resource) {
-            this.name = name;
-            this.resource = resource;
-            refcount = 0;
-            linked = true;
+        CountedResource(ResourceArguments<T, ?> args, T resource) {
+            this.mArgs = args;
+            this.mResource = resource;
+            mRefcount = 0;
+            mLinked = true;
         }
 
         /** Decrease reference count. Potentially free and unlink the resource */
         public void decrRefCount() {
-            if (--refcount == 0) {
-                if (AutoCloseable.class.isInstance(resource)) {
+            if (--mRefcount == 0) {
+                if (AutoCloseable.class.isInstance(mResource)) {
                     try {
-                        ((AutoCloseable) resource).close();
+                        ((AutoCloseable) mResource).close();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                resource = null;
-                if (linked) ResourceManager.unlinkResource(name);
+                mResource = null;
+                if (mLinked) ResourceManager.unlinkResource(mArgs);
             }
 
-            if (refcount < 0) {
+            if (mRefcount < 0) {
                 throw new RuntimeException("Failed to do this!");
             }
         }
@@ -75,8 +83,8 @@ public class ResourceManager {
         @SuppressWarnings("unchecked")
         private <F> Resource<F> incRefCount(Class<F> type) {
             // We are checking if T == F
-            if (type.isInstance(resource)) {
-                refcount += 1;
+            if (type.isInstance(mResource)) {
+                mRefcount += 1;
                 return new Resource<F>((CountedResource<F>) this);
             } else return null;
         }
@@ -87,7 +95,7 @@ public class ResourceManager {
          * @retrun a resource with reference to underlying resource.
          */
         public Resource<T> incRefCount() {
-            refcount += 1;
+            mRefcount += 1;
             return new Resource<T>(this);
         }
 
@@ -98,12 +106,100 @@ public class ResourceManager {
          * @return {@code true} if reload was successful. On false, the underlying object is left
          *     unchanged.
          */
-        public boolean reload(IResourceLoader<T> loader) {
-            T res = ResourceManager.loadResource(loader, name);
+        public boolean reload() {
+            T res = ResourceManager.loadResource(mArgs);
             if (res == null) return false;
-            resource = res;
+            if (AutoCloseable.class.isInstance(mResource)) {
+                try {
+                    ((AutoCloseable) mResource).close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            mResource = res;
             return true;
         }
+    }
+
+    /** Simple composed {@link IResourceLoader} */
+    private static class CompositeResourceLoader<T, F> implements IResourceLoader<T, F> {
+        private final IResourcePathResolver<T, F> mPathResolver;
+        private final IResourceBufferLoader<T, F> mBufferLoader;
+
+        CompositeResourceLoader(
+                IResourcePathResolver<T, F> pathResolver,
+                IResourceBufferLoader<T, F> bufferLoader) {
+            mPathResolver = pathResolver;
+            mBufferLoader = bufferLoader;
+        }
+
+        public String toPath(ResourceArguments<T, F> args) {
+            return mPathResolver.toPath(args);
+        }
+
+        public T loadFromBuffer(byte[] buffer, ResourceArguments<T, F> args) throws Exception {
+            return mBufferLoader.loadFromBuffer(buffer, args);
+        }
+    }
+
+    /**
+     * Register a resource loader in a composite way
+     *
+     * @param type type of the resource
+     * @param pathResolver implementation (lambda) of path resolving
+     * @param bufferLoader implementation (lambda) of resource loading
+     */
+    public static <T, F> void registerResource(
+            Class<T> type,
+            IResourcePathResolver<T, F> pathResolver,
+            IResourceBufferLoader<T, F> bufferLoader) {
+        sLoaders.put(type, new CompositeResourceLoader<>(pathResolver, bufferLoader));
+    }
+
+    /**
+     * Register a resource loader in a composite way
+     *
+     * <p>This method is purely for convenience to allow to easily specify the {@code F} type, but
+     * does exactly the same as the above method.
+     *
+     * @param type type of the resource
+     * @param argType type of the argument
+     * @param pathResolver implementation (lambda) of path resolving
+     * @param bufferLoader implementation (lambda) of resource loading
+     */
+    public static <T, F> void registerResource(
+            Class<T> type,
+            Class<F> argType,
+            IResourcePathResolver<T, F> pathResolver,
+            IResourceBufferLoader<T, F> bufferLoader) {
+        registerResource(type, pathResolver, bufferLoader);
+    }
+
+    /**
+     * Register a resource loader
+     *
+     * @param type type of the resource
+     * @param loader loader for the resource
+     */
+    public static <T, F> void registerResource(Class<T> type, IResourceLoader<T, F> loader) {
+        sLoaders.put(type, loader);
+    }
+
+    /**
+     * Get a resource object by name and class type
+     *
+     * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
+     * cached.
+     *
+     * @param arguments arguments used for loading
+     * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
+     *     {@code null} is returned if the object type does not match the input name
+     */
+    public static <T, F> Resource<T> getResource(ResourceArguments<T, F> arguments) {
+        CountedResource<?> inst = sLoadedResources.get(arguments);
+
+        if (inst == null) return loadAndCacheResource(arguments);
+        else return inst.incRefCount(arguments.getType());
     }
 
     /**
@@ -113,17 +209,28 @@ public class ResourceManager {
      * cached.
      *
      * @param type class of {@code T}. Usually {@code T.class}.
-     * @param loader object that maps {@code byte[]} to {@code T}. Can be a simple lambda.
-     * @param name resource path name.
+     * @param name name of the resource to load
+     * @param additionalArgs additional arguments to load with
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     *     {@code name} is returned if the object type does not match the input {@code name}
+     *     {@code null} is returned if the object type does not match the input {@code name}
      */
-    public static <T> Resource<T> getResource(
-            Class<T> type, IResourceLoader<T> loader, String name) {
-        CountedResource<?> inst = loadedResources.get(name);
+    public static <T, F> Resource<T> getResource(Class<T> type, String name, F additionalArgs) {
+        return getResource(new ResourceArguments<>(type, name, additionalArgs));
+    }
 
-        if (inst == null) return loadAndCacheResource(type, loader, name);
-        else return inst.incRefCount(type);
+    /**
+     * Get a resource object by name and class type
+     *
+     * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
+     * cached.
+     *
+     * @param type class of {@code T}. Usually {@code T.class}.
+     * @param name name of the resource to load.
+     * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
+     *     {@code null} is returned if the object type does not match the input {@code name}
+     */
+    public static <T> Resource<T> getResource(Class<T> type, String name) {
+        return getResource(type, name, null);
     }
 
     /**
@@ -132,11 +239,24 @@ public class ResourceManager {
      * <p>Use this method if you want to preemptively remove a resource from cache. Useful when
      * reloading is needed, but active references should not be mutated.
      *
+     * @param args full arguments that were used to load the resource with
+     */
+    public static void unlinkResource(ResourceArguments<?, ?> args) {
+        CountedResource<?> res = sLoadedResources.remove(args);
+        if (res != null) res.mLinked = false;
+    }
+
+    /**
+     * Unlinks a resource from internal cache
+     *
+     * <p>Use this method if you want to preemptively remove a resource from cache. Useful when
+     * reloading is needed, but active references should not be mutated.
+     *
+     * @param type type of the resource
      * @param name name of the resource to unlink.
      */
-    public static void unlinkResource(String name) {
-        CountedResource<?> res = loadedResources.remove(name);
-        if (res != null) res.linked = false;
+    public static void unlinkResource(Class<?> type, String name) {
+        unlinkResource(new ResourceArguments<>(type, name, null));
     }
 
     /**
@@ -144,13 +264,22 @@ public class ResourceManager {
      *
      * <p>This method loads a resource from file, and simply returns it. No caching occurs.
      *
-     * @param loader mapper from {@code byte[]} to {@code T}. Can be a lambda.
+     * @param arguments arguments to load the resource with, including class, name, and custom args.
      * @return loaded object object, or {@code null}, if there was an error.
      */
-    public static <T> T loadResource(IResourceLoader<T> loader, String name) {
-        try (InputStream inputStream = CLASS_LOADER.getResourceAsStream(name)) {
+    @SuppressWarnings("unchecked")
+    public static <T, F> T loadResource(ResourceArguments<T, F> arguments) {
+
+        IResourceLoader<?, ?> loader = sLoaders.get(arguments.getType());
+        if (loader == null) return null;
+
+        IResourceLoader<T, F> castLoader = (IResourceLoader<T, F>) loader;
+
+        String path = castLoader.toPath(arguments);
+
+        try (InputStream inputStream = CLASS_LOADER.getResourceAsStream(path)) {
             byte[] buffer = readAllBytes(inputStream);
-            return loader.loadFromBuffer(buffer);
+            return castLoader.loadFromBuffer(buffer, arguments);
         } catch (Exception e) {
             return null;
         }
@@ -161,13 +290,12 @@ public class ResourceManager {
      *
      * <p>This method simply loads a resource, and caches it in the internal map
      */
-    private static <T> Resource<T> loadAndCacheResource(
-            Class<T> type, IResourceLoader<T> loader, String name) {
-        T ret = loadResource(loader, name);
+    private static <T, F> Resource<T> loadAndCacheResource(ResourceArguments<T, F> arguments) {
+        T ret = loadResource(arguments);
         if (ret == null) return null;
-        CountedResource<T> inst = new CountedResource<T>(name, ret);
-        loadedResources.put(name, inst);
-        return inst.incRefCount(type);
+        CountedResource<T> inst = new CountedResource<T>(arguments, ret);
+        sLoadedResources.put(arguments, inst);
+        return inst.incRefCount(arguments.getType());
     }
 
     /** Essentially Java 9 readAllBytes */

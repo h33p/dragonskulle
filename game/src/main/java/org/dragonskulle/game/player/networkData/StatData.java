@@ -19,7 +19,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 @Accessors(prefix = "m")
 public class StatData implements INetSerializable {
 
-    private SyncStat<?> mStat;
+    public SyncStat<?> mStat;
 
     private int mQ;
     private int mR;

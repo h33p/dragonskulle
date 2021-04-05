@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.4.40",
+        "generator" : "Khronos glTF Blender I/O v1.5.17",
         "version" : "2.0"
     },
     "extensionsUsed" : [
@@ -47,6 +47,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mAxialCoordinate",
@@ -84,6 +85,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.ui.UIText",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mVerticalAlignment",
@@ -201,8 +203,7 @@
             "name" : "Material",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
-                    "index" : 0,
-                    "texCoord" : 0
+                    "index" : 0
                 },
                 "metallicFactor" : 0,
                 "roughnessFactor" : 0.4000000059604645
@@ -274,7 +275,7 @@
         {
             "mimeType" : "image/png",
             "name" : "error",
-            "uri" : "../textures/gltf/testin/error.png"
+            "uri" : "../textures/gltf/error.png"
         }
     ],
     "accessors" : [

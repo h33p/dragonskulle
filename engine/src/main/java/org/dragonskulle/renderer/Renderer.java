@@ -21,15 +21,16 @@ import java.nio.LongBuffer;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.renderer.DrawCallState.DrawData;
 import org.dragonskulle.renderer.DrawCallState.NonInstancedDraw;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
@@ -49,6 +50,7 @@ import org.lwjgl.vulkan.*;
  */
 @Accessors(prefix = "m")
 @Getter(AccessLevel.PACKAGE)
+@Log
 public class Renderer implements NativeResource {
 
     private long mWindow;
@@ -58,6 +60,7 @@ public class Renderer implements NativeResource {
     private long mSurface;
 
     private PhysicalDevice mPhysicalDevice;
+    private int mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
     private VkDevice mDevice;
     private VkQueue mGraphicsQueue;
@@ -82,6 +85,9 @@ public class Renderer implements NativeResource {
     @Getter(AccessLevel.PUBLIC)
     private int mInstanceBufferSize = 0;
 
+    private VulkanImage mColorImage;
+    private long mColorImageView;
+
     private VulkanImage mDepthImage;
     private long mDepthImageView;
 
@@ -103,11 +109,12 @@ public class Renderer implements NativeResource {
     private static final Set<String> DEVICE_EXTENSIONS =
             Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
 
-    private static final Logger LOGGER = Logger.getLogger("render");
     static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
     private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
     private static final int INSTANCE_BUFFER_SIZE = envInt("INSTANCE_BUFFER_SIZE", 1);
+
+    private static final int MSAA_SAMPLES = envInt("MSAA_SAMPLES", 4);
 
     private static final long UINT64_MAX = -1L;
     private static final int FRAMES_IN_FLIGHT = 4;
@@ -156,10 +163,11 @@ public class Renderer implements NativeResource {
                 createInfo.height(renderer.mExtent.height());
                 createInfo.layers(1);
 
-                LongBuffer attachment = stack.longs(mImageView, renderer.mDepthImageView);
+                LongBuffer attachments =
+                        stack.longs(renderer.mColorImageView, renderer.mDepthImageView, mImageView);
                 LongBuffer framebuffer = stack.longs(0);
 
-                createInfo.pAttachments(attachment);
+                createInfo.pAttachments(attachments);
 
                 int result = vkCreateFramebuffer(renderer.mDevice, createInfo, null, framebuffer);
 
@@ -192,13 +200,14 @@ public class Renderer implements NativeResource {
      * @throws RuntimeException when initialization fails.
      */
     public Renderer(String appName, long window) throws RuntimeException {
-        LOGGER.info("Initialize renderer");
+        log.info("Initialize renderer");
         mInstanceBufferSize = INSTANCE_BUFFER_SIZE * 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
         if (DEBUG_MODE) mDebugMessenger = createDebugLogger();
         mSurface = createSurface();
         mPhysicalDevice = pickPhysicalDevice();
+        mMSAASamples = mPhysicalDevice.findSuitableMSAACount(MSAA_SAMPLES);
         mDevice = createLogicalDevice();
         mGraphicsQueue = createGraphicsQueue();
         mPresentQueue = createPresentQueue();
@@ -221,8 +230,9 @@ public class Renderer implements NativeResource {
      *
      * @param camera object from where the renderer should render
      * @param objects list of objects that should be rendered
+     * @param lights list of lights to light the objects with
      */
-    public void render(Camera camera, List<Renderable> objects) {
+    public void render(Camera camera, List<Renderable> objects, List<Light> lights) {
         if (mImageContexts == null) recreateSwapchain();
 
         if (mImageContexts == null) return;
@@ -261,7 +271,7 @@ public class Renderer implements NativeResource {
 
             if (discardedBuffer != null) discardedBuffer.free();
 
-            updateInstanceBuffer(image, objects);
+            updateInstanceBuffer(image, objects, lights);
             recordCommandBuffer(image, camera);
 
             VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
@@ -379,7 +389,7 @@ public class Renderer implements NativeResource {
             IntBuffer x = stack.ints(0);
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(mWindow, x, y);
-            LOGGER.finer(String.format("%d %d", x.get(0), y.get(0)));
+            log.finer(String.format("%d %d", x.get(0), y.get(0)));
             if (x.get(0) == 0 || y.get(0) == 0) return;
         }
 
@@ -423,6 +433,12 @@ public class Renderer implements NativeResource {
         mDepthImage.free();
         mDepthImage = null;
 
+        vkDestroyImageView(mDevice, mColorImageView, null);
+        mColorImageView = 0;
+
+        mColorImage.free();
+        mColorImage = null;
+
         vkDestroySwapchainKHR(mDevice, mSwapchain, null);
     }
 
@@ -439,6 +455,8 @@ public class Renderer implements NativeResource {
         mExtent = mPhysicalDevice.getSwapchainSupport().chooseExtent(mWindow);
         mSwapchain = createSwapchain();
         mRenderPass = createRenderPass();
+        mColorImage = createColorImage();
+        mColorImageView = mColorImage.createImageView();
         mDepthImage = createDepthImage();
         mDepthImageView = mDepthImage.createImageView();
         int imageCount = getImageCount();
@@ -455,7 +473,7 @@ public class Renderer implements NativeResource {
      * instance will also enable debug validation layers, which allow to track down issues.
      */
     private VkInstance createInstance(String appName) {
-        LOGGER.fine("Create instance");
+        log.fine("Create instance");
 
         try (MemoryStack stack = stackPush()) {
             // Prepare basic Vulkan App information
@@ -519,7 +537,7 @@ public class Renderer implements NativeResource {
      * frame. Do not pop the stack before using up createInfo!!!
      */
     private void setupDebugValidationLayers(VkInstanceCreateInfo createInfo, MemoryStack stack) {
-        LOGGER.fine("Setup VK validation layers");
+        log.fine("Setup VK validation layers");
 
         Set<String> wantedSet = new HashSet<>(WANTED_VALIDATION_LAYERS_LIST);
 
@@ -602,7 +620,7 @@ public class Renderer implements NativeResource {
             level = Level.INFO;
         }
 
-        LOGGER.log(level, callbackData.pMessageString());
+        log.log(level, callbackData.pMessageString());
 
         return VK_FALSE;
     }
@@ -628,7 +646,7 @@ public class Renderer implements NativeResource {
      * <p>This method uses window to get its surface that the renderer will draw to
      */
     private long createSurface() {
-        LOGGER.fine("Create surface");
+        log.fine("Create surface");
 
         try (MemoryStack stack = stackPush()) {
             LongBuffer pSurface = stack.callocLong(1);
@@ -645,14 +663,14 @@ public class Renderer implements NativeResource {
 
     /** Sets up one physical device for use */
     private PhysicalDevice pickPhysicalDevice() {
-        LOGGER.fine("Pick physical device");
+        log.fine("Pick physical device");
         PhysicalDevice physicalDevice =
                 PhysicalDevice.pickPhysicalDevice(
                         mInstance, mSurface, TARGET_GPU, DEVICE_EXTENSIONS);
         if (physicalDevice == null) {
             throw new RuntimeException("Failed to find compatible GPU!");
         }
-        LOGGER.fine(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
+        log.fine(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
         return physicalDevice;
     }
 
@@ -660,7 +678,7 @@ public class Renderer implements NativeResource {
 
     /** Creates a logical device with required features */
     private VkDevice createLogicalDevice() {
-        LOGGER.fine("Create logical device");
+        log.fine("Create logical device");
 
         try (MemoryStack stack = stackPush()) {
             FloatBuffer queuePriority = stack.floats(1.0f);
@@ -745,7 +763,7 @@ public class Renderer implements NativeResource {
      * <p>This method creates a command pool which is used for creating command buffers.
      */
     private long createCommandPool() {
-        LOGGER.fine("Create command pool");
+        log.fine("Create command pool");
 
         try (MemoryStack stack = stackPush()) {
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
@@ -770,7 +788,7 @@ public class Renderer implements NativeResource {
 
     /** Sets up the swapchain required for rendering */
     private long createSwapchain() {
-        LOGGER.fine("Setup swapchain");
+        log.fine("Setup swapchain");
 
         try (MemoryStack stack = stackPush()) {
             int presentMode = mPhysicalDevice.getSwapchainSupport().choosePresentMode();
@@ -884,14 +902,14 @@ public class Renderer implements NativeResource {
      * <p>TODO: move to material system? Move to render pass manager?
      */
     private long createRenderPass() {
-        LOGGER.fine("Create render pass");
+        log.fine("Create render pass");
 
         try (MemoryStack stack = stackPush()) {
             VkAttachmentDescription.Buffer attachments =
-                    VkAttachmentDescription.callocStack(2, stack);
+                    VkAttachmentDescription.callocStack(3, stack);
             VkAttachmentDescription colorAttachment = attachments.get(0);
             colorAttachment.format(mSurfaceFormat.format());
-            colorAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
+            colorAttachment.samples(mMSAASamples);
             colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
             colorAttachment.storeOp(VK_ATTACHMENT_STORE_OP_STORE);
             // We don't use stencils yet
@@ -900,7 +918,7 @@ public class Renderer implements NativeResource {
             // We present the image after rendering, and don't care what it was,
             // since we clear it anyways.
             colorAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
-            colorAttachment.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+            colorAttachment.finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
             VkAttachmentReference.Buffer colorAttachmentRef =
                     VkAttachmentReference.callocStack(1, stack);
@@ -909,7 +927,7 @@ public class Renderer implements NativeResource {
 
             VkAttachmentDescription depthAttachment = attachments.get(1);
             depthAttachment.format(mPhysicalDevice.findDepthFormat());
-            depthAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
+            depthAttachment.samples(mMSAASamples);
             depthAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
             depthAttachment.storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
             depthAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
@@ -921,11 +939,27 @@ public class Renderer implements NativeResource {
             depthAttachmentRef.attachment(1);
             depthAttachmentRef.layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
+            VkAttachmentDescription resolveAttachment = attachments.get(2);
+            resolveAttachment.format(mSurfaceFormat.format());
+            resolveAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
+            resolveAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+            resolveAttachment.storeOp(VK_ATTACHMENT_STORE_OP_STORE);
+            resolveAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+            resolveAttachment.stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
+            resolveAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
+            resolveAttachment.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+            VkAttachmentReference.Buffer resolveAttachmentRef =
+                    VkAttachmentReference.callocStack(1, stack);
+            resolveAttachmentRef.attachment(2);
+            resolveAttachmentRef.layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
             VkSubpassDescription.Buffer subpass = VkSubpassDescription.callocStack(1, stack);
             subpass.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS);
             subpass.colorAttachmentCount(1);
             subpass.pColorAttachments(colorAttachmentRef);
             subpass.pDepthStencilAttachment(depthAttachmentRef);
+            subpass.pResolveAttachments(resolveAttachmentRef);
 
             VkRenderPassCreateInfo renderPassInfo = VkRenderPassCreateInfo.callocStack(stack);
             renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
@@ -962,6 +996,27 @@ public class Renderer implements NativeResource {
         }
     }
 
+    /// Color texture setup
+
+    private VulkanImage createColorImage() {
+        VkCommandBuffer tmpCommandBuffer = beginSingleUseCommandBuffer();
+        VulkanImage colorImage =
+                new VulkanImage(
+                        tmpCommandBuffer,
+                        mDevice,
+                        mPhysicalDevice,
+                        mExtent.width(),
+                        mExtent.height(),
+                        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+                                | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                        mMSAASamples,
+                        mSurfaceFormat.format(),
+                        VK_IMAGE_ASPECT_COLOR_BIT,
+                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        endSingleUseCommandBuffer(tmpCommandBuffer);
+        return colorImage;
+    }
+
     /// Depth texture setup
 
     private VulkanImage createDepthImage() {
@@ -972,7 +1027,8 @@ public class Renderer implements NativeResource {
                         mDevice,
                         mPhysicalDevice,
                         mExtent.width(),
-                        mExtent.height());
+                        mExtent.height(),
+                        mMSAASamples);
         endSingleUseCommandBuffer(tmpCommandBuffer);
         return depthImage;
     }
@@ -985,7 +1041,7 @@ public class Renderer implements NativeResource {
      * <p>As the name implies, this buffer holds base per-instance data
      */
     private VulkanBuffer createInstanceBuffer(int sizeOfBuffer) {
-        LOGGER.fine("Create instance buffer");
+        log.fine("Create instance buffer");
 
         try (MemoryStack stack = stackPush()) {
             return new VulkanBuffer(
@@ -1059,7 +1115,7 @@ public class Renderer implements NativeResource {
     /// Frame Context setup
 
     private FrameContext[] createFrameContexts(int framesInFlight) {
-        LOGGER.fine("Setup sync objects");
+        log.fine("Setup sync objects");
 
         try (MemoryStack stack = stackPush()) {
             FrameContext[] frames = new FrameContext[framesInFlight];
@@ -1108,7 +1164,7 @@ public class Renderer implements NativeResource {
     private TreeMap<Integer, List<DrawCallState>> mToPresort = new TreeMap<>();
     private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
 
-    void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables) {
+    void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables, List<Light> lights) {
 
         mToPresort.clear();
 
@@ -1144,6 +1200,14 @@ public class Renderer implements NativeResource {
             }
             state.addObject(renderable);
         }
+
+        mDrawInstances
+                .entrySet()
+                .removeIf(
+                        e -> {
+                            e.getValue().entrySet().removeIf(e2 -> e2.getValue().shouldCleanup());
+                            return e.getValue().isEmpty();
+                        });
 
         int instanceBufferSize = 0;
 
@@ -1192,7 +1256,7 @@ public class Renderer implements NativeResource {
 
                 for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
-                        state.updateInstanceBuffer(byteBuffer);
+                        state.updateInstanceBuffer(byteBuffer, lights);
                         state.endDrawData(ctx.imageIndex);
                     }
                 }
@@ -1201,7 +1265,7 @@ public class Renderer implements NativeResource {
             } else {
                 for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
-                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory);
+                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory, lights);
                         state.endDrawData(ctx.imageIndex);
                     }
                 }

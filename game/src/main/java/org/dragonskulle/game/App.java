@@ -45,9 +45,35 @@ public class App implements NativeResource {
     private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
 
+    private static void addDebugUI(Scene scene) {
+        GameObject debugUI =
+                new GameObject(
+                        "debugUI",
+                        new TransformUI(true),
+                        (handle) -> {
+                            handle.getTransform(TransformUI.class)
+                                    .setParentAnchor(0.0f, 1f, 0.5f, 1f);
+                            handle.getTransform(TransformUI.class).setMargin(0f, -0.3f, 0f, 0f);
+                            handle.getTransform(TransformUI.class).setPivotOffset(0f, 1f);
+                            handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
+                        });
+
+        scene.addRootObject(debugUI);
+    }
+
     private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
+
+        addDebugUI(mainScene);
+
+        mainScene.addRootObject(
+                new GameObject(
+                        "light",
+                        (light) -> {
+                            light.addComponent(new Light());
+                            light.getTransform(Transform3D.class).setRotation(45f, 0f, 45f);
+                        }));
 
         GameObject cameraRig =
                 new GameObject(
@@ -120,7 +146,8 @@ public class App implements NativeResource {
                             "hostGameUI",
                             new TransformUI(false),
                             (root) -> {
-                                root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                                // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
+                                // 0.1f)));
                                 root.getTransform(TransformUI.class).setParentAnchor(0f);
                                 root.buildChild(
                                         "populate_with_ai",
@@ -142,8 +169,7 @@ public class App implements NativeResource {
                                                                             "Rise of Kingdom.ttf"),
                                                                     "Fill game with AI"),
                                                             (a, b) -> {
-                                                                System.out.println(
-                                                                        "should fill with ai");
+                                                                log.info("should fill with ai");
                                                                 networkManager
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(
@@ -163,6 +189,8 @@ public class App implements NativeResource {
 
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
+
+        addDebugUI(mainMenu);
 
         TemplateManager templates = new TemplateManager();
 
@@ -397,7 +425,7 @@ public class App implements NativeResource {
                                 slider.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
 
                                 UISlider newSlider =
-                                        new UISlider((uiSlider, val) -> System.out.println(val));
+                                        new UISlider((uiSlider, val) -> log.info("Value " + val));
 
                                 newSlider.setValue(
                                         Settings.getInstance()
@@ -607,9 +635,9 @@ public class App implements NativeResource {
                                 try {
                                     sPort = in.nextInt();
                                     sIP = line.trim();
-                                    System.out.println("Address set successfully!");
+                                    log.info("Address set successfully!");
                                 } catch (Exception e) {
-                                    System.out.println("Failed to set IP and port!");
+                                    log.info("Failed to set IP and port!");
                                 }
                             }
                         })
@@ -620,7 +648,7 @@ public class App implements NativeResource {
     }
 
     private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
-        System.out.println("CONNECTED ID " + netID);
+        log.info("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
                 new GameObject(
@@ -637,8 +665,6 @@ public class App implements NativeResource {
     private void onClientConnected(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 

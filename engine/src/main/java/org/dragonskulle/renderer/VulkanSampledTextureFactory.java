@@ -33,6 +33,7 @@ class VulkanSampledTextureFactory implements NativeResource {
             mImage =
                     new VulkanImage(
                             texture.getTexture().get(),
+                            texture.isLinear(),
                             cmd,
                             factory.mDevice,
                             factory.mPhysicalDevice);
