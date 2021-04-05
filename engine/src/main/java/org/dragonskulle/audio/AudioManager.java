@@ -13,8 +13,10 @@ import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.audio.formats.Sound;
 import org.dragonskulle.audio.formats.WaveSound;
+import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.joml.Vector3f;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC;
@@ -231,16 +233,36 @@ public class AudioManager {
     }
 
     /**
+     * Updates the OpenAL listener position and rotation from the singleton audio listener in the
+     * scene
+     */
+    private void updateListenerPosAndRot() {
+        Transform t = mAudioListener.get().getGameObject().getTransform();
+
+        Vector3f pos = t.getPosition();
+        AL11.alListener3f(AL11.AL_POSITION, pos.x, pos.y, pos.z);
+
+        Vector3f up = t.getUpVector();
+        Vector3f forward = t.getForwardVector();
+
+        AL11.alListenerfv(AL11.AL_ORIENTATION,
+                new float[] {forward.x, forward.y, forward.z, up.x, up.y, up.z});
+
+    }
+
+    /**
      * Handles the distribution of sources between all of the AudioSources in the scene, assigning
      * sources to those that have the highest priority and removing them from those that no longer
      * need them
      */
     public void update() {
-        if (mAudioListener == null) {
+        if (!mInitialized || mAudioListener == null) {
             return;
         }
 
-        // First remove any references to AudioSources that are no longer valid
+        updateListenerPosAndRot();
+
+        // remove any references to AudioSources that are no longer valid
         mAudioSources.removeIf(ref -> !ref.isValid());
 
         // All references will be valid because they any invalid ones are removed at the start
@@ -250,7 +272,8 @@ public class AudioManager {
             // Get the distance of the source from the listener
             float distance = 100000f;
             if (mAudioListener != null && mAudioListener.isValid()) {
-                distance = mAudioListener.get().getPosition().distance(audioSource.getPosition());
+                distance = mAudioListener.get().getGameObject()
+                        .getTransform().getPosition().distance(audioSource.getPosition());
             }
 
             // Don't attach a source if the AudioSource:
@@ -266,6 +289,7 @@ public class AudioManager {
             }
         }
 
+        // TODO: Sort audio sources by priority
         // List is not sorted by priority for now but will be in the future so
         // detach all sources from index mSources.size() onwards
         if (mAudioSources.size() > mSources.size()) {
