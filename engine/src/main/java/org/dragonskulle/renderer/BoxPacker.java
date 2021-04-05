@@ -58,6 +58,8 @@ class BoxPacker<T extends IBox> {
             if (node.mWidth == width && node.mHeight == height) {
                 node.mFilledLeaf = true;
                 node.mBox = newBox;
+                node.mWidth -= gap;
+                node.mHeight -= gap;
                 return node;
             } else if (node.mWidth >= width && node.mHeight >= height) {
 

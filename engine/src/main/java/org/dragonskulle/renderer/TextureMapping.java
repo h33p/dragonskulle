@@ -75,7 +75,7 @@ public class TextureMapping implements Serializable {
         }
 
         public static TextureWrapping fromGLTF(Integer value) {
-            if (value == null) return CLAMP;
+            if (value == null) return REPEAT;
 
             // There is no CLAMP_BORDER value
             switch (value) {

@@ -5,12 +5,12 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.util.shaderc.Shaderc.*;
 
 import java.nio.ByteBuffer;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.NativeResource;
 
 /**
@@ -26,6 +26,45 @@ public class ShaderBuf implements NativeResource {
     @Getter
     private ByteBuffer mBuffer;
 
+    @Accessors(prefix = "m")
+    @Getter
+    public static class MacroDefinition {
+        private final String mName;
+        private final String mValue;
+
+        public MacroDefinition(String name, String value) {
+            mName = name;
+            mValue = value;
+        }
+    }
+
+    @EqualsAndHashCode
+    private static class ShaderBufLoadArgs {
+        private final ShaderKind mKind;
+        private final MacroDefinition[] mDefinitions;
+
+        ShaderBufLoadArgs(ShaderKind kind, MacroDefinition... definitions) {
+            mKind = kind;
+            mDefinitions = definitions;
+        }
+    }
+
+    static {
+        ResourceManager.registerResource(
+                ShaderBuf.class,
+                ShaderBufLoadArgs.class,
+                (args) ->
+                        String.format(
+                                "shaders/%s.%s",
+                                args.getName(), args.getAdditionalArgs().mKind.toString()),
+                (buffer, args) ->
+                        compileShader(
+                                new String(buffer),
+                                args.getName(),
+                                args.getAdditionalArgs().mKind,
+                                args.getAdditionalArgs().mDefinitions));
+    }
+
     /**
      * Load a shader resource
      *
@@ -33,40 +72,23 @@ public class ShaderBuf implements NativeResource {
      * @param kind kind of the shader (vertex, fragment, geometry)
      * @return shader resource if loaded, null otherwise
      */
-    public static Resource<ShaderBuf> getResource(String name, ShaderKind kind) {
-        String spirvName = String.format("shaderc/%s.%s.spv", name, kind.toString());
-
-        Resource<ShaderBuf> precompiledShader =
-                ResourceManager.getResource(
-                        ShaderBuf.class,
-                        (buffer) -> {
-                            ShaderBuf ret = new ShaderBuf();
-                            ret.mBuffer = MemoryUtil.memAlloc(buffer.length);
-                            ret.mBuffer.put(buffer);
-                            ret.mBuffer.rewind();
-                            return ret;
-                        },
-                        spirvName);
-
-        if (precompiledShader != null) return precompiledShader;
-
-        String glslName = String.format("shaders/%s.%s", name, kind.toString());
-
+    public static Resource<ShaderBuf> getResource(
+            String name, ShaderKind kind, MacroDefinition... macros) {
         return ResourceManager.getResource(
-                ShaderBuf.class,
-                (buffer) -> compileShader(glslName, new String(buffer), kind),
-                glslName);
+                ShaderBuf.class, name, new ShaderBufLoadArgs(kind, macros));
     }
 
     /**
      * Compile a shader directly
      *
-     * @param name name of the shader
      * @param data shader bytecode
+     * @param name name of the shader
      * @param shaderKind shader kind (vertex, fragment, geometry)
+     * @param macros custom macro definitions
      * @return compiled shader, null if there was an error
      */
-    public static ShaderBuf compileShader(String name, String data, ShaderKind shaderKind) {
+    public static ShaderBuf compileShader(
+            String data, String name, ShaderKind shaderKind, MacroDefinition[] macros) {
         log.fine("Compiling " + name);
 
         if (data == null) {
@@ -81,8 +103,20 @@ public class ShaderBuf implements NativeResource {
             return null;
         }
 
+        long options = shaderc_compile_options_initialize();
+
+        shaderc_compile_options_set_optimization_level(
+                options, shaderc_optimization_level_performance);
+
+        for (MacroDefinition macro : macros) {
+            shaderc_compile_options_add_macro_definition(options, macro.mName, macro.mValue);
+        }
+
         long result =
-                shaderc_compile_into_spv(compiler, data, shaderKind.getKind(), name, "main", NULL);
+                shaderc_compile_into_spv(
+                        compiler, data, shaderKind.getKind(), name, "main", options);
+
+        shaderc_compile_options_release(options);
 
         if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success) {
             log.warning(

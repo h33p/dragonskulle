@@ -32,6 +32,22 @@ public class MathUtils {
         return (int) (Math.log(val) / Math.log(base));
     }
 
+    /**
+     * Round a number down to the lower power of two.
+     *
+     * @param n number to round down
+     * @return rounded down number
+     */
+    public static int roundDownToPow2(int n) {
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n++;
+        return n >> 1;
+    }
+
     public static double mapOneRangeToAnother(
             double sourceNumber,
             double fromA,

@@ -166,23 +166,32 @@ public abstract class Transform extends Component {
             Vector3fc position, Quaternionfc rotation, Vector3fc scale);
 
     /**
+     * Transform a direction vector into world space
+     *
+     * @param direction direction to transform
+     * @return direction after transformation
+     */
+    public Vector3f transformDirection(Vector3f direction) {
+        return direction.mulDirection(getWorldMatrix());
+    }
+
+    /**
      * Get the right direction vector
      *
      * @return Vector3f containing the right direction
      */
     public Vector3f getRightVector() {
-        Vector3f right = new Vector3f();
-        getWorldMatrix().normalizedPositiveX(right);
-        return right;
+        return getRightVector(new Vector3f());
     }
 
     /**
      * Get the right direction vector
      *
      * @param dest Vector3f to store the right direction
+     * @return dest after transformation
      */
-    public void getRightVector(Vector3f dest) {
-        getWorldMatrix().normalizedPositiveX(dest);
+    public Vector3f getRightVector(Vector3f dest) {
+        return transformDirection(dest.set(1f, 0f, 0f));
     }
 
     /**
@@ -191,18 +200,17 @@ public abstract class Transform extends Component {
      * @return Vector3f containing the up direction
      */
     public Vector3f getUpVector() {
-        Vector3f up = new Vector3f();
-        getWorldMatrix().normalizedPositiveZ(up);
-        return up;
+        return getUpVector(new Vector3f());
     }
 
     /**
      * Get the up direction vector
      *
      * @param dest Vector3f to store the up direction
+     * @return dest after transformation
      */
-    public void getUpVector(Vector3f dest) {
-        getWorldMatrix().normalizedPositiveZ(dest);
+    public Vector3f getUpVector(Vector3f dest) {
+        return transformDirection(dest.set(0f, 0f, 1f));
     }
 
     /**
@@ -211,17 +219,16 @@ public abstract class Transform extends Component {
      * @return Vector3f containing the forward direction
      */
     public Vector3f getForwardVector() {
-        Vector3f forward = new Vector3f();
-        getWorldMatrix().normalizedPositiveY(forward);
-        return forward;
+        return getForwardVector(new Vector3f());
     }
 
     /**
      * Get the forward direction vector
      *
      * @param dest Vector3f to store the forward direction
+     * @return dest after transformation
      */
-    public void getForwardVector(Vector3f dest) {
-        getWorldMatrix().normalizedPositiveY(dest);
+    public Vector3f getForwardVector(Vector3f dest) {
+        return transformDirection(dest.set(0f, 1f, 0f));
     }
 }

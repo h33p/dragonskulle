@@ -10,27 +10,28 @@ public class ResourceManagerTest {
 
     private static boolean throwOnLoad = false;
 
+    static {
+        ResourceManager.registerResource(
+                TestBytes.class, (a) -> "text/" + a.getName(), (b, __) -> new TestBytes(b));
+        ResourceManager.registerResource(
+                TestLines.class, (a) -> "text/" + a.getName(), (b, __) -> new TestLines(b));
+    }
+
     /** First class for simple text resource loading */
     private static class TestBytes {
         private byte[] buf;
-
-        private static final IResourceLoader<TestBytes> LOADER = TestBytes::new;
 
         private TestBytes(byte[] buf) {
             if (throwOnLoad) throw new RuntimeException("Was asked to throw!");
             this.buf = buf;
         }
 
-        public static String resourcePath(String name) {
-            return "text/" + name;
-        }
-
         public static Resource<TestBytes> getResource(String name) {
-            return ResourceManager.getResource(TestBytes.class, LOADER, resourcePath(name));
+            return ResourceManager.getResource(TestBytes.class, name);
         }
 
         public static void unlinkResource(String name) {
-            ResourceManager.unlinkResource(resourcePath(name));
+            ResourceManager.unlinkResource(TestBytes.class, name);
         }
     }
 
@@ -45,7 +46,7 @@ public class ResourceManagerTest {
         }
 
         public static Resource<TestLines> getResource(String name) {
-            return ResourceManager.getResource(TestLines.class, TestLines::new, "text/" + name);
+            return ResourceManager.getResource(TestLines.class, name);
         }
 
         @Override
@@ -113,49 +114,6 @@ public class ResourceManagerTest {
     }
 
     /**
-     * Test property of trying to load the same resource as different types
-     *
-     * <p>Second resource should simply fail to load.
-     */
-    @Test
-    public void cachedTypeSafety() {
-        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
-            assertNotNull(res);
-            assertNotNull(res.get());
-
-            try (Resource<TestLines> res2 = TestLines.getResource("a.txt")) {
-                assertNull(res2);
-            }
-        }
-    }
-
-    /**
-     * Test property of caching working, and resource being freed
-     *
-     * <p>Second resource should simply fail to load. But the third one should succeed.
-     */
-    @Test
-    public void cachedFreeTypeSafety() {
-        try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
-            assertNotNull(res);
-            assertNotNull(res.get());
-
-            try (Resource<TestLines> res2 = TestLines.getResource("a.txt")) {
-                assertNull(res2);
-            }
-        }
-
-        try (Resource<TestLines> res = TestLines.getResource("a.txt")) {
-            assertNotNull(res);
-            assertNotNull(res.get());
-
-            try (Resource<TestBytes> res2 = TestBytes.getResource("a.txt")) {
-                assertNull(res2);
-            }
-        }
-    }
-
-    /**
      * Test whether unlinking functions as expected
      *
      * <p>Loading second resource after unlinking should yield different reference, and loading a
@@ -212,7 +170,7 @@ public class ResourceManagerTest {
                 assertNotNull(res2);
                 assertSame(res.get(), res2.get());
                 TestBytes cached = res.get();
-                assertTrue(res.reload(TestBytes.LOADER));
+                assertTrue(res.reload());
                 assertNotSame(cached, res.get());
                 assertSame(res.get(), res2.get());
                 assertEquals(cached.buf.length, res.get().buf.length);

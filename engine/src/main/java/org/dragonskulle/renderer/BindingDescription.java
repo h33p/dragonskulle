@@ -28,4 +28,15 @@ public class BindingDescription {
     public static BindingDescription instancedWithMatrix(int size) {
         return instanced(size + AttributeDescription.MATRIX_SIZE);
     }
+
+    /**
+     * Creates a new binding description with default transformation matrix attached at the
+     * beginning of the structure, and light information after it.
+     */
+    public static BindingDescription instancedWithMatrixAndLights(int size, int lightCount) {
+        return instanced(
+                size
+                        + AttributeDescription.MATRIX_SIZE
+                        + lightCount * 2 * AttributeDescription.LIGHT_HALF_SIZE);
+    }
 }
