@@ -27,6 +27,15 @@ public final class SellData implements INetSerializable {
      * @param toSell The building to sell
      */
     public SellData(Building toSell) {
+        setData(toSell);
+    }
+
+    /**
+     * Sets the request's data
+     *
+     * @param toSell The building to sell
+     */
+    public void setData(Building toSell) {
         HexagonTile tileToSell = toSell.getTile();
 
         mQ = tileToSell.getQ();

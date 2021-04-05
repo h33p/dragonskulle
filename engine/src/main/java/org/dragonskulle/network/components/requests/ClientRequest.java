@@ -22,6 +22,10 @@ public class ClientRequest<T extends INetSerializable> {
     private NetworkObject mNetworkObject;
     private int mRequestId;
 
+    public static interface IInvokationSetter<T extends INetSerializable> {
+        void setValues(T data);
+    }
+
     /**
      * Defined how an event it to be handled on the server.
      *
@@ -38,13 +42,36 @@ public class ClientRequest<T extends INetSerializable> {
         mRequestId = id;
     }
 
+    /**
+     * Invoke a request with a setter lambda
+     *
+     * <p>This method should be more efficient than passing {@code new} data every time, since it
+     * would not invoke GC allocations (if Java is smart about it).
+     *
+     * @param setter setter interface for the temporary data
+     */
+    public void invoke(IInvokationSetter<T> setter) {
+        setter.setValues(mTmpData);
+        invoke(mTmpData);
+    }
+
+    /**
+     * Invokes a request
+     *
+     * <p>This method sends a request to the server, if the object is owned by the player, or calls
+     * it directly, if was invoked by the server.
+     *
+     * @param data data to send/invoke.
+     */
     public void invoke(T data) {
         try {
-            if (mNetworkObject.isServer()) {
+            if (!mNetworkObject.isMine()) {
                 log.warning(
-                        "Client invoked "
+                        "Invoked "
                                 + data.getClass().getName()
-                                + "event called on server! This is wrong!");
+                                + "event called on non-owned object! This is wrong!");
+            } else if (mNetworkObject.isServer()) {
+                mHandler.handleRequest(data);
             } else {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 try (DataOutputStream oos = new DataOutputStream(bos)) {

@@ -457,7 +457,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The tile to place a building on.
      * @return Whether the attempt to build was successful.
      */
-    public boolean buildAttempt(HexagonTile tile) {
+    private boolean buildAttempt(HexagonTile tile) {
         if (buildCheck(tile) == false) {
             log.info("Unable to pass build check.");
             return false;
@@ -565,7 +565,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param defender The defending building.
      * @return Whether the attempt to attack was successful.
      */
-    public boolean attackAttempt(Building attacker, Building defender) {
+    private boolean attackAttempt(Building attacker, Building defender) {
 
         if (attackCheck(attacker, defender) == false) {
             log.info("Unable to pass attack check.");
@@ -707,7 +707,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to sell.
      * @return Whether the attempt to sell the building was successful.
      */
-    public boolean sellAttempt(Building building) {
+    private boolean sellAttempt(Building building) {
         if (sellCheck(building) == false) {
             log.info("Unable to pass sell check.");
             return false;
@@ -778,7 +778,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param stat The stat to increase.
      * @return Whether the attempt to change the stats where successful.
      */
-    public boolean statAttempt(Building building, SyncStat<?> stat) {
+    private boolean statAttempt(Building building, SyncStat<?> stat) {
         if (statCheck(building) == false) {
             log.info("Unable to pass stat check.");
             return false;
