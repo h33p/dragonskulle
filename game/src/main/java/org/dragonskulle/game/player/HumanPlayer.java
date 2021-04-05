@@ -159,7 +159,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .orElse(null);
         }
 
-        if (mPlayer == null || mPlayer.get() == null) return;
+        if (mPlayer == null || !mPlayer.isValid()) return;
 
         if (mPlayer.get().hasLost()) {
             log.warning("You've lost your capital");
