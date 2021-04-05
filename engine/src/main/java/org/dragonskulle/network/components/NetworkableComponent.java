@@ -59,6 +59,10 @@ public abstract class NetworkableComponent extends Component {
                         .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
                         .toArray(Field[]::new);
 
+        for (Field f : mFields) {
+            f.setAccessible(true);
+        }
+
         Field[] requestFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> ClientRequest.class.isAssignableFrom(field.getType()))

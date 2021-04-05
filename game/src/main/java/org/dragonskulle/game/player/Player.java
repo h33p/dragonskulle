@@ -51,10 +51,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
     /** The number of tokens the player has, synchronised from server to client. */
-    @Getter public SyncInt mTokens = new SyncInt(0);
+    @Getter private SyncInt mTokens = new SyncInt(0);
 
     /** The colour of the player. */
-    @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
+    @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
 
     @Getter private HighlightSelection mPlayerHighlightSelection;
 
@@ -62,12 +62,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /** Whether they own the building */
-    public SyncBool mOwnsCapital = new SyncBool(true);
+    private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack */
     private final float ATTACK_COOLDOWN = 20f;
     /** When the last time a player attacked */
-    public float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
+    private float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
