@@ -335,7 +335,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
                 mMaterial = (UIMaterial) rend.getMaterial();
         }
 
-        if (mIsEnabled) {
+        if (!mIsEnabled) {
             mRegularColor.lerp(mDisabledColour, 0.8f, mTmpLerp);
             mMaterial.colour.set(mTmpLerp);
         }

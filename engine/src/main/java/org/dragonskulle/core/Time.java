@@ -15,7 +15,7 @@ public class Time {
      *
      * @return The current time in seconds
      */
-    public static float getTimeInSeconds() {
-        return ((float) System.nanoTime()) / NS_PER_S;
+    public static double getTimeInSeconds() {
+        return ((double) System.nanoTime()) / NS_PER_S;
     }
 }

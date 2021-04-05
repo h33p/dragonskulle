@@ -5,6 +5,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.AttributeDescription;
@@ -16,6 +17,7 @@ import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.components.Light;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
@@ -102,7 +104,8 @@ public class UnlitMaterial
         return OPAQUE_SET;
     }
 
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
+    public void writeVertexInstanceData(
+            int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         mColour.get(offset, buffer);
     }
