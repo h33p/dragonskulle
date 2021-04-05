@@ -67,7 +67,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** This Is how often a player can attack */
     private final float ATTACK_COOLDOWN = 20f;
     /** When the last time a player attacked */
-    public float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
+    public double lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
