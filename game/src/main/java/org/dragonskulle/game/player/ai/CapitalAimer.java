@@ -31,7 +31,7 @@ public class CapitalAimer extends AiPlayer {
 
     @Override
     protected void simulateInput() {
-        if (opponentPlayer.getOwnerId() == mPlayer.get().getOwnerId()) {
+        if (opponentPlayer.getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
             findOpponent();
         }
 
@@ -76,7 +76,7 @@ public class CapitalAimer extends AiPlayer {
     private void findOpponent() {
         Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
 
-        while (opponentPlayer.getOwnerId() == mPlayer.get().getOwnerId()) {
+        while (opponentPlayer.getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
             Optional<HexagonTile> tile = tiles.findAny();
             HexagonTile tileFound = tile.get();
             Player playerAiming = tileFound.getClaimant();
@@ -88,7 +88,7 @@ public class CapitalAimer extends AiPlayer {
 
     /** This will perform the A* Search */
     private void aStar() {
-        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getOwnerId(),  new Building());		//TODO Currently just creates a dummy building so the code compiles
+        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getNetworkObject().getOwnerId(),  new Building());		//TODO Currently just creates a dummy building so the code compiles
         graph = tempGraph;
         AStar aStar = new AStar(graph);
         findCapital();
