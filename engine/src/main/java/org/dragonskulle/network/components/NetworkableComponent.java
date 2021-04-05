@@ -14,6 +14,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.ISyncVar;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
@@ -176,7 +177,7 @@ public abstract class NetworkableComponent extends Component {
     public void updateFromStream(DataInputStream stream) throws IOException {
         int maskLength = stream.readByte();
         // cast to one byte
-        boolean[] mask = NetworkMessage.getMaskFromBytes(stream.readNBytes(maskLength));
+        boolean[] mask = NetworkMessage.getMaskFromBytes(IOUtils.readNBytes(stream, maskLength));
 
         for (int i = 0; i < mask.length && i < mFields.length; i++) {
             if (mask[i]) {

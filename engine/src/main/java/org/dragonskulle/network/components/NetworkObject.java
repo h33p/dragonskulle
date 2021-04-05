@@ -15,6 +15,7 @@ import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * The type Network object.
@@ -181,7 +182,7 @@ public class NetworkObject extends Component {
 
         int maskLength = stream.readByte();
 
-        byte[] mask = stream.readNBytes(maskLength);
+        byte[] mask = IOUtils.readNBytes(stream, maskLength);
 
         boolean[] masks = NetworkMessage.getMaskFromBytes(mask);
 
