@@ -257,13 +257,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     } else {
                         // Checks if cannot build here
                         if (mHexChosen.isClaimed()) {
-                            System.out.println("Human:Cannot build");
+                            log.info("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
                             return;
                         } else {
                             // If you can build
-                            System.out.println("Human:Change Screen");
+                            log.info("Human:Change Screen");
                             setScreenOn(Screen.TILE_SCREEN);
                         }
                     }
@@ -278,8 +278,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 screenPos.y(),
                                 new Vector3f());
 
-                System.out.println("[DEBUG] RCL Position : " + screenPos.toString());
-                System.out.println("[DEBUG] RCL Position From Camera : " + pos.toString());
+                log.info("[DEBUG] RCL Position : " + screenPos.toString());
+                log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
             }
         }
     }

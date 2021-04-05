@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -15,6 +16,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.ui.UIManager;
 
@@ -26,6 +28,7 @@ import org.dragonskulle.ui.UIManager;
  *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
+@Log
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -53,6 +56,7 @@ public class Engine {
     @Getter private GLFWState mGLFWState = null;
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
+    private final ArrayList<Light> mTmpLights = new ArrayList<>();
 
     public interface IEngineExitCondition {
         boolean shouldExit();
@@ -197,14 +201,14 @@ public class Engine {
 
     /** Debug loop of the engine */
     private void debugLoop(IEngineExitCondition exitCondition) {
-        float mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getTimeInSeconds();
 
-        float cumulativeTime = 0;
+        double cumulativeTime = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            float mCurTime = Time.getTimeInSeconds();
-            float deltaTime = mCurTime - mPrevTime;
+            double mCurTime = Time.getTimeInSeconds();
+            double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
             cumulativeTime += deltaTime;
@@ -238,20 +242,20 @@ public class Engine {
     /** Main loop of the engine */
     private void mainLoop(IEngineExitCondition exitCondition) {
 
-        float mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getTimeInSeconds();
 
         // Basic frame counter
         int frames = 0;
-        float secondTimer = 0;
-        float cumulativeTime = 0;
+        double secondTimer = 0;
+        double cumulativeTime = 0;
 
         int instancedDrawCalls = 0;
         int slowDrawCalls = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            float mCurTime = Time.getTimeInSeconds();
-            float deltaTime = mCurTime - mPrevTime;
+            double mCurTime = Time.getTimeInSeconds();
+            double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
             cumulativeTime += deltaTime;
@@ -276,7 +280,7 @@ public class Engine {
             AudioManager.getInstance().updateAudioListener();
 
             // Call FrameUpdate on the presentation scene
-            frameUpdate(deltaTime);
+            frameUpdate((float) deltaTime);
             Scene.setActiveScene(null);
 
             if (cumulativeTime > UPDATE_TIME) {
@@ -291,7 +295,7 @@ public class Engine {
 
             Scene.setActiveScene(mPresentationScene);
             // Call LateFrameUpdate on the presentation scene
-            lateFrameUpdate(deltaTime);
+            lateFrameUpdate((float) deltaTime);
 
             AudioManager.getInstance().update();
 
@@ -308,15 +312,20 @@ public class Engine {
                 // One second has elapsed so frames contains the FPS
 
                 // Have no use for this currently besides printing it to console
-                System.out.println("FPS:" + frames);
-                System.out.println("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
-                System.out.println("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
-                System.out.println("IB Size:" + mGLFWState.getRenderer().getInstanceBufferSize());
-                System.out.println(
-                        "MB Size:"
-                                + mGLFWState.getRenderer().getVertexBufferSize()
-                                + ":"
-                                + mGLFWState.getRenderer().getIndexBufferSize());
+                log.info(
+                        String.format(
+                                "\tFPS: %d"
+                                        + "\n\tInstanced Draws: %d"
+                                        + "\n\tSlow Draws: %d"
+                                        + "\n\tIB Size: %d"
+                                        + "\n\tMB Size: %d:%d",
+                                frames,
+                                (instancedDrawCalls + frames / 2) / frames,
+                                (slowDrawCalls + frames / 2) / frames,
+                                mGLFWState.getRenderer().getInstanceBufferSize(),
+                                mGLFWState.getRenderer().getVertexBufferSize(),
+                                mGLFWState.getRenderer().getIndexBufferSize()));
+
                 instancedDrawCalls = 0;
                 slowDrawCalls = 0;
                 secondTimer -= 1.0;
@@ -435,15 +444,20 @@ public class Engine {
 
     private void renderFrame() {
         mTmpRenderables.clear();
+        mTmpLights.clear();
+
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof Renderable) {
                 mTmpRenderables.add((Renderable) component);
+            } else if (component instanceof Light) {
+                mTmpLights.add((Light) component);
             }
         }
 
         Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
-        if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
+        if (mainCamera != null)
+            mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
     }
 
     /**

@@ -5,6 +5,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.List;
 import org.dragonskulle.renderer.AttributeDescription;
 import org.dragonskulle.renderer.BindingDescription;
 import org.dragonskulle.renderer.SampledTexture;
@@ -14,6 +15,7 @@ import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
@@ -112,7 +114,8 @@ public class UIMaterial implements IMaterial, Serializable {
         return sShaderSet;
     }
 
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer, Matrix4fc matrix) {
+    public void writeVertexInstanceData(
+            int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         colour.get(offset, buffer);
     }

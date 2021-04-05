@@ -7,17 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.materials.VertexHighlightMaterial;
 import org.dragonskulle.game.player.Player;
-import org.dragonskulle.renderer.*;
-import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
-import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
-import org.dragonskulle.renderer.components.Renderable;
-import org.dragonskulle.renderer.materials.IColouredMaterial;
 
 /**
  * @author Leela Muppala
@@ -28,33 +24,14 @@ import org.dragonskulle.renderer.materials.IColouredMaterial;
 @Accessors(prefix = "m")
 public class HexagonTile {
 
-    // A variable which changes the colour of the hex tiles to make them easier to see
-    private static final boolean DEBUG = true;
+    static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
     /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
-            new GameObject(
-                    "land",
-                    (go) -> {
-                        Mesh mesh = Mesh.HEXAGON;
-                        SampledTexture texture =
-                                new SampledTexture(
-                                        "map/grass.png",
-                                        new TextureMapping(
-                                                TextureFiltering.LINEAR, TextureWrapping.REPEAT));
-
-                        IColouredMaterial mat = new VertexHighlightMaterial(texture);
-                        mat.getColour().set(0f, 1f, 0f, 1f);
-                        go.addComponent(new Renderable(mesh, mat));
-
-                        if (DEBUG) {
-                            Reference<Renderable> hexRenderer = go.getComponent(Renderable.class);
-                            VertexHighlightMaterial hexMaterial =
-                                    hexRenderer.get().getMaterial(VertexHighlightMaterial.class);
-                            hexMaterial.setDistancePow(20f);
-                            hexMaterial.getTexColour().set(0.1f, 0.1f, 0.1f, 1.f);
-                        }
-                    });
+            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
+                    .filter(go -> go.getName().equals("Land Hex"))
+                    .findFirst()
+                    .orElse(null);
 
     /** This is the axial storage system for each tile */
     @Getter private final int mQ;

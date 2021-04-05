@@ -1,9 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio.components;
 
-import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.Source;
 import org.dragonskulle.audio.WaveSound;
@@ -17,9 +17,9 @@ import org.joml.Vector3f;
 import org.lwjgl.openal.AL11;
 
 @Accessors(prefix = "m")
+@Log
 public class AudioSource extends Component implements IFixedUpdate, ILateFrameUpdate {
 
-    private static final Logger LOGGER = Logger.getLogger("audio");
     private final Reference<AudioSource> mReference = getReference(AudioSource.class);
     @Getter private final Vector3f mPosition = new Vector3f();
 
@@ -69,7 +69,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         updatePosition();
 
         AL11.alSourcePlay(s);
-        LOGGER.info("Attached source " + mSource.getSource());
+        log.info("Attached source " + mSource.getSource());
     }
 
     /** Detach the Source from this AudioSource if there is one */
@@ -84,7 +84,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         AL11.alSourceStop(source);
         AL11.alSourcei(source, AL11.AL_BUFFER, 0);
 
-        LOGGER.info("Detached source " + mSource.getSource());
+        log.info("Detached source " + mSource.getSource());
         mSource.setInUse(false);
         mSource = null;
     }

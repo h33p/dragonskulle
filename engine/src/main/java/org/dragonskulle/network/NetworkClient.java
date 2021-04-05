@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.exceptions.DecodingException;
 
@@ -17,8 +17,8 @@ import org.dragonskulle.exceptions.DecodingException;
  *     connect to. ClientListener is the handler for commands that the client receives. {@link
  *     org.dragonskulle.network.IClientListener}**
  */
+@Log
 public class NetworkClient {
-    private static final Logger mLogger = Logger.getLogger(NetworkClient.class.getName());
 
     /** The Socket connection to the server. */
     private Socket mSocket;
@@ -65,7 +65,7 @@ public class NetworkClient {
             mClientThread.start();
         } catch (Exception exception) {
             mOpen = false;
-            mLogger.severe(exception.getMessage());
+            log.severe(exception.getMessage());
         }
     }
 
@@ -77,19 +77,18 @@ public class NetworkClient {
      * @return the byteCode of the message processed.
      */
     public byte executeBytes(byte messageType, byte[] payload) {
-        mLogger.fine("EXEB - " + messageType);
+        log.fine("EXEB - " + messageType);
         switch (messageType) {
             case NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT:
-                mLogger.fine("Should update requested network object");
+                log.fine("Should update requested network object");
                 mClientListener.updateNetworkObject(payload);
                 break;
             case NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT:
-                mLogger.fine("Spawn a networked object");
+                log.fine("Spawn a networked object");
                 mClientListener.spawnNetworkObject(payload);
                 break;
             default:
-                mLogger.info(
-                        "unsure of what to do with message as unknown type byte " + messageType);
+                log.info("unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
         return messageType;
@@ -117,7 +116,7 @@ public class NetworkClient {
                 }
             }
         } catch (Exception exception) {
-            mLogger.severe(exception.getMessage());
+            log.severe(exception.getMessage());
         }
     }
 
@@ -140,11 +139,11 @@ public class NetworkClient {
         if (mOpen) {
             try {
                 if (mDOut != null) {
-                    mLogger.fine("sending bytes");
+                    log.fine("sending bytes");
                     mDOut.write(bytes);
                 }
             } catch (IOException e) {
-                mLogger.fine("Failed to send bytes");
+                log.fine("Failed to send bytes");
             }
         }
     }
@@ -211,7 +210,7 @@ public class NetworkClient {
             if (mClientListener != null) mClientListener.disconnected();
 
             dispose();
-            System.out.println("cancelled successfully");
+            log.info("cancelled successfully");
         }
     }
 
@@ -221,20 +220,20 @@ public class NetworkClient {
      * @param bArray the bytes
      */
     private void queueRequest(byte[] bArray) {
-        mLogger.fine("queuing request :: " + Hex.encodeHexString(bArray));
+        log.fine("queuing request :: " + Hex.encodeHexString(bArray));
         this.mRequests.add(bArray);
     }
 
     /** Processes all requests. */
     public int processRequests() {
-        mLogger.fine("processing all " + this.mRequests.size() + " requests");
+        log.fine("processing all " + this.mRequests.size() + " requests");
         int cnt = 0;
         while (!this.mRequests.isEmpty()) {
             byte[] requestBytes = this.mRequests.poll();
             if (requestBytes != null) {
                 parseBytes(requestBytes);
             }
-            if (cnt > 100) mLogger.info("CNT " + cnt);
+            if (cnt > 100) log.info("CNT " + cnt);
 
             cnt++;
         }
@@ -251,8 +250,8 @@ public class NetworkClient {
         try {
             NetworkMessage.parse(bytes, this);
         } catch (Exception e) {
-            mLogger.fine("error parsing bytes");
-            mLogger.severe(e.getMessage());
+            log.fine("error parsing bytes");
+            log.severe(e.getMessage());
         }
     }
 
@@ -266,7 +265,7 @@ public class NetworkClient {
                 mSocket = null;
             }
         } catch (Exception exception) {
-            mLogger.severe(exception.getMessage());
+            log.severe(exception.getMessage());
         }
         try {
             if (mDOut != null) {
@@ -274,7 +273,7 @@ public class NetworkClient {
                 mDOut = null;
             }
         } catch (Exception exception) {
-            mLogger.severe(exception.getMessage());
+            log.severe(exception.getMessage());
         }
     }
 }

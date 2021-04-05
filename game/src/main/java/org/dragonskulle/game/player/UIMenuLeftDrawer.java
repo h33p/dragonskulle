@@ -153,7 +153,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     if (mGetHexChosen.get() != null) {
-                        System.out.println("Running place button lambda");
+                        log.info("Running place button lambda");
                         Reference<Player> player = mGetPlayer.get();
                         if (player != null && player.isValid()) {
                             player.get()

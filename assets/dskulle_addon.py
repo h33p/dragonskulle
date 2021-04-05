@@ -470,7 +470,7 @@ class Component(bpy.types.PropertyGroup):
         for p in self.properties:
             properties.append(p.serialize())
 
-        return {"class_name": self.class_name, "properties": properties}
+        return {"class_name": self.class_name, "enabled": self.enabled, "properties": properties}
 
 class GameObject(bpy.types.PropertyGroup):
     transform_type: bpy.props.EnumProperty(name = "Transform", items = (('org.dragonskulle.components.Transform3D', '3D', 'Use Transform3D'), ('org.dragonskulle.components.TransformHex', 'Hex', 'Use TransformHex')))
