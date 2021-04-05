@@ -74,6 +74,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
+    /** Store the {@link HexagonMap} that the {@link Building} is on. */
+    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
@@ -93,6 +96,20 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
+
+        // Store the map.
+        HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
+        if (checkingMapExists == null) {
+            log.severe("Scene Map is null");
+        } else {
+            Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
+            if (mapCheck != null && mapCheck.isValid()) {
+                mMap = mapCheck;
+            } else {
+                log.severe("mapCheck is null.");
+            }
+        }
+
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addOwnership(this);
@@ -193,8 +210,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         final int maxValue = 1000;
 
         // Get the attacker and defender's stats.
-        int attack = mAttack.getValue();
-        int defence = opponent.mDefence.getValue();
+        int attack = getAttack().getValue();
+        int defence = opponent.getDefence().getValue();
 
         // Stores the highest result of rolling a dice a set number of times, defined by the attack
         // stat.
@@ -216,7 +233,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         for (int i = 1; i < defence; i++) {
             int value = (int) (Math.random() * (maxValue) + 1);
             // Store the highest value achieved.
-            if (value > defence) {
+            if (value > highestDefence) {
                 highestDefence = value;
             }
         }
@@ -322,7 +339,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The map.
      */
     private HexagonMap getMap() {
-        return Scene.getActiveScene().getSingleton(HexagonMap.class);
+        return mMap.get();
     }
 
     /**
@@ -410,6 +427,30 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // TODO: Request that the building should be destroyed.
         // destroy();
+    }
+
+    /**
+     * This will create and return a base cost for attacking
+     *
+     * @return The cost for attacking
+     */
+    public int getAttackCost() {
+
+        // Base cost
+        int cost = 20;
+
+        // Update cost on different stats
+        cost += (mDefence.get() * 3);
+        cost += (mAttack.get() * 2);
+        cost += (mTokenGeneration.get());
+        cost += (mViewDistance.get());
+        cost += (mAttackDistance.get());
+
+        if (isCapital()) {
+            cost += 10;
+        }
+
+        return cost;
     }
 
     @Override

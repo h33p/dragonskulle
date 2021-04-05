@@ -201,13 +201,13 @@ public class Engine {
 
     /** Debug loop of the engine */
     private void debugLoop(IEngineExitCondition exitCondition) {
-        double mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getPreciseTimeInSeconds();
 
         double cumulativeTime = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            double mCurTime = Time.getTimeInSeconds();
+            double mCurTime = Time.getPreciseTimeInSeconds();
             double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
@@ -242,7 +242,7 @@ public class Engine {
     /** Main loop of the engine */
     private void mainLoop(IEngineExitCondition exitCondition) {
 
-        double mPrevTime = Time.getTimeInSeconds();
+        double mPrevTime = Time.getPreciseTimeInSeconds();
 
         // Basic frame counter
         int frames = 0;
@@ -254,7 +254,7 @@ public class Engine {
 
         while (mIsRunning) {
             // Calculate time for last frame
-            double mCurTime = Time.getTimeInSeconds();
+            double mCurTime = Time.getPreciseTimeInSeconds();
             double deltaTime = mCurTime - mPrevTime;
             mPrevTime = mCurTime;
 
