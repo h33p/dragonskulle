@@ -30,7 +30,7 @@ public class CapitalAimer extends AiPlayer {
 
     @Override
     protected void simulateInput() {
-        if (opponentPlayer.getOwnerId == mPlayer.get().getOwnerId()) {
+        if (opponentPlayer.getOwnerId() == mPlayer.get().getOwnerId()) {
             findOpponent();
         }
 
@@ -43,6 +43,15 @@ public class CapitalAimer extends AiPlayer {
         }
 
         // TODO Perform actions here
+        /*TODO
+         * To do this I need to have 2 Deques - one with the tiles which I have done (Must be a stack)
+         * The second one is the next ones to use
+         * Check if the next tile is claimed in the deque -- if it isn't claim (either attack/build)
+         * If it is put it in the claimed deque.
+         * Everytime you redo A* it needs to be reset
+         * The start node is always OUR capital.  
+         * 
+         */
 
     }
 
