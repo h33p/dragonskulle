@@ -7,6 +7,8 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
@@ -20,64 +22,66 @@ import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 public class Graph {
 
     protected Map<Integer, Node> graph; // The hash map which will have the integer to the Node
+    private int mNodeNum;
+    private Reference<HexagonMap> mMap;
+    private final int mOwnerId;
+    private Reference<HexagonTile> mTileAiming;
 
-    /** Constructor which assumes no data to add at start */
-    public Graph() {
-        graph = new HashMap<Integer, Node>();
-    }
-
-    public Graph(HexagonMap map) {
+    public Graph(HexagonMap map, int ownerId, HexagonTile tileAiming) {
+    	mTileAiming = new Reference<HexagonTile>(tileAiming);
+    	mMap = map.getReference(HexagonMap.class);
+    	mOwnerId = ownerId;
+    	mNodeNum = 0;
+    	graph = new HashMap<Integer, Node>();
         Stream<HexagonTile> tiles = map.getAllTiles();
+        tiles.forEach(this::convertToNode);
+        mNodeNum = 0;
+        tiles.forEach(this::addConnections);
     }
 
-    /**
-     * This one assumes it takes data from a file
-     *
-     * @param data
-     * @throws GraphNodeException
-     */
-    public Graph(ArrayList<ArrayList<String>> data)
-            throws NumberFormatException, GraphException, GraphNodeException {
-
-        graph = new HashMap<Integer, Node>();
-
-        for (ArrayList<String> list :
-                data) { // For each line in the arraylist will add it as a connection
-
-            addConnection(
-                    Integer.parseInt(list.get(0)),
-                    Integer.parseInt(list.get(1)),
-                    Double.parseDouble(list.get(2)));
-        }
+    private void convertToNode(HexagonTile tile) {
+    	
+    	try {
+			addNode(mNodeNum, tile);
+			
+			int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
+			
+			this.setNodeSpecial(mNodeNum, heuristic);
+			
+		} catch (GraphNodeException e) {
+			// TODO Already in graph
+		}
+    	mNodeNum++;
+    	
     }
-
-    /**
-     * Used if the data has special info for each node
-     *
-     * @param dataNodes The nodes to add with the special info
-     * @param dataConnections The connections for the graph
-     */
-    public Graph(
-            ArrayList<ArrayList<String>> dataNodes, ArrayList<ArrayList<String>> dataConnections)
-            throws NumberFormatException, GraphException, GraphNodeException {
-
-        graph = new HashMap<Integer, Node>();
-
-        for (ArrayList<String> list : dataNodes) { // WIll add all the nodes with the special info
-            addNode(Integer.parseInt(list.get(0)));
-            setNodeSpecial(Integer.parseInt(list.get(0)), Double.parseDouble(list.get(1)));
-        }
-
-        for (ArrayList<String> list :
-                dataConnections) { // For each line in the arraylist will add it as a connection
-
-            addConnection(
-                    Integer.parseInt(list.get(0)),
-                    Integer.parseInt(list.get(1)),
-                    Double.parseDouble(list.get(2)));
-        }
+    
+    private void addConnections(HexagonTile tile) {
+    	boolean found = false;
+    	ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
+    	
+    	for (HexagonTile tileNeighbour : neighbourTiles) {
+    		for (Map.Entry<Integer, Node> mapEntry : graph.entrySet()) {
+    			if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ() && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
+    				
+    				int distance = 10; // A Chosen number so the hueristic will be smaller
+    				
+    				if (tileNeighbour.getClaimant() == null) {
+    					distance += 10;  //TODO link this to building price
+    				}
+    				else if (tileNeighbour.getClaimant().getOwnerId() != mOwnerId) {
+    					distance += tileNeighbour.getBuilding().getCost();		//This adds the cost of attack.
+    				}
+    				else {
+    					// Don't do anything as its claimed by you so you want to go over it
+    				}
+    				
+    				addConnection(mNodeNum, mapEntry.getValue().getNode(), distance); //Weight set to 10
+    			}
+    		}
+    	}
+    	mNodeNum++;
     }
-
+  
     /**
      * This will add a node to a graph with no connections
      *
@@ -98,6 +102,27 @@ public class Graph {
         }
     }
 
+    /**
+     * This will add a node to a graph with no connections
+     *
+     * @param nodeToAdd The node number
+     * @param tile The {@code HexagonTile} it corresponds to
+     * @throws GraphNodeException If the node already exists
+     */
+    public void addNode(int nodeToAdd, HexagonTile tile) throws GraphNodeException {
+
+        Node node =
+                graph.get(nodeToAdd); // Gets the connection if in the graph. If not there gets null
+
+        if (node == null) { // If the node is not in the graph
+            Node newNode = new Node(nodeToAdd); // Makes a new node
+            graph.put(nodeToAdd, newNode); // Adds to graph
+
+        } else {
+            throw new GraphNodeException();
+        }
+    }
+    
     /**
      * Adds a connection between two nodes
      *

@@ -4,6 +4,7 @@ package org.dragonskulle.game.player.ai;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.dragonskulle.core.Time;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ai.algorithms.AStar;
@@ -87,7 +88,7 @@ public class CapitalAimer extends AiPlayer {
 
     /** This will perform the A* Search */
     private void aStar() {
-        Graph tempGraph = new Graph(mPlayer.get().getMap());
+        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getOwnerId(),  new Building());		//TODO Currently just creates a dummy building so the code compiles
         graph = tempGraph;
         AStar aStar = new AStar(graph);
         findCapital();
