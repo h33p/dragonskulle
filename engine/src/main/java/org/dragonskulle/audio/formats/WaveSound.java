@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.audio;
+package org.dragonskulle.audio.formats;
 
 import com.sun.media.sound.WaveFileReader;
 import java.io.File;
@@ -24,29 +24,27 @@ import org.lwjgl.openal.AL11;
  *     then buffered using alBufferData.
  */
 @Log
-public class WaveSound implements Serializable {
+public class WaveSound extends Sound implements Serializable {
 
-    public int buffer;
-    public int sampleRate;
-    public int format;
-    public float length;
-    public int bits;
-    public int channels;
+    private int mSampleRate;
+    private int mFormat;
+    private int mBits;
+    private int mChannels;
 
-    public void setALFormat() {
-        switch (bits) {
+    private void setALFormat() {
+        switch (mBits) {
             case 16:
-                if (channels > 1) {
-                    format = AL11.AL_FORMAT_STEREO16;
+                if (mChannels > 1) {
+                    mFormat = AL11.AL_FORMAT_STEREO16;
                 } else {
-                    format = AL11.AL_FORMAT_MONO16;
+                    mFormat = AL11.AL_FORMAT_MONO16;
                 }
                 break;
             case 8:
-                if (channels > 1) {
-                    format = AL11.AL_FORMAT_STEREO8;
+                if (mChannels > 1) {
+                    mFormat = AL11.AL_FORMAT_STEREO8;
                 } else {
-                    format = AL11.AL_FORMAT_MONO8;
+                    mFormat = AL11.AL_FORMAT_MONO8;
                 }
         }
     }
@@ -96,10 +94,10 @@ public class WaveSound implements Serializable {
             WaveSound sound = new WaveSound();
             AudioFormat format = audioInputStream.getFormat();
 
-            sound.sampleRate = (int) format.getSampleRate();
+            sound.mSampleRate = (int) format.getSampleRate();
 
-            sound.bits = format.getSampleSizeInBits();
-            sound.channels = format.getChannels();
+            sound.mBits = format.getSampleSizeInBits();
+            sound.mChannels = format.getChannels();
             sound.setALFormat();
 
             int audioLength = (int) audioInputStream.getFrameLength() * format.getFrameSize();
@@ -115,15 +113,15 @@ public class WaveSound implements Serializable {
 
             sound.length = (float) bytesRead / format.getSampleRate();
 
-            if (sound.bits == 16) {
+            if (sound.mBits == 16) {
                 sound.length /= 2;
             }
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
-            ByteBuffer buffer = processRawBytes(audioBytes, sound.bits == 8, order);
+            ByteBuffer buffer = processRawBytes(audioBytes, sound.mBits == 8, order);
 
             sound.buffer = AL11.alGenBuffers();
-            AL11.alBufferData(sound.buffer, sound.format, buffer, sound.sampleRate);
+            AL11.alBufferData(sound.buffer, sound.mFormat, buffer, sound.mSampleRate);
 
             return sound;
         } catch (UnsupportedAudioFileException e) {

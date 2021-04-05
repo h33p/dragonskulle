@@ -11,6 +11,8 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
+import org.dragonskulle.audio.formats.Sound;
+import org.dragonskulle.audio.formats.WaveSound;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.lwjgl.openal.AL;
@@ -35,7 +37,7 @@ public class AudioManager {
     // TODO: Decide how many simultaneous audio sources we want to support
     private static final int MAX_SOURCES = 32;
 
-    private final ArrayList<WaveSound> mSounds = new ArrayList<>();
+    private final ArrayList<Sound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
     private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
 
@@ -202,7 +204,7 @@ public class AudioManager {
             return -1;
         }
 
-        WaveSound sound = WaveSound.loadWave(file);
+        Sound sound = WaveSound.loadWave(file);
 
         if (sound == null) {
             return -1;
@@ -220,7 +222,7 @@ public class AudioManager {
      * @param id Integer of id that the sound was loaded with
      * @return A WaveSound object representing the sound, or null if there was no sound with that id
      */
-    public WaveSound getSound(int id) {
+    public Sound getSound(int id) {
         if (id < 0 || id >= mSounds.size()) {
             return null;
         } else {
@@ -336,7 +338,7 @@ public class AudioManager {
         }
         mSources.clear();
 
-        for (WaveSound s : mSounds) {
+        for (Sound s : mSounds) {
             AL11.alDeleteBuffers(s.buffer);
         }
         mSounds.clear();
