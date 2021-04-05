@@ -12,15 +12,9 @@ public class ResourceManagerTest {
 
     static {
         ResourceManager.registerResource(
-                TestBytes.class,
-                Object.class,
-                (a) -> "text/" + a.getName(),
-                (b, __) -> new TestBytes(b));
+                TestBytes.class, (a) -> "text/" + a.getName(), (b, __) -> new TestBytes(b));
         ResourceManager.registerResource(
-                TestLines.class,
-                Object.class,
-                (a) -> "text/" + a.getName(),
-                (b, __) -> new TestLines(b));
+                TestLines.class, (a) -> "text/" + a.getName(), (b, __) -> new TestLines(b));
     }
 
     /** First class for simple text resource loading */

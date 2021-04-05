@@ -100,7 +100,6 @@ public final class Font extends Texture {
     static {
         ResourceManager.registerResource(
                 Font.class,
-                Object.class,
                 (a) -> String.format("fonts/%s", a.getName()),
                 (buffer, __) -> {
                     Font ret = new Font();

@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
  *     <p>example declaring a custom resource:
  *     <pre>{@code
  * static {
- *     ResourceManager.registerResource(GLTF.class, Object.class, (a) -> "gltf/" + a + ".gltf", (b, __) -> new GLTF(b));
+ *     ResourceManager.registerResource(GLTF.class, (a) -> "gltf/" + a + ".gltf", (b, __) -> new GLTF(b));
  * }
  *
  * public static Resource<GLTF> getResource(String name) {
@@ -36,8 +36,8 @@ public class ResourceManager {
     private static HashMap<Class<?>, IResourceLoader<?, ?>> sLoaders = new HashMap<>();
 
     static {
-        registerResource(byte[].class, Object.class, (a) -> a.getName(), (b, __) -> b);
-        registerResource(String.class, Object.class, (a) -> a.getName(), (b, __) -> new String(b));
+        registerResource(byte[].class, (a) -> a.getName(), (b, __) -> b);
+        registerResource(String.class, (a) -> a.getName(), (b, __) -> new String(b));
     }
 
     /** Reference counts the accesses */
@@ -146,7 +146,24 @@ public class ResourceManager {
      * Register a resource loader in a composite way
      *
      * @param type type of the resource
-     * @param argType type of the arguments
+     * @param pathResolver implementation (lambda) of path resolving
+     * @param bufferLoader implementation (lambda) of resource loading
+     */
+    public static <T, F> void registerResource(
+            Class<T> type,
+            IResourcePathResolver<T, F> pathResolver,
+            IResourceBufferLoader<T, F> bufferLoader) {
+        sLoaders.put(type, new CompositeResourceLoader<>(pathResolver, bufferLoader));
+    }
+
+    /**
+     * Register a resource loader in a composite way
+     *
+     * <p>This method is purely for convenience to allow to easily specify the {@code F} type, but
+     * does exactly the same as the above method.
+     *
+     * @param type type of the resource
+     * @param argType type of the argument
      * @param pathResolver implementation (lambda) of path resolving
      * @param bufferLoader implementation (lambda) of resource loading
      */
@@ -155,7 +172,7 @@ public class ResourceManager {
             Class<F> argType,
             IResourcePathResolver<T, F> pathResolver,
             IResourceBufferLoader<T, F> bufferLoader) {
-        sLoaders.put(type, new CompositeResourceLoader<>(pathResolver, bufferLoader));
+        registerResource(type, pathResolver, bufferLoader);
     }
 
     /**
@@ -256,7 +273,7 @@ public class ResourceManager {
         IResourceLoader<?, ?> loader = sLoaders.get(arguments.getType());
         if (loader == null) return null;
 
-        IResourceLoader<T, F> castLoader = (IResourceLoader<T, F>) (Object) loader;
+        IResourceLoader<T, F> castLoader = (IResourceLoader<T, F>) loader;
 
         String path = castLoader.toPath(arguments);
 

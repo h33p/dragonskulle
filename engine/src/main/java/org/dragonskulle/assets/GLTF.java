@@ -263,7 +263,6 @@ public class GLTF implements NativeResource {
     static {
         ResourceManager.registerResource(
                 GLTF.class,
-                Object.class,
                 (args) -> String.format("gltf/%s.gltf", args.getName()),
                 (buffer, __) -> new GLTF(new String(buffer)));
     }

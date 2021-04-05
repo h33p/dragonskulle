@@ -26,7 +26,6 @@ public class Texture implements NativeResource {
     static {
         ResourceManager.registerResource(
                 Texture.class,
-                Object.class,
                 (args) -> String.format("textures/%s", args.getName()),
                 (buffer, args) -> loadTexture(buffer, args.getName()));
     }

@@ -9,8 +9,9 @@ import lombok.experimental.Accessors;
  * Load resources from byte buffers
  *
  * @author Aurimas Blažulionis
- *     <p>This interface is really trivial. A simple lambda that accepts {@code byte[]}, and outputs
- *     {@code T} implements it automatically!
+ *     <p>This class stores all arguments for a resource - its type, name, and any additional
+ *     arguments that its loader may want to use. Essentially, if a resource is retrieved with the
+ *     same arguments, it will point to the same resource.
  */
 @Getter
 @Accessors(prefix = "m")
