@@ -306,7 +306,7 @@ public class NetworkMessage {
     /**
      * Gets mask from bytes.
      *
-     * @param buff the buff
+     * @param maskBytes mask in byte form
      * @return the mask from bytes
      */
     public static boolean[] getMaskFromBytes(byte[] maskBytes) {
