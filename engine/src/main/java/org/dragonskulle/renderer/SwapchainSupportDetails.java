@@ -8,16 +8,16 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.IntBuffer;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+@Log
 class SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
     VkSurfaceFormatKHR.Buffer formats;
     IntBuffer presentModes;
-    public static final Logger LOGGER = Logger.getLogger("render");
 
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_FIFO_KHR);
 
@@ -57,7 +57,7 @@ class SwapchainSupportDetails {
                                                         == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                         .findAny()
                         .orElseGet(() -> formats.get(0));
-        LOGGER.fine(
+        log.fine(
                 String.format(
                         "Picked surface format: %d %d", format.format(), format.colorSpace()));
         return format;
@@ -87,13 +87,13 @@ class SwapchainSupportDetails {
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(window, x, y);
 
-            LOGGER.finer(String.format("Extent TRY: %dx%d", x.get(0), y.get(0)));
-            LOGGER.finer(
+            log.finer(String.format("Extent TRY: %dx%d", x.get(0), y.get(0)));
+            log.finer(
                     String.format(
                             "MAX: %dx%d",
                             capabilities.maxImageExtent().width(),
                             capabilities.maxImageExtent().height()));
-            LOGGER.finer(
+            log.finer(
                     String.format(
                             "MIN: %dx%d",
                             capabilities.minImageExtent().width(),
@@ -108,7 +108,7 @@ class SwapchainSupportDetails {
                             Integer.min(y.get(0), capabilities.maxImageExtent().height()),
                             capabilities.minImageExtent().height()));
 
-            LOGGER.finer(String.format("Extent: %dx%d", extent.width(), extent.height()));
+            log.finer(String.format("Extent: %dx%d", extent.width(), extent.height()));
 
             return extent;
         }

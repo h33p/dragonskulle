@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
@@ -18,6 +19,7 @@ import org.joml.Vector3f;
 import org.junit.Test;
 
 /** Unit tests for {@link GLTF} files. */
+@Log
 public class GLTFTest {
     @Test
     public void loadGLTF() {
@@ -80,7 +82,7 @@ public class GLTFTest {
             ArrayList<Reference<Component>> outList = new ArrayList<>();
             cube.getComponents(Component.class, outList);
             for (Reference<Component> comp : outList) {
-                System.out.println(comp.get());
+                log.info(comp.get().toString());
             }
             Reference<UIText> uiText = cube.getComponent(UIText.class);
             assertNotNull(uiText);
