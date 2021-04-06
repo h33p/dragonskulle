@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -248,6 +250,8 @@ public class ServerNetworkManager {
             else mNetworkObjects.remove(entry.getKey());
         }
 
+        clientUpdate();
+
         for (ServerClient c : mServer.getClients()) {
             for (ServerObjectEntry entry : mNetworkObjects.values()) {
                 entry.updateClient(c);
@@ -268,5 +272,29 @@ public class ServerNetworkManager {
      */
     private int allocateId() {
         return mNetworkObjectCounter.getAndIncrement();
+    }
+
+    /** Sends updated server state to the clients */
+    private void clientUpdate() {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream stream = new DataOutputStream(bos);
+
+        try {
+            stream.writeFloat(Engine.getInstance().getCurTime());
+
+            stream.flush();
+            stream.close();
+            bos.flush();
+            bos.close();
+
+            byte[] msg =
+                    NetworkMessage.build(
+                            NetworkConfig.Codes.MESSAGE_UPDATE_STATE, bos.toByteArray());
+
+            for (ServerClient c : mServer.getClients()) c.sendBytes(msg);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

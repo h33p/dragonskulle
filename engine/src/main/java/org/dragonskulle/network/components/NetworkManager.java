@@ -138,6 +138,18 @@ public class NetworkManager extends Component implements INetworkUpdate {
         return mClientManager != null;
     }
 
+    /**
+     * Gets the server's time
+     *
+     * @return server's time. Note that it does not account for latency or anything like that. If
+     *     there is no client or server active, {@code -1f} is returned.
+     */
+    public float getServerTime() {
+        if (mServerManager != null) return Engine.getInstance().getCurTime();
+        else if (mClientManager != null) return mClientManager.getServerTime();
+        return -1f;
+    }
+
     public Stream<NetworkObject> getObjectsOwnedBy(int netId) {
         Stream<Reference<NetworkObject>> obj = null;
 

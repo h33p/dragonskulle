@@ -268,7 +268,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
             // Ensure the building is not owned by the owner of this building.
             if (getOwnerID() == building.getOwnerID()) {
-                log.info("Building owned by same player.");
+                log.fine("Building owned by same player.");
                 continue;
             }
 

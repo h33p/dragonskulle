@@ -46,4 +46,11 @@ public interface IClientListener {
      * @param payload payload containing the object info
      */
     void spawnNetworkObject(byte[] payload);
+
+    /**
+     * Update the server's state on the client.
+     *
+     * @param payload payload containing the server's world state
+     */
+    void updateServerState(byte[] payload);
 }

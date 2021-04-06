@@ -10,6 +10,8 @@ public class NetworkConfig {
         public static final byte MESSAGE_UPDATE_OBJECT = 15;
         /** ID of spawn object message */
         public static final byte MESSAGE_SPAWN_OBJECT = 16;
+        /** ID of server state update */
+        public static final byte MESSAGE_UPDATE_STATE = 17;
         /** ID of client to server request message */
         public static final byte MESSAGE_CLIENT_REQUEST = 21;
     }

@@ -87,6 +87,10 @@ public class NetworkClient {
                 log.fine("Spawn a networked object");
                 mClientListener.spawnNetworkObject(payload);
                 break;
+            case NetworkConfig.Codes.MESSAGE_UPDATE_STATE:
+                log.fine("Update server's state");
+                mClientListener.updateServerState(payload);
+                break;
             default:
                 log.info("unsure of what to do with message as unknown type byte " + messageType);
                 break;

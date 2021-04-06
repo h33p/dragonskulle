@@ -16,7 +16,6 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.Time;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -31,6 +30,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
@@ -67,7 +67,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** This Is how often a player can attack */
     private final float ATTACK_COOLDOWN = 20f;
     /** When the last time a player attacked */
-    private float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
+    private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -657,12 +657,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks if you're in cooldown
-        if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
-            log.warning("Still in cooldown");
+        if (getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN) {
+            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
 
-        lastAttack = Time.getTimeInSeconds();
+        mLastAttack.set(getNetworkManager().getServerTime());
 
         return true;
     }

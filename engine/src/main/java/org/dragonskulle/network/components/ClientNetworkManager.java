@@ -103,6 +103,23 @@ public class ClientNetworkManager {
             }
         }
 
+        /**
+         * Update the server's state on the client.
+         *
+         * @param payload payload containing the server's world state
+         */
+        @Override
+        public void updateServerState(byte[] payload) {
+            ByteArrayInputStream bis = new ByteArrayInputStream(payload);
+            DataInputStream stream = new DataInputStream(bis);
+
+            try {
+                mServerTime = stream.readFloat();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         private void updateOwnershipLink(Reference<NetworkObject> mNetworkObject) {
             mModifiedOwnerListeners.stream().forEach(l -> l.handleModifyOwner(mNetworkObject));
         }
@@ -150,6 +167,8 @@ public class ClientNetworkManager {
     private List<IObjectOwnerModifiedEvent> mModifiedOwnerListeners = new ArrayList<>();
 
     @Getter private int mNetID = -1;
+
+    @Getter private float mServerTime = 0f;
 
     /** An map of references to objects. */
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
