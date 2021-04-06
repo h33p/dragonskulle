@@ -767,8 +767,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to increase a specific {@link Stat} of
-     * a {@link Building}.
+     * Process and parse an event in which the <b>client</b> player wishes to increase a specific
+     * {@link Stat} of a {@link Building}.
      *
      * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
      * #statAttempt(Building, Stat)}.
@@ -793,7 +793,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.warning("Unable to parse StatData: Building from StatData is null.");
             return;
         }
-        
+
         Stat stat = data.getStat();
         if (stat == null) {
             log.warning("Unable to parse StatData: Stat from StatData is null.");
@@ -841,7 +841,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.warning("Building is null.");
             return false;
         }
-        
+
         if (stat == null) {
             log.warning("Stat is null.");
             return false;
@@ -852,14 +852,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("Building not owned.");
             return false;
         }
-        
-        if(building.getStat(stat) == null) {
-        	log.info("Building is missing specified stat.");
+
+        if (building.getStat(stat) == null) {
+            log.info("Building is missing specified stat.");
             return false;
         }
-        
-        if(building.getStat(stat).get() >= SyncStat.LEVEL_MAX) {
-        	log.info("Building stat already fully upgraded.");
+
+        if (building.getStat(stat).get() >= SyncStat.LEVEL_MAX) {
+            log.info("Building stat already fully upgraded.");
             return false;
         }
 
