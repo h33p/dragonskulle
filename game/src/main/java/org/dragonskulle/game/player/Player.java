@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -33,6 +34,9 @@ import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
+import org.dragonskulle.utils.MathUtils;
+import org.joml.Matrix2f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -88,7 +92,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private final int playersToPlay = 6;
+    private final int MAX_PLAYERS = 6;
 
     /** Used by the client to request that a building be placed by the server. */
     @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
@@ -166,36 +170,61 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will randomly place a capital using an angle so each person is within their own slice
      */
     private void distributeCoordinates() {
+        boolean completed = false;
+        while (!completed) {
 
-        float angleOfCircle = (float) 360 / (float) playersToPlay;
+            float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+            float angleBetween =
+                    (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
 
-        // This says how many people have joined the server so far
-        int playersOnlineNow = mPlayersOnline.size();
+            // The number of players online
+            int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
+            if (playersOnlineNow < 0) {
+                playersOnlineNow += MAX_PLAYERS; // handle AI Players
+            }
 
-        // This gives us the angle to find our coordinates
-        float angleToStart = playersOnlineNow * angleOfCircle;
-        float angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
+            // This gives us the angle to find our coordinates.  Stored in degrees
+            float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
+            float angleToEnd =
+                    ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
 
-        /* TODO NOTES
-        Create a line from each of these angles.  Use Maths
-        Then choose a pair of coordinates from between those lines
-        Change to Axial
-        Done????
-        */
-        // boolean finished;
+            Random random = new Random();
 
-        int min = -10;
-        int max = 10;
+            // Creates the vector coordinates to use
+            float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
+            Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
+            Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
 
-        int posX = min + (int) (Math.random() * ((max - min) + 1));
-        int posY = min + (int) (Math.random() * ((max - min) + 1));
-        // HexagonTile toBuild = mMapComponent.get().getTile(posX, posY);
-        Building buildingToBecomeCapital = createBuilding(posX, posY);
-        if (buildingToBecomeCapital == null) {
-            log.severe("Unable to place an initial capital building.");
-            return;
+            // Make sure the capital is not spawned over outside the circle
+            float radius = (getMap().getSize() / 2);
+            radius = (float) Math.sqrt(radius * radius * 0.75f);
+
+            // Make sure the capital is not spawned near the centre
+            int minDistance = 10;
+            float distance = random.nextFloat() * (radius - minDistance) + minDistance;
+
+            direction.mul(distance).mul(TransformHex.HEX_WIDTH);
+
+            log.info("X: " + direction.x + " Y: " + direction.y);
+
+            // Convert to Axial coordinates
+            Vector3f coords = new Vector3f(direction.x, direction.y, 0f);
+            TransformHex.cartesianToAxial(coords);
+
+            // Add the building
+            Building buildingToBecomeCapital = createBuilding((int) coords.x, (int) coords.y);
+            if (buildingToBecomeCapital == null) {
+                log.severe(
+                        "Unable to place an initial capital building.  X = "
+                                + (int) coords.x
+                                + " Y = "
+                                + (int) coords.y);
+
+            } else if (!completed) {
+                buildingToBecomeCapital.setCapital(true);
+                completed = true;
+            }
         }
-        buildingToBecomeCapital.setCapital(true);
     }
 
     /**
