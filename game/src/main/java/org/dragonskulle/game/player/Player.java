@@ -19,6 +19,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.Time;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -623,7 +624,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 // Update stats
                 ArrayList<SyncStat<?>> stats = defender.getStats();
                 for (SyncStat<?> stat : stats) {
-                    stat.set(0);
+                    stat.set(SyncStat.LEVEL_MIN);
                 }
 
                 defender.getOwner().setOwnsCapital(false);
@@ -668,7 +669,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (attacker.getNetworkObject().getOwnerId() != getNetworkObject().getOwnerId()) {
+        if (checkBuildingOwnership(attacker) == false) {
             log.info("It's not your building");
             return false;
         }
@@ -766,11 +767,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to increase the stats of
+     * Process and parse an event in which the <b>client</b> player wishes to increase a specific {@link Stat} of
      * a {@link Building}.
      *
      * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #statAttempt(Building)}.
+     * #statAttempt(Building, Stat)}.
      *
      * @param data The {@link StatData} sent by the client.
      */
@@ -792,30 +793,35 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.warning("Unable to parse StatData: Building from StatData is null.");
             return;
         }
+        
+        Stat stat = data.getStat();
+        if (stat == null) {
+            log.warning("Unable to parse StatData: Stat from StatData is null.");
+            return;
+        }
 
         // Try to change the stats of the building.
-        statAttempt(building, null); // TODO: Pass through the stat to be changed.
+        statAttempt(building, stat);
     }
 
     /**
-     * Attempt to increase a specific stat of a {@link Building}.
+     * Attempt to increase a specific {@link Stat} of a {@link Building}.
      *
      * <p>This first checks the building and stat to make sure that they are fully eligible before
      * any stat changes happen.
      *
-     * @param building The building whose stats will be changed.
+     * @param building The building whose stat will be changed.
      * @param stat The stat to increase.
-     * @return Whether the attempt to change the stats where successful.
+     * @return Whether the attempt to change the stat was successful.
      */
-    public boolean statAttempt(Building building, SyncStat<?> stat) {
-        if (statCheck(building) == false) {
+    public boolean statAttempt(Building building, Stat stat) {
+        if (statCheck(building, stat) == false) {
             log.info("Unable to pass stat check.");
             return false;
         }
 
-        // TODO: Add stat increase logic.
-        log.info("INCREASE SPECIFIC STAT HERE.");
-
+        // Increase the stat level.
+        building.getStat(stat).increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -823,20 +829,39 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Ensure that the {@link Building} is eligible to have its stats changed.
+     * Ensure that the {@link Building} is eligible to have its {@link Stat} changed.
      *
-     * @param building The building to have its stats increased.
-     * @return {@code true} if the tile is eligible, otherwise {@code false}.
+     * @param building The building to have its stat increased.
+     * @param stat The stat to increase.
+     * @return {@code true} if the building and stat is eligible, otherwise {@code false}.
      */
-    public boolean statCheck(Building building) {
+    public boolean statCheck(Building building, Stat stat) {
 
         if (building == null) {
             log.warning("Building is null.");
             return false;
         }
+        
+        if (stat == null) {
+            log.warning("Stat is null.");
+            return false;
+        }
 
-        // TODO: Write all checks.
-        // TODO: Also check the desired stat.
+        // Checks you own the building
+        if (checkBuildingOwnership(building) == false) {
+            log.info("Building not owned.");
+            return false;
+        }
+        
+        if(building.getStat(stat) == null) {
+        	log.info("Building is missing specified stat.");
+            return false;
+        }
+        
+        if(building.getStat(stat).get() >= SyncStat.LEVEL_MAX) {
+        	log.info("Building stat already fully upgraded.");
+            return false;
+        }
 
         return true;
     }
