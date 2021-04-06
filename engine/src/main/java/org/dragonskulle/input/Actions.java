@@ -4,7 +4,6 @@ package org.dragonskulle.input;
 import java.util.ArrayList;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 
 /**
  * Used to access all actions and input related values. Extended to add actions (that can be
@@ -25,7 +24,6 @@ import lombok.extern.java.Log;
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "s")
-@Log
 public abstract class Actions {
     /**
      * When actiavted, TRIGGER_DRAG will cause {@link #sCursor} to start detecting cursor movement
@@ -43,17 +41,37 @@ public abstract class Actions {
     /** A list of {@link Action}s that have been activated this frame. */
     private static ArrayList<Action> mJustActivated = new ArrayList<Action>();
 
+    /** A list of {@link Action}s that have been deactivated this frame. */
+    private static ArrayList<Action> mJustDeactivated = new ArrayList<Action>();
+
     /** Refresh select values back to their defaults, ready for their new values. */
     static void refresh() {
         if (sScroll != null) {
             sScroll.reset();
         }
 
-        // The frame has been complete, so the actions have no longer just been activated.
+        resetJustActivated();
+        resetJustDeactivated();
+    }
+
+    /**
+     * The frame has been complete, so the stored actions will no longer have just been activated.
+     */
+    private static void resetJustActivated() {
         for (Action action : mJustActivated) {
             action.setJustActivated(false);
         }
         mJustActivated.clear();
+    }
+
+    /**
+     * The frame has been complete, so the stored actions will no longer have just been deactivated.
+     */
+    private static void resetJustDeactivated() {
+        for (Action action : mJustDeactivated) {
+            action.setJustDeactivated(false);
+        }
+        mJustDeactivated.clear();
     }
 
     /**
@@ -63,6 +81,15 @@ public abstract class Actions {
      */
     static void addJustActivated(Action action) {
         mJustActivated.add(action);
+    }
+
+    /**
+     * Add an {@link Action} to the list of actions that have been deactivated this frame.
+     *
+     * @param action The action that has been deactivated this frame.
+     */
+    static void addJustDeactivated(Action action) {
+        mJustDeactivated.add(action);
     }
 
     /**
