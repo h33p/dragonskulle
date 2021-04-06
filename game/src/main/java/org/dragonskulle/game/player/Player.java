@@ -35,10 +35,7 @@ import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.dragonskulle.utils.MathUtils;
-import org.joml.Matrix2d;
-import org.joml.Matrix2dc;
 import org.joml.Matrix2f;
-import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -175,9 +172,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void distributeCoordinates() {
         boolean completed = false;
         while (!completed) {
-     
-            float angleOfCircle = 360f / (MAX_PLAYERS+1);
-            float angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;		//TODO Make more efficient
+
+            float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+            float angleBetween =
+                    (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
@@ -186,36 +184,41 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
 
             // This gives us the angle to find our coordinates.  Stored in degrees
-            float angleToStart = playersOnlineNow*(angleOfCircle + angleBetween);
-            float angleToEnd = ((playersOnlineNow + 1) * (angleOfCircle + angleBetween))-angleBetween;
+            float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
+            float angleToEnd =
+                    ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
 
             Random random = new Random();
 
-                      
+            // Creates the vector coordinates to use
             float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
             Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
-            
             Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
-            
+
+            // Make sure the capital is not spawned over outside the circle
             float radius = (getMap().getSize() / 2);
-            radius = (float)Math.sqrt(radius * radius * 0.75f); // Need to make sure the generated circle does not go out of bounds. This will make it impossible for capitals to generate on map corners, but I think that's OK.
-            
+            radius = (float) Math.sqrt(radius * radius * 0.75f);
+
+            // Make sure the capital is not spawned near the centre
             int minDistance = 10;
-            float distance = random.nextFloat() * (radius - minDistance) + minDistance; 
-            
+            float distance = random.nextFloat() * (radius - minDistance) + minDistance;
+
             direction.mul(distance);
-            
-            log.severe("X: " + direction.x + " Y: " + direction.y);
-            
+
+            log.info("X: " + direction.x + " Y: " + direction.y);
+
+            // Convert to Axial coordinates
             Vector3f coords = new Vector3f(direction.x, direction.y, 0f);
             TransformHex.cartesianToAxial(coords);
-            Building buildingToBecomeCapital = createBuilding((int)coords.x, (int)coords.y);
+
+            // Add the building
+            Building buildingToBecomeCapital = createBuilding((int) coords.x, (int) coords.y);
             if (buildingToBecomeCapital == null) {
                 log.severe(
                         "Unable to place an initial capital building.  X = "
-                                + (int)coords.x
+                                + (int) coords.x
                                 + " Y = "
-                                + (int)coords.y);
+                                + (int) coords.y);
 
             } else {
                 buildingToBecomeCapital.setCapital(true);
