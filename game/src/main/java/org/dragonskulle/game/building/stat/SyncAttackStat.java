@@ -15,7 +15,7 @@ public class SyncAttackStat extends SyncStat<Integer> {
     }
 
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public Integer getValue() {
         return get() + 1;
     }

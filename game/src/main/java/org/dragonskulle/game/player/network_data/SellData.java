@@ -1,35 +1,36 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.networkData;
+package org.dragonskulle.game.player.network_data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import lombok.experimental.Accessors;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * The Class which holds the data for building a building
+ * The Class which holds the data so buildings can be sold
  *
  * @author DragonSkulle
  */
-@Accessors(prefix = "m")
-public class BuildData implements INetSerializable {
+public final class SellData implements INetSerializable {
 
     private int mQ;
     private int mR;
 
-    public BuildData() {}
+    public SellData() {}
 
     /**
-     * The constructor
+     * The Constructor
      *
-     * @param hexTileToAdd The {@code HexagonTile} to build on
+     * @param toSell The building to sell
      */
-    public BuildData(HexagonTile hexTileToAdd) {
-        mQ = hexTileToAdd.getQ();
-        mR = hexTileToAdd.getR();
+    public SellData(Building toSell) {
+        HexagonTile tileToSell = toSell.getTile();
+
+        mQ = tileToSell.getQ();
+        mR = tileToSell.getR();
     }
 
     @Override
@@ -44,7 +45,8 @@ public class BuildData implements INetSerializable {
         mR = stream.readInt();
     }
 
-    public HexagonTile getTile(HexagonMap map) {
-        return map.getTile(mQ, mR);
+    public Building getBuilding(HexagonMap map) {
+        HexagonTile tile = map.getTile(mQ, mR);
+        return tile == null ? null : tile.getBuilding();
     }
 }

@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.networkData;
+package org.dragonskulle.game.player.network_data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
