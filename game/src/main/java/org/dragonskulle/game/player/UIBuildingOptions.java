@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -18,23 +16,35 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFrameUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Getter private Building mSelectedBuilding;
-    @Getter private UIMenuLeftDrawer.IGetPlayer mGetPlayer;
+    @Getter
+    private Building mSelectedBuilding;
+    @Getter
+    private UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private UIText mLabel;
-    @Setter private Reference<GameObject> mPastOptionsRef;
+    @Setter
+    private Reference<GameObject> mPastOptionsRef;
+    private Reference<GameObject> mPossibleBuildingComponent;
 
     public UIBuildingOptions(UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -42,71 +52,68 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
      */
     @Override
     public void onStart() {
-        mLabel =
-                new UIText(
-                        new Vector3f(0f, 0f, 0f),
-                        Font.getFontResource("Rise of Kingdom.ttf"),
-                        "PLACE NEW");
-        getGameObject()
+        mPossibleBuildingComponent = getGameObject()
                 .buildChild(
                         "possible_buildings",
                         new TransformUI(),
                         (self) -> {
-                            self.addComponent(mLabel);
                             final TransformUI transform = self.getTransform(TransformUI.class);
                             transform.setParentAnchor(0.1f, 0.6f);
                             transform.setMargin(0, -0.2f, 0, 0.2f);
                         });
     }
 
-    private Reference<GameObject> buildOptions(List<String> mOptionsChildren) {
+    private void buildOptions(List<String> mOptionsChildren) {
         Reference<GameObject> ref =
-                getGameObject()
+                mPossibleBuildingComponent.get()
                         .buildChild(
-                                "built_options",
+                                "built_upgradable_options",
                                 new TransformUI(),
                                 (root) -> {
                                     for (int i = 0, mButtonChildrenSize = mOptionsChildren.size();
-                                            i < mButtonChildrenSize;
-                                            i++) {
+                                         i < mButtonChildrenSize;
+                                         i++) {
                                         String mChildString = mOptionsChildren.get(i);
+
+
                                         int finalI = i;
-                                        root.buildChild(
-                                                "options_child_" + i,
-                                                new TransformUI(true),
-                                                (self) -> {
-                                                    self.getTransform(TransformUI.class)
+                                        root.buildChild("built_child_" + i, new TransformUI(true), (self) -> {
+                                                    final UIText uiText = new UIText(
+                                                            new Vector3f(0f, 0f, 0f),
+                                                            Font.getFontResource(
+                                                                    "Rise of Kingdom.ttf"),
+                                                            mChildString);
+
+                                                    self.addComponent(uiText);
+                                                    final TransformUI transform = self.getTransform(TransformUI.class);
+                                                    transform
                                                             .setPosition(
                                                                     0f,
                                                                     (0.2f
-                                                                                    * finalI
-                                                                                    / mButtonChildrenSize
-                                                                                    * 1f)
+                                                                            * finalI
+                                                                            / mButtonChildrenSize
+                                                                            * 1f)
                                                                             - 0.15f);
 
-                                                    self.getTransform(TransformUI.class)
+                                                    transform
                                                             .setMargin(0.075f, 0f, -0.075f, 0f);
 
-                                                    self.addComponent(
-                                                            new UIText(
-                                                                    new Vector3f(0f, 0f, 0f),
-                                                                    Font.getFontResource(
-                                                                            "Rise of Kingdom.ttf"),
-                                                                    mChildString));
-                                                });
+                                                }
+                                        );
                                     }
                                 });
+        ref.get().setEnabled(false);
         replaceOptions(ref);
-        return ref;
     }
 
     private void replaceOptions(Reference<GameObject> newOptions) {
-        if (mPastOptionsRef != null) {
-            final GameObject gameObject = mPastOptionsRef.get();
-            gameObject.setEnabled(false);
-            gameObject.destroy();
+//        log.warning("replacing building options");
+        if (mPastOptionsRef != null && !mPastOptionsRef.equals(newOptions)) {
+            mPastOptionsRef.get().destroy();
         }
-        newOptions.get().setEnabled(true);
+        if(getGameObject().isEnabled()) {
+            newOptions.get().setEnabled(true);
+        }
         mPastOptionsRef = newOptions;
     }
 
@@ -118,18 +125,20 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        int currentTokens = 0;
-        if (mGetPlayer.get().isValid()) {
-            currentTokens = mGetPlayer.get().get().getTokens().get();
-        }
+        if(getGameObject().isEnabled()) {
+            int currentTokens = 0;
+            if (mGetPlayer.get().isValid()) {
+                currentTokens = mGetPlayer.get().get().getTokens().get();
+            }
 
-        mBuildingsCanPlace = PredefinedBuildings.getPlaceable(currentTokens);
+            mBuildingsCanPlace = PredefinedBuildings.getPlaceable(currentTokens);
 
-        List<String> buildingTextList = new ArrayList<>();
-        for (BuildingDescriptor building : mBuildingsCanPlace) {
-            // do render for possible building.
-            buildingTextList.add(building.toString());
+            List<String> buildingTextList = new ArrayList<>();
+            for (BuildingDescriptor building : mBuildingsCanPlace) {
+                // do render for possible building.
+                buildingTextList.add(building.toString());
+            }
+            buildOptions(buildingTextList);
         }
-        buildOptions(buildingTextList);
     }
 }

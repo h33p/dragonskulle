@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
@@ -15,17 +16,28 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart {
-    @Getter private ShopState mState = ShopState.BUILDING_SELECTED;
-    private Reference<UIText> mWindowTextRef;
+    @Getter
+    private ShopState mState = ShopState.BUILDING_SELECTED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
+    private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private UIBuildingOptions mBuildingOptions;
+    private Reference<GameObject> mNewBuildingPanel;
+    private Reference<GameObject> mUpgradePanel;
 
-    public UIShopSection(UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
+    @Setter
+    @Getter
+    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+
+
+    public UIShopSection(UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
         this.mGetPlayer = mGetPlayer;
+        this.mGetHexChosen = mGetHexChosen;
     }
 
     public void setRandomState() {
@@ -41,43 +53,70 @@ public class UIShopSection extends Component implements IOnStart {
         BUILDING_SELECTED
     }
 
-    protected void setState(ShopState state) {
-        log.info("Setting shop state to " + state);
-        this.mState = state;
-        switch (mState) {
-            case CLOSED:
-                getGameObject().setEnabled(false);
-                break;
-            case BUILDING_NEW:
-                mBuildingOptions.setEnabled(true);
-                if (mWindowTextRef != null && mWindowTextRef.isValid()) {
-                    mWindowTextRef.get().setText("NEW BUILDING SHOP");
-                }
-                getGameObject().setEnabled(true);
-                break;
-            case ATTACK_SCREEN:
-                if (mWindowTextRef != null && mWindowTextRef.isValid()) {
-                    mWindowTextRef.get().setText("ATTACK SHOP");
-                }
-                getGameObject().setEnabled(true);
-                break;
-            case UPGRADE:
-                if (mWindowTextRef != null && mWindowTextRef.isValid()) {
-                    mWindowTextRef.get().setText("UPGRADE SELECTED SHOP");
-                }
-                break;
-            case BUILDING_SELECTED:
-                if (mWindowTextRef != null && mWindowTextRef.isValid()) {
-                    mWindowTextRef.get().setText("BUILDING SELECTED SHOP");
-                }
-                getGameObject().setEnabled(true);
-                break;
-        }
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
+    @Override
+    protected void onDestroy() {
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
-    @Override
-    protected void onDestroy() {}
+    protected void setState(ShopState state) {
+        Reference<GameObject> newPanel;
+        log.warning("setting visible state to " + state.toString());
+        switch (state) {
+            case CLOSED:
+                getGameObject().setEnabled(false);
+                if (mCurrentPanel != null) {
+                    mCurrentPanel.get().setEnabled(false);
+                }
+                return;
+            case ATTACK_SCREEN:
+                getGameObject().setEnabled(true);
+                newPanel = new Reference<>(null);
+                break;
+            case BUILDING_NEW:
+                getGameObject().setEnabled(true);
+                newPanel = mNewBuildingPanel;
+                break;
+            case BUILDING_SELECTED: //todo is BUILDING_SELECTED the same as the upgrade panel?
+            case UPGRADE:
+                getGameObject().setEnabled(true);
+                newPanel = mUpgradePanel;
+                break;
+            default:
+                log.warning("Menu hasn't been updated to reflect this screen yet");
+                setState(ShopState.CLOSED);
+                return;
+        }
+        swapPanels(newPanel);
+    }
+
+    private void swapPanels(Reference<GameObject> newPanel) {
+        log.warning("swapping panels");
+        final boolean lastIsValid = mCurrentPanel.isValid();
+        if (newPanel == null || !newPanel.isValid()) {
+            log.warning("Swap panel case 1");
+            if (mCurrentPanel != null && lastIsValid) {
+                mCurrentPanel.get().setEnabled(false);
+            }
+            mCurrentPanel = newPanel;
+        } else if (mCurrentPanel == null || !lastIsValid) {
+            log.warning("Swap panel case 2");
+
+            mCurrentPanel = newPanel;
+            newPanel.get().setEnabled(true);
+        } else if (!mCurrentPanel.equals(newPanel)) {
+            log.warning("hiding the previous panel :: " + mCurrentPanel.get().getName());
+            mCurrentPanel.get().setEnabled(false);
+            mCurrentPanel = newPanel;
+            if (newPanel.isValid()) {
+                log.warning("showing panel :: " + newPanel.get().getName());
+                newPanel.get().setEnabled(true);
+            }
+        }else{
+            log.severe("none of the panel swaps caught me");
+        }
+    }
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -85,26 +124,31 @@ public class UIShopSection extends Component implements IOnStart {
      */
     @Override
     public void onStart() {
-        UIRenderable mWindow = new UIRenderable(new SampledTexture("white.bmp"));
 
-        Reference<GameObject> buildingOptionsGO =
+        mUpgradePanel = getGameObject().buildChild("building_upgrade_panel", new TransformUI(true),
+                (self) -> {
+                    UIBuildingUpgrade mUpgradeComponent = new UIBuildingUpgrade(mGetHexChosen);
+                    self.addComponent(mUpgradeComponent);
+                });
+        mUpgradePanel.get().setEnabled(false);
+
+        mNewBuildingPanel =
                 getGameObject()
                         .buildChild(
                                 "building_new_options",
                                 new TransformUI(true),
                                 (self) -> {
                                     mBuildingOptions = new UIBuildingOptions(mGetPlayer);
-                                    mBuildingOptions.setEnabled(false);
                                     self.addComponent(mBuildingOptions);
                                     TransformUI tran =
                                             getGameObject().getTransform(TransformUI.class);
                                     tran.setParentAnchor(0.08f, 0.8f, 1 - 0.08f, 1 - 0.04f);
-                                    ;
                                 });
-
+        mNewBuildingPanel.get().setEnabled(false);
+        //Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setParentAnchor(0.08f, 0.73f, 1 - 0.08f, 1 - 0.03f);
-        getGameObject().addComponent(mWindow);
+        getGameObject().addComponent(new UIRenderable(new SampledTexture("white.bmp")));
         Reference<GameObject> textObj =
                 getGameObject()
                         .buildChild(
@@ -117,9 +161,7 @@ public class UIShopSection extends Component implements IOnStart {
                                                     Font.getFontResource("Rise of Kingdom.ttf"),
                                                     "PLACEHOLDER SHOP TEXT");
                                     self.addComponent(mWindowText);
-                                    mWindowTextRef = mWindowText.getReference(UIText.class);
                                 });
-        getGameObject().addComponent(mBuildingOptions);
 
         TransformUI textTransform = textObj.get().getTransform(TransformUI.class);
         textTransform.setParentAnchor(0.05f, 0f);
