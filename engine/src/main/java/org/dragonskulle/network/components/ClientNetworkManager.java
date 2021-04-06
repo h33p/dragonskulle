@@ -131,6 +131,28 @@ public class ClientNetworkManager {
             int spawnTemplateId = NetworkObject.getIntFromBytes(payload, SPAWN_TEMPLATE_ID);
             spawnNewNetworkObject(objectId, ownerId, spawnTemplateId);
         }
+
+        @Override
+        public void objectEvent(byte[] payload) {
+            ByteArrayInputStream bis = new ByteArrayInputStream(payload);
+            DataInputStream stream = new DataInputStream(bis);
+
+            try {
+                int objectID = stream.readInt();
+                ClientObjectEntry entry = getNetworkObjectEntry(objectID);
+                if (entry == null) {
+                    log.info("Should have spawned! Couldn't find nob id :" + objectID);
+                    return;
+                }
+                NetworkObject nob = entry.mNetworkObject.get();
+
+                int eventID = stream.readInt();
+
+                if (nob != null) nob.handleServerEvent(eventID, stream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static class ClientObjectEntry {
@@ -260,6 +282,7 @@ public class ClientNetworkManager {
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
         mNetworkObjectReferences.clear();
+
         mManager.onClientDisconnect();
     }
 
@@ -302,6 +325,10 @@ public class ClientNetworkManager {
                 }
             } else mTicksWithoutRequests = 0;
         }
+
+        mNetworkObjectReferences
+                .entrySet()
+                .removeIf(entry -> !entry.getValue().mNetworkObject.isValid());
     }
 
     // TODO: implement lobby

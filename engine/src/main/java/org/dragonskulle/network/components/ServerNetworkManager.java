@@ -1,13 +1,13 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
@@ -22,6 +22,8 @@ import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
+import org.dragonskulle.network.components.requests.ServerEvent;
+import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 
 /**
  * Server network manager
@@ -223,6 +225,39 @@ public class ServerNetworkManager {
         return ref;
     }
 
+    /**
+     * Send an event to the clients
+     *
+     * @param event event we send
+     * @param stream serialized data of the event
+     */
+    public void sendEvent(ServerEvent<?> event, ByteArrayOutputStream stream) throws IOException {
+        byte[] streamBytes = stream.toByteArray();
+
+        byte[] msg = NetworkMessage.build(NetworkConfig.Codes.MESSAGE_SERVER_EVENT, streamBytes);
+
+        int oid = event.getNetworkObject().getOwnerId();
+
+        EventRecipients recipients = event.getRecipients();
+
+        if (recipients == EventRecipients.OWNER) {
+            if (oid < 0) {
+                ByteArrayInputStream bis = new ByteArrayInputStream(streamBytes);
+                DataInputStream dis = new DataInputStream(bis);
+                event.handle(dis);
+            } else {
+                ServerClient c = mServer.getClient(oid);
+                if (c != null) c.sendBytes(msg);
+            }
+        } else { // Both ACTIVE_CLIENTS and ALL_CLIENTS for now
+            for (ServerClient c : mServer.getClients()) c.sendBytes(msg);
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(streamBytes);
+            DataInputStream dis = new DataInputStream(bis);
+            event.handle(dis);
+        }
+    }
+
     /** Destroy the server, and tell {@link NetworkManager} about it */
     public void destroy() {
         mServer.dispose();
@@ -244,11 +279,17 @@ public class ServerNetworkManager {
         mServer.updateClientList();
         mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
 
-        for (Entry<Integer, ServerObjectEntry> entry : mNetworkObjects.entrySet()) {
-            NetworkObject obj = entry.getValue().mNetworkObject.get();
-            if (obj != null) obj.beforeNetSerialize();
-            else mNetworkObjects.remove(entry.getKey());
-        }
+        mNetworkObjects
+                .entrySet()
+                .removeIf(
+                        entry -> {
+                            NetworkObject obj = entry.getValue().mNetworkObject.get();
+                            if (obj != null) {
+                                obj.beforeNetSerialize();
+                                return false;
+                            }
+                            return true;
+                        });
 
         clientUpdate();
 
@@ -258,11 +299,17 @@ public class ServerNetworkManager {
             }
         }
 
-        for (Entry<Integer, ServerObjectEntry> entry : mNetworkObjects.entrySet()) {
-            NetworkObject obj = entry.getValue().mNetworkObject.get();
-            if (obj != null) obj.resetUpdateMask();
-            else mNetworkObjects.remove(entry.getKey());
-        }
+        mNetworkObjects
+                .entrySet()
+                .removeIf(
+                        entry -> {
+                            NetworkObject obj = entry.getValue().mNetworkObject.get();
+                            if (obj != null) {
+                                obj.resetUpdateMask();
+                                return false;
+                            }
+                            return true;
+                        });
     }
 
     /**

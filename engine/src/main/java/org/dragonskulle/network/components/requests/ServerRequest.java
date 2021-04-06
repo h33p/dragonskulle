@@ -10,13 +10,13 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * Allows client to request action from server
+ * Allows server to send events to the clients
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 @Log
-public class ClientRequest<T extends INetSerializable> {
+public class ServerRequest<T extends INetSerializable> {
     private IHandler<T> mHandler;
     private T mTmpData;
     private NetworkObject mNetworkObject;
@@ -32,7 +32,7 @@ public class ClientRequest<T extends INetSerializable> {
      * @param defaultValue the template of the event e.g {@code TestAttackData}
      * @param handler the handler for the event
      */
-    public ClientRequest(T defaultValue, IHandler<T> handler) {
+    public ServerRequest(T defaultValue, IHandler<T> handler) {
         mTmpData = defaultValue;
         mHandler = handler;
     }

@@ -53,4 +53,11 @@ public interface IClientListener {
      * @param payload payload containing the server's world state
      */
     void updateServerState(byte[] payload);
+
+    /**
+     * Invoke a server event on the client's object.
+     *
+     * @param payload payload containing the event
+     */
+    void objectEvent(byte[] payload);
 }

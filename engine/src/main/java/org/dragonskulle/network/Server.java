@@ -95,6 +95,10 @@ public class Server {
         mServerThread.start();
     }
 
+    public ServerClient getClient(Integer id) {
+        return mClients.get(id);
+    }
+
     public Collection<ServerClient> getClients() {
         return mClients.values();
     }
@@ -212,7 +216,6 @@ public class Server {
             try {
                 s.shutdownOutput();
                 s.close();
-                mClientCount--;
             } catch (IOException e) {
                 e.printStackTrace();
             }

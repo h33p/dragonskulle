@@ -91,6 +91,10 @@ public class NetworkClient {
                 log.fine("Update server's state");
                 mClientListener.updateServerState(payload);
                 break;
+            case NetworkConfig.Codes.MESSAGE_SERVER_EVENT:
+                log.fine("A server object event");
+                mClientListener.objectEvent(payload);
+                break;
             default:
                 log.info("unsure of what to do with message as unknown type byte " + messageType);
                 break;
@@ -113,11 +117,11 @@ public class NetworkClient {
                 }
                 mSocket = null;
                 mDOut = null;
-                mClientListener = null;
                 if (mClientThread != null) {
                     mClientThread.interrupt();
                     mClientThread.join();
                 }
+                mClientListener = null;
             }
         } catch (Exception exception) {
             log.severe(exception.getMessage());

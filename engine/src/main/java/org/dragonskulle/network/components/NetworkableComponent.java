@@ -13,6 +13,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.utils.IOUtils;
 
@@ -46,8 +47,12 @@ public abstract class NetworkableComponent extends Component {
      * Init fields. @param networkObject the network object
      *
      * @param outRequests the requests it can deal with
+     * @param outEvents the events it can deal with
      */
-    public void initialize(NetworkObject networkObject, List<ClientRequest<?>> outRequests) {
+    public void initialize(
+            NetworkObject networkObject,
+            List<ClientRequest<?>> outRequests,
+            List<ServerEvent<?>> outEvents) {
 
         mNetworkObject = networkObject;
 
@@ -72,6 +77,21 @@ public abstract class NetworkableComponent extends Component {
                 f.setAccessible(true);
                 ClientRequest<?> req = (ClientRequest<?>) f.get(this);
                 outRequests.add(req);
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        Field[] eventFields =
+                Arrays.stream(this.getClass().getDeclaredFields())
+                        .filter(field -> ServerEvent.class.isAssignableFrom(field.getType()))
+                        .toArray(Field[]::new);
+
+        try {
+            for (Field f : eventFields) {
+                f.setAccessible(true);
+                ServerEvent<?> req = (ServerEvent<?>) f.get(this);
+                outEvents.add(req);
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();

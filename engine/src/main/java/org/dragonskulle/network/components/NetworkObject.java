@@ -15,6 +15,10 @@ import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.NoneData;
+import org.dragonskulle.network.components.requests.ServerEvent;
+import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
+import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -38,6 +42,20 @@ public class NetworkObject extends Component {
             new ArrayList<>();
 
     @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
+    @Getter private final ArrayList<ServerEvent<?>> mServerEvents = new ArrayList<>();
+
+    private boolean mDestroyed = false;
+
+    @Getter
+    private final ServerEvent<NoneData> mDestroyEvent =
+            new ServerEvent<>(
+                    NoneData.DATA,
+                    (__) -> {
+                        mDestroyed = true;
+                        getGameObject().destroy();
+                    },
+                    EventRecipients.ACTIVE_CLIENTS,
+                    EventTimeframe.LONG_TERM_DELAYABLE);
 
     /** The network client ID that owns this */
     @Getter private int mOwnerId;
@@ -73,19 +91,28 @@ public class NetworkObject extends Component {
     }
 
     @Override
-    public void onDestroy() {}
+    public void onDestroy() {
+        if (!mDestroyed && mIsServer) mDestroyEvent.invoke(NoneData.DATA);
+    }
 
     public void networkInitialize() {
         getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
 
+        mServerEvents.add(mDestroyEvent);
+
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
-            nc.initialize(this, mClientRequests);
+            nc.initialize(this, mClientRequests, mServerEvents);
         }
 
         int id = 0;
         for (ClientRequest<?> req : mClientRequests) {
             req.attachNetworkObject(this, id++);
+        }
+
+        id = 0;
+        for (ServerEvent<?> event : mServerEvents) {
+            event.attachNetworkObject(this, id++);
         }
     }
 
@@ -160,6 +187,29 @@ public class NetworkObject extends Component {
         if (requestID < 0 || requestID >= mClientRequests.size()) return false;
 
         mClientRequests.get(requestID).handle(stream);
+
+        return true;
+    }
+
+    /**
+     * Handle a server event
+     *
+     * <p>This will take a server's event and handle it
+     *
+     * <p>The dataflow looks like so:
+     *
+     * <p>ServerEvent::invoke on the server, goes to the client, here, and then to
+     * ServerEvent::handle
+     *
+     * @param eventID the event ID
+     * @param stream the input stream
+     * @return true if executed successfully.
+     * @throws IOException if parsing fails
+     */
+    public boolean handleServerEvent(int eventID, DataInputStream stream) throws IOException {
+        if (eventID < 0 || eventID >= mServerEvents.size()) return false;
+
+        mServerEvents.get(eventID).handle(stream);
 
         return true;
     }
