@@ -3,6 +3,8 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Time;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
@@ -26,6 +28,7 @@ public class CapitalAimer extends AiPlayer {
     private Graph graph = null;
     private Node capNode = null;
     private Node oppCapNode = null;
+    private Reference<HexagonTile> tileToAim = new Reference<HexagonTile>(null);
 
     public CapitalAimer() {};
 
@@ -72,6 +75,17 @@ public class CapitalAimer extends AiPlayer {
         }
     }
 
+    private void getTile() {
+    	Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
+    	while (tileToAim == null) {
+    		Optional<HexagonTile> tile = tiles.findAny();
+    		HexagonTile tileFound = tile.get();
+    		if (tileFound.getBuilding() != null && tileFound.getBuilding().isCapital()) {
+    			tileToAim = new Reference<HexagonTile>(tileFound);
+    		}
+    	}
+    }
+    
     /** This will set the opponent to aim for */
     private void findOpponent() {
         Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
@@ -88,7 +102,7 @@ public class CapitalAimer extends AiPlayer {
 
     /** This will perform the A* Search */
     private void aStar() {
-        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getNetworkObject().getOwnerId(),  new Building());		//TODO Currently just creates a dummy building so the code compiles
+        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getNetworkObject().getOwnerId(), );		//TODO Currently just creates a dummy building so the code compiles
         graph = tempGraph;
         AStar aStar = new AStar(graph);
         findCapital();
