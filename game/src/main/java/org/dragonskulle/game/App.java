@@ -72,7 +72,7 @@ public class App implements NativeResource {
                         "light",
                         (light) -> {
                             light.addComponent(new Light());
-                            light.getTransform(Transform3D.class).setRotation(45f, 0f, 45f);
+                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, 0f);
                         }));
 
         GameObject cameraRig =

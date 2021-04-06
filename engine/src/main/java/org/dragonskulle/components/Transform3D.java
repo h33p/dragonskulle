@@ -121,7 +121,7 @@ public class Transform3D extends Transform {
      * @param z Z coordinate of rotation
      */
     public void setRotation(float x, float y, float z) {
-        mRotation.identity().rotateXYZ(x, y, z);
+        mRotation.identity().rotateZYX(z, y, x);
         setUpdateFlag();
     }
 

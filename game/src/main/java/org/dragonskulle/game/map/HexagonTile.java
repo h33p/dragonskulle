@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -33,12 +34,45 @@ public class HexagonTile {
                     .findFirst()
                     .orElse(null);
 
+    /** Describes a template for water hex tile */
+    static final GameObject WATER_TILE =
+            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
+                    .filter(go -> go.getName().equals("Water Hex"))
+                    .findFirst()
+                    .orElse(null);
+
+    /** Describes a template for water hex tile */
+    static final GameObject MOUNTAIN_TILE =
+            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
+                    .filter(go -> go.getName().equals("Mountains Hex"))
+                    .findFirst()
+                    .orElse(null);
+
+    public static enum TileType {
+        LAND((byte) 0),
+        WATER((byte) 1),
+        MOUNTAIN((byte) 2);
+
+        @Getter private final byte mValue;
+
+        private TileType(byte value) {
+            mValue = value;
+        }
+    }
+
+    private static final float WATER_THRESHOLD = -0.3f;
+    private static final float MOUNTAINS_THRESHOLD = 0.8f;
+
     /** This is the axial storage system for each tile */
     @Getter private final int mQ;
 
     @Getter private final int mR;
 
     @Getter private final int mS;
+
+    @Getter private final float mHeight;
+
+    @Getter private final TileType mTileType;
 
     /**
      * Associated game object.
@@ -63,13 +97,35 @@ public class HexagonTile {
      * @param r The second coordinate.
      * @param s The third coordinate.
      */
-    HexagonTile(int q, int r, int s) {
+    HexagonTile(int q, int r, int s, float height) {
         this.mQ = q;
         this.mR = r;
         this.mS = s;
-        mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR));
+        this.mHeight = height;
         if (q + r + s != 0) {
             log.warning("The coordinates do not add up to 0");
+        }
+
+        if (height <= WATER_THRESHOLD) mTileType = TileType.WATER;
+        else if (height >= MOUNTAINS_THRESHOLD) mTileType = TileType.MOUNTAIN;
+        else mTileType = TileType.LAND;
+
+        switch (mTileType) {
+            case WATER:
+                mGameObject =
+                        GameObject.instantiate(
+                                WATER_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
+                mGameObject
+                        .findChildByName("Water Floor")
+                        .getTransform(Transform3D.class)
+                        .setPosition(0f, 0f, height - WATER_THRESHOLD - 0.1f);
+                break;
+            case MOUNTAIN:
+                mGameObject =
+                        GameObject.instantiate(MOUNTAIN_TILE, new TransformHex(mQ, mR, height));
+                break;
+            default:
+                mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR, height));
         }
     }
 

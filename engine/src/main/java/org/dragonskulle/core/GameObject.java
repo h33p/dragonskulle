@@ -281,6 +281,21 @@ public class GameObject implements Serializable {
     }
 
     /**
+     * Finds a child by its name
+     *
+     * @param name name of the child
+     * @return child game object if found, {@code null} otherwise
+     */
+    public GameObject findChildByName(String name) {
+        for (GameObject child : mChildren) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Add a component to the GameObject. If the component's GameObject is null, it is set to this
      * If the component's GameObject is another GameObject, the component is removed from that
      * GameObject and is set to this.
