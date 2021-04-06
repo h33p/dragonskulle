@@ -13,9 +13,11 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
+import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
@@ -178,6 +180,24 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     // show options to upgrade
                     // buildingSelectedView stats.  Will leave
                     // until after prototype
+
+                    // TODO Properly implement.
+
+                    Stat stat = Stat.ATTACK;
+
+                    Reference<Player> player = mGetPlayer.get();
+                    if (player != null && player.isValid()) {
+                        Reference<Building> buildingChosen = mGetBuildingChosen.get();
+                        if (buildingChosen != null && buildingChosen.isValid()) {
+                            player.get()
+                                    .getClientStatRequest()
+                                    .invoke(new StatData(buildingChosen.get(), stat)); // Send Data
+                        }
+                    }
+
+                    mSetHexChosen.set(null);
+                    mSetBuildingChosen.set(null);
+
                     mNotifyScreenChange.call(Screen.STAT_SCREEN);
                 },
                 false);
