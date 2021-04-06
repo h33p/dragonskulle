@@ -169,7 +169,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void distributeCoordinates() {
         boolean completed = false;
         while (!completed) {
-            float angleOfCircle = 360f / MAX_PLAYERS;
+            float angleOfCircle = 360f / (MAX_PLAYERS+1);
+            float angleBetween = (360f - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
@@ -179,7 +180,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             // This gives us the angle to find our coordinates.  Stored in degrees
             float angleToStart = (playersOnlineNow * angleOfCircle);
-            float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);
+            float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle)-angleBetween;
 
             double lineToStartM = Math.tan(Math.toRadians(angleToStart));
             double lineToEndM = Math.tan(Math.toRadians(angleToEnd));
