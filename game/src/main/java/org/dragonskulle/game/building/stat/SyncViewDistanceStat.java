@@ -14,6 +14,7 @@ public class SyncViewDistanceStat extends SyncStat<Integer> {
         super(building);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Integer getValue() {
         return 3;

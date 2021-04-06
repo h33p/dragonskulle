@@ -71,11 +71,11 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     }
 
     /**
-     * Get the value of the stat, of type {@code T}, at the current level.
+     * Get the value of the stat at the current level.
      *
      * @return The value of the stat.
      */
-    public abstract T getValue();
+    public abstract <U extends Serializable> U getValue();
 
     @Override
     public void deserialize(DataInputStream in) throws IOException {
