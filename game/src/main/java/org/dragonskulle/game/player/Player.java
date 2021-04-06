@@ -203,7 +203,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             int minDistance = 10;
             float distance = random.nextFloat() * (radius - minDistance) + minDistance;
 
-            direction.mul(distance);
+            direction.mul(distance).mul(TransformHex.HEX_WIDTH);
 
             log.info("X: " + direction.x + " Y: " + direction.y);
 
@@ -220,7 +220,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                 + " Y = "
                                 + (int) coords.y);
 
-            } else {
+            } else if (!completed) {
                 buildingToBecomeCapital.setCapital(true);
                 completed = true;
             }
