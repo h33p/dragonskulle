@@ -34,9 +34,12 @@ import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix2d;
 import org.joml.Matrix2dc;
+import org.joml.Matrix2f;
 import org.joml.Vector2d;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -172,8 +175,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void distributeCoordinates() {
         boolean completed = false;
         while (!completed) {
-            double angleOfCircle = 360 / (MAX_PLAYERS+1);
-            double angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
+     
+            float angleOfCircle = 360f / (MAX_PLAYERS+1);
+            float angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;		//TODO Make more efficient
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
@@ -182,158 +186,36 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
 
             // This gives us the angle to find our coordinates.  Stored in degrees
-            double angleToStart = (playersOnlineNow * angleOfCircle);
-            double angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);//-angleBetween;
-
-            double lineToStartM = Math.tan(Math.toRadians(angleToStart));
-            double lineToEndM = Math.tan(Math.toRadians(angleToEnd));
-
-            boolean foundSensibleCoordStart = false;
-            boolean foundSensibleCoordEnd = false;
+            float angleToStart = playersOnlineNow*(angleOfCircle + angleBetween);
+            float angleToEnd = ((playersOnlineNow + 1) * (angleOfCircle + angleBetween))-angleBetween;
 
             Random random = new Random();
 
-            int xCoord = 0;
-            int yCoord = 0;
-
-            int angle = random.nextInt() % ((int)Math.floor(angleToEnd) + 1 - (int)Math.floor(angleToStart)) + (int)Math.floor(angleToEnd);
-            Matrix2d rotation = new Matrix2d().rotate(Math.toRadians((double)angle));
-            Matrix2d directionSorting = new Matrix2d();
-            directionSorting.m00 = 0;
-            directionSorting.m11 = 1;
-            Matrix2d direction = rotation.mul(directionSorting);
+                      
+            float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
+            Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
             
-
-            double radius = (getMap().getSize() / 2);
-            radius = Math.sqrt(radius * radius * 0.75f); // Need to make sure the generated circle does not go out of bounds. This will make it impossible for capitals to generate on map corners, but I think that's OK.
+            Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
             
-            int minDistance = 5;
-            int distance = random.nextInt() % ((int)radius + 1 - minDistance) + minDistance; 
+            float radius = (getMap().getSize() / 2);
+            radius = (float)Math.sqrt(radius * radius * 0.75f); // Need to make sure the generated circle does not go out of bounds. This will make it impossible for capitals to generate on map corners, but I think that's OK.
             
-            direction.m00 = direction.m00 * distance;
-            direction.m11 = direction.m11 * distance;
+            int minDistance = 10;
+            float distance = random.nextFloat() * (radius - minDistance) + minDistance; 
             
-            log.severe("X: " + direction.m00 + " Y: " + direction.m11);
+            direction.mul(distance);
             
-            while ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd)) {
-
-                foundSensibleCoordStart = false;
-                foundSensibleCoordEnd = false;
-
-                xCoord = random.nextInt((int) Math.floor((double) (getMap().getSize() / 2)));
-                yCoord = random.nextInt((int) Math.floor((double) (getMap().getSize() / 2)));
-
-                // This makes sure the number could be negative
-                if (random.nextInt(2) == 1) {
-                    xCoord *= -1;
-                }
-                if (random.nextInt(2) == 1) {
-                    yCoord *= -1;
-                }
-
-                if (Double.isNaN(lineToEndM) && Double.isNaN(lineToStartM)) {
-                    // TODO How they got here is beyond me It is literally impossible but just in
-                    // case
-                    // TODO Both lines are x = 0
-
-                    log.warning(
-                            "SOME BIZZARE MATHS HAS HAPPENED: " + angleToStart + " " + angleToEnd);
-                } else if (Double.isNaN(lineToStartM)) {
-
-                    // lineStart X = 0 one another y = mx
-                    if (angleToStart == 90) {
-
-                        // ASSUMPTION that y > mx Must hold && x < 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord < 0 && yCoord > mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    } else {
-                        // angleToStart = 270 so y < mx Must hold && x > 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord > 0 && yCoord < mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    }
-                } else if (Double.isNaN(lineToEndM)) {
-                    // TODO lineEnd X = 0 one another y = mx
-                    if (angleToEnd == 90) {
-
-                        // ASSUMPTION that y > mx Must hold && x > 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord > 0 && yCoord > mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    } else {
-                        // angleToStart = 270 so y < mx Must hold && x < 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord < 0 && yCoord < mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    }
-
-                } else {
-
-                    if (angleToStart > 90 && angleToStart < 270) {
-                        // Assumption y < mx must hold
-                        double mx = lineToStartM * xCoord;
-
-                        if (yCoord < mx) {
-                            foundSensibleCoordStart = true;
-                        }
-
-                    } else {
-                        // Assumption y > mx must hold
-                        double mx = lineToStartM * xCoord;
-
-                        if (yCoord > mx) {
-                            foundSensibleCoordStart = true;
-                        }
-                    }
-
-                    if (angleToEnd > 90 && angleToEnd < 270) {
-                        // Assumption y > mx mustHold
-                        double mx = lineToEndM * xCoord;
-
-                        if (yCoord > mx) {
-                            foundSensibleCoordEnd = true;
-                        }
-                    } else {
-                        // Assumption y < mx must hold
-                        double mx = lineToEndM * xCoord;
-
-                        if (yCoord < mx) {
-                            foundSensibleCoordEnd = true;
-                        }
-                    }
-                }
-            }
-
-            log.info(
-                    "X = "
-                            + xCoord
-                            + " Y = "
-                            + yCoord
-                            + " angle from origin start = "
-                            + angleToStart
-                            + " angle from origin end = "
-                            + angleToEnd
-                            + " angle to add "
-                            + angleOfCircle
-                            + " number of players = "
-                            + playersOnlineNow);
-
-            Building buildingToBecomeCapital = createBuilding(xCoord, yCoord);
+            log.severe("X: " + direction.x + " Y: " + direction.y);
+            
+            Vector3f coords = new Vector3f(direction.x, direction.y, 0f);
+            TransformHex.cartesianToAxial(coords);
+            Building buildingToBecomeCapital = createBuilding((int)coords.x, (int)coords.y);
             if (buildingToBecomeCapital == null) {
                 log.severe(
                         "Unable to place an initial capital building.  X = "
-                                + xCoord
+                                + (int)coords.x
                                 + " Y = "
-                                + yCoord);
+                                + (int)coords.y);
 
             } else {
                 buildingToBecomeCapital.setCapital(true);
