@@ -34,6 +34,9 @@ import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
+import org.dragonskulle.utils.MathUtils;
+import org.joml.Matrix2f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -169,7 +172,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void distributeCoordinates() {
         boolean completed = false;
         while (!completed) {
-            float angleOfCircle = 360f / MAX_PLAYERS;
+
+            float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+            float angleBetween =
+                    (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
@@ -178,141 +184,43 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
 
             // This gives us the angle to find our coordinates.  Stored in degrees
-            float angleToStart = (playersOnlineNow * angleOfCircle);
-            float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);
-
-            double lineToStartM = Math.tan(Math.toRadians(angleToStart));
-            double lineToEndM = Math.tan(Math.toRadians(angleToEnd));
-
-            boolean foundSensibleCoordStart = false;
-            boolean foundSensibleCoordEnd = false;
+            float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
+            float angleToEnd =
+                    ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
 
             Random random = new Random();
 
-            int xCoord = 0;
-            int yCoord = 0;
+            // Creates the vector coordinates to use
+            float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
+            Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
+            Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
 
-            while ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd)) {
+            // Make sure the capital is not spawned over outside the circle
+            float radius = (getMap().getSize() / 2);
+            radius = (float) Math.sqrt(radius * radius * 0.75f);
 
-                foundSensibleCoordStart = false;
-                foundSensibleCoordEnd = false;
+            // Make sure the capital is not spawned near the centre
+            int minDistance = 10;
+            float distance = random.nextFloat() * (radius - minDistance) + minDistance;
 
-                xCoord = random.nextInt((int) Math.floor((double) (getMap().getSize() / 2)));
-                yCoord = random.nextInt((int) Math.floor((double) (getMap().getSize() / 2)));
+            direction.mul(distance).mul(TransformHex.HEX_WIDTH);
 
-                // This makes sure the number could be negative
-                if (random.nextInt(2) == 1) {
-                    xCoord *= -1;
-                }
-                if (random.nextInt(2) == 1) {
-                    yCoord *= -1;
-                }
+            log.info("X: " + direction.x + " Y: " + direction.y);
 
-                if (Double.isNaN(lineToEndM) && Double.isNaN(lineToStartM)) {
-                    // TODO How they got here is beyond me It is literally impossible but just in
-                    // case
-                    // TODO Both lines are x = 0
+            // Convert to Axial coordinates
+            Vector3f coords = new Vector3f(direction.x, direction.y, 0f);
+            TransformHex.cartesianToAxial(coords);
 
-                    log.warning(
-                            "SOME BIZZARE MATHS HAS HAPPENED: " + angleToStart + " " + angleToEnd);
-                } else if (Double.isNaN(lineToStartM)) {
-
-                    // lineStart X = 0 one another y = mx
-                    if (angleToStart == 90) {
-
-                        // ASSUMPTION that y > mx Must hold && x < 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord < 0 && yCoord > mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    } else {
-                        // angleToStart = 270 so y < mx Must hold && x > 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord > 0 && yCoord < mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    }
-                } else if (Double.isNaN(lineToEndM)) {
-                    // TODO lineEnd X = 0 one another y = mx
-                    if (angleToEnd == 90) {
-
-                        // ASSUMPTION that y > mx Must hold && x > 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord > 0 && yCoord > mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    } else {
-                        // angleToStart = 270 so y < mx Must hold && x < 0
-                        double mx = lineToEndM * xCoord;
-                        if (xCoord < 0 && yCoord < mx) {
-                            foundSensibleCoordStart = true;
-                            foundSensibleCoordEnd = true;
-                        }
-                    }
-
-                } else {
-
-                    if (angleToStart > 90 && angleToStart < 270) {
-                        // Assumption y < mx must hold
-                        double mx = lineToStartM * xCoord;
-
-                        if (yCoord < mx) {
-                            foundSensibleCoordStart = true;
-                        }
-
-                    } else {
-                        // Assumption y > mx must hold
-                        double mx = lineToStartM * xCoord;
-
-                        if (yCoord > mx) {
-                            foundSensibleCoordStart = true;
-                        }
-                    }
-
-                    if (angleToEnd > 90 && angleToEnd < 270) {
-                        // Assumption y > mx mustHold
-                        double mx = lineToEndM * xCoord;
-
-                        if (yCoord > mx) {
-                            foundSensibleCoordEnd = true;
-                        }
-                    } else {
-                        // Assumption y < mx must hold
-                        double mx = lineToEndM * xCoord;
-
-                        if (yCoord < mx) {
-                            foundSensibleCoordEnd = true;
-                        }
-                    }
-                }
-            }
-
-            log.info(
-                    "X = "
-                            + xCoord
-                            + " Y = "
-                            + yCoord
-                            + " angle from origin start = "
-                            + angleToStart
-                            + " angle from origin end = "
-                            + angleToEnd
-                            + " angle to add "
-                            + angleOfCircle
-                            + " number of players = "
-                            + playersOnlineNow);
-
-            Building buildingToBecomeCapital = createBuilding(xCoord, yCoord);
+            // Add the building
+            Building buildingToBecomeCapital = createBuilding((int) coords.x, (int) coords.y);
             if (buildingToBecomeCapital == null) {
                 log.severe(
                         "Unable to place an initial capital building.  X = "
-                                + xCoord
+                                + (int) coords.x
                                 + " Y = "
-                                + yCoord);
+                                + (int) coords.y);
 
-            } else {
+            } else if (!completed) {
                 buildingToBecomeCapital.setCapital(true);
                 completed = true;
             }
