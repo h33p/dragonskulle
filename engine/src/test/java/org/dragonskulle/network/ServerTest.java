@@ -343,6 +343,9 @@ public class ServerTest {
     public void testComponentCanSubmitActionRequest() throws Throwable {
         try (TestContext ctx = new TestContext(7006)) {
             ctx.run(ctx::testSubmitRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 
@@ -350,6 +353,9 @@ public class ServerTest {
     public void testCanDestroy() throws Throwable {
         try (TestContext ctx = new TestContext(7007)) {
             ctx.run(ctx::testCanDestroy);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 }

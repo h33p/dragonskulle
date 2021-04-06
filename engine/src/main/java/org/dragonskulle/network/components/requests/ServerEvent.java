@@ -5,6 +5,7 @@ import java.io.*;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -140,6 +141,7 @@ public class ServerEvent<T extends INetSerializable> {
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             try (DataOutputStream oos = new DataOutputStream(bos)) {
+                oos.writeByte(NetworkConfig.Codes.MESSAGE_SERVER_EVENT);
                 oos.writeInt(mNetworkObject.getId());
                 oos.writeInt(mEventId);
                 data.serialize(oos);

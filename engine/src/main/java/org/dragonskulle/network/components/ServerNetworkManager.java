@@ -19,7 +19,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
-import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ServerEvent;
@@ -132,13 +131,18 @@ public class ServerNetworkManager {
 
             // Send a spawn message to the client, if haven't already
             if (mSpawnedFor.add(client)) {
-                byte[] spawnMessage =
-                        NetworkMessage.build(
-                                NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT,
-                                NetworkMessage.convertIntsToByteArray(
-                                        obj.getNetworkObjectId(), obj.getOwnerId(), mTemplateId));
-                client.sendBytes(spawnMessage);
-                forceUpdate = true;
+                DataOutputStream stream = client.getDataOut();
+                try {
+                    stream.writeByte(NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT);
+                    stream.writeInt(obj.getNetworkObjectId());
+                    stream.writeInt(obj.getOwnerId());
+                    stream.writeInt(mTemplateId);
+                    stream.flush();
+                    forceUpdate = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    client.closeSocket();
+                }
             }
 
             obj.sendUpdate(client, forceUpdate);
@@ -232,9 +236,7 @@ public class ServerNetworkManager {
      * @param stream serialized data of the event
      */
     public void sendEvent(ServerEvent<?> event, ByteArrayOutputStream stream) throws IOException {
-        byte[] streamBytes = stream.toByteArray();
-
-        byte[] msg = NetworkMessage.build(NetworkConfig.Codes.MESSAGE_SERVER_EVENT, streamBytes);
+        byte[] msg = stream.toByteArray();
 
         int oid = event.getNetworkObject().getOwnerId();
 
@@ -242,8 +244,11 @@ public class ServerNetworkManager {
 
         if (recipients == EventRecipients.OWNER) {
             if (oid < 0) {
-                ByteArrayInputStream bis = new ByteArrayInputStream(streamBytes);
+                ByteArrayInputStream bis = new ByteArrayInputStream(msg);
                 DataInputStream dis = new DataInputStream(bis);
+                dis.readByte(); // messageId
+                dis.readInt(); // networkObjectId
+                dis.readInt(); // eventId
                 event.handle(dis);
             } else {
                 ServerClient c = mServer.getClient(oid);
@@ -252,8 +257,11 @@ public class ServerNetworkManager {
         } else { // Both ACTIVE_CLIENTS and ALL_CLIENTS for now
             for (ServerClient c : mServer.getClients()) c.sendBytes(msg);
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(streamBytes);
+            ByteArrayInputStream bis = new ByteArrayInputStream(msg);
             DataInputStream dis = new DataInputStream(bis);
+            dis.readByte(); // messageId
+            dis.readInt(); // networkObjectId
+            dis.readInt(); // eventId
             event.handle(dis);
         }
     }
@@ -327,6 +335,7 @@ public class ServerNetworkManager {
         DataOutputStream stream = new DataOutputStream(bos);
 
         try {
+            stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_STATE);
             stream.writeFloat(Engine.getInstance().getCurTime());
 
             stream.flush();
@@ -334,9 +343,7 @@ public class ServerNetworkManager {
             bos.flush();
             bos.close();
 
-            byte[] msg =
-                    NetworkMessage.build(
-                            NetworkConfig.Codes.MESSAGE_UPDATE_STATE, bos.toByteArray());
+            byte[] msg = bos.toByteArray();
 
             for (ServerClient c : mServer.getClients()) c.sendBytes(msg);
 

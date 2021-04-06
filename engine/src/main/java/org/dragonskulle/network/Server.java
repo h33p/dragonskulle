@@ -142,6 +142,10 @@ public class Server {
 
         for (ServerClient c : mClients.values()) cnt += c.processRequests(clientRequests);
 
+        // Clients may have gracefully shut down, remove them from the list
+        ServerClient c;
+        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
+
         return cnt;
     }
 

@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -304,32 +303,14 @@ public class NetworkObject extends Component {
         }
         if (shouldBroadcast) {
             try {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream stream = new DataOutputStream(bos);
-
-                // TODO: Do this sanely here
-                // stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
-
+                DataOutputStream stream = client.getDataOut();
+                stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
                 generateUpdateBytes(stream, didChildUpdateMask, forceUpdate);
-
                 stream.flush();
-                stream.close();
-                bos.flush();
-                bos.close();
-
-                byte[] bytes = bos.toByteArray();
-
-                log.fine(
-                        "Update update size for client "
-                                + client.getNetworkID()
-                                + ":: "
-                                + bytes.length);
-
-                client.sendBytes(
-                        NetworkMessage.build(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT, bytes));
             } catch (IOException e) {
                 log.warning("Failed to serialize data!");
                 e.printStackTrace();
+                client.closeSocket();
             }
         }
     }

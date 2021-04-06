@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,28 +78,21 @@ public class ClientNetworkManager {
          * @param payload the payload of the object to be updated
          */
         @Override
-        public void updateNetworkObject(byte[] payload) {
-            ByteArrayInputStream bis = new ByteArrayInputStream(payload);
-            DataInputStream stream = new DataInputStream(bis);
-
-            try {
-                int idToUpdate = stream.readInt();
-                ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
-                if (entry == null) {
-                    log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
-                    return;
-                }
-                int oldOwner = entry.mNetworkObject.get().getOwnerId();
-                int newOwner = entry.mNetworkObject.get().updateFromBytes(stream);
-                if (oldOwner != newOwner) { // ownership has changed
-                    updateOwnershipLink(entry.mNetworkObject);
-                }
-                if (!entry.mSynchronized) {
-                    entry.mSynchronized = true;
-                    entry.mNetworkObject.get().getGameObject().setEnabled(true);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        public void updateNetworkObject(DataInputStream stream) throws IOException {
+            int idToUpdate = stream.readInt();
+            ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
+            if (entry == null) {
+                log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
+                return;
+            }
+            int oldOwner = entry.mNetworkObject.get().getOwnerId();
+            int newOwner = entry.mNetworkObject.get().updateFromBytes(stream);
+            if (oldOwner != newOwner) { // ownership has changed
+                updateOwnershipLink(entry.mNetworkObject);
+            }
+            if (!entry.mSynchronized) {
+                entry.mSynchronized = true;
+                entry.mNetworkObject.get().getGameObject().setEnabled(true);
             }
         }
 
@@ -109,15 +102,8 @@ public class ClientNetworkManager {
          * @param payload payload containing the server's world state
          */
         @Override
-        public void updateServerState(byte[] payload) {
-            ByteArrayInputStream bis = new ByteArrayInputStream(payload);
-            DataInputStream stream = new DataInputStream(bis);
-
-            try {
-                mServerTime = stream.readFloat();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        public void updateServerState(DataInputStream stream) throws IOException {
+            mServerTime = stream.readFloat();
         }
 
         private void updateOwnershipLink(Reference<NetworkObject> mNetworkObject) {
@@ -125,33 +111,26 @@ public class ClientNetworkManager {
         }
 
         @Override
-        public void spawnNetworkObject(byte[] payload) {
-            int objectId = NetworkObject.getIntFromBytes(payload, SPAWN_OBJECT_ID);
-            int ownerId = NetworkObject.getIntFromBytes(payload, SPAWN_OWNER_ID);
-            int spawnTemplateId = NetworkObject.getIntFromBytes(payload, SPAWN_TEMPLATE_ID);
+        public void spawnNetworkObject(DataInputStream stream) throws IOException {
+            int objectId = stream.readInt();
+            int ownerId = stream.readInt();
+            int spawnTemplateId = stream.readInt();
             spawnNewNetworkObject(objectId, ownerId, spawnTemplateId);
         }
 
         @Override
-        public void objectEvent(byte[] payload) {
-            ByteArrayInputStream bis = new ByteArrayInputStream(payload);
-            DataInputStream stream = new DataInputStream(bis);
-
-            try {
-                int objectID = stream.readInt();
-                ClientObjectEntry entry = getNetworkObjectEntry(objectID);
-                if (entry == null) {
-                    log.info("Should have spawned! Couldn't find nob id :" + objectID);
-                    return;
-                }
-                NetworkObject nob = entry.mNetworkObject.get();
-
-                int eventID = stream.readInt();
-
-                if (nob != null) nob.handleServerEvent(eventID, stream);
-            } catch (IOException e) {
-                e.printStackTrace();
+        public void objectEvent(DataInputStream stream) throws IOException {
+            int objectID = stream.readInt();
+            ClientObjectEntry entry = getNetworkObjectEntry(objectID);
+            if (entry == null) {
+                log.info("Should have spawned! Couldn't find nob id :" + objectID);
+                return;
             }
+            NetworkObject nob = entry.mNetworkObject.get();
+
+            int eventID = stream.readInt();
+
+            if (nob != null) nob.handleServerEvent(eventID, stream);
         }
     }
 
@@ -164,10 +143,6 @@ public class ClientNetworkManager {
             mNetworkObject = networkObject;
         }
     }
-
-    private static final int SPAWN_OBJECT_ID = 0;
-    private static final int SPAWN_OWNER_ID = SPAWN_OBJECT_ID + 4;
-    private static final int SPAWN_TEMPLATE_ID = SPAWN_OWNER_ID + 4;
 
     /** Underlying network client instance */
     private final NetworkClient mClient;
@@ -221,6 +196,10 @@ public class ClientNetworkManager {
      */
     public void sendToServer(byte[] message) {
         mClient.sendBytes(message);
+    }
+
+    public DataOutputStream getDataOut() {
+        return mClient.getDataOut();
     }
 
     /**

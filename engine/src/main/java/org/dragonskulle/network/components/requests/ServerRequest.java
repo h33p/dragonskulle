@@ -5,7 +5,6 @@ import java.io.*;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.NetworkConfig;
-import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -75,6 +74,7 @@ public class ServerRequest<T extends INetSerializable> {
             } else {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 try (DataOutputStream oos = new DataOutputStream(bos)) {
+                    oos.writeByte(NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST);
                     oos.writeInt(mNetworkObject.getId());
                     oos.writeInt(mRequestId);
                     data.serialize(oos);
@@ -84,10 +84,7 @@ public class ServerRequest<T extends INetSerializable> {
                 mNetworkObject
                         .getNetworkManager()
                         .getClientManager()
-                        .sendToServer(
-                                NetworkMessage.build(
-                                        NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST,
-                                        bos.toByteArray()));
+                        .sendToServer(bos.toByteArray());
             }
         } catch (IOException e) {
             e.printStackTrace();
