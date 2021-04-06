@@ -119,7 +119,7 @@ public class AStar {
                         == currentNode) { // If the node on this connection is the right one
 
                     answerOfNodes.push(connectionsFinal.get(i)[0]);
-                    currentNode = connectionsFinal.get(i)[0]; // }
+                    currentNode = connectionsFinal.get(i)[0];
                 }
             }
         }
@@ -131,9 +131,9 @@ public class AStar {
      * @return An Integer Array of length 0 if there is no path otherwise the nodes to get to the
      *     answer
      */
-    public Integer[] nodesToVisit() {
+    public	Deque<Integer> nodesToVisit() {
 
-        return answerOfNodes.toArray(new Integer[0]);
+        return answerOfNodes;
     }
 
     /**

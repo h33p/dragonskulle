@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -24,7 +26,8 @@ public class CapitalAimer extends AiPlayer {
     private Player opponentPlayer = mPlayer.get();
     private final float UPDATE_PATH_TIME = 60;
     private float timeSinceLastCheck = Time.getTimeInSeconds() - UPDATE_PATH_TIME;
-    private Integer[] nodesToUse;
+    private Deque<Integer> path;
+    private Deque<Integer> gone;
     private Graph graph = null;
     private Node capNode = null;
     private Node oppCapNode = null;
@@ -36,15 +39,61 @@ public class CapitalAimer extends AiPlayer {
     protected void simulateInput() {
         if (opponentPlayer.getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
             findOpponent();
+            tileToAim = new Reference<HexagonTile>(null);
+            getTile();
         }
 
         if (timeSinceLastCheck + UPDATE_PATH_TIME > Time.getTimeInSeconds()) {
             aStar();
         }
 
-        if (nodesToUse.length == 0) {
+        if (path.size() == 0) {
             opponentPlayer = mPlayer.get();
+            return;
         }
+        
+        if (gone.size() == 0) {
+        	int firstElement = path.pop();
+        	if (graph.getNode(firstElement).getHexTile().get().getClaimant().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
+        		gone.push(firstElement);
+        	}
+        	else {
+        		log.severe("You might be dead");
+        	}
+        }
+        
+        int previousNode = gone.pop();
+        
+        boolean onYourNode = false;
+        while (!onYourNode) {
+        	if (graph.getNode(previousNode).getHexTile().get().getClaimant() == null) {
+        		path.push(previousNode);
+            	previousNode = gone.pop();
+        	}
+        	else if (graph.getNode(previousNode).getHexTile().get().getClaimant().getOwnerId() != mPlayer.get().getNetworkObject().getOwnerId()) {
+        		path.push(previousNode);
+            	previousNode = gone.pop();
+        	}
+        	else {
+        		onYourNode = true;
+        	}
+        	
+        }
+       
+        gone.push(previousNode);
+		int nextNode = path.pop();
+        while (graph.getNode(nextNode).getHexTile().get().getClaimant().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
+        	gone.push(nextNode);
+        	path.pop();
+        }
+        
+        // BUILD
+        if (graph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
+        	
+        	getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(graph.getNode(nextNode).getHexTile().get()));
+        	gone.push(nextNode);
+        }
+        
 
         // TODO Perform actions here
         /*TODO
@@ -77,7 +126,7 @@ public class CapitalAimer extends AiPlayer {
 
     private void getTile() {
     	Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
-    	while (tileToAim == null) {
+    	while (tileToAim.get() == null) {
     		Optional<HexagonTile> tile = tiles.findAny();
     		HexagonTile tileFound = tile.get();
     		if (tileFound.getBuilding() != null && tileFound.getBuilding().isCapital()) {
@@ -102,7 +151,7 @@ public class CapitalAimer extends AiPlayer {
 
     /** This will perform the A* Search */
     private void aStar() {
-        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getNetworkObject().getOwnerId(), );		//TODO Currently just creates a dummy building so the code compiles
+        Graph tempGraph = new Graph(mPlayer.get().getMap(), mPlayer.get().getNetworkObject().getOwnerId(),tileToAim.get() );		//TODO Currently just creates a dummy building so the code compiles
         graph = tempGraph;
         AStar aStar = new AStar(graph);
         findCapital();
@@ -112,6 +161,7 @@ public class CapitalAimer extends AiPlayer {
             // TODO Shouldn't get here.
             log.severe("EXCEPTION");
         }
-        nodesToUse = aStar.nodesToVisit();
+        path = aStar.nodesToVisit();
+        gone = new ArrayDeque<Integer>();
     }
 }
