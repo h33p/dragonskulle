@@ -34,6 +34,9 @@ import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
+import org.joml.Matrix2d;
+import org.joml.Matrix2dc;
+import org.joml.Vector2d;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -169,8 +172,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void distributeCoordinates() {
         boolean completed = false;
         while (!completed) {
-            float angleOfCircle = 360f / (MAX_PLAYERS+1);
-            float angleBetween = (360f - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
+            double angleOfCircle = 360 / (MAX_PLAYERS+1);
+            double angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
@@ -179,8 +182,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
 
             // This gives us the angle to find our coordinates.  Stored in degrees
-            float angleToStart = (playersOnlineNow * angleOfCircle);
-            float angleToEnd = ((playersOnlineNow + 1) * angleOfCircle)-angleBetween;
+            double angleToStart = (playersOnlineNow * angleOfCircle);
+            double angleToEnd = ((playersOnlineNow + 1) * angleOfCircle);//-angleBetween;
 
             double lineToStartM = Math.tan(Math.toRadians(angleToStart));
             double lineToEndM = Math.tan(Math.toRadians(angleToEnd));
@@ -193,6 +196,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             int xCoord = 0;
             int yCoord = 0;
 
+            int angle = random.nextInt() % ((int)Math.floor(angleToEnd) + 1 - (int)Math.floor(angleToStart)) + (int)Math.floor(angleToEnd);
+            Matrix2d rotation = new Matrix2d().rotate(Math.toRadians((double)angle));
+            Matrix2d directionSorting = new Matrix2d();
+            directionSorting.m00 = 0;
+            directionSorting.m11 = 1;
+            Matrix2d direction = rotation.mul(directionSorting);
+            
+
+            double radius = (getMap().getSize() / 2);
+            radius = Math.sqrt(radius * radius * 0.75f); // Need to make sure the generated circle does not go out of bounds. This will make it impossible for capitals to generate on map corners, but I think that's OK.
+            
+            int minDistance = 5;
+            int distance = random.nextInt() % ((int)radius + 1 - minDistance) + minDistance; 
+            
+            direction.m00 = direction.m00 * distance;
+            direction.m11 = direction.m11 * distance;
+            
+            log.severe("X: " + direction.m00 + " Y: " + direction.m11);
+            
             while ((!foundSensibleCoordStart) || (!foundSensibleCoordEnd)) {
 
                 foundSensibleCoordStart = false;
