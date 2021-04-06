@@ -2,6 +2,8 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -11,6 +13,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.building.stat.Stat;
 import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
 import org.dragonskulle.game.building.stat.SyncAttackStat;
 import org.dragonskulle.game.building.stat.SyncDefenceStat;
@@ -42,7 +45,12 @@ import org.joml.Vector3i;
 @Accessors(prefix = "m")
 @Log
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
-
+	
+	/** A map between {@link Stat}s and their {@link SyncStat} values. */
+	EnumMap<Stat, SyncStat<?>> mStats = new EnumMap<Stat, SyncStat<?>>(Stat.class);
+	
+	// TODO: Make the SyncStats and SyncBool private.
+	
     /** Stores the attack strength of the building. */
     @Getter public final SyncAttackStat mAttack = new SyncAttackStat(this);
     /** Stores the defence strength of the building. */
@@ -85,7 +93,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onAwake() {
-        // For debugging, set all stat levels to 5.
+    	// Store the stats under the relevant names.
+    	storeStat(Stat.ATTACK, mAttack);
+    	storeStat(Stat.DEFENCE, mDefence);
+    	storeStat(Stat.TOKEN_GENERATION, mTokenGeneration);
+    	storeStat(Stat.VIEW_DISTANCE, mViewDistance);
+    	storeStat(Stat.ATTACK_DISTANCE, mAttackDistance);
+    	
+    	log.info("mStats:" + mStats);
+    	
+    	// For debugging, set all stat levels to 5.
         // TODO: Remove.
         mAttack.setLevel(5);
         mDefence.setLevel(5);
@@ -343,22 +360,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an ArrayList of Stats that the Building has.
-     *
-     * @return An ArrayList of Stats.
-     */
-    public ArrayList<SyncStat<?>> getStats() {
-        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>();
-        stats.add(mAttack);
-        stats.add(mDefence);
-        stats.add(mTokenGeneration);
-        stats.add(mViewDistance);
-        stats.add(mAttackDistance);
-
-        return stats;
-    }
-
-    /**
      * Get the ID of the owner of the building.
      *
      * @return The ID of the owner.
@@ -453,6 +454,44 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         return cost;
     }
 
+    /**
+     * Store a {@link SyncStat} in {@link #mStats} using a {@link Stat} value as the key.
+     * 
+     * @param name The name of the stat.
+     * @param stat The stat to be stored.
+     */
+    private void storeStat(Stat name, SyncStat<?> stat) {
+    	if(name == null || stat == null) {
+    		log.warning("Unable to store stat: name or stat is null.");
+    		return;
+    	}
+    	mStats.put(name, stat);
+    }
+    
+    /**
+     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant name.
+     * 
+     * @param name The name of the desired stat.
+     * @return The SyncStat, otherwise {@code null}.
+     */
+    public SyncStat<?> getStat(Stat name) {
+    	if(name == null) {
+    		log.warning("Unable to get stat: name is null.");
+    		return null;
+    	}
+    	return mStats.get(name);
+    }
+    
+    /**
+     * Get an {@link ArrayList} of Stats that the Building has.
+     *
+     * @return An ArrayList of Stats.
+     */
+    public ArrayList<SyncStat<?>> getStats() {
+        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>(mStats.values());
+        return stats;
+    }
+    
     @Override
     protected void onDestroy() {}
 }
