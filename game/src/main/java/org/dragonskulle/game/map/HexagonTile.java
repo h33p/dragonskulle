@@ -69,8 +69,6 @@ public class HexagonTile {
 
     @Getter private final int mR;
 
-    @Getter private final int mS;
-
     @Getter private final float mHeight;
 
     @Getter private final TileType mTileType;
@@ -94,21 +92,15 @@ public class HexagonTile {
     private Reference<Building> mClaimedBy = new Reference<Building>(null);
 
     /**
-     * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
-     * 0.
+     * Constructor that creates the HexagonTile
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
-     * @param s The third coordinate.
      */
-    HexagonTile(int q, int r, int s, float height) {
+    HexagonTile(int q, int r, float height) {
         this.mQ = q;
         this.mR = r;
-        this.mS = s;
         this.mHeight = height;
-        if (q + r + s != 0) {
-            log.warning("The coordinates do not add up to 0");
-        }
 
         if (height <= WATER_THRESHOLD) mTileType = TileType.WATER;
         else if (height >= MOUNTAINS_THRESHOLD) mTileType = TileType.MOUNTAIN;
@@ -143,18 +135,27 @@ public class HexagonTile {
      * @return The length of the tile from the origin.
      */
     public int length() {
-        return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
+        return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(getS())) / 2);
     }
 
     public int distTo(int q, int r) {
         int s = -q - r;
 
-        return (int) ((Math.abs(q - mQ) + Math.abs(r - mR) + Math.abs(s - mS)) / 2);
+        return (int) ((Math.abs(q - mQ) + Math.abs(r - mR) + Math.abs(s - getS())) / 2);
+    }
+
+    /**
+     * Retrieve the third (cube) coordinate
+     *
+     * <p>This coordinate will always be equal to -getQ() -getR()
+     */
+    public int getS() {
+        return -mQ - mR;
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(new int[] {this.mQ, this.mR, this.mS});
+        return Arrays.toString(new int[] {this.mQ, this.mR});
     }
 
     /**

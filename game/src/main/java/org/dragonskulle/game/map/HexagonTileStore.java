@@ -41,9 +41,8 @@ class HexagonTileStore {
                 } else {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
-                    int s1 = -q1 - r1;
-                    float height = getHeight(q1, r1, s1);
-                    setTile(new HexagonTile(q1, r1, s1, height));
+                    float height = getHeight(q1, r1);
+                    setTile(new HexagonTile(q1, r1, height));
                 }
             }
             empty--;
@@ -54,9 +53,8 @@ class HexagonTileStore {
         for (int q = 0; q < mSize; q++) {
             int q1 = q - mCoordShift;
             int r1 = r_m - mCoordShift;
-            int s1 = -q1 - r1;
-            float height = getHeight(q1, r1, s1);
-            setTile(new HexagonTile(q1, r1, s1, height));
+            float height = getHeight(q1, r1);
+            setTile(new HexagonTile(q1, r1, height));
         }
 
         /** Generates the last part of the map */
@@ -71,9 +69,8 @@ class HexagonTileStore {
                 if (inside_val <= current_val) {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
-                    int s1 = -q1 - r1;
-                    float height = getHeight(q1, r1, s1);
-                    setTile(new HexagonTile(q1, r1, s1, height));
+                    float height = getHeight(q1, r1);
+                    setTile(new HexagonTile(q1, r1, height));
                     inside_val++;
                 } // otherwise we do not need a tile
             }
@@ -132,7 +129,7 @@ class HexagonTileStore {
         {0.6f, 0.1f}
     };
 
-    private float getHeight(int q, int r, int s) {
+    private float getHeight(int q, int r) {
 
         float sum = 0f;
 
@@ -142,7 +139,7 @@ class HexagonTileStore {
                                     Noise.valueCoherentNoise3D(
                                             q * vals[0],
                                             r * vals[0],
-                                            s * vals[0],
+                                            (-q - r) * vals[0],
                                             mSeed,
                                             NoiseQuality.BEST)
                             * vals[1];
