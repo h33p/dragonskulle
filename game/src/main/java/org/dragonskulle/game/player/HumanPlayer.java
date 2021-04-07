@@ -14,7 +14,6 @@ import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
@@ -307,14 +306,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (!mPlayer.get().hasLost()) {
             switch (mScreenOn) {
                 case MAP_SCREEN:
-                    effects.highlightTiles(
-                            (tile) -> {
-                                Player owner = tile.getClaimant();
-                                if (owner != null) {
-                                    return owner.getPlayerHighlightSelection();
-                                }
-                                return HighlightSelection.CLEARED;
-                            });
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(null);
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     if (mMenuDrawer.isValid()) {
@@ -335,8 +328,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             upgrade_button.get().getComponent(UIButton.class).get().enable();
                         }
                     }
-                    undoLastHighlight();
-                    highlightSelectedTile(StandardHighlightType.VALID);
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case TILE_SCREEN:
                     if (mMenuDrawer.isValid()) {
@@ -357,8 +351,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             upgrade_button.get().getComponent(UIButton.class).get().disable();
                         }
                     }
-                    undoLastHighlight();
-                    highlightSelectedTile(StandardHighlightType.PLAIN);
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.PLAIN));
                     break;
                 case ATTACK_SCREEN:
                     if (mMenuDrawer.isValid()) {
@@ -379,7 +374,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             upgrade_button.get().getComponent(UIButton.class).get().disable();
                         }
                     }
-                    highlightSelectedTile(StandardHighlightType.VALID);
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     for (Building attackableBuilding :
                             mHexChosen.getBuilding().getAttackableBuildings()) {
                         effects.highlightTile(
@@ -388,29 +385,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                     break;
                 case STAT_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(null);
                     break;
             }
         }
     }
 
-    private void highlightSelectedTile(StandardHighlightType highlight) {
+    private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
         if (mHexChosen != null) {
-            mMapEffects.get().highlightTile(mHexChosen, highlight.asSelection());
-        }
-    }
-
-    private void undoLastHighlight() {
-        MapEffects effects = mMapEffects.get();
-        if (effects != null && mLastHexChosen != null) {
-            final Player lastTileOwner = mLastHexChosen.getClaimant();
-            if (lastTileOwner != null) {
-                effects.highlightTile(
-                        mLastHexChosen,
-                        lastTileOwner
-                                .getPlayerHighlightSelection()); // set tile to what it was before
-            } else {
-                effects.unhighlightTile(mLastHexChosen);
-            }
+            fx.highlightTile(mHexChosen, highlight.asSelection());
         }
     }
 
