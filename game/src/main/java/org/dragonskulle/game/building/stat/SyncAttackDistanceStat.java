@@ -16,7 +16,7 @@ public class SyncAttackDistanceStat extends SyncStat {
 
     @Override
     public int getValue() {
-    	// Regardless of the level, the value of the attack distance will always be 2.
-    	return 2;
+        // Regardless of the level, the value of the attack distance will always be 2.
+        return 2;
     }
 }

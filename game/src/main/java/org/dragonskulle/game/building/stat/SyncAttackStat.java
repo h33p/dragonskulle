@@ -16,7 +16,7 @@ public class SyncAttackStat extends SyncStat {
 
     @Override
     public int getValue() {
-    	// The attack value is identical to the current level number plus one.
-    	return getLevel() + 1;
+        // The attack value is identical to the current level number plus one.
+        return getLevel() + 1;
     }
 }

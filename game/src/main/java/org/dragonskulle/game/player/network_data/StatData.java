@@ -7,7 +7,6 @@ import java.io.IOException;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.Stat;
-import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
@@ -36,15 +35,15 @@ public class StatData implements INetSerializable {
      * @param stat The Stat to increase.
      */
     public StatData(Building building, Stat stat) {
-    	setData(building, stat);
+        setData(building, stat);
     }
 
     public void setData(Building building, Stat stat) {
-    	mQ = building.getTile().getQ();
+        mQ = building.getTile().getQ();
         mR = building.getTile().getR();
         mStatID = stat.getID();
     }
-    
+
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
         stream.writeInt(mQ);

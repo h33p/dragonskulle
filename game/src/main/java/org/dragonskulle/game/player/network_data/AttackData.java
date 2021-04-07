@@ -19,7 +19,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 @Accessors(prefix = "m")
 @Log
 public class AttackData implements INetSerializable {
-	private int mAttackerQ;
+    private int mAttackerQ;
     private int mAttackerR;
     private int mDefenderQ;
     private int mDefenderR;
