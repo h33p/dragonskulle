@@ -27,8 +27,10 @@ public class StatData implements INetSerializable {
     public StatData() {}
 
     public StatData(Building building, SyncStat<?> stat) {
-        if (building == null) return;
+        setData(building, stat);
+    }
 
+    public void setData(Building building, SyncStat<?> stat) {
         mQ = building.getTile().getQ();
         mR = building.getTile().getR();
     }

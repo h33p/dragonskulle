@@ -44,19 +44,19 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** Stores the attack strength of the building. */
-    @Getter public final SyncAttackStat mAttack = new SyncAttackStat(this);
+    @Getter private final SyncAttackStat mAttack = new SyncAttackStat(this);
     /** Stores the defence strength of the building. */
-    @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat(this);
+    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat(this);
     /** Stores how many tokens the building can generate in one go. */
     @Getter
-    public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
+    private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
     /** Stores the view range of the building. */
-    @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
+    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
     /** Stores the attack range of the building. */
-    @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
+    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
 
     /** Whether the building is a capital. */
-    public final SyncBool mIsCapital = new SyncBool(false);
+    private final SyncBool mIsCapital = new SyncBool(false);
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
@@ -268,7 +268,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
             // Ensure the building is not owned by the owner of this building.
             if (getOwnerID() == building.getOwnerID()) {
-                log.info("Building owned by same player.");
+                log.fine("Building owned by same player.");
                 continue;
             }
 

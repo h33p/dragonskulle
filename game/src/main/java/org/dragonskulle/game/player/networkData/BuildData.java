@@ -28,6 +28,10 @@ public class BuildData implements INetSerializable {
      * @param hexTileToAdd The {@code HexagonTile} to build on
      */
     public BuildData(HexagonTile hexTileToAdd) {
+        setTile(hexTileToAdd);
+    }
+
+    public void setTile(HexagonTile hexTileToAdd) {
         mQ = hexTileToAdd.getQ();
         mR = hexTileToAdd.getR();
     }
