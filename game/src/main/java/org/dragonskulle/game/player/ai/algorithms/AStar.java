@@ -131,7 +131,7 @@ public class AStar {
      * @return An Integer Array of length 0 if there is no path otherwise the nodes to get to the
      *     answer
      */
-    public	Deque<Integer> nodesToVisit() {
+    public Deque<Integer> nodesToVisit() {
 
         return answerOfNodes;
     }

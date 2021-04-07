@@ -7,7 +7,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -28,11 +27,11 @@ public class Graph {
     private Reference<HexagonTile> mTileAiming;
 
     public Graph(HexagonMap map, int ownerId, HexagonTile tileAiming) {
-    	mTileAiming = new Reference<HexagonTile>(tileAiming);
-    	mMap = map.getReference(HexagonMap.class);
-    	mOwnerId = ownerId;
-    	mNodeNum = 0;
-    	graph = new HashMap<Integer, Node>();
+        mTileAiming = new Reference<HexagonTile>(tileAiming);
+        mMap = map.getReference(HexagonMap.class);
+        mOwnerId = ownerId;
+        mNodeNum = 0;
+        graph = new HashMap<Integer, Node>();
         Stream<HexagonTile> tiles = map.getAllTiles();
         tiles.forEach(this::convertToNode);
         mNodeNum = 0;
@@ -40,48 +39,51 @@ public class Graph {
     }
 
     private void convertToNode(HexagonTile tile) {
-    	
-    	try {
-			addNode(mNodeNum, tile);
-			
-			int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
-			
-			this.setNodeSpecial(mNodeNum, heuristic);
-			
-		} catch (GraphNodeException e) {
-			// TODO Already in graph
-		}
-    	mNodeNum++;
-    	
+
+        try {
+            addNode(mNodeNum, tile);
+
+            int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
+
+            this.setNodeSpecial(mNodeNum, heuristic);
+
+        } catch (GraphNodeException e) {
+            // TODO Already in graph
+        }
+        mNodeNum++;
     }
-    
+
     private void addConnections(HexagonTile tile) {
-    	boolean found = false;
-    	ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
-    	
-    	for (HexagonTile tileNeighbour : neighbourTiles) {
-    		for (Map.Entry<Integer, Node> mapEntry : graph.entrySet()) {
-    			if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ() && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
-    				
-    				int distance = 10; // A Chosen number so the hueristic will be smaller
-    				
-    				if (tileNeighbour.getClaimant() == null) {
-    					distance += 10;  //TODO link this to building price
-    				}
-    				else if (tileNeighbour.getClaimant().getNetworkObject().getOwnerId() != mOwnerId) {
-    					distance += tileNeighbour.getBuilding().getAttackCost();		//This adds the cost of attack.
-    				}
-    				else {
-    					// Don't do anything as its claimed by you so you want to go over it
-    				}
-    				
-    				addConnection(mNodeNum, mapEntry.getValue().getNode(), distance); //Weight set to 10
-    			}
-    		}
-    	}
-    	mNodeNum++;
+        boolean found = false;
+        ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
+
+        for (HexagonTile tileNeighbour : neighbourTiles) {
+            for (Map.Entry<Integer, Node> mapEntry : graph.entrySet()) {
+                if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
+                        && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
+
+                    int distance = 10; // A Chosen number so the hueristic will be smaller
+
+                    if (tileNeighbour.getClaimant() == null) {
+                        distance += 10; // TODO link this to building price
+                    } else if (tileNeighbour.getClaimant().getNetworkObject().getOwnerId()
+                            != mOwnerId) {
+                        distance +=
+                                tileNeighbour
+                                        .getBuilding()
+                                        .getAttackCost(); // This adds the cost of attack.
+                    } else {
+                        // Don't do anything as its claimed by you so you want to go over it
+                    }
+
+                    addConnection(
+                            mNodeNum, mapEntry.getValue().getNode(), distance); // Weight set to 10
+                }
+            }
+        }
+        mNodeNum++;
     }
-  
+
     /**
      * This will add a node to a graph with no connections
      *
@@ -122,7 +124,7 @@ public class Graph {
             throw new GraphNodeException();
         }
     }
-    
+
     /**
      * Adds a connection between two nodes
      *
