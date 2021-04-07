@@ -3,7 +3,6 @@ package org.dragonskulle.game.building.stat;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -32,27 +31,25 @@ public abstract class SyncStat extends SyncInt {
 
     /**
      * @deprecated Please use #getLevel().
-     * 
-     * <p> Get the stat's current level.
-     * 
+     *     <p>Get the stat's current level.
      * @return The level.
      */
     @Override
     public int get() {
-    	return super.get();
+        return super.get();
     }
-    
+
     /**
      * Get the stat's current level.
-     * 
+     *
      * <p>This level will be between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
-     * 
+     *
      * @return The level.
      */
-    public int getLevel(){
-    	return super.get();
+    public int getLevel() {
+        return super.get();
     }
-    
+
     /**
      * Set the level, and calculate and the new value.
      *
