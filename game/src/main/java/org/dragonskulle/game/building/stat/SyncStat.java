@@ -15,10 +15,9 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * <p>This level value is synchronised with the server.
  *
  * @author Craig Wilbourne
- * @param <T> The datatype of the stat value.
  */
 @Accessors(prefix = "m")
-public abstract class SyncStat<T extends Serializable> extends SyncInt {
+public abstract class SyncStat extends SyncInt {
 
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 0;
@@ -98,7 +97,7 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
      *
      * @return The value of the stat.
      */
-    public abstract <U extends Serializable> U getValue();
+    public abstract int getValue();
 
     @Override
     public void deserialize(DataInputStream in) throws IOException {

@@ -622,8 +622,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 defender.setCapital(false);
 
                 // Update stats
-                ArrayList<SyncStat<?>> stats = defender.getStats();
-                for (SyncStat<?> stat : stats) {
+                ArrayList<SyncStat> stats = defender.getStats();
+                for (SyncStat stat : stats) {
                     stat.set(SyncStat.LEVEL_MIN);
                 }
 

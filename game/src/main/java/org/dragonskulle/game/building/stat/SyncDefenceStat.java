@@ -8,15 +8,14 @@ import org.dragonskulle.game.building.Building;
  *
  * @author Craig Wilbourne
  */
-public class SyncDefenceStat extends SyncStat<Integer> {
+public class SyncDefenceStat extends SyncStat {
 
     public SyncDefenceStat(Building building) {
         super(building);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Integer getValue() {
+    public int getValue() {
         return getLevel() + 1;
     }
 }

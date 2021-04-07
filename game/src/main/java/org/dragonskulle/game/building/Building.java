@@ -46,7 +46,7 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** A map between {@link Stat}s and their {@link SyncStat} values. */
-    EnumMap<Stat, SyncStat<?>> mStats = new EnumMap<Stat, SyncStat<?>>(Stat.class);
+    EnumMap<Stat, SyncStat> mStats = new EnumMap<Stat, SyncStat>(Stat.class);
 
     // TODO: Make the SyncStats and SyncBool private.
 
@@ -457,7 +457,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @param name The name of the stat.
      * @param stat The stat to be stored.
      */
-    private void storeStat(Stat name, SyncStat<?> stat) {
+    private void storeStat(Stat name, SyncStat stat) {
         if (name == null || stat == null) {
             log.warning("Unable to store stat: name or stat is null.");
             return;
@@ -471,7 +471,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @param name The name of the desired stat.
      * @return The SyncStat, otherwise {@code null}.
      */
-    public SyncStat<?> getStat(Stat name) {
+    public SyncStat getStat(Stat name) {
         if (name == null) {
             log.warning("Unable to get stat: name is null.");
             return null;
@@ -484,8 +484,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      *
      * @return An ArrayList of Stats.
      */
-    public ArrayList<SyncStat<?>> getStats() {
-        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>(mStats.values());
+    public ArrayList<SyncStat> getStats() {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>(mStats.values());
         return stats;
     }
 
