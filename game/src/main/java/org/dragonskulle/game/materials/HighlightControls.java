@@ -46,7 +46,7 @@ public class HighlightControls extends Component implements IOnAwake {
     public void onAwake() {
         final GameObject go;
 
-        if (mChildName != null && !mChildName.isBlank()) {
+        if (mChildName != null && !mChildName.equals("")) {
             go = getGameObject().findChildByName(mChildName);
         } else {
             go = getGameObject();
