@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player;
 
 import java.util.List;
+
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -15,19 +16,25 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpdate {
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private Reference<UIText> textReference;
     private Reference<GameObject> mBuildingUpgradeComponent;
+    private Reference<GameObject> mStatChildren;
 
     public UIBuildingUpgrade(UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
         this.mGetHexChosen = mGetHexChosen;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -42,18 +49,30 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
         if (hexagonTile != null) {
             final Building building = hexagonTile.getBuilding();
             if (building != null) {
-                List<SyncStat<?>> stats = building.getStats();
-                stats.forEach(
-                        s ->
-                                builder.append(s.getClass().getSimpleName().toString())
-                                        .append("::")
-                                        .append(s.getValue())
-                                        .append(",\n"));
+                buildStatUpgradeChildren(builder, building);
             }
         }
         if (textReference != null && textReference.isValid()) {
             textReference.get().setText(builder.toString());
         }
+    }
+
+    private void buildStatUpgradeChildren(StringBuilder builder, Building building) {
+        List<SyncStat<?>> stats = building.getStats();
+        mStatChildren = getGameObject().buildChild("stats_upgrade_children", new TransformUI(), (self) -> {
+            stats.forEach(
+                    stat ->
+                    {
+                        self.buildChild("child_" + stat.getClass().getSimpleName(), (child) -> {
+                            float offset = 0.05f;
+                            child.addComponent(buildSingleStatChild(stat, offset));
+                        });
+                        builder.append(stat.getClass().getSimpleName())
+                                .append("::")
+                                .append(stat.getValue())
+                                .append(",\n");
+                    });
+        });
     }
 
     /**
@@ -91,5 +110,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                             TransformUI textTransform = self.getTransform(TransformUI.class);
                             textTransform.setMargin(0.2f, 0f, -0.2f, 0f);
                         });
+    }
+
+
+    private Component buildSingleStatChild(SyncStat<?> stat, float offset) {
+        TransformUI tran = getGameObject().getTransform(TransformUI.class);
+        //set transform depending on offset
+        return new UIStatUpgrader(stat, null); //TODO add actual method
     }
 }

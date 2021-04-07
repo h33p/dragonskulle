@@ -149,7 +149,7 @@ public class UIShopSection extends Component implements IOnStart {
         show(mNewBuildingPanel, false);
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        tran.setParentAnchor(0.08f, 0.73f, 1 - 0.08f, 1 - 0.03f);
+        tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
         getGameObject().addComponent(new UIRenderable(new SampledTexture("white.bmp")));
         Reference<GameObject> textObj =
                 getGameObject()
@@ -169,6 +169,6 @@ public class UIShopSection extends Component implements IOnStart {
 
         TransformUI textTransform = textObj.get().getTransform(TransformUI.class);
         textTransform.setParentAnchor(0.05f, 0f);
-        textTransform.translate(0, -0.18f);
+        textTransform.translate(0, -0.22f);
     }
 }

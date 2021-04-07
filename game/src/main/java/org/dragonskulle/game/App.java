@@ -5,6 +5,7 @@ import java.util.Scanner;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -23,6 +24,7 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.player.FancyCursor;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
@@ -96,7 +98,6 @@ public class App implements NativeResource {
                         });
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
-
         GameObject hexagonMap =
                 new GameObject(
                         "hexagon map",
@@ -105,7 +106,16 @@ public class App implements NativeResource {
                             map.addComponent(new HexagonMap(51));
                         });
 
+        GameObject uiCursor =
+                new GameObject(
+                        "fancy_cursor",
+                        new TransformUI(true),
+                        (self) -> {
+                            self.addComponent(new FancyCursor());
+                        });
+
         mainScene.addRootObject(hexagonMap);
+        mainScene.addRootObject(uiCursor);
 
         return mainScene;
     }
@@ -607,21 +617,21 @@ public class App implements NativeResource {
         // TODO: actually make a fully fledged console
         // TODO: join it at the end
         new Thread(
-                        () -> {
-                            Scanner in = new Scanner(System.in);
+                () -> {
+                    Scanner in = new Scanner(System.in);
 
-                            String line;
+                    String line;
 
-                            while ((line = in.nextLine()) != null) {
-                                try {
-                                    sPort = in.nextInt();
-                                    sIP = line.trim();
-                                    System.out.println("Address set successfully!");
-                                } catch (Exception e) {
-                                    System.out.println("Failed to set IP and port!");
-                                }
-                            }
-                        })
+                    while ((line = in.nextLine()) != null) {
+                        try {
+                            sPort = in.nextInt();
+                            sIP = line.trim();
+                            System.out.println("Address set successfully!");
+                        } catch (Exception e) {
+                            System.out.println("Failed to set IP and port!");
+                        }
+                    }
+                })
                 .start();
 
         // Run the game
