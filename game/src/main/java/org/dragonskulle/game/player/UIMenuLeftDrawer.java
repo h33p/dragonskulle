@@ -14,6 +14,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.UIShopSection.ShopState;
 import org.dragonskulle.game.player.networkData.BuildData;
 import org.dragonskulle.game.player.networkData.SellData;
 import org.dragonskulle.renderer.Font;
@@ -115,7 +116,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
 
         buildingSelectedScreenMenuItems.add(buildAttackButtonFrame());
         buildingSelectedScreenMenuItems.add(buildSellButtonFrame());
-        buildingSelectedScreenMenuItems.add(buildUpgradeButtonFrame());
         buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mBuildScreenMenu = buildMenu(buildingSelectedScreenMenuItems);
 
@@ -147,28 +147,27 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         switch (screen) {
             case MAP_SCREEN:
                 newScreen = mMapScreenMenu;
-                setShopState(UIShopSection.ShopState.CLOSED);
+                setShopState(ShopState.CLOSED);
                 break;
             case BUILDING_SELECTED_SCREEN:
                 newScreen = mBuildScreenMenu;
-                setShopState(UIShopSection.ShopState.BUILDING_SELECTED);
+                setShopState(ShopState.MY_BUILDING_SELECTED);
                 break;
             case BUILD_TILE_SCREEN:
                 newScreen = mTileSelectedMenu;
-                setShopState(UIShopSection.ShopState.BUILDING_NEW);
+                final HexagonTile tile = mGetHexChosen.get();
+                if (tile != null && tile.isBuildable(mGetPlayer.get().get())) {
+                    setShopState(ShopState.BUILDING_NEW);
+                }
                 break;
             case ATTACK_SCREEN:
                 newScreen = mAttackScreenMenu;
-                setShopState(UIShopSection.ShopState.CLOSED);
-                break;
-            case UPGRADE_SCREEN:
-                newScreen = mStatScreenMenu;
-                setShopState(UIShopSection.ShopState.UPGRADE);
+                setShopState(ShopState.CLOSED);
                 break;
             default:
                 log.warning("Menu hasn't been updated to reflect this screen yet");
                 newScreen = mMapScreenMenu;
-                setShopState(UIShopSection.ShopState.CLOSED);
+                setShopState(ShopState.CLOSED);
         }
         swapScreens(newScreen);
     }
@@ -194,7 +193,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         }
     }
 
-    private void setShopState(UIShopSection.ShopState shopState) {
+    private void setShopState(ShopState shopState) {
         if (mShop != null && getShop().isValid()) {
             getShop().get().setState(shopState);
         }

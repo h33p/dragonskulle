@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -43,54 +44,86 @@ import org.joml.Vector3fc;
 @Log
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
-    /** A list of {@link Building}s owned by the player. */
+    /**
+     * A list of {@link Building}s owned by the player.
+     */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
-    /** The number of tokens the player has, synchronised from server to client. */
-    @Getter public SyncInt mTokens = new SyncInt(0);
+    /**
+     * The number of tokens the player has, synchronised from server to client.
+     */
+    @Getter
+    public SyncInt mTokens = new SyncInt(0);
 
-    /** The colour of the player. */
-    @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
+    /**
+     * The colour of the player.
+     */
+    @Getter
+    public final SyncVector3 mPlayerColour = new SyncVector3();
 
-    @Getter private HighlightSelection mPlayerHighlightSelection;
+    @Getter
+    private HighlightSelection mPlayerHighlightSelection;
 
-    /** Reference to the HexagonMap being used by the Player. */
+    /**
+     * Reference to the HexagonMap being used by the Player.
+     */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     private static final Vector3f[] COLOURS = {
-        new Vector3f(0.5f, 1f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.86f),
-        new Vector3f(0.89f, 0.05f, 1f),
-        new Vector3f(0.1f, 0.56f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.1f, 0.05f, 0.56f),
-        new Vector3f(0f, 0f, 0f)
+            new Vector3f(0.5f, 1f, 0.05f),
+            new Vector3f(0.05f, 1f, 0.86f),
+            new Vector3f(0.89f, 0.05f, 1f),
+            new Vector3f(0.1f, 0.56f, 0.05f),
+            new Vector3f(0.05f, 1f, 0.34f),
+            new Vector3f(0.05f, 1f, 0.34f),
+            new Vector3f(0.1f, 0.05f, 0.56f),
+            new Vector3f(0f, 0f, 0f)
     };
 
-    /** The base rate of tokens which will always be added. */
+    /**
+     * The base rate of tokens which will always be added.
+     */
     private final int TOKEN_RATE = 5;
-    /** How frequently the tokens should be added. */
+    /**
+     * How frequently the tokens should be added.
+     */
     private final float TOKEN_TIME = 1f;
-    /** The total amount of time passed since the last time tokens where added. */
+    /**
+     * The total amount of time passed since the last time tokens where added.
+     */
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
     private final int playersToPlay = 6;
 
-    /** Used by the client to request that a building be placed by the server. */
-    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
-    /** Used by the client to request that a building attack another building. */
-    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
-    /** Used by the client to request that a building's stats be increased. */
-    @Getter private transient ClientRequest<StatData> mClientStatRequest;
-    /** Used by the client to request that a building be sold. */
-    @Getter private transient ClientRequest<SellData> mClientSellRequest;
+    /**
+     * Used by the client to request that a building be placed by the server.
+     */
+    @Getter
+    private transient ClientRequest<BuildData> mClientBuildRequest;
+    /**
+     * Used by the client to request that a building attack another building.
+     */
+    @Getter
+    private transient ClientRequest<AttackData> mClientAttackRequest;
+    /**
+     * Used by the client to request that a building's stats be increased.
+     */
+    @Getter
+    private transient ClientRequest<StatData> mClientStatRequest;
+    /**
+     * Used by the client to request that a building be sold.
+     */
+    @Getter
+    private transient ClientRequest<SellData> mClientSellRequest;
 
-    /** The base constructor for player */
-    public Player() {}
+    /**
+     * The base constructor for player
+     */
+    public Player() {
+    }
 
     @Override
     protected void onConnectedSyncvars() {
@@ -148,7 +181,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * This will randomly place a capital using an angle so each person is within their own slice
@@ -321,7 +355,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param tile The tile to get the building from.
      * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
-     *     {@code null}.
+     * {@code null}.
      */
     public Reference<Building> getOwnedBuilding(HexagonTile tile) {
         return mOwnedBuildings.get(tile);
@@ -371,7 +405,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param tiles The tiles to check.
      * @return {@code true} if the list of tiles contains at least one building that the player
-     *     owns; otherwise {@code false}.
+     * owns; otherwise {@code false}.
      */
     public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
@@ -469,43 +503,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the tile is eligible, otherwise {@code false}.
      */
     public boolean buildCheck(HexagonTile tile) {
-
-        if (tile == null) {
-            log.warning("Tile is null.");
-            return false;
-        }
-
-        if (mTokens.get() < Building.BUY_PRICE) {
+        if (getTokens().get() < Building.BUY_PRICE) {
             log.info("Not enough tokens to buy building.");
             return false;
         }
-
-        HexagonMap map = getMap();
-        if (map == null) {
-            log.warning("Map is null.");
-            return false;
-        }
-
-        if (tile.isClaimed()) {
-            log.info("Tile already claimed.");
-            return false;
-        }
-
-        if (tile.hasBuilding()) {
-            log.info("Building already on tile.");
-            return false;
-        }
-
-        // Ensure the building is placed within a set radius of an owned building.
-        final int radius = 3;
-        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
-
-        if (containsOwnedBuilding(tiles) == false) {
-            log.info("Building is placed too far away from preexisting buildings.");
-            return false;
-        }
-
-        return true;
+        return tile.isBuildable(this);
     }
 
     /**
@@ -684,7 +686,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * any stat changes happen.
      *
      * @param building The building whose stats will be changed.
-     * @param stat The stat to increase.
+     * @param stat     The stat to increase.
      * @return Whether the attempt to change the stats where successful.
      */
     public boolean statAttempt(Building building, SyncStat<?> stat) {

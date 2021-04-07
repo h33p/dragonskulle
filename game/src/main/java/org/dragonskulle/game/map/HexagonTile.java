@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,8 +23,8 @@ import org.dragonskulle.renderer.materials.IColouredMaterial;
 
 /**
  * @author Leela Muppala
- *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
- *     coordinates of each tile.
+ * <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
+ * coordinates of each tile.
  */
 @Log
 @Accessors(prefix = "m")
@@ -31,7 +33,9 @@ public class HexagonTile {
     // A variable which changes the colour of the hex tiles to make them easier to see
     private static final boolean DEBUG = true;
 
-    /** Describes a template for land hex tile */
+    /**
+     * Describes a template for land hex tile
+     */
     static final GameObject LAND_TILE =
             new GameObject(
                     "land",
@@ -56,12 +60,17 @@ public class HexagonTile {
                         }
                     });
 
-    /** This is the axial storage system for each tile */
-    @Getter private final int mQ;
+    /**
+     * This is the axial storage system for each tile
+     */
+    @Getter
+    private final int mQ;
 
-    @Getter private final int mR;
+    @Getter
+    private final int mR;
 
-    @Getter private final int mS;
+    @Getter
+    private final int mS;
 
     /**
      * Associated game object.
@@ -72,10 +81,16 @@ public class HexagonTile {
     @Getter(AccessLevel.PACKAGE)
     private final GameObject mGameObject;
 
-    /** Building that is on the tile */
-    @Getter @Setter private Building mBuilding;
+    /**
+     * Building that is on the tile
+     */
+    @Getter
+    @Setter
+    private Building mBuilding;
 
-    /** A reference to the building that claims the tile, or {@code null}. */
+    /**
+     * A reference to the building that claims the tile, or {@code null}.
+     */
     private Reference<Building> mClaimedBy = new Reference<Building>(null);
 
     /**
@@ -113,7 +128,7 @@ public class HexagonTile {
 
     @Override
     public String toString() {
-        return Arrays.toString(new int[] {this.mQ, this.mR, this.mS});
+        return Arrays.toString(new int[]{this.mQ, this.mR, this.mS});
     }
 
     /**
@@ -122,7 +137,7 @@ public class HexagonTile {
      *
      * @param building The building which claimed the tile.
      * @return {@code true} if the claim was successful, otherwise {@code false} if the tile is
-     *     already claimed.
+     * already claimed.
      */
     public boolean setClaimedBy(Building building) {
         if (isClaimed()) return false;
@@ -160,5 +175,35 @@ public class HexagonTile {
      */
     public boolean hasBuilding() {
         return mBuilding != null;
+    }
+
+    public boolean isBuildable(Player player) {
+        if(player==null) return false;
+
+        HexagonMap map = player.getMap();
+        if (map == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        // Ensure the building is placed within a set radius of an owned building.
+        final int radius = 3;
+        ArrayList<HexagonTile> tiles = map.getTilesInRadius(this, radius);
+
+        if (!player.containsOwnedBuilding(tiles)) {
+            log.info("Building is placed too far away from preexisting buildings.");
+            return false;
+        }
+        return true;
     }
 }

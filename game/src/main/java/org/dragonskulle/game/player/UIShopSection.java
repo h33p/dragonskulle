@@ -23,7 +23,7 @@ import org.joml.Vector3f;
 @Log
 public class UIShopSection extends Component implements IOnStart {
     @Getter
-    private ShopState mState = ShopState.BUILDING_SELECTED;
+    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private UIBuildingOptions mBuildingOptions;
@@ -33,6 +33,7 @@ public class UIShopSection extends Component implements IOnStart {
     @Setter
     @Getter
     private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    private Reference<UIText> titleRef;
 
 
     public UIShopSection(UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
@@ -49,8 +50,7 @@ public class UIShopSection extends Component implements IOnStart {
         CLOSED,
         BUILDING_NEW,
         ATTACK_SCREEN,
-        UPGRADE,
-        BUILDING_SELECTED
+        MY_BUILDING_SELECTED
     }
 
     /**
@@ -66,7 +66,7 @@ public class UIShopSection extends Component implements IOnStart {
         switch (state) {
             case CLOSED:
                 getGameObject().setEnabled(false);
-                if (mCurrentPanel != null) {
+                if (mCurrentPanel != null && mCurrentPanel.isValid()) {
                     mCurrentPanel.get().setEnabled(false);
                 }
                 return;
@@ -78,8 +78,7 @@ public class UIShopSection extends Component implements IOnStart {
                 getGameObject().setEnabled(true);
                 newPanel = mNewBuildingPanel;
                 break;
-            case BUILDING_SELECTED: //todo is BUILDING_SELECTED the same as the upgrade panel?
-            case UPGRADE:
+            case MY_BUILDING_SELECTED: //todo is BUILDING_SELECTED the same as the upgrade panel?
                 getGameObject().setEnabled(true);
                 newPanel = mUpgradePanel;
                 break;
@@ -88,34 +87,33 @@ public class UIShopSection extends Component implements IOnStart {
                 setState(ShopState.CLOSED);
                 return;
         }
+        if (titleRef != null && titleRef.isValid()) {
+            titleRef.get().setText(state.toString());
+        }
         swapPanels(newPanel);
     }
 
     private void swapPanels(Reference<GameObject> newPanel) {
         log.warning("swapping panels");
         final boolean lastIsValid = mCurrentPanel.isValid();
-        if (newPanel == null || !newPanel.isValid()) {
-            log.warning("Swap panel case 1");
-            if (mCurrentPanel != null && lastIsValid) {
-                mCurrentPanel.get().setEnabled(false);
-            }
-            mCurrentPanel = newPanel;
-        } else if (mCurrentPanel == null || !lastIsValid) {
-            log.warning("Swap panel case 2");
-
-            mCurrentPanel = newPanel;
-            newPanel.get().setEnabled(true);
-        } else if (!mCurrentPanel.equals(newPanel)) {
-            log.warning("hiding the previous panel :: " + mCurrentPanel.get().getName());
+        if (mCurrentPanel.isValid()) {
+            //there is a screen being shown
+            //deactivate the panel
             mCurrentPanel.get().setEnabled(false);
-            mCurrentPanel = newPanel;
-            if (newPanel.isValid()) {
-                log.warning("showing panel :: " + newPanel.get().getName());
-                newPanel.get().setEnabled(true);
-            }
-        }else{
-            log.severe("none of the panel swaps caught me");
         }
+        //activate the new panel and assign the last current variable
+        mCurrentPanel = activateNewPanel(newPanel);
+    }
+
+    private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
+        if (newPanel != null) {
+            //check if valid reference then reassign
+            if(newPanel.isValid()){
+                newPanel.get().setEnabled(true);
+                return newPanel;
+            }
+        }
+        return new Reference<>(null);
     }
 
     /**
@@ -161,6 +159,8 @@ public class UIShopSection extends Component implements IOnStart {
                                                     Font.getFontResource("Rise of Kingdom.ttf"),
                                                     "PLACEHOLDER SHOP TEXT");
                                     self.addComponent(mWindowText);
+
+                                    titleRef = mWindowText.getReference(UIText.class);
                                 });
 
         TransformUI textTransform = textObj.get().getTransform(TransformUI.class);
