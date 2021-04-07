@@ -21,6 +21,7 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.player.networkData.AttackData;
@@ -153,6 +154,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // TODO Get all Players & add to list
         updateTokens(TOKEN_TIME);
+    }
+
+    /** Marks visuals to update whenever a new object is spawned */
+    private void onerModifiedObject(Reference<NetworkObject> obj) {
+        // remove from self as owned if exists, then we need to check if we are the owner again
+        if (obj.isValid()) {
+            final Reference<Building> buildingReference =
+                    obj.get().getGameObject().getComponent(Building.class);
+            if (obj.get().isMine()) {
+                addOwnership(buildingReference.get());
+            } else if (buildingReference != null
+                    && checkBuildingOwnership(buildingReference.get())) {
+                removeOwnership(buildingReference.get());
+            }
+        }
     }
 
     @Override
@@ -294,6 +310,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (tile.hasBuilding()) {
             log.warning("Unable to create building: Tile already has Building.");
+            return null;
+        }
+
+        if (tile.getTileType() != TileType.LAND) {
             return null;
         }
 
@@ -631,11 +651,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 defender.getOwner().setOwnsCapital(false);
                 defender.afterStatChange();
             }
-
-            // Change ownership
-            Player oldOwner = defender.getOwner();
-            oldOwner.removeOwnership(defender);
-            addOwnership(defender);
 
             defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
         }

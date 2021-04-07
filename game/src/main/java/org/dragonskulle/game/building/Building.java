@@ -95,8 +95,19 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     @Override
-    public void onStart() {
+    public void onOwnerIdChange(int newId) {
+        Player owningPlayer = getOwner();
+        if (owningPlayer != null) owningPlayer.removeOwnership(this);
+        Player newOwningPlayer = getOwner(newId);
+        if (newOwningPlayer == null) {
+            log.severe("New owner is null!");
+            return;
+        }
+        newOwningPlayer.addOwnership(this);
+    }
 
+    @Override
+    public void onStart() {
         // Store the map.
         HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
         if (checkingMapExists == null) {
@@ -373,9 +384,19 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The owning player, or {@code null}.
      */
     public Player getOwner() {
+        return getOwner(getNetworkObject().getOwnerId());
+    }
+
+    /**
+     * Get the {@link Player} which owns the {@link Building}.
+     *
+     * @param ownerId target owner ID
+     * @return The owning player, or {@code null}.
+     */
+    private Player getOwner(int ownerId) {
         return getNetworkObject()
                 .getNetworkManager()
-                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                .getObjectsOwnedBy(ownerId)
                 .map(NetworkObject::getGameObject)
                 .map(go -> go.getComponent(Player.class))
                 .filter(ref -> ref != null)
