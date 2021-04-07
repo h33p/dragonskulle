@@ -9,8 +9,14 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.ui.UIManager;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
 
 /**
  * @author Leela Muppala and Craig Wilbourne
@@ -173,6 +179,33 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         }
 
         return tiles;
+    }
+
+    public HexagonTile cursorToTile() {
+        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
+
+        if (mainCam == null) return null;
+
+        // Retrieve scaled screen coordinates
+        Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+        // Convert those coordinates to local coordinates within the map
+        Vector3f pos =
+                mainCam.screenToPlane(
+                        getGameObject().getTransform(),
+                        screenPos.x(),
+                        screenPos.y(),
+                        new Vector3f());
+
+        Vector2f axial = new Vector2f();
+
+        // Convert those coordinates to axial
+        TransformHex.cartesianToAxial(pos, axial);
+        // And round them
+        TransformHex.roundAxial(axial, pos);
+
+        HexagonTile tile = getTile((int) axial.x, (int) axial.y);
+
+        return tile;
     }
 
     @Override

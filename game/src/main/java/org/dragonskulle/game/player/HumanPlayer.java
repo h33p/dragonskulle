@@ -18,9 +18,7 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.*;
-import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
@@ -193,30 +191,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void mapScreen() {
 
         // Checks that its clicking something
-        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
         if (GameActions.LEFT_CLICK.isActivated()) {
-            if (UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
-                // Retrieve scaled screen coordinates
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
-                // Convert those coordinates to local coordinates within the map
-                Vector3f pos =
-                        mainCam.screenToPlane(
-                                mPlayer.get().getMap().getGameObject().getTransform(),
-                                screenPos.x(),
-                                screenPos.y(),
-                                new Vector3f());
-
-                // Convert those coordinates to axial
-                TransformHex.cartesianToAxial(pos);
-                // And round them
-                TransformHex.roundAxial(pos);
+            if (UIManager.getInstance().getHoveredObject() == null) {
                 // And then select the tile
                 Player player = mPlayer.get();
                 if (player != null) {
                     HexagonMap component = player.getMap();
                     if (component != null) {
                         mLastHexChosen = mHexChosen;
-                        mHexChosen = component.getTile((int) pos.x, (int) pos.y);
+                        mHexChosen = component.cursorToTile();
                     }
                 }
 
@@ -264,16 +247,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
             } else if (GameActions.RIGHT_CLICK.isActivated()) {
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
-                // Convert those coordinates to local coordinates within the map
-                Vector3f pos =
-                        mainCam.screenToPlane(
-                                mPlayer.get().getMap().getGameObject().getTransform(),
-                                screenPos.x(),
-                                screenPos.y(),
-                                new Vector3f());
-
-                log.info("[DEBUG] RCL Position : " + screenPos.toString());
+                HexagonTile tile = mPlayer.get().getMap().cursorToTile();
+                Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
                 log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
             }
         }

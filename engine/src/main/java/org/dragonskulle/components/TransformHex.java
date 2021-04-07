@@ -4,10 +4,13 @@ package org.dragonskulle.components;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.joml.AxisAngle4f;
+import org.joml.Matrix2f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionfc;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -25,19 +28,20 @@ public class TransformHex extends Transform {
     public static final float HEX_HEIGHT = 2 * HEX_SIZE;
 
     // Matrix that takes a cartesian coordinate into hex coordinate space
-    // It's a 3x3 matrix so that a 3d vector can still be multiplied
-    public static final Matrix3f WORLD_TO_HEX =
-            new Matrix3f((float) Math.sqrt(3) / 3, 0, 0, -1f / 3f, 2f / 3f, 0, 0, 0, 0);
+    public static final Matrix2f WORLD_TO_HEX =
+            new Matrix2f((float) Math.sqrt(3) / 3, 0, -1f / 3f, 2f / 3f);
 
+    // Matrix that takes an axial coordinate into cartesian coordinate space
+    // It's a 3x3 matrix so that a 3d vector can still be multiplied
     public static final Matrix3f HEX_TO_WORLD =
             new Matrix3f((float) Math.sqrt(3), 0, 0, (float) Math.sqrt(3) / 2, 3f / 2f, 0, 0, 0, 0);
 
-    private Vector3f mPosition = new Vector3f();
+    private Vector2f mPosition = new Vector2f();
 
     private float mRotation = 0f;
     @Getter private float mHeight = 0f;
 
-    private Vector3f mCartesianPosition = new Vector3f();
+    private Vector3f mTmp3DVec = new Vector3f();
     private Matrix4f mWorldMatrix = new Matrix4f();
     private Matrix4f mLocalMatrix = new Matrix4f();
 
@@ -50,7 +54,7 @@ public class TransformHex extends Transform {
      *
      * @param axial The axial coordinates for the transform
      */
-    public TransformHex(Vector3fc axial) {
+    public TransformHex(Vector2fc axial) {
         setPosition(axial);
     }
 
@@ -68,7 +72,7 @@ public class TransformHex extends Transform {
      *
      * @param axial axial coordinates to translate the object with on the transformation plane
      */
-    public void translate(Vector3fc axial) {
+    public void translate(Vector2fc axial) {
         translate(axial, 0f);
     }
 
@@ -78,7 +82,7 @@ public class TransformHex extends Transform {
      * @param axial axial coordinates to translate the object with on the transformation plane
      * @param height vertical transformation
      */
-    public void translate(Vector3fc axial, float height) {
+    public void translate(Vector2fc axial, float height) {
         translate(axial.x(), axial.y(), height);
     }
 
@@ -89,21 +93,19 @@ public class TransformHex extends Transform {
      * @param r r axial coordinate
      */
     public void translate(float q, float r) {
-        mPosition.add(q, r, 0f);
+        mPosition.add(q, r);
         setUpdateFlag();
     }
 
     /**
-     * Translate the object locally
+     * Translate the object locally with hex coordinates
      *
-     * @param q q axial coordinate
-     * @param r r axial coordinate
-     * @param height vertical height to translate
+     * @param x x hex coordinate (+q)
+     * @param y y hex coordinate (+q-r)
+     * @param z z hex coordinate (-r)
      */
-    public void translate(float q, float r, float height) {
-        mPosition.add(q, r, 0f);
-        mHeight += height;
-        setUpdateFlag();
+    public void translate(float x, float y, float z) {
+        translate(x + y, -z - y);
     }
 
     /**
@@ -132,7 +134,7 @@ public class TransformHex extends Transform {
      *
      * @param axial Coordinates of the position in axial coordinate system
      */
-    public void setPosition(Vector3fc axial) {
+    public void setPosition(Vector2fc axial) {
         mPosition.set(axial);
         setUpdateFlag();
     }
@@ -143,26 +145,20 @@ public class TransformHex extends Transform {
      *
      * @param q q coordinate in axial coordinate system
      * @param r r coordinate in axial coordinate system
-     * @param s s coordinate in axial coordinate system. Must be (-q -r) to make sense.
      */
-    public void setPosition(float q, float r, float s) {
-        mPosition.set(q, r, s);
-        setUpdateFlag();
-    }
-
     public void setPosition(float q, float r) {
-        mPosition.set(q, r, -q - r);
+        mPosition.set(q, r);
         setUpdateFlag();
     }
 
     /**
-     * Get the position of a hex in axial coordinates. The z component of the vector is always 0
+     * Get the position of a hex in cube coordinates. The z component of the vector is -x-y
      *
      * @param dest matrix to write the position to
      * @return Vector3f containing the axial coordinates (dest)
      */
     public Vector3f getLocalPosition(Vector3f dest) {
-        dest.set(mPosition);
+        dest.set(mPosition.x, mPosition.y, -mPosition.x - mPosition.y);
         return dest;
     }
 
@@ -174,8 +170,7 @@ public class TransformHex extends Transform {
      * @return Vector3f containing the axial coordinates (dest)
      */
     public Vector3f getRoundedLocalPosition(Vector3f dest) {
-        dest.set(mPosition);
-        return TransformHex.roundAxial(dest);
+        return TransformHex.roundCube(axialToCube(mPosition.x, mPosition.y, dest));
     }
 
     /** Gets the world transformation matrix */
@@ -184,10 +179,9 @@ public class TransformHex extends Transform {
         if (mShouldUpdate) {
             mShouldUpdate = false;
 
-            mCartesianPosition.set(mPosition);
-            axialToCartesian(mCartesianPosition, mHeight);
+            axialToCartesian(mPosition, mHeight, mTmp3DVec);
 
-            mLocalMatrix.identity().translate(mCartesianPosition).rotateZ(mRotation);
+            mLocalMatrix.identity().translate(mTmp3DVec).rotateZ(mRotation);
 
             Transform parent = mGameObject.getParentTransform();
             if (parent != null) mWorldMatrix.set(parent.getMatrixForChildren());
@@ -215,8 +209,8 @@ public class TransformHex extends Transform {
     @Override
     public void setLocal3DTransformation(
             Vector3fc position, Quaternionfc rotation, Vector3fc scale) {
-        mPosition.set(position);
-        cartesianToAxial(mPosition);
+        mTmp3DVec.set(position);
+        cartesianToAxial(mTmp3DVec, mPosition);
         mHeight = position.z();
         AxisAngle4f rotAxis = rotation.get(new AxisAngle4f());
         mRotation = rotAxis.z * rotAxis.angle;
@@ -227,20 +221,34 @@ public class TransformHex extends Transform {
     public void onDestroy() {}
 
     /**
-     * Convert a vector containing axial coordinates to their equivalent cartesian coordinates. The
-     * conversion is done in place, so make sure that you no longer need the vector containing the
-     * axial coordinates
+     * Convert a vector containing axial coordinates to their equivalent cartesian coordinates.
      *
-     * @param axial Vector3f with axial coordinates to convert
+     * @param axial Vector2fc with axial coordinates to convert
+     * @param height height of the hexagon
+     * @param cartesian Vector3f where the result will be written
      */
-    public static void axialToCartesian(Vector3f axial, float height) {
+    public static void axialToCartesian(Vector2fc axial, float height, Vector3f cartesian) {
         // Multiply axial by the HEX_TO_PIXEL matrix
-        axial.mul(HEX_TO_WORLD);
+        cartesian.set(axial.x(), axial.y(), 0);
+        cartesian.mul(HEX_TO_WORLD);
 
         // And then multiply q and r by HEX_SIZE
-        axial.x *= HEX_SIZE;
-        axial.y *= HEX_SIZE;
-        axial.z = height;
+        cartesian.x *= HEX_SIZE;
+        cartesian.y *= HEX_SIZE;
+        cartesian.z = height;
+    }
+
+    /**
+     * Gets the nearest hex from a fractional axial position
+     *
+     * @param axialPoint the fractional axial coordinate
+     * @param cubeCoordsOut 3D vector that will store cube coordinates
+     * @return Vector2f the input axial coordinate, rounded.
+     */
+    public static Vector2f roundAxial(Vector2f axialPoint, Vector3f cubeCoordsOut) {
+        axialToCube(axialPoint.x, axialPoint.y, cubeCoordsOut);
+        roundCube(cubeCoordsOut);
+        return axialPoint.set(cubeCoordsOut.x, cubeCoordsOut.y);
     }
 
     /**
@@ -248,12 +256,11 @@ public class TransformHex extends Transform {
      *
      * <p>Algorithm from: https://www.redblobgames.com/grids/hexagons/#rounding
      *
-     * @param axialPoint The fractional axial coordinate
+     * @param cubePoint The fractional cube coordinate
      * @return Vector3f containing the actual hex coordinates
      */
-    public static Vector3f roundAxial(Vector3f axialPoint) {
-        // First convert the axial coordinates to cube:
-        Vector3f rounded = TransformHex.axialToCube(axialPoint);
+    public static Vector3f roundCube(Vector3f cubePoint) {
+        Vector3f rounded = cubePoint;
 
         // Round x, y and z
         float rx = Math.round(rounded.x);
@@ -274,18 +281,32 @@ public class TransformHex extends Transform {
             rz = -rx - ry;
         }
 
-        return rounded.set(rx, rz, 0);
+        return rounded.set(rx, ry, rz);
+    }
+
+    /**
+     * Convert axial vector to cube coordinates
+     *
+     * @param q the q axial coordinate
+     * @param r the r axial cooredinate
+     * @param dest destination vector
+     * @return same dest reference, after conversion to cube coordinates
+     */
+    public static Vector3f axialToCube(float q, float r, Vector3f dest) {
+        return dest.set(q, r, -q - r);
     }
 
     /**
      * Convert axial vector to cube coordinates
      *
      * @param axialPoint a point in axial coordinate space
-     * @return same axialPoint reference, after conversion to cube coordinates
+     * @param dest destination vector
+     * @return same dest reference, after conversion to cube coordinates
      */
-    public static Vector3f axialToCube(Vector3f axialPoint) {
-        return axialPoint.set(axialPoint.x(), -axialPoint.x() - axialPoint.y(), axialPoint.y());
+    public static Vector3f axialToCube(Vector2fc axialPoint, Vector3f dest) {
+        return axialToCube(axialPoint.x(), axialPoint.y(), dest);
     }
+
     /**
      * Convert a vector containing cartesian coordinates to their equivalent axial coordinates. The
      * conversion is done in place, so make sure that you no longer need the vector containing the
@@ -293,13 +314,13 @@ public class TransformHex extends Transform {
      *
      * @param cartesian Vector3f with cartesian coordinates to convert
      */
-    public static void cartesianToAxial(Vector3f cartesian) {
+    public static void cartesianToAxial(Vector3f cartesian, Vector2f axial) {
+        axial.set(cartesian.x(), cartesian.y());
         // Multiply cartesian by the PIXEL_TO_HEX matrix
-        cartesian.mul(WORLD_TO_HEX);
+        axial.mul(WORLD_TO_HEX);
 
         // And then divide both q and r by HEX_SIZE
-        cartesian.x /= HEX_SIZE;
-        cartesian.y /= HEX_SIZE;
-        cartesian.z = 0;
+        axial.x /= HEX_SIZE;
+        axial.y /= HEX_SIZE;
     }
 }

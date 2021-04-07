@@ -224,17 +224,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("X: " + direction.x + " Y: " + direction.y);
 
             // Convert to Axial coordinates
-            Vector3f coords = new Vector3f(direction.x, direction.y, 0f);
-            TransformHex.cartesianToAxial(coords);
+            Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
+            Vector2f axial = new Vector2f();
+            TransformHex.cartesianToAxial(cartesian, axial);
 
             // Add the building
-            Building buildingToBecomeCapital = createBuilding((int) coords.x, (int) coords.y);
+            Building buildingToBecomeCapital = createBuilding((int) axial.x, (int) axial.y);
             if (buildingToBecomeCapital == null) {
                 log.severe(
                         "Unable to place an initial capital building.  X = "
-                                + (int) coords.x
+                                + (int) axial.x
                                 + " Y = "
-                                + (int) coords.y);
+                                + (int) axial.y);
 
             } else if (!completed) {
                 buildingToBecomeCapital.setCapital(true);
