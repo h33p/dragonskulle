@@ -16,6 +16,7 @@ public class SyncTokenGenerationStat extends SyncStat {
 
     @Override
     public int getValue() {
-        return getLevel();
+        // The number of tokens to generate is identical to the current level number.
+    	return getLevel();
     }
 }

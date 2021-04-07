@@ -81,9 +81,9 @@ public abstract class SyncStat extends SyncInt {
      * @return The level, bounded between the minimum and maximum possible levels.
      */
     private int getBoundedLevel(int level) {
-        if (get() < LEVEL_MIN) {
+        if (getLevel() < LEVEL_MIN) {
             return LEVEL_MIN;
-        } else if (get() > LEVEL_MAX) {
+        } else if (getLevel() > LEVEL_MAX) {
             return LEVEL_MAX;
         }
         return level;

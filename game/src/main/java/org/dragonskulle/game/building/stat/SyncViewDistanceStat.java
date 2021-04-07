@@ -16,6 +16,7 @@ public class SyncViewDistanceStat extends SyncStat {
 
     @Override
     public int getValue() {
-        return 3;
+        // Regardless of the level, the value of the stat will always be 3.
+    	return 3;
     }
 }
