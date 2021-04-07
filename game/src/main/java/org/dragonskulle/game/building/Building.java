@@ -34,8 +34,6 @@ import org.joml.Vector3i;
  *
  * <p>The owner of the Building also needs to be set via {@link NetworkObject#setOwnerId}.
  *
- * <p>The building needs to be added to the relevant {@link HexagonTile}
- *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
