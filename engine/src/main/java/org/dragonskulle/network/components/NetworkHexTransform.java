@@ -1,13 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+@Accessors(prefix = "m")
 public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate {
-    public SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
+    @Getter private SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
     private TransformHex hexTransform;
 
     public NetworkHexTransform(int q, int r) {

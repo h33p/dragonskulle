@@ -95,6 +95,10 @@ public class Server {
         mServerThread.start();
     }
 
+    public ServerClient getClient(Integer id) {
+        return mClients.get(id);
+    }
+
     public Collection<ServerClient> getClients() {
         return mClients.values();
     }
@@ -137,6 +141,10 @@ public class Server {
         int cnt = 0;
 
         for (ServerClient c : mClients.values()) cnt += c.processRequests(clientRequests);
+
+        // Clients may have gracefully shut down, remove them from the list
+        ServerClient c;
+        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
         return cnt;
     }
@@ -212,7 +220,6 @@ public class Server {
             try {
                 s.shutdownOutput();
                 s.close();
-                mClientCount--;
             } catch (IOException e) {
                 e.printStackTrace();
             }

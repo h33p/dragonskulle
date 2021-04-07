@@ -16,11 +16,11 @@ import org.dragonskulle.network.components.sync.SyncString;
 public class Capital extends NetworkableComponent {
 
     /** A syncable field. */
-    @Getter public SyncBool mSyncMe = new SyncBool(false);
+    @Getter private SyncBool mSyncMe = new SyncBool(false);
     /** A syncable field. */
-    @Getter public SyncString mSyncMeAlso = new SyncString("Hello World");
+    @Getter private SyncString mSyncMeAlso = new SyncString("Hello World");
 
-    @Getter public final SyncInt mClientToggled = new SyncInt(0);
+    @Getter private final SyncInt mClientToggled = new SyncInt(0);
 
     /**
      * Creates the link between the request type @code{new AttackRequest()} and what to do when

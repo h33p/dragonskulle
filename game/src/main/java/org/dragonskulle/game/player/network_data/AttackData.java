@@ -19,7 +19,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 @Accessors(prefix = "m")
 @Log
 public class AttackData implements INetSerializable {
-    private int mAttackerQ;
+	private int mAttackerQ;
     private int mAttackerR;
     private int mDefenderQ;
     private int mDefenderR;
@@ -50,6 +50,16 @@ public class AttackData implements INetSerializable {
      * @param attacking The defending building
      */
     public AttackData(Building attackingFrom, Building attacking) {
+        setData(attackingFrom, attacking);
+    }
+
+    /**
+     * Sets the request data
+     *
+     * @param attackingFrom The attacker building
+     * @param attacking The defending building
+     */
+    public void setData(Building attackingFrom, Building attacking) {
         HexagonTile fromTile = attackingFrom.getTile();
         mAttackerQ = fromTile.getQ();
         mAttackerR = fromTile.getR();

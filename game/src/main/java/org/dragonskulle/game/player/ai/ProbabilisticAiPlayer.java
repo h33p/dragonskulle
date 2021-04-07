@@ -107,7 +107,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Pick and attempt to place a {@link Building}.
      *
-     * @return Whether the attempt to pick and add a building was successful.
+     * @return Whether the attempt to pick and add a building was invoked.
      */
     private boolean addBuilding() {
         log.info("Placing Building");
@@ -121,7 +121,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             int randomIndex = mRandom.nextInt(tilesToUse.size());
             HexagonTile tileToBuildOn = tilesToUse.get(randomIndex);
 
-            return getPlayer().buildAttempt(tileToBuildOn);
+            getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
+            return true;
         }
 
         return false;
@@ -130,7 +131,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Pick a {@link Building} and attempt to upgrade one of its stats.
      *
-     * @return Whether the attempt to upgrade a building's stats was successful.
+     * @return Whether the attempt to upgrade a building's stats was invoked.
      */
     private boolean upgradeBuilding() {
         log.info("AI: Upgrading");
@@ -153,13 +154,14 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         Stat[] stats = Stat.values();
         Stat stat = stats[mRandom.nextInt(stats.length)];
 
-        return getPlayer().statAttempt(building, stat);
+        getPlayer().getClientStatRequest().invoke(d -> d.setData(building, stat));
+        return true;
     }
 
     /**
      * Attack an opponent {@link Building} from an owned Building.
      *
-     * @return Whether the attempt to attack an opponent was successful.
+     * @return Whether the attempt to attack an opponent was invoked.
      */
     private boolean attack() {
         log.info("AI: Attacking");
@@ -198,7 +200,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 // Check in case accidentally a null slipped in
                 return false;
             }
-            return getPlayer().attackAttempt(buildingToAttack[0], buildingToAttack[1]);
+            getPlayer()
+                    .getClientAttackRequest()
+                    .invoke(d -> d.setData(buildingToAttack[0], buildingToAttack[1]));
+            return true;
         }
 
         return false;
@@ -207,7 +212,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Pick a {@link Building} and sell it.
      *
-     * @return Whether the attempt to sell a building was successful.
+     * @return Whether the attempt to sell a building was invoked.
      */
     private boolean sell() {
         log.info("AI: Selling");
@@ -223,7 +228,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             // Get the Building.
             Building building = buildingReference.get();
-            return getPlayer().sellAttempt(building);
+            getPlayer().getClientSellRequest().invoke(d -> d.setData(building));
+            return true;
         }
 
         return false;
