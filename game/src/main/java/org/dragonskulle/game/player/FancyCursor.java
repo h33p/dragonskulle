@@ -37,8 +37,9 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
     @Override
     public void frameUpdate(float deltaTime) {
         final Vector2f position = UIManager.getInstance().getScaledCursorCoords();
+        position.add(1f, 1f).mul(0.5f);
         if (mCursorTransform != null) {
-            mCursorTransform.setPosition(position.x, position.y);
+            mCursorTransform.setParentAnchor(position.x, position.y, position.x, position.y);
         }
 //
 //        if(GameActions.LEFT_CLICK.isActivated()){
@@ -55,7 +56,7 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
         mFancyCursor = new UIRenderable(new SampledTexture("ui/cursor.png"));
         getGameObject().addComponent(mFancyCursor);
         mCursorTransform = getGameObject().getTransform(TransformUI.class);
-        mCursorTransform.setParentAnchor(0.01f, 0f, 0.01f, 1f);
-        mCursorTransform.setMargin(0.01f, -0.01f, -0.01f, 0.01f);
+//        mCursorTransform.setParentAnchor(0.01f, 0f, 0.01f, 1f);
+        mCursorTransform.setMargin(-0.03f, -0.03f, 0.03f, 0.03f);
     }
 }

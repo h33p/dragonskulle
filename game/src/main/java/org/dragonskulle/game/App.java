@@ -97,6 +97,14 @@ public class App implements NativeResource {
                                     });
                         });
 
+        GameObject uiCursor =
+                new GameObject(
+                        "fancy_cursor",
+                        new TransformUI(true),
+                        (self) -> {
+                            self.addComponent(new FancyCursor());
+                        });
+        mainScene.addRootObject(uiCursor);
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
         GameObject hexagonMap =
                 new GameObject(
@@ -106,16 +114,9 @@ public class App implements NativeResource {
                             map.addComponent(new HexagonMap(51));
                         });
 
-        GameObject uiCursor =
-                new GameObject(
-                        "fancy_cursor",
-                        new TransformUI(true),
-                        (self) -> {
-                            self.addComponent(new FancyCursor());
-                        });
+
 
         mainScene.addRootObject(hexagonMap);
-        mainScene.addRootObject(uiCursor);
 
         return mainScene;
     }
@@ -234,6 +235,15 @@ public class App implements NativeResource {
                         });
 
         mainMenu.addRootObject(audio);
+
+        GameObject uiCursor =
+                new GameObject(
+                        "fancy_cursor",
+                        new TransformUI(true),
+                        (self) -> {
+                            self.addComponent(new FancyCursor());
+                        });
+        mainMenu.addRootObject(uiCursor);
 
         GameObject gameTitle =
                 new GameObject(

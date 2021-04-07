@@ -5,6 +5,9 @@ import org.joml.Vector2d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_HIDDEN;
+
 /**
  * Once attached to a window, this allows access to:
  *
@@ -20,13 +23,20 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
  */
 public class Cursor {
 
-    /** This cursor's current position. */
+    /**
+     * This cursor's current position.
+     */
     private Vector2d mPosition = new Vector2d(0, 0);
-    /** The starting position of a drag, or {@code null} if no drag is taking place. */
+    /**
+     * The starting position of a drag, or {@code null} if no drag is taking place.
+     */
     private Vector2d mDragStart;
 
-    /** Create a new cursor manager. */
-    public Cursor() {}
+    /**
+     * Create a new cursor manager.
+     */
+    public Cursor() {
+    }
 
     /**
      * Attach this cursor to a window.
@@ -45,8 +55,8 @@ public class Cursor {
                         detectDrag();
                     }
                 };
-
         GLFW.glfwSetCursorPosCallback(window, listener);
+        GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 
     /**
@@ -77,12 +87,16 @@ public class Cursor {
         }
     }
 
-    /** Start a new drag. */
+    /**
+     * Start a new drag.
+     */
     void startDrag() {
         mDragStart = new Vector2d(mPosition);
     }
 
-    /** End a drag in progress. */
+    /**
+     * End a drag in progress.
+     */
     void endDrag() {
         mDragStart = null;
     }
@@ -118,7 +132,7 @@ public class Cursor {
      * Get the direct distance between where this cursor started dragging and its current position.
      *
      * @return A {@code double} representing the distance from the starting point of the user's
-     *     drag, or {@code 0} if no dragging is taking place.
+     * drag, or {@code 0} if no dragging is taking place.
      */
     public double getDragDistance() {
         if (!inDrag()) {
@@ -131,7 +145,7 @@ public class Cursor {
      * Get the angle between where this cursor started dragging and its current position.
      *
      * @return The angle, in radians, between the drag start point and current position, or {@code
-     *     0} if no dragging is taking place.
+     * 0} if no dragging is taking place.
      */
     public double getDragAngle() {
         if (!inDrag()) {
