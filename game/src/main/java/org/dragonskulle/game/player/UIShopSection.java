@@ -16,27 +16,22 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart {
-    @Getter
-    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private UIBuildingOptions mBuildingOptions;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> titleRef;
 
-
-    public UIShopSection(UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
+    public UIShopSection(
+            UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
         this.mGetPlayer = mGetPlayer;
         this.mGetHexChosen = mGetHexChosen;
     }
@@ -53,33 +48,30 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     protected void setState(ShopState state) {
         Reference<GameObject> newPanel;
         log.warning("setting visible state to " + state.toString());
         switch (state) {
             case CLOSED:
-                getGameObject().setEnabled(false);
+                show(false);
                 if (mCurrentPanel != null && mCurrentPanel.isValid()) {
-                    mCurrentPanel.get().setEnabled(false);
+                    show(mCurrentPanel, false);
                 }
                 return;
             case ATTACK_SCREEN:
-                getGameObject().setEnabled(true);
+                show(true);
                 newPanel = new Reference<>(null);
                 break;
             case BUILDING_NEW:
-                getGameObject().setEnabled(true);
+                show(true);
                 newPanel = mNewBuildingPanel;
                 break;
-            case MY_BUILDING_SELECTED: //todo is BUILDING_SELECTED the same as the upgrade panel?
-                getGameObject().setEnabled(true);
+            case MY_BUILDING_SELECTED: // todo is BUILDING_SELECTED the same as the upgrade panel?
+                show(true);
                 newPanel = mUpgradePanel;
                 break;
             default:
@@ -93,22 +85,30 @@ public class UIShopSection extends Component implements IOnStart {
         swapPanels(newPanel);
     }
 
+    private void show(boolean showShow) {
+        getGameObject().setEnabled(showShow);
+    }
+
+    private void show(Reference<GameObject> gameObject, boolean show) {
+        gameObject.get().setEnabled(show);
+    }
+
     private void swapPanels(Reference<GameObject> newPanel) {
         log.warning("swapping panels");
         if (mCurrentPanel.isValid()) {
-            //there is a screen being shown
-            //deactivate the panel
-            mCurrentPanel.get().setEnabled(false);
+            // there is a screen being shown
+            // deactivate the panel
+            show(mCurrentPanel, false);
         }
-        //activate the new panel and assign the last current variable
+        // activate the new panel and assign the last current variable
         mCurrentPanel = activateNewPanel(newPanel);
     }
 
     private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
         if (newPanel != null) {
-            //check if valid reference then reassign
-            if(newPanel.isValid()){
-                newPanel.get().setEnabled(true);
+            // check if valid reference then reassign
+            if (newPanel.isValid()) {
+                show(newPanel, true);
                 return newPanel;
             }
         }
@@ -122,12 +122,17 @@ public class UIShopSection extends Component implements IOnStart {
     @Override
     public void onStart() {
 
-        mUpgradePanel = getGameObject().buildChild("building_upgrade_panel", new TransformUI(true),
-                (self) -> {
-                    UIBuildingUpgrade mUpgradeComponent = new UIBuildingUpgrade(mGetHexChosen);
-                    self.addComponent(mUpgradeComponent);
-                });
-        mUpgradePanel.get().setEnabled(false);
+        mUpgradePanel =
+                getGameObject()
+                        .buildChild(
+                                "building_upgrade_panel",
+                                new TransformUI(true),
+                                (self) -> {
+                                    UIBuildingUpgrade mUpgradeComponent =
+                                            new UIBuildingUpgrade(mGetHexChosen);
+                                    self.addComponent(mUpgradeComponent);
+                                });
+        show(mUpgradePanel, false);
 
         mNewBuildingPanel =
                 getGameObject()
@@ -141,8 +146,8 @@ public class UIShopSection extends Component implements IOnStart {
                                             getGameObject().getTransform(TransformUI.class);
                                     tran.setParentAnchor(0.08f, 0.8f, 1 - 0.08f, 1 - 0.04f);
                                 });
-        mNewBuildingPanel.get().setEnabled(false);
-        //Outer window stuff
+        show(mNewBuildingPanel, false);
+        // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setParentAnchor(0.08f, 0.73f, 1 - 0.08f, 1 - 0.03f);
         getGameObject().addComponent(new UIRenderable(new SampledTexture("white.bmp")));
