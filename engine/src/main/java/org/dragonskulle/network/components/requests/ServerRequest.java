@@ -5,18 +5,17 @@ import java.io.*;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.NetworkConfig;
-import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * Allows client to request action from server
+ * Allows server to send events to the clients
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 @Log
-public class ClientRequest<T extends INetSerializable> {
+public class ServerRequest<T extends INetSerializable> {
     private IHandler<T> mHandler;
     private T mTmpData;
     private NetworkObject mNetworkObject;
@@ -32,7 +31,7 @@ public class ClientRequest<T extends INetSerializable> {
      * @param defaultValue the template of the event e.g {@code TestAttackData}
      * @param handler the handler for the event
      */
-    public ClientRequest(T defaultValue, IHandler<T> handler) {
+    public ServerRequest(T defaultValue, IHandler<T> handler) {
         mTmpData = defaultValue;
         mHandler = handler;
     }
@@ -64,9 +63,6 @@ public class ClientRequest<T extends INetSerializable> {
      * @param data data to send/invoke.
      */
     public void invoke(T data) {
-
-        ClientNetworkManager clientMan = mNetworkObject.getNetworkManager().getClientManager();
-
         try {
             if (!mNetworkObject.isMine()) {
                 log.warning(
@@ -76,15 +72,21 @@ public class ClientRequest<T extends INetSerializable> {
             } else if (mNetworkObject.isServer()) {
                 mHandler.invokeHandler(data);
             } else {
-                DataOutputStream oos = clientMan.getDataOut();
-                oos.writeByte(NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST);
-                oos.writeInt(mNetworkObject.getId());
-                oos.writeInt(mRequestId);
-                data.serialize(oos);
-                oos.flush();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                try (DataOutputStream oos = new DataOutputStream(bos)) {
+                    oos.writeByte(NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST);
+                    oos.writeInt(mNetworkObject.getId());
+                    oos.writeInt(mRequestId);
+                    data.serialize(oos);
+                    oos.flush();
+                }
+                bos.close();
+                mNetworkObject
+                        .getNetworkManager()
+                        .getClientManager()
+                        .sendToServer(bos.toByteArray());
             }
         } catch (IOException e) {
-            if (clientMan != null) clientMan.disconnect();
             e.printStackTrace();
         }
     }

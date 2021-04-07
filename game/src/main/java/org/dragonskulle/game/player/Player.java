@@ -17,7 +17,6 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.Time;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -32,6 +31,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.dragonskulle.utils.MathUtils;
@@ -55,10 +55,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
     /** The number of tokens the player has, synchronised from server to client. */
-    @Getter public SyncInt mTokens = new SyncInt(0);
+    @Getter private SyncInt mTokens = new SyncInt(0);
 
     /** The colour of the player. */
-    @Getter public final SyncVector3 mPlayerColour = new SyncVector3();
+    @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
 
     @Getter private HighlightSelection mPlayerHighlightSelection;
 
@@ -66,12 +66,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /** Whether they own the building */
-    public SyncBool mOwnsCapital = new SyncBool(true);
+    private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack */
     private final float ATTACK_COOLDOWN = 20f;
     /** When the last time a player attacked */
-    public float lastAttack = Time.getTimeInSeconds() - ATTACK_COOLDOWN;
+    private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     private static final Vector3f[] COLOURS = {
         new Vector3f(0.5f, 1f, 0.05f),
@@ -486,7 +486,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The tile to place a building on.
      * @return Whether the attempt to build was successful.
      */
-    public boolean buildAttempt(HexagonTile tile) {
+    private boolean buildAttempt(HexagonTile tile) {
         if (buildCheck(tile) == false) {
             log.info("Unable to pass build check.");
             return false;
@@ -594,7 +594,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param defender The defending building.
      * @return Whether the attempt to attack was successful.
      */
-    public boolean attackAttempt(Building attacker, Building defender) {
+    private boolean attackAttempt(Building attacker, Building defender) {
 
         if (attackCheck(attacker, defender) == false) {
             log.info("Unable to pass attack check.");
@@ -686,12 +686,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks if you're in cooldown
-        if (Time.getTimeInSeconds() < lastAttack + ATTACK_COOLDOWN) {
-            log.warning("Still in cooldown");
+        if (getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN) {
+            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
 
-        lastAttack = Time.getTimeInSeconds();
+        mLastAttack.set(getNetworkManager().getServerTime());
 
         return true;
     }
@@ -736,7 +736,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to sell.
      * @return Whether the attempt to sell the building was successful.
      */
-    public boolean sellAttempt(Building building) {
+    private boolean sellAttempt(Building building) {
         if (sellCheck(building) == false) {
             log.info("Unable to pass sell check.");
             return false;
@@ -807,7 +807,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param stat The stat to increase.
      * @return Whether the attempt to change the stats where successful.
      */
-    public boolean statAttempt(Building building, SyncStat<?> stat) {
+    private boolean statAttempt(Building building, SyncStat<?> stat) {
         if (statCheck(building) == false) {
             log.info("Unable to pass stat check.");
             return false;

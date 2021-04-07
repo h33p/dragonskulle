@@ -6,6 +6,6 @@ package org.dragonskulle.network.components.requests;
  *
  * @author Aurimas Blažulionis
  */
-public interface IRequestHandler<T> {
-    void handleRequest(T data);
+public interface IHandler<T> {
+    void invokeHandler(T data);
 }
