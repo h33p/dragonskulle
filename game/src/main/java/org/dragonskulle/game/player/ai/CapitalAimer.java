@@ -84,17 +84,37 @@ public class CapitalAimer extends AiPlayer {
 		int nextNode = path.pop();
         while (graph.getNode(nextNode).getHexTile().get().getClaimant().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
         	gone.push(nextNode);
-        	path.pop();
+        	nextNode = path.pop();
         }
         
-        // BUILD
+        
         if (graph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
-        	
+        	// BUILD
         	getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(graph.getNode(nextNode).getHexTile().get()));
         	gone.push(nextNode);
         }
         
 
+        
+        else if (graph.getNode(nextNode).getHexTile().get().getClaimant() != null) {
+        	// ATTACK
+        	if (!graph.getNode(nextNode).getHexTile().get().hasBuilding()){
+        		// Assuming that the building is on the next node
+        		gone.push(nextNode);
+        		nextNode = path.pop();
+        	}
+        	Building toAttack = graph.getNode(nextNode).getHexTile().get().getBuilding();
+        	for (Building attacker :toAttack.getAttackableBuildings()) {
+        		if (attacker.getOwnerID() == mPlayer.get().getOwnerId()) {
+        			getPlayer()
+                    .getClientAttackRequest()
+                    .invoke(d -> d.setData(attacker, toAttack));
+        			gone.push(nextNode);
+        		}
+        	
+        	}
+        	
+        }
         // TODO Perform actions here
         /*TODO
          * To do this I need to have 2 Deques - one with the tiles which I have done (Must be a stack)
