@@ -17,6 +17,6 @@ public class SyncTokenGenerationStat extends SyncStat<Integer> {
     @SuppressWarnings("unchecked")
     @Override
     public Integer getValue() {
-        return get();
+        return getLevel();
     }
 }

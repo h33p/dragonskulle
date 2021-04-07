@@ -438,11 +438,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int cost = 20;
 
         // Update cost on different stats
-        cost += (mDefence.get() * 3);
-        cost += (mAttack.get() * 2);
-        cost += (mTokenGeneration.get());
-        cost += (mViewDistance.get());
-        cost += (mAttackDistance.get());
+        cost += (mDefence.getLevel() * 3);
+        cost += (mAttack.getLevel() * 2);
+        cost += (mTokenGeneration.getLevel());
+        cost += (mViewDistance.getLevel());
+        cost += (mAttackDistance.getLevel());
 
         if (isCapital()) {
             cost += 10;

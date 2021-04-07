@@ -32,6 +32,29 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
     }
 
     /**
+     * @deprecated Please use #getLevel().
+     * 
+     * <p> Get the stat's current level.
+     * 
+     * @return The level.
+     */
+    @Override
+    public int get() {
+    	return super.get();
+    }
+    
+    /**
+     * Get the stat's current level.
+     * 
+     * <p>This level will be between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     * 
+     * @return The level.
+     */
+    public int getLevel(){
+    	return super.get();
+    }
+    
+    /**
      * Set the level, and calculate and the new value.
      *
      * <p>The level will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
@@ -45,13 +68,13 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
 
     /** Increase the level of the stat and calculate the new value. */
     public void increaseLevel() {
-        int level = get() + 1;
+        int level = getLevel() + 1;
         setLevel(level);
     }
 
     /** Decrease the level of the stat and calculate the new value. */
     public void decreaseLevel() {
-        int level = get() - 1;
+        int level = getLevel() - 1;
         setLevel(level);
     }
 

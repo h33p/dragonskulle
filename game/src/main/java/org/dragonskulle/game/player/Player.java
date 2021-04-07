@@ -858,7 +858,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (building.getStat(stat).get() >= SyncStat.LEVEL_MAX) {
+        if (building.getStat(stat).getLevel() >= SyncStat.LEVEL_MAX) {
             log.info("Building stat already fully upgraded.");
             return false;
         }
