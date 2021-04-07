@@ -30,24 +30,15 @@ public class HexagonTile {
 
     /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
-            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
-                    .filter(go -> go.getName().equals("Land Hex"))
-                    .findFirst()
-                    .orElse(null);
+            TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
 
     /** Describes a template for water hex tile */
     static final GameObject WATER_TILE =
-            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
-                    .filter(go -> go.getName().equals("Water Hex"))
-                    .findFirst()
-                    .orElse(null);
+            TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
 
     /** Describes a template for water hex tile */
     static final GameObject MOUNTAIN_TILE =
-            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
-                    .filter(go -> go.getName().equals("Mountains Hex"))
-                    .findFirst()
-                    .orElse(null);
+            TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
 
     public static enum TileType {
         LAND((byte) 0),

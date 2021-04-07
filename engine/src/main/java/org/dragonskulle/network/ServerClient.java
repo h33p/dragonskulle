@@ -92,14 +92,9 @@ public class ServerClient {
      *
      * @param message message to send
      */
-    public void sendBytes(byte[] message) {
-        try {
-            mDataOut.write(message);
-            mDataOut.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-            mThread.interrupt();
-        }
+    public void sendBytes(byte[] message) throws IOException {
+        mDataOut.write(message);
+        mDataOut.flush();
     }
 
     /** Close the socket, tell the thread to stop */

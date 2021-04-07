@@ -31,8 +31,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         VALID(0),
         INVALID(1),
         PLAIN(2),
-        ATTACK(3),
-        FOG(4);
+        ATTACK(3);
 
         @Accessors(prefix = "m")
         @Getter
@@ -52,8 +51,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
-                case FOG:
-                    return FOG_MATERIAL;
                 default:
                     return null;
             }
@@ -107,7 +104,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection ATTACK_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
     public static final HighlightSelection FOG_MATERIAL =
-            highlightSelectionFromColour(0.3f, 0.3f, 0.33f);
+            highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
 
     private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
     private Reference<HexagonMap> mMapReference = null;

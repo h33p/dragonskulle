@@ -11,6 +11,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
@@ -50,6 +51,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
+    private Reference<FogOfWar> mFogOfWar;
     private boolean mVisualsNeedUpdate;
     private Reference<GameObject> mZoomSlider;
     private Reference<UITokenCounter> mTokenCounter;
@@ -79,7 +81,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 Scene.getActiveScene()
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
-        mVisualsNeedUpdate = true;
+
+        mFogOfWar =
+                Scene.getActiveScene().getSingleton(FogOfWar.class).getReference(FogOfWar.class);
 
         // Get the screen for map
         mMapScreen =
@@ -123,6 +127,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
+
+        updateVisuals();
     }
 
     private Reference<Player> getPlayer() {
@@ -275,7 +281,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         MapEffects effects = mMapEffects.get();
         if (!mPlayer.get().hasLost()) {
+
+            if (mFogOfWar != null && mFogOfWar.isValid()) {
+                mFogOfWar.get().setActivePlayer(mPlayer);
+            }
+
             effects.setActivePlayer(mPlayer);
+
             switch (mScreenOn) {
                 case MAP_SCREEN:
                     effects.setDefaultHighlight(true);

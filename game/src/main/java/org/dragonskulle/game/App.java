@@ -18,6 +18,7 @@ import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
@@ -105,6 +106,7 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
+                                                    camera.addComponent(new FogOfWar());
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);

@@ -113,14 +113,17 @@ public class Server {
         ServerClient c;
         while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
-        byte[] netID = {-1};
-
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
-            netID[0] = (byte) c.getNetworkID();
-            c.sendBytes(netID);
-            mServerListener.clientActivated(c);
+            try {
+                DataOutputStream out = c.getDataOut();
+                out.writeByte((byte) c.getNetworkID());
+                out.flush();
+                mServerListener.clientActivated(c);
+            } catch (IOException e) {
+                c.closeSocket();
+            }
         }
 
         // Now accept new socket connections

@@ -345,8 +345,14 @@ public class ServerNetworkManager {
 
             byte[] msg = bos.toByteArray();
 
-            for (ServerClient c : mServer.getClients()) c.sendBytes(msg);
-
+            for (ServerClient c : mServer.getClients()) {
+                try {
+                    c.sendBytes(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    c.closeSocket();
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
