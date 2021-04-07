@@ -143,7 +143,7 @@ public class AStar {
      */
     public Connection[] solutionActions() {
 
-        Integer[] answer = nodesToVisit(); // Gets the nodes to visit
+        Integer[] answer = nodesToVisit().toArray(new Integer[0]); // Gets the nodes to visit
 
         for (int i = 1; i < answer.length; i++) {
 

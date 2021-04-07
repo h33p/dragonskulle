@@ -69,7 +69,7 @@ public class Graph {
     					distance += 10;  //TODO link this to building price
     				}
     				else if (tileNeighbour.getClaimant().getNetworkObject().getOwnerId() != mOwnerId) {
-    					distance += tileNeighbour.getBuilding().getCost();		//This adds the cost of attack.
+    					distance += tileNeighbour.getBuilding().getAttackCost();		//This adds the cost of attack.
     				}
     				else {
     					// Don't do anything as its claimed by you so you want to go over it

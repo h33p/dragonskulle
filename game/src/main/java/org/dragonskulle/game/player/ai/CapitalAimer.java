@@ -16,11 +16,14 @@ import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 import org.dragonskulle.game.player.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.algorithms.graphs.Node;
 
+import lombok.extern.java.Log;
+
 /**
  * An AI player which will aim for a capital of a player.
  *
  * @author Dragonskulle
  */
+@Log
 public class CapitalAimer extends AiPlayer {
 
     private Player opponentPlayer = mPlayer.get();
@@ -54,7 +57,7 @@ public class CapitalAimer extends AiPlayer {
         
         if (gone.size() == 0) {
         	int firstElement = path.pop();
-        	if (graph.getNode(firstElement).getHexTile().get().getClaimant().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
+        	if (graph.getNode(firstElement).getHexTile().get().getClaimant().getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
         		gone.push(firstElement);
         	}
         	else {
@@ -70,7 +73,7 @@ public class CapitalAimer extends AiPlayer {
         		path.push(previousNode);
             	previousNode = gone.pop();
         	}
-        	else if (graph.getNode(previousNode).getHexTile().get().getClaimant().getOwnerId() != mPlayer.get().getNetworkObject().getOwnerId()) {
+        	else if (graph.getNode(previousNode).getHexTile().get().getClaimant().getNetworkObject().getOwnerId() != mPlayer.get().getNetworkObject().getOwnerId()) {
         		path.push(previousNode);
             	previousNode = gone.pop();
         	}
@@ -82,7 +85,7 @@ public class CapitalAimer extends AiPlayer {
        
         gone.push(previousNode);
 		int nextNode = path.pop();
-        while (graph.getNode(nextNode).getHexTile().get().getClaimant().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
+        while (graph.getNode(nextNode).getHexTile().get().getClaimant().getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
         	gone.push(nextNode);
         	nextNode = path.pop();
         }
@@ -90,7 +93,7 @@ public class CapitalAimer extends AiPlayer {
         
         if (graph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
         	// BUILD
-        	getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(graph.getNode(nextNode).getHexTile().get()));
+        	mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(graph.getNode(nextNode).getHexTile().get()));  		//TODO Make as close as final as possible
         	gone.push(nextNode);
         }
         
@@ -105,10 +108,10 @@ public class CapitalAimer extends AiPlayer {
         	}
         	Building toAttack = graph.getNode(nextNode).getHexTile().get().getBuilding();
         	for (Building attacker :toAttack.getAttackableBuildings()) {
-        		if (attacker.getOwnerID() == mPlayer.get().getOwnerId()) {
-        			getPlayer()
+        		if (attacker.getOwnerID() == mPlayer.get().getNetworkObject().getOwnerId()) {
+        			mPlayer.get()
                     .getClientAttackRequest()
-                    .invoke(d -> d.setData(attacker, toAttack));
+                    .invoke(d -> d.setData(attacker, toAttack));			//TODO Make as close as final as possible
         			gone.push(nextNode);
         		}
         	
