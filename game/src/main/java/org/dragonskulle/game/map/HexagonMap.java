@@ -10,7 +10,6 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.Building;
 
 /**
  * @author Leela Muppala and Craig Wilbourne
