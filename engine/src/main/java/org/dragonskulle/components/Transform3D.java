@@ -421,26 +421,6 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the position of the transform in the world
-     *
-     * @return Vector3f containing the world position
-     */
-    public Vector3f getPosition() {
-        Vector3f position = new Vector3f();
-        getWorldMatrix().getColumn(3, position);
-        return position;
-    }
-
-    /**
-     * Get the position of the transform in the world
-     *
-     * @param dest Vector3f to store the position
-     */
-    public void getPosition(Vector3f dest) {
-        getWorldMatrix().getColumn(3, dest);
-    }
-
-    /**
      * Get the scale of the transform in the world
      *
      * @return Vector3f containing the scale of the transform

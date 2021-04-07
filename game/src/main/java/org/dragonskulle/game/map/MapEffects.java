@@ -31,7 +31,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         VALID(0),
         INVALID(1),
         PLAIN(2),
-        ATTACK(3);
+        ATTACK(3),
+        FOG(4);
 
         @Accessors(prefix = "m")
         @Getter
@@ -51,6 +52,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
+                case FOG:
+                    return FOG_MATERIAL;
                 default:
                     return null;
             }
@@ -103,6 +106,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final HighlightSelection ATTACK_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
+    public static final HighlightSelection FOG_MATERIAL =
+            highlightSelectionFromColour(0.3f, 0.3f, 0.33f);
 
     private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
     private Reference<HexagonMap> mMapReference = null;
@@ -111,6 +116,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     @Getter @Setter private boolean mDefaultHighlight = true;
     /** This interface gets called to allow overlaying any selections on top */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
+
+    @Getter @Setter private Reference<Player> mActivePlayer;
 
     public static IRefCountedMaterial highlightMaterialFromColour(float r, float g, float b) {
         return new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(r, g, b, 0.5f));
@@ -207,8 +214,28 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * <p>This option essentially draws map bounds of different player teritories
      */
     private void defaultHighlight() {
+
+        Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
+
         highlightTiles(
                 (tile) -> {
+
+                    // TODO: do this better, with O(1)
+                    if (activePlayer != null) {
+                        Boolean contains =
+                                activePlayer
+                                        .getOwnedBuildingsAsStream()
+                                        .filter(Reference::isValid)
+                                        .map(Reference::get)
+                                        .map(b -> (Boolean) b.getViewableTiles().contains(tile))
+                                        .filter(b -> b == true)
+                                        .findFirst()
+                                        .orElse(null);
+                        if (contains == null) {
+                            return FOG_MATERIAL;
+                        }
+                    }
+
                     Player owner = tile.getClaimant();
                     if (owner != null) {
                         return owner.getPlayerHighlightSelection();

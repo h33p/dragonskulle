@@ -2,6 +2,7 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -62,7 +63,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
 
     /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
-    @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
+    @Getter private HashSet<HexagonTile> mViewableTiles = new HashSet<HexagonTile>();
 
     /**
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
@@ -184,7 +185,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
-        mViewableTiles = map.getTilesInRadius(getTile(), distance);
+        mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
         // View the tile the building is on.
         mViewableTiles.add(getTile());
     }
@@ -443,7 +444,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Reset the list of claimed, viewable and attackable tiles.
         mClaimedTiles = new ArrayList<HexagonTile>();
-        mViewableTiles = new ArrayList<HexagonTile>();
+        mViewableTiles.clear();
         mAttackableTiles = new ArrayList<HexagonTile>();
 
         // TODO: Request that the building should be destroyed.

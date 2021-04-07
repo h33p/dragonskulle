@@ -275,6 +275,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         MapEffects effects = mMapEffects.get();
         if (!mPlayer.get().hasLost()) {
+            effects.setActivePlayer(mPlayer);
             switch (mScreenOn) {
                 case MAP_SCREEN:
                     effects.setDefaultHighlight(true);
