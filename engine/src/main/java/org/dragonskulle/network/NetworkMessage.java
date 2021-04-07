@@ -2,75 +2,9 @@
 package org.dragonskulle.network;
 
 import java.util.*;
-import lombok.extern.java.Log;
 
 /** @author Oscar L */
-@Log
 public class NetworkMessage {
-    /**
-     * Convert byte array of length 4, to int.
-     *
-     * @param bytes the bytes
-     * @return the int
-     */
-    public static int convertByteArrayToInt(byte[] bytes) {
-        return ((bytes[0] & 0xFF) << 24)
-                | ((bytes[1] & 0xFF) << 16)
-                | ((bytes[2] & 0xFF) << 8)
-                | ((bytes[3] & 0xFF));
-    }
-
-    /**
-     * Converts int array to a byte array of length 4 * length.
-     *
-     * @param values the integer values
-     * @return the bytes generated
-     */
-    public static byte[] convertIntsToByteArray(int... values) {
-        byte[] bytes = new byte[4 * values.length];
-
-        int cnt = 0;
-
-        for (int value : values) {
-            bytes[cnt++] = (byte) (value >> 24);
-            bytes[cnt++] = (byte) (value >> 16);
-            bytes[cnt++] = (byte) (value >> 8);
-            bytes[cnt++] = (byte) value;
-        }
-
-        return bytes;
-    }
-
-    /**
-     * Converts int to a byte array of length 4.
-     *
-     * @param value the integer
-     * @return the bytes generated
-     */
-    public static byte[] convertIntToByteArray(int value) {
-        return convertIntsToByteArray(value);
-    }
-
-    /**
-     * Gets payload size.
-     *
-     * @param bytes the bytes
-     * @return the payload size
-     */
-    public static int getPayloadSize(byte[] bytes) {
-        return convertByteArrayToInt(Arrays.copyOfRange(bytes, 6, 11)); // inclusive, exclusive
-    }
-
-    /**
-     * Gets message type as defined in then schema.
-     *
-     * @param bytes the bytes
-     * @return the message type
-     */
-    public static byte getMessageType(byte[] bytes) {
-        return bytes[5];
-    }
-
     /**
      * Converts an Array of Bytes to a byte array.
      *
@@ -84,18 +18,6 @@ public class NetworkMessage {
             ret[i] = in.get(i);
         }
         return ret;
-    }
-
-    /**
-     * Gets field length from bytes.
-     *
-     * @param buff the buff
-     * @param offset the offset
-     * @return the field length from bytes
-     */
-    public static int getFieldLengthFromBytes(byte[] buff, int offset) {
-        assert (buff != null);
-        return buff[offset];
     }
 
     /**

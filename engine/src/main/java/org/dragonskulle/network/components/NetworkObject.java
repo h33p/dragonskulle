@@ -115,19 +115,6 @@ public class NetworkObject extends Component {
         }
     }
 
-    /**
-     * Gets id from bytes.
-     *
-     * @param payload the payload
-     * @param offset the offset
-     * @return the id from bytes
-     */
-    public static int getIntFromBytes(byte[] payload, int offset) {
-        byte[] bytes = Arrays.copyOfRange(payload, offset, offset + 4);
-
-        return NetworkMessage.convertByteArrayToInt(bytes);
-    }
-
     public void beforeNetSerialize() {
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
@@ -347,15 +334,5 @@ public class NetworkObject extends Component {
                 mNetworkableComponents.get(i).get().serialize(stream, forceUpdate);
             }
         }
-    }
-
-    /**
-     * Gets id of the object from the bytes.
-     *
-     * @param payload the payload
-     * @return the id from bytes
-     */
-    public static int getIdFromBytes(byte[] payload) {
-        return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
     }
 }

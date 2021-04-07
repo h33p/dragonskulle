@@ -135,7 +135,7 @@ public abstract class NetworkableComponent extends Component {
      * <p>Call this after every network update, once all clients had their state updated
      */
     void resetUpdateMask() {
-        for (int i = 0; i < mFieldsMask.length; i++) mFieldsMask[i] = false;
+        Arrays.fill(mFieldsMask, false);
     }
 
     /**
@@ -168,24 +168,6 @@ public abstract class NetworkableComponent extends Component {
                 }
             }
         }
-    }
-
-    /**
-     * Serialize component.
-     *
-     * @param stream the stream to write to
-     */
-    public void serialize(DataOutputStream stream) throws IOException {
-        serialize(stream, false);
-    }
-
-    /**
-     * Serialize fully byte, is this ran on spawn when the whole component needs creating.
-     *
-     * @param stream the stream to write to
-     */
-    public void serializeFully(DataOutputStream stream) throws IOException {
-        serialize(stream, true);
     }
 
     /**

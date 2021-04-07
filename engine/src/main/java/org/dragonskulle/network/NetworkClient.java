@@ -155,7 +155,7 @@ public class NetworkClient {
                 mTimeoutInputStream = new TimeoutInputStream(mBIn, 500);
                 mBIn.read(netID);
                 mInput = new DataInputStream(mTimeoutInputStream);
-                mClientListener.connectedToServer((int) netID[0]);
+                mClientListener.connectedToServer(netID[0]);
             } catch (UnknownHostException exception) {
                 mOpen = false;
                 mClientListener.unknownHost();
