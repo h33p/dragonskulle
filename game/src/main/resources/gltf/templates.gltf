@@ -69,7 +69,13 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
             "mesh" : 1,
@@ -78,7 +84,13 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
             "mesh" : 2,
@@ -91,7 +103,7 @@
                 }
             },
             "mesh" : 3,
-            "name" : "Land Hex.001"
+            "name" : "Water"
         },
         {
             "extensions" : {
@@ -114,7 +126,19 @@
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mChildName",
+                                    "value" : "Water Floor"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "name" : "Water Hex"

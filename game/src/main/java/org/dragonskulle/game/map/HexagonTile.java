@@ -14,6 +14,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
 
 /**
@@ -83,6 +84,9 @@ public class HexagonTile {
     @Getter(AccessLevel.PACKAGE)
     private final GameObject mGameObject;
 
+    @Getter(AccessLevel.PACKAGE)
+    private final Reference<HighlightControls> mHighlightControls;
+
     /** Building that is on the tile */
     @Getter @Setter private Building mBuilding;
 
@@ -127,6 +131,10 @@ public class HexagonTile {
             default:
                 mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR, height));
         }
+
+        Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
+        if (controls == null) mHighlightControls = new Reference<>(null);
+        else mHighlightControls = controls;
     }
 
     /**

@@ -474,7 +474,7 @@ public class GLTF implements NativeResource {
                 }
 
                 if (baseSampled != null) pbrMat.setAlbedoMap(baseSampled);
-                if (normalSampled != null) pbrMat.setNormaMap(normalSampled);
+                if (normalSampled != null) pbrMat.setNormalMap(normalSampled);
                 if (metallicSampled != null) {
                     pbrMat.setMetalnessRoughnessMap(metallicSampled);
                 }

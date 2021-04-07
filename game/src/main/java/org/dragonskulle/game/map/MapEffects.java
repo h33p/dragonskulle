@@ -1,19 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.TransformHex;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.renderer.Mesh;
+import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.*;
 import org.joml.Vector4f;
 
@@ -41,7 +38,7 @@ public class MapEffects extends Component implements IOnStart {
             this.mValue = type;
         }
 
-        public IRefCountedMaterial getMaterial() {
+        public HighlightSelection asSelection() {
             switch (this) {
                 case VALID:
                     return VALID_MATERIAL;
@@ -55,28 +52,26 @@ public class MapEffects extends Component implements IOnStart {
                     return null;
             }
         }
-
-        public HighlightSelection asSelection() {
-            return HighlightSelection.with(getMaterial());
-        }
     }
 
     /** A class describing a sleection. Value of null means ignoring */
     public static class HighlightSelection {
         private boolean mClear;
-        private IRefCountedMaterial mMaterial;
+        private Vector4f mOverlay;
 
         public static final HighlightSelection CLEARED = cleared();
 
-        private HighlightSelection() {}
+        private HighlightSelection() {
+            mOverlay = new Vector4f();
+        }
 
         public static HighlightSelection ignored() {
             return null;
         }
 
-        public static HighlightSelection with(IRefCountedMaterial material) {
+        public static HighlightSelection with(Vector4f overlay) {
             HighlightSelection ret = new HighlightSelection();
-            ret.mMaterial = material;
+            ret.mOverlay.set(overlay);
             return ret;
         }
 
@@ -92,16 +87,16 @@ public class MapEffects extends Component implements IOnStart {
         public HighlightSelection handleTile(HexagonTile tile);
     }
 
-    public static final IRefCountedMaterial VALID_MATERIAL =
-            highlightMaterialFromColour(0f, 1f, 0.2f);
-    public static final IRefCountedMaterial INVALID_MATERIAL =
-            highlightMaterialFromColour(1f, 0.08f, 0f);
-    public static final IRefCountedMaterial PLAIN_MATERIAL =
-            highlightMaterialFromColour(0.7f, 0.94f, 0.98f);
-    public static final IRefCountedMaterial ATTACK_MATERIAL =
-            highlightMaterialFromColour(0.9f, 0.3f, 0.3f);
+    public static final HighlightSelection VALID_MATERIAL =
+            highlightSelectionFromColour(0f, 1f, 0.2f);
+    public static final HighlightSelection INVALID_MATERIAL =
+            highlightSelectionFromColour(1f, 0.08f, 0f);
+    public static final HighlightSelection PLAIN_MATERIAL =
+            highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
+    public static final HighlightSelection ATTACK_MATERIAL =
+            highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
 
-    private HashMap<HexagonTile, GameObject> mHighlightedTiles = new HashMap<>();
+    private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
     private Reference<HexagonMap> mMapReference = null;
 
     public static IRefCountedMaterial highlightMaterialFromColour(float r, float g, float b) {
@@ -109,7 +104,7 @@ public class MapEffects extends Component implements IOnStart {
     }
 
     public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
-        return HighlightSelection.with(highlightMaterialFromColour(r, g, b));
+        return HighlightSelection.with(new Vector4f(r, g, b, 0.8f));
     }
 
     /**
@@ -119,30 +114,24 @@ public class MapEffects extends Component implements IOnStart {
      * @param selection type of highlight to use
      */
     public void highlightTile(HexagonTile tile, HighlightSelection selection) {
+        highlightTile(tile, selection, true);
+    }
+
+    private void highlightTile(HexagonTile tile, HighlightSelection selection, boolean removeOld) {
 
         if (tile == null || selection == null) return;
 
-        GameObject effectObject = mHighlightedTiles.remove(tile);
-        if (effectObject != null) effectObject.destroy();
+        if (removeOld) mHighlightedTiles.remove(tile);
         if (selection.mClear) return;
         if (!ensureMapReference()) return;
 
-        effectObject =
-                new GameObject(
-                        "selection effect",
-                        new TransformHex(tile.getQ(), tile.getR(), tile.getHeight()),
-                        (handle) -> {
-                            handle.getTransform(TransformHex.class).translate(0.03f);
+        Reference<HighlightControls> controls = tile.getHighlightControls();
 
-                            IRefCountedMaterial mat = selection.mMaterial.incRefCount();
+        if (controls.isValid()) {
+            controls.get().setHighlight(selection.mOverlay);
+        }
 
-                            Renderable rend = new Renderable(Mesh.HEXAGON, mat);
-                            handle.addComponent(rend);
-                        });
-
-        mHighlightedTiles.put(tile, effectObject);
-
-        mMapReference.get().getGameObject().addChild(effectObject);
+        mHighlightedTiles.add(tile);
     }
 
     /**
@@ -174,7 +163,8 @@ public class MapEffects extends Component implements IOnStart {
      * <p>This will clear any selection that currently takes place
      */
     public void unhighlightAllTiles() {
-        for (GameObject go : mHighlightedTiles.values()) go.destroy();
+        for (HexagonTile tile : mHighlightedTiles)
+            highlightTile(tile, HighlightSelection.CLEARED, false);
         mHighlightedTiles.clear();
     }
 
@@ -185,7 +175,7 @@ public class MapEffects extends Component implements IOnStart {
      * @return {@code true} if the tile is currently selected, {@code false} otherwise.
      */
     public boolean isTileHighlighted(HexagonTile tile) {
-        return mHighlightedTiles.get(tile) != null;
+        return mHighlightedTiles.contains(tile);
     }
 
     @Override

@@ -29,8 +29,9 @@ public interface IMaterial extends NativeResource {
      * @param buffer buffer to write into
      * @param matrix transformation matrix of the object.
      * @param lights list of lights that can be used for rendering.
+     * @return next byte after this
      */
-    void writeVertexInstanceData(
+    int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights);
 
     SampledTexture[] getFragmentTextures();
