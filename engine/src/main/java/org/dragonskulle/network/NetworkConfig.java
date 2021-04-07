@@ -7,9 +7,15 @@ public class NetworkConfig {
 
     public static class Codes {
         /** ID of object update message */
+        public static final byte MESSAGE_DISCONNECT = -1;
+        /** ID of object update message */
         public static final byte MESSAGE_UPDATE_OBJECT = 15;
         /** ID of spawn object message */
         public static final byte MESSAGE_SPAWN_OBJECT = 16;
+        /** ID of server state update */
+        public static final byte MESSAGE_UPDATE_STATE = 17;
+        /** ID of server to client event */
+        public static final byte MESSAGE_SERVER_EVENT = 18;
         /** ID of client to server request message */
         public static final byte MESSAGE_CLIENT_REQUEST = 21;
     }

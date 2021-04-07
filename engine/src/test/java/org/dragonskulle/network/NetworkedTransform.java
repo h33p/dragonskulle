@@ -12,7 +12,7 @@ import org.joml.Vector3f;
  *     forward and backwards
  */
 public class NetworkedTransform extends NetworkableComponent implements IFrameUpdate {
-    public SyncVector3 mPosition = new SyncVector3(new Vector3f(0, 0, 0));
+    private SyncVector3 mPosition = new SyncVector3(new Vector3f(0, 0, 0));
     private int mShouldFlipDirection = 1;
 
     @Override

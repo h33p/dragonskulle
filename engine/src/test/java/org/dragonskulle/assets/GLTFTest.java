@@ -127,7 +127,7 @@ public class GLTFTest {
                     sphere.getComponent(NetworkHexTransform.class);
             assertNotNull(networkHexTransform);
             assertEquals(
-                    new Vector3f(1f, 2f, 3f), networkHexTransform.get().mAxialCoordinate.get());
+                    new Vector3f(1f, 2f, 3f), networkHexTransform.get().getAxialCoordinate().get());
         }
     }
 }
