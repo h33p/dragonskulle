@@ -308,7 +308,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         GameObject gameObject = networkObject.get().getGameObject();
-        gameObject.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        TransformHex transform = gameObject.getTransform(TransformHex.class);
+        transform.setPosition(qPos, rPos);
+        transform.setHeight(tile.getHeight());
         Reference<Building> building = gameObject.getComponent(Building.class);
 
         if (building == null || building.isValid() == false) {

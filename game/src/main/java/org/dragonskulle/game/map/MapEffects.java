@@ -130,7 +130,7 @@ public class MapEffects extends Component implements IOnStart {
         effectObject =
                 new GameObject(
                         "selection effect",
-                        new TransformHex(tile.getQ(), tile.getR()),
+                        new TransformHex(tile.getQ(), tile.getR(), tile.getHeight()),
                         (handle) -> {
                             handle.getTransform(TransformHex.class).translate(0.03f);
 
