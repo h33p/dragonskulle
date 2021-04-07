@@ -178,7 +178,10 @@ public class HexagonTile {
     }
 
     public boolean isBuildable(Player player) {
-        if(player==null) return false;
+        if (player == null) {
+            log.warning("player was null so false");
+            return false;
+        }
 
         HexagonMap map = player.getMap();
         if (map == null) {

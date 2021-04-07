@@ -95,7 +95,6 @@ public class UIShopSection extends Component implements IOnStart {
 
     private void swapPanels(Reference<GameObject> newPanel) {
         log.warning("swapping panels");
-        final boolean lastIsValid = mCurrentPanel.isValid();
         if (mCurrentPanel.isValid()) {
             //there is a screen being shown
             //deactivate the panel
