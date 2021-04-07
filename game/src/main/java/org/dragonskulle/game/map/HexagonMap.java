@@ -11,7 +11,6 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.Building;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector2f;
@@ -68,59 +67,6 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      */
     public Stream<HexagonTile> getAllTiles() {
         return mTiles.getAllTiles();
-    }
-
-    /**
-     * @deprecated Use {@link HexagonTile}{@code .getBuilding()} instead.
-     *     <p>Get the building at the specified position, or {@code null} if the building does not
-     *     exist.
-     * @param q The q coordinate.
-     * @param r The r coordinate.
-     * @return The building, or {@code null} if there is no building at that position.
-     */
-    public Building getBuilding(int q, int r) {
-        HexagonTile tile = getTile(q, r);
-
-        if (tile == null) return null;
-
-        return tile.getBuilding();
-    }
-
-    /**
-     * @deprecated This is now done within each {@link Building}.
-     *     <p>Store a reference to the {@link Building} at the specified position.
-     * @param building The Building to be stored.
-     * @param q The q coordinate.
-     * @param r The r coordinate.
-     * @return {@code true} if the building was stored. {@code false} if coordinate was invalid, or
-     *     building already exists at the location (remove it first).
-     */
-    public boolean storeBuilding(Building building, int q, int r) {
-        HexagonTile tile = getTile(q, r);
-
-        if (tile == null || tile.getBuilding() != null) return false;
-
-        tile.setBuilding(building);
-
-        return true;
-    }
-
-    /**
-     * @deprecated This should be done directly via {@link Building#remove()}.
-     *     <p>Stop storing the reference to the Building at the specified position.
-     *     <p>Stores {@code null} at the position instead.
-     * @param q The q coordinate.
-     * @param r The r coordinate.
-     * @return {@code true} if tile was valid, {@code false} otherwise.
-     */
-    public boolean removeBuilding(int q, int r) {
-        HexagonTile tile = getTile(q, r);
-
-        if (tile == null) return false;
-
-        tile.setBuilding(null);
-
-        return true;
     }
 
     /**

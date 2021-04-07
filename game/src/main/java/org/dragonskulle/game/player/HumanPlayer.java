@@ -128,7 +128,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
 
-        updateVisuals();
+        mVisualsNeedUpdate = true;
     }
 
     private Reference<Player> getPlayer() {
@@ -262,9 +262,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** AURI!! This updates what the user can see */
     private void updateVisuals() {
-        mVisualsNeedUpdate = false;
-
         if (mMapEffects == null || mPlayer == null) return;
+
+        mVisualsNeedUpdate = false;
 
         Player player = mPlayer.get();
 
