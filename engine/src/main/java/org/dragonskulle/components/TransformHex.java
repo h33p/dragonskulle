@@ -73,11 +73,24 @@ public class TransformHex extends Transform {
         setPosition(axial);
     }
 
+    /**
+     * Create a new Transform for hex coordinates.
+     *
+     * @param q q axial coordinate
+     * @param r r axial coordinate
+     * @param height height of the object above the plane
+     */
     public TransformHex(float q, float r, float height) {
         setPosition(q, r);
         mHeight = height;
     }
 
+    /**
+     * Create a new Transform for hex coordinates.
+     *
+     * @param q q axial coordinate
+     * @param r r axial coordinate
+     */
     public TransformHex(float q, float r) {
         setPosition(q, r);
     }
@@ -328,8 +341,10 @@ public class TransformHex extends Transform {
      * cartesian coordinates
      *
      * @param cartesian Vector3f with cartesian coordinates to convert
+     * @param axial Vector2f that will contain the converted coordinates
+     * @return converted axial coordinates (the same {@code axial} reference)
      */
-    public static void cartesianToAxial(Vector3f cartesian, Vector2f axial) {
+    public static Vector2f cartesianToAxial(Vector3fc cartesian, Vector2f axial) {
         axial.set(cartesian.x(), cartesian.y());
         // Multiply cartesian by the PIXEL_TO_HEX matrix
         axial.mul(WORLD_TO_HEX);
@@ -337,5 +352,6 @@ public class TransformHex extends Transform {
         // And then divide both q and r by HEX_SIZE
         axial.x /= HEX_SIZE;
         axial.y /= HEX_SIZE;
+        return axial;
     }
 }

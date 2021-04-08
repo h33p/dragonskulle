@@ -440,9 +440,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         // Reset the list of claimed, viewable and attackable tiles.
-        mClaimedTiles = new ArrayList<HexagonTile>();
+        mClaimedTiles.clear();
         mViewableTiles.clear();
-        mAttackableTiles = new ArrayList<HexagonTile>();
+        mAttackableTiles.clear();
 
         // TODO: Request that the building should be destroyed.
         // destroy();
