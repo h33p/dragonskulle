@@ -306,15 +306,12 @@ public class NetworkObject extends Component {
             }
         }
         if (shouldBroadcast) {
-            try {
-                DataOutputStream stream = client.getDataOut();
+            try (DataOutputStream stream = client.getDataOut()) {
                 stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
                 generateUpdateBytes(stream, didChildUpdateMask, forceUpdate);
-                stream.flush();
             } catch (IOException e) {
                 log.warning("Failed to serialize data!");
                 e.printStackTrace();
-                client.closeSocket();
             }
         }
     }

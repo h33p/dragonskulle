@@ -3,15 +3,19 @@ package org.dragonskulle.network;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * Stores server's client connection
@@ -39,11 +43,10 @@ public class ServerClient {
     /** Thread of the input loop */
     private Thread mThread;
     /** Output stream for the socket */
-    @Getter private DataOutputStream mDataOut;
+    private DataOutputStream mDataOut;
 
-    private TimeoutInputStream mTimeoutInputStream;
     /** The scheduled requests to be processed. */
-    private DataInputStream mInput;
+    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
 
     /**
      * Constructor for {@link ServerClient}
@@ -54,6 +57,10 @@ public class ServerClient {
     ServerClient(Socket socket, IServerListener serverListener) {
         mSocket = socket;
         mServerListener = serverListener;
+    }
+
+    public DataOutputStream getDataOut() {
+        return new NetworkMessageStream(mDataOut);
     }
 
     /**
@@ -68,20 +75,19 @@ public class ServerClient {
     public int processRequests(int count) {
         int i = 0;
 
-        try {
-            int oldSoTime = mSocket.getSoTimeout();
-            mSocket.setSoTimeout(mTimeoutInputStream.getTimeout());
+        byte[] req = null;
 
-            for (i = 0; i < count && mInput.available() > 0; i++) {
-                mTimeoutInputStream.enableTimeout();
-                parseRequest();
+        for (i = 0; i < count && (req = mRequests.poll()) != null; i++) {
+            try {
+                ByteArrayInputStream bin = new ByteArrayInputStream(req);
+                DataInputStream stream = new DataInputStream(bin);
+                parseRequest(stream);
+                stream.close();
+                bin.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                // closeAllConnections();
             }
-
-            mTimeoutInputStream.disableTimeout();
-            mSocket.setSoTimeout(oldSoTime);
-        } catch (IOException e) {
-            e.printStackTrace();
-            closeSocket();
         }
 
         return i;
@@ -93,15 +99,15 @@ public class ServerClient {
      * @param message message to send
      */
     public void sendBytes(byte[] message) throws IOException {
+        mDataOut.writeShort((short) message.length);
         mDataOut.write(message);
         mDataOut.flush();
     }
 
     /** Close the socket, tell the thread to stop */
     public void closeSocket() {
-        try {
-            mDataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
-            mDataOut.flush();
+        try (DataOutputStream dataOut = getDataOut()) {
+            dataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
         } catch (Exception e) {
 
         }
@@ -143,27 +149,25 @@ public class ServerClient {
             log.info("Spawned client thread");
 
             BufferedInputStream bIn = new BufferedInputStream(mSocket.getInputStream());
-            mTimeoutInputStream = new TimeoutInputStream(bIn, 100);
-            mInput = new DataInputStream(mTimeoutInputStream);
+            DataInputStream input = new DataInputStream(bIn);
             mDataOut = new DataOutputStream(new BufferedOutputStream(mSocket.getOutputStream()));
 
             mServerListener.clientConnected(this);
 
-            log.info("Got ID " + mNetworkID);
-
             if (mNetworkID == -1) closeSocket();
 
-            while (mRunning && mSocket.isConnected() && !mSocket.isClosed()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
+            mDataOut.writeByte((byte) mNetworkID);
 
-            closeSocket();
+            while (mRunning && mSocket.isConnected() && !mSocket.isClosed()) {
+                short len = input.readShort();
+                byte[] bytes = IOUtils.readExactlyNBytes(input, len);
+                mRequests.add(bytes);
+            }
+        } catch (EOFException e) {
         } catch (Exception exception) {
             exception.printStackTrace();
+        } finally {
+            closeSocket();
         }
 
         triggerDisconnect();
@@ -180,27 +184,18 @@ public class ServerClient {
      * Parses a network message from bytes and executes the correct functions. This is for server
      * use.
      *
-     * @param buff the buff
+     * @param stream stream to parse the request from
      */
-    private void parseRequest() throws IOException {
-        byte messageType = mInput.readByte();
+    private void parseRequest(DataInputStream stream) throws IOException {
+        byte messageType = stream.readByte();
 
-        dispatchMessage(messageType);
-    }
-
-    /**
-     * Executes bytes on the server.
-     *
-     * @param messageType the message type
-     */
-    private void dispatchMessage(byte messageType) throws IOException {
         switch (messageType) {
             case NetworkConfig.Codes.MESSAGE_DISCONNECT:
                 triggerDisconnect();
                 mThread.interrupt();
                 break;
             case NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST:
-                handleClientRequest();
+                handleClientRequest(stream);
                 break;
             default:
                 log.info("The server received invalid request: " + messageType);
@@ -208,10 +203,10 @@ public class ServerClient {
         }
     }
 
-    private void handleClientRequest() throws IOException {
-        int objectID = mInput.readInt();
-        int requestID = mInput.readInt();
+    private void handleClientRequest(DataInputStream stream) throws IOException {
+        int objectID = stream.readInt();
+        int requestID = stream.readInt();
 
-        mServerListener.clientComponentRequest(this, objectID, requestID, mInput);
+        mServerListener.clientComponentRequest(this, objectID, requestID, stream);
     }
 }

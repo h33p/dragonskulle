@@ -131,13 +131,11 @@ public class ServerNetworkManager {
 
             // Send a spawn message to the client, if haven't already
             if (mSpawnedFor.add(client)) {
-                DataOutputStream stream = client.getDataOut();
-                try {
+                try (DataOutputStream stream = client.getDataOut()) {
                     stream.writeByte(NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT);
                     stream.writeInt(obj.getNetworkObjectId());
                     stream.writeInt(obj.getOwnerId());
                     stream.writeInt(mTemplateId);
-                    stream.flush();
                     forceUpdate = true;
                 } catch (IOException e) {
                     e.printStackTrace();

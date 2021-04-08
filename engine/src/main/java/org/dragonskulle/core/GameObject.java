@@ -556,7 +556,7 @@ public class GameObject implements Serializable {
         return objectData;
     }
 
-    private GameObject createClone() {
+    public GameObject createClone() {
         return Engine.getCloner().deepClone(this);
     }
 

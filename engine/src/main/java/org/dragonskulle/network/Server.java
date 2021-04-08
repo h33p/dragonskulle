@@ -120,14 +120,7 @@ public class Server {
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
-            try {
-                DataOutputStream out = c.getDataOut();
-                out.writeByte((byte) c.getNetworkID());
-                out.flush();
-                mServerListener.clientActivated(c);
-            } catch (IOException e) {
-                c.closeSocket();
-            }
+            mServerListener.clientActivated(c);
         }
 
         // Now accept new socket connections
