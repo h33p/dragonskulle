@@ -17,11 +17,15 @@ import lombok.extern.java.Log;
  * Once attached to a window, this allows access to:
  *
  * <ul>
- *   <li>The cursor's current position.
- *   <li>The starting location of a cursor drag (with the drag being triggered by {@link
+ *   <li>The cursor's current raw position.
+ *   <li>The cursor's position scaled to the range [-1, 1], [-1, 1].
+ *   <li>The raw starting location of a cursor drag (with the drag being triggered by {@link
  *       Actions#TRIGGER_DRAG}).
- *   <li>The distance of a drag.
- *   <li>The angle of a drag.
+ *   <li>The scaled starting location of a cursor drag.
+ *   <li>The raw distance of a drag.
+ *   <li>The scaled distance of a drag.
+ *   <li>The raw angle of a drag.
+ *   <li>The scaled angle of a drag.
  * </ul>
  *
  * @author Craig Wilbourne
@@ -176,6 +180,7 @@ public class Cursor {
         if (!inDrag()) {
             return 0;
         }
+        // DOES NOT WORK
         return mScaledPosition.angle(mScaledDragStart);
     }
 }
