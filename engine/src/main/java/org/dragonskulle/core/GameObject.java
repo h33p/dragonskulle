@@ -287,12 +287,10 @@ public class GameObject implements Serializable {
      * @return child game object if found, {@code null} otherwise
      */
     public GameObject findChildByName(String name) {
-        for (GameObject child : mChildren) {
-            if (child.getName().equals(name)) {
-                return child;
-            }
-        }
-        return null;
+        return mChildren.stream()
+                .filter(child -> child.getName().equals(name))
+                .findFirst()
+                .orElse(null);
     }
 
     /**

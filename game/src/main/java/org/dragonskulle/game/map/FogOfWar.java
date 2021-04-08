@@ -25,7 +25,7 @@ import org.dragonskulle.game.player.Player;
 @Log
 public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
-    private HashMap<HexagonTile, Reference<GameObject>> mFogTiles = new HashMap<>();
+    @Getter private final HashMap<HexagonTile, Reference<GameObject>> mFogTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
     @Getter @Setter private Reference<Player> mActivePlayer;
 
@@ -50,22 +50,17 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
         if (activePlayer == null) return;
 
-        mMapReference
-                .get()
-                .getAllTiles()
+        activePlayer
+                .getOwnedBuildingsAsStream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
                 .forEach(
-                        tile -> {
-                            // TODO: do this better, in O(1)
-                            Boolean contains =
-                                    activePlayer
-                                            .getOwnedBuildingsAsStream()
-                                            .filter(Reference::isValid)
-                                            .map(Reference::get)
-                                            .map(b -> (Boolean) b.getViewableTiles().contains(tile))
-                                            .filter(b -> b == true)
-                                            .findFirst()
-                                            .orElse(null);
-                            setFog(tile, contains == null);
+                        building -> {
+                            building.getViewableTiles()
+                                    .forEach(
+                                            (tile) -> {
+                                                setFog(tile, false);
+                                            });
                         });
     }
 
@@ -89,7 +84,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         return mMapReference != null;
     }
 
-    private void setFog(HexagonTile tile, boolean enable) {
+    protected void setFog(HexagonTile tile, boolean enable) {
         if (!enable) {
             Reference<GameObject> go = mFogTiles.remove(tile);
             if (go != null && go.isValid()) go.get().destroy();

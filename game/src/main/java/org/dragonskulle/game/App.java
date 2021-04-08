@@ -62,7 +62,7 @@ public class App implements NativeResource {
         scene.addRootObject(debugUI);
     }
 
-    private static Scene createMainScene() {
+    private static Scene createMainScene(boolean asServer) {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -127,7 +127,7 @@ public class App implements NativeResource {
                         "hexagon map",
                         new Transform3D(),
                         (map) -> {
-                            map.addComponent(new HexagonMap(51));
+                            map.addComponent(new HexagonMap(51, asServer));
                         });
 
         mainScene.addRootObject(hexagonMap);
@@ -138,7 +138,7 @@ public class App implements NativeResource {
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
         log.warning("We have got here " + asServer);
-        Scene mainScene = createMainScene();
+        Scene mainScene = createMainScene(asServer);
 
         // asServer = true;
         if (asServer) {

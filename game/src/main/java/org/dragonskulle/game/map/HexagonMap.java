@@ -10,6 +10,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.UIManager;
@@ -29,6 +30,8 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     /** The size that is used to create the map. */
     @Getter private final int mSize;
 
+    private boolean asServer;
+
     /** The map that is created which is made of a 2d array of HexagonTiles. */
     private HexagonTileStore mTiles;
 
@@ -37,9 +40,11 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      * create the map.
      *
      * @param size the size of the map
+     * @param asServer if the map is being displayed on the server or not
      */
-    public HexagonMap(int size) {
+    public HexagonMap(int size, boolean asServer) {
         this.mSize = size;
+        this.asServer = asServer;
 
         if (size < 0) {
             size = 0;
@@ -209,10 +214,18 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     /** Spawns each HexagonTile as a GameObject */
     @Override
     public void onStart() {
+        Reference<FogOfWar> fogOfWarReference =
+                Scene.getActiveScene().getSingleton(FogOfWar.class).getReference(FogOfWar.class);
+
         mTiles.getAllTiles()
                 .forEach(
                         tile -> {
                             getGameObject().addChild(tile.getGameObject());
+                            if (!asServer
+                                    && fogOfWarReference != null
+                                    && fogOfWarReference.isValid()) {
+                                fogOfWarReference.get().setFog(tile, true);
+                            }
                         });
     }
 }
