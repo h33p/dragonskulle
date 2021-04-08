@@ -30,12 +30,12 @@ import lombok.extern.java.Log;
 public class Cursor {
 
     /** This cursor's current raw position. */
-    private Vector2d mRawPosition = new Vector2d(0, 0);
+    private Vector2f mRawPosition = new Vector2f(0, 0);
     /** Scaled mouse cursor position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledPosition = new Vector2f(0, 0);
     
     /** The raw starting position of a drag, or {@code null} if no drag is taking place. */
-    private Vector2d mRawDragStart;    
+    private Vector2f mRawDragStart;    
     /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledDragStart = new Vector2f(0, 0);
 
@@ -70,7 +70,7 @@ public class Cursor {
      * @param y The y position.
      */
     void setPosition(double x, double y) {
-    	mRawPosition.set(x, y);
+    	mRawPosition.set((float) x, (float) y);
         mScaledPosition = calculateScaled(mRawPosition);
     }
 
@@ -79,7 +79,7 @@ public class Cursor {
      * @param rawPosition The raw vector coordinates.
      * @return A new vector that has been scaled to the correct range.
      */
-    private Vector2f calculateScaled(Vector2d rawPosition) {
+    private Vector2f calculateScaled(Vector2f rawPosition) {
     	GLFWState state = Engine.getInstance().getGLFWState();
         if(state == null || rawPosition == null) {
         	log.warning("GLFWState or raw position is null.");
@@ -87,8 +87,8 @@ public class Cursor {
         }
 
         Vector2ic windowSize = state.getWindowSize();
-        float scaledX = (float) rawPosition.x() / (float) windowSize.x() * 2f - 1f;
-        float scaledY = (float) rawPosition.y() / (float) windowSize.y() * 2f - 1f;
+        float scaledX = rawPosition.x() / (float) windowSize.x() * 2f - 1f;
+        float scaledY = rawPosition.y() / (float) windowSize.y() * 2f - 1f;
         
         return new Vector2f(scaledX, scaledY);
     }
@@ -113,7 +113,7 @@ public class Cursor {
 
     /** Start a new drag. */
     void startDrag() {
-        mRawDragStart = new Vector2d(mRawPosition);
+        mRawDragStart = new Vector2f(mRawPosition);
         mScaledDragStart = calculateScaled(mRawDragStart);
     }
 
