@@ -339,8 +339,6 @@ public class NetworkObject extends Component {
 
         stream.writeInt(getNetworkObjectId());
 
-        log.info("Write owner: " + getOwnerId());
-
         byte[] byteMask = NetworkMessage.convertBoolArrayToBytes(mask);
 
         stream.writeByte(byteMask.length);
