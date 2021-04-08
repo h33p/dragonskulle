@@ -195,6 +195,7 @@ public class NetworkClient {
                     processMessage(stream);
                     stream.close();
                     bin.close();
+                    cnt++;
                 } catch (IOException e) {
                     e.printStackTrace();
                     // closeAllConnections();
