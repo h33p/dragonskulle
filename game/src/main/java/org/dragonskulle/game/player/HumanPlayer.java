@@ -10,6 +10,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
@@ -61,6 +62,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<GameObject> sell_button;
     private Reference<GameObject> upgrade_button;
     private Reference<GameObject> place_button;
+
+    private boolean mMovedCameraToCapital = false;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -159,6 +162,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
 
         if (mPlayer == null || !mPlayer.isValid()) return;
+
+        if (!mMovedCameraToCapital) {
+            TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
+
+            Building capital = mPlayer.get().getCapital();
+
+            if (targetRig != null && capital != null) {
+                log.info("MOVE TO CAPITAL BRUDDY!");
+                targetRig.setTarget(capital.getGameObject().getTransform());
+                mMovedCameraToCapital = true;
+            }
+        }
 
         if (mPlayer.get().hasLost()) {
             log.warning("You've lost your capital");

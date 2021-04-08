@@ -53,6 +53,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
+    /** Link to the current capital */
+    private Reference<Building> mCapital = null;
+
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
     /** The number of tokens the player has, synchronised from server to client. */
@@ -871,5 +874,32 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     public void setOwnsCapital(boolean hasCapital) {
         mOwnsCapital.set(hasCapital);
+    }
+
+    /**
+     * Retrieves the current capital, if one exists
+     *
+     * <p>This method exists on assumption that a player can only lose a capital, but it itself can
+     * not change.
+     *
+     * @return capital, if one exists
+     */
+    public Building getCapital() {
+        if (!mOwnsCapital.get()) return null;
+
+        if (mCapital != null && mCapital.isValid()) {
+            return mCapital.get();
+        }
+
+        mCapital =
+                mOwnedBuildings.values().stream()
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .filter(Building::isCapital)
+                        .map(b -> b.getReference(Building.class))
+                        .findFirst()
+                        .orElse(null);
+
+        return mCapital != null ? mCapital.get() : null;
     }
 }

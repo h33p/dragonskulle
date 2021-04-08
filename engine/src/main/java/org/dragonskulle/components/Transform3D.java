@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
@@ -26,6 +27,18 @@ public class Transform3D extends Transform {
     private final Vector3f mPosition = new Vector3f();
     private final Quaternionf mRotation = new Quaternionf();
     private final Vector3f mScale = new Vector3f(1f);
+
+    static {
+        Engine.getCloner()
+                .registerFastCloner(
+                        Transform3D.class,
+                        (t, cloner, clones) -> {
+                            Transform3D m = (Transform3D) t;
+                            Transform3D ret = new Transform3D(m.getLocalMatrix());
+                            ret.mGameObject = cloner.deepClone(m.mGameObject, clones);
+                            return ret;
+                        });
+    }
 
     /** Default constructor. mLocalMatrix is just the identity matrix */
     public Transform3D() {}

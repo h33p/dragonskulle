@@ -107,7 +107,7 @@ public class ServerClient {
         }
 
         try {
-            mRunning = false;
+            triggerDisconnect();
             mSocket.shutdownOutput();
             mSocket.close();
         } catch (IOException e) {

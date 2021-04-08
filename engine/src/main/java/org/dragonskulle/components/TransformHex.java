@@ -3,6 +3,7 @@ package org.dragonskulle.components;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.Engine;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix2f;
 import org.joml.Matrix3f;
@@ -44,6 +45,20 @@ public class TransformHex extends Transform {
     private Vector3f mTmp3DVec = new Vector3f();
     private Matrix4f mWorldMatrix = new Matrix4f();
     private Matrix4f mLocalMatrix = new Matrix4f();
+
+    static {
+        Engine.getCloner()
+                .registerFastCloner(
+                        TransformHex.class,
+                        (t, cloner, clones) -> {
+                            TransformHex m = (TransformHex) t;
+                            TransformHex ret =
+                                    new TransformHex(m.mPosition.x, m.mPosition.y, m.mHeight);
+                            ret.mRotation = m.mRotation;
+                            ret.mGameObject = cloner.deepClone(m.mGameObject, clones);
+                            return ret;
+                        });
+    }
 
     /** Default constructor for TransformHex */
     public TransformHex() {}

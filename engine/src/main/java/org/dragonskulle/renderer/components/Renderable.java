@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
@@ -24,6 +25,20 @@ public class Renderable extends Component {
     @Getter private Mesh mMesh = Mesh.HEXAGON;
     /** Material of the object */
     @Getter @Setter protected IMaterial mMaterial = new UnlitMaterial();
+
+    static {
+        Engine.getCloner()
+                .registerFastCloner(
+                        Renderable.class,
+                        (t, cloner, clones) -> {
+                            Renderable m = (Renderable) t;
+                            Renderable ret =
+                                    new Renderable(m.mMesh, cloner.deepClone(m.mMaterial, clones));
+                            clones.put(m, ret);
+                            ret.mGameObject = cloner.deepClone(m.mGameObject, clones);
+                            return ret;
+                        });
+    }
 
     /** Construct a Renderable with default parameters */
     public Renderable() {

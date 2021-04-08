@@ -16,6 +16,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
+import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.FogOfWar;
@@ -82,6 +83,7 @@ public class App implements NativeResource {
                         (rig) -> {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
                             rig.addComponent(keyboardMovement);
+                            rig.addComponent(new TargetMovement());
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
 
