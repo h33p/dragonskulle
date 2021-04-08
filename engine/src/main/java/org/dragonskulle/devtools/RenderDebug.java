@@ -98,7 +98,7 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
             final String cursorText;
 
             if (cursor != null) {
-                Vector2d cursorCoords = cursor.getPosition();
+                Vector2f cursorCoords = cursor.getPosition();
                 cursorText =
                         String.format(
                                 "%.2f %.2f (%.0f %.0f)\n",

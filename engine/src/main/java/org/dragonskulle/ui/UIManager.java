@@ -34,7 +34,7 @@ public class UIManager {
     @Getter private Reference<UIRenderable> mHoveredObject;
 
     /** Scaled mouse cursor coordinates in [[-1, 1], [-1, 1]] range */
-    @Getter private Vector2f mScaledCursorCoords = new Vector2f();
+    private Vector2f mScaledCursorCoords = new Vector2f();
 
     /**
      * Update which UI element is currently hovered by the cursor
@@ -48,15 +48,9 @@ public class UIManager {
 
         if (cursor == null) return;
 
-        Vector2d cursorCoords = cursor.getPosition();
-
-        GLFWState state = Engine.getInstance().getGLFWState();
-
-        Vector2ic windowSize = state.getWindowSize();
-
-        mScaledCursorCoords.set(
-                (float) cursorCoords.x() / (float) windowSize.x() * 2f - 1f,
-                (float) cursorCoords.y() / (float) windowSize.y() * 2f - 1f);
+        // TODO Remove mScaledCursorCoords.
+        Vector2f cursorCoords = cursor.getPosition();        
+        mScaledCursorCoords.set(cursorCoords);
 
         int curDepth = 0;
 
@@ -75,5 +69,13 @@ public class UIManager {
     /** Get singleton UIManager instance */
     public static UIManager getInstance() {
         return SINGLETON;
+    }
+    
+    /**
+     * @deprecated Use {@link Cursor#getPosition()}.
+     * @return mScaledCursorCoords
+     */
+    public Vector2f getScaledCursorCoords() {
+    	return mScaledCursorCoords;
     }
 }
