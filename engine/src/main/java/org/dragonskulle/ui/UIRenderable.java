@@ -108,7 +108,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     public boolean cursorOver() {
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2f cursorCoords = Actions.getCursor().getDragStart();
+        Vector2f cursorCoords = Actions.getCursor().getPosition();
 
         mTmpMatrix.invert();
 

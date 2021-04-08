@@ -137,7 +137,22 @@ public class Cursor {
     }
 
     /**
-     * Get the angle between where this cursor started dragging and its current position.
+     * Get the position the cursor, in the range [-1, 1] and [-1, 1], when the drag began- or {@code
+     * null} if there is no drag.
+     *
+     * @return The initial position of the cursor, relative to the window size, or {@code null} if
+     *     no dragging is taking place.
+     */
+    public Vector2f getDragStart() {
+        if (!inDrag()) {
+            return null;
+        }
+        return mScaledDragStart;
+    }
+
+    /**
+     * Get the angle, in radians, between where this cursor started dragging and its current
+     * position.
      *
      * @return The angle, in radians, between the drag start point and current position, or {@code
      *     0} if no dragging is taking place.
@@ -174,23 +189,9 @@ public class Cursor {
     }
 
     /**
-     * Get the position the cursor, in the range [-1, 1] and [-1, 1], when the drag began- or {@code
-     * null} if there is no drag.
-     *
-     * @return The initial position of the cursor, relative to the window size, or {@code null} if
-     *     no dragging is taking place.
-     */
-    public Vector2f getDragStart() {
-        if (!inDrag()) {
-            return null;
-        }
-        return mScaledDragStart;
-    }
-
-    /**
      * Get the raw position of the cursor.
      *
-     * <p>Used only for testing.
+     * <p><b>Used only for testing.</b>
      *
      * @return The raw cursor position.
      */
