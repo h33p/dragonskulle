@@ -70,8 +70,6 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
                                             .orElse(null);
                             setFog(tile, contains == null);
                         });
-
-        log.info(String.format("Spawn time: %.2f", Time.getPreciseTimeInSeconds() - time));
     }
 
     @Override
