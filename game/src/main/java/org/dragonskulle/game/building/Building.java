@@ -50,11 +50,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** Stores the defence strength of the building. */
     @Getter private final SyncStat mDefence = new SyncStat(Stat::getDefenceValue, this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter private final SyncStat mTokenGeneration = new SyncStat(Stat::getTokenGenerationValue, this);
+    @Getter
+    private final SyncStat mTokenGeneration = new SyncStat(Stat::getTokenGenerationValue, this);
     /** Stores the view range of the building. */
     @Getter private final SyncStat mViewDistance = new SyncStat(Stat::getViewDistanceValue, this);
     /** Stores the attack range of the building. */
-    @Getter private final SyncStat mAttackDistance = new SyncStat(Stat::getAttackDistanceValue, this);
+    @Getter
+    private final SyncStat mAttackDistance = new SyncStat(Stat::getAttackDistanceValue, this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -92,7 +94,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         storeStat(Stat.TOKEN_GENERATION, mTokenGeneration);
         storeStat(Stat.VIEW_DISTANCE, mViewDistance);
         storeStat(Stat.ATTACK_DISTANCE, mAttackDistance);
-        
+
         // For debugging:
         // TODO: Remove.
         mAttack.setLevel(SyncStat.LEVEL_MIN);
@@ -101,7 +103,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
     }
-    
+
     @Override
     public void onStart() {
 

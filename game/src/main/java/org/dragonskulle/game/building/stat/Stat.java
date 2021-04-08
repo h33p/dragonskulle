@@ -47,59 +47,59 @@ public enum Stat {
 
         return values[id];
     }
-    
+
     /**
      * Used as a lambda expression to get the value of an attack stat for a given level.
-     * 
+     *
      * @param level The level of the stat.
      * @return The stat's attack value.
      */
     public static int getAttackValue(int level) {
-    	// The attack value is identical to the current level number plus one.
-    	return level + 1;
+        // The attack value is identical to the current level number plus one.
+        return level + 1;
     }
-    
+
     /**
      * Used as a lambda expression to get the value of a defence stat for a given level.
-     * 
+     *
      * @param level The level of the stat.
      * @return The stat's defence value.
      */
     public static int getDefenceValue(int level) {
-    	// The defence value is identical to the current level number plus one.
-    	return level + 1;
+        // The defence value is identical to the current level number plus one.
+        return level + 1;
     }
-    
+
     /**
      * Used as a lambda expression to get the token generation of a building for a given level.
-     * 
+     *
      * @param level The level of the stat.
      * @return The building's token generation at that level.
      */
     public static int getTokenGenerationValue(int level) {
-    	// The number of tokens to generate is identical to the current level number.
+        // The number of tokens to generate is identical to the current level number.
         return level;
     }
-    
+
     /**
      * Used as a lambda expression to get the view distance of a building for a given level.
-     * 
+     *
      * @param level The level of the stat.
      * @return The building's view distance.
      */
     public static int getViewDistanceValue(int level) {
-    	// Regardless of the level, the value of the stat will always be 3.
+        // Regardless of the level, the value of the stat will always be 3.
         return 3;
     }
-    
+
     /**
      * Used as a lambda expression to get the attack distance of a building for a given level.
-     * 
+     *
      * @param level The level of the stat.
      * @return The building's attack distance.
      */
     public static int getAttackDistanceValue(int level) {
-    	// Regardless of the level, the value of the attack distance will always be 2.
+        // Regardless of the level, the value of the attack distance will always be 2.
         return 2;
     }
 }

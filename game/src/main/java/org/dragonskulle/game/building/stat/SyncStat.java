@@ -4,15 +4,10 @@ package org.dragonskulle.game.building.stat;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
@@ -38,18 +33,20 @@ public class SyncStat extends SyncInt {
     public static interface IValueCalculator extends Serializable {
         int getValue(int level);
     }
-    
+
     /** Store the function used to calculate the value of the stat. */
     private IValueCalculator mValueCalculator;
-    
+
     /**
-     * Create a new SyncStat, providing the method that will be used to calculate the value of the stat for given levels, and the {@link Building} the stat relates to.
+     * Create a new SyncStat, providing the method that will be used to calculate the value of the
+     * stat for given levels, and the {@link Building} the stat relates to.
+     *
      * @param valueCalculator The {@link IValueCalculator} used to calculate the value of the stat.
      * @param building The Building the stat relates to.
      */
     public SyncStat(IValueCalculator valueCalculator, Building building) {
-    	mValueCalculator = valueCalculator;
-    	mBuilding = building.getReference(Building.class);
+        mValueCalculator = valueCalculator;
+        mBuilding = building.getReference(Building.class);
     }
 
     /**
@@ -118,13 +115,13 @@ public class SyncStat extends SyncInt {
      * @return The value of the stat, or {@code -1} on error.
      */
     public int getValue() {
-    	if(mValueCalculator == null) {
-    		log.warning("mValueCalculator is null.");
-    		return -1;
-    	}
-    	return mValueCalculator.getValue(getLevel());
+        if (mValueCalculator == null) {
+            log.warning("mValueCalculator is null.");
+            return -1;
+        }
+        return mValueCalculator.getValue(getLevel());
     }
-    
+
     @Override
     public void deserialize(DataInputStream in) throws IOException {
         super.deserialize(in);
