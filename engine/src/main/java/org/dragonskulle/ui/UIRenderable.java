@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
@@ -107,7 +108,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     public boolean cursorOver() {
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
+        Vector2f cursorCoords = Actions.getCursor().getDragStart();
 
         mTmpMatrix.invert();
 
