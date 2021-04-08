@@ -1,7 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
-import org.joml.Vector2d;
+import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
+import org.dragonskulle.core.Engine;
+import org.dragonskulle.core.GLFWState;
+import org.joml.Vector2f;
+import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 
@@ -9,21 +14,28 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
  * Once attached to a window, this allows access to:
  *
  * <ul>
- *   <li>The cursor's current position.
- *   <li>The starting location of a cursor drag (with the drag being triggered by {@link
- *       Actions#TRIGGER_DRAG}).
- *   <li>The distance of a drag.
- *   <li>The angle of a drag.
+ *   <li>The cursor's position in the window scaled to the range [-1, 1], [-1, 1].
+ *   <li>The cursor's position, in the window scaled to the range [-1, 1], [-1, 1], at the start of
+ *       a drag.
+ *   <li>The distance of a drag from the start point.
+ *   <li>The scaled angle of a drag from the start point.
  * </ul>
  *
  * @author Craig Wilbourne
  */
+@Log
+@Accessors(prefix = "m")
 public class Cursor {
 
-    /** This cursor's current position. */
-    private Vector2d mPosition = new Vector2d(0, 0);
-    /** The starting position of a drag, or {@code null} if no drag is taking place. */
-    private Vector2d mDragStart;
+    /** This cursor's current raw position. */
+    private Vector2f mRawPosition = new Vector2f(0, 0);
+    /** Scaled mouse cursor position in the range [[-1, 1], [-1, 1]]. */
+    private Vector2f mScaledPosition = new Vector2f(0, 0);
+
+    /** The raw starting position of a drag, or {@code null} if no drag is taking place. */
+    private Vector2f mRawDragStart;
+    /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
+    private Vector2f mScaledDragStart = new Vector2f(0, 0);
 
     /** Create a new cursor manager. */
     public Cursor() {}
@@ -41,7 +53,7 @@ public class Cursor {
                 new GLFWCursorPosCallback() {
                     @Override
                     public void invoke(long window, double x, double y) {
-                        setPosition(x, y);
+                        setPosition((float) x, (float) y);
                         detectDrag();
                     }
                 };
@@ -52,11 +64,38 @@ public class Cursor {
     /**
      * Set the current position of the mouse.
      *
-     * @param x
-     * @param y
+     * @param x The x position.
+     * @param y The y position.
      */
-    void setPosition(double x, double y) {
-        mPosition.set(x, y);
+    void setPosition(float x, float y) {
+        mRawPosition.set(x, y);
+        mScaledPosition = calculateScaled(mRawPosition);
+    }
+
+    /**
+     * Scale the vector so it is in the range [-1, 1] and [-1, 1], relative to the current window
+     * size.
+     *
+     * @param rawPosition The raw vector coordinates.
+     * @return A new vector that has been scaled to the correct range.
+     */
+    private Vector2f calculateScaled(Vector2f rawPosition) {
+        if (rawPosition == null) {
+            log.warning("Raw position is null.");
+            return null;
+        }
+
+        GLFWState state = Engine.getInstance().getGLFWState();
+        if (state == null) {
+            log.warning("GLFWState is null: may cause unintended side-effects.");
+            return null;
+        }
+
+        Vector2ic windowSize = state.getWindowSize();
+        float scaledX = rawPosition.x() / (float) windowSize.x() * 2f - 1f;
+        float scaledY = rawPosition.y() / (float) windowSize.y() * 2f - 1f;
+
+        return new Vector2f(scaledX, scaledY);
     }
 
     /**
@@ -79,12 +118,13 @@ public class Cursor {
 
     /** Start a new drag. */
     void startDrag() {
-        mDragStart = new Vector2d(mPosition);
+        mRawDragStart = new Vector2f(mRawPosition);
+        mScaledDragStart = calculateScaled(mRawDragStart);
     }
 
     /** End a drag in progress. */
     void endDrag() {
-        mDragStart = null;
+        mRawDragStart = null;
     }
 
     /**
@@ -93,50 +133,69 @@ public class Cursor {
      * @return {@code true} if the cursor is currently being dragged; otherwise {@code false}.
      */
     public boolean inDrag() {
-        return !(mDragStart == null);
+        return !(mRawDragStart == null);
     }
 
     /**
-     * Get the current location of this cursor in the window.
+     * Get the position the cursor, in the range [-1, 1] and [-1, 1], when the drag began- or {@code
+     * null} if there is no drag.
      *
-     * @return The current cursor position.
+     * @return The initial position of the cursor, relative to the window size, or {@code null} if
+     *     no dragging is taking place.
      */
-    public Vector2d getPosition() {
-        return mPosition;
-    }
-
-    /**
-     * Get the position of where the drag began.
-     *
-     * @return The start position of the cursor, or {@code null} if no dragging is taking place.
-     */
-    public Vector2d getDragStart() {
-        return mDragStart;
-    }
-
-    /**
-     * Get the direct distance between where this cursor started dragging and its current position.
-     *
-     * @return A {@code double} representing the distance from the starting point of the user's
-     *     drag, or {@code 0} if no dragging is taking place.
-     */
-    public double getDragDistance() {
+    public Vector2f getDragStart() {
         if (!inDrag()) {
-            return 0;
+            return null;
         }
-        return mPosition.distance(mDragStart);
+        return mScaledDragStart;
     }
 
     /**
-     * Get the angle between where this cursor started dragging and its current position.
+     * Get the angle, in radians, between where this cursor started dragging and its current
+     * position.
      *
      * @return The angle, in radians, between the drag start point and current position, or {@code
      *     0} if no dragging is taking place.
      */
-    public double getDragAngle() {
+    public float getDragAngle() {
         if (!inDrag()) {
-            return 0;
+            return 0f;
         }
-        return mPosition.angle(mDragStart);
+        // Use the raw positions to calculate the correct angle.
+        return (float) mRawPosition.angle(mRawDragStart);
+    }
+
+    /**
+     * Get the distance between where this cursor started dragging and its current position. Will be
+     * in the range [0, 2].
+     *
+     * @return A {@code double} representing the distance from the starting point of the user's
+     *     drag, or {@code 0} if no dragging is taking place.
+     */
+    public float getDragDistance() {
+        if (!inDrag()) {
+            return 0f;
+        }
+        return mScaledPosition.distance(mScaledDragStart);
+    }
+
+    /**
+     * Get the current position of the cursor in the range [-1, 1] and [-1, 1].
+     *
+     * @return The cursor position, relative to the window size.
+     */
+    public Vector2f getPosition() {
+        return mScaledPosition;
+    }
+
+    /**
+     * Get the raw position of the cursor.
+     *
+     * <p><b>Used only for testing.</b>
+     *
+     * @return The raw cursor position.
+     */
+    Vector2f getRawPosition() {
+        return mRawPosition;
     }
 }

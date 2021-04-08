@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
@@ -173,7 +174,7 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
         // Extract the starting mouse offset so we "pin" the knob to the mouse
         Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
 
-        Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
+        Vector2f cursorCoords = Actions.getCursor().getPosition();
 
         mTmpCursorPos.set(cursorCoords.x(), cursorCoords.y(), 0f);
 
@@ -198,7 +199,7 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
             // First, let's figure out the delta from value 0
             mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
             Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
-            Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
+            Vector2f cursorCoords = Actions.getCursor().getPosition();
             mTmpCursorPos2.set(cursorCoords.x(), cursorCoords.y(), 0f);
             mTmpCursorPos2.mulPosition(invMatrix);
             mTmpCursorPos2.sub(mTmpCursorPos);

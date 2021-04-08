@@ -11,8 +11,9 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.input.Actions;
+import org.dragonskulle.input.Cursor;
 import org.dragonskulle.renderer.components.Camera;
-import org.dragonskulle.ui.UIManager;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
@@ -133,7 +134,11 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         if (mainCam == null) return null;
 
         // Retrieve scaled screen coordinates
-        Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+        Cursor cursor = Actions.getCursor();
+
+        if (cursor == null) return null;
+
+        Vector2fc screenPos = cursor.getPosition();
 
         // Convert those coordinates to local coordinates within the map
         Vector3f pos =
