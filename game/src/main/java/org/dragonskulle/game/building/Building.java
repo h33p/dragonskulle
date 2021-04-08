@@ -13,12 +13,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.stat.Stat;
-import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
-import org.dragonskulle.game.building.stat.SyncAttackStat;
-import org.dragonskulle.game.building.stat.SyncDefenceStat;
 import org.dragonskulle.game.building.stat.SyncStat;
-import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
-import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
@@ -51,16 +46,15 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     // TODO: Make the SyncStats and SyncBool private.
 
     /** Stores the attack strength of the building. */
-    @Getter private final SyncAttackStat mAttack = new SyncAttackStat(this);
+    @Getter private final SyncStat mAttack = new SyncStat(Stat::getAttackValue, this);
     /** Stores the defence strength of the building. */
-    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat(this);
+    @Getter private final SyncStat mDefence = new SyncStat(Stat::getDefenceValue, this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter
-    private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
+    @Getter private final SyncStat mTokenGeneration = new SyncStat(Stat::getTokenGenerationValue, this);
     /** Stores the view range of the building. */
-    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
+    @Getter private final SyncStat mViewDistance = new SyncStat(Stat::getViewDistanceValue, this);
     /** Stores the attack range of the building. */
-    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
+    @Getter private final SyncStat mAttackDistance = new SyncStat(Stat::getAttackDistanceValue, this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -98,7 +92,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         storeStat(Stat.TOKEN_GENERATION, mTokenGeneration);
         storeStat(Stat.VIEW_DISTANCE, mViewDistance);
         storeStat(Stat.ATTACK_DISTANCE, mAttackDistance);
-
+        
         // For debugging:
         // TODO: Remove.
         mAttack.setLevel(SyncStat.LEVEL_MIN);
@@ -107,7 +101,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewDistance.setLevel(5);
         mAttackDistance.setLevel(5);
     }
-
+    
     @Override
     public void onStart() {
 

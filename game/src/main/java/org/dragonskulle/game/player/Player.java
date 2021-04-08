@@ -542,6 +542,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Ensure the building is placed within a set radius of an owned building.
+        // TODO Remove hard coded value.
         final int radius = 3;
         ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
 
