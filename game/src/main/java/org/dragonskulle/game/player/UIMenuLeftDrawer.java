@@ -193,47 +193,20 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private UITextButtonFrame buildAttackButtonFrame() {
         return new UITextButtonFrame(
                 "attack_button",
-                "Attack Selected Building",
+                "Attack From Here",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
+                    Reference<Building> buildingChosen = mGetBuildingChosen.get();
+                    if (buildingChosen != null && buildingChosen.isValid()) {
 
-                    // Send attackView to server
-                    //            mPlayer.get()
-                    //                    .getClientAttackRequest()
-                    //                    .invoke(
-                    //                            new AttackData(
-                    //                                    mBuildingChosen.get(),
-                    //                                    attackableBuilding));
-                    // for (Building attackableBuilding :
-                    // mBuildingChosen.get().getAttackableBuildings()) {
-                    //                attackBuildingsButton.add(
-                    //                        new UITextButtonFrame("Attack buildingSelectedView",
-                    // (handle, __) -> {
-                    //                            // -- Need way to show different
-                    // buildingSelectedView
-                    //
-                    //                            // Send attackView to server
-                    //                            mPlayer.get()
-                    //                                    .getClientAttackRequest()
-                    //                                    .invoke(
-                    //                                            new AttackData(
-                    //                                                    mBuildingChosen.get(),
-                    //                                                    attackableBuilding)); //
-                    // TODO Send
-                    //                            setHexChosen.set(null);
-                    //                            mBuildingChosen = null;
-                    //                            notifyScreenChange.call(Screen.MAP_SCREEN);
-                    //                        })
-                    //                );
-                    //            }
-                    //
-                    //
-                    //
-                    // TODO change so this button will display the attackable buildings, then if the
-                    // user clicks on one it will show a prompt to confirm.
-                    mSetHexChosen.set(null);
-                    mSetBuildingChosen.set(null);
-                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                        // TODO Change tiles which can be attacked
+                        mSetHexChosen.set(null);
+                        mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
+                    } else {
+                        mSetHexChosen.set(null);
+                        mSetBuildingChosen.set(null);
+                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                    }
                 },
                 true);
     }
@@ -257,7 +230,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     if (mGetHexChosen.get() != null) {
-                        System.out.println("Running place button lambda");
+                        log.info("Running place button lambda");
                         Reference<Player> player = mGetPlayer.get();
                         if (player != null && player.isValid()) {
                             player.get()

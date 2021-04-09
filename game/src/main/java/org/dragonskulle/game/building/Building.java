@@ -34,9 +34,6 @@ import org.joml.Vector3i;
  *
  * <p>The owner of the Building also needs to be set via {@link NetworkObject#setOwnerId}.
  *
- * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
- * {@link HexagonMap#storeBuilding(Building, int, int)}).
- *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
@@ -44,19 +41,19 @@ import org.joml.Vector3i;
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
     /** Stores the attack strength of the building. */
-    @Getter public final SyncAttackStat mAttack = new SyncAttackStat(this);
+    @Getter private final SyncAttackStat mAttack = new SyncAttackStat(this);
     /** Stores the defence strength of the building. */
-    @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat(this);
+    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat(this);
     /** Stores how many tokens the building can generate in one go. */
     @Getter
-    public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
+    private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
     /** Stores the view range of the building. */
-    @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
+    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
     /** Stores the attack range of the building. */
-    @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
+    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
 
     /** Whether the building is a capital. */
-    public final SyncBool mIsCapital = new SyncBool(false);
+    private final SyncBool mIsCapital = new SyncBool(false);
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
@@ -73,6 +70,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
+
+    /** Store the {@link HexagonMap} that the {@link Building} is on. */
+    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
@@ -93,6 +93,20 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
+
+        // Store the map.
+        HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
+        if (checkingMapExists == null) {
+            log.severe("Scene Map is null");
+        } else {
+            Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
+            if (mapCheck != null && mapCheck.isValid()) {
+                mMap = mapCheck;
+            } else {
+                log.severe("mapCheck is null.");
+            }
+        }
+
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addOwnership(this);
@@ -193,8 +207,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         final int maxValue = 1000;
 
         // Get the attacker and defender's stats.
-        int attack = mAttack.getValue();
-        int defence = opponent.mDefence.getValue();
+        int attack = getAttack().getValue();
+        int defence = opponent.getDefence().getValue();
 
         // Stores the highest result of rolling a dice a set number of times, defined by the attack
         // stat.
@@ -216,7 +230,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         for (int i = 1; i < defence; i++) {
             int value = (int) (Math.random() * (maxValue) + 1);
             // Store the highest value achieved.
-            if (value > defence) {
+            if (value > highestDefence) {
                 highestDefence = value;
             }
         }
@@ -251,7 +265,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
             // Ensure the building is not owned by the owner of this building.
             if (getOwnerID() == building.getOwnerID()) {
-                log.info("Building owned by same player.");
+                log.fine("Building owned by same player.");
                 continue;
             }
 
@@ -322,7 +336,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The map.
      */
     private HexagonMap getMap() {
-        return Scene.getActiveScene().getSingleton(HexagonMap.class);
+        return mMap.get();
     }
 
     /**
@@ -410,6 +424,30 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // TODO: Request that the building should be destroyed.
         // destroy();
+    }
+
+    /**
+     * This will create and return a base cost for attacking
+     *
+     * @return The cost for attacking
+     */
+    public int getAttackCost() {
+
+        // Base cost
+        int cost = 20;
+
+        // Update cost on different stats
+        cost += (mDefence.get() * 3);
+        cost += (mAttack.get() * 2);
+        cost += (mTokenGeneration.get());
+        cost += (mViewDistance.get());
+        cost += (mAttackDistance.get());
+
+        if (isCapital()) {
+            cost += 10;
+        }
+
+        return cost;
     }
 
     @Override

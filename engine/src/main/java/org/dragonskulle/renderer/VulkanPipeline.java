@@ -5,7 +5,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 import java.nio.LongBuffer;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
@@ -17,14 +17,13 @@ import org.lwjgl.vulkan.*;
  *
  * @author Aurimas Blažulionis
  */
+@Log
 class VulkanPipeline implements NativeResource {
     public long pipeline;
     public long layout;
 
     private VkDevice mDevice;
     private ShaderSet mShaderSet;
-
-    private static final Logger LOGGER = Logger.getLogger("render");
 
     /** Get vulkan binding descriptors for the vertex shader */
     private static VkVertexInputBindingDescription.Buffer getBindingDescriptions(
@@ -69,6 +68,9 @@ class VulkanPipeline implements NativeResource {
                 descOut.location(descIn.location);
                 descOut.format(descIn.format);
                 descOut.offset(descIn.offset);
+
+                // Implicitly shift location for per-instance data.
+                if (descIn.bindingID != 0) descOut.location(descOut.location() + 4);
             }
         }
 
@@ -80,8 +82,9 @@ class VulkanPipeline implements NativeResource {
             long[] descriptorSetLayouts,
             VkDevice device,
             VkExtent2D extent,
-            long renderPass) {
-        LOGGER.fine("Setup pipeline");
+            long renderPass,
+            int msaaCount) {
+        log.fine("Setup pipeline");
 
         mDevice = device;
         mShaderSet = shaderSet;
@@ -212,12 +215,11 @@ class VulkanPipeline implements NativeResource {
             // Used for shadowmaps, which we currently don't have...
             rasterizer.depthBiasEnable(false);
 
-            // TODO: Enable MSAA optionally/on feature check
             VkPipelineMultisampleStateCreateInfo multisampling =
                     VkPipelineMultisampleStateCreateInfo.callocStack(stack);
             multisampling.sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
             multisampling.sampleShadingEnable(false);
-            multisampling.rasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
+            multisampling.rasterizationSamples(msaaCount);
 
             VkPipelineDepthStencilStateCreateInfo depthStencil =
                     VkPipelineDepthStencilStateCreateInfo.callocStack(stack);

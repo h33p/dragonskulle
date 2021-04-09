@@ -11,8 +11,8 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * The type Server.
@@ -22,9 +22,9 @@ import lombok.experimental.Accessors;
  *     <p>This is the main Server Class, it handles setup and stores all client connections. It can
  *     broadcast messages to every client and receive from individual clients.
  */
+@Log
 @Accessors(prefix = "m")
 public class Server {
-    private static final Logger mLogger = Logger.getLogger(Server.class.getName());
     private static final int MAX_CLIENTS = 128;
 
     /** The timeout for accepting a client. */
@@ -75,7 +75,7 @@ public class Server {
      * @param listener the listener
      */
     public Server(int port, IServerListener listener) throws IOException {
-        mLogger.fine("[S] Setting up server");
+        log.fine("[S] Setting up server");
         mServerListener = listener;
 
         mServerSocket =
@@ -91,8 +91,12 @@ public class Server {
         mServerThread = new Thread(this.mServerRunner);
         mServerThread.setDaemon(true);
         mServerThread.setName("Server");
-        mLogger.fine("[S] Starting server");
+        log.fine("[S] Starting server");
         mServerThread.start();
+    }
+
+    public ServerClient getClient(Integer id) {
+        return mClients.get(id);
     }
 
     public Collection<ServerClient> getClients() {
@@ -138,6 +142,10 @@ public class Server {
 
         for (ServerClient c : mClients.values()) cnt += c.processRequests(clientRequests);
 
+        // Clients may have gracefully shut down, remove them from the list
+        ServerClient c;
+        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
+
         return cnt;
     }
 
@@ -171,7 +179,7 @@ public class Server {
         ServerClient mapClient = mClients.remove(c.getNetworkID());
 
         if (mapClient != c) {
-            mLogger.warning("Illegal client passed!");
+            log.warning("Illegal client passed!");
         } else if (mapClient != null) {
             mapClient.closeSocket();
             mapClient.joinThread();
@@ -192,7 +200,7 @@ public class Server {
             try {
                 this.mServerThread.join();
             } catch (InterruptedException e) {
-                mLogger.warning("Server thread was interrupted!");
+                log.warning("Server thread was interrupted!");
                 e.printStackTrace();
             }
 
@@ -212,7 +220,6 @@ public class Server {
             try {
                 s.shutdownOutput();
                 s.close();
-                mClientCount--;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -225,7 +232,7 @@ public class Server {
         mClients.clear();
 
         if (mClientCount != 0) {
-            mLogger.severe("Client count non-zero on disposal! Current count: " + mClientCount);
+            log.severe("Client count non-zero on disposal! Current count: " + mClientCount);
         }
     }
 

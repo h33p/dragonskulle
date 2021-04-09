@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.4.40",
+        "generator" : "Khronos glTF Blender I/O v1.5.17",
         "version" : "2.0"
     },
     "extensionsUsed" : [
@@ -19,8 +19,8 @@
                         1,
                         1
                     ],
-                    "intensity" : 1000,
-                    "type" : "point",
+                    "intensity" : 40,
+                    "type" : "directional",
                     "name" : "Light"
                 }
             ]
@@ -55,10 +55,10 @@
             },
             "name" : "Light",
             "rotation" : [
-                0.16907575726509094,
-                0.27217137813568115,
-                0.7558803558349609,
-                0.570947527885437
+                0.5771641731262207,
+                0.28235217928886414,
+                0.336726576089859,
+                0.6883124113082886
             ],
             "translation" : [
                 4.076245307922363,
@@ -81,9 +81,9 @@
                 0.7160838842391968
             ],
             "translation" : [
-                5.746150016784668,
-                -9.944880485534668,
-                2.2607638835906982
+                5.316149711608887,
+                -10.054880142211914,
+                1.6407638788223267
             ]
         },
         {
@@ -93,14 +93,15 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Spinner",
+                            "enabled" : true,
                             "properties" : [
-                                {
-                                    "name" : "sineSpeed",
-                                    "value" : 5
-                                },
                                 {
                                     "name" : "spinSpeed",
                                     "value" : -20
+                                },
+                                {
+                                    "name" : "sineSpeed",
+                                    "value" : 5
                                 },
                                 {
                                     "name" : "sineAmplitude",
@@ -112,16 +113,22 @@
                 }
             },
             "mesh" : 0,
-            "name" : "Cube",
+            "name" : "Cube.002",
+            "rotation" : [
+                0,
+                0,
+                -0.43479543924331665,
+                0.9005292654037476
+            ],
             "scale" : [
-                0.5,
-                0.5,
-                0.5
+                1.206251859664917,
+                1.206251859664917,
+                1.206251859664917
             ],
             "translation" : [
                 0,
                 0,
-                0.9346508979797363
+                0.10000000149011612
             ]
         },
         {
@@ -143,10 +150,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.25980764627456665
+                                    "value" : 0.4330126941204071
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -183,6 +191,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
@@ -218,10 +227,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.25980764627456665
+                                    "value" : 0.4330126941204071
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -258,10 +268,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.2598075866699219
+                                    "value" : 0.43301263451576233
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -298,10 +309,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.2598075866699219
+                                    "value" : 0.43301263451576233
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -338,10 +350,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.25980764627456665
+                                    "value" : 0.4330126941204071
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -378,10 +391,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.2598074972629547
+                                    "value" : 0.4330124855041504
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -418,10 +432,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.45000001788139343
+                                    "value" : 0.75
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -458,10 +473,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.45000001788139343
+                                    "value" : 0.75
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -498,10 +514,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0.7499997019767761
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -538,10 +555,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0.7499997019767761
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -578,10 +596,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0.7499997019767761
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -618,10 +637,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4499998390674591
+                                    "value" : 0.7499997019767761
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -658,10 +678,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196149945259094
+                                    "value" : 0.8660249710083008
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -698,10 +719,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196149945259094
+                                    "value" : 0.8660249710083008
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -738,10 +760,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196152925491333
+                                    "value" : 0.8660253882408142
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -778,10 +801,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196151733398438
+                                    "value" : 0.8660252690315247
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -818,10 +842,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196152925491333
+                                    "value" : 0.8660253882408142
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -858,10 +883,11 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.5196151733398438
+                                    "value" : 0.8660252690315247
                                 },
                                 {
                                     "name" : "wobbleRange",
@@ -908,6 +934,7 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.Spinner",
+                            "enabled" : true,
                             "properties" : [
                                 {
                                     "name" : "spinSpeed",
@@ -953,20 +980,6 @@
     "materials" : [
         {
             "doubleSided" : true,
-            "name" : "Material",
-            "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.800000011920929,
-                    0.800000011920929,
-                    0.800000011920929,
-                    1
-                ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.4000000059604645
-            }
-        },
-        {
-            "doubleSided" : true,
             "name" : "MenuHex",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
@@ -975,14 +988,26 @@
                     0.06823772937059402,
                     1
                 ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.5
+                "roughnessFactor" : 0.19117647409439087
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "MenuHex2",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    1,
+                    0.537187397480011,
+                    0.06823772937059402,
+                    1
+                ],
+                "roughnessFactor" : 0.0882352963089943
             }
         }
     ],
     "meshes" : [
         {
-            "name" : "Cube",
+            "name" : "Cube.002",
             "primitives" : [
                 {
                     "attributes" : {
@@ -992,12 +1017,7 @@
                     },
                     "indices" : 3,
                     "material" : 0
-                }
-            ]
-        },
-        {
-            "name" : "Circle",
-            "primitives" : [
+                },
                 {
                     "attributes" : {
                         "POSITION" : 4,
@@ -1010,7 +1030,7 @@
             ]
         },
         {
-            "name" : "Sphere",
+            "name" : "Circle",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1018,7 +1038,21 @@
                         "NORMAL" : 9,
                         "TEXCOORD_0" : 10
                     },
-                    "indices" : 11
+                    "indices" : 11,
+                    "material" : 0
+                }
+            ]
+        },
+        {
+            "name" : "Sphere",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 12,
+                        "NORMAL" : 13,
+                        "TEXCOORD_0" : 14
+                    },
+                    "indices" : 15
                 }
             ]
         }
@@ -1027,39 +1061,73 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 532,
             "max" : [
-                1,
-                1,
-                1
+                0.39324676990509033,
+                0.39360949397087097,
+                0.6200202703475952
             ],
             "min" : [
-                -1,
-                -1,
-                -1
+                -0.39324676990509033,
+                -0.39360949397087097,
+                0
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 532,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 532,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 36,
+            "count" : 2076,
             "type" : "SCALAR"
         },
         {
             "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 469,
+            "max" : [
+                0.40454524755477905,
+                0.40454527735710144,
+                0.901775598526001
+            ],
+            "min" : [
+                -0.40454524755477905,
+                -0.40454527735710144,
+                0.6124474406242371
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 469,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 6,
+            "componentType" : 5126,
+            "count" : 469,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 7,
+            "componentType" : 5123,
+            "count" : 1812,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 8,
             "componentType" : 5126,
             "count" : 126,
             "max" : [
@@ -1075,25 +1143,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 5,
+            "bufferView" : 9,
             "componentType" : 5126,
             "count" : 126,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 6,
+            "bufferView" : 10,
             "componentType" : 5126,
             "count" : 126,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 7,
+            "bufferView" : 11,
             "componentType" : 5123,
             "count" : 498,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 8,
+            "bufferView" : 12,
             "componentType" : 5126,
             "count" : 1984,
             "max" : [
@@ -1109,19 +1177,19 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 9,
+            "bufferView" : 13,
             "componentType" : 5126,
             "count" : 1984,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 10,
+            "bufferView" : 14,
             "componentType" : 5126,
             "count" : 1984,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 11,
+            "bufferView" : 15,
             "componentType" : 5123,
             "count" : 2880,
             "type" : "SCALAR"
@@ -1130,68 +1198,88 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 288,
+            "byteLength" : 6384,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 288,
-            "byteOffset" : 288
+            "byteLength" : 6384,
+            "byteOffset" : 6384
         },
         {
             "buffer" : 0,
-            "byteLength" : 192,
-            "byteOffset" : 576
+            "byteLength" : 4256,
+            "byteOffset" : 12768
         },
         {
             "buffer" : 0,
-            "byteLength" : 72,
-            "byteOffset" : 768
+            "byteLength" : 4152,
+            "byteOffset" : 17024
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 5628,
+            "byteOffset" : 21176
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 5628,
+            "byteOffset" : 26804
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3752,
+            "byteOffset" : 32432
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3624,
+            "byteOffset" : 36184
         },
         {
             "buffer" : 0,
             "byteLength" : 1512,
-            "byteOffset" : 840
+            "byteOffset" : 39808
         },
         {
             "buffer" : 0,
             "byteLength" : 1512,
-            "byteOffset" : 2352
+            "byteOffset" : 41320
         },
         {
             "buffer" : 0,
             "byteLength" : 1008,
-            "byteOffset" : 3864
+            "byteOffset" : 42832
         },
         {
             "buffer" : 0,
             "byteLength" : 996,
-            "byteOffset" : 4872
+            "byteOffset" : 43840
         },
         {
             "buffer" : 0,
             "byteLength" : 23808,
-            "byteOffset" : 5868
+            "byteOffset" : 44836
         },
         {
             "buffer" : 0,
             "byteLength" : 23808,
-            "byteOffset" : 29676
+            "byteOffset" : 68644
         },
         {
             "buffer" : 0,
             "byteLength" : 15872,
-            "byteOffset" : 53484
+            "byteOffset" : 92452
         },
         {
             "buffer" : 0,
             "byteLength" : 5760,
-            "byteOffset" : 69356
+            "byteOffset" : 108324
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 75116,
+            "byteLength" : 114084,
             "uri" : "main_menu.bin"
         }
     ]

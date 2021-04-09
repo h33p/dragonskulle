@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.input;
 
+import org.dragonskulle.devtools.RenderDebug;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Scroll;
 import org.dragonskulle.ui.UIButton;
@@ -41,5 +42,7 @@ public class GameBindings extends Bindings {
 
         addBinding(Scroll.UP, GameActions.MENU_UP, GameActions.ZOOM_IN);
         addBinding(Scroll.DOWN, GameActions.MENU_DOWN, GameActions.ZOOM_OUT);
+
+        addBinding(GLFW.GLFW_KEY_F3, RenderDebug.DEBUG_ACTION);
     }
 }

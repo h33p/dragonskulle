@@ -6,7 +6,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Engine;
@@ -20,9 +20,9 @@ import org.junit.*;
 import org.lwjgl.system.NativeResource;
 
 /** @author Oscar L */
+@Log
 public class ServerTest {
-    private static final Logger mLogger = Logger.getLogger(ServerTest.class.getName());
-    private static final long TIMEOUT = 8;
+    private static final long TIMEOUT = 1;
 
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
     private static final Scene CLIENT_NETMAN_SCENE = new Scene("client_netman_test");
@@ -55,12 +55,12 @@ public class ServerTest {
     private static ReentrantLock mEngineLock = new ReentrantLock();
 
     private static void cleanupNetmans() {
-        mLogger.info("Cleanup netmans");
+        log.info("Cleanup netmans");
         if (CLIENT_NETWORK_MANAGER.getClientManager() != null)
             CLIENT_NETWORK_MANAGER.getClientManager().disconnect();
         if (SERVER_NETWORK_MANAGER.getServerManager() != null)
             SERVER_NETWORK_MANAGER.getServerManager().destroy();
-        mLogger.info("CLEANED UP");
+        log.info("CLEANED UP");
     }
 
     private static class LambdaOnStart extends Component implements IOnStart {
@@ -85,16 +85,21 @@ public class ServerTest {
         private boolean mShouldExit;
         private int mPort;
 
+        private Throwable toThrow = null;
+
         public TestContext(int port) {
             mPort = port;
         }
 
-        public synchronized void run(Runnable runnable) {
+        public synchronized void run(Runnable runnable) throws Throwable {
             mTestThread =
                     new Thread(
                             () -> {
-                                runnable.run();
-                                mShouldExit = true;
+                                try {
+                                    runnable.run();
+                                } finally {
+                                    mShouldExit = true;
+                                }
                             });
             mEngineLock.lock();
 
@@ -103,7 +108,7 @@ public class ServerTest {
             SERVER_NETWORK_MANAGER.createServer(
                     mPort,
                     (__, man, id) -> {
-                        mLogger.info("CONNECTED");
+                        log.info("CONNECTED");
                         man.getServerManager()
                                 .spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
                         man.getServerManager()
@@ -114,10 +119,14 @@ public class ServerTest {
                     "127.0.0.1",
                     mPort,
                     (__1, __2, netid) -> {
-                        mLogger.info("CONNECTED CLIENT");
+                        log.info("CONNECTED CLIENT");
                         assertTrue(netid >= 0);
                     });
 
+            mTestThread.setUncaughtExceptionHandler(
+                    (t, e) -> {
+                        toThrow = e;
+                    });
             mTestThread.start();
 
             Engine.getInstance().loadScene(CLIENT_NETMAN_SCENE, true);
@@ -126,8 +135,11 @@ public class ServerTest {
 
             try {
                 mTestThread.join();
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+
+            if (toThrow != null) throw toThrow;
         }
 
         private boolean shouldExit() {
@@ -187,10 +199,10 @@ public class ServerTest {
 
             mEngineLock.lock();
             int capitalId = clientCapital.get().getNetworkObject().getId();
-            mLogger.info(
+            log.info(
                     "\t-----> " + capitalId + " " + serverCapital.get().getNetworkObject().getId());
             assertEquals(capitalId, serverCapital.get().getNetworkObject().getId());
-            mLogger.info("\t-----> " + capitalId);
+            log.info("\t-----> " + capitalId);
             assert (serverCapital.get().getSyncMe().get() == false);
             assert (serverCapital.get().getSyncMeAlso().get().equals("Hello World"));
             mEngineLock.unlock();
@@ -226,17 +238,34 @@ public class ServerTest {
                                 return ret;
                             });
         }
+
+        private void testCanDestroy() {
+            testCapitalSpawnDefaultServer();
+            Capital cap = getServerComponent(Capital.class).get();
+            mEngineLock.lock();
+            cap.getGameObject()
+                    .addComponent(new LambdaOnStart(() -> cap.getGameObject().destroy()));
+            mEngineLock.unlock();
+            await().atMost(TIMEOUT, SECONDS)
+                    .until(
+                            () -> {
+                                mEngineLock.lock();
+                                boolean ret = getClientComponent(Capital.class) == null;
+                                mEngineLock.unlock();
+                                return ret;
+                            });
+        }
     }
 
     @Test
-    public void testCapitalSpawnedServer() {
+    public void testCapitalSpawnedServer() throws Throwable {
         try (TestContext ctx = new TestContext(7002)) {
             ctx.run(ctx::testCapitalSpawnDefaultServer);
         }
     }
 
     @Test
-    public void testCapitalUpdatedServer() {
+    public void testCapitalUpdatedServer() throws Throwable {
         try (TestContext ctx = new TestContext(7003)) {
             ctx.run(
                     () -> {
@@ -273,7 +302,7 @@ public class ServerTest {
     }
 
     @Test
-    public void testCapitalUpdatedClient() {
+    public void testCapitalUpdatedClient() throws Throwable {
         try (TestContext ctx = new TestContext(7005)) {
             ctx.run(
                     () -> {
@@ -311,9 +340,22 @@ public class ServerTest {
     }
 
     @Test
-    public void testComponentCanSubmitActionRequest() {
+    public void testComponentCanSubmitActionRequest() throws Throwable {
         try (TestContext ctx = new TestContext(7006)) {
             ctx.run(ctx::testSubmitRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Test
+    public void testCanDestroy() throws Throwable {
+        try (TestContext ctx = new TestContext(7007)) {
+            ctx.run(ctx::testCanDestroy);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 }

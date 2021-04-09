@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -15,6 +16,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.ui.UIManager;
 
@@ -26,6 +28,7 @@ import org.dragonskulle.ui.UIManager;
  *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
+@Log
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -52,7 +55,10 @@ public class Engine {
     /** Engine's GLFW window state */
     @Getter private GLFWState mGLFWState = null;
 
+    @Getter private float mCurTime = 0f;
+
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
+    private final ArrayList<Light> mTmpLights = new ArrayList<>();
 
     public interface IEngineExitCondition {
         boolean shouldExit();
@@ -73,7 +79,9 @@ public class Engine {
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
-        mainLoop(mGLFWState::processEvents);
+        mainLoop(mGLFWState::processEvents, true);
+
+        cleanup();
     }
 
     /**
@@ -85,7 +93,7 @@ public class Engine {
      */
     public synchronized void startFixedDebug(IEngineExitCondition exitCondition) {
         mIsRunning = true;
-        debugLoop(exitCondition);
+        mainLoop(exitCondition, false);
     }
 
     /**
@@ -195,67 +203,24 @@ public class Engine {
         mIsRunning = false;
     }
 
-    /** Debug loop of the engine */
-    private void debugLoop(IEngineExitCondition exitCondition) {
-        float mPrevTime = Time.getTimeInSeconds();
-
-        float cumulativeTime = 0;
-
-        while (mIsRunning) {
-            // Calculate time for last frame
-            float mCurTime = Time.getTimeInSeconds();
-            float deltaTime = mCurTime - mPrevTime;
-            mPrevTime = mCurTime;
-
-            cumulativeTime += deltaTime;
-
-            // Update scenes
-            switchScenes();
-
-            // Update all component lists in active scenes
-            updateScenesComponentsList();
-
-            // Wake up all components that aren't awake (Called on all active scenes)
-            wakeComponents();
-
-            // Start all enabled components (Called on all active scenes)
-            startEnabledComponents();
-
-            mIsRunning = exitCondition.shouldExit();
-
-            if (cumulativeTime > UPDATE_TIME) {
-                networkUpdate();
-
-                do {
-                    cumulativeTime -= UPDATE_TIME;
-
-                    fixedUpdate();
-                } while (cumulativeTime > UPDATE_TIME);
-            }
-        }
-    }
-
     /** Main loop of the engine */
-    private void mainLoop(IEngineExitCondition exitCondition) {
+    private void mainLoop(IEngineExitCondition exitCondition, boolean present) {
 
-        float mPrevTime = Time.getTimeInSeconds();
+        double prevTime = Time.getPreciseTimeInSeconds();
 
         // Basic frame counter
-        int frames = 0;
-        float secondTimer = 0;
-        float cumulativeTime = 0;
+        double cumulativeTime = 0;
 
-        int instancedDrawCalls = 0;
-        int slowDrawCalls = 0;
+        mCurTime = 0;
 
         while (mIsRunning) {
             // Calculate time for last frame
-            float mCurTime = Time.getTimeInSeconds();
-            float deltaTime = mCurTime - mPrevTime;
-            mPrevTime = mCurTime;
+            double curTime = Time.getPreciseTimeInSeconds();
+            double deltaTime = curTime - prevTime;
+            prevTime = curTime;
+            double cumulativeDeltaTime = deltaTime;
 
             cumulativeTime += deltaTime;
-            secondTimer += deltaTime;
 
             // Update scenes
             switchScenes();
@@ -271,60 +236,45 @@ public class Engine {
 
             mIsRunning = exitCondition.shouldExit();
 
-            Scene.setActiveScene(mPresentationScene);
-            UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
-            AudioManager.getInstance().updateAudioListener();
+            if (present) {
+                Scene.setActiveScene(mPresentationScene);
+                UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
+                AudioManager.getInstance().updateAudioListener();
 
-            // Call FrameUpdate on the presentation scene
-            frameUpdate(deltaTime);
-            Scene.setActiveScene(null);
+                // Call FrameUpdate on the presentation scene
+                frameUpdate((float) deltaTime);
+                Scene.setActiveScene(null);
+            }
 
             if (cumulativeTime > UPDATE_TIME) {
                 networkUpdate();
 
                 do {
                     cumulativeTime -= UPDATE_TIME;
+                    mCurTime += UPDATE_TIME;
+                    cumulativeDeltaTime -= UPDATE_TIME;
 
                     fixedUpdate();
                 } while (cumulativeTime > UPDATE_TIME);
             }
 
-            Scene.setActiveScene(mPresentationScene);
-            // Call LateFrameUpdate on the presentation scene
-            lateFrameUpdate(deltaTime);
+            mCurTime += cumulativeDeltaTime;
 
-            AudioManager.getInstance().update();
+            if (present) {
+                Scene.setActiveScene(mPresentationScene);
 
-            renderFrame();
-            instancedDrawCalls += mGLFWState.getRenderer().getInstancedCalls();
-            slowDrawCalls += mGLFWState.getRenderer().getSlowCalls();
-            Scene.setActiveScene(null);
+                // Call LateFrameUpdate on the presentation scene
+                lateFrameUpdate((float) deltaTime);
+
+                AudioManager.getInstance().update();
+
+                renderFrame();
+                Scene.setActiveScene(null);
+            }
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
-
-            frames++;
-            if (secondTimer >= 1.0) {
-                // One second has elapsed so frames contains the FPS
-
-                // Have no use for this currently besides printing it to console
-                System.out.println("FPS:" + frames);
-                System.out.println("Instanced Draws:" + (instancedDrawCalls + frames / 2) / frames);
-                System.out.println("Slow Draws:" + (slowDrawCalls + frames / 2) / frames);
-                System.out.println("IB Size:" + mGLFWState.getRenderer().getInstanceBufferSize());
-                System.out.println(
-                        "MB Size:"
-                                + mGLFWState.getRenderer().getVertexBufferSize()
-                                + ":"
-                                + mGLFWState.getRenderer().getIndexBufferSize());
-                instancedDrawCalls = 0;
-                slowDrawCalls = 0;
-                secondTimer -= 1.0;
-                frames = 0;
-            }
         }
-
-        cleanup();
     }
 
     /** Iterate through a list of components that aren't awake and wake them */
@@ -435,15 +385,20 @@ public class Engine {
 
     private void renderFrame() {
         mTmpRenderables.clear();
+        mTmpLights.clear();
+
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof Renderable) {
                 mTmpRenderables.add((Renderable) component);
+            } else if (component instanceof Light) {
+                mTmpLights.add((Light) component);
             }
         }
 
         Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
-        if (mainCamera != null) mGLFWState.getRenderer().render(mainCamera, mTmpRenderables);
+        if (mainCamera != null)
+            mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
     }
 
     /**

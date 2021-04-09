@@ -2,6 +2,7 @@
 package org.dragonskulle.renderer.components;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -59,10 +60,11 @@ public class Renderable extends Component {
      *
      * @param offset offset into which we should write
      * @param buffer byte buffer into which we should write
+     * @param lights list of all lights that can be used for rendering
      */
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
+    public void writeVertexInstanceData(int offset, ByteBuffer buffer, List<Light> lights) {
         mMaterial.writeVertexInstanceData(
-                offset, buffer, getGameObject().getTransform().getWorldMatrix());
+                offset, buffer, getGameObject().getTransform().getWorldMatrix(), lights);
     }
 
     /**

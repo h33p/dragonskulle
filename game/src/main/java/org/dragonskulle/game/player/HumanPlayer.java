@@ -34,6 +34,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // All screens to be used
     private Screen mScreenOn = Screen.MAP_SCREEN;
+    private Reference<GameObject> mMapScreen;
+
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
@@ -118,7 +120,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
-        highlightOwners();
     }
 
     private Reference<Player> getPlayer() {
@@ -148,8 +149,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .orElse(null);
         }
 
-        if (mPlayer == null) return;
+        if (mPlayer == null || !mPlayer.isValid()) return;
 
+        if (mPlayer.get().hasLost()) {
+            log.warning("You've lost your capital");
+            setEnabled(false);
+            return;
+        }
         // Update token
         if (mPlayer.isValid()) {
             updateVisibleTokens();
@@ -181,7 +187,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (GameActions.LEFT_CLICK.isActivated()) {
             if (UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
                 // Retrieve scaled screen coordinates
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+                Vector2fc screenPos = GameActions.getCursor().getPosition();
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
@@ -210,9 +216,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class))) {
+                        if (hasPlayerGotBuilding(building.getReference(Building.class))
+                                && mScreenOn != Screen.ATTACKING_SCREEN) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+                        } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
+
+                            // Get the defending building
+                            Building defendingBuilding = building;
+
+                            // Checks the building can be attacked
+                            boolean canAttack =
+                                    mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
+                            if (canAttack) {
+                                player.getClientAttackRequest()
+                                        .invoke(
+                                                new AttackData(
+                                                        mBuildingChosen.get(),
+                                                        defendingBuilding)); // Send Data
+                            }
+
+                            setScreenOn(Screen.MAP_SCREEN);
+                            mBuildingChosen = null;
                         }
                     } else {
                         // Checks if cannot build here
@@ -228,19 +253,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
             } else if (GameActions.RIGHT_CLICK.isActivated()) {
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+                Vector2fc screenPos = GameActions.getCursor().getPosition();
                 // Convert those coordinates to local coordinates within the map
-                if (mainCam != null) {
-                    Vector3f pos =
-                            mainCam.screenToPlane(
-                                    mPlayer.get().getMap().getGameObject().getTransform(),
-                                    screenPos.x(),
-                                    screenPos.y(),
-                                    new Vector3f());
+                Vector3f pos =
+                        mainCam.screenToPlane(
+                                mPlayer.get().getMap().getGameObject().getTransform(),
+                                screenPos.x(),
+                                screenPos.y(),
+                                new Vector3f());
 
-                    System.out.println("[DEBUG] RCL Position : " + screenPos.toString());
-                    System.out.println("[DEBUG] RCL Position From Camera : " + pos.toString());
-                }
+                log.info("[DEBUG] RCL Position : " + screenPos.toString());
+                log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
             }
         }
     }
@@ -342,6 +365,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
+    /**
+     * AURI!!!
+     *
+     * @param newScreen
+     */
     private void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen))
             mVisualsNeedUpdate = true;
