@@ -30,8 +30,7 @@ public class Node {
      */
     public Node(int num, int info) {
 
-        mConnections = new ArrayList<Connection>();
-        mNode = num;
+        
         mExtraInfo = info;
     }
 
@@ -47,7 +46,13 @@ public class Node {
         mConnections = new ArrayList<Connection>();
     }
 
-    /**
+    public Node(int nodeToAdd, HexagonTile tile) {
+    	mConnections = new ArrayList<Connection>();
+        mNode = nodeToAdd;
+        mHexTile = new Reference<HexagonTile>(tile);
+	}
+
+	/**
      * A Setter which adds a new <Code> Connection </Code> to the node
      *
      * @param destinationNode The Destination node

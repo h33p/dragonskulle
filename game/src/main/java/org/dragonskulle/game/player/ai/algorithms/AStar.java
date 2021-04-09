@@ -132,7 +132,7 @@ public class AStar {
     /**
      * This will return a Connection Array with the connections for the solution
      *
-     * @return A arrya of length 0 if it does not exist else a Connection array
+     * @return A array of length 0 if it does not exist else a Connection array
      */
     public Connection[] solutionActions() {
 

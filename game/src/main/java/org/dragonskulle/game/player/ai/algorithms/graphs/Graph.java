@@ -43,6 +43,10 @@ public class Graph {
         tiles.forEach(this::addConnections);
     }
 
+    /**
+     * This will convert a {@code HexagonTile} to a {@code Node} which can be used by a {@code Graph}
+     * @param tile The {@code HexagonTile} to be made a node
+     */
     private void convertToNode(HexagonTile tile) {
 
         try {
@@ -58,6 +62,10 @@ public class Graph {
         mNodeNum++;
     }
 
+    /**
+     * This will add all the connections for a node
+     * @param tile The {@code HexagonTile} to add connections for in the graph
+     */
     private void addConnections(HexagonTile tile) {
         boolean found = false;
         ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
@@ -94,25 +102,6 @@ public class Graph {
         mNodeNum++;
     }
 
-    /**
-     * This will add a node to a mGraph with no connections
-     *
-     * @param nodeToAdd The node number
-     * @throws GraphNodeException If the node already exists
-     */
-    public void addNode(int nodeToAdd) throws GraphNodeException {
-
-        Node node =
-                mGraph.get(nodeToAdd); // Gets the connection if in the mGraph. If not there gets null
-
-        if (node == null) { // If the node is not in the mGraph
-            Node newNode = new Node(nodeToAdd); // Makes a new node
-            mGraph.put(nodeToAdd, newNode); // Adds to mGraph
-
-        } else {
-            throw new GraphNodeException();
-        }
-    }
 
     /**
      * This will add a node to a mGraph with no connections
@@ -127,7 +116,7 @@ public class Graph {
                 mGraph.get(nodeToAdd); // Gets the connection if in the mGraph. If not there gets null
 
         if (node == null) { // If the node is not in the mGraph
-            Node newNode = new Node(nodeToAdd); // Makes a new node
+            Node newNode = new Node(nodeToAdd, tile); // Makes a new node
             mGraph.put(nodeToAdd, newNode); // Adds to mGraph
 
         } else {
@@ -171,46 +160,12 @@ public class Graph {
         }
     }
 
-    /**
-     * Removes a node from the mGraph
-     *
-     * @param nodeToRemove the node to remove
-     * @throws GraphNodeException If the node does not exist
-     */
-    public void removeNode(int nodeToRemove) throws GraphNodeException {
+    private void addNode(int originNode) {
+		// TODO Auto-generated method stub
+		
+	}
 
-        Deque<Integer> keys = new ArrayDeque<Integer>(); // WIll hold all the keys and nodes
-        Deque<Node> nodes = new ArrayDeque<Node>();
-        Node finalNode = null;
-
-        for (Map.Entry<Integer, Node> entry :
-                mGraph.entrySet()) { // Takes each pair of values in the mGraph
-
-            Node node = entry.getValue(); // Gets the node
-            int key = entry.getKey(); // Gets the key
-            if (node.getNode() == nodeToRemove) {
-                finalNode = node;
-            }
-
-            node.removeConnection(nodeToRemove); // Removes the connection from the node
-            keys.add(key); // Adds both to respective queues
-            nodes.add(node);
-        }
-
-        if (finalNode == null) {
-            throw new GraphNodeException();
-        } else {
-
-            for (int i = 0; i < keys.size(); i++) { // For each node and key
-                int key = keys.remove();
-                Node node = nodes.remove();
-
-                mGraph.replace(key, node); // Replaces the data
-            }
-        }
-    }
-
-    /**
+	/**
      * Returns the connections as originNode, Destination node and weight
      *
      * @return A 2D Object Array with the origin node, the destination node and the weight between
@@ -234,25 +189,6 @@ public class Graph {
         }
 
         return connections.toArray(new Object[0][0]);
-    }
-
-    /**
-     * Removes a connection between nodes
-     *
-     * @param originNode The origin node
-     * @param destinationNode The destination node
-     * @throws GraphNodeException If the origin does not exist
-     */
-    public void removeConnection(int originNode, int destinationNode) throws GraphNodeException {
-
-        Node origin = mGraph.get(originNode); // Gets the node
-
-        if (origin == null) {
-            throw new GraphNodeException();
-        } else {
-
-            origin.removeConnection(destinationNode); // Removes the connection from the node
-        }
     }
 
     /**

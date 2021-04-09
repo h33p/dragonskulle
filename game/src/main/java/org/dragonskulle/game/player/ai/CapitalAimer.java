@@ -17,7 +17,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
 /**
- * An AI player which will aim for a capital of a player.
+ * An AI player which will aim for a capital of a player.  This is done using the A* Algorithm
  *
  * @author Dragonskulle
  */
@@ -133,7 +133,6 @@ public class CapitalAimer extends AiPlayer {
                 }
             }
         }
-        // TODO Perform actions here
         /*TODO
          * To do this I need to have 2 Deques - one with the tiles which I have done (Must be a stack)
          * The second one is the next ones to use
@@ -146,7 +145,9 @@ public class CapitalAimer extends AiPlayer {
 
     }
 
-    /** This will find the capital node for both you and the opponent */
+    /** 
+     * This will find the capital node for both you and the opponent 
+    */
     private void findCapital() {
         Integer[] nodesInGraph = mGraph.getNodes();
 
@@ -162,6 +163,9 @@ public class CapitalAimer extends AiPlayer {
         }
     }
 
+    /**
+     * This will get the tile which needs to be aimed for
+     */
     private void getTile() {
         Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
         while (mTileToAim.get() == null) {
@@ -173,7 +177,9 @@ public class CapitalAimer extends AiPlayer {
         }
     }
 
-    /** This will set the opponent to aim for */
+    /** 
+     * This will set the opponent to aim for 
+    */
     private void findOpponent() {
         Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
 
@@ -188,15 +194,16 @@ public class CapitalAimer extends AiPlayer {
         }
     }
 
-    /** This will perform the A* Search */
+    /** 
+     * This will perform the A* Search and all related operations to it
+    */
     private void aStar() {
         Graph tempGraph =
                 new Graph(
                         mPlayer.get().getMap(),
                         mPlayer.get().getNetworkObject().getOwnerId(),
                         mTileToAim
-                                .get()); // TODO Currently just creates a dummy building so the code
-        // compiles
+                                .get()); 
         mGraph = tempGraph;
         AStar aStar = new AStar(mGraph);
         findCapital();
