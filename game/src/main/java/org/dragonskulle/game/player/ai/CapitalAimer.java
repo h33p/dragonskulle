@@ -39,33 +39,35 @@ public class CapitalAimer extends AiPlayer {
     @Override
     protected void simulateInput() {
     	
+    	// Checks if we have reached the capital
     	if (mPath.size() == 0) {
-    		log.severe("Changing opponent");
-             mOpponentPlayer = mPlayer.get();
-             
-         }
-    	 
-        if (mOpponentPlayer.getNetworkObject().getOwnerId()
-                == mPlayer.get().getNetworkObject().getOwnerId()) {
-        	log.severe("Actually changing");
+    		
+    		// Will find the opponent to attack
+    		log.info("Changing opponent");
+            mOpponentPlayer = mPlayer.get();
             findOpponent();
-            log.severe("Found opponent");
+           
+            // Will find the tile to attack
             mTileToAim = new Reference<HexagonTile>(null);
             getTile();
-            log.severe("Found Tile");
-        }
-
-        if (mTimeSinceLastCheck + UPDATE_PATH_TIME < Time.getTimeInSeconds()) {
-        	log.severe("A* Ran");
+            log.info("Found Tile");
+        
+            // Will perform all necessary checks for A*
             aStar();
-        }
-
+            log.severe("A* Ran");
+            
+    	}
+    	
+    	// Checks if path size is 0 
         if (mPath.size() == 0) {
         	return;
         }
 
+        // Checks if we are at our capital.  If so will build one on
         if (mGone.size() == 0) {
         	log.severe("BUILDING");
+        	int nextDoor =mPath.pop();
+        	mGone.push(nextDoor);
             int firstElement = mPath.pop();
             if (mGraph.getNode(firstElement)
                             .getHexTile()
@@ -80,11 +82,12 @@ public class CapitalAimer extends AiPlayer {
             }
         }
 
+        // This will move us onto our own claimed tiles
         int previousNode = mGone.pop();
 
         boolean onYourNode = false;
         while (!onYourNode) {
-            if (mGraph.getNode(previousNode).getHexTile().get().getClaimant() == null) {
+            if (mGraph.getNode(previousNode).getHexTile().get().getClaimant() == null) {		//TODO null checks please
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
             } else if (mGraph.getNode(previousNode)
@@ -102,8 +105,11 @@ public class CapitalAimer extends AiPlayer {
         }
 
         mGone.push(previousNode);
+        
+        // This will point us to the next tile to use
         int nextNode = mPath.pop();
-        while (mGraph.getNode(nextNode)
+        while (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null &&
+        		mGraph.getNode(nextNode)					//TODO null checks please
                         .getHexTile()
                         .get()
                         .getClaimant()
@@ -114,6 +120,7 @@ public class CapitalAimer extends AiPlayer {
             nextNode = mPath.pop();
         }
 
+        // Checks whether to build or to attack
         if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
             // BUILD
             HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
@@ -144,16 +151,6 @@ public class CapitalAimer extends AiPlayer {
                 }
             }
         }
-        /*TODO
-         * To do this I need to have 2 Deques - one with the tiles which I have done (Must be a stack)
-         * The second one is the next ones to use
-         * Check if the next tile is claimed in the deque -- if it isn't claim (either attack/build)
-         * If it is put it in the claimed deque.
-         * Everytime you redo A* it needs to be reset
-         * The start node is always OUR capital.
-         *
-         */
-
     }
 
     /** 
@@ -162,7 +159,7 @@ public class CapitalAimer extends AiPlayer {
     private void findCapital() {
         Integer[] nodesInGraph = mGraph.getNodes();
 
-        
+        // Go through all nodes to find the capital
         for (int nodeNumber : nodesInGraph) {
             Node node = mGraph.getNode(nodeNumber);
             
@@ -200,7 +197,6 @@ public class CapitalAimer extends AiPlayer {
      * This will set the opponent to aim for 
     */
     private void findOpponent() {
-        //Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
 
        boolean found = mPlayer.get().getMap().getAllTiles().anyMatch(tile -> {
             	if (tile.getClaimant() != null && tile.getClaimant().getNetworkObject().getOwnerId() !=  mPlayer.get().getNetworkObject().getOwnerId()) {
@@ -224,6 +220,7 @@ public class CapitalAimer extends AiPlayer {
      * This will perform the A* Search and all related operations to it
     */
     private void aStar() {
+    	// Creates a graph
         Graph tempGraph =
                 new Graph(
                         mPlayer.get().getMap(),
@@ -231,13 +228,13 @@ public class CapitalAimer extends AiPlayer {
                         mTileToAim
                                 .get()); 
         mGraph = tempGraph;
-        Integer[] nodes = mGraph.getNodes();
+ 
         
-        for (int node : nodes) {
-        	System.out.println(node);
-        }
-        AStar aStar = new AStar(mGraph);
+        // Finds the capitals
         findCapital();
+        
+        // Performs A* Search
+        AStar aStar = new AStar(mGraph);
         try {
             aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());
             log.severe("Completed");
@@ -245,7 +242,10 @@ public class CapitalAimer extends AiPlayer {
             // TODO Shouldn't get here.
             log.severe("EXCEPTION");
         }
+        
         mPath = aStar.getAnswerOfNodes();
+        
+        //TODO Testing - remove before PR
         String answer = "";
         if (mPath.size() == 0) {
         	log.severe("HOWWWWW");
@@ -256,6 +256,7 @@ public class CapitalAimer extends AiPlayer {
         	log.severe("Q " + hexTile.get().getQ() + " R " + hexTile.get().getR());
         }
         log.severe(answer);
+        
         mGone = new ArrayDeque<Integer>();
     }
 }

@@ -63,26 +63,5 @@ public class Node {
         mConnections.add(new Connection(mNode, destinationNode, weight));
     }
 
-    /**
-     * Removes a <Code> Connection </Code> from the Node
-     *
-     * @param destinationNode The destination node for the connection to remove
-     */
-    public void removeConnection(int destinationNode) {
-
-        // TODO assumption only 1 connection between each node. Need to enforce!
-
-        Connection connectionToDelete = null; // Sets up the connection
-        for (Connection edge : mConnections) {
-
-            if (edge.getDestinationNode() == destinationNode) { // If the connection exists say so
-                connectionToDelete = edge;
-            }
-        }
-
-        if (connectionToDelete != null) { // Removes the connection
-            mConnections.remove(connectionToDelete);
-        }
-    }
 
 }
