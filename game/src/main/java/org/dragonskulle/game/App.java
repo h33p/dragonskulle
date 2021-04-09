@@ -173,7 +173,7 @@ public class App implements NativeResource {
                                                                 networkManager
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(
-                                                                                -1,
+                                                                                -3,
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aStarAi"));

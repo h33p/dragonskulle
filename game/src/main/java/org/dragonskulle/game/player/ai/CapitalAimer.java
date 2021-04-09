@@ -65,8 +65,8 @@ public class CapitalAimer extends AiPlayer {
 
         // Checks if we are at our capital.  If so will build one on
         if (mGone.size() == 0) {
-        	log.severe("BUILDING");
-        	int nextDoor =mPath.pop();
+        	log.info("mGone == 0");
+        	int nextDoor = mPath.pop();
         	mGone.push(nextDoor);
             int firstElement = mPath.pop();
             if (mGraph.getNode(firstElement)
@@ -123,6 +123,7 @@ public class CapitalAimer extends AiPlayer {
 
         // Checks whether to build or to attack
         if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
+        	log.info("Building");
             // BUILD
             HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
             mPlayer.get()
@@ -131,6 +132,7 @@ public class CapitalAimer extends AiPlayer {
             // possible
             mGone.push(nextNode);
         } else if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null) {
+        	log.info("Attacking");
             // ATTACK
             if (!mGraph.getNode(nextNode).getHexTile().get().hasBuilding()) {
                 // Assuming that the building is on the next node
@@ -253,10 +255,8 @@ public class CapitalAimer extends AiPlayer {
         }
         for (int node: mPath) {
         	answer = answer + node + " ->";
-        	Reference<HexagonTile> hexTile = mGraph.getNode(node).getHexTile();
-        	log.severe("Q " + hexTile.get().getQ() + " R " + hexTile.get().getR());
         }
-        log.severe(answer);
+        log.info(answer);
         
         mGone = new ArrayDeque<Integer>();
     }
