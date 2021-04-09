@@ -7,8 +7,8 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
-import org.dragonskulle.game.player.algorithms.graphs.Connection;
-import org.dragonskulle.game.player.algorithms.graphs.Graph;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 
 /**
  * Class which performs the A* Algorithm

@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.algorithms.graphs;
+package org.dragonskulle.game.player.ai.algorithms.graphs;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

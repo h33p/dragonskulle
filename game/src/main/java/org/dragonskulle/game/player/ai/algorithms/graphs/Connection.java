@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.algorithms.graphs;
+package org.dragonskulle.game.player.ai.algorithms.graphs;
 
 /**
  * The class which holds the information for a connection and provides access to this data

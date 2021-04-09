@@ -13,8 +13,8 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ai.algorithms.AStar;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
-import org.dragonskulle.game.player.algorithms.graphs.Graph;
-import org.dragonskulle.game.player.algorithms.graphs.Node;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
 /**
  * An AI player which will aim for a capital of a player.
