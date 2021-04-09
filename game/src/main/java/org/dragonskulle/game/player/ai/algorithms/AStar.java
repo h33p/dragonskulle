@@ -9,6 +9,7 @@ import java.util.Set;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -27,8 +28,6 @@ public class AStar {
     private Set<Integer> mVisited; // This will hold the nodes which has been mVisited
     private Graph mGraph; // This will hold the mGraph being processed
     @Getter private Deque<Integer> mAnswerOfNodes; // This hold the solution of which nodes to visit
-    private Deque<Connection>
-            mAnswerOfConnections; // This holds the connections which need to be mVisited
 
     /**
      * The constructor which allows you to make the object.
@@ -41,7 +40,6 @@ public class AStar {
         mFrontier = new ArrayList<double[]>();
         mVisited = new HashSet<Integer>();
         mAnswerOfNodes = new ArrayDeque<Integer>();
-        mAnswerOfConnections = new ArrayDeque<Connection>();
     }
 
     /**
@@ -61,6 +59,8 @@ public class AStar {
 
         while (!finished) {
         	log.severe("Current Node: " + currentNode + " End Node " + endNode);
+        	Node node1 = mGraph.getNode(currentNode);
+        	Node node2 = mGraph.getNode(endNode);
             ArrayList<Connection> connections =
                     mGraph.getConnection(currentNode); // Gets all the connections needed
 
@@ -70,6 +70,7 @@ public class AStar {
 
                 Connection connection = connections.get(i);
                 int child = connection.getDestinationNode(); // Gets the destination node
+                Node childNode = mGraph.getNode(child);
                 double destinationInfo = mGraph.getNodeSpecial(child); // Gets the heuristic info
                 double weight =
                         connection.getWeight()
@@ -136,7 +137,7 @@ public class AStar {
     /** Performs a sort on the mFrontier */
     private void sort() {
 
-        mFrontier = mergesort(mFrontier, 0, mFrontier.size() - 1);
+        mergesort(0, mFrontier.size() - 1);
     }
 
     /**
@@ -147,16 +148,16 @@ public class AStar {
      * @param right the right index
      * @return the data sorted
      */
-    private ArrayList<double[]> mergesort(ArrayList<double[]> data, int left, int right) {
+    private void mergesort( int left, int right) {
 
         if (left < right) { // While the left and right points are the correct ends
 
             int mid = (left + right) / 2; // Finds the mid index
-            data = mergesort(data, left, mid); // Sorts the left side
-            data = mergesort(data, mid + 1, right); // Sorts the right side
-            data = merge(data, left, mid, right); // Merges the 2 sides together
+            mergesort(left, mid); // Sorts the left side
+            mergesort(mid + 1, right); // Sorts the right side
+            merge(left, mid, right); // Merges the 2 sides together
         }
-        return data;
+       
     }
 
     /**
@@ -168,7 +169,7 @@ public class AStar {
      * @param right The right index
      * @return the data sorted
      */
-    private ArrayList<double[]> merge(ArrayList<double[]> a, int left, int mid, int right) {
+    private void merge( int left, int mid, int right) {
 
         double[][] b = new double[right - left + 1][2]; // The array which will be sorted
         int bcount = 0; // Where you are in the b array
@@ -177,17 +178,17 @@ public class AStar {
 
         while ((lcount <= mid) && (rcount <= right)) { // Whilst both sides are not sorted
 
-            if (a.get(lcount)[1]
-                    <= a.get(rcount)[
+            if (mFrontier.get(lcount)[1]
+                    <= mFrontier.get(rcount)[
                             1]) { // If the data on the left side is smaller than the data on the
                 // right side
                 b[bcount] =
-                        a.get(lcount); // Put that data in the first available space in the b array
+                        mFrontier.get(lcount); // Put that data in the first available space in the b array
                 bcount++; // Increase the b and l pointer
                 lcount++;
             } else { // If the data on the right side is larger
                 b[bcount] =
-                        a.get(lcount); // Put that data in the first available space in the b array
+                        mFrontier.get(rcount); // Put that data in the first available space in the b array
                 bcount++; // Increase the b and l pointer
                 rcount++;
             }
@@ -197,7 +198,7 @@ public class AStar {
 
             while (rcount <= right) { // Add all the data from the right side
 
-                b[bcount] = a.get(rcount);
+                b[bcount] = mFrontier.get(rcount);
                 bcount++;
                 rcount++;
             }
@@ -205,7 +206,7 @@ public class AStar {
 
             while (lcount <= mid) { // Add all the data from the left side
 
-                b[bcount] = a.get(lcount);
+                b[bcount] = mFrontier.get(lcount);
                 bcount++;
                 lcount++;
             }
@@ -213,12 +214,12 @@ public class AStar {
 
         // Adds all the data sorted back into the array
         for (bcount = 0; bcount < right - left + 1; bcount++) {
-
-            a.remove(left + bcount);
-            a.add(left + bcount, b[bcount]);
+        	
+        	mFrontier.remove(left+bcount);
+           mFrontier.add(left+bcount, b[bcount]);
+           
         }
 
-        return a;
     }
 
     /**
