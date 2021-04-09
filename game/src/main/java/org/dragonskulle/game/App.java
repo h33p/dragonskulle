@@ -125,7 +125,7 @@ public class App implements NativeResource {
                         "hexagon map",
                         new Transform3D(),
                         (map) -> {
-                            map.addComponent(new HexagonMap(51));
+                            map.addComponent(new HexagonMap(10));
                         });
 
         mainScene.addRootObject(hexagonMap);
@@ -606,6 +606,8 @@ public class App implements NativeResource {
         do {
             sReload = false;
             Settings.getInstance().loadSettings();
+            AudioManager.getInstance()
+            .toggleMasterMute();
             try (App app = new App()) {
                 app.run();
             }

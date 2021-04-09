@@ -162,12 +162,14 @@ public class CapitalAimer extends AiPlayer {
     private void findCapital() {
         Integer[] nodesInGraph = mGraph.getNodes();
 
+        
         for (int nodeNumber : nodesInGraph) {
             Node node = mGraph.getNode(nodeNumber);
-            if (node.getHexTile().get().getClaimant() == mOpponentPlayer
+            
+            if (node.getHexTile().get().getClaimant() != null && node.getHexTile().get().getClaimant().getNetworkObject().getOwnerId() == mOpponentPlayer.getNetworkObject().getOwnerId()
                    && node.getHexTile().get().getBuilding() != null && node.getHexTile().get().getBuilding().isCapital()) {
                 mOppCapNode = node;
-            } else if (node.getHexTile().get().getClaimant() == mPlayer.get()
+            } else if (node.getHexTile().get().getClaimant() != null && node.getHexTile().get().getClaimant().getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()
                     && node.getHexTile().get().getBuilding() != null && node.getHexTile().get().getBuilding().isCapital()) {
                 mCapNode = node;
             }
@@ -229,6 +231,11 @@ public class CapitalAimer extends AiPlayer {
                         mTileToAim
                                 .get()); 
         mGraph = tempGraph;
+        Integer[] nodes = mGraph.getNodes();
+        
+        for (int node : nodes) {
+        	System.out.println(node);
+        }
         AStar aStar = new AStar(mGraph);
         findCapital();
         try {
@@ -239,6 +246,16 @@ public class CapitalAimer extends AiPlayer {
             log.severe("EXCEPTION");
         }
         mPath = aStar.getAnswerOfNodes();
+        String answer = "";
+        if (mPath.size() == 0) {
+        	log.severe("HOWWWWW");
+        }
+        for (int node: mPath) {
+        	answer = answer + node + " ->";
+        	Reference<HexagonTile> hexTile = mGraph.getNode(node).getHexTile();
+        	log.severe("Q " + hexTile.get().getQ() + " R " + hexTile.get().getR());
+        }
+        log.severe(answer);
         mGone = new ArrayDeque<Integer>();
     }
 }

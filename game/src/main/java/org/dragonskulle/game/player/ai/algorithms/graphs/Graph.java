@@ -50,9 +50,10 @@ public class Graph {
 
         try {
             addNode(mNodeNum, tile);
-
+            
             int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
-
+            
+            
             this.setNodeSpecial(mNodeNum, heuristic);
 
         } catch (GraphNodeException e) {
@@ -74,25 +75,13 @@ public class Graph {
                 if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
                         && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
 
-                    int distance = 10; // A Chosen number so the hueristic will be smaller
-
-                    if (tileNeighbour.getClaimant() == null) {
-                        distance += 10; // TODO link this to building price
-                    } else if (tileNeighbour.getClaimant().getNetworkObject().getOwnerId()
-                            != mOwnerId && tileNeighbour.getBuilding() != null) {
-                        distance +=
-                                tileNeighbour
-                                        .getBuilding()
-                                        .getAttackCost(); // This adds the cost of attack.
+                    //int distance = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
                     
-                    } else {
-                        // Don't do anything as its claimed by you so you want to go over it
-                    }
                     try {
                         addConnection(
                                 mNodeNum,
                                 mapEntry.getValue().getNode(),
-                                distance); // Weight set to 10
+                                1); // Weight set to 1
                     } catch (Exception e) {
                         log.severe("Exception -- not sure how is here");
                     }
