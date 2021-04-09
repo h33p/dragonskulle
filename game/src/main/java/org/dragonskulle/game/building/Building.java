@@ -403,12 +403,20 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * // TODO: Ensure this is correct.
+     * Remove this building from the game.
      *
-     * <p>Remove this building from the {@link Player} who owns the building and references to it in
-     * any {@link HexagonTile}s.
+     * <p>
+     *
+     * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     *   <li>Calls {@link GameObject#destroy()}.
+     * </ul>
      */
     public void remove() {
+        // Remove the ownership of the building from the owner.
+        getOwner().removeOwnership(this);
+
         // Remove the building from the tile.
         getTile().setBuilding(null);
 
@@ -422,8 +430,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewableTiles = new ArrayList<HexagonTile>();
         mAttackableTiles = new ArrayList<HexagonTile>();
 
-        // TODO: Request that the building should be destroyed.
-        // destroy();
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
     }
 
     /**
