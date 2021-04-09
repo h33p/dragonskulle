@@ -9,6 +9,7 @@ import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 
 /**
  * @author Oscar L
@@ -35,12 +36,10 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        final Vector2f position = GameActions.getCursor().getPosition();
-        log.info("Cursor Position: ")
-        position.add(1f, 1f);//.mul(0.5f);
-        if (mCursorTransform != null) {
-            mCursorTransform.setParentAnchor(position.x, position.y, position.x, position.y);
-        }
+        final Vector2fc position = GameActions.getCursor().getPosition();
+        float x = (position.x() + 1) * 0.5f;
+        float y = (position.y() + 1) * 0.5f;
+        mCursorTransform.setParentAnchor(x, y, x, y);
 //
 //        if(GameActions.LEFT_CLICK.isActivated()){
 //            mFancyCursor.

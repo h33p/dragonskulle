@@ -19,6 +19,7 @@ import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
@@ -94,8 +95,8 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
             final String cursorText;
 
             if (cursor != null) {
-                Vector2f cursorCoords = cursor.getPosition();
-                cursorText = String.format("Cursor: %.2f %.2f \n", cursorCoords.x, cursorCoords.y);
+                Vector2fc cursorCoords = cursor.getPosition();
+                cursorText = String.format("Cursor: %.2f %.2f \n", cursorCoords.x(), cursorCoords.y());
             } else {
                 cursorText = "Cursor error";
             }

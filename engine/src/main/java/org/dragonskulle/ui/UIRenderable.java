@@ -12,11 +12,7 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.components.*;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
-import org.joml.Vector4fc;
+import org.joml.*;
 
 /**
  * Class describing a renderable UI object
@@ -108,7 +104,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     public boolean cursorOver() {
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2f cursorCoords = Actions.getCursor().getPosition();
+        Vector2fc cursorCoords = Actions.getCursor().getPosition();
 
         mTmpMatrix.invert();
 

@@ -6,6 +6,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GLFWState;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -61,7 +62,7 @@ public class Cursor {
                     }
                 };
         GLFW.glfwSetCursorPosCallback(window, listener);
-        GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+//        GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 
     /**
@@ -187,7 +188,7 @@ public class Cursor {
      *
      * @return The cursor position, relative to the window size.
      */
-    public Vector2f getPosition() {
+    public Vector2fc getPosition() {
         return mScaledPosition;
     }
 
