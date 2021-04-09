@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
 import org.dragonskulle.components.Component;
@@ -11,9 +12,7 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate {
     private final SyncStat<?> stat;
     private final IUpgradeStat mStatIncreaserMethod;
@@ -28,13 +27,9 @@ public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate 
         this.mStatIncreaserMethod = statIncreaserMethod;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-
-    }
+    protected void onDestroy() {}
 
     /**
      * Fixed update is aimed to be called a fixed number of times per second. The target rate is
@@ -44,9 +39,7 @@ public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate 
      * @param deltaTime Approximate time between calls to fixedUpdate
      */
     @Override
-    public void fixedUpdate(float deltaTime) {
-
-    }
+    public void fixedUpdate(float deltaTime) {}
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -54,11 +47,11 @@ public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate 
      */
     @Override
     public void onStart() {
-        UIText name = new UIText(
-                new Vector3f(0f, 0f, 0f),
-                Font.getFontResource(
-                        "Rise of Kingdom.ttf"),
-                stat.getClass().getSimpleName());
+        UIText name =
+                new UIText(
+                        new Vector3f(0f, 0f, 0f),
+                        Font.getFontResource("Rise of Kingdom.ttf"),
+                        stat.getClass().getSimpleName());
         UIRenderable upgradeGraphic = new UIRenderable(new SampledTexture("ui/upgrade_button.png"));
         UIButton upgradeButton = new UIButton((__, _____) -> mStatIncreaserMethod.call());
     }

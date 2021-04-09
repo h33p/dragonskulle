@@ -3,7 +3,6 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -25,9 +24,7 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
@@ -39,17 +36,14 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetPlayer mGetPlayer;
 
     private final float mOffsetToTop = 0.46f;
-    @Getter
-    private Reference<UIShopSection> mShop;
+    @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mStatScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -91,12 +85,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -177,26 +168,26 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         swapScreens(newScreen);
     }
 
-//    private void swapScreens(Reference<GameObject> newScreen) {
-//        log.warning("Swapping screens");
-//        final boolean lastIsValid = mCurrentScreen.isValid();
-//        if (!newScreen.isValid()) {
-//            if (lastIsValid) {
-//                mCurrentScreen.get().setEnabled(false); // disable last
-//            }
-//            mCurrentScreen = newScreen; // replace
-//        } else if (mCurrentScreen == null || !lastIsValid) {
-//            mCurrentScreen = newScreen; // replace old
-//            mCurrentScreen.get().setEnabled(true); // enable new
-//        } else if (!mCurrentScreen.equals(newScreen)) { // if the screens are not the same
-//            mCurrentScreen.get().setEnabled(false);
-//            mCurrentScreen = newScreen;
-//            mCurrentScreen.get().setEnabled(true);
-//
-//        } else {
-//            log.warning("the screens are the same.");
-//        }
-//    }
+    //    private void swapScreens(Reference<GameObject> newScreen) {
+    //        log.warning("Swapping screens");
+    //        final boolean lastIsValid = mCurrentScreen.isValid();
+    //        if (!newScreen.isValid()) {
+    //            if (lastIsValid) {
+    //                mCurrentScreen.get().setEnabled(false); // disable last
+    //            }
+    //            mCurrentScreen = newScreen; // replace
+    //        } else if (mCurrentScreen == null || !lastIsValid) {
+    //            mCurrentScreen = newScreen; // replace old
+    //            mCurrentScreen.get().setEnabled(true); // enable new
+    //        } else if (!mCurrentScreen.equals(newScreen)) { // if the screens are not the same
+    //            mCurrentScreen.get().setEnabled(false);
+    //            mCurrentScreen = newScreen;
+    //            mCurrentScreen.get().setEnabled(true);
+    //
+    //        } else {
+    //            log.warning("the screens are the same.");
+    //        }
+    //    }
 
     private void swapScreens(Reference<GameObject> newScreen) {
         log.warning("swapping screens");
@@ -343,8 +334,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                 new TransformUI(),
                                 (root) -> {
                                     for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-                                         i < mButtonChildrenSize;
-                                         i++) {
+                                            i < mButtonChildrenSize;
+                                            i++) {
                                         UITextButtonFrame mButtonChild = mButtonChildren.get(i);
                                         int finalI = i;
                                         root.buildChild(
@@ -355,9 +346,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                                             .setPosition(
                                                                     0f,
                                                                     (0.8f
-                                                                            * finalI
-                                                                            / mButtonChildrenSize
-                                                                            * 1.3f)
+                                                                                    * finalI
+                                                                                    / mButtonChildrenSize
+                                                                                    * 1.3f)
                                                                             - mOffsetToTop);
                                                     self.getTransform(TransformUI.class)
                                                             .setMargin(0.075f, 0f, -0.075f, 0f);

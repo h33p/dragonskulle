@@ -5,7 +5,6 @@ import java.util.Scanner;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -140,8 +139,6 @@ public class App implements NativeResource {
                             map.addComponent(new HexagonMap(51));
                         });
 
-
-
         mainScene.addRootObject(hexagonMap);
 
         return mainScene;
@@ -201,7 +198,6 @@ public class App implements NativeResource {
 
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
-
         addDebugUI(mainMenu);
 
         TemplateManager templates = new TemplateManager();
@@ -264,15 +260,6 @@ public class App implements NativeResource {
                         });
 
         mainMenu.addRootObject(audio);
-
-        GameObject uiCursor =
-                new GameObject(
-                        "fancy_cursor",
-                        new TransformUI(true),
-                        (self) -> {
-                            self.addComponent(new FancyCursor());
-                        });
-        mainMenu.addRootObject(uiCursor);
 
         GameObject gameTitle =
                 new GameObject(
@@ -437,25 +424,6 @@ public class App implements NativeResource {
 
                                 button.addComponent(newButton);
                             });
-                    bg.buildChild(
-                            "slider",
-                            new TransformUI(true),
-                            (slider) -> {
-                                slider.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
-                                slider.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UISlider newSlider =
-                                        new UISlider((uiSlider, val) -> log.info("Value " + val));
-
-                                newSlider.setValue(
-                                        Settings.getInstance()
-                                                .retrieveFloat("sliderDefaultValue", 0.5f));
-                                newSlider.setRoundStep(0.1f);
-                                newSlider.setMaxValue(10f);
-
-                                slider.addComponent(newSlider);
-                            });
                 });
         joinUI.buildChild(
                 "bg",
@@ -609,6 +577,11 @@ public class App implements NativeResource {
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
 
+        mainMenu.addRootObject(
+                new GameObject(
+                        "fancy_cursor",
+                        new TransformUI(true),
+                        (self) -> self.addComponent(new FancyCursor())));
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(hostUI);
@@ -656,10 +629,10 @@ public class App implements NativeResource {
         // TODO: actually make a fully fledged console
         // TODO: join it at the end
         new Thread(
-                () -> {
-                    Scanner in = new Scanner(System.in);
+                        () -> {
+                            Scanner in = new Scanner(System.in);
 
-                    String line;
+                            String line;
 
                             while ((line = in.nextLine()) != null) {
                                 try {

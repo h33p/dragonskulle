@@ -2,7 +2,6 @@
 package org.dragonskulle.ui;
 
 import java.util.Collection;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
@@ -27,8 +26,7 @@ public class UIManager {
      *
      * <p>It will always be the top most element.
      */
-    @Getter
-    private Reference<UIRenderable> mHoveredObject;
+    @Getter private Reference<UIRenderable> mHoveredObject;
 
     /**
      * Update which UI element is currently hovered by the cursor
@@ -45,7 +43,8 @@ public class UIManager {
         int curDepth = 0;
 
         for (Component component : components) {
-            if (component instanceof UIRenderable && !component.getGameObject().getName().equals("fancy_cursor")) {
+            if (component instanceof UIRenderable
+                    && !component.getGameObject().getName().equals("fancy_cursor")) {
                 UIRenderable rend = (UIRenderable) component;
                 int depth = rend.getGameObject().getDepth();
                 if (rend.cursorOver() && depth >= curDepth) {
@@ -56,9 +55,7 @@ public class UIManager {
         }
     }
 
-    /**
-     * Get singleton UIManager instance
-     */
+    /** Get singleton UIManager instance */
     public static UIManager getInstance() {
         return SINGLETON;
     }

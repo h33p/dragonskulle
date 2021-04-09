@@ -1,6 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_HIDDEN;
+
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Engine;
@@ -10,9 +13,6 @@ import org.joml.Vector2fc;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
-
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_HIDDEN;
 
 /**
  * Once attached to a window, this allows access to:
@@ -62,7 +62,7 @@ public class Cursor {
                     }
                 };
         GLFW.glfwSetCursorPosCallback(window, listener);
-//        GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 
     /**

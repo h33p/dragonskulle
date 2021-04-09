@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
 import lombok.extern.java.Log;
@@ -8,25 +9,18 @@ import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIRenderable;
-import org.joml.Vector2f;
 import org.joml.Vector2fc;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Log
 public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
 
     private TransformUI mCursorTransform;
     private UIRenderable mFancyCursor;
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-
-    }
+    protected void onDestroy() {}
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -40,10 +34,10 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
         float x = (position.x() + 1) * 0.5f;
         float y = (position.y() + 1) * 0.5f;
         mCursorTransform.setParentAnchor(x, y, x, y);
-//
-//        if(GameActions.LEFT_CLICK.isActivated()){
-//            mFancyCursor.
-//        }
+        //
+        //        if(GameActions.LEFT_CLICK.isActivated()){
+        //            mFancyCursor.
+        //        }
     }
 
     /**
@@ -55,7 +49,7 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
         mFancyCursor = new UIRenderable(new SampledTexture("ui/cursor.png"));
         getGameObject().addComponent(mFancyCursor);
         mCursorTransform = getGameObject().getTransform(TransformUI.class);
-//        mCursorTransform.setParentAnchor(0.01f, 0f, 0.01f, 1f);
+        //        mCursorTransform.setParentAnchor(0.01f, 0f, 0.01f, 1f);
         mCursorTransform.setMargin(-0.03f, -0.03f, 0.03f, 0.03f);
     }
 }
