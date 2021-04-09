@@ -114,7 +114,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         // Gets all the tiles it can expand to
         List<HexagonTile> tilesToUse = getBuildableTiles();
-
+        
         // Checks if there are tiles
         if (tilesToUse.size() > 0) {
             // Picks a random number and thus a random tile.
@@ -165,47 +165,40 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean attack() {
         log.info("AI: Attacking");
-        ArrayList<Building[]> buildingsToAttack = new ArrayList<Building[]>();
-
-        // Will create a list of [attacker (your building), defender (building to
-        // attack)]
-        getPlayer()
-                .getOwnedBuildingsAsStream()
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .forEach(
-                        b -> {
-                            List<Building> attackableBuildings = b.getAttackableBuildings();
-                            for (Building buildingWhichCouldBeAttacked : attackableBuildings) {
-                                Building[] listToAdd = {b, buildingWhichCouldBeAttacked};
-
-                                buildingsToAttack.add(listToAdd);
-                            }
-                        });
-
-        // Checks if you can attack
-        if (buildingsToAttack.size() != 0) {
-
-            // getting a random building to
-            // {attackFrom, and attackTo}
-            // Chosen building to attack in form [buildingToAttackFrom,
-            // buildingToAttack]
-            Building[] buildingToAttack =
-                    buildingsToAttack.get(mRandom.nextInt(buildingsToAttack.size()));
-            // Send to server
-
-            if (buildingToAttack == null
-                    || buildingToAttack[0] == null
-                    || buildingToAttack[1] == null) {
-                // Check in case accidentally a null slipped in
+        
+        
+        int iterations = 100;
+        int i = 0;
+        boolean finished = false;
+        while (!finished) {
+        	
+        	if (i >iterations) {
+        		return false;
+            	
+            }
+        	if (getPlayer().getNumberOfOwnedBuildings() == 0) {
                 return false;
             }
-            getPlayer()
-                    .getClientAttackRequest()
-                    .invoke(d -> d.setData(buildingToAttack[0], buildingToAttack[1]));
-            return true;
-        }
 
+            int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+            Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
+            if (buildingReference == null || buildingReference.isValid() == false) {
+                log.info("AI: could not get building to attack from.");
+                i++;
+                continue;
+            }
+            if (buildingReference.get().getAttackableBuildings().size() == 0) {
+            	log.info("AI: No attackable buildings");
+            	i++;
+            	continue;
+            }
+            Building defender = buildingReference.get().getAttackableBuildings().get(mRandom.nextInt(buildingReference.get().getAttackableBuildings().size()));
+            getPlayer()
+            .getClientAttackRequest()
+            .invoke(d -> d.setData(buildingReference.get(), defender));
+            return true;
+            
+        }
         return false;
     }
 
