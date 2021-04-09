@@ -166,47 +166,31 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean attack() {
         log.info("AI: Attacking");
 
-        int iterations = 100;
-        int i = 0;
-        boolean finished = false;
-        while (!finished) {
-
-            if (i > iterations) {
-                return false;
-            }
-            if (getPlayer().getNumberOfOwnedBuildings() == 0) {
-                return false;
-            }
-
-            int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-            Reference<Building> buildingReference =
-                    getPlayer().getOwnedBuildings().get(buildingIndex);
-            if (buildingReference == null || buildingReference.isValid() == false) {
-                log.info("AI: could not get building to attack from.");
-                i++;
-                continue;
-            }
-            if (buildingReference.get().getAttackableBuildings().size() == 0) {
-                log.info("AI: No attackable buildings");
-                i++;
-                continue;
-            }
-            Building defender =
-                    buildingReference
-                            .get()
-                            .getAttackableBuildings()
-                            .get(
-                                    mRandom.nextInt(
-                                            buildingReference
-                                                    .get()
-                                                    .getAttackableBuildings()
-                                                    .size()));
-            getPlayer()
-                    .getClientAttackRequest()
-                    .invoke(d -> d.setData(buildingReference.get(), defender));
-            return true;
-        }
-        return false;
+        boolean completed = getPlayer()
+        .getOwnedBuildingsAsStream()
+        .filter(Reference::isValid)
+        .map(Reference::get).anyMatch(building -> {
+        	ArrayList<Building> attackableBuildings = building.getAttackableBuildings();
+        	if (attackableBuildings.size() == 0) {
+        		return false;
+        	}
+        	Building defender = building
+                    
+                    .getAttackableBuildings()
+                    .get(
+                            mRandom.nextInt(
+                                    building
+                                            
+                                            .getAttackableBuildings()
+                                            .size()));
+        	getPlayer()
+            .getClientAttackRequest()
+            .invoke(d -> d.setData(building, defender));
+        	return true;
+        });
+        
+        
+           return completed;
     }
 
     /**
