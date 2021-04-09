@@ -31,12 +31,14 @@ public class Renderable extends Component {
                 .registerFastCloner(
                         Renderable.class,
                         (t, cloner, clones) -> {
-                            Renderable m = (Renderable) t;
-                            Renderable ret =
-                                    new Renderable(m.mMesh, cloner.deepClone(m.mMaterial, clones));
-                            clones.put(m, ret);
-                            ret.mGameObject = cloner.deepClone(m.mGameObject, clones);
-                            return ret;
+                            Renderable toClone = (Renderable) t;
+                            Renderable cloned =
+                                    new Renderable(
+                                            toClone.mMesh,
+                                            cloner.deepClone(toClone.mMaterial, clones));
+                            clones.put(toClone, cloned);
+                            cloned.mGameObject = cloner.deepClone(toClone.mGameObject, clones);
+                            return cloned;
                         });
     }
 

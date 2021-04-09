@@ -51,12 +51,15 @@ public class TransformHex extends Transform {
                 .registerFastCloner(
                         TransformHex.class,
                         (t, cloner, clones) -> {
-                            TransformHex m = (TransformHex) t;
-                            TransformHex ret =
-                                    new TransformHex(m.mPosition.x, m.mPosition.y, m.mHeight);
-                            ret.mRotation = m.mRotation;
-                            ret.mGameObject = cloner.deepClone(m.mGameObject, clones);
-                            return ret;
+                            TransformHex toClone = (TransformHex) t;
+                            TransformHex cloned =
+                                    new TransformHex(
+                                            toClone.mPosition.x,
+                                            toClone.mPosition.y,
+                                            toClone.mHeight);
+                            cloned.mRotation = toClone.mRotation;
+                            cloned.mGameObject = cloner.deepClone(toClone.mGameObject, clones);
+                            return cloned;
                         });
     }
 

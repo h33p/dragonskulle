@@ -45,21 +45,21 @@ public class GameObject implements Serializable {
                 .registerFastCloner(
                         GameObject.class,
                         (t, cloner, clones) -> {
-                            GameObject m = (GameObject) t;
-                            GameObject ret = new GameObject(m.mName);
-                            clones.put(m, ret);
-                            ret.mRoot = cloner.deepClone(m.mRoot, clones);
-                            ret.mParent = cloner.deepClone(m.mParent, clones);
-                            ret.mTransform = cloner.deepClone(m.mTransform, clones);
-                            for (Component comp : m.mComponents) {
-                                ret.mComponents.add(cloner.deepClone(comp, clones));
+                            GameObject toClone = (GameObject) t;
+                            GameObject cloned = new GameObject(toClone.mName);
+                            clones.put(toClone, cloned);
+                            cloned.mRoot = cloner.deepClone(toClone.mRoot, clones);
+                            cloned.mParent = cloner.deepClone(toClone.mParent, clones);
+                            cloned.mTransform = cloner.deepClone(toClone.mTransform, clones);
+                            for (Component comp : toClone.mComponents) {
+                                cloned.mComponents.add(cloner.deepClone(comp, clones));
                             }
-                            for (GameObject go : m.mChildren) {
-                                ret.mChildren.add(cloner.deepClone(go, clones));
+                            for (GameObject go : toClone.mChildren) {
+                                cloned.mChildren.add(cloner.deepClone(go, clones));
                             }
-                            ret.mEnabled = m.mEnabled;
-                            ret.mDepth = m.mDepth;
-                            return ret;
+                            cloned.mEnabled = toClone.mEnabled;
+                            cloned.mDepth = toClone.mDepth;
+                            return cloned;
                         });
     }
 

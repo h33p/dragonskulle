@@ -42,8 +42,8 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     public HexagonMap(int size) {
         this.mSize = size;
 
-        if (size < 0) {
-            throw new RuntimeException("The size should be greater than 0");
+        if (size <= 0) {
+            throw new RuntimeException("The size must be greater than 0");
         }
 
         mTiles = new HexagonTileStore(mSize, 3);

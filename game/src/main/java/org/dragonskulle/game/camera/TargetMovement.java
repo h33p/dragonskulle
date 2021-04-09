@@ -57,13 +57,10 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
 
             mTransform.getPosition(mTmpVec1);
             mTarget.get().getPosition(mTmpVec2);
-            System.out.println(String.format("%.2f %.2f %.2f", mTmpVec2.x, mTmpVec2.y, mTmpVec2.z));
             mTmpVec2.sub(mTmpVec1).mul(mDirectionMul);
-            System.out.println(String.format("%.2f %.2f %.2f", mTmpVec2.x, mTmpVec2.y, mTmpVec2.z));
 
             if (mTmpVec2.lengthSquared() <= mEndDelta * mEndDelta) {
                 if (curHoldTime >= mHoldTime) {
-                    System.out.println("BREAK OUT OF HOLD!!!");
                     mTarget = null;
                     return;
                 }
@@ -82,9 +79,6 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
                             mMinMoveSpeed,
                             mMaxMoveSpeed,
                             Math.min(mMaxSpeedDistance, dist) / mMaxSpeedDistance);
-
-            System.out.println(String.format("%.2f | %.2f", dist, moveSpeed * deltaTime));
-            System.out.println(String.format("%.2f %.2f %.2f", mTmpVec2.x, mTmpVec2.y, mTmpVec2.z));
 
             mTmpVec2.normalize().mul(Math.min(moveSpeed * deltaTime, dist));
 

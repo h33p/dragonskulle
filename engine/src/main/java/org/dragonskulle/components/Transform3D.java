@@ -33,10 +33,10 @@ public class Transform3D extends Transform {
                 .registerFastCloner(
                         Transform3D.class,
                         (t, cloner, clones) -> {
-                            Transform3D m = (Transform3D) t;
-                            Transform3D ret = new Transform3D(m.getLocalMatrix());
-                            ret.mGameObject = cloner.deepClone(m.mGameObject, clones);
-                            return ret;
+                            Transform3D toClone = (Transform3D) t;
+                            Transform3D cloned = new Transform3D(toClone.getLocalMatrix());
+                            cloned.mGameObject = cloner.deepClone(toClone.mGameObject, clones);
+                            return cloned;
                         });
     }
 

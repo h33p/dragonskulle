@@ -159,21 +159,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         updateTokens(TOKEN_TIME);
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
-    private void onerModifiedObject(Reference<NetworkObject> obj) {
-        // remove from self as owned if exists, then we need to check if we are the owner again
-        if (obj.isValid()) {
-            final Reference<Building> buildingReference =
-                    obj.get().getGameObject().getComponent(Building.class);
-            if (obj.get().isMine()) {
-                addOwnership(buildingReference.get());
-            } else if (buildingReference != null
-                    && checkBuildingOwnership(buildingReference.get())) {
-                removeOwnership(buildingReference.get());
-            }
-        }
-    }
-
     @Override
     public void fixedUpdate(float deltaTime) {
         if (!hasLost()) {

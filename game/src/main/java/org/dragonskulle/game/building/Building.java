@@ -183,8 +183,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Get the tiles within the view distance.
         mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
-        // View the tile the building is on.
-        mViewableTiles.add(getTile());
     }
 
     /**
