@@ -55,7 +55,7 @@ public class CapitalAimer extends AiPlayer {
             // Will perform all necessary checks for A*
             aStar();
             log.severe("A* Ran");
-            
+            return;
     	}
     	
     	// Checks if path size is 0 
@@ -80,6 +80,7 @@ public class CapitalAimer extends AiPlayer {
             } else {
                 log.severe("You might be dead");
             }
+            return;
         }
 
         // This will move us onto our own claimed tiles
