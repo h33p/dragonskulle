@@ -202,7 +202,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (GameActions.LEFT_CLICK.isActivated()) {
             if (UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
                 // Retrieve scaled screen coordinates
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+                Vector2fc screenPos = GameActions.getCursor().getPosition();
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
@@ -269,7 +269,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
             } else if (GameActions.RIGHT_CLICK.isActivated()) {
-                Vector2fc screenPos = UIManager.getInstance().getScaledCursorCoords();
+                Vector2fc screenPos = GameActions.getCursor().getPosition();
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
                         mainCam.screenToPlane(
