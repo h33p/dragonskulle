@@ -141,7 +141,7 @@ public class HexagonTile {
         if (!isClaimed()) {
             return null;
         }
-        return mClaimedBy.get().getOwnerID();
+        return mClaimedBy.get().getOwnerId();
     }
 
     /**
