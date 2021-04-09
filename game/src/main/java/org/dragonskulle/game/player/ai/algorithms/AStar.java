@@ -7,8 +7,8 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
+import org.dragonskulle.game.player.ai.algorithms.mGraphs.Connection;
+import org.dragonskulle.game.player.ai.algorithms.mGraphs.Graph;
 
 /**
  * Class which performs the A* Algorithm
@@ -17,25 +17,25 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
  */
 public class AStar {
 
-    private ArrayList<double[]> frontier; // This will hold the nodes to be visited
-    private Set<Integer> visited; // This will hold the nodes which has been visited
-    private Graph graph; // This will hold the graph being processed
-    private Deque<Integer> answerOfNodes; // This hold the solution of which nodes to visit
+    private ArrayList<double[]> mFrontier; // This will hold the nodes to be mVisited
+    private Set<Integer> mVisited; // This will hold the nodes which has been mVisited
+    private Graph mGraph; // This will hold the mGraph being processed
+    private Deque<Integer> mAnswerOfNodes; // This hold the solution of which nodes to visit
     private Deque<Connection>
-            answerOfConnections; // This holds the connections which need to be visited
+            mAnswerOfConnections; // This holds the connections which need to be mVisited
 
     /**
      * The constructor which allows you to make the object.
      *
-     * @param graph
+     * @param mGraph
      */
-    public AStar(Graph graph) {
-        this.graph = graph;
+    public AStar(Graph mGraph) {
+        this.mGraph = mGraph;
         // Initialises all the needed variables
-        frontier = new ArrayList<double[]>();
-        visited = new HashSet<Integer>();
-        answerOfNodes = new ArrayDeque<Integer>();
-        answerOfConnections = new ArrayDeque<Connection>();
+        mFrontier = new ArrayList<double[]>();
+        mVisited = new HashSet<Integer>();
+        mAnswerOfNodes = new ArrayDeque<Integer>();
+        mAnswerOfConnections = new ArrayDeque<Connection>();
     }
 
     /**
@@ -43,7 +43,7 @@ public class AStar {
      *
      * @param currentNode The node to start from
      * @param endNode The goal node
-     * @throws GraphNodeException If there is a problem with the graph
+     * @throws GraphNodeException If there is a problem with the mGraph
      */
     public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
 
@@ -54,15 +54,15 @@ public class AStar {
 
         while (!finished) {
             ArrayList<Connection> connections =
-                    graph.getConnection(currentNode); // Gets all the connections needed
+                    mGraph.getConnection(currentNode); // Gets all the connections needed
 
-            visited.add(currentNode); // Adds the current node to the visited stack
+            mVisited.add(currentNode); // Adds the current node to the mVisited stack
 
             for (int i = 0; i < connections.size(); i++) { // Go through each connection
 
                 Connection connection = connections.get(i);
                 int child = connection.getDestinationNode(); // Gets the destination node
-                double destinationInfo = graph.getNodeSpecial(child); // Gets the heuristic info
+                double destinationInfo = mGraph.getNodeSpecial(child); // Gets the heuristic info
                 double weight =
                         connection.getWeight()
                                 + oldFNode; // Gets the weight of the node and add the old
@@ -70,29 +70,29 @@ public class AStar {
 
                 double fNode = destinationInfo + weight; // This is the fnode known
 
-                if (!visited.contains(child)) { // If the child is not already visited
-                    if (search(child) == -1) { // If it is not in the frontier
+                if (!mVisited.contains(child)) { // If the child is not already mVisited
+                    if (search(child) == -1) { // If it is not in the mFrontier
                         double[] toAdd = {child, fNode, weight, currentNode}; // Info to be added
-                        frontier.add(toAdd); // Added to frontier
+                        mFrontier.add(toAdd); // Added to mFrontier
 
                     } else {
                         int index = search(child); // Find the index of child
-                        double[] oldInfo = frontier.get(index); // Get the info
+                        double[] oldInfo = mFrontier.get(index); // Get the info
 
                         if (oldInfo[1] > fNode) { // If the new info is smaller than the old info
 
                             double[] toAdd = {child, fNode, weight, currentNode}; // The data to add
-                            frontier.remove(index); // Remove the current data
-                            frontier.add(toAdd); // Add the new data
+                            mFrontier.remove(index); // Remove the current data
+                            mFrontier.add(toAdd); // Add the new data
                         }
                     }
                 }
             }
 
-            sort(); // Sorts the frontier
+            sort(); // Sorts the mFrontier
 
-            if (!frontier.isEmpty()) { // As long as the frontier is not empty
-                double[] nextNode = frontier.remove(0); // Removes the first element
+            if (!mFrontier.isEmpty()) { // As long as the mFrontier is not empty
+                double[] nextNode = mFrontier.remove(0); // Removes the first element
                 int[] connectionHere = {(int) nextNode[3], (int) nextNode[0]}; // The connection
                 connectionsFinal.add(connectionHere); // Add it to the final connections
                 if ((int) nextNode[0] == endNode) { // If it ends at the final node
@@ -103,13 +103,13 @@ public class AStar {
                     oldFNode = nextNode[2]; // Gets the weight
                     currentNode = (int) nextNode[0]; // Set the current node to the next node
                 }
-            } else { // If the frontier is empty
+            } else { // If the mFrontier is empty
                 finished = true; // Finish the loop
             }
         }
 
         if (currentNode == endNode) { // If we have reached the end
-            answerOfNodes.push(endNode); // Push the end Node
+            mAnswerOfNodes.push(endNode); // Push the end Node
 
             for (int i = connectionsFinal.size() - 1;
                     i >= 0;
@@ -118,7 +118,7 @@ public class AStar {
                 if (connectionsFinal.get(i)[1]
                         == currentNode) { // If the node on this connection is the right one
 
-                    answerOfNodes.push(connectionsFinal.get(i)[0]);
+                    mAnswerOfNodes.push(connectionsFinal.get(i)[0]);
                     currentNode = connectionsFinal.get(i)[0];
                 }
             }
@@ -126,14 +126,14 @@ public class AStar {
     }
 
     /**
-     * This will return the nodes which need to be visited
+     * This will return the nodes which need to be mVisited
      *
      * @return An Integer Array of length 0 if there is no path otherwise the nodes to get to the
      *     answer
      */
     public Deque<Integer> nodesToVisit() {
 
-        return answerOfNodes;
+        return mAnswerOfNodes;
     }
 
     /**
@@ -152,7 +152,7 @@ public class AStar {
             int endNode = answer[i];
             ArrayList<Connection> connection = null;
             try {
-                connection = graph.getConnection(originNode);
+                connection = mGraph.getConnection(originNode);
             } catch (GraphNodeException e) {
 
                 e.printStackTrace();
@@ -166,16 +166,16 @@ public class AStar {
                 }
             }
 
-            answerOfConnections.add(finalConnection); // Add it to the data structire
+            mAnswerOfConnections.add(finalConnection); // Add it to the data structire
         }
 
-        return answerOfConnections.toArray(new Connection[0]);
+        return mAnswerOfConnections.toArray(new Connection[0]);
     }
 
-    /** Performs a sort on the frontier */
+    /** Performs a sort on the mFrontier */
     private void sort() {
 
-        frontier = mergesort(frontier, 0, frontier.size() - 1);
+        mFrontier = mergesort(mFrontier, 0, mFrontier.size() - 1);
     }
 
     /**
@@ -268,9 +268,9 @@ public class AStar {
      */
     private int search(int node) {
 
-        for (int i = 0; i < frontier.size(); i++) { // Goes through each element
+        for (int i = 0; i < mFrontier.size(); i++) { // Goes through each element
 
-            if ((int) frontier.get(i)[0]
+            if ((int) mFrontier.get(i)[0]
                     == node) { // If the element is what you're looking for return the index
 
                 return i;

@@ -12,10 +12,10 @@ import org.dragonskulle.game.map.HexagonTile;
  */
 public class Node {
 
-    private int nodeNum; // The node number
-    private double extraInfo; // The extra info for that node
-    private ArrayList<Connection> connections; // The Connections from that node
-    private Reference<HexagonTile> tile;
+    private int mNodeNum; // The node number
+    private double mExtraInfo; // The extra info for that node
+    private ArrayList<Connection> mConnections; // The Connections from that node
+    private Reference<HexagonTile> mTile;
 
     /**
      * This constructor assumes you know the extra info you want to be set
@@ -25,9 +25,9 @@ public class Node {
      */
     public Node(int num, int info) {
 
-        connections = new ArrayList<Connection>();
-        nodeNum = num;
-        extraInfo = info;
+        mConnections = new ArrayList<Connection>();
+        mNodeNum = num;
+        mExtraInfo = info;
     }
 
     /**
@@ -37,9 +37,9 @@ public class Node {
      */
     public Node(int num) {
 
-        nodeNum = num;
-        extraInfo = 0;
-        connections = new ArrayList<Connection>();
+        mNodeNum = num;
+        mExtraInfo = 0;
+        mConnections = new ArrayList<Connection>();
     }
 
     /**
@@ -49,7 +49,7 @@ public class Node {
      */
     public int getNode() {
 
-        return nodeNum;
+        return mNodeNum;
     }
 
     /**
@@ -59,7 +59,7 @@ public class Node {
      */
     public double getExtraInfo() {
 
-        return extraInfo;
+        return mExtraInfo;
     }
 
     /**
@@ -69,7 +69,7 @@ public class Node {
      */
     public void setExtraInfo(double newInfo) {
 
-        extraInfo = newInfo;
+        mExtraInfo = newInfo;
     }
 
     /**
@@ -80,7 +80,7 @@ public class Node {
      */
     public void addConnection(int destinationNode, double weight) {
 
-        connections.add(new Connection(nodeNum, destinationNode, weight));
+        mConnections.add(new Connection(mNodeNum, destinationNode, weight));
     }
 
     /**
@@ -93,7 +93,7 @@ public class Node {
         // TODO assumption only 1 connection between each node. Need to enforce!
 
         Connection connectionToDelete = null; // Sets up the connection
-        for (Connection edge : connections) {
+        for (Connection edge : mConnections) {
 
             if (edge.getDestinationNode() == destinationNode) { // If the connection exists say so
                 connectionToDelete = edge;
@@ -101,26 +101,26 @@ public class Node {
         }
 
         if (connectionToDelete != null) { // Removes the connection
-            connections.remove(connectionToDelete);
+            mConnections.remove(connectionToDelete);
         }
     }
 
     /**
      * A getter which returns all the Connections
      *
-     * @return the connections for that node
+     * @return the mConnections for that node
      */
     public ArrayList<Connection> getConnections() {
 
-        return connections;
+        return mConnections;
     }
 
     /**
-     * Returns a reference to the hexagon tile this node corresponds to
+     * Returns a reference to the hexagon mTile this node corresponds to
      *
-     * @return The hexagon tile this node corresponds to
+     * @return The hexagon mTile this node corresponds to
      */
     public Reference<HexagonTile> getHexTile() {
-        return tile;
+        return mTile;
     }
 }

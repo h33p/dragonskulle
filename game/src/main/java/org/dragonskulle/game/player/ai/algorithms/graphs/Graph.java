@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.ai.algorithms.graphs;
+package org.dragonskulle.game.player.ai.algorithms.mGraphs;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 @Log
 public class Graph {
 
-    protected Map<Integer, Node> graph; // The hash map which will have the integer to the Node
+    protected Map<Integer, Node> mGraph; // The hash map which will have the integer to the Node
     private int mNodeNum;
     private Reference<HexagonMap> mMap;
     private final int mOwnerId;
@@ -33,7 +33,7 @@ public class Graph {
         mMap = map.getReference(HexagonMap.class);
         mOwnerId = ownerId;
         mNodeNum = 0;
-        graph = new HashMap<Integer, Node>();
+        mGraph = new HashMap<Integer, Node>();
         Stream<HexagonTile> tiles = map.getAllTiles();
         tiles.forEach(this::convertToNode);
         mNodeNum = 0;
@@ -50,7 +50,7 @@ public class Graph {
             this.setNodeSpecial(mNodeNum, heuristic);
 
         } catch (GraphNodeException e) {
-            // TODO Already in graph
+            // TODO Already in mGraph
         }
         mNodeNum++;
     }
@@ -60,7 +60,7 @@ public class Graph {
         ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
 
         for (HexagonTile tileNeighbour : neighbourTiles) {
-            for (Map.Entry<Integer, Node> mapEntry : graph.entrySet()) {
+            for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {
                 if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
                         && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
 
@@ -92,7 +92,7 @@ public class Graph {
     }
 
     /**
-     * This will add a node to a graph with no connections
+     * This will add a node to a mGraph with no connections
      *
      * @param nodeToAdd The node number
      * @throws GraphNodeException If the node already exists
@@ -100,11 +100,11 @@ public class Graph {
     public void addNode(int nodeToAdd) throws GraphNodeException {
 
         Node node =
-                graph.get(nodeToAdd); // Gets the connection if in the graph. If not there gets null
+                mGraph.get(nodeToAdd); // Gets the connection if in the mGraph. If not there gets null
 
-        if (node == null) { // If the node is not in the graph
+        if (node == null) { // If the node is not in the mGraph
             Node newNode = new Node(nodeToAdd); // Makes a new node
-            graph.put(nodeToAdd, newNode); // Adds to graph
+            mGraph.put(nodeToAdd, newNode); // Adds to mGraph
 
         } else {
             throw new GraphNodeException();
@@ -112,7 +112,7 @@ public class Graph {
     }
 
     /**
-     * This will add a node to a graph with no connections
+     * This will add a node to a mGraph with no connections
      *
      * @param nodeToAdd The node number
      * @param tile The {@code HexagonTile} it corresponds to
@@ -121,11 +121,11 @@ public class Graph {
     public void addNode(int nodeToAdd, HexagonTile tile) throws GraphNodeException {
 
         Node node =
-                graph.get(nodeToAdd); // Gets the connection if in the graph. If not there gets null
+                mGraph.get(nodeToAdd); // Gets the connection if in the mGraph. If not there gets null
 
-        if (node == null) { // If the node is not in the graph
+        if (node == null) { // If the node is not in the mGraph
             Node newNode = new Node(nodeToAdd); // Makes a new node
-            graph.put(nodeToAdd, newNode); // Adds to graph
+            mGraph.put(nodeToAdd, newNode); // Adds to mGraph
 
         } else {
             throw new GraphNodeException();
@@ -145,21 +145,21 @@ public class Graph {
             throws GraphException, GraphNodeException {
 
         Node node =
-                graph.get(
-                        originNode); // Gets the connection if in the graph. If not there gets null
+                mGraph.get(
+                        originNode); // Gets the connection if in the mGraph. If not there gets null
 
-        if (node == null) { // If the node is not in the graph
-            addNode(originNode); // Adds the node to the graph
-            node = graph.get(originNode); // Gets the actual edge
+        if (node == null) { // If the node is not in the mGraph
+            addNode(originNode); // Adds the node to the mGraph
+            node = mGraph.get(originNode); // Gets the actual edge
         }
         Connection foundConnection = findConnection(originNode, destinationNode);
 
         if (foundConnection == null) {
             node.addConnection(destinationNode, weight); // Adds the connection to the node
 
-            Node nodeEnd = graph.get(destinationNode); // Gets the destination node
+            Node nodeEnd = mGraph.get(destinationNode); // Gets the destination node
 
-            if (nodeEnd == null) { // Adds the node to the graph if it does not exist
+            if (nodeEnd == null) { // Adds the node to the mGraph if it does not exist
 
                 addNode(destinationNode);
             }
@@ -169,7 +169,7 @@ public class Graph {
     }
 
     /**
-     * Removes a node from the graph
+     * Removes a node from the mGraph
      *
      * @param nodeToRemove the node to remove
      * @throws GraphNodeException If the node does not exist
@@ -181,7 +181,7 @@ public class Graph {
         Node finalNode = null;
 
         for (Map.Entry<Integer, Node> entry :
-                graph.entrySet()) { // Takes each pair of values in the graph
+                mGraph.entrySet()) { // Takes each pair of values in the mGraph
 
             Node node = entry.getValue(); // Gets the node
             int key = entry.getKey(); // Gets the key
@@ -202,7 +202,7 @@ public class Graph {
                 int key = keys.remove();
                 Node node = nodes.remove();
 
-                graph.replace(key, node); // Replaces the data
+                mGraph.replace(key, node); // Replaces the data
             }
         }
     }
@@ -219,7 +219,7 @@ public class Graph {
                 new ArrayList<>(); // The object which will have all the connections
 
         for (Map.Entry<Integer, Node> entry :
-                graph.entrySet()) { // For each pair of values in the hash map
+                mGraph.entrySet()) { // For each pair of values in the hash map
 
             ArrayList<Connection> connection = entry.getValue().getConnections();
 
@@ -242,7 +242,7 @@ public class Graph {
      */
     public void removeConnection(int originNode, int destinationNode) throws GraphNodeException {
 
-        Node origin = graph.get(originNode); // Gets the node
+        Node origin = mGraph.get(originNode); // Gets the node
 
         if (origin == null) {
             throw new GraphNodeException();
@@ -253,13 +253,13 @@ public class Graph {
     }
 
     /**
-     * The number of nodes in the graph
+     * The number of nodes in the mGraph
      *
-     * @return the size of the graph
+     * @return the size of the mGraph
      */
     public int getNumberOfNodes() {
 
-        return graph.size();
+        return mGraph.size();
     }
 
     /**
@@ -271,11 +271,11 @@ public class Graph {
      */
     public ArrayList<Connection> getConnection(int nodeNum) throws GraphNodeException {
 
-        Node node = graph.get(nodeNum);
+        Node node = mGraph.get(nodeNum);
         if (node == null) {
             throw new GraphNodeException();
         } else {
-            return graph.get(nodeNum).getConnections();
+            return mGraph.get(nodeNum).getConnections();
         }
     }
 
@@ -288,12 +288,12 @@ public class Graph {
      */
     public double getNodeSpecial(int nodeToGet) throws GraphNodeException {
 
-        Node node = graph.get(nodeToGet);
+        Node node = mGraph.get(nodeToGet);
         if (node == null) {
             throw new GraphNodeException();
         } else {
 
-            return graph.get(nodeToGet).getExtraInfo();
+            return mGraph.get(nodeToGet).getExtraInfo();
         }
     }
 
@@ -306,16 +306,16 @@ public class Graph {
      */
     public void setNodeSpecial(int nodeToChange, double newInfo) throws GraphNodeException {
 
-        Node node = graph.get(nodeToChange);
+        Node node = mGraph.get(nodeToChange);
         if (node == null) {
             throw new GraphNodeException();
         }
         node.setExtraInfo(newInfo);
-        graph.replace(nodeToChange, node);
+        mGraph.replace(nodeToChange, node);
     }
 
     /**
-     * Will return all the node numbers in the graph
+     * Will return all the node numbers in the mGraph
      *
      * @return An integer array which has all the Nodes used
      */
@@ -323,7 +323,7 @@ public class Graph {
 
         ArrayList<Integer> nodes = new ArrayList<Integer>();
 
-        for (Map.Entry<Integer, Node> entry : graph.entrySet()) {
+        for (Map.Entry<Integer, Node> entry : mGraph.entrySet()) {
             Integer node = entry.getKey();
             nodes.add(node);
         }
@@ -351,13 +351,13 @@ public class Graph {
     }
 
     /**
-     * If the graph contains that node
+     * If the mGraph contains that node
      *
      * @param node The node to look for
-     * @return True if the node is in the graph false if not
+     * @return True if the node is in the mGraph false if not
      */
     public boolean inGraph(int node) {
-        return graph.containsKey(node);
+        return mGraph.containsKey(node);
     }
 
     /**
@@ -367,6 +367,6 @@ public class Graph {
      * @return The actual {@code Node}
      */
     public Node getNode(Integer node) {
-        return graph.get(node);
+        return mGraph.get(node);
     }
 }

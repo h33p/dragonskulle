@@ -8,30 +8,30 @@ package org.dragonskulle.game.player.ai.algorithms.graphs;
  */
 public class Connection {
 
-    protected int originNode; // This is the origin node
-    protected int destinationNode; // This is the destination node
-    protected double weight; // This is the weight of the edge
+    protected int mOriginNode; // This is the origin node
+    protected int mDestinationNode; // This is the destination node
+    protected double mWeight; // This is the mWeight of the edge
 
     /**
      * The constructor for the class.
      *
-     * @param node1 - The originNode for the connection
-     * @param node2 - The destinationNode for the connection
-     * @param weight - The weight of the node
+     * @param node1 - The mOriginNode for the connection
+     * @param node2 - The mDestinationNode for the connection
+     * @param mWeight - The mWeight of the node
      */
-    public Connection(int node1, int node2, double weight) {
-        this.originNode = node1;
-        this.destinationNode = node2;
-        this.weight = weight;
+    public Connection(int node1, int node2, double mWeight) {
+        this.mOriginNode = node1;
+        this.mDestinationNode = node2;
+        this.mWeight = mWeight;
     }
 
     /**
-     * A setter which changes the weight of the connection
+     * A setter which changes the mWeight of the connection
      *
-     * @param newWeight - The new weight for the node
+     * @param newWeight - The new mWeight for the node
      */
     public void changeWeight(int newWeight) {
-        weight = newWeight;
+        mWeight = newWeight;
     }
 
     /**
@@ -40,7 +40,7 @@ public class Connection {
      * @return - Integer which is the origin Node of the connection
      */
     public int getOriginNode() {
-        return originNode;
+        return mOriginNode;
     }
 
     /**
@@ -49,26 +49,26 @@ public class Connection {
      * @return - Integer which is the destination node of the connection#
      */
     public int getDestinationNode() {
-        return destinationNode;
+        return mDestinationNode;
     }
 
     /**
-     * A getter which gets the weight of the node
+     * A getter which gets the mWeight of the node
      *
-     * @return - {@code double} which is the weight of the node
+     * @return - {@code double} which is the mWeight of the node
      */
     public double getWeight() {
-        return weight;
+        return mWeight;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + destinationNode;
-        result = prime * result + originNode;
+        result = prime * result + mDestinationNode;
+        result = prime * result + mOriginNode;
         long temp;
-        temp = Double.doubleToLongBits(weight);
+        temp = Double.doubleToLongBits(mWeight);
         result = prime * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
@@ -79,9 +79,9 @@ public class Connection {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         Connection other = (Connection) obj;
-        if (destinationNode != other.destinationNode) return false;
-        if (originNode != other.originNode) return false;
-        if (Double.doubleToLongBits(weight) != Double.doubleToLongBits(other.weight)) return false;
+        if (mDestinationNode != other.mDestinationNode) return false;
+        if (mOriginNode != other.mOriginNode) return false;
+        if (Double.doubleToLongBits(mWeight) != Double.doubleToLongBits(other.mWeight)) return false;
         return true;
     }
 }
