@@ -7,13 +7,12 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
-
-import lombok.extern.java.Log;
 
 /**
  * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure
@@ -79,13 +78,13 @@ public class Graph {
                         // Don't do anything as its claimed by you so you want to go over it
                     }
                     try {
-                    addConnection(
-                            mNodeNum, mapEntry.getValue().getNode(), distance); // Weight set to 10
+                        addConnection(
+                                mNodeNum,
+                                mapEntry.getValue().getNode(),
+                                distance); // Weight set to 10
+                    } catch (Exception e) {
+                        log.severe("Exception -- not sure how is here");
                     }
-                    catch (Exception e) {
-                    	log.severe("Exception -- not sure how is here");
-                    }
-                    
                 }
             }
         }
