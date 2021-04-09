@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.ai.algorithms.mGraphs;
+package org.dragonskulle.game.player.ai.algorithms.graphs;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -13,6 +13,9 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
+
 
 /**
  * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure
