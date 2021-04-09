@@ -35,7 +35,8 @@
                 1,
                 2,
                 3,
-                4
+                4,
+                5
             ]
         }
     ],
@@ -142,6 +143,29 @@
                 }
             },
             "name" : "aiPlayer",
+            "translation" : [
+                -8,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.player.Player",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.player.ai.CapitalAimer",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "aStarAi",
             "translation" : [
                 -8,
                 0,
