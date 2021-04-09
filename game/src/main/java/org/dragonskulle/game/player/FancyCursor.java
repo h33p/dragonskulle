@@ -4,9 +4,9 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2f;
 
@@ -18,7 +18,6 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
 
     private TransformUI mCursorTransform;
     private UIRenderable mFancyCursor;
-    private float mManualXOffset = 2f;
 
     /**
      * User-defined destroy method, this is what needs to be overridden instead of destroy
@@ -36,8 +35,9 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        final Vector2f position = UIManager.getInstance().getScaledCursorCoords();
-        position.add(1f, 1f).mul(0.5f);
+        final Vector2f position = GameActions.getCursor().getPosition();
+        log.info("Cursor Position: ")
+        position.add(1f, 1f);//.mul(0.5f);
         if (mCursorTransform != null) {
             mCursorTransform.setParentAnchor(position.x, position.y, position.x, position.y);
         }

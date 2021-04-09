@@ -16,12 +16,15 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
+import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.*;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
+
+import java.util.Objects;
 
 /**
  * This class will allow a user to interact with game.
@@ -34,14 +37,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // All screens to be used
     private Screen mScreenOn = Screen.MAP_SCREEN;
-    private Reference<GameObject> mMapScreen;
 
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter @Setter private HexagonTile mHexChosen;
+    @Getter
+    @Setter
+    private HexagonTile mHexChosen;
 
-    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter
+    @Setter
+    private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -53,7 +59,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // Visual effects
     private Reference<MapEffects> mMapEffects;
     private boolean mVisualsNeedUpdate;
-    private Reference<GameObject> mZoomSlider;
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
@@ -62,7 +67,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netID The human player's network ID.
+     * @param netID          The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
@@ -83,15 +88,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getReference(MapEffects.class);
         mVisualsNeedUpdate = true;
 
-        mZoomSlider =
-                // Creates a blank screen
-                getGameObject()
-                        .buildChild(
-                                "zoom_slider",
-                                new TransformUI(true),
-                                (go) -> {
-                                    go.addComponent(new UILinkedScrollBar());
-                                });
+        getGameObject()
+                .buildChild(
+                        "zoom_slider",
+                        new TransformUI(true),
+                        (go) -> go.addComponent(new UILinkedScrollBar()));
 
         Reference<GameObject> tmpRef =
                 getGameObject()
@@ -127,7 +128,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -144,7 +146,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .filter(NetworkObject::isMine)
                                 .map(NetworkObject::getGameObject)
                                 .map(go -> go.getComponent(Player.class))
-                                .filter(ref -> ref != null)
+                                .filter(Objects::nonNull)
                                 .findFirst()
                                 .orElse(null);
         }
@@ -179,7 +181,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -220,7 +224,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 && mScreenOn != Screen.ATTACKING_SCREEN) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                        } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
+                        } else if (mScreenOn == Screen.ATTACKING_SCREEN && player != null) {
 
                             // Get the defending building
                             Building defendingBuilding = building;
@@ -252,7 +256,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         }
                     }
                 }
-            } else if (GameActions.RIGHT_CLICK.isActivated()) {
+            } else if (GameActions.RIGHT_CLICK.isActivated() && mainCam != null) {
                 Vector2fc screenPos = GameActions.getCursor().getPosition();
                 // Convert those coordinates to local coordinates within the map
                 Vector3f pos =
@@ -268,7 +272,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** AURI!! This updates what the user can see */
+    /**
+     * AURI!! This updates what the user can see
+     */
     private void updateVisuals() {
         mVisualsNeedUpdate = false;
 
@@ -308,6 +314,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 break;
             case UPGRADE_SCREEN:
                 break;
+            case ATTACKING_SCREEN:
+                break;
         }
     }
 
@@ -345,12 +353,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onOwnerModifiedObject(Reference<NetworkObject> obj) {
         // remove from self as owned if exists, then we need to check if we are the owner again
         if (obj.isValid()) {
