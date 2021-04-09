@@ -24,37 +24,48 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 @Log
 public class CapitalAimer extends AiPlayer {
 
-    private Player mOpponentPlayer = mPlayer.get();
+    private Player mOpponentPlayer; 
     private final float UPDATE_PATH_TIME = 60;
-    private float mTimeSinceLastCheck = Time.getTimeInSeconds() - UPDATE_PATH_TIME;
-    private Deque<Integer> mPath;
+    private float mTimeSinceLastCheck = Time.getTimeInSeconds()  - UPDATE_PATH_TIME;
+    private Deque<Integer> mPath = new ArrayDeque<Integer>();
     private Deque<Integer> mGone;
     private Graph mGraph = null;
     private Node mCapNode = null;
     private Node mOppCapNode = null;
     private Reference<HexagonTile> mTileToAim = new Reference<HexagonTile>(null);
 
-    public CapitalAimer() {};
+    public CapitalAimer() {}
 
     @Override
     protected void simulateInput() {
+    	
+    	if (mPath.size() == 0) {
+    		log.severe("Changing opponent");
+             mOpponentPlayer = mPlayer.get();
+             
+         }
+    	 
         if (mOpponentPlayer.getNetworkObject().getOwnerId()
                 == mPlayer.get().getNetworkObject().getOwnerId()) {
+        	log.severe("Actually changing");
             findOpponent();
+            log.severe("Found opponent");
             mTileToAim = new Reference<HexagonTile>(null);
             getTile();
+            log.severe("Found Tile");
         }
 
-        if (mTimeSinceLastCheck + UPDATE_PATH_TIME > Time.getTimeInSeconds()) {
+        if (mTimeSinceLastCheck + UPDATE_PATH_TIME < Time.getTimeInSeconds()) {
+        	log.severe("A* Ran");
             aStar();
         }
 
         if (mPath.size() == 0) {
-            mOpponentPlayer = mPlayer.get();
-            return;
+        	return;
         }
 
         if (mGone.size() == 0) {
+        	log.severe("BUILDING");
             int firstElement = mPath.pop();
             if (mGraph.getNode(firstElement)
                             .getHexTile()
@@ -154,10 +165,10 @@ public class CapitalAimer extends AiPlayer {
         for (int nodeNumber : nodesInGraph) {
             Node node = mGraph.getNode(nodeNumber);
             if (node.getHexTile().get().getClaimant() == mOpponentPlayer
-                    && node.getHexTile().get().getBuilding().isCapital()) {
+                   && node.getHexTile().get().getBuilding() != null && node.getHexTile().get().getBuilding().isCapital()) {
                 mOppCapNode = node;
             } else if (node.getHexTile().get().getClaimant() == mPlayer.get()
-                    && node.getHexTile().get().getBuilding().isCapital()) {
+                    && node.getHexTile().get().getBuilding() != null && node.getHexTile().get().getBuilding().isCapital()) {
                 mCapNode = node;
             }
         }
@@ -167,31 +178,44 @@ public class CapitalAimer extends AiPlayer {
      * This will get the tile which needs to be aimed for
      */
     private void getTile() {
-        Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
-        while (mTileToAim.get() == null) {
-            Optional<HexagonTile> tile = tiles.findAny();
-            HexagonTile tileFound = tile.get();
-            if (tileFound.getBuilding() != null && tileFound.getBuilding().isCapital()) {
-                mTileToAim = new Reference<HexagonTile>(tileFound);
-            }
-        }
+    	boolean foundTile = mPlayer.get().getMap().getAllTiles().anyMatch(tile -> {
+    		if (tile.getBuilding() != null && tile.getBuilding().isCapital() && tile.getClaimant().getNetworkObject().getOwnerId() ==
+    				mOpponentPlayer.getNetworkObject().getOwnerId()) {
+    			mTileToAim = new Reference<HexagonTile>(tile);
+    			return true;
+    		}
+    		else {
+    			return false;
+    		}
+    	});
+        
+    	if (!foundTile) {
+    		log.severe("We have a serious problem");
+    	}
     }
 
     /** 
      * This will set the opponent to aim for 
     */
     private void findOpponent() {
-        Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
+        //Stream<HexagonTile> tiles = mPlayer.get().getMap().getAllTiles();
 
-        while (mOpponentPlayer.getNetworkObject().getOwnerId()
-                == mPlayer.get().getNetworkObject().getOwnerId()) {
-            Optional<HexagonTile> tile = tiles.findAny();
-            HexagonTile tileFound = tile.get();
-            Player playerAiming = tileFound.getClaimant();
-            if (playerAiming != null) {
-                mOpponentPlayer = playerAiming;
-            }
-        }
+       boolean found = mPlayer.get().getMap().getAllTiles().anyMatch(tile -> {
+            	if (tile.getClaimant() != null && tile.getClaimant().getNetworkObject().getOwnerId() !=  mPlayer.get().getNetworkObject().getOwnerId()) {
+            		mOpponentPlayer = tile.getClaimant();
+            		return true;
+            	}
+            	else {
+            		
+            		return false;
+            	}
+            });
+       
+       if (found == false) {
+    	   log.severe("Houston we have a problem");
+       }
+           
+        
     }
 
     /** 
@@ -209,6 +233,7 @@ public class CapitalAimer extends AiPlayer {
         findCapital();
         try {
             aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());
+            log.severe("Completed");
         } catch (GraphNodeException e) {
             // TODO Shouldn't get here.
             log.severe("EXCEPTION");

@@ -12,6 +12,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 
 /**
  * Class which performs the A* Algorithm
@@ -19,6 +20,7 @@ import lombok.experimental.Accessors;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
+@Log
 public class AStar {
 
     private ArrayList<double[]> mFrontier; // This will hold the nodes to be mVisited
@@ -51,12 +53,14 @@ public class AStar {
      */
     public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
 
+    	log.severe("Current Node: " + currentNode + " End Node " + endNode);
         boolean finished = false; // This checks if it finished
         double oldFNode = 0; // This is what the previous f node value was
         ArrayList<int[]> connectionsFinal =
                 new ArrayList<int[]>(); // This will hold the spare data which is needed
 
         while (!finished) {
+        	log.severe("Current Node: " + currentNode + " End Node " + endNode);
             ArrayList<Connection> connections =
                     mGraph.getConnection(currentNode); // Gets all the connections needed
 
@@ -127,42 +131,6 @@ public class AStar {
                 }
             }
         }
-    }
-
-    /**
-     * This will return a Connection Array with the connections for the solution
-     *
-     * @return A array of length 0 if it does not exist else a Connection array
-     */
-    public Connection[] solutionActions() {
-
-        Integer[] answer = mAnswerOfNodes.toArray(new Integer[0]); // Gets the nodes to visit
-
-        for (int i = 1; i < answer.length; i++) {
-
-            // Gets the correct connection
-            int originNode = answer[i - 1];
-            int endNode = answer[i];
-            ArrayList<Connection> connection = null;
-            try {
-                connection = mGraph.getConnection(originNode);
-            } catch (GraphNodeException e) {
-
-                e.printStackTrace();
-            }
-
-            Connection finalConnection = null; // This will be the correct connection
-            for (Connection connectionMaybe : connection) {
-                if (originNode == connectionMaybe.getOriginNode()
-                        && connectionMaybe.getDestinationNode() == endNode) {
-                    finalConnection = connectionMaybe;
-                }
-            }
-
-            mAnswerOfConnections.add(finalConnection); // Add it to the data structire
-        }
-
-        return mAnswerOfConnections.toArray(new Connection[0]);
     }
 
     /** Performs a sort on the mFrontier */

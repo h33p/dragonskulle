@@ -37,10 +37,9 @@ public class Graph {
         mOwnerId = ownerId;
         mNodeNum = 0;
         mGraph = new HashMap<Integer, Node>();
-        Stream<HexagonTile> tiles = map.getAllTiles();
-        tiles.forEach(this::convertToNode);
+        map.getAllTiles().forEach(this::convertToNode);
         mNodeNum = 0;
-        tiles.forEach(this::addConnections);
+        map.getAllTiles().forEach(this::addConnections);
     }
 
     /**
@@ -80,11 +79,12 @@ public class Graph {
                     if (tileNeighbour.getClaimant() == null) {
                         distance += 10; // TODO link this to building price
                     } else if (tileNeighbour.getClaimant().getNetworkObject().getOwnerId()
-                            != mOwnerId) {
+                            != mOwnerId && tileNeighbour.getBuilding() != null) {
                         distance +=
                                 tileNeighbour
                                         .getBuilding()
                                         .getAttackCost(); // This adds the cost of attack.
+                    
                     } else {
                         // Don't do anything as its claimed by you so you want to go over it
                     }
