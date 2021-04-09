@@ -51,14 +51,12 @@ public class AStar {
      */
     public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
 
-    	log.severe("Current Node: " + currentNode + " End Node " + endNode);
-        boolean finished = false; // This checks if it finished
+    	boolean finished = false; // This checks if it finished
         double oldFNode = 0; // This is what the previous f node value was
         ArrayList<int[]> connectionsFinal =
                 new ArrayList<int[]>(); // This will hold the spare data which is needed
 
         while (!finished) {
-        	log.severe("Current Node: " + currentNode + " End Node " + endNode);
         	Node node1 = mGraph.getNode(currentNode);
         	Node node2 = mGraph.getNode(endNode);
             ArrayList<Connection> connections =

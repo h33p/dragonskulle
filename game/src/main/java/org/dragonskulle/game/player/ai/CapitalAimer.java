@@ -133,7 +133,7 @@ public class CapitalAimer extends AiPlayer {
             mGone.push(nextNode);
         } else if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null) {
         	log.info("Attacking");
-            // ATTACK
+            // ATTACK		TODO -- Sort out attacking
             if (!mGraph.getNode(nextNode).getHexTile().get().hasBuilding()) {
                 // Assuming that the building is on the next node
                 mGone.push(nextNode);
@@ -148,9 +148,10 @@ public class CapitalAimer extends AiPlayer {
                                     d ->
                                             d.setData(
                                                     attacker,
-                                                    toAttack)); // TODO Make as close as final as
-                    // possible
-                    mGone.push(nextNode);
+                                                    toAttack));
+                    if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null && mGraph.getNode(nextNode).getHexTile().get().getClaimant().getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
+                    mGone.push(nextNode);}
+                    
                 }
             }
         }
@@ -239,7 +240,7 @@ public class CapitalAimer extends AiPlayer {
         // Performs A* Search
         AStar aStar = new AStar(mGraph);
         try {
-            aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());
+            aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());		// TODO FORCE mCapNode && mOppNode not to be null!
             log.severe("Completed");
         } catch (GraphNodeException e) {
             // TODO Shouldn't get here.
