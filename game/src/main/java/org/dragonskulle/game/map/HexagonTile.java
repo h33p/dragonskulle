@@ -132,7 +132,8 @@ public class HexagonTile {
     /**
      * Get the ID of the Player who claimed the HexagonTile.
      *
-     * <p>If {@link Player} does not need to be accessed, then this should be used.
+     * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
+     * then this should be used.
      *
      * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
      *     claimant.
