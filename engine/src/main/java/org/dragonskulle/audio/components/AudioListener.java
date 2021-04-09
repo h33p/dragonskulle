@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.audio.components;
 
 import lombok.Getter;
@@ -18,13 +19,13 @@ public class AudioListener extends Component implements IFixedUpdate, IOnStart {
     private final Reference<AudioListener> mReference = this.getReference(AudioListener.class);
     @Getter private final Vector3f mPosition = new Vector3f();
 
-    /** Set the OpenAL listener's position to the position of mGameObject */
+    /** Set the OpenAL listener's position to the position of mGameObject. */
     private void updatePosition() {
         mGameObject.getTransform().getPosition(mPosition);
         AL11.alListener3f(AL11.AL_POSITION, mPosition.x, mPosition.y, mPosition.z);
     }
 
-    /** Set the orientation of the OpenAL listener to match the orientation of mGameObject */
+    /** Set the orientation of the OpenAL listener to match the orientation of mGameObject. */
     private void updateRotation() {
         Vector3f up = mGameObject.getTransform().getUpVector();
         Vector3f forward = mGameObject.getTransform().getForwardVector();

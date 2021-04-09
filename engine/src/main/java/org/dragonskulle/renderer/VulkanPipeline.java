@@ -64,13 +64,13 @@ class VulkanPipeline implements NativeResource {
         for (AttributeDescription[] descArray : descs) {
             for (AttributeDescription descIn : descArray) {
                 VkVertexInputAttributeDescription descOut = attributeDescriptionsOut.get(cnt++);
-                descOut.binding(descIn.bindingID);
-                descOut.location(descIn.location);
-                descOut.format(descIn.format);
-                descOut.offset(descIn.offset);
+                descOut.binding(descIn.mBindingId);
+                descOut.location(descIn.mLocation);
+                descOut.format(descIn.mFormat);
+                descOut.offset(descIn.mOffset);
 
                 // Implicitly shift location for per-instance data.
-                if (descIn.bindingID != 0) descOut.location(descOut.location() + 4);
+                if (descIn.mBindingId != 0) descOut.location(descOut.location() + 4);
             }
         }
 

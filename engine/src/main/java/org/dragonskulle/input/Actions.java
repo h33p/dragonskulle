@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.input;
 
 import java.util.ArrayList;
@@ -39,10 +40,10 @@ public abstract class Actions {
     @Getter private static Scroll sScroll;
 
     /** A list of {@link Action}s that have been activated this frame. */
-    private static ArrayList<Action> mJustActivated = new ArrayList<Action>();
+    private static ArrayList<Action> sJustActivated = new ArrayList<Action>();
 
     /** A list of {@link Action}s that have been deactivated this frame. */
-    private static ArrayList<Action> mJustDeactivated = new ArrayList<Action>();
+    private static ArrayList<Action> sJustDeactivated = new ArrayList<Action>();
 
     /** Refresh select values back to their defaults, ready for their new values. */
     static void refresh() {
@@ -58,20 +59,20 @@ public abstract class Actions {
      * The frame has been complete, so the stored actions will no longer have just been activated.
      */
     private static void resetJustActivated() {
-        for (Action action : mJustActivated) {
+        for (Action action : sJustActivated) {
             action.setJustActivated(false);
         }
-        mJustActivated.clear();
+        sJustActivated.clear();
     }
 
     /**
      * The frame has been complete, so the stored actions will no longer have just been deactivated.
      */
     private static void resetJustDeactivated() {
-        for (Action action : mJustDeactivated) {
+        for (Action action : sJustDeactivated) {
             action.setJustDeactivated(false);
         }
-        mJustDeactivated.clear();
+        sJustDeactivated.clear();
     }
 
     /**
@@ -80,7 +81,7 @@ public abstract class Actions {
      * @param action The action that has been activated this frame.
      */
     static void addJustActivated(Action action) {
-        mJustActivated.add(action);
+        sJustActivated.add(action);
     }
 
     /**
@@ -89,7 +90,7 @@ public abstract class Actions {
      * @param action The action that has been deactivated this frame.
      */
     static void addJustDeactivated(Action action) {
-        mJustDeactivated.add(action);
+        sJustDeactivated.add(action);
     }
 
     /**

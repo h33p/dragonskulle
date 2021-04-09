@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game;
 
 import java.util.Scanner;
@@ -7,7 +8,7 @@ import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -25,9 +26,15 @@ import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.renderer.components.*;
-import org.dragonskulle.ui.*;
-import org.joml.*;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UISlider;
+import org.dragonskulle.ui.UIText;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
 @Log
@@ -42,8 +49,8 @@ public class App implements NativeResource {
     private static int sPort = 7000;
     private static boolean sReload = false;
 
-    private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
-    private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
+    private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
+    private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
 
     private static void addDebugUI(Scene scene) {
         GameObject debugUI =
@@ -188,14 +195,14 @@ public class App implements NativeResource {
     }
 
     private Scene createMainMenu() {
-        Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
+        Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
 
         addDebugUI(mainMenu);
 
         TemplateManager templates = new TemplateManager();
 
         templates.addAllObjects(
-                mNetworkTemplatesGLTF.get().getDefaultScene().getGameObjects().stream()
+                mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
 
         Reference<NetworkManager> networkManager =
@@ -218,12 +225,12 @@ public class App implements NativeResource {
                             audioRoot.buildChild(
                                     "muteUI",
                                     new TransformUI(true),
-                                    (muteUI) -> {
-                                        TransformUI t = muteUI.getTransform(TransformUI.class);
+                                    (muteUi) -> {
+                                        TransformUI t = muteUi.getTransform(TransformUI.class);
                                         t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
                                         t.setMargin(0f, 0.1f, 0f, 0.2f);
 
-                                        muteUI.addComponent(
+                                        muteUi.addComponent(
                                                 new UIButton(
                                                         new UIText(
                                                                 new Vector3f(0f, 0f, 0f),
@@ -271,34 +278,34 @@ public class App implements NativeResource {
 
         mainMenu.addRootObject(gameTitle);
 
-        GameObject mainUI =
+        GameObject mainUi =
                 new GameObject(
-                        "mainUI",
+                        "mainUi",
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject joinUI =
+        GameObject joinUi =
                 new GameObject(
-                        "joinUI",
+                        "joinUi",
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject hostUI =
+        GameObject hostUi =
                 new GameObject(
-                        "hostUI",
+                        "hostUi",
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        mainUI.buildChild(
+        mainUi.buildChild(
                 "bg",
                 new TransformUI(false),
                 (bg) -> {
@@ -321,9 +328,9 @@ public class App implements NativeResource {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Join Game"),
                                                 (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    joinUI.setEnabled(true);
-                                                    hostUI.setEnabled(false);
+                                                    mainUi.setEnabled(false);
+                                                    joinUi.setEnabled(true);
+                                                    hostUi.setEnabled(false);
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
                                 button.addComponent(newButton);
@@ -344,8 +351,8 @@ public class App implements NativeResource {
                                                         Font.getFontResource("Rise of Kingdom.ttf"),
                                                         "Host Game"),
                                                 (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    hostUI.setEnabled(true);
+                                                    mainUi.setEnabled(false);
+                                                    hostUi.setEnabled(true);
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
                                 button.addComponent(newButton);
@@ -436,7 +443,7 @@ public class App implements NativeResource {
                                 slider.addComponent(newSlider);
                             });
                 });
-        joinUI.buildChild(
+        joinUi.buildChild(
                 "bg",
                 new TransformUI(false),
                 (bg) -> {
@@ -521,15 +528,15 @@ public class App implements NativeResource {
                                                         "Cancel"),
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
-                                                    joinUI.setEnabled(false);
-                                                    mainUI.setEnabled(true);
+                                                    joinUi.setEnabled(false);
+                                                    mainUi.setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
                             });
                 });
 
-        hostUI.buildChild(
+        hostUi.buildChild(
                 "bg",
                 new TransformUI(false),
                 (bg) -> {
@@ -577,22 +584,22 @@ public class App implements NativeResource {
                                                         "Cancel"),
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
-                                                    hostUI.setEnabled(false);
-                                                    mainUI.setEnabled(true);
+                                                    hostUi.setEnabled(false);
+                                                    mainUi.setEnabled(true);
                                                 });
 
                                 button.addComponent(newButton);
                             });
                 });
 
-        joinUI.setEnabled(false);
-        hostUI.setEnabled(false);
+        joinUi.setEnabled(false);
+        hostUi.setEnabled(false);
 
         mainMenu.addRootObject(networkManagerObject);
 
-        mainMenu.addRootObject(hostUI);
-        mainMenu.addRootObject(joinUI);
-        mainMenu.addRootObject(mainUI);
+        mainMenu.addRootObject(hostUi);
+        mainMenu.addRootObject(joinUi);
+        mainMenu.addRootObject(mainUi);
 
         return mainMenu;
     }
@@ -670,7 +677,7 @@ public class App implements NativeResource {
 
     @Override
     public void free() {
-        mMainMenuGLTF.free();
-        mNetworkTemplatesGLTF.free();
+        mMainMenuGltf.free();
+        mNetworkTemplatesGltf.free();
     }
 }
