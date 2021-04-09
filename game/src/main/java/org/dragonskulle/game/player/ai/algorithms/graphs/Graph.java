@@ -13,11 +13,14 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
+import lombok.extern.java.Log;
+
 /**
  * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure
  *
  * @author Dragonskulle
  */
+@Log
 public class Graph {
 
     protected Map<Integer, Node> graph; // The hash map which will have the integer to the Node
@@ -75,9 +78,14 @@ public class Graph {
                     } else {
                         // Don't do anything as its claimed by you so you want to go over it
                     }
-
+                    try {
                     addConnection(
                             mNodeNum, mapEntry.getValue().getNode(), distance); // Weight set to 10
+                    }
+                    catch (Exception e) {
+                    	log.severe("Exception -- not sure how is here");
+                    }
+                    
                 }
             }
         }

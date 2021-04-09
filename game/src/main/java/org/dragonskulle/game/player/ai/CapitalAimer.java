@@ -105,14 +105,15 @@ public class CapitalAimer extends AiPlayer {
 
         if (graph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
             // BUILD
+        	HexagonTile tileToBuildOn = graph.getNode(nextNode)
+                    .getHexTile()
+                    .get();
             mPlayer.get()
                     .getClientBuildRequest()
                     .invoke(
                             (d) ->
                                     d.setTile(
-                                            graph.getNode(nextNode)
-                                                    .getHexTile()
-                                                    .get())); // TODO Make as close as final as
+                                            tileToBuildOn)); // TODO Make as close as final as
             // possible
             gone.push(nextNode);
         } else if (graph.getNode(nextNode).getHexTile().get().getClaimant() != null) {
