@@ -206,7 +206,7 @@ public class CapitalAimer extends AiPlayer {
             // TODO Shouldn't get here.
             log.severe("EXCEPTION");
         }
-        mPath = aStar.nodesToVisit();
+        mPath = aStar.getAnswerOfNodes();
         mGone = new ArrayDeque<Integer>();
     }
 }

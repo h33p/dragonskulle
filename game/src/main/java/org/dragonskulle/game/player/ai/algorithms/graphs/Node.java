@@ -5,17 +5,22 @@ import java.util.ArrayList;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonTile;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 /**
  * This is a class which contains all the info needed for a Node
  *
  * @author Dragonskulle
  */
+@Accessors(prefix = "m")
 public class Node {
 
-    private int mNodeNum; // The node number
-    private double mExtraInfo; // The extra info for that node
-    private ArrayList<Connection> mConnections; // The Connections from that node
-    private Reference<HexagonTile> mTile;
+    @Getter private int mNode; // The node number
+    @Getter @Setter private double mExtraInfo; // The extra info for that node
+    @Getter private ArrayList<Connection> mConnections; // The Connections from that node
+    @Getter private Reference<HexagonTile> mHexTile;
 
     /**
      * This constructor assumes you know the extra info you want to be set
@@ -26,7 +31,7 @@ public class Node {
     public Node(int num, int info) {
 
         mConnections = new ArrayList<Connection>();
-        mNodeNum = num;
+        mNode = num;
         mExtraInfo = info;
     }
 
@@ -37,39 +42,9 @@ public class Node {
      */
     public Node(int num) {
 
-        mNodeNum = num;
+        mNode = num;
         mExtraInfo = 0;
         mConnections = new ArrayList<Connection>();
-    }
-
-    /**
-     * Returns the node number
-     *
-     * @return An <Code> int </Code> which is the number for that node
-     */
-    public int getNode() {
-
-        return mNodeNum;
-    }
-
-    /**
-     * A getter which returns the extra info
-     *
-     * @return An <Code> int </Code> which is the extra info for that node
-     */
-    public double getExtraInfo() {
-
-        return mExtraInfo;
-    }
-
-    /**
-     * A setter which edits the extra info
-     *
-     * @param newInfo The new info you want to edit
-     */
-    public void setExtraInfo(double newInfo) {
-
-        mExtraInfo = newInfo;
     }
 
     /**
@@ -80,7 +55,7 @@ public class Node {
      */
     public void addConnection(int destinationNode, double weight) {
 
-        mConnections.add(new Connection(mNodeNum, destinationNode, weight));
+        mConnections.add(new Connection(mNode, destinationNode, weight));
     }
 
     /**
@@ -105,22 +80,4 @@ public class Node {
         }
     }
 
-    /**
-     * A getter which returns all the Connections
-     *
-     * @return the mConnections for that node
-     */
-    public ArrayList<Connection> getConnections() {
-
-        return mConnections;
-    }
-
-    /**
-     * Returns a reference to the hexagon mTile this node corresponds to
-     *
-     * @return The hexagon mTile this node corresponds to
-     */
-    public Reference<HexagonTile> getHexTile() {
-        return mTile;
-    }
 }

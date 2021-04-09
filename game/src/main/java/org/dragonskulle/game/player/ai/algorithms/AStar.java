@@ -10,17 +10,21 @@ import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
  * Class which performs the A* Algorithm
  *
  * @author DragonSkulle
  */
+@Accessors(prefix = "m")
 public class AStar {
 
     private ArrayList<double[]> mFrontier; // This will hold the nodes to be mVisited
     private Set<Integer> mVisited; // This will hold the nodes which has been mVisited
     private Graph mGraph; // This will hold the mGraph being processed
-    private Deque<Integer> mAnswerOfNodes; // This hold the solution of which nodes to visit
+    @Getter private Deque<Integer> mAnswerOfNodes; // This hold the solution of which nodes to visit
     private Deque<Connection>
             mAnswerOfConnections; // This holds the connections which need to be mVisited
 
@@ -126,24 +130,13 @@ public class AStar {
     }
 
     /**
-     * This will return the nodes which need to be mVisited
-     *
-     * @return An Integer Array of length 0 if there is no path otherwise the nodes to get to the
-     *     answer
-     */
-    public Deque<Integer> nodesToVisit() {
-
-        return mAnswerOfNodes;
-    }
-
-    /**
      * This will return a Connection Array with the connections for the solution
      *
      * @return A arrya of length 0 if it does not exist else a Connection array
      */
     public Connection[] solutionActions() {
 
-        Integer[] answer = nodesToVisit().toArray(new Integer[0]); // Gets the nodes to visit
+        Integer[] answer = mAnswerOfNodes.toArray(new Integer[0]); // Gets the nodes to visit
 
         for (int i = 1; i < answer.length; i++) {
 
