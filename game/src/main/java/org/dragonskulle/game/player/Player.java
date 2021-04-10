@@ -415,7 +415,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
     public boolean checkBuildingOwnership(Building building) {
-        return building.getOwnerID() == getNetworkObject().getOwnerId();
+        return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
 
     /**
@@ -686,7 +686,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you're not attacking your own building
-        if (defender.getOwnerID() == attacker.getOwnerID()) {
+        if (defender.getOwnerId() == attacker.getOwnerId()) {
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }

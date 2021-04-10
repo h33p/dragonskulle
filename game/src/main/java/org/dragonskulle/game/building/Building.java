@@ -274,7 +274,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             if (building == null) continue;
 
             // Ensure the building is not owned by the owner of this building.
-            if (getOwnerID() == building.getOwnerID()) {
+            if (getOwnerId() == building.getOwnerId()) {
                 log.fine("Building owned by same player.");
                 continue;
             }
@@ -370,7 +370,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      *
      * @return The ID of the owner.
      */
-    public int getOwnerID() {
+    public int getOwnerId() {
         return getNetworkObject().getOwnerId();
     }
 
@@ -423,12 +423,20 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * // TODO: Ensure this is correct.
+     * Remove this building from the game.
      *
-     * <p>Remove this building from the {@link Player} who owns the building and references to it in
-     * any {@link HexagonTile}s.
+     * <p>
+     *
+     * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     *   <li>Calls {@link GameObject#destroy()}.
+     * </ul>
      */
     public void remove() {
+        // Remove the ownership of the building from the owner.
+        getOwner().removeOwnership(this);
+
         // Remove the building from the tile.
         getTile().setBuilding(null);
 
@@ -442,8 +450,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mViewableTiles.clear();
         mAttackableTiles.clear();
 
-        // TODO: Request that the building should be destroyed.
-        // destroy();
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
     }
 
     /**

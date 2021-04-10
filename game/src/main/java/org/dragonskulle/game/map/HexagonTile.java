@@ -4,7 +4,6 @@ package org.dragonskulle.game.map;
 import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
@@ -76,8 +75,8 @@ public class HexagonTile {
     @Getter(AccessLevel.PACKAGE)
     private final Reference<HighlightControls> mHighlightControls;
 
-    /** Building that is on the tile */
-    @Getter @Setter private Building mBuilding;
+    /** Reference to the {@link Building} that is on the tile. */
+    private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /** A reference to the building that claims the tile, or {@code null}. */
     private Reference<Building> mClaimedBy = new Reference<Building>(null);
@@ -187,11 +186,54 @@ public class HexagonTile {
     }
 
     /**
+     * Get the ID of the Player who claimed the HexagonTile.
+     *
+     * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
+     * then this should be used.
+     *
+     * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
+     *     claimant.
+     */
+    public Integer getClaimantId() {
+        if (!isClaimed()) {
+            return null;
+        }
+        return mClaimedBy.get().getOwnerId();
+    }
+
+    /**
+     * Store the {@link Building} on the HexagonTile.
+     *
+     * <p>To stop storing the Building, {@code null} can be provided.
+     *
+     * @param building The Building on the tile, or {@code null} if there is no Building.
+     */
+    public void setBuilding(Building building) {
+        // If null is provided, set a reference to null.
+        if (building == null) {
+            mBuilding = new Reference<Building>(null);
+            return;
+        }
+        mBuilding = building.getReference(Building.class);
+    }
+
+    /**
+     * Get the {@link Building} on the tile, if it exists.
+     *
+     * @return The Building on the HexagonTile, otherwise {@code null}.
+     */
+    public Building getBuilding() {
+        if (mBuilding == null || mBuilding.isValid() == false) return null;
+
+        return mBuilding.get();
+    }
+
+    /**
      * Get whether there is a {@link Building} on this tile.
      *
      * @return Whether there is a building on this tile.
      */
     public boolean hasBuilding() {
-        return mBuilding != null;
+        return getBuilding() != null;
     }
 }
