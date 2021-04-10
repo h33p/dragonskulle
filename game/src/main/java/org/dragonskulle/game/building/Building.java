@@ -94,14 +94,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         storeStat(Stat.TOKEN_GENERATION, mTokenGeneration);
         storeStat(Stat.VIEW_DISTANCE, mViewDistance);
         storeStat(Stat.ATTACK_DISTANCE, mAttackDistance);
-
-        // For debugging:
-        // TODO: Remove.
-        mAttack.setLevel(SyncStat.LEVEL_MIN);
-        mDefence.setLevel(5);
-        mTokenGeneration.setLevel(5);
-        mViewDistance.setLevel(5);
-        mAttackDistance.setLevel(5);
     }
 
     @Override

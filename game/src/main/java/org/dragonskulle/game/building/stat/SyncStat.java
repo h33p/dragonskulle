@@ -22,7 +22,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
 public class SyncStat extends SyncInt {
 
     /** The lowest level possible. */
-    public static final int LEVEL_MIN = 0;
+    public static final int LEVEL_MIN = 1;
     /** The highest level possible. */
     public static final int LEVEL_MAX = 5;
 
