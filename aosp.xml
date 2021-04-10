@@ -334,14 +334,7 @@
       <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF"/>
     </module>
     <module name="MissingJavadocMethod">
-      <property name="scope" value="public"/>
-	  <property name="allowMissingPropertyJavadoc" value="false"/>
-      <property name="allowedAnnotations" value="Override, Test"/>
-      <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,
-                                   COMPACT_CTOR_DEF"/>
-    </module>
-	<module name="MissingJavadocMethod">
-      <property name="scope" value="protected"/>
+      <property name="scope" value="private"/>
 	  <property name="allowMissingPropertyJavadoc" value="false"/>
       <property name="allowedAnnotations" value="Override, Test"/>
       <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,
@@ -372,5 +365,11 @@
              default="checkstyle-xpath-suppressions.xml" />
       <property name="optional" value="true"/>
     </module>
+	
+	<module name="RegexpSinglelineJava">
+		<property name="format" value="System\.out\.print"/>
+		<property name="ignoreComments" value="true"/>
+	</module>
+	
   </module>
 </module>

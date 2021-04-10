@@ -140,7 +140,6 @@ public class NetworkClient {
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
      */
-    @SuppressWarnings("")
     private class ClientRunner implements Runnable {
         private String mIP;
         private int mPort;
