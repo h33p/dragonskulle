@@ -122,7 +122,7 @@ public class Graph {
      * @throws GraphException If a connection already exists between them
      * @throws GraphNodeException If the node already exists -- shouldn't happen
      */
-    public void addConnection(int originNode, int destinationNode, double weight)
+    public void addConnection(int originNode, int destinationNode, int weight)
             throws GraphException, GraphNodeException {
 
         Node node =
@@ -214,7 +214,7 @@ public class Graph {
      * @return the extra info for that node
      * @throws GraphNodeException
      */
-    public double getNodeSpecial(int nodeToGet) throws GraphNodeException {
+    public int getNodeSpecial(int nodeToGet) throws GraphNodeException {
 
         Node node = mGraph.get(nodeToGet);
         if (node == null) {
@@ -232,7 +232,7 @@ public class Graph {
      * @param newInfo The extra info to change
      * @throws GraphNodeException
      */
-    public void setNodeSpecial(int nodeToChange, double newInfo) throws GraphNodeException {
+    public void setNodeSpecial(int nodeToChange, int newInfo) throws GraphNodeException {
 
         Node node = mGraph.get(nodeToChange);
         if (node == null) {

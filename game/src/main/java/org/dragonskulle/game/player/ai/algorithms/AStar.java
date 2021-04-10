@@ -24,7 +24,7 @@ import lombok.extern.java.Log;
 @Log
 public class AStar {
 
-    private ArrayList<double[]> mFrontier; // This will hold the nodes to be mVisited
+    private ArrayList<int[]> mFrontier; // This will hold the nodes to be mVisited
     private Set<Integer> mVisited; // This will hold the nodes which has been mVisited
     private Graph mGraph; // This will hold the mGraph being processed
     @Getter private Deque<Integer> mAnswerOfNodes; // This hold the solution of which nodes to visit
@@ -37,7 +37,7 @@ public class AStar {
     public AStar(Graph mGraph) {
         this.mGraph = mGraph;
         // Initialises all the needed variables
-        mFrontier = new ArrayList<double[]>();
+        mFrontier = new ArrayList<int[]>();
         mVisited = new HashSet<Integer>();
         mAnswerOfNodes = new ArrayDeque<Integer>();
     }
@@ -52,7 +52,7 @@ public class AStar {
     public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
 
     	boolean finished = false; // This checks if it finished
-        double oldFNode = 0; // This is what the previous f node value was
+        int oldFNode = 0; // This is what the previous f node value was
         ArrayList<int[]> connectionsFinal =
                 new ArrayList<int[]>(); // This will hold the spare data which is needed
 
@@ -69,26 +69,26 @@ public class AStar {
                 Connection connection = connections.get(i);
                 int child = connection.getDestinationNode(); // Gets the destination node
                 Node childNode = mGraph.getNode(child);
-                double destinationInfo = mGraph.getNodeSpecial(child); // Gets the heuristic info
-                double weight =
+                int destinationInfo = mGraph.getNodeSpecial(child); // Gets the heuristic info
+                int weight =
                         connection.getWeight()
                                 + oldFNode; // Gets the weight of the node and add the old
                 // weights known
 
-                double fNode = destinationInfo + weight; // This is the fnode known
+                int fNode = destinationInfo + weight; // This is the fnode known
 
                 if (!mVisited.contains(child)) { // If the child is not already mVisited
                     if (search(child) == -1) { // If it is not in the mFrontier
-                        double[] toAdd = {child, fNode, weight, currentNode}; // Info to be added
+                        int[] toAdd = {child, fNode, weight, currentNode}; // Info to be added
                         mFrontier.add(toAdd); // Added to mFrontier
 
                     } else {
                         int index = search(child); // Find the index of child
-                        double[] oldInfo = mFrontier.get(index); // Get the info
+                        int[] oldInfo = mFrontier.get(index); // Get the info
 
                         if (oldInfo[1] > fNode) { // If the new info is smaller than the old info
 
-                            double[] toAdd = {child, fNode, weight, currentNode}; // The data to add
+                            int[] toAdd = {child, fNode, weight, currentNode}; // The data to add
                             mFrontier.remove(index); // Remove the current data
                             mFrontier.add(toAdd); // Add the new data
                         }
@@ -99,16 +99,16 @@ public class AStar {
             sort(); // Sorts the mFrontier
 
             if (!mFrontier.isEmpty()) { // As long as the mFrontier is not empty
-                double[] nextNode = mFrontier.remove(0); // Removes the first element
-                int[] connectionHere = {(int) nextNode[3], (int) nextNode[0]}; // The connection
+                int[] nextNode = mFrontier.remove(0); // Removes the first element
+                int[] connectionHere = {nextNode[3], nextNode[0]}; // The connection
                 connectionsFinal.add(connectionHere); // Add it to the final connections
-                if ((int) nextNode[0] == endNode) { // If it ends at the final node
+                if (nextNode[0] == endNode) { // If it ends at the final node
                     finished = true; // Finish the loop
-                    currentNode = (int) nextNode[0]; // Set the current node to the next node
+                    currentNode = nextNode[0]; // Set the current node to the next node
 
                 } else { // If it is not the end
                     oldFNode = nextNode[2]; // Gets the weight
-                    currentNode = (int) nextNode[0]; // Set the current node to the next node
+                    currentNode = nextNode[0]; // Set the current node to the next node
                 }
             } else { // If the mFrontier is empty
                 finished = true; // Finish the loop
@@ -146,7 +146,7 @@ public class AStar {
      * @param right the right index
      * @return the data sorted
      */
-    private void mergesort( int left, int right) {
+    private void mergesort(int left, int right) {
 
         if (left < right) { // While the left and right points are the correct ends
 
@@ -169,7 +169,7 @@ public class AStar {
      */
     private void merge( int left, int mid, int right) {
 
-        double[][] b = new double[right - left + 1][2]; // The array which will be sorted
+        int[][] b = new int[right - left + 1][2]; // The array which will be sorted
         int bcount = 0; // Where you are in the b array
         int lcount = left; // Where you are in the left side
         int rcount = mid + 1; // Where you are in the right side
@@ -214,7 +214,7 @@ public class AStar {
         for (bcount = 0; bcount < right - left + 1; bcount++) {
         	
         	mFrontier.remove(left+bcount);
-           mFrontier.add(left+bcount, b[bcount]);
+        	mFrontier.add(left+bcount, b[bcount]);
            
         }
 
@@ -230,7 +230,7 @@ public class AStar {
 
         for (int i = 0; i < mFrontier.size(); i++) { // Goes through each element
 
-            if ((int) mFrontier.get(i)[0]
+            if (mFrontier.get(i)[0]
                     == node) { // If the element is what you're looking for return the index
 
                 return i;

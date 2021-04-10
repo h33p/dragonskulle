@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 public class Node {
 
     @Getter private int mNode; // The node number
-    @Getter @Setter private double mExtraInfo; // The extra info for that node
+    @Getter @Setter private int mExtraInfo; // The extra info for that node
     @Getter private ArrayList<Connection> mConnections; // The Connections from that node
     @Getter private Reference<HexagonTile> mHexTile;
 
@@ -58,7 +58,7 @@ public class Node {
      * @param destinationNode The Destination node
      * @param weight the weight of the connection
      */
-    public void addConnection(int destinationNode, double weight) {
+    public void addConnection(int destinationNode, int weight) {
 
         mConnections.add(new Connection(mNode, destinationNode, weight));
     }

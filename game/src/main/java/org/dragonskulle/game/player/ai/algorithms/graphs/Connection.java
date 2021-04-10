@@ -14,7 +14,7 @@ public class Connection {
 
     @Getter private int mOriginNode; // This is the origin node
     @Getter private int mDestinationNode; // This is the destination node
-    @Getter private double mWeight; // This is the mWeight of the edge
+    @Getter private int mWeight; // This is the mWeight of the edge
 
     /**
      * The constructor for the class.
@@ -23,7 +23,7 @@ public class Connection {
      * @param node2 - The mDestinationNode for the connection
      * @param mWeight - The mWeight of the node
      */
-    public Connection(int node1, int node2, double mWeight) {
+    public Connection(int node1, int node2, int mWeight) {
         this.mOriginNode = node1;
         this.mDestinationNode = node2;
         this.mWeight = mWeight;
