@@ -27,6 +27,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of selling an owned {@link Building}. */
     protected float mSellProbability = 0.05f;
 
+    /** Used to handle events for building and attacking */
     public interface IHandleBuildingEvent {
         public boolean handleEvent(int index);
     }
@@ -84,7 +85,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * A function which goes through and checks if you can run code
      *
-     * @param lambdaMethod What to
+     * @param lambdaMethod What to on a building
      * @return If the stuff is invoked on the server
      */
     public boolean checkBuilding(IHandleBuildingEvent lambdaMethod) {
