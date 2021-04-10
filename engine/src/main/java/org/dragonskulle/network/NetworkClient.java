@@ -4,10 +4,11 @@ package org.dragonskulle.network;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * @author Oscar L
@@ -22,7 +23,7 @@ public class NetworkClient {
     /** The Socket connection to the server. */
     private Socket mSocket;
     /** The byte output stream. */
-    @Getter private DataOutputStream mDataOut;
+    private DataOutputStream mDataOut;
     /** The byte input stream. */
     private BufferedInputStream mBIn;
 
@@ -39,9 +40,12 @@ public class NetworkClient {
 
     private AtomicBoolean didDispose = new AtomicBoolean(false);
 
-    private TimeoutInputStream mTimeoutInputStream;
-    /** The input stream from the server */
-    private DataInputStream mInput;
+    /** Stores all requests from the server once scheduled. */
+    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
+
+    public DataOutputStream getDataOut() {
+        return new NetworkMessageStream(mDataOut);
+    }
 
     /**
      * Instantiates a new Network client.
@@ -116,10 +120,8 @@ public class NetworkClient {
     public void sendBytes(byte[] bytes) {
         if (mOpen) {
             try {
-                if (mDataOut != null) {
-                    log.fine("sending bytes");
-                    mDataOut.write(bytes);
-                }
+                mDataOut.writeShort(bytes.length);
+                mDataOut.write(bytes);
             } catch (IOException e) {
                 log.fine("Failed to send bytes");
                 mClientThread.interrupt();
@@ -150,26 +152,26 @@ public class NetworkClient {
             try {
                 mSocket = new Socket(mIP, mPort);
                 mDataOut = new DataOutputStream(mSocket.getOutputStream());
-                byte[] netID = {-1};
                 mBIn = new BufferedInputStream(mSocket.getInputStream());
-                mTimeoutInputStream = new TimeoutInputStream(mBIn, 500);
-                mBIn.read(netID);
-                mInput = new DataInputStream(mTimeoutInputStream);
-                mClientListener.connectedToServer(netID[0]);
+                DataInputStream input = new DataInputStream(mBIn);
+                byte netID = input.readByte();
+                mClientListener.connectedToServer(netID);
+
+                while (mOpen && mSocket.isConnected()) {
+                    try {
+                        short len = input.readShort();
+                        byte[] bytes = IOUtils.readExactlyNBytes(input, len);
+                        mRequests.add(bytes);
+                    } catch (IOException e) {
+                        break;
+                    }
+                }
             } catch (UnknownHostException exception) {
                 mOpen = false;
                 mClientListener.unknownHost();
             } catch (IOException exception) {
                 mOpen = false;
                 mClientListener.couldNotConnect();
-            }
-
-            while (mOpen && mSocket.isConnected()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    break;
-                }
             }
 
             if (mClientListener != null) mClientListener.disconnected();
@@ -181,27 +183,24 @@ public class NetworkClient {
 
     /** Processes all requests. */
     public int processRequests() {
-        log.fine("processing all requests");
+        log.fine("processing all " + this.mRequests.size() + " requests");
         int cnt = 0;
 
-        try {
-            int oldSoTime = mSocket.getSoTimeout();
-            mSocket.setSoTimeout(mTimeoutInputStream.getTimeout());
-
-            while (mInput.available() > 0) {
-                mTimeoutInputStream.enableTimeout();
-                processMessage();
-
-                if (cnt > 100) log.info("CNT " + cnt);
-
-                cnt++;
+        while (!this.mRequests.isEmpty()) {
+            byte[] requestBytes = mRequests.poll();
+            if (requestBytes != null) {
+                try {
+                    ByteArrayInputStream bin = new ByteArrayInputStream(requestBytes);
+                    DataInputStream stream = new DataInputStream(bin);
+                    processMessage(stream);
+                    stream.close();
+                    bin.close();
+                    cnt++;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // closeAllConnections();
+                }
             }
-
-            mTimeoutInputStream.disableTimeout();
-            mSocket.setSoTimeout(oldSoTime);
-        } catch (IOException e) {
-            e.printStackTrace();
-            closeAllConnections();
         }
 
         return cnt;
@@ -210,10 +209,11 @@ public class NetworkClient {
     /**
      * Process a message
      *
+     * @param stream stream to read the message from
      * @return the byteCode of the message processed.
      */
-    private byte processMessage() throws IOException {
-        byte messageType = mInput.readByte();
+    private byte processMessage(DataInputStream stream) throws IOException {
+        byte messageType = stream.readByte();
         log.fine("EXEB - " + messageType);
         switch (messageType) {
             case NetworkConfig.Codes.MESSAGE_DISCONNECT:
@@ -221,19 +221,19 @@ public class NetworkClient {
                 break;
             case NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT:
                 log.fine("Should update requested network object");
-                mClientListener.updateNetworkObject(mInput);
+                mClientListener.updateNetworkObject(stream);
                 break;
             case NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT:
                 log.fine("Spawn a networked object");
-                mClientListener.spawnNetworkObject(mInput);
+                mClientListener.spawnNetworkObject(stream);
                 break;
             case NetworkConfig.Codes.MESSAGE_UPDATE_STATE:
                 log.fine("Update server's state");
-                mClientListener.updateServerState(mInput);
+                mClientListener.updateServerState(stream);
                 break;
             case NetworkConfig.Codes.MESSAGE_SERVER_EVENT:
                 log.fine("A server object event");
-                mClientListener.objectEvent(mInput);
+                mClientListener.objectEvent(stream);
                 break;
             default:
                 log.info("unsure of what to do with message as unknown type byte " + messageType);
@@ -246,9 +246,8 @@ public class NetworkClient {
     private void closeAllConnections() {
         mOpen = false;
 
-        try {
-            mDataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
-            mDataOut.flush();
+        try (DataOutputStream dataOut = getDataOut()) {
+            dataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
         } catch (Exception e) {
 
         }

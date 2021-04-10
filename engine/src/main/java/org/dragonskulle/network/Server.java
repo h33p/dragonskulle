@@ -79,7 +79,11 @@ public class Server {
         mServerListener = listener;
 
         mServerSocket =
-                new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
+                new ServerSocket(
+                        port,
+                        0,
+                        InetAddress.getByAddress(
+                                new byte[] {0x00, 0x00, 0x00, 0x00})); // sets up on localhost
         mServerSocket.setSoTimeout(SO_TIMEOUT);
 
         if (this.mPort == 0) {
@@ -113,13 +117,9 @@ public class Server {
         ServerClient c;
         while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
-        byte[] netID = {-1};
-
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
-            netID[0] = (byte) c.getNetworkID();
-            c.sendBytes(netID);
             mServerListener.clientActivated(c);
         }
 
@@ -257,6 +257,7 @@ public class Server {
                 }
 
                 if (clientSocket != null) {
+                    log.info("ACCEPT SOCKET: " + clientSocket);
                     mPendingClients.add(clientSocket);
                 }
             }
