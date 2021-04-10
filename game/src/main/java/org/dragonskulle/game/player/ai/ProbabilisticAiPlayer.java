@@ -78,33 +78,6 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * Gets all {@link HexagonTile}s that can be used to place a {@link Building} on.
-     *
-     * @return A list of HexagonTiles, all of which can have a building placed on them.
-     */
-    private List<HexagonTile> getBuildableTiles() {
-
-        List<HexagonTile> buildableTiles = new ArrayList<HexagonTile>();
-
-        getPlayer()
-                .getOwnedBuildingsAsStream()
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .forEach(
-                        building -> {
-                            List<HexagonTile> visibleTiles = building.getViewableTiles();
-                            // Check each tile is valid.
-                            for (HexagonTile tile : visibleTiles) {
-                                if (tile.isClaimed() == false && tile.hasBuilding() == false) {
-                                    buildableTiles.add(tile);
-                                }
-                            }
-                        });
-
-        return buildableTiles;
-    }
-
-    /**
      * Pick and attempt to place a {@link Building}.
      *
      * @return Whether the attempt to pick and add a building was invoked.
@@ -112,19 +85,31 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean addBuilding() {
         log.info("Placing Building");
 
-        // Gets all the tiles it can expand to
-        List<HexagonTile> tilesToUse = getBuildableTiles();
-
-        // Checks if there are tiles
-        if (tilesToUse.size() > 0) {
-            // Picks a random number and thus a random tile.
-            int randomIndex = mRandom.nextInt(tilesToUse.size());
-            HexagonTile tileToBuildOn = tilesToUse.get(randomIndex);
-
-            getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
-            return true;
+        int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+        boolean done = false;
+        int end = index;
+        ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+        
+        while (!done) {
+        	if (buildings.get(index).get().getViewableTiles().size() != 0) {
+        		List<HexagonTile> visibleTiles = buildings.get(index).get().getViewableTiles();
+        		for (HexagonTile tile : visibleTiles) {
+                    if (tile.isClaimed() == false && tile.hasBuilding() == false) {
+                    	getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
+                    	done = true;
+                    	return true;
+                    }
+                }			
+        	}
+        	index++;
+        	if (index >= getPlayer().getNumberOfOwnedBuildings()) {
+        		index = 0;
+        	}
+        	else if (index == end) {
+        		done = true;
+        		return false;
+        	}
         }
-
         return false;
     }
 
