@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
