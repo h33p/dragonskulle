@@ -104,8 +104,6 @@ public class Graph {
      * @param originNode The origin node
      * @param destinationNode the end node
      * @param weight The weight between the nodes
-     * @throws GraphException If a connection already exists between them
-     * @throws GraphNodeException If the node already exists -- shouldn't happen
      */
     public void addConnection(int originNode, int destinationNode, int weight)
             {

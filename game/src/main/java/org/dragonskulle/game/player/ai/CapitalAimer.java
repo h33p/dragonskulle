@@ -25,8 +25,6 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 public class CapitalAimer extends AiPlayer {
 
     private Player mOpponentPlayer; 
-    private final float UPDATE_PATH_TIME = 60;
-    private float mTimeSinceLastCheck = Time.getTimeInSeconds()  - UPDATE_PATH_TIME;
     private Deque<Integer> mPath = new ArrayDeque<Integer>();
     private Deque<Integer> mGone;
     private Graph mGraph = null;
