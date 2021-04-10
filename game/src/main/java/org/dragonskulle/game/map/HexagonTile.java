@@ -138,7 +138,7 @@ public class HexagonTile {
      * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
      *     claimant.
      */
-    public Integer getClaimantID() {
+    public Integer getClaimantId() {
         if (!isClaimed()) {
             return null;
         }
