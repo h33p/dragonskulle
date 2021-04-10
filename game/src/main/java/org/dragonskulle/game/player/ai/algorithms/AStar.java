@@ -17,7 +17,9 @@ import lombok.extern.java.Log;
 
 /**
  * Class which performs the A* Algorithm
- *
+ * This has been adapted from Nathaniel Lowis's (one of our group members) repository:
+ * https://github.com/low101043/aiProjectComputer
+ * 
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")

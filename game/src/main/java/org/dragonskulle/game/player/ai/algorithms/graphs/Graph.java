@@ -18,7 +18,9 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
 
 
 /**
- * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure
+ * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure.
+ * This has been adapted from Nathaniel Lowis's (one of our group members) repository:
+ * https://github.com/low101043/aiProjectComputer
  *
  * @author Dragonskulle
  */
