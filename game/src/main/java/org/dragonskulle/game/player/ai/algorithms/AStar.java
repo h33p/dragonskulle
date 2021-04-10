@@ -6,20 +6,17 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
-import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
+import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 
 /**
- * Class which performs the A* Algorithm
- * This has been adapted from Nathaniel Lowis's (one of our group members) repository:
- * https://github.com/low101043/aiProjectComputer
- * 
+ * Class which performs the A* Algorithm This has been adapted from Nathaniel Lowis's (one of our
+ * group members) repository: https://github.com/low101043/aiProjectComputer
+ *
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
@@ -53,10 +50,9 @@ public class AStar {
      */
     public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
 
-    	boolean finished = false; // This checks if it finished
+        boolean finished = false; // This checks if it finished
         int oldFNode = 0; // This is what the previous f node value was
-        ArrayList<int[]> connectionsFinal =
-                new ArrayList<int[]>(); // This will hold the route
+        ArrayList<int[]> connectionsFinal = new ArrayList<int[]>(); // This will hold the route
 
         while (!finished) {
             ArrayList<Connection> connections =
@@ -154,7 +150,6 @@ public class AStar {
             mergesort(mid + 1, right); // Sorts the right side
             merge(left, mid, right); // Merges the 2 sides together
         }
-       
     }
 
     /**
@@ -166,7 +161,7 @@ public class AStar {
      * @param right The right index
      * @return the data sorted
      */
-    private void merge( int left, int mid, int right) {
+    private void merge(int left, int mid, int right) {
 
         int[][] b = new int[right - left + 1][2]; // The array which will be sorted
         int bcount = 0; // Where you are in the b array
@@ -176,16 +171,21 @@ public class AStar {
         while ((lcount <= mid) && (rcount <= right)) { // Whilst both sides are not sorted
 
             if (mFrontier.get(lcount)[1]
-                    <= mFrontier.get(rcount)[
+                    <= mFrontier
+                            .get(rcount)[
                             1]) { // If the data on the left side is smaller than the data on the
                 // right side
                 b[bcount] =
-                        mFrontier.get(lcount); // Put that data in the first available space in the b array
+                        mFrontier.get(
+                                lcount); // Put that data in the first available space in the b
+                // array
                 bcount++; // Increase the b and l pointer
                 lcount++;
             } else { // If the data on the right side is larger
                 b[bcount] =
-                        mFrontier.get(rcount); // Put that data in the first available space in the b array
+                        mFrontier.get(
+                                rcount); // Put that data in the first available space in the b
+                // array
                 bcount++; // Increase the b and l pointer
                 rcount++;
             }
@@ -211,12 +211,10 @@ public class AStar {
 
         // Adds all the data sorted back into the array
         for (bcount = 0; bcount < right - left + 1; bcount++) {
-        	
-        	mFrontier.remove(left+bcount);
-        	mFrontier.add(left+bcount, b[bcount]);
-           
-        }
 
+            mFrontier.remove(left + bcount);
+            mFrontier.add(left + bcount, b[bcount]);
+        }
     }
 
     /**

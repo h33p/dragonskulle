@@ -1,21 +1,14 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai.algorithms.graphs;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphException;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
-import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
-
 
 /**
  * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure.
@@ -45,20 +38,21 @@ public class Graph {
     }
 
     /**
-     * This will convert a {@code HexagonTile} to a {@code Node} which can be used by a {@code Graph}
+     * This will convert a {@code HexagonTile} to a {@code Node} which can be used by a {@code
+     * Graph}
+     *
      * @param tile The {@code HexagonTile} to be made a node
      */
     private void convertToNode(HexagonTile tile) {
 
         try {
             addNode(mNodeNum, tile);
-            
+
             int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
-            
-            
+
             setNodeSpecial(mNodeNum, heuristic);
 
-        } catch (GraphNodeException e) {		// TODO shouldn't need
+        } catch (GraphNodeException e) { // TODO shouldn't need
             // TODO Already in mGraph
         }
         mNodeNum++;
@@ -66,6 +60,7 @@ public class Graph {
 
     /**
      * This will add all the connections for a node
+     *
      * @param tile The {@code HexagonTile} to add connections for in the graph
      */
     private void addConnections(HexagonTile tile) {
@@ -77,8 +72,7 @@ public class Graph {
                 if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
                         && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
 
-                	addConnection(mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
-                    
+                    addConnection(mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
                 }
             }
         }
@@ -94,8 +88,8 @@ public class Graph {
      */
     public void addNode(int nodeToAdd, HexagonTile tile) throws GraphNodeException {
 
-            Node newNode = new Node(nodeToAdd, tile); // Makes a new node
-            mGraph.put(nodeToAdd, newNode); // Adds to mGraph
+        Node newNode = new Node(nodeToAdd, tile); // Makes a new node
+        mGraph.put(nodeToAdd, newNode); // Adds to mGraph
     }
 
     /**
@@ -105,16 +99,12 @@ public class Graph {
      * @param destinationNode the end node
      * @param weight The weight between the nodes
      */
-    public void addConnection(int originNode, int destinationNode, int weight)
-            {
+    public void addConnection(int originNode, int destinationNode, int weight) {
 
-    	// Gets the connection if in the graph -- assumption is that all are added by now.
-        Node node =
-                mGraph.get(
-                        originNode); 
+        // Gets the connection if in the graph -- assumption is that all are added by now.
+        Node node = mGraph.get(originNode);
 
-       node.addConnection(destinationNode, weight); // Adds the connection to the node
-
+        node.addConnection(destinationNode, weight); // Adds the connection to the node
     }
 
     /**

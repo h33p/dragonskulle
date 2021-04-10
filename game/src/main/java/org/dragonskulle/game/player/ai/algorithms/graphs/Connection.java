@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * The class which holds the information for a connection and provides access to this data
- * This has been adapted from Nathaniel Lowis's (one of our group members) repository:
+ * The class which holds the information for a connection and provides access to this data This has
+ * been adapted from Nathaniel Lowis's (one of our group members) repository:
  * https://github.com/low101043/aiProjectComputer
- * 
+ *
  * @author Dragonskulle
  */
 @Accessors(prefix = "m")
@@ -51,7 +51,8 @@ public class Connection {
         Connection other = (Connection) obj;
         if (mDestinationNode != other.mDestinationNode) return false;
         if (mOriginNode != other.mOriginNode) return false;
-        if (Double.doubleToLongBits(mWeight) != Double.doubleToLongBits(other.mWeight)) return false;
+        if (Double.doubleToLongBits(mWeight) != Double.doubleToLongBits(other.mWeight))
+            return false;
         return true;
     }
 }

@@ -606,8 +606,7 @@ public class App implements NativeResource {
         do {
             sReload = false;
             Settings.getInstance().loadSettings();
-            AudioManager.getInstance()
-            .toggleMasterMute();
+            AudioManager.getInstance().toggleMasterMute();
             try (App app = new App()) {
                 app.run();
             }

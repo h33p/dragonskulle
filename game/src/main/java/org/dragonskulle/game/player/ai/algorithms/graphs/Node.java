@@ -2,16 +2,15 @@
 package org.dragonskulle.game.player.ai.algorithms.graphs;
 
 import java.util.ArrayList;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.game.map.HexagonTile;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.map.HexagonTile;
 
 /**
- * This is a class which contains all the info needed for a Node
- * This has been adapted from Nathaniel Lowis's (one of our group members) repository:
+ * This is a class which contains all the info needed for a Node This has been adapted from
+ * Nathaniel Lowis's (one of our group members) repository:
  * https://github.com/low101043/aiProjectComputer
  *
  * @author Dragonskulle
@@ -31,7 +30,7 @@ public class Node {
      * @param info the extra info for that node
      */
     public Node(int num, int info) {
-        
+
         mExtraInfo = info;
     }
 
@@ -48,12 +47,12 @@ public class Node {
     }
 
     public Node(int nodeToAdd, HexagonTile tile) {
-    	mConnections = new ArrayList<Connection>();
+        mConnections = new ArrayList<Connection>();
         mNode = nodeToAdd;
         mHexTile = new Reference<HexagonTile>(tile);
-	}
+    }
 
-	/**
+    /**
      * A Setter which adds a new <Code> Connection </Code> to the node
      *
      * @param destinationNode The Destination node
@@ -63,6 +62,4 @@ public class Node {
 
         mConnections.add(new Connection(mNode, destinationNode, weight));
     }
-
-
 }
