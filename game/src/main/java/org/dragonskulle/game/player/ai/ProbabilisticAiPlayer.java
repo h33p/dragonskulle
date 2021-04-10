@@ -166,31 +166,31 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean attack() {
         log.info("AI: Attacking");
 
-        boolean completed =
-                getPlayer()
-                        .getOwnedBuildingsAsStream()
-                        .filter(Reference::isValid)
-                        .map(Reference::get)
-                        .anyMatch(
-                                building -> {
-                                    ArrayList<Building> attackableBuildings =
-                                            building.getAttackableBuildings();
-                                    if (attackableBuildings.size() == 0) {
-                                        return false;
-                                    }
-                                    Building defender =
-                                            building.getAttackableBuildings()
-                                                    .get(
-                                                            mRandom.nextInt(
-                                                                    building.getAttackableBuildings()
-                                                                            .size()));
-                                    getPlayer()
-                                            .getClientAttackRequest()
-                                            .invoke(d -> d.setData(building, defender));
-                                    return true;
-                                });
-
-        return completed;
+        int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+        boolean done = false;
+        int end = index;
+        ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+        while (!done) {
+        	if (buildings.get(index).get().getAttackableBuildings().size() != 0) {
+        		int buildingChoice = mRandom.nextInt(buildings.get(index).get().getAttackableBuildings().size());
+        		Building defender = buildings.get(index).get().getAttackableBuildings().get(buildingChoice);
+        		Building attacker = buildings.get(index).get();
+        		
+        		getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+        				
+        		done = true;
+        		return true;
+        	}
+        	index++;
+        	if (index >= getPlayer().getNumberOfOwnedBuildings()) {
+        		index = 0;
+        	}
+        	else if (index == end) {
+        		done = true;
+        		return false;
+        	}
+        }
+        return false;
     }
 
     /**
