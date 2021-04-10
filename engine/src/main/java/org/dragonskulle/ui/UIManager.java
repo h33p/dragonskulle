@@ -5,14 +5,9 @@ import java.util.Collection;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.core.Engine;
-import org.dragonskulle.core.GLFWState;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
-import org.joml.Vector2d;
-import org.joml.Vector2f;
-import org.joml.Vector2ic;
 
 /**
  * General UI manager.
@@ -33,9 +28,6 @@ public class UIManager {
      */
     @Getter private Reference<UIRenderable> mHoveredObject;
 
-    /** Scaled mouse cursor coordinates in [[-1, 1], [-1, 1]] range */
-    @Getter private Vector2f mScaledCursorCoords = new Vector2f();
-
     /**
      * Update which UI element is currently hovered by the cursor
      *
@@ -47,16 +39,6 @@ public class UIManager {
         Cursor cursor = Actions.getCursor();
 
         if (cursor == null) return;
-
-        Vector2d cursorCoords = cursor.getPosition();
-
-        GLFWState state = Engine.getInstance().getGLFWState();
-
-        Vector2ic windowSize = state.getWindowSize();
-
-        mScaledCursorCoords.set(
-                (float) cursorCoords.x() / (float) windowSize.x() * 2f - 1f,
-                (float) cursorCoords.y() / (float) windowSize.y() * 2f - 1f);
 
         int curDepth = 0;
 
