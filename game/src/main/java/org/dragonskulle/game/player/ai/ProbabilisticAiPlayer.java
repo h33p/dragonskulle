@@ -81,9 +81,17 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         }
     }
 
+    /**
+     * A function which goes through and checks if you can run code
+     * @param lambdaMethod What to
+     * @return If the stuff is invoked on the server
+     */
     public boolean checkBuilding(IHandleBuildingEvent lambdaMethod) {
+    	if (getPlayer() == null) {
+    		return false;
+    	}
     	int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-        boolean done = false;
+        
         final int END = index;
         
         while (true) {
@@ -114,6 +122,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         return checkBuilding(this::tryToAddBuilding);
     }
     
+    /**
+     * Will try and building a building
+     * @param index the index to check
+     * @return whether the code was invoked
+     */
     private boolean tryToAddBuilding(int index) {
     	ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
 
@@ -151,6 +164,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean upgradeBuilding() {
         log.info("AI: Upgrading");
 
+        if (getPlayer() == null) {
+        	return false;
+        }
         if (getPlayer().getNumberOfOwnedBuildings() == 0) {
             return false;
         }
@@ -184,6 +200,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         return checkBuilding(this::tryToAttack);
     }
     
+    /**
+     * This will try to attack from a building
+     * @param index where in the list to get it
+     * @return whether it was invoked
+     */
     private boolean tryToAttack(int index) {
     	ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
     	if (buildings.get(index).isValid() && buildings.get(index).get().getAttackableBuildings().size() != 0) {
@@ -230,6 +251,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         return false;
     }
 
+    /**
+     * Gets the player 
+     * @return the player
+     */
     private Player getPlayer() {
         Player player = mPlayer.get();
         if (player == null) {
