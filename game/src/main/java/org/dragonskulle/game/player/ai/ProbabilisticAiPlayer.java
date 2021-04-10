@@ -135,7 +135,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         if (buildings.get(index).isValid()
                 && buildings.get(index).get().getViewableTiles().size() != 0) {
-            List<HexagonTile> visibleTiles = buildings.get(index).get().getViewableTiles();
+            List<HexagonTile> visibleTiles = new ArrayList<HexagonTile>(buildings.get(index).get().getViewableTiles());
             int j = mRandom.nextInt(visibleTiles.size());
             final int END = j;
             while (true) {
