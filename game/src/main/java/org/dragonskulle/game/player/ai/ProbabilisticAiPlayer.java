@@ -26,9 +26,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     protected float mAttackProbability = 0.15f;
     /** Probability of selling an owned {@link Building}. */
     protected float mSellProbability = 0.05f;
-    
-    public interface IHandleBuildingEvent{
-    	public boolean handleEvent(int index);
+
+    public interface IHandleBuildingEvent {
+        public boolean handleEvent(int index);
     }
 
     /** A Constructor for an AI Player */
@@ -83,34 +83,34 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /**
      * A function which goes through and checks if you can run code
+     *
      * @param lambdaMethod What to
      * @return If the stuff is invoked on the server
      */
     public boolean checkBuilding(IHandleBuildingEvent lambdaMethod) {
-    	if (getPlayer() == null) {
-    		return false;
-    	}
-    	int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-        
+        if (getPlayer() == null) {
+            return false;
+        }
+        int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+
         final int END = index;
-        
+
         while (true) {
-        	boolean completed = lambdaMethod.handleEvent(index);
-        	if (completed) {
-        		return true;
-        	}
+            boolean completed = lambdaMethod.handleEvent(index);
+            if (completed) {
+                return true;
+            }
             index++;
             if (index >= getPlayer().getNumberOfOwnedBuildings()) {
                 index = 0;
-            } 
+            }
             if (index == END) {
-                
+
                 return false;
             }
         }
-        	
     }
-    
+
     /**
      * Pick and attempt to place a {@link Building}.
      *
@@ -121,41 +121,40 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         return checkBuilding(this::tryToAddBuilding);
     }
-    
+
     /**
      * Will try and building a building
+     *
      * @param index the index to check
      * @return whether the code was invoked
      */
     private boolean tryToAddBuilding(int index) {
-    	ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+        ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
 
-    	 if (buildings.get(index).isValid() && buildings.get(index).get().getViewableTiles().size() != 0) {
-             List<HexagonTile> visibleTiles = buildings.get(index).get().getViewableTiles();
-             int j = mRandom.nextInt(visibleTiles.size());
-             final int END = j;
-             while (true) {
-            	 HexagonTile tile = visibleTiles.get(j);
-            	 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
-                     getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
-                     
-                     return true;
-                 }
-            	 j++;
-            	 if (j >= visibleTiles.size()) {
-            		 j = 0;
-            	 }
-            	 if (j == END) {
-            		 return false;
-            	 }
-            	 
-             }
-        
-    	 }
-    	 return false;
+        if (buildings.get(index).isValid()
+                && buildings.get(index).get().getViewableTiles().size() != 0) {
+            List<HexagonTile> visibleTiles = buildings.get(index).get().getViewableTiles();
+            int j = mRandom.nextInt(visibleTiles.size());
+            final int END = j;
+            while (true) {
+                HexagonTile tile = visibleTiles.get(j);
+                if (tile.isClaimed() == false && tile.hasBuilding() == false) {
+                    getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
 
+                    return true;
+                }
+                j++;
+                if (j >= visibleTiles.size()) {
+                    j = 0;
+                }
+                if (j == END) {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
-    
+
     /**
      * Pick a {@link Building} and attempt to upgrade one of its stats.
      *
@@ -165,7 +164,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         log.info("AI: Upgrading");
 
         if (getPlayer() == null) {
-        	return false;
+            return false;
         }
         if (getPlayer().getNumberOfOwnedBuildings() == 0) {
             return false;
@@ -199,15 +198,17 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         return checkBuilding(this::tryToAttack);
     }
-    
+
     /**
      * This will try to attack from a building
+     *
      * @param index where in the list to get it
      * @return whether it was invoked
      */
     private boolean tryToAttack(int index) {
-    	ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
-    	if (buildings.get(index).isValid() && buildings.get(index).get().getAttackableBuildings().size() != 0) {
+        ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+        if (buildings.get(index).isValid()
+                && buildings.get(index).get().getAttackableBuildings().size() != 0) {
             int buildingChoice =
                     mRandom.nextInt(buildings.get(index).get().getAttackableBuildings().size());
             Building defender =
@@ -218,7 +219,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             return true;
         }
-    	return false;
+        return false;
     }
 
     /**
@@ -252,7 +253,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * Gets the player 
+     * Gets the player
+     *
      * @return the player
      */
     private Player getPlayer() {
