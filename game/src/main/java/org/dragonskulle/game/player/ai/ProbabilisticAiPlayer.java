@@ -26,6 +26,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     protected float mAttackProbability = 0.15f;
     /** Probability of selling an owned {@link Building}. */
     protected float mSellProbability = 0.05f;
+    
+    public interface IHandleBuildingEvent{
+    	public boolean handleEvent(int index);
+    }
 
     /** A Constructor for an AI Player */
     public ProbabilisticAiPlayer() {}
@@ -77,30 +81,17 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         }
     }
 
-    /**
-     * Pick and attempt to place a {@link Building}.
-     *
-     * @return Whether the attempt to pick and add a building was invoked.
-     */
-    private boolean addBuilding() {
-        log.info("Placing Building");
-
-        int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
+    public boolean checkBuilding(IHandleBuildingEvent lambdaMethod) {
+    	int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
         boolean done = false;
         int end = index;
         ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
-
+        
         while (!done) {
-            if (buildings.get(index).get().getViewableTiles().size() != 0) {
-                List<HexagonTile> visibleTiles = buildings.get(index).get().getViewableTiles();
-                for (HexagonTile tile : visibleTiles) {
-                    if (tile.isClaimed() == false && tile.hasBuilding() == false) {
-                        getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
-                        done = true;
-                        return true;
-                    }
-                }
-            }
+        	boolean completed = lambdaMethod.handleEvent(index);
+        	if (completed) {
+        		return true;
+        	}
             index++;
             if (index >= getPlayer().getNumberOfOwnedBuildings()) {
                 index = 0;
@@ -110,6 +101,35 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             }
         }
         return false;
+        
+    	
+    }
+    
+    /**
+     * Pick and attempt to place a {@link Building}.
+     *
+     * @return Whether the attempt to pick and add a building was invoked.
+     */
+    private boolean addBuilding() {
+        log.info("Placing Building");
+
+        return checkBuilding(this::tryToAddBuilding);
+    }
+    
+    private boolean tryToAddBuilding(int index) {
+    	ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+
+    	 if (buildings.get(index).get().getViewableTiles().size() != 0) {
+             List<HexagonTile> visibleTiles = buildings.get(index).get().getViewableTiles();
+             for (HexagonTile tile : visibleTiles) {
+                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
+                     getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
+                     
+                     return true;
+                 }
+             }
+         }
+    	return false;
     }
 
     /**
@@ -150,32 +170,23 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean attack() {
         log.info("AI: Attacking");
 
-        int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-        boolean done = false;
-        int end = index;
-        ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
-        while (!done) {
-            if (buildings.get(index).get().getAttackableBuildings().size() != 0) {
-                int buildingChoice =
-                        mRandom.nextInt(buildings.get(index).get().getAttackableBuildings().size());
-                Building defender =
-                        buildings.get(index).get().getAttackableBuildings().get(buildingChoice);
-                Building attacker = buildings.get(index).get();
+        return checkBuilding(this::tryToAttack);
+    }
+    
+    private boolean tryToAttack(int index) {
+    	ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+    	if (buildings.get(index).get().getAttackableBuildings().size() != 0) {
+            int buildingChoice =
+                    mRandom.nextInt(buildings.get(index).get().getAttackableBuildings().size());
+            Building defender =
+                    buildings.get(index).get().getAttackableBuildings().get(buildingChoice);
+            Building attacker = buildings.get(index).get();
 
-                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+            getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
 
-                done = true;
-                return true;
-            }
-            index++;
-            if (index >= getPlayer().getNumberOfOwnedBuildings()) {
-                index = 0;
-            } else if (index == end) {
-                done = true;
-                return false;
-            }
+            return true;
         }
-        return false;
+    	return false;
     }
 
     /**
