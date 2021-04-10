@@ -147,7 +147,7 @@ public class Graph {
      *
      * @param nodeToChange The node to change
      * @param newInfo The extra info to change
-     * @throws GraphNodeException If the node does not exist -- shouldn't happen 
+     * @throws GraphNodeException If the node does not exist -- shouldn't happen
      */
     public void setNodeSpecial(int nodeToChange, int newInfo) throws GraphNodeException {
 
