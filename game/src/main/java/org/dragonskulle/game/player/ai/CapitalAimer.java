@@ -237,10 +237,16 @@ public class CapitalAimer extends AiPlayer {
         // Finds the capitals
         findCapital();
         
+        if (mCapNode == null || mOppCapNode == null) {
+        	
+        	// Null pointer check to try and not destroy the server
+        	mPath = new ArrayDeque<Integer>();
+        	return;
+        }
         // Performs A* Search
         AStar aStar = new AStar(mGraph);
         try {
-            aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());		// TODO FORCE mCapNode && mOppNode not to be null!
+            aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());
             log.severe("Completed");
         } catch (GraphNodeException e) {
             // TODO Shouldn't get here.
