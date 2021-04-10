@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.map;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import org.dragonskulle.core.Scene;
 
 /**
  * @author Leela Muppala and Craig Wilbourne
+ *
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
  */
@@ -55,7 +57,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * Get a stream of all hexagon tiles
+     * Get a stream of all hexagon tiles.
      *
      * @return stream of all non-null hexagon tiles in the map
      */
@@ -93,7 +95,9 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      */
     public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius) {
         ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-        if (tile == null) return tiles;
+        if (tile == null) {
+            return tiles;
+        }
 
         // Get the tile's q and r coordinates.
         int qCentre = tile.getQ();
@@ -105,13 +109,19 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
                 int sOffset = -qOffset - rOffset;
 
                 // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
+                if (sOffset > radius || sOffset < -radius) {
+                    continue;
+                }
                 // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
+                if (qOffset == 0 && rOffset == 0) {
+                    continue;
+                }
 
                 // Attempt to get the desired tile, and check if it exists.
                 HexagonTile selectedTile = getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
+                if (selectedTile == null) {
+                    continue;
+                }
 
                 // Add the tile to the list.
                 tiles.add(selectedTile);
@@ -129,7 +139,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         Scene.getActiveScene().registerSingleton(this);
     }
 
-    /** Spawns each HexagonTile as a GameObject */
+    /** Spawns each HexagonTile as a GameObject. */
     @Override
     public void onStart() {
         mTiles.getAllTiles()

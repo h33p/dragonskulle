@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.map;
 
 import java.util.Arrays;
@@ -17,6 +18,7 @@ import org.dragonskulle.game.player.Player;
 
 /**
  * @author Leela Muppala
+ *
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
  *     coordinates of each tile.
  */
@@ -26,14 +28,14 @@ public class HexagonTile {
 
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
-    /** Describes a template for land hex tile */
+    /** Describes a template for land hex tile. */
     static final GameObject LAND_TILE =
             TEMPLATES.get().getDefaultScene().getGameObjects().stream()
                     .filter(go -> go.getName().equals("Land Hex"))
                     .findFirst()
                     .orElse(null);
 
-    /** This is the axial storage system for each tile */
+    /** This is the axial storage system for each tile. */
     @Getter private final int mQ;
 
     @Getter private final int mR;
@@ -102,7 +104,9 @@ public class HexagonTile {
      *     already claimed.
      */
     public boolean setClaimedBy(Building building) {
-        if (isClaimed()) return false;
+        if (isClaimed()) {
+            return false;
+        }
 
         mClaimedBy = building.getReference(Building.class);
         return true;

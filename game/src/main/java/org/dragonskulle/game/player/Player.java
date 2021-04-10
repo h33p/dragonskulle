@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * This is the class which contains all the needed data to play a game
+ * This is the class which contains all the needed data to play a game.
  *
  * @author DragonSkulle
  */
@@ -65,12 +66,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
-    /** Whether they own the building */
+    /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
-    /** This Is how often a player can attack */
+    /** This Is how often a player can attack. */
     private final float ATTACK_COOLDOWN = 20f;
-    /** When the last time a player attacked */
+    /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     private static final Vector3f[] COLOURS = {
@@ -103,14 +104,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Used by the client to request that a building be sold. */
     @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
-    /** The base constructor for player */
+    /** The base constructor for player. */
     public Player() {}
 
     @Override
     protected void onConnectedSyncvars() {
         if (getNetworkObject().isServer()) {
             int id = getNetworkObject().getOwnerId() % COLOURS.length;
-            if (id < 0) id += COLOURS.length;
+            if (id < 0) {
+                id += COLOURS.length;
+            }
             mPlayerColour.set(COLOURS[id]);
         }
     }
@@ -125,7 +128,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
         mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
 
-        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
+        if (getNetworkObject().isMine()) {
+            Scene.getActiveScene().registerSingleton(this);
+        }
     }
 
     @Override
@@ -139,7 +144,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.severe("Player has no NetworkManager.");
         }
 
-        if (assignMap() == false) {
+        if (!assignMap()) {
             log.severe("Player has no HexagonMap.");
         }
 
@@ -167,7 +172,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     protected void onDestroy() {}
 
     /**
-     * This will randomly place a capital using an angle so each person is within their own slice
+     * This will randomly place a capital using an angle so each person is within their own slice.
      */
     private void distributeCoordinates() {
         boolean completed = false;
@@ -302,7 +307,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Reference<NetworkObject> networkObject =
                 getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
-        if (networkObject == null || networkObject.isValid() == false) {
+        if (networkObject == null || !networkObject.isValid()) {
             log.warning("Unable to create building: Could not create a Network Object.");
             return null;
         }
@@ -311,7 +316,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         gameObject.getTransform(TransformHex.class).setPosition(qPos, rPos);
         Reference<Building> building = gameObject.getComponent(Building.class);
 
-        if (building == null || building.isValid() == false) {
+        if (building == null || !building.isValid()) {
             log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
@@ -325,7 +330,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
     public void addOwnership(Building building) {
-        if (building == null) return;
+        if (building == null) {
+            return;
+        }
 
         // Get the tile the building is on.
         HexagonTile tile = building.getTile();
@@ -347,10 +354,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} on success, otherwise {@code false}.
      */
     public boolean removeOwnership(Building building) {
-        if (building == null) return false;
+        if (building == null) {
+            return false;
+        }
 
         HexagonTile tile = building.getTile();
-        if (tile == null) return false;
+        if (tile == null) {
+            return false;
+        }
 
         Reference<Building> removed = mOwnedBuildings.remove(tile);
         return (removed != null);
@@ -358,7 +369,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Get the {@link Building}, that is on the specified {@link HexagonTile}, from {@link
-     * #mOwnedBuildings}
+     * #mOwnedBuildings}.
      *
      * @param tile The tile to get the building from.
      * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
@@ -404,7 +415,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
     public boolean checkBuildingOwnership(Building building) {
-        return building.getOwnerID() == getNetworkObject().getOwnerId();
+        return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
 
     /**
@@ -432,11 +443,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean assignMap() {
         HexagonMap map = Scene.getActiveScene().getSingleton(HexagonMap.class);
-        if (map == null) return false;
+        if (map == null) {
+            return false;
+        }
 
         mMap = map.getReference(HexagonMap.class);
-        if (mMap == null || mMap.isValid() == false) return false;
-        return true;
+        return mMap != null && mMap.isValid();
     }
 
     /**
@@ -487,7 +499,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to build was successful.
      */
     private boolean buildAttempt(HexagonTile tile) {
-        if (buildCheck(tile) == false) {
+        if (!buildCheck(tile)) {
             log.info("Unable to pass build check.");
             return false;
         }
@@ -544,7 +556,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         final int radius = 3;
         ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
 
-        if (containsOwnedBuilding(tiles) == false) {
+        if (!containsOwnedBuilding(tiles)) {
             log.info("Building is placed too far away from preexisting buildings.");
             return false;
         }
@@ -596,7 +608,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
-        if (attackCheck(attacker, defender) == false) {
+        if (!attackCheck(attacker, defender)) {
             log.info("Unable to pass attack check.");
             return false;
         }
@@ -680,7 +692,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you're not attacking your own building
-        if (defender.getOwnerID() == attacker.getOwnerID()) {
+        if (defender.getOwnerId() == attacker.getOwnerId()) {
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }
@@ -737,7 +749,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to sell the building was successful.
      */
     private boolean sellAttempt(Building building) {
-        if (sellCheck(building) == false) {
+        if (!sellCheck(building)) {
             log.info("Unable to pass sell check.");
             return false;
         }
@@ -808,7 +820,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to change the stats where successful.
      */
     private boolean statAttempt(Building building, SyncStat<?> stat) {
-        if (statCheck(building) == false) {
+        if (!statCheck(building)) {
             log.info("Unable to pass stat check.");
             return false;
         }
@@ -842,7 +854,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This will return whether the player has lost their capital and thus the game
+     * This will return whether the player has lost their capital and thus the game.
      *
      * @return {@code true} if they have they have lost there capital and thus the game {@code
      *     false} if not

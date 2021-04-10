@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.map;
 
 import java.util.HashMap;
@@ -14,7 +15,8 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.Renderable;
-import org.dragonskulle.renderer.materials.*;
+import org.dragonskulle.renderer.materials.IRefCountedMaterial;
+import org.dragonskulle.renderer.materials.UnlitMaterial;
 import org.joml.Vector4f;
 
 /**
@@ -26,7 +28,7 @@ import org.joml.Vector4f;
 @Log
 public class MapEffects extends Component implements IOnStart {
 
-    /** Describes tile highlight option */
+    /** Describes tile highlight option. */
     public static enum StandardHighlightType {
         VALID(0),
         INVALID(1),
@@ -87,7 +89,7 @@ public class MapEffects extends Component implements IOnStart {
         }
     }
 
-    /** A simple tile highlight selection interface */
+    /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
         public HighlightSelection handleTile(HexagonTile tile);
     }
@@ -113,19 +115,27 @@ public class MapEffects extends Component implements IOnStart {
     }
 
     /**
-     * Select a single tile, overriding previous selection
+     * Select a single tile, overriding previous selection.
      *
      * @param tile tile to select
      * @param selection type of highlight to use
      */
     public void highlightTile(HexagonTile tile, HighlightSelection selection) {
 
-        if (tile == null || selection == null) return;
+        if (tile == null || selection == null) {
+            return;
+        }
 
         GameObject effectObject = mHighlightedTiles.remove(tile);
-        if (effectObject != null) effectObject.destroy();
-        if (selection.mClear) return;
-        if (!ensureMapReference()) return;
+        if (effectObject != null) {
+            effectObject.destroy();
+        }
+        if (selection.mClear) {
+            return;
+        }
+        if (!ensureMapReference()) {
+            return;
+        }
 
         effectObject =
                 new GameObject(
@@ -146,7 +156,7 @@ public class MapEffects extends Component implements IOnStart {
     }
 
     /**
-     * Select multiple tiles by selector handler
+     * Select multiple tiles by selector handler.
      *
      * <p>This will iterate through all tiles on the map, and call the selector handler to see if
      * any selection should take place
@@ -169,17 +179,19 @@ public class MapEffects extends Component implements IOnStart {
     }
 
     /**
-     * Deselect all tiles
+     * Deselect all tiles.
      *
      * <p>This will clear any selection that currently takes place
      */
     public void unhighlightAllTiles() {
-        for (GameObject go : mHighlightedTiles.values()) go.destroy();
+        for (GameObject go : mHighlightedTiles.values()) {
+            go.destroy();
+        }
         mHighlightedTiles.clear();
     }
 
     /**
-     * Check whether tile is selected
+     * Check whether tile is selected.
      *
      * @param tile tile to check
      * @return {@code true} if the tile is currently selected, {@code false} otherwise.
@@ -201,7 +213,9 @@ public class MapEffects extends Component implements IOnStart {
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) return true;
+        if (mMapReference != null) {
+            return true;
+        }
         mMapReference =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)

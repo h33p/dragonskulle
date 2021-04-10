@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.map;
 
 import java.util.Arrays;
@@ -7,6 +8,7 @@ import lombok.extern.java.Log;
 
 /**
  * @author Leela Muppala
+ *
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
  */
@@ -16,20 +18,20 @@ class HexagonTileStore {
     private final int mCoordShift;
 
     /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */
-    public HexagonTileStore(int mSize) {
-        mTiles = new HexagonTile[mSize][mSize];
-        mCoordShift = mSize / 2;
+    public HexagonTileStore(int size) {
+        mTiles = new HexagonTile[size][size];
+        mCoordShift = size / 2;
 
-        int max_empty = getSpaces(mSize); // The max number of empty spaces in one row of the array
-        int loop = mSize / 2;
+        int max_empty = getSpaces(size); // The max number of empty spaces in one row of the array
+        int loop = size / 2;
         int empty = max_empty;
 
-        /** Generates the first part of the map */
+        /* Generates the first part of the map */
         for (int r = 0; r < loop; r++) {
 
             int inside_empty = empty;
 
-            for (int q = 0; q < mSize; q++) {
+            for (int q = 0; q < size; q++) {
                 if (inside_empty > 0) {
                     // No tile in this location
                     inside_empty--;
@@ -42,23 +44,23 @@ class HexagonTileStore {
             empty--;
         }
 
-        /** Generates the middle part of the map */
-        int r_m = (mSize / 2);
-        for (int q = 0; q < mSize; q++) {
+        /* Generates the middle part of the map */
+        int r_m = (size / 2);
+        for (int q = 0; q < size; q++) {
             int q1 = q - mCoordShift;
             int r1 = r_m - mCoordShift;
             setTile(new HexagonTile(q1, r1, -q1 - r1));
         }
 
-        /** Generates the last part of the map */
-        loop = (mSize / 2) + 1;
-        int min_val = mSize - max_empty;
-        int current_val = mSize;
-        for (int r = loop; r < mSize; r++) {
+        /* Generates the last part of the map */
+        loop = (size / 2) + 1;
+        int min_val = size - max_empty;
+        int current_val = size;
+        for (int r = loop; r < size; r++) {
             current_val--; // The number of cells with actual coordinates, it decreases with every
             // row
             int inside_val = 1;
-            for (int q = 0; q < mSize; q++) {
+            for (int q = 0; q < size; q++) {
                 if (inside_val <= current_val) {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;

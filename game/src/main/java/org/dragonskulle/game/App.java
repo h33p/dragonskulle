@@ -52,10 +52,10 @@ public class App implements NativeResource {
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
 
-    private static void addDebugUI(Scene scene) {
-        GameObject debugUI =
+    private static void addDebugUi(Scene scene) {
+        GameObject debugUi =
                 new GameObject(
-                        "debugUI",
+                        "debugUi",
                         new TransformUI(true),
                         (handle) -> {
                             handle.getTransform(TransformUI.class)
@@ -65,14 +65,14 @@ public class App implements NativeResource {
                             handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
                         });
 
-        scene.addRootObject(debugUI);
+        scene.addRootObject(debugUi);
     }
 
     private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
 
-        addDebugUI(mainScene);
+        addDebugUi(mainScene);
 
         mainScene.addRootObject(
                 new GameObject(
@@ -148,9 +148,9 @@ public class App implements NativeResource {
         // asServer = true;
         if (asServer) {
             log.warning("I am the server");
-            GameObject hostGameUI =
+            GameObject hostGameUi =
                     new GameObject(
-                            "hostGameUI",
+                            "hostGameUi",
                             new TransformUI(false),
                             (root) -> {
                                 // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
@@ -189,7 +189,7 @@ public class App implements NativeResource {
                                                             }));
                                         });
                             });
-            mainScene.addRootObject(hostGameUI);
+            mainScene.addRootObject(hostGameUi);
         }
         return mainScene;
     }
@@ -197,7 +197,7 @@ public class App implements NativeResource {
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
 
-        addDebugUI(mainMenu);
+        addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();
 
@@ -493,11 +493,11 @@ public class App implements NativeResource {
                                                             .createClient(
                                                                     sIP,
                                                                     sPort,
-                                                                    (gameScene, manager, netID) -> {
-                                                                        if (netID >= 0) {
+                                                                    (gameScene, manager, netId) -> {
+                                                                        if (netId >= 0) {
                                                                             onConnectedClient(
                                                                                     gameScene,
-                                                                                    manager, netID);
+                                                                                    manager, netId);
                                                                         } else if (connectingTextRef
                                                                                 .isValid()) {
                                                                             connectingTextRef
@@ -506,8 +506,9 @@ public class App implements NativeResource {
                                                                                             false);
                                                                         }
                                                                     });
-                                                    if (connectingTextRef.isValid())
+                                                    if (connectingTextRef.isValid()) {
                                                         connectingTextRef.get().setEnabled(true);
+                                                    }
                                                 });
                                 button.addComponent(newButton);
                             });
@@ -654,8 +655,8 @@ public class App implements NativeResource {
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
-        log.info("CONNECTED ID " + netID);
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
+        log.info("CONNECTED ID " + netId);
 
         GameObject humanPlayer =
                 new GameObject(
@@ -663,7 +664,7 @@ public class App implements NativeResource {
                         (handle) -> {
                             handle.addComponent(
                                     new HumanPlayer(
-                                            manager.getReference(NetworkManager.class), netID));
+                                            manager.getReference(NetworkManager.class), netId));
                         });
 
         gameScene.addRootObject(humanPlayer);

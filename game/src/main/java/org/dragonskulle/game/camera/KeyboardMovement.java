@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.camera;
 
 import lombok.Getter;
@@ -13,7 +14,7 @@ import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.utils.MathUtils;
 
 /**
- * Allows to control object with keyboard
+ * Allows to control object with keyboard.
  *
  * @author Aurimas Blažulionis
  */

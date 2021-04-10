@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.input;
 
 import org.dragonskulle.input.Action;
