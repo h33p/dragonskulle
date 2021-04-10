@@ -110,7 +110,7 @@ public class CapitalAimer extends AiPlayer {
         // This will point us to the next tile to use
         int nextNode = mPath.pop();
         while (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null &&
-        		mGraph.getNode(nextNode)					//TODO null checks please
+        		mGraph.getNode(nextNode)					
                         .getHexTile()
                         .get()
                         .getClaimant()
@@ -131,17 +131,23 @@ public class CapitalAimer extends AiPlayer {
                     .invoke((d) -> d.setTile(tileToBuildOn)); // TODO Make as close as final as
             // possible
             mGone.push(nextNode);
+            return;
         } else if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null) {
+        	
         	log.info("Attacking");
-            // ATTACK		TODO -- Sort out attacking
+            // ATTACK		
             if (!mGraph.getNode(nextNode).getHexTile().get().hasBuilding()) {
                 // Assuming that the building is on the next node
+            	
                 mGone.push(nextNode);
                 nextNode = mPath.pop();
             }
             Building toAttack = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+            
             for (Building attacker : toAttack.getAttackableBuildings()) {
+            	
                 if (attacker.getOwnerID() == mPlayer.get().getNetworkObject().getOwnerId()) {
+                	
                     mPlayer.get()
                             .getClientAttackRequest()
                             .invoke(
@@ -151,6 +157,7 @@ public class CapitalAimer extends AiPlayer {
                                                     toAttack));
                     if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null && mGraph.getNode(nextNode).getHexTile().get().getClaimant().getNetworkObject().getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
                     mGone.push(nextNode);}
+                    return;
                     
                 }
             }
