@@ -23,22 +23,18 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 @Log
 public class AStar {
 
-    private ArrayList<int[]> mFrontier; // This will hold the nodes to be mVisited
-    private Set<Integer> mVisited; // This will hold the nodes which has been mVisited
+    private ArrayList<int[]> mFrontier = new ArrayList<int[]>();; // This will hold the nodes to be mVisited
+    private Set<Integer> mVisited = new HashSet<Integer>(); // This will hold the nodes which has been mVisited
     private Graph mGraph; // This will hold the mGraph being processed
-    @Getter private Deque<Integer> mAnswerOfNodes; // This hold the solution of which nodes to visit
+    @Getter private Deque<Integer> mAnswerOfNodes = new ArrayDeque<Integer>(); // This hold the solution of which nodes to visit
 
     /**
      * The constructor which allows you to make the object.
      *
-     * @param mGraph
+     * @param graph The {@code Graph} to use A* on
      */
     public AStar(Graph graph) {
         this.mGraph = graph;
-        // Initialises all the needed variables
-        mFrontier = new ArrayList<int[]>();
-        mVisited = new HashSet<Integer>();
-        mAnswerOfNodes = new ArrayDeque<Integer>();
     }
 
     /**
@@ -46,7 +42,7 @@ public class AStar {
      *
      * @param currentNode The node to start from
      * @param endNode The goal node
-     * @throws GraphNodeException If there is a problem with the mGraph
+     * @throws GraphNodeException If there is a problem with the graph -- shouldn't happen
      */
     public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
 

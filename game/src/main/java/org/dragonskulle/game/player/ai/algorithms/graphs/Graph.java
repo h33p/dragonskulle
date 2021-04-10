@@ -129,7 +129,7 @@ public class Graph {
      *
      * @param nodeToGet The node which has the special info to get
      * @return the extra info for that node
-     * @throws GraphNodeException
+     * @throws GraphNodeException If the node does not exist -- shouldn't happen
      */
     public int getNodeSpecial(int nodeToGet) throws GraphNodeException {
 
@@ -147,7 +147,7 @@ public class Graph {
      *
      * @param nodeToChange The node to change
      * @param newInfo The extra info to change
-     * @throws GraphNodeException
+     * @throws GraphNodeException If the node does not exist -- shouldn't happen 
      */
     public void setNodeSpecial(int nodeToChange, int newInfo) throws GraphNodeException {
 
