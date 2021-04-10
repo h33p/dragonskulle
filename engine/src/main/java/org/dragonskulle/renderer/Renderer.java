@@ -158,8 +158,7 @@ public class Renderer implements NativeResource {
      * <p>A future expansion here would be to add another layer of indirection for individual render
      * passes.
      */
-    private TreeMap<Integer, Map<DrawCallState.HashKey, DrawCallState>> mDrawInstances =
-            new TreeMap<>();
+    private TreeMap<Integer, Map<ShaderSet, DrawCallState>> mDrawInstances = new TreeMap<>();
 
     /**
      * Maps a render order to a list of unsorted objects that are not supposed to be drawn in
@@ -529,7 +528,7 @@ public class Renderer implements NativeResource {
 
         mImageContexts = null;
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values())
             for (DrawCallState state : stateMap.values()) state.free();
         mDrawInstances.clear();
 
@@ -1412,33 +1411,27 @@ public class Renderer implements NativeResource {
 
         mCurrentMeshBuffer.cleanupUnusedMeshes();
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values())
             for (DrawCallState state : stateMap.values()) state.startDrawData();
-
-        DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
 
         for (Renderable renderable : renderables) {
             if (renderable.getMesh() == null) continue;
 
-            tmpKey.setRenderable(renderable);
-
             ShaderSet shaderSet = renderable.getMaterial().getShaderSet();
             Integer renderOrder = shaderSet.mRenderOrder;
 
-            Map<DrawCallState.HashKey, DrawCallState> stateMap = mDrawInstances.get(renderOrder);
+            Map<ShaderSet, DrawCallState> stateMap = mDrawInstances.get(renderOrder);
 
             if (stateMap == null) {
                 stateMap = new HashMap<>();
                 mDrawInstances.put(renderOrder, stateMap);
             }
 
-            DrawCallState state = stateMap.get(tmpKey);
+            DrawCallState state = stateMap.get(shaderSet);
             if (state == null) {
-                // We don't want to put the temp key in, becuase it changes values
-                DrawCallState.HashKey newKey = new DrawCallState.HashKey(renderable);
-                state = new DrawCallState(this, mImageContexts.length, newKey);
+                state = new DrawCallState(this, mImageContexts.length, shaderSet);
                 state.startDrawData();
-                stateMap.put(newKey, state);
+                stateMap.put(shaderSet, state);
             }
             state.addObject(renderable);
         }
@@ -1453,7 +1446,7 @@ public class Renderer implements NativeResource {
 
         int instanceBufferSize = 0;
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
             for (DrawCallState state : stateMap.values()) {
                 state.updateMeshBuffer(mCurrentMeshBuffer);
                 instanceBufferSize = state.setInstanceBufferOffset(instanceBufferSize);
@@ -1496,7 +1489,7 @@ public class Renderer implements NativeResource {
             if (res == VK_SUCCESS) {
                 ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
 
-                for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
                         state.updateInstanceBuffer(byteBuffer, lights);
                         state.endDrawData(ctx.imageIndex);
@@ -1505,7 +1498,7 @@ public class Renderer implements NativeResource {
 
                 vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
             } else {
-                for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
                         state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory, lights);
                         state.endDrawData(ctx.imageIndex);
@@ -1597,7 +1590,7 @@ public class Renderer implements NativeResource {
                     stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.instanceBuffer.buffer);
 
             // Render regular objects in an instanced manner
-            for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                 for (DrawCallState callState : stateMap.values()) {
 
                     Collection<DrawData> drawDataCollection = callState.getDrawData();

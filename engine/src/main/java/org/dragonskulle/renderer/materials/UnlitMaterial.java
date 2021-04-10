@@ -141,8 +141,6 @@ public class UnlitMaterial
      *
      * @return the array of SampledTexture
      */
-    SampledTexture[] getFragmentTextures();
-
     public SampledTexture[] getFragmentTextures() {
         return mFragmentTextures;
     }
