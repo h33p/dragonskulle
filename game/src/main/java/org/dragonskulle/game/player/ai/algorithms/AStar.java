@@ -36,8 +36,8 @@ public class AStar {
      *
      * @param mGraph
      */
-    public AStar(Graph mGraph) {
-        this.mGraph = mGraph;
+    public AStar(Graph graph) {
+        this.mGraph = graph;
         // Initialises all the needed variables
         mFrontier = new ArrayList<int[]>();
         mVisited = new HashSet<Integer>();
@@ -56,11 +56,9 @@ public class AStar {
     	boolean finished = false; // This checks if it finished
         int oldFNode = 0; // This is what the previous f node value was
         ArrayList<int[]> connectionsFinal =
-                new ArrayList<int[]>(); // This will hold the spare data which is needed
+                new ArrayList<int[]>(); // This will hold the route
 
         while (!finished) {
-        	Node node1 = mGraph.getNode(currentNode);
-        	Node node2 = mGraph.getNode(endNode);
             ArrayList<Connection> connections =
                     mGraph.getConnection(currentNode); // Gets all the connections needed
 
@@ -70,7 +68,6 @@ public class AStar {
 
                 Connection connection = connections.get(i);
                 int child = connection.getDestinationNode(); // Gets the destination node
-                Node childNode = mGraph.getNode(child);
                 int destinationInfo = mGraph.getNodeSpecial(child); // Gets the heuristic info
                 int weight =
                         connection.getWeight()

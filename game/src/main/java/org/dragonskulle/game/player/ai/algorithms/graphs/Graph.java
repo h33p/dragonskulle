@@ -56,9 +56,9 @@ public class Graph {
             int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
             
             
-            this.setNodeSpecial(mNodeNum, heuristic);
+            setNodeSpecial(mNodeNum, heuristic);
 
-        } catch (GraphNodeException e) {
+        } catch (GraphNodeException e) {		// TODO shouldn't need
             // TODO Already in mGraph
         }
         mNodeNum++;
@@ -77,22 +77,13 @@ public class Graph {
                 if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
                         && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
 
-                    //int distance = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
+                	addConnection(mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
                     
-                    try {
-                        addConnection(
-                                mNodeNum,
-                                mapEntry.getValue().getNode(),
-                                1); // Weight set to 1
-                    } catch (Exception e) {
-                        log.severe("Exception -- not sure how is here");
-                    }
                 }
             }
         }
         mNodeNum++;
     }
-
 
     /**
      * This will add a node to a mGraph with no connections
@@ -103,16 +94,8 @@ public class Graph {
      */
     public void addNode(int nodeToAdd, HexagonTile tile) throws GraphNodeException {
 
-        Node node =
-                mGraph.get(nodeToAdd); // Gets the connection if in the mGraph. If not there gets null
-
-        if (node == null) { // If the node is not in the mGraph
             Node newNode = new Node(nodeToAdd, tile); // Makes a new node
             mGraph.put(nodeToAdd, newNode); // Adds to mGraph
-
-        } else {
-            throw new GraphNodeException();
-        }
     }
 
     /**
@@ -125,71 +108,15 @@ public class Graph {
      * @throws GraphNodeException If the node already exists -- shouldn't happen
      */
     public void addConnection(int originNode, int destinationNode, int weight)
-            throws GraphException, GraphNodeException {
+            {
 
+    	// Gets the connection if in the graph -- assumption is that all are added by now.
         Node node =
                 mGraph.get(
-                        originNode); // Gets the connection if in the mGraph. If not there gets null
+                        originNode); 
 
-        if (node == null) { // If the node is not in the mGraph
-            addNode(originNode); // Adds the node to the mGraph
-            node = mGraph.get(originNode); // Gets the actual edge
-        }
-        Connection foundConnection = findConnection(originNode, destinationNode);
+       node.addConnection(destinationNode, weight); // Adds the connection to the node
 
-        if (foundConnection == null) {
-            node.addConnection(destinationNode, weight); // Adds the connection to the node
-
-            Node nodeEnd = mGraph.get(destinationNode); // Gets the destination node
-
-            if (nodeEnd == null) { // Adds the node to the mGraph if it does not exist
-
-                addNode(destinationNode);
-            }
-        } else {
-            throw new GraphException();
-        }
-    }
-
-    private void addNode(int originNode) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/**
-     * Returns the connections as originNode, Destination node and weight
-     *
-     * @return A 2D Object Array with the origin node, the destination node and the weight between
-     *     them
-     */
-    public Object[][] getConnections() {
-
-        ArrayList<Object[]> connections =
-                new ArrayList<>(); // The object which will have all the connections
-
-        for (Map.Entry<Integer, Node> entry :
-                mGraph.entrySet()) { // For each pair of values in the hash map
-
-            ArrayList<Connection> connection = entry.getValue().getConnections();
-
-            for (Connection edge : connection) // Will add it to the connections
-            connections.add(
-                        new Object[] {
-                            edge.getOriginNode(), edge.getDestinationNode(), edge.getWeight()
-                        });
-        }
-
-        return connections.toArray(new Object[0][0]);
-    }
-
-    /**
-     * The number of nodes in the mGraph
-     *
-     * @return the size of the mGraph
-     */
-    public int getNumberOfNodes() {
-
-        return mGraph.size();
     }
 
     /**
@@ -245,7 +172,7 @@ public class Graph {
     }
 
     /**
-     * Will return all the node numbers in the mGraph
+     * Will return all the node numbers in the mGraph -- Used for testing
      *
      * @return An integer array which has all the Nodes used
      */
@@ -259,35 +186,6 @@ public class Graph {
         }
 
         return nodes.toArray(new Integer[0]);
-    }
-
-    /**
-     * This will find a specific connection
-     *
-     * @param node The node to start with
-     * @param destination the destination node
-     * @return The Connection if found
-     * @throws GraphNodeException
-     */
-    private Connection findConnection(int node, int destination) throws GraphNodeException {
-
-        ArrayList<Connection> connections = getConnection(node);
-        for (Connection connection : connections) {
-            if (connection.getDestinationNode() == destination) {
-                return connection;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * If the mGraph contains that node
-     *
-     * @param node The node to look for
-     * @return True if the node is in the mGraph false if not
-     */
-    public boolean inGraph(int node) {
-        return mGraph.containsKey(node);
     }
 
     /**

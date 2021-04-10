@@ -31,7 +31,6 @@ public class Node {
      * @param info the extra info for that node
      */
     public Node(int num, int info) {
-
         
         mExtraInfo = info;
     }
