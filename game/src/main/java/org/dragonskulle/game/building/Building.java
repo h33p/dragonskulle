@@ -13,7 +13,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -38,23 +38,19 @@ import org.joml.Vector3i;
 @Log
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
-    /** A map between {@link Stat}s and their {@link SyncStat} values. */
-    EnumMap<Stat, SyncStat> mStats = new EnumMap<Stat, SyncStat>(Stat.class);
-
-    // TODO: Make the SyncStats and SyncBool private.
+    /** A map between {@link StatType}s and their {@link SyncStat} values. */
+    EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
 
     /** Stores the attack strength of the building. */
-    @Getter private final SyncStat mAttack = new SyncStat(Stat::getAttackValue, this);
+    @Getter private final SyncStat mAttack = new SyncStat(this);
     /** Stores the defence strength of the building. */
-    @Getter private final SyncStat mDefence = new SyncStat(Stat::getDefenceValue, this);
+    @Getter private final SyncStat mDefence = new SyncStat(this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter
-    private final SyncStat mTokenGeneration = new SyncStat(Stat::getTokenGenerationValue, this);
+    @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
     /** Stores the view range of the building. */
-    @Getter private final SyncStat mViewDistance = new SyncStat(Stat::getViewDistanceValue, this);
+    @Getter private final SyncStat mViewDistance = new SyncStat(this);
     /** Stores the attack range of the building. */
-    @Getter
-    private final SyncStat mAttackDistance = new SyncStat(Stat::getAttackDistanceValue, this);
+    @Getter private final SyncStat mAttackDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -86,12 +82,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onAwake() {
-        // Store the stats under the relevant names.
-        storeStat(Stat.ATTACK, mAttack);
-        storeStat(Stat.DEFENCE, mDefence);
-        storeStat(Stat.TOKEN_GENERATION, mTokenGeneration);
-        storeStat(Stat.VIEW_DISTANCE, mViewDistance);
-        storeStat(Stat.ATTACK_DISTANCE, mAttackDistance);
+        // Initialise each SyncStat with the relevant StatType.
+        initiliseStat(mAttack, StatType.ATTACK);
+        initiliseStat(mDefence, StatType.DEFENCE);
+        initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
+        initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
+        initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
     }
 
     @Override
@@ -465,35 +461,49 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Store a {@link SyncStat} in {@link #mStats} using a {@link Stat} value as the key.
+     * Initialise a {@link SyncStat} via specifying a {@link StatType}. The SyncStat will take on
+     * the properties of the StatType, and be stored in {@link #mStats} under the StatType.
      *
-     * @param name The name of the stat.
-     * @param stat The stat to be stored.
+     * @param stat The SyncStat.
+     * @param type The type of stat the SyncStat should be.
      */
-    private void storeStat(Stat name, SyncStat stat) {
-        if (name == null || stat == null) {
-            log.warning("Unable to store stat: name or stat is null.");
+    private void initiliseStat(SyncStat stat, StatType type) {
+        // Set the value calculator of the SyncStat.
+        stat.setValueCalculator(type.getValueCalculator());
+        // Store the stat.
+        storeStat(type, stat);
+    }
+
+    /**
+     * Store a {@link SyncStat} in {@link #mStats} using a {@link StatType} as the key.
+     *
+     * @param type The type of stat to be stored.
+     * @param stat The relevant SyncStat.
+     */
+    private void storeStat(StatType type, SyncStat stat) {
+        if (type == null || stat == null) {
+            log.warning("Unable to store stat: type or SyncStat is null.");
             return;
         }
-        mStats.put(name, stat);
+        mStats.put(type, stat);
     }
 
     /**
-     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant name.
+     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant type.
      *
-     * @param name The name of the desired stat.
+     * @param type The type of the desired stat.
      * @return The SyncStat, otherwise {@code null}.
      */
-    public SyncStat getStat(Stat name) {
-        if (name == null) {
-            log.warning("Unable to get stat: name is null.");
+    public SyncStat getStat(StatType type) {
+        if (type == null) {
+            log.warning("Unable to get stat: type is null.");
             return null;
         }
-        return mStats.get(name);
+        return mStats.get(type);
     }
 
     /**
-     * Get an {@link ArrayList} of Stats that the Building has.
+     * Get an {@link ArrayList} of {@link SyncStat}s that the Building has.
      *
      * @return An ArrayList of Stats.
      */

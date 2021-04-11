@@ -44,9 +44,12 @@ public class SyncStat extends SyncInt {
      * @param valueCalculator The {@link IValueCalculator} used to calculate the value of the stat.
      * @param building The Building the stat relates to.
      */
-    public SyncStat(IValueCalculator valueCalculator, Building building) {
-        mValueCalculator = valueCalculator;
+    public SyncStat(Building building) {
         mBuilding = building.getReference(Building.class);
+    }
+
+    public void setValueCalculator(IValueCalculator valueCalculator) {
+        mValueCalculator = valueCalculator;
     }
 
     /**
@@ -117,7 +120,7 @@ public class SyncStat extends SyncInt {
     public int getValue() {
         if (mValueCalculator == null) {
             log.warning("mValueCalculator is null.");
-            return -1;
+            return 0;
         }
         return mValueCalculator.getValue(getLevel());
     }

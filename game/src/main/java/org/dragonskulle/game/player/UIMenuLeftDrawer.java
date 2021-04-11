@@ -13,7 +13,7 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -183,7 +183,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
 
                     // TODO Properly implement.
 
-                    Stat stat = Stat.ATTACK;
+                    StatType statType = StatType.ATTACK;
 
                     Reference<Player> player = mGetPlayer.get();
                     if (player != null && player.isValid()) {
@@ -191,7 +191,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                         if (buildingChosen != null && buildingChosen.isValid()) {
                             player.get()
                                     .getClientStatRequest()
-                                    .invoke(new StatData(buildingChosen.get(), stat)); // Send Data
+                                    .invoke(
+                                            new StatData(
+                                                    buildingChosen.get(), statType)); // Send Data
                         }
                     }
 

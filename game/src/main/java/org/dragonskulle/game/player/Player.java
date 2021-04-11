@@ -18,7 +18,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -775,10 +775,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Process and parse an event in which the <b>client</b> player wishes to increase a specific
-     * {@link Stat} of a {@link Building}.
+     * {@link StatType} of a {@link Building}.
      *
      * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #statAttempt(Building, Stat)}.
+     * #statAttempt(Building, StatType)}.
      *
      * @param data The {@link StatData} sent by the client.
      */
@@ -801,34 +801,34 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
-        Stat stat = data.getStat();
-        if (stat == null) {
-            log.warning("Unable to parse StatData: Stat from StatData is null.");
+        StatType statType = data.getStat();
+        if (statType == null) {
+            log.warning("Unable to parse StatData: StatType from StatData is null.");
             return;
         }
 
         // Try to change the stats of the building.
-        statAttempt(building, stat);
+        statAttempt(building, statType);
     }
 
     /**
-     * Attempt to increase a specific {@link Stat} of a {@link Building}.
+     * Attempt to increase a specific {@link StatType} of a {@link Building}.
      *
      * <p>This first checks the building and stat to make sure that they are fully eligible before
      * any stat changes happen.
      *
      * @param building The building whose stat will be changed.
-     * @param stat The stat to increase.
+     * @param statType The stat to increase.
      * @return Whether the attempt to change the stat was successful.
      */
-    private boolean statAttempt(Building building, Stat stat) {
-        if (statCheck(building, stat) == false) {
+    private boolean statAttempt(Building building, StatType statType) {
+        if (statCheck(building, statType) == false) {
             log.info("Unable to pass stat check.");
             return false;
         }
 
         // Increase the stat level.
-        building.getStat(stat).increaseLevel();
+        building.getStat(statType).increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -836,21 +836,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Ensure that the {@link Building} is eligible to have its {@link Stat} changed.
+     * Ensure that the {@link Building} is eligible to have its {@link StatType} changed.
      *
      * @param building The building to have its stat increased.
-     * @param stat The stat to increase.
+     * @param statType The stat to increase.
      * @return {@code true} if the building and stat is eligible, otherwise {@code false}.
      */
-    public boolean statCheck(Building building, Stat stat) {
+    public boolean statCheck(Building building, StatType statType) {
 
         if (building == null) {
             log.warning("Building is null.");
             return false;
         }
 
-        if (stat == null) {
-            log.warning("Stat is null.");
+        if (statType == null) {
+            log.warning("StatType is null.");
             return false;
         }
 
@@ -860,12 +860,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (building.getStat(stat) == null) {
+        if (building.getStat(statType) == null) {
             log.info("Building is missing specified stat.");
             return false;
         }
 
-        if (building.getStat(stat).getLevel() >= SyncStat.LEVEL_MAX) {
+        if (building.getStat(statType).getLevel() >= SyncStat.LEVEL_MAX) {
             log.info("Building stat already fully upgraded.");
             return false;
         }

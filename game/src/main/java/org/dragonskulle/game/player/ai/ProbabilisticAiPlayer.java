@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 
@@ -151,11 +151,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         // Get the Building.
         Building building = buildingReference.get();
 
-        // Get Stat to upgrade.
-        Stat[] stats = Stat.values();
-        Stat stat = stats[mRandom.nextInt(stats.length)];
+        // Get StatType to upgrade.
+        StatType[] stats = StatType.values();
+        StatType statType = stats[mRandom.nextInt(stats.length)];
 
-        getPlayer().getClientStatRequest().invoke(d -> d.setData(building, stat));
+        getPlayer().getClientStatRequest().invoke(d -> d.setData(building, statType));
         return true;
     }
 

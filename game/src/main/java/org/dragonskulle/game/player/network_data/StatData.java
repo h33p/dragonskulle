@@ -6,21 +6,21 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.Stat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * Holds data to allow a {@link Building} to increase a specific {@link Stat}.
+ * Holds data to allow a {@link Building} to increase a specific {@link StatType}.
  *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
 public class StatData implements INetSerializable {
 
-    /** The ID of the {@link Stat} to change. */
-    private int mStatID;
+    /** The ID of the {@link StatType} to change. */
+    private int mStatTypeID;
     /** The q coordinate of the desired {@link Building}. */
     private int mQ;
     /** The r coordinate of the desired {@link Building}. */
@@ -29,33 +29,33 @@ public class StatData implements INetSerializable {
     public StatData() {}
 
     /**
-     * Store data for increasing a specific {@link Stat} for a {@link Building}.
+     * Store data for increasing a specific {@link StatType} for a {@link Building}.
      *
-     * @param building The Building whose Stat will increase.
-     * @param stat The Stat to increase.
+     * @param building The Building whose StatType will increase.
+     * @param statType The StatType to increase.
      */
-    public StatData(Building building, Stat stat) {
-        setData(building, stat);
+    public StatData(Building building, StatType statType) {
+        setData(building, statType);
     }
 
-    public void setData(Building building, Stat stat) {
+    public void setData(Building building, StatType statType) {
         mQ = building.getTile().getQ();
         mR = building.getTile().getR();
-        mStatID = stat.getID();
+        mStatTypeID = statType.getID();
     }
 
     @Override
     public void serialize(DataOutputStream stream) throws IOException {
         stream.writeInt(mQ);
         stream.writeInt(mR);
-        stream.writeInt(mStatID);
+        stream.writeInt(mStatTypeID);
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
         mQ = stream.readInt();
         mR = stream.readInt();
-        mStatID = stream.readInt();
+        mStatTypeID = stream.readInt();
     }
 
     /**
@@ -69,7 +69,7 @@ public class StatData implements INetSerializable {
     }
 
     /**
-     * Get the {@link Building} whose Stat is increasing.
+     * Get the {@link Building} whose StatType is increasing.
      *
      * @param map The {@link HexagonMap} being used.
      * @return The Building whose stat is increasing, or {@code null}.
@@ -80,11 +80,11 @@ public class StatData implements INetSerializable {
     }
 
     /**
-     * Get the {@link Stat} that is being changed.
+     * Get the {@link StatType} that is being changed.
      *
-     * @return The Stat, or {@code null}.
+     * @return The StatType, or {@code null}.
      */
-    public Stat getStat() {
-        return Stat.getFromID(mStatID);
+    public StatType getStat() {
+        return StatType.getFromID(mStatTypeID);
     }
 }
