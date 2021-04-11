@@ -4,6 +4,7 @@ package org.dragonskulle.game.building.stat;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
@@ -35,7 +36,7 @@ public class SyncStat extends SyncInt {
     }
 
     /** Store the function used to calculate the value of the stat. */
-    private IValueCalculator mValueCalculator;
+    @Setter private IValueCalculator mValueCalculator;
 
     /**
      * Create a new SyncStat, providing the method that will be used to calculate the value of the
@@ -48,18 +49,17 @@ public class SyncStat extends SyncInt {
         mBuilding = building.getReference(Building.class);
     }
 
-    public void setValueCalculator(IValueCalculator valueCalculator) {
-        mValueCalculator = valueCalculator;
-    }
-
     /**
-     * @deprecated Please use #getLevel().
-     *     <p>Get the stat's current level.
-     * @return The level.
+     * Get the value of the stat at the current level.
+     *
+     * @return The value of the stat, or {@code -1} on error.
      */
-    @Override
-    public int get() {
-        return super.get();
+    public int getValue() {
+        if (mValueCalculator == null) {
+            log.warning("mValueCalculator is null.");
+            return 0;
+        }
+        return mValueCalculator.getValue(getLevel());
     }
 
     /**
@@ -71,30 +71,6 @@ public class SyncStat extends SyncInt {
      */
     public int getLevel() {
         return super.get();
-    }
-
-    /**
-     * Set the level, and calculate and the new value.
-     *
-     * <p>The level will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
-     *
-     * @param level The level.
-     */
-    public void setLevel(int level) {
-        level = getBoundedLevel(level);
-        set(level);
-    }
-
-    /** Increase the level of the stat and calculate the new value. */
-    public void increaseLevel() {
-        int level = getLevel() + 1;
-        setLevel(level);
-    }
-
-    /** Decrease the level of the stat and calculate the new value. */
-    public void decreaseLevel() {
-        int level = getLevel() - 1;
-        setLevel(level);
     }
 
     /**
@@ -112,17 +88,28 @@ public class SyncStat extends SyncInt {
         return level;
     }
 
+    /** Increase the level of the stat and calculate the new value. */
+    public void increaseLevel() {
+        int level = getLevel() + 1;
+        setLevel(level);
+    }
+
+    /** Decrease the level of the stat and calculate the new value. */
+    public void decreaseLevel() {
+        int level = getLevel() - 1;
+        setLevel(level);
+    }
+
     /**
-     * Get the value of the stat at the current level.
+     * Set the level, and calculate and the new value.
      *
-     * @return The value of the stat, or {@code -1} on error.
+     * <p>The level will be bound between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     *
+     * @param level The level.
      */
-    public int getValue() {
-        if (mValueCalculator == null) {
-            log.warning("mValueCalculator is null.");
-            return 0;
-        }
-        return mValueCalculator.getValue(getLevel());
+    public void setLevel(int level) {
+        level = getBoundedLevel(level);
+        set(level);
     }
 
     @Override
@@ -132,5 +119,15 @@ public class SyncStat extends SyncInt {
         // The stats have changed, so call the building's afterStatChange.
         if (mBuilding == null || mBuilding.isValid() == false) return;
         mBuilding.get().afterStatChange();
+    }
+
+    /**
+     * @deprecated Please use #getLevel() for clarity.
+     *     <p>Get the stat's current level.
+     * @return The level.
+     */
+    @Override
+    public int get() {
+        return getLevel();
     }
 }
