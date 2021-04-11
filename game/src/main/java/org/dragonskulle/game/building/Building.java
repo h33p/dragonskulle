@@ -412,6 +412,17 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
+     * Set the building to be a capital.
+     *
+     * <p>By default, buildings are not capitals.
+     *
+     * @param isCapital Whether the building should be capital.
+     */
+    public void setCapital(boolean isCapital) {
+        mIsCapital.set(isCapital);
+    }
+
+    /**
      * Remove this building from the game.
      *
      * <p>

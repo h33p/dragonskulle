@@ -751,9 +751,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         //Adds the tokens
         mTokens.add(Building.SELL_PRICE);
 
-        //Remove from players list of  owned buildings
-        mOwnedBuildings.remove(building);
-
         //Remove the building
         building.remove();
 
