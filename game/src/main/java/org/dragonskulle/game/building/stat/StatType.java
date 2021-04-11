@@ -21,11 +21,38 @@ import org.dragonskulle.game.building.stat.SyncStat.IValueCalculator;
 @Log
 @Accessors(prefix = "m")
 public enum StatType {
-    ATTACK(StatType::getAttackValue),
-    DEFENCE(StatType::getDefenceValue),
-    TOKEN_GENERATION(StatType::getTokenGenerationValue),
-    VIEW_DISTANCE(StatType::getViewDistanceValue),
-    ATTACK_DISTANCE(StatType::getAttackDistanceValue);
+    ATTACK(
+            // The attack value is identical to the current level number.
+            (level) -> {
+                return level;
+            }),
+
+    DEFENCE(
+            // The defence value is identical to the current level number.
+            (level) -> {
+                return level;
+            }),
+
+    TOKEN_GENERATION(
+            // The number of tokens to generate is identical to the current level number minus one.
+            (level) -> {
+                int tokens = level - 1;
+                if (tokens < 0) {
+                    return 0;
+                }
+                return tokens;
+            }),
+    VIEW_DISTANCE(
+            // Regardless of the level, the view distance will always be 3.
+            (level) -> {
+                return 3;
+            }),
+
+    ATTACK_DISTANCE(
+            // Regardless of the level, the attack distance will always be 3.
+            (level) -> {
+                return 3;
+            });
 
     /** Set the IDs of the Stats. */
     static {
@@ -69,60 +96,5 @@ public enum StatType {
         }
 
         return values[id];
-    }
-
-    /**
-     * Used as a lambda expression to get the value of an attack stat for a given level.
-     *
-     * @param level The level of the stat.
-     * @return The stat's attack value.
-     */
-    private static int getAttackValue(int level) {
-        // The attack value is identical to the current level number plus one.
-        return level + 1;
-    }
-
-    /**
-     * Used as a lambda expression to get the value of a defence stat for a given level.
-     *
-     * @param level The level of the stat.
-     * @return The stat's defence value.
-     */
-    private static int getDefenceValue(int level) {
-        // The defence value is identical to the current level number plus one.
-        return level + 1;
-    }
-
-    /**
-     * Used as a lambda expression to get the token generation of a building for a given level.
-     *
-     * @param level The level of the stat.
-     * @return The building's token generation at that level.
-     */
-    private static int getTokenGenerationValue(int level) {
-        // The number of tokens to generate is identical to the current level number.
-        return level;
-    }
-
-    /**
-     * Used as a lambda expression to get the view distance of a building for a given level.
-     *
-     * @param level The level of the stat.
-     * @return The building's view distance.
-     */
-    private static int getViewDistanceValue(int level) {
-        // Regardless of the level, the value of the stat will always be 3.
-        return 3;
-    }
-
-    /**
-     * Used as a lambda expression to get the attack distance of a building for a given level.
-     *
-     * @param level The level of the stat.
-     * @return The building's attack distance.
-     */
-    private static int getAttackDistanceValue(int level) {
-        // Regardless of the level, the value of the attack distance will always be 2.
-        return 2;
     }
 }
