@@ -414,7 +414,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to check.
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
-    public boolean checkBuildingOwnership(Building building) {
+    public boolean isBuildingOwner(Building building) {
         return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
 
@@ -427,7 +427,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && checkBuildingOwnership(tile.getBuilding())) {
+            if (tile.hasBuilding() && isBuildingOwner(tile.getBuilding())) {
                 return true;
             }
         }
@@ -776,15 +776,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        //Checks you  own the building
-        if (building.getNetworkObject().getOwnerId() != getNetworkObject().getOwnerId()) {
-            log.info("It's not your building");
-            return false;
-        }
-
-        //Question - Which way should I use to check ownership as a method for this is already implemented?
-        checkBuildingOwnership(building);
-
+        //Checks that you own the building
+        isBuildingOwner(building);
 
         return true;
     }
