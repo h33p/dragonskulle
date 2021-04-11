@@ -42,7 +42,6 @@ public class SyncStat extends SyncInt {
      * Create a new SyncStat, providing the method that will be used to calculate the value of the
      * stat for given levels, and the {@link Building} the stat relates to.
      *
-     * @param valueCalculator The {@link IValueCalculator} used to calculate the value of the stat.
      * @param building The Building the stat relates to.
      */
     public SyncStat(Building building) {
