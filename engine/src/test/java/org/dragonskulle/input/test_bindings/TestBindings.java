@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.input.test_bindings;
 
 import org.dragonskulle.input.Bindings;

@@ -1,10 +1,14 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
@@ -16,10 +20,12 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.junit.*;
+import org.junit.Test;
 import org.lwjgl.system.NativeResource;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ * */
 @Log
 public class ServerTest {
     private static final long TIMEOUT = 1;
@@ -56,10 +62,12 @@ public class ServerTest {
 
     private static void cleanupNetmans() {
         log.info("Cleanup netmans");
-        if (CLIENT_NETWORK_MANAGER.getClientManager() != null)
+        if (CLIENT_NETWORK_MANAGER.getClientManager() != null) {
             CLIENT_NETWORK_MANAGER.getClientManager().disconnect();
-        if (SERVER_NETWORK_MANAGER.getServerManager() != null)
+        }
+        if (SERVER_NETWORK_MANAGER.getServerManager() != null) {
             SERVER_NETWORK_MANAGER.getServerManager().destroy();
+        }
         log.info("CLEANED UP");
     }
 
@@ -85,7 +93,7 @@ public class ServerTest {
         private boolean mShouldExit;
         private int mPort;
 
-        private Throwable toThrow = null;
+        private Throwable mToThrow = null;
 
         public TestContext(int port) {
             mPort = port;
@@ -125,7 +133,7 @@ public class ServerTest {
 
             mTestThread.setUncaughtExceptionHandler(
                     (t, e) -> {
-                        toThrow = e;
+                        mToThrow = e;
                     });
             mTestThread.start();
 
@@ -139,14 +147,18 @@ public class ServerTest {
                 e.printStackTrace();
             }
 
-            if (toThrow != null) throw toThrow;
+            if (mToThrow != null) {
+                throw mToThrow;
+            }
         }
 
         private boolean shouldExit() {
 
             mEngineLock.unlock();
 
-            if (mShouldExit) return false;
+            if (mShouldExit) {
+                return false;
+            }
 
             mEngineLock.lock();
 
@@ -166,7 +178,7 @@ public class ServerTest {
             Reference<T> ret =
                     SERVER_NETWORK_MANAGER.getServerManager().getNetworkObjects().values().stream()
                             .map(c -> c.getNetworkObject().get().getGameObject().getComponent(type))
-                            .filter(c -> c != null)
+                            .filter(Objects::nonNull)
                             .findFirst()
                             .orElse(null);
             mEngineLock.unlock();
@@ -180,7 +192,7 @@ public class ServerTest {
                             .getClientManager()
                             .getNetworkObjects()
                             .map(c -> c.get().getGameObject().getComponent(type))
-                            .filter(c -> c != null)
+                            .filter(Objects::nonNull)
                             .findFirst()
                             .orElse(null);
             mEngineLock.unlock();

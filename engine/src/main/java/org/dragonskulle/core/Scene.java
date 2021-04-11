@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
@@ -11,9 +12,10 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 
 /**
- * Scene class
+ * Scene class.
  *
  * @author Harry Stoltz
+ *
  *     <p>Represents a single scene in a game, storing a list of all GameObjects in that scene.
  */
 @Accessors(prefix = "m")
@@ -32,7 +34,7 @@ public class Scene {
     private static Scene sActiveScene = null;
 
     /**
-     * Constructor for a Scene
+     * Constructor for a Scene.
      *
      * @param name Name of the scene
      */
@@ -41,7 +43,7 @@ public class Scene {
     }
 
     /**
-     * Add a new root object to the scene
+     * Add a new root object to the scene.
      *
      * @param object The GameObject to be added to the scene
      */
@@ -50,7 +52,7 @@ public class Scene {
     }
 
     /**
-     * Remove a single game object from the scene
+     * Remove a single game object from the scene.
      *
      * @param object The GameObject to be removed from the scene
      */
@@ -59,7 +61,7 @@ public class Scene {
     }
 
     /**
-     * Remove a single game object from the scene, and destroy it (immediately)
+     * Remove a single game object from the scene, and destroy it (immediately).
      *
      * <p>Try not to call this while in update loop :)
      *
@@ -97,7 +99,9 @@ public class Scene {
         Class<?> type = comp.getClass();
         Reference<Component> current = mSingletons.get(type);
 
-        if (current != null && current.isValid()) return false;
+        if (current != null && current.isValid()) {
+            return false;
+        }
 
         current = comp.getReference();
         mSingletons.put(type, current);
@@ -105,7 +109,7 @@ public class Scene {
     }
 
     /**
-     * Retrieves a singleton for type if there is any
+     * Retrieves a singleton for type if there is any.
      *
      * @param type type to retrieve the reference to
      * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed
@@ -113,12 +117,14 @@ public class Scene {
     @SuppressWarnings("unchecked")
     public <T extends Component> T getSingleton(Class<T> type) {
         Reference<Component> current = mSingletons.get(type);
-        if (current == null || !current.isValid()) return null;
+        if (current == null || !current.isValid()) {
+            return null;
+        }
         return (T) current.get();
     }
 
     /**
-     * Unregisters a singleton
+     * Unregisters a singleton.
      *
      * @param type type to unregister
      * @return component reference if there was a singleton
@@ -127,7 +133,7 @@ public class Scene {
         return mSingletons.remove(type);
     }
 
-    /** Iterates through all GameObjects in the scene and collects their components */
+    /** Iterates through all GameObjects in the scene and collects their components. */
     public void updateComponentsList() {
         mComponents.clear();
 
@@ -146,7 +152,7 @@ public class Scene {
     }
 
     /**
-     * Get a list of all enabled components in the scene
+     * Get a list of all enabled components in the scene.
      *
      * @return A new ArrayList containing all of the enabled components
      */
@@ -158,7 +164,7 @@ public class Scene {
     }
 
     /**
-     * Get a list of all components that aren't awake yet
+     * Get a list of all components that aren't awake yet.
      *
      * @return A new ArrayList containing all of the non awake components
      */
@@ -169,7 +175,7 @@ public class Scene {
     }
 
     /**
-     * Get a list of all components that are enabled but have not been started yet
+     * Get a list of all components that are enabled but have not been started yet.
      *
      * @return A new ArrayList containing all of the enabled but not started components
      */

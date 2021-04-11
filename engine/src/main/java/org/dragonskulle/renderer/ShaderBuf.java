@@ -1,9 +1,21 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.lwjgl.util.shaderc.Shaderc.*;
-
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compilation_status_success;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_into_spv;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_add_macro_definition;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_initialize;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_release;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_set_optimization_level;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compiler_initialize;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compiler_release;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_optimization_level_performance;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_bytes;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_compilation_status;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_error_message;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
 import java.nio.ByteBuffer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +26,7 @@ import org.dragonskulle.core.ResourceManager;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Describes a raw SPIR-V shader buffer
+ * Describes a raw SPIR-V shader buffer.
  *
  * @author Aurimas Blažulionis
  */
@@ -66,7 +78,7 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
-     * Load a shader resource
+     * Load a shader resource.
      *
      * @param name name of the shader
      * @param kind kind of the shader (vertex, fragment, geometry)
@@ -79,7 +91,7 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
-     * Compile a shader directly
+     * Compile a shader directly.
      *
      * @param data shader bytecode
      * @param name name of the shader

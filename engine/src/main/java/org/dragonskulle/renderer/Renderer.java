@@ -1,25 +1,138 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
-import static org.dragonskulle.utils.Env.*;
+import static org.dragonskulle.utils.Env.envBool;
+import static org.dragonskulle.utils.Env.envInt;
 import static org.dragonskulle.utils.Env.envString;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
+import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
 import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.lwjgl.vulkan.EXTDebugUtils.*;
-import static org.lwjgl.vulkan.KHRSurface.*;
-import static org.lwjgl.vulkan.KHRSwapchain.*;
-import static org.lwjgl.vulkan.VK10.*;
-
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.vkCreateDebugUtilsMessengerEXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT;
+import static org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkAcquireNextImageKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkCreateSwapchainKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkDestroySwapchainKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkGetSwapchainImagesKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkQueuePresentKHR;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_API_VERSION_1_0;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_CLEAR;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_FALSE;
+import static org.lwjgl.vulkan.VK10.VK_FENCE_CREATE_SIGNALED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
+import static org.lwjgl.vulkan.VK10.VK_MAKE_VERSION;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_CONCURRENT;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SUBMIT_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUBPASS_CONTENTS_INLINE;
+import static org.lwjgl.vulkan.VK10.VK_SUBPASS_EXTERNAL;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkBeginCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBeginRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
+import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
+import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
+import static org.lwjgl.vulkan.VK10.vkCmdEndRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCmdPushConstants;
+import static org.lwjgl.vulkan.VK10.vkCreateCommandPool;
+import static org.lwjgl.vulkan.VK10.vkCreateDevice;
+import static org.lwjgl.vulkan.VK10.vkCreateFence;
+import static org.lwjgl.vulkan.VK10.vkCreateFramebuffer;
+import static org.lwjgl.vulkan.VK10.vkCreateInstance;
+import static org.lwjgl.vulkan.VK10.vkCreateRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCreateSemaphore;
+import static org.lwjgl.vulkan.VK10.vkDestroyCommandPool;
+import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
+import static org.lwjgl.vulkan.VK10.vkDestroyFence;
+import static org.lwjgl.vulkan.VK10.vkDestroyFramebuffer;
+import static org.lwjgl.vulkan.VK10.vkDestroyImageView;
+import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
+import static org.lwjgl.vulkan.VK10.vkDestroyRenderPass;
+import static org.lwjgl.vulkan.VK10.vkDestroySemaphore;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkEndCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceLayerProperties;
+import static org.lwjgl.vulkan.VK10.vkFreeCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkGetDeviceQueue;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkQueueSubmit;
+import static org.lwjgl.vulkan.VK10.vkQueueWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkResetFences;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
+import static org.lwjgl.vulkan.VK10.vkWaitForFences;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -37,14 +150,46 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.system.Pointer;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkAttachmentDescription;
+import org.lwjgl.vulkan.VkAttachmentReference;
+import org.lwjgl.vulkan.VkClearDepthStencilValue;
+import org.lwjgl.vulkan.VkClearValue;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
+import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
+import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackDataEXT;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkDeviceCreateInfo;
+import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkFenceCreateInfo;
+import org.lwjgl.vulkan.VkFramebufferCreateInfo;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkLayerProperties;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPresentInfoKHR;
+import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkRenderPassBeginInfo;
+import org.lwjgl.vulkan.VkRenderPassCreateInfo;
+import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
+import org.lwjgl.vulkan.VkSubmitInfo;
+import org.lwjgl.vulkan.VkSubpassDependency;
+import org.lwjgl.vulkan.VkSubpassDescription;
+import org.lwjgl.vulkan.VkSurfaceFormatKHR;
+import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 /**
- * Vulkan renderer
+ * Vulkan renderer.
  *
  * @author Aurimas Blažulionis
+ *
  *     <p>This renderer allows to draw {@code Renderable} objects on screen. Application needs to
  *     call {@code onResized} when its window gets resized.
+ *
  *     <p>This renderer was originally based on<a href="https://vulkan-tutorial.com/">Vulkan
  *     Tutorial</a>, and was later rewritten with a much more manageable design.
  */
@@ -119,14 +264,14 @@ public class Renderer implements NativeResource {
     private static final long UINT64_MAX = -1L;
     private static final int FRAMES_IN_FLIGHT = 4;
 
-    /** Synchronization objects for when multiple frames are rendered at a time */
+    /** Synchronization objects for when multiple frames are rendered at a time. */
     private class FrameContext {
         public long imageAvailableSemaphore;
         public long renderFinishedSemaphore;
         public long inFlightFence;
     }
 
-    /** All state for a single frame */
+    /** All state for a single frame. */
     private static class ImageContext {
         public VkCommandBuffer commandBuffer;
         public long inFlightFence;
@@ -139,7 +284,7 @@ public class Renderer implements NativeResource {
         private long mImageView;
         private VkDevice mDevice;
 
-        /** Create a image context */
+        /** Create a image context. */
         private ImageContext(
                 Renderer renderer, VulkanImage image, int imageIndex, long commandBuffer) {
             this.commandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
@@ -152,7 +297,7 @@ public class Renderer implements NativeResource {
             instanceBufferSize = 0;
         }
 
-        /** Create a framebuffer from image view */
+        /** Create a framebuffer from image view. */
         private long createFramebuffer(Renderer renderer) {
             try (MemoryStack stack = stackPush()) {
                 VkFramebufferCreateInfo createInfo = VkFramebufferCreateInfo.callocStack(stack);
@@ -183,14 +328,16 @@ public class Renderer implements NativeResource {
         }
 
         private void free() {
-            if (instanceBuffer != null) instanceBuffer.free();
+            if (instanceBuffer != null) {
+                instanceBuffer.free();
+            }
             vkDestroyFramebuffer(mDevice, framebuffer, null);
             vkDestroyImageView(mDevice, mImageView, null);
         }
     }
 
     /**
-     * Create a renderer
+     * Create a renderer.
      *
      * <p>This constructor will create a Vulkan renderer instance, and set everything up so that
      * {@code render} method can be called.
@@ -204,7 +351,9 @@ public class Renderer implements NativeResource {
         mInstanceBufferSize = INSTANCE_BUFFER_SIZE * 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
-        if (DEBUG_MODE) mDebugMessenger = createDebugLogger();
+        if (DEBUG_MODE) {
+            mDebugMessenger = createDebugLogger();
+        }
         mSurface = createSurface();
         mPhysicalDevice = pickPhysicalDevice();
         mMSAASamples = mPhysicalDevice.findSuitableMSAACount(MSAA_SAMPLES);
@@ -223,7 +372,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Render a frame
+     * Render a frame.
      *
      * <p>This method will take a list of renderable objects, and render them from the camera point
      * of view.
@@ -233,9 +382,13 @@ public class Renderer implements NativeResource {
      * @param lights list of lights to light the objects with
      */
     public void render(Camera camera, List<Renderable> objects, List<Light> lights) {
-        if (mImageContexts == null) recreateSwapchain();
+        if (mImageContexts == null) {
+            recreateSwapchain();
+        }
 
-        if (mImageContexts == null) return;
+        if (mImageContexts == null) {
+            return;
+        }
 
         camera.updateAspectRatio(mExtent.width(), mExtent.height());
 
@@ -262,14 +415,17 @@ public class Renderer implements NativeResource {
                 return;
             }
 
-            if (image.inFlightFence != 0)
+            if (image.inFlightFence != 0) {
                 vkWaitForFences(mDevice, image.inFlightFence, true, UINT64_MAX);
+            }
 
             image.inFlightFence = ctx.inFlightFence;
 
             VulkanMeshBuffer discardedBuffer = mDiscardedMeshBuffers.remove(imageIndex);
 
-            if (discardedBuffer != null) discardedBuffer.free();
+            if (discardedBuffer != null) {
+                discardedBuffer.free();
+            }
 
             updateInstanceBuffer(image, objects, lights);
             recordCommandBuffer(image, camera);
@@ -319,7 +475,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Inform the renderer about window being resized
+     * Inform the renderer about window being resized.
      *
      * <p>This method needs to be called by the app every time the window gets resized, so that the
      * renderer can change its render resolution.
@@ -329,7 +485,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Retrieve the size of the current vertex buffer
+     * Retrieve the size of the current vertex buffer.
      *
      * @return size of vertex buffer
      */
@@ -338,7 +494,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Retrieve the size of the current index buffer
+     * Retrieve the size of the current index buffer.
      *
      * @return size of index buffer
      */
@@ -347,7 +503,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Free all renderer resources
+     * Free all renderer resources.
      *
      * <p>Call this method to shutdown the renderer and free all its resources.
      */
@@ -375,7 +531,7 @@ public class Renderer implements NativeResource {
 
     /// Internal code
 
-    /** Recreate swapchain when it becomes invalid */
+    /** Recreate swapchain when it becomes invalid. */
     private void recreateSwapchain() {
         if (mImageContexts != null) {
             vkQueueWaitIdle(mPresentQueue);
@@ -390,7 +546,9 @@ public class Renderer implements NativeResource {
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(mWindow, x, y);
             log.finer(String.format("%d %d", x.get(0), y.get(0)));
-            if (x.get(0) == 0 || y.get(0) == 0) return;
+            if (x.get(0) == 0 || y.get(0) == 0) {
+                return;
+            }
         }
 
         mPhysicalDevice.onRecreateSwapchain(mSurface);
@@ -398,7 +556,7 @@ public class Renderer implements NativeResource {
         createSwapchainObjects();
     }
 
-    /** Cleanup swapchain resources */
+    /** Cleanup swapchain resources. */
     private void cleanupSwapchain() {
         Arrays.stream(mImageContexts).forEach(ImageContext::free);
 
@@ -415,11 +573,16 @@ public class Renderer implements NativeResource {
 
         mImageContexts = null;
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
-            for (DrawCallState state : stateMap.values()) state.free();
+        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (DrawCallState state : stateMap.values()) {
+                state.free();
+            }
+        }
         mDrawInstances.clear();
 
-        for (VulkanMeshBuffer meshBuffer : mDiscardedMeshBuffers.values()) meshBuffer.free();
+        for (VulkanMeshBuffer meshBuffer : mDiscardedMeshBuffers.values()) {
+            meshBuffer.free();
+        }
         mDiscardedMeshBuffers.clear();
 
         mTextureSetFactory.free();
@@ -442,7 +605,7 @@ public class Renderer implements NativeResource {
         vkDestroySwapchainKHR(mDevice, mSwapchain, null);
     }
 
-    /// Internal setup code
+    /// Internal setup code.
 
     /**
      * Create swapchain objects
@@ -467,7 +630,7 @@ public class Renderer implements NativeResource {
     /// Instance setup
 
     /**
-     * Create a Vulkan instance
+     * Create a Vulkan instance.
      *
      * <p>Vulkan instance is needed for the duration of the renderer. If debug mode is on, the
      * instance will also enable debug validation layers, which allow to track down issues.
@@ -515,7 +678,7 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /** Returns required extensions for the VK context */
+    /** Returns required extensions for the VK context. */
     private PointerBuffer getExtensions(
             VkInstanceCreateInfo createInfoMemoryStack, MemoryStack stack) {
         PointerBuffer glfwExtensions = glfwGetRequiredInstanceExtensions();
@@ -557,21 +720,21 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /** Utility for converting collection to pointer buffer */
+    /** Utility for converting collection to pointer buffer. */
     private PointerBuffer toPointerBuffer(Collection<String> collection, MemoryStack stack) {
         PointerBuffer buffer = stack.mallocPointer(collection.size());
         collection.stream().map(stack::UTF8).forEach(buffer::put);
         return buffer.rewind();
     }
 
-    /** Utility for converting a collection of pointer types to pointer buffer */
+    /** Utility for converting a collection of pointer types to pointer buffer. */
     private <T extends Pointer> PointerBuffer toPointerBuffer(T[] array, MemoryStack stack) {
         PointerBuffer buffer = stack.mallocPointer(array.length);
         Arrays.stream(array).forEach(buffer::put);
         return buffer.rewind();
     }
 
-    /** Utility for retrieving instance VkLayerProperties list */
+    /** Utility for retrieving instance VkLayerProperties list. */
     private VkLayerProperties.Buffer getInstanceLayerProperties(MemoryStack stack) {
         IntBuffer propertyCount = stack.ints(0);
         vkEnumerateInstanceLayerProperties(propertyCount, null);
@@ -581,7 +744,7 @@ public class Renderer implements NativeResource {
         return properties;
     }
 
-    /** Creates default debug messenger info for logging */
+    /** Creates default debug messenger info for logging. */
     private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
                 VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
@@ -604,7 +767,7 @@ public class Renderer implements NativeResource {
 
     /// Setup debug logging
 
-    /** VK logging entrypoint */
+    /** VK logging entrypoint. */
     private static int debugCallback(
             int messageSeverity, int messageType, long pCallbackData, long pUserData) {
         VkDebugUtilsMessengerCallbackDataEXT callbackData =
@@ -625,7 +788,7 @@ public class Renderer implements NativeResource {
         return VK_FALSE;
     }
 
-    /** Initializes debugMessenger to receive VK log messages */
+    /** Initializes debugMessenger to receive VK log messages. */
     private long createDebugLogger() {
         try (MemoryStack stack = stackPush()) {
             LongBuffer pDebugMessenger = stack.longs(0);
@@ -638,10 +801,10 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /// Setup window surface
+    /// Setup window surface.
 
     /**
-     * Create a window surface
+     * Create a window surface.
      *
      * <p>This method uses window to get its surface that the renderer will draw to
      */
@@ -661,7 +824,7 @@ public class Renderer implements NativeResource {
 
     /// Physical device setup
 
-    /** Sets up one physical device for use */
+    /** Sets up one physical device for use. */
     private PhysicalDevice pickPhysicalDevice() {
         log.fine("Pick physical device");
         PhysicalDevice physicalDevice =
@@ -676,7 +839,7 @@ public class Renderer implements NativeResource {
 
     /// Logical device setup
 
-    /** Creates a logical device with required features */
+    /** Creates a logical device with required features. */
     private VkDevice createLogicalDevice() {
         log.fine("Create logical device");
 
@@ -708,9 +871,10 @@ public class Renderer implements NativeResource {
             createInfo.pEnabledFeatures(deviceFeatures);
             createInfo.ppEnabledExtensionNames(toPointerBuffer(DEVICE_EXTENSIONS, stack));
 
-            if (DEBUG_MODE)
+            if (DEBUG_MODE) {
                 createInfo.ppEnabledLayerNames(
                         toPointerBuffer(WANTED_VALIDATION_LAYERS_LIST, stack));
+            }
 
             PointerBuffer pDevice = stack.callocPointer(1);
 
@@ -730,7 +894,7 @@ public class Renderer implements NativeResource {
     /// Queue setup
 
     /**
-     * Create a graphics queue
+     * Create a graphics queue.
      *
      * <p>This queue is used to submit graphics commands every frame
      */
@@ -743,7 +907,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Create a presentation queue
+     * Create a presentation queue.
      *
      * <p>This queue is used to display rendered frames on the screen
      */
@@ -786,7 +950,7 @@ public class Renderer implements NativeResource {
 
     /// Swapchain setup
 
-    /** Sets up the swapchain required for rendering */
+    /** Sets up the swapchain required for rendering. */
     private long createSwapchain() {
         log.fine("Setup swapchain");
 
@@ -820,7 +984,7 @@ public class Renderer implements NativeResource {
             }
 
             createInfo.preTransform(
-                    mPhysicalDevice.getSwapchainSupport().capabilities.currentTransform());
+                    mPhysicalDevice.getSwapchainSupport().mCapabilities.currentTransform());
             createInfo.compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
             createInfo.presentMode(presentMode);
 
@@ -828,9 +992,10 @@ public class Renderer implements NativeResource {
 
             int result = vkCreateSwapchainKHR(mDevice, createInfo, null, pSwapchain);
 
-            if (result != VK_SUCCESS)
+            if (result != VK_SUCCESS) {
                 throw new RuntimeException(
                         String.format("Failed to create swapchain! Error: %x", -result));
+            }
 
             return pSwapchain.get(0);
         }
@@ -838,7 +1003,7 @@ public class Renderer implements NativeResource {
 
     /// Per swapchain image setup
 
-    /** Get the number of images swapchain was created with */
+    /** Get the number of images swapchain was created with. */
     private int getImageCount() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer pImageCount = stack.ints(0);
@@ -849,7 +1014,7 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /** Create a context for each swapchain image */
+    /** Create a context for each swapchain image. */
     private ImageContext[] createImageContexts(int imageCount) {
         try (MemoryStack stack = stackPush()) {
             // Get swapchain images
@@ -895,7 +1060,7 @@ public class Renderer implements NativeResource {
     /// Render pass setup
 
     /**
-     * Create a render pass
+     * Create a render pass.
      *
      * <p>This method will describe how a single render pass should behave.
      *
@@ -1036,7 +1201,7 @@ public class Renderer implements NativeResource {
     /// Vertex and index buffers
 
     /**
-     * Create a instance buffer
+     * Create a instance buffer.
      *
      * <p>As the name implies, this buffer holds base per-instance data
      */
@@ -1086,7 +1251,7 @@ public class Renderer implements NativeResource {
         return beginSingleUseCommandBuffer(mDevice, mCommandPool);
     }
 
-    /** Ends and frees the single use command buffer */
+    /** Ends and frees the single use command buffer. */
     static void endSingleUseCommandBuffer(
             VkCommandBuffer commandBuffer,
             VkDevice device,
@@ -1170,13 +1335,18 @@ public class Renderer implements NativeResource {
 
         mCurrentMeshBuffer.cleanupUnusedMeshes();
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
-            for (DrawCallState state : stateMap.values()) state.startDrawData();
+        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (DrawCallState state : stateMap.values()) {
+                state.startDrawData();
+            }
+        }
 
         DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
 
         for (Renderable renderable : renderables) {
-            if (renderable.getMesh() == null) continue;
+            if (renderable.getMesh() == null) {
+                continue;
+            }
 
             tmpKey.setRenderable(renderable);
 
@@ -1233,8 +1403,12 @@ public class Renderer implements NativeResource {
 
         if (instanceBufferSize > ctx.instanceBufferSize) {
             int cursize = mInstanceBufferSize > 0 ? mInstanceBufferSize : 4096;
-            while (instanceBufferSize > cursize) cursize *= 2;
-            if (ctx.instanceBuffer != null) ctx.instanceBuffer.free();
+            while (instanceBufferSize > cursize) {
+                cursize *= 2;
+            }
+            if (ctx.instanceBuffer != null) {
+                ctx.instanceBuffer.free();
+            }
             ctx.instanceBuffer = createInstanceBuffer(cursize);
             ctx.instanceBufferSize = cursize;
             mInstanceBufferSize = cursize;
@@ -1351,8 +1525,9 @@ public class Renderer implements NativeResource {
 
                     Collection<DrawData> drawDataCollection = callState.getDrawData();
 
-                    if (drawDataCollection.isEmpty() || callState.getShaderSet().isPreSort())
+                    if (drawDataCollection.isEmpty() || callState.getShaderSet().isPreSort()) {
                         continue;
+                    }
 
                     VulkanPipeline pipeline = callState.getPipeline();
 
@@ -1481,9 +1656,11 @@ public class Renderer implements NativeResource {
 
     /// Cleanup code
 
-    /** Destroys debugMessenger if exists */
+    /** Destroys debugMessenger if exists. */
     private void destroyDebugMessanger() {
-        if (mDebugMessenger == 0) return;
+        if (mDebugMessenger == 0) {
+            return;
+        }
         vkDestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, null);
     }
 }

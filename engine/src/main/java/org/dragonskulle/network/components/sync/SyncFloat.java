@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components.sync;
 
 import java.io.DataInputStream;
@@ -7,7 +8,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L */
+/**
+ *  @author Oscar L
+ *  */
 public class SyncFloat implements ISyncVar, Serializable {
 
     private float mData;
@@ -87,8 +90,12 @@ public class SyncFloat implements ISyncVar, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SyncFloat syncVar = (SyncFloat) o;
         return mData == syncVar.mData;
     }

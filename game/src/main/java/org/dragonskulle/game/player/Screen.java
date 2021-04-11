@@ -1,9 +1,10 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player;
 
 /**
  * A {@code enum} which contains all the different screens the human player could see whilst playing
- * a game
+ * a game.
  *
  * @author DragonSkulle
  */

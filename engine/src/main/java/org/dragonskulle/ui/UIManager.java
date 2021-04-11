@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.ui;
 
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class UIManager {
     @Getter private Reference<UIRenderable> mHoveredObject;
 
     /**
-     * Update which UI element is currently hovered by the cursor
+     * Update which UI element is currently hovered by the cursor.
      *
      * @param components a list of currently enabled components
      */
@@ -38,7 +39,9 @@ public class UIManager {
 
         Cursor cursor = Actions.getCursor();
 
-        if (cursor == null) return;
+        if (cursor == null) {
+            return;
+        }
 
         int curDepth = 0;
 
@@ -54,7 +57,7 @@ public class UIManager {
         }
     }
 
-    /** Get singleton UIManager instance */
+    /** Get singleton UIManager instance. */
     public static UIManager getInstance() {
         return SINGLETON;
     }

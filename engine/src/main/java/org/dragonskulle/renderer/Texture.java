@@ -1,9 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.stb.STBImage.*;
+import static org.lwjgl.stb.STBImage.STBI_rgb_alpha;
+import static org.lwjgl.stb.STBImage.stbi_image_free;
+import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 import static org.lwjgl.system.MemoryStack.stackPush;
-
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import lombok.Getter;

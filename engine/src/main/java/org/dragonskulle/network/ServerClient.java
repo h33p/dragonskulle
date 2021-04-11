@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network;
 
 import java.io.BufferedInputStream;
@@ -14,7 +15,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
 /**
- * Stores server's client connection
+ * Stores server's client connection.
  *
  * @author Aurimas Blažulionis
  * @author Oscar L
@@ -22,23 +23,23 @@ import lombok.extern.java.Log;
 @Log
 @Accessors(prefix = "m")
 public class ServerClient {
-    @Getter
-    @Setter(AccessLevel.PACKAGE)
     /**
      * Network ID. All networked clients will have a non-negative ID. Negative IDs indicate either
      * invalid IDs, or server owned objects
      */
+    @Getter
+    @Setter(AccessLevel.PACKAGE)
     private int mNetworkID = -1;
 
-    /** Underlying {@link Socket} */
+    /** Underlying {@link Socket}. */
     private Socket mSocket;
-    /** Is the client loop running, and supposed to be running */
+    /** Is the client loop running, and supposed to be running. */
     @Getter private boolean mRunning;
-    /** Reference to the server event listener */
+    /** Reference to the server event listener. */
     private IServerListener mServerListener;
-    /** Thread of the input loop */
+    /** Thread of the input loop. */
     private Thread mThread;
-    /** Output stream for the socket */
+    /** Output stream for the socket. */
     @Getter private DataOutputStream mDataOut;
 
     private TimeoutInputStream mTimeoutInputStream;
@@ -46,7 +47,7 @@ public class ServerClient {
     private DataInputStream mInput;
 
     /**
-     * Constructor for {@link ServerClient}
+     * Constructor for {@link ServerClient}.
      *
      * @param socket socket for this connection
      * @param serverListener reference to the server listener
@@ -57,10 +58,10 @@ public class ServerClient {
     }
 
     /**
-     * Process a number of requests
+     * Process a number of requests.
      *
      * <p>This method will process up to the specified number of requests, and return the number of
-     * requests actually processed
+     * requests actually processed.
      *
      * @param count maximum number of requests to process
      * @return number of requests processed
@@ -88,7 +89,7 @@ public class ServerClient {
     }
 
     /**
-     * Send byte message to the client
+     * Send byte message to the client.
      *
      * @param message message to send
      */
@@ -102,12 +103,12 @@ public class ServerClient {
         }
     }
 
-    /** Close the socket, tell the thread to stop */
+    /** Close the socket, tell the thread to stop. */
     public void closeSocket() {
         try {
             mDataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
             mDataOut.flush();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 
@@ -115,11 +116,11 @@ public class ServerClient {
             mRunning = false;
             mSocket.shutdownOutput();
             mSocket.close();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
     }
 
-    /** Join the underlying thread */
+    /** Join the underlying thread. */
     void joinThread() {
         try {
             mThread.join();
@@ -128,7 +129,7 @@ public class ServerClient {
         }
     }
 
-    /** Start the network input thread */
+    /** Start the network input thread. */
     void startThread() {
         mThread = new Thread(this::run);
         mThread.setDaemon(true);
@@ -156,7 +157,9 @@ public class ServerClient {
 
             log.info("Got ID " + mNetworkID);
 
-            if (mNetworkID == -1) closeSocket();
+            if (mNetworkID == -1) {
+                closeSocket();
+            }
 
             while (mRunning && mSocket.isConnected() && !mSocket.isClosed()) {
                 try {
@@ -185,7 +188,6 @@ public class ServerClient {
      * Parses a network message from bytes and executes the correct functions. This is for server
      * use.
      *
-     * @param buff the buff
      */
     private void parseRequest() throws IOException {
         byte messageType = mInput.readByte();

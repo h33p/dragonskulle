@@ -1,11 +1,12 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.input;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
 /**
- * Once attached to a window, this allows for scrolling to:
+ * Once attached to a window, this allows for scrolling to:.
  *
  * <ul>
  *   <li>Trigger the {@link Scroll#UP} button (which can be used to trigger {@link Action}s).

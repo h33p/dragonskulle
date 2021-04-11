@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.components;
 
 import org.dragonskulle.core.GameObject;
@@ -11,13 +12,15 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * Base Transform class
+ * Base Transform class.
  *
  * @author Harry Stoltz
  * @author Aurimas Blažulionis
+ *
  *     <p>All GameObjects will have a Transform object which allows it to be positioned, rotated and
  *     scaled in the world, and relative to parents The Transform can be used to get 3D position,
  *     scale and rotation.
+ *
  *     <p>More concrete transform types are used to modify the object's transformation.
  */
 public abstract class Transform extends Component {
@@ -56,7 +59,7 @@ public abstract class Transform extends Component {
         return mInvMatrix;
     }
 
-    /** Set mShouldUpdate to true in all children transforms */
+    /** Set mShouldUpdate to true in all children transforms. */
     protected void setUpdateFlag() {
         if (mShouldUpdate) {
             return;
@@ -69,7 +72,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the rotation of the transform in the world as a Quaternion
+     * Get the rotation of the transform in the world as a Quaternion.
      *
      * @return Quaternionf containing the rotation of the transform
      */
@@ -80,7 +83,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the rotation of the transform in the world as a Quaternion
+     * Get the rotation of the transform in the world as a Quaternion.
      *
      * @param dest Quaternionf to store the rotation of the transform
      */
@@ -89,7 +92,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the rotation of the transform in the world as axis angles
+     * Get the rotation of the transform in the world as axis angles.
      *
      * @return AxisAngle4f containing the rotation of the transform
      */
@@ -100,7 +103,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the rotation of the transform in the world as axis angles
+     * Get the rotation of the transform in the world as axis angles.
      *
      * @param dest AxisAnglef to store the rotation of the transform
      */
@@ -109,7 +112,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the position of the transform in the world
+     * Get the position of the transform in the world.
      *
      * @return Vector3f containing the world position
      */
@@ -120,7 +123,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the position of the transform in the world
+     * Get the position of the transform in the world.
      *
      * @param dest Vector3f to store the position
      */
@@ -129,7 +132,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the scale of the transform in the world
+     * Get the scale of the transform in the world.
      *
      * @return Vector3f containing the scale of the transform
      */
@@ -140,7 +143,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the scale of the transform in the world
+     * Get the scale of the transform in the world.
      *
      * @param dest Vector3f to store the scale
      */
@@ -166,7 +169,7 @@ public abstract class Transform extends Component {
             Vector3fc position, Quaternionfc rotation, Vector3fc scale);
 
     /**
-     * Transform a direction vector into world space
+     * Transform a direction vector into world space.
      *
      * @param direction direction to transform
      * @return direction after transformation
@@ -176,7 +179,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the right direction vector
+     * Get the right direction vector.
      *
      * @return Vector3f containing the right direction
      */
@@ -185,7 +188,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the right direction vector
+     * Get the right direction vector.
      *
      * @param dest Vector3f to store the right direction
      * @return dest after transformation
@@ -195,7 +198,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the up direction vector
+     * Get the up direction vector.
      *
      * @return Vector3f containing the up direction
      */
@@ -204,7 +207,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the up direction vector
+     * Get the up direction vector.
      *
      * @param dest Vector3f to store the up direction
      * @return dest after transformation
@@ -214,7 +217,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the forward direction vector
+     * Get the forward direction vector.
      *
      * @return Vector3f containing the forward direction
      */
@@ -223,7 +226,7 @@ public abstract class Transform extends Component {
     }
 
     /**
-     * Get the forward direction vector
+     * Get the forward direction vector.
      *
      * @param dest Vector3f to store the forward direction
      * @return dest after transformation

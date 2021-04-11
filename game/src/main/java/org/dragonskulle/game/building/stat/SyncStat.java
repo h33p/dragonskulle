@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.building.stat;
 
 import java.io.DataInputStream;
@@ -82,7 +83,9 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
         super.deserialize(in);
 
         // The stats have changed, so call the building's afterStatChange.
-        if (mBuilding == null || mBuilding.isValid() == false) return;
+        if (mBuilding == null || mBuilding.isValid() == false) {
+            return;
+        }
         mBuilding.get().afterStatChange();
     }
 }

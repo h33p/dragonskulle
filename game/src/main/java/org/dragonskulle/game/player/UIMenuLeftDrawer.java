@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
@@ -24,7 +25,10 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ *
+ * @author Oscar L
+ * */
 @Accessors(prefix = "m")
 @Log
 public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStart {
@@ -35,7 +39,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
     private final INotifyScreenChange mNotifyScreenChange;
     private final IGetPlayer mGetPlayer;
     @Getter private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
-    private final float offsetToTop = 0.46f;
+    private final float mOffsetToTop = 0.46f;
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -77,7 +81,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -233,7 +237,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                                                                                             * finalI
                                                                                             / mButtonChildrenSize
                                                                                             * 1.3f)
-                                                                                    - offsetToTop);
+                                                                                    - mOffsetToTop);
                                                             self.getTransform(TransformUI.class)
                                                                     .setMargin(
                                                                             0.075f, 0f, -0.075f,

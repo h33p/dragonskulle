@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.ui;
 
 import java.nio.ByteBuffer;
@@ -6,12 +7,13 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
-import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.renderer.components.Renderable;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -19,13 +21,13 @@ import org.joml.Vector3fc;
 import org.joml.Vector4fc;
 
 /**
- * Class describing a renderable UI object
+ * Class describing a renderable UI object.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 public class UIRenderable extends Renderable implements IOnAwake {
-    /** Maintain aspect ration of the UI element with its texture */
+    /** Maintain aspect ration of the UI element with its texture. */
     @Getter @Setter private boolean mMaintainAspect = true;
 
     /**
@@ -47,13 +49,13 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     private final Vector3f mTmpCursorPos = new Vector3f();
 
-    /** Default constructor for UIRenderable */
+    /** Default constructor for UIRenderable. */
     public UIRenderable() {
         super(Mesh.QUAD, new UIMaterial());
     }
 
     /**
-     * Constructor for UIRenderable
+     * Constructor for UIRenderable.
      *
      * @param colour colour of the rendered UI element
      * @param texture texture of the rendered UI element
@@ -72,7 +74,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIRenderable
+     * Constructor for UIRenderable.
      *
      * @param texture texture of the rendered UI element
      */
@@ -90,8 +92,9 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
         TransformUI uiTransform = getGameObject().getTransform(TransformUI.class);
 
-        if (tex != null && uiTransform != null)
+        if (tex != null && uiTransform != null) {
             uiTransform.setTargetAspectRatio((float) tex.getWidth() / (float) tex.getHeight());
+        }
     }
 
     @Override

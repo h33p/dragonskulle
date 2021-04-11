@@ -1,7 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components.requests;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -10,7 +14,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * Allows server to send events to the clients
+ * Allows server to send events to the clients.
  *
  * @author Aurimas Blažulionis
  */
@@ -25,7 +29,7 @@ public class ServerEvent<T extends INetSerializable> {
     @Getter private final EventTimeframe mTimeframe;
 
     /**
-     * Describes who should receive the event
+     * Describes who should receive the event.
      *
      * <p>{@code ACTIVE_CLIENTS} is the default that will send the event to all clients that would
      * generally see it {@code OWNER} sends an event only to the owner of the object {@code
@@ -71,7 +75,7 @@ public class ServerEvent<T extends INetSerializable> {
     }
 
     /**
-     * Defines a server event to be executed on the clients
+     * Defines a server event to be executed on the clients.
      *
      * @param defaultValue the template of the event e.g {@code TestAttackData}
      * @param handler the handler for the event

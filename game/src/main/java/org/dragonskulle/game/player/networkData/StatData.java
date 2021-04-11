@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player.networkData;
 
 import java.io.DataInputStream;
@@ -12,7 +13,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * The Class which holds the data to be sent for upgrading stats
+ * The Class which holds the data to be sent for upgrading stats.
  *
  * @author low101043
  */
@@ -52,7 +53,9 @@ public class StatData implements INetSerializable {
     }
 
     public Building getBuilding(HexagonMap map) {
-        if (getTile(map) == null) return null;
+        if (getTile(map) == null) {
+            return null;
+        }
         return getTile(map).getBuilding();
     }
 }

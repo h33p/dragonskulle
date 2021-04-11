@@ -1,15 +1,19 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
-/** @author Oscar L For loading in any settings from the settings.json file. */
+/**
+ * @author Oscar L For loading in any settings from the settings.json file.
+ * */
 @Accessors(prefix = "m")
 @Log
 public class Settings {
@@ -81,7 +85,6 @@ public class Settings {
      *     Settings are not allowed.
      * @return the float setting value.
      */
-    @SuppressWarnings("unchecked")
     public Float retrieveFloat(String name, Float defaultValue) {
         Float value = retrieveFloat(name);
         return (value != null ? value : defaultValue);

@@ -1,8 +1,10 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.util.shaderc.Shaderc.*;
-
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_glsl_fragment_shader;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_glsl_geometry_shader;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_glsl_vertex_shader;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -21,9 +23,14 @@ public enum ShaderKind {
 
     @Override
     public String toString() {
-        if (this == VERTEX_SHADER) return "vert";
-        else if (this == GEOMETRY_SHADER) return "geom";
-        else if (this == FRAGMENT_SHADER) return "frag";
-        else return "none";
+        if (this == VERTEX_SHADER) {
+            return "vert";
+        } else if (this == GEOMETRY_SHADER) {
+            return "geom";
+        } else if (this == FRAGMENT_SHADER) {
+            return "frag";
+        } else {
+            return "none";
+        }
     }
 }

@@ -1,12 +1,20 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components.sync;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.io.Serializable;
 
 /**
- * @author Aurimas B The type Sync short.
- *     <p>This primitve type is implemented manually more space savings
+ *
+ * @author Aurimas B
+ *
+ * The type Sync short.
+ *
+ *     <p>This primitve type is implemented manually more space savings.
  */
 public class SyncShort implements ISyncVar, Serializable {
     /** The Data. */
@@ -89,8 +97,12 @@ public class SyncShort implements ISyncVar, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SyncShort syncVar = (SyncShort) o;
         return mData == syncVar.mData;
     }

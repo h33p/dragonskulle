@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
 import org.lwjgl.system.NativeResource;
@@ -77,8 +78,12 @@ public class Resource<T> implements NativeResource {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Resource)) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Resource)) {
+            return false;
+        }
         Resource<?> res = (Resource<?>) o;
         return get().equals(res.get());
     }

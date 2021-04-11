@@ -1,9 +1,18 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
-
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCreateDescriptorPool;
+import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorPool;
+import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -12,10 +21,15 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkDescriptorImageInfo;
+import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo;
+import org.lwjgl.vulkan.VkDescriptorPoolSize;
+import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 /**
- * Class abstracting a set of textures and their descriptor sets
+ * Class abstracting a set of textures and their descriptor sets.
  *
  * @author Aurimas Blažulionis
  */
@@ -27,15 +41,15 @@ class TextureSet implements NativeResource {
 
     private VkDevice mDevice;
 
-    /** Descriptor pool of this TextureSet */
+    /** Descriptor pool of this TextureSet. */
     @Getter private long mPool;
-    /** Layout of the descriptor sets */
+    /** Layout of the descriptor sets. */
     @Getter private long mSetLayout;
 
     private long[] mDescriptorSets;
 
     /**
-     * Create a new TextureSet
+     * Create a new TextureSet.
      *
      * @param device current vulkan device
      * @param factory factory of texture set layouts
@@ -70,9 +84,10 @@ class TextureSet implements NativeResource {
 
             int res = vkAllocateDescriptorSets(mDevice, allocInfo, pDescriptorSets);
 
-            if (res != VK_SUCCESS)
+            if (res != VK_SUCCESS) {
                 throw new RuntimeException(
                         String.format("Failed to create descriptor sets! Res: %x", -res));
+            }
 
             mDescriptorSets =
                     IntStream.range(0, descriptorSetCount)
@@ -85,7 +100,7 @@ class TextureSet implements NativeResource {
         }
     }
 
-    /** Update the descriptor set to have correct textures attached */
+    /** Update the descriptor set to have correct textures attached. */
     private void updateDescriptorSet(int index) {
         try (MemoryStack stack = stackPush()) {
 
@@ -117,7 +132,7 @@ class TextureSet implements NativeResource {
     }
 
     /**
-     * Create a new descriptor pool
+     * Create a new descriptor pool.
      *
      * @param textureCount number of textures used
      * @param descriptorSetCount number of descriptor sets to create
@@ -151,15 +166,17 @@ class TextureSet implements NativeResource {
         }
     }
 
-    /** Retrieve a descriptor set by image index */
+    /** Retrieve a descriptor set by image index. */
     public long getDescriptorSet(int index) {
         return mDescriptorSets[index];
     }
 
-    /** Free underlying descriptor pool */
+    /** Free underlying descriptor pool. */
     @Override
     public void free() {
-        if (mPool != 0) vkDestroyDescriptorPool(mDevice, mPool, null);
+        if (mPool != 0) {
+            vkDestroyDescriptorPool(mDevice, mPool, null);
+        }
         mPool = 0;
     }
 }

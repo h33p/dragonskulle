@@ -1,33 +1,38 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
-
+import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
+import static org.lwjgl.vulkan.VK10.VK_FILTER_NEAREST;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT;
 import java.io.Serializable;
 import lombok.Getter;
 
 /**
- * Describe the way texture is mapped on surfaces
+ * Describe the way texture is mapped on surfaces.
  *
  * @author Aurimas Blažulionis
  */
 public class TextureMapping implements Serializable {
 
-    public TextureFiltering filtering;
+    public TextureFiltering mFiltering;
 
-    public TextureWrapping wrapU;
-    public TextureWrapping wrapV;
-    public TextureWrapping wrapW;
+    public TextureWrapping mWrapU;
+    public TextureWrapping mWrapV;
+    public TextureWrapping mWrapW;
 
     public TextureMapping(
             TextureFiltering filtering,
             TextureWrapping wrapU,
             TextureWrapping wrapV,
             TextureWrapping wrapW) {
-        this.filtering = filtering;
-        this.wrapU = wrapU;
-        this.wrapV = wrapV;
-        this.wrapW = wrapW;
+        this.mFiltering = filtering;
+        this.mWrapU = wrapU;
+        this.mWrapV = wrapV;
+        this.mWrapW = wrapW;
     }
 
     public TextureMapping(TextureFiltering filtering, TextureWrapping wrap) {
@@ -42,14 +47,16 @@ public class TextureMapping implements Serializable {
         NEAREST(VK_FILTER_NEAREST),
         LINEAR(VK_FILTER_LINEAR);
 
-        @Getter private final int value;
+        @Getter private final int mValue;
 
         private TextureFiltering(int value) {
-            this.value = value;
+            this.mValue = value;
         }
 
         public static TextureFiltering fromGLTF(Integer value) {
-            if (value == null) return LINEAR;
+            if (value == null) {
+                return LINEAR;
+            }
 
             switch (value) {
                 case 9728: // NEAREST
@@ -75,7 +82,9 @@ public class TextureMapping implements Serializable {
         }
 
         public static TextureWrapping fromGLTF(Integer value) {
-            if (value == null) return REPEAT;
+            if (value == null) {
+                return REPEAT;
+            }
 
             // There is no CLAMP_BORDER value
             switch (value) {
@@ -91,13 +100,17 @@ public class TextureMapping implements Serializable {
 
     @Override
     public int hashCode() {
-        return filtering.value + wrapU.value * 10 + wrapV.value * 100 + wrapW.value * 1000;
+        return mFiltering.mValue + mWrapU.value * 10 + mWrapV.value * 100 + mWrapW.value * 1000;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof TextureMapping)) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof TextureMapping)) {
+            return false;
+        }
         return hashCode() == o.hashCode();
     }
 }

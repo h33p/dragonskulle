@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player;
 
 import org.dragonskulle.components.Component;
@@ -12,10 +13,13 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIVerticalSlider;
 import org.dragonskulle.utils.MathUtils;
 
-/** @author Oscar L */
+/**
+ *
+ * @author Oscar L
+ * */
 public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnStart {
-    private Reference<ScrollTranslate> scrollRef;
-    private Reference<Component> sliderReference;
+    private Reference<ScrollTranslate> mScrollRef;
+    private Reference<Component> mSliderReference;
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -25,16 +29,16 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        if (sliderReference.isValid()) {
-            ((UIVerticalSlider) sliderReference.get())
+        if (mSliderReference.isValid()) {
+            ((UIVerticalSlider) mSliderReference.get())
                     .setValue(
                             (float)
                                     MathUtils.mapOneRangeToAnother(
-                                            scrollRef.get().getZoomLevel(), 0, 1, 0, 100, 0));
+                                            mScrollRef.get().getZoomLevel(), 0, 1, 0, 100, 0));
         }
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -44,7 +48,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
      */
     @Override
     public void onStart() {
-        scrollRef =
+        mScrollRef =
                 Scene.getActiveScene()
                         .getSingleton(Camera.class)
                         .getGameObject()
@@ -57,8 +61,8 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
         UIVerticalSlider newSlider =
                 new UIVerticalSlider(
                         (uiSlider, val) -> {
-                            if (scrollRef != null && scrollRef.isValid()) {
-                                scrollRef
+                            if (mScrollRef != null && mScrollRef.isValid()) {
+                                mScrollRef
                                         .get()
                                         .setTargetLerpTime(
                                                 (float)
@@ -67,7 +71,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
                             }
                         });
 
-        sliderReference = newSlider.getReference();
+        mSliderReference = newSlider.getReference();
         newSlider.setRoundStep(1f);
         newSlider.setMaxValue(100f);
         newSlider.setMinValue(0f);

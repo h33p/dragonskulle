@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player.networkData;
 
 import java.io.DataInputStream;
@@ -10,7 +11,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * The Class which holds the data so buildings can be sold
+ * The Class which holds the data so buildings can be sold.
  *
  * @author DragonSkulle
  */
@@ -22,7 +23,7 @@ public final class SellData implements INetSerializable {
     public SellData() {}
 
     /**
-     * The Constructor
+     * The Constructor.
      *
      * @param toSell The building to sell
      */
@@ -31,7 +32,7 @@ public final class SellData implements INetSerializable {
     }
 
     /**
-     * Sets the request's data
+     * Sets the request's data.
      *
      * @param toSell The building to sell
      */

@@ -1,14 +1,21 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 /** Unit tests for Resource Manager. */
 public class ResourceManagerTest {
 
-    private static boolean throwOnLoad = false;
+    private static boolean sThrowOnLoad = false;
 
     static {
         ResourceManager.registerResource(
@@ -17,13 +24,15 @@ public class ResourceManagerTest {
                 TestLines.class, (a) -> "text/" + a.getName(), (b, __) -> new TestLines(b));
     }
 
-    /** First class for simple text resource loading */
+    /** First class for simple text resource loading. */
     private static class TestBytes {
-        private byte[] buf;
+        private byte[] mBuf;
 
         private TestBytes(byte[] buf) {
-            if (throwOnLoad) throw new RuntimeException("Was asked to throw!");
-            this.buf = buf;
+            if (sThrowOnLoad) {
+                throw new RuntimeException("Was asked to throw!");
+            }
+            this.mBuf = buf;
         }
 
         public static Resource<TestBytes> getResource(String name) {
@@ -35,14 +44,16 @@ public class ResourceManagerTest {
         }
     }
 
-    /** Second class for simple text resource loading */
+    /** Second class for simple text resource loading. */
     private static class TestLines implements AutoCloseable {
-        private String[] lines;
-        private boolean wasClosed = false;
+        private String[] mLines;
+        private boolean mWasClosed = false;
 
         private TestLines(byte[] buf) {
-            if (throwOnLoad) throw new RuntimeException("Was asked to throw!");
-            lines = (new String(buf)).split("\\r?\\n");
+            if (sThrowOnLoad) {
+                throw new RuntimeException("Was asked to throw!");
+            }
+            mLines = (new String(buf)).split("\\r?\\n");
         }
 
         public static Resource<TestLines> getResource(String name) {
@@ -51,12 +62,12 @@ public class ResourceManagerTest {
 
         @Override
         public void close() {
-            assertFalse(wasClosed);
-            wasClosed = true;
+            assertFalse(mWasClosed);
+            mWasClosed = true;
         }
     }
 
-    /** Simple test for seeing if loading works */
+    /** Simple test for seeing if loading works. */
     @Test
     public void simpleLoad() {
         try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
@@ -68,7 +79,7 @@ public class ResourceManagerTest {
             assertNotNull(res != null);
             assertNotNull(res.get() != null);
             TestLines lines = res.get();
-            assertEquals(1, lines.lines.length);
+            assertEquals(1, lines.mLines.length);
         }
     }
 
@@ -173,7 +184,7 @@ public class ResourceManagerTest {
                 assertTrue(res.reload());
                 assertNotSame(cached, res.get());
                 assertSame(res.get(), res2.get());
-                assertEquals(cached.buf.length, res.get().buf.length);
+                assertEquals(cached.mBuf.length, res.get().mBuf.length);
             }
         }
     }
@@ -186,11 +197,11 @@ public class ResourceManagerTest {
      */
     @Test
     public void reloadAfterFail() {
-        throwOnLoad = true;
+        sThrowOnLoad = true;
         try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
             assertNull(res);
         }
-        throwOnLoad = false;
+        sThrowOnLoad = false;
         try (Resource<TestBytes> res = TestBytes.getResource("a.txt")) {
             assertNotNull(res);
         }
@@ -211,6 +222,6 @@ public class ResourceManagerTest {
             lines = res.get();
         }
         assertNotNull(lines);
-        assertTrue(lines.wasClosed);
+        assertTrue(lines.mWasClosed);
     }
 }
