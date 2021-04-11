@@ -407,8 +407,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /**
      * Remove this building from the game.
      *
-     * <p>
-     *
      * <ul>
      *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
      *   <li>Removes any links to any {@link HexagonTile}s.
