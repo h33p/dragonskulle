@@ -29,10 +29,10 @@ public class CapitalAimer extends AiPlayer {
 
     /** This is the graph to traverse */
     private Graph mGraph;
-    
+
     /** The opponent to attack */
     private Player mOpponent;
-    
+
     /** The tile which contains the capital */
     private Reference<HexagonTile> mTileToAim;
 
@@ -189,7 +189,6 @@ public class CapitalAimer extends AiPlayer {
     /** This will get the tile which needs to be aimed for */
     private Reference<HexagonTile> getTile(Player opponentPlayer) {
 
-        
         boolean foundTile =
                 mPlayer.get()
                         .getMap()
@@ -245,7 +244,6 @@ public class CapitalAimer extends AiPlayer {
         } else {
             return mOpponent;
         }
-        
     }
 
     /** This will perform the A* Search and all related operations to it */
