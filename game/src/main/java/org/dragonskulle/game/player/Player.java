@@ -742,11 +742,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Add sell logic.
         log.info("SELL HERE.");
 
         //Adds the tokens
         mTokens.set(mTokens.get() + building.SELL_PRICE);
+
+        //Remove from players list of  owned buildings
+        mOwnedBuildings.remove(building);
+
+        //Remove the building
+        building.remove();
 
         return true;
     }
