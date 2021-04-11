@@ -46,28 +46,25 @@ public class Graph {
      */
     private void convertToNode(HexagonTile tile) {
 
-    	if (tile.getTileType() == TileType.LAND) {
-        try {
-        	
-            addNode(mNodeNum, tile);
+        if (tile.getTileType() == TileType.LAND) {
+            try {
 
-            int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
+                addNode(mNodeNum, tile);
 
-            setNodeSpecial(mNodeNum, heuristic);
+                int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
 
-        } catch (GraphNodeException e) { // TODO shouldn't need
-            // TODO Already in mGraph
+                setNodeSpecial(mNodeNum, heuristic);
+
+            } catch (GraphNodeException e) { // TODO shouldn't need
+                // TODO Already in mGraph
+            }
+            mNodeNum++;
+        } else {
+
+            // log.warning("Tried to add somehting which isn't land");
+            ;
         }
-        mNodeNum++;
     }
-    	 else {
-    		 
-    		//log.warning("Tried to add somehting which isn't land");
-    		 ;
-    	    	
-    	    }
-    }
-   
 
     /**
      * This will add all the connections for a node
@@ -76,24 +73,23 @@ public class Graph {
      */
     private void addConnections(HexagonTile tile) {
         if (tile.getTileType() == TileType.LAND) {
-        ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
+            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
 
-        for (HexagonTile tileNeighbour : neighbourTiles) {
-            for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {
-                if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
-                        && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
-                	
-                    addConnection(mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
+            for (HexagonTile tileNeighbour : neighbourTiles) {
+                for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {
+                    if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
+                            && tileNeighbour.getR()
+                                    == mapEntry.getValue().getHexTile().get().getR()) {
+
+                        addConnection(
+                                mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
+                    }
                 }
             }
-        }
-        mNodeNum++;
-        }
-        else {
-        	;
+            mNodeNum++;
+        } else {;
         }
     }
-        
 
     /**
      * This will add a node to a mGraph with no connections
