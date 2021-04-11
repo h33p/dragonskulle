@@ -760,13 +760,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Write all checks.
+        //Checks if the buildings owner is null
+        if (building.getOwner() == null){
+            log.info("The owner of the building is null");
+            return false;
+        }
 
         //Checks you  own the building
         if (building.getNetworkObject().getOwnerId() != getNetworkObject().getOwnerId()) {
             log.info("It's not your building");
             return false;
         }
+
+        //Question - Which way should I use to check ownership as a method for this is already implemented?
+        checkBuildingOwnership(building);
 
 
         return true;
