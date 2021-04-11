@@ -1,11 +1,13 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -18,8 +20,10 @@ import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.utils.IOUtils;
 
 /**
+ *
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
+
 @Accessors(prefix = "m")
 @Log
 public abstract class NetworkableComponent extends Component {
@@ -97,7 +101,9 @@ public abstract class NetworkableComponent extends Component {
             e.printStackTrace();
         }
 
-        if (networkObject.isServer()) connectSyncVars();
+        if (networkObject.isServer()) {
+            connectSyncVars();
+        }
 
         onConnectedSyncvars();
     }
@@ -130,7 +136,7 @@ public abstract class NetworkableComponent extends Component {
     protected void afterNetUpdate() {}
 
     /**
-     * Reset the changed bitmask
+     * Reset the changed bitmask.
      *
      * <p>Call this after every network update, once all clients had their state updated
      */
@@ -156,7 +162,9 @@ public abstract class NetworkableComponent extends Component {
 
         stream.writeByte(byteMask.length);
 
-        for (byte b : byteMask) stream.writeByte(b);
+        for (byte b : byteMask) {
+            stream.writeByte(b);
+        }
 
         for (int i = 0; i < this.mFields.length; i++) {
             Field f = this.mFields[i];

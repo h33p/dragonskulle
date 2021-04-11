@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class GameObjectTest {
 
     // TODO: rewrite tests
 
-    /** Test whether a child GameObject's parent always has the child */
+    /** Test whether a child GameObject's parent always has the child. */
     @Test
     public void parentContainsChild() {
         GameObject parent = new GameObject("parent");
@@ -32,7 +33,7 @@ public class GameObjectTest {
 
     /**
      * Test whether a GameObject added as a child to a non-root object is still available through
-     * the root
+     * the root.
      */
     @Test
     public void rootContainsChild() {
@@ -53,7 +54,7 @@ public class GameObjectTest {
         Assert.assertTrue("Child's root did not contain the child in all children", val);
     }
 
-    /** Test whether a game object is removed from its parent when it is destroyed */
+    /** Test whether a game object is removed from its parent when it is destroyed. */
     @Test
     public void destroyRemovesFromParent() {
         GameObject root = new GameObject("root");
@@ -74,7 +75,7 @@ public class GameObjectTest {
         Assert.assertEquals(message, 0, children.size());
     }
 
-    /** Test whether every non-root GameObject has a root */
+    /** Test whether every non-root GameObject has a root. */
     @Test
     public void nonRootObjectNeverHasNullRoot() {
         GameObject root = new GameObject("root");
@@ -97,7 +98,7 @@ public class GameObjectTest {
         }
     }
 
-    /** Test whether a GameObject always has a transform */
+    /** Test whether a GameObject always has a transform. */
     @Test
     public void transformNeverNull() {
 
@@ -118,7 +119,7 @@ public class GameObjectTest {
                 "GameObject did not have a transform after cloning", objClone.getTransform());
     }
 
-    /** Test whether updating a parent synchronizes its subchildren */
+    /** Test whether updating a parent synchronizes its subchildren. */
     @Test
     public void indirectTransformsSynchronized() {
         GameObject subchild = new GameObject("subchild", new Transform3D(0f, 0f, 2f));

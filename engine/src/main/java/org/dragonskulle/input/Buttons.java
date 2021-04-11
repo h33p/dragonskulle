@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.input;
 
 import java.util.HashMap;
@@ -18,7 +19,7 @@ class Buttons {
     private Bindings mBindings;
 
     /** Store which buttons are pressed. */
-    private final HashMap<Integer, Boolean> buttons = new HashMap<Integer, Boolean>();
+    private final HashMap<Integer, Boolean> mButtons = new HashMap<Integer, Boolean>();
 
     /**
      * Listens for GLFW button inputs from the keyboard and reports when they are pressed or
@@ -112,7 +113,7 @@ class Buttons {
      */
     private void attemptDeactivate(Action action) {
         for (Integer button : mBindings.getButtons(action)) {
-            if (isPressed(button) == true) {
+            if (isPressed(button)) {
                 // A button is still triggering the action- so do not deactivate the action.
                 return;
             }
@@ -129,7 +130,7 @@ class Buttons {
      * @param pressed Whether the button is being pressed.
      */
     void setPressed(int button, boolean pressed) {
-        buttons.put(button, pressed);
+        mButtons.put(button, pressed);
     }
 
     /**
@@ -139,7 +140,7 @@ class Buttons {
      * @return Whether the button is currently being pressed.
      */
     boolean isPressed(int button) {
-        Boolean value = buttons.get(button);
+        Boolean value = mButtons.get(button);
         if (value == null) {
             return false;
         }

@@ -2,7 +2,6 @@
 
 package org.dragonskulle.game.map;
 
-import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,10 +10,10 @@ import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
-import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.Building;
 import org.dragonskulle.game.player.Player;
+import java.util.Arrays;
 
 /**
  * @author Leela Muppala

@@ -1,8 +1,9 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
 /**
- * Load resources from byte buffers
+ * Load resources from byte buffers.
  *
  * @author Aurimas Blažulionis
  *     <p>This interface is the composite of {@link IResourceBufferLoader} and {@link

@@ -38,9 +38,9 @@ class VulkanPipeline implements NativeResource {
         for (int i = 0; i < bindingDescriptions.length; i++) {
             BindingDescription descIn = bindingDescriptions[i];
             VkVertexInputBindingDescription descOut = bindingDescriptionsOut.get(i);
-            descOut.binding(descIn.bindingID);
-            descOut.stride(descIn.size);
-            descOut.inputRate(descIn.inputRate);
+            descOut.binding(descIn.mbindingId);
+            descOut.stride(descIn.mSize);
+            descOut.inputRate(descIn.mInputRate);
         }
         return bindingDescriptionsOut;
     }

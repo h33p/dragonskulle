@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -26,6 +25,7 @@ import org.lwjgl.openal.ALCapabilities;
  * The manager for the engine's audio system.
  *
  * @author Harry Stoltz
+ *
  * <p>This class will handle the loading and buffering of all sound files, and will also manage
  * a pool of sources that can be used by AudioSources to play the sounds back
  */

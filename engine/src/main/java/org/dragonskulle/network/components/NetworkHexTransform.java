@@ -1,9 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -11,7 +13,7 @@ import org.joml.Vector3fc;
 @Accessors(prefix = "m")
 public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate {
     @Getter private SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
-    private TransformHex hexTransform;
+    private TransformHex mHexTransform;
 
     public NetworkHexTransform(int q, int r) {
         mAxialCoordinate.set(new Vector3f(q, r, 0));
@@ -40,19 +42,19 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
     }
 
     private void setHexPosition() {
-        if (hexTransform == null) hexTransform = getGameObject().getTransform(TransformHex.class);
+        if (mHexTransform == null) mHexTransform = getGameObject().getTransform(TransformHex.class);
 
-        if (hexTransform != null) {
+        if (mHexTransform != null) {
             if (getNetworkObject().isServer()) {
-                Vector3f newPosition = hexTransform.getLocalPosition(new Vector3f());
-                newPosition.z = hexTransform.getHeight();
+                Vector3f newPosition = mHexTransform.getLocalPosition(new Vector3f());
+                newPosition.z = mHexTransform.getHeight();
                 if (!mAxialCoordinate.get().equals(newPosition)) {
                     mAxialCoordinate.set(newPosition);
                 }
             } else {
                 Vector3fc pos = mAxialCoordinate.get();
-                hexTransform.setPosition(pos.x(), pos.y());
-                hexTransform.setHeight(pos.z());
+                mHexTransform.setPosition(pos.x(), pos.y());
+                mHexTransform.setHeight(pos.z());
             }
         }
     }

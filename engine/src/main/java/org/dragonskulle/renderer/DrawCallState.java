@@ -1,8 +1,10 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
-
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,9 +66,15 @@ class DrawCallState implements NativeResource {
 
         @Override
         public boolean equals(Object other) {
-            if (this == other) return true;
-            if (other == null) return false;
-            if (!(other instanceof DrawDataHashKey)) return false;
+            if (this == other) {
+                return true;
+            }
+            if (other == null) {
+                return false;
+            }
+            if (!(other instanceof DrawDataHashKey)) {
+                return false;
+            }
             DrawDataHashKey otherKey = (DrawDataHashKey) other;
             return Arrays.equals(mMatTextures, otherKey.mMatTextures)
                     && mMesh.equals(otherKey.mMesh);
@@ -93,15 +101,21 @@ class DrawCallState implements NativeResource {
 
         @Override
         public boolean equals(Object other) {
-            if (this == other) return true;
-            if (other == null) return false;
-            if (!(other instanceof HashKey)) return false;
+            if (this == other) {
+                return true;
+            }
+            if (other == null) {
+                return false;
+            }
+            if (!(other instanceof HashKey)) {
+                return false;
+            }
             HashKey otherKey = (HashKey) other;
             return mShaderSet.equals(otherKey.mShaderSet);
         }
     }
 
-    /** Describes addition data needed for a single instanced draw call */
+    /** Describes addition data needed for a single instanced draw call. */
     @Accessors(prefix = "m")
     @Getter
     public static class DrawData {
@@ -119,23 +133,24 @@ class DrawCallState implements NativeResource {
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
                 object.writeVertexInstanceData(cur_off, buffer, lights);
-                cur_off += shaderSet.getVertexBindingDescription().size;
+                cur_off += shaderSet.getVertexBindingDescription().mSize;
             }
         }
 
         public void slowUpdateInstanceBuffer(
                 ShaderSet shaderSet, PointerBuffer pData, long memory, List<Light> lights) {
-            int shaderSetSize = shaderSet.getVertexBindingDescription().size;
+            int shaderSetSize = shaderSet.getVertexBindingDescription().mSize;
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
                 pData.rewind();
                 int res = vkMapMemory(mDevice, memory, cur_off, shaderSetSize, 0, pData);
 
-                if (res != VK_SUCCESS)
+                if (res != VK_SUCCESS) {
                     throw new RuntimeException(
                             String.format(
                                     "Failed to map memory! Out of resources! off: %x sz: %x",
                                     cur_off, shaderSetSize));
+                }
 
                 ByteBuffer byteBuffer = pData.getByteBuffer(shaderSetSize);
 
@@ -149,7 +164,7 @@ class DrawCallState implements NativeResource {
 
         public int setInstanceBufferOffset(ShaderSet shaderSet, int offset) {
             mInstanceBufferOffset = offset;
-            return offset + shaderSet.getVertexBindingDescription().size * mObjects.size();
+            return offset + shaderSet.getVertexBindingDescription().mSize * mObjects.size();
         }
 
         public void endDrawData(int imageIndex, Long descriptorSet) {
@@ -168,12 +183,12 @@ class DrawCallState implements NativeResource {
     public static class NonInstancedDraw {
         private DrawCallState mState;
         private DrawData mData;
-        private int mObjectID;
+        private int mObjectId;
 
         public int getInstanceBufferOffset() {
             ShaderSet shaderSet = mState.getShaderSet();
             return mData.getInstanceBufferOffset()
-                    + shaderSet.getVertexBindingDescription().size * mObjectID;
+                    + shaderSet.getVertexBindingDescription().mSize * mObjectId;
         }
     }
 
@@ -234,7 +249,9 @@ class DrawCallState implements NativeResource {
     }
 
     public void startDrawData() {
-        for (DrawData d : mDrawData.values()) d.mObjects.clear();
+        for (DrawData d : mDrawData.values()) {
+            d.mObjects.clear();
+        }
 
         mDrawData.entrySet().removeIf(e -> e.getValue().getMesh().getRefCount() <= 0);
     }
@@ -242,7 +259,9 @@ class DrawCallState implements NativeResource {
     public void endDrawData(int imageIndex) {
         Long descriptorSet =
                 mDescriptorPool == null ? null : mDescriptorPool.getDescriptorSet(imageIndex);
-        for (DrawData d : mDrawData.values()) d.endDrawData(imageIndex, descriptorSet);
+        for (DrawData d : mDrawData.values()) {
+            d.endDrawData(imageIndex, descriptorSet);
+        }
     }
 
     public boolean shouldCleanup() {
@@ -264,8 +283,12 @@ class DrawCallState implements NativeResource {
                 int matTexturesLength = matTextures.length;
 
                 for (int i = 0; i < textures.length; i++) {
-                    if (i < matTexturesLength) textures[i] = matTextures[i];
-                    if (textures[i] == null) textures[i] = ERROR_TEXTURE;
+                    if (i < matTexturesLength) {
+                        textures[i] = matTextures[i];
+                    }
+                    if (textures[i] == null) {
+                        textures[i] = ERROR_TEXTURE;
+                    }
                 }
 
                 drawData.mTextureSet = mTextureSetFactory.getSet(textures, mTextureFactory);
@@ -279,37 +302,52 @@ class DrawCallState implements NativeResource {
     }
 
     public void updateMeshBuffer(VulkanMeshBuffer meshBuffer) {
-        for (DrawData data : mDrawData.values())
+        for (DrawData data : mDrawData.values()) {
             data.mMeshDescriptor = meshBuffer.addMesh(data.mMesh);
+        }
     }
 
     public int setInstanceBufferOffset(int offset) {
-        for (DrawData d : mDrawData.values())
+        for (DrawData d : mDrawData.values()) {
             offset = d.setInstanceBufferOffset(mShaderSet, offset);
+        }
         return offset;
     }
 
     public void updateInstanceBuffer(ByteBuffer buffer, List<Light> lights) {
-        for (DrawData d : mDrawData.values()) d.updateInstanceBuffer(mShaderSet, buffer, lights);
+        for (DrawData d : mDrawData.values()) {
+            d.updateInstanceBuffer(mShaderSet, buffer, lights);
+        }
     }
 
     public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory, List<Light> lights) {
-        for (DrawData d : mDrawData.values())
+        for (DrawData d : mDrawData.values()) {
             d.slowUpdateInstanceBuffer(mShaderSet, pData, memory, lights);
+        }
     }
 
     @Override
     public void free() {
-        if (mPipeline != null) mPipeline.free();
+        if (mPipeline != null) {
+            mPipeline.free();
+        }
         mPipeline = null;
     }
 
     private static long[] combineDescriptorSets(long[] arr, Long... entries) {
         int elemCount = 0;
-        for (Long l : entries) if (l != null) elemCount++;
+        for (Long l : entries) {
+            if (l != null) {
+                elemCount++;
+            }
+        }
         long[] ret = (arr != null && elemCount == arr.length) ? arr : new long[elemCount];
         elemCount = 0;
-        for (Long l : entries) if (l != null) ret[elemCount++] = l;
+        for (Long l : entries) {
+            if (l != null) {
+                ret[elemCount++] = l;
+            }
+        }
         return ret;
     }
 

@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.input;
 
 import static org.junit.Assert.assertEquals;

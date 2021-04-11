@@ -1,9 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.assets;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.extern.java.Log;
@@ -42,10 +44,12 @@ public class GLTFTest {
 
             String[] targetRootObjects = {"Camera", "Cube", "Light", "Suzanne", "Torus.001"};
             Set<String> targetRootObjectSet = new HashSet<>();
-            for (String s : targetRootObjects) targetRootObjectSet.add(s);
+            Collections.addAll(targetRootObjectSet, targetRootObjects);
 
             Set<String> actualRootObjectSet = new HashSet<>();
-            for (GameObject go : scene.getGameObjects()) actualRootObjectSet.add(go.getName());
+            for (GameObject go : scene.getGameObjects()) {
+                actualRootObjectSet.add(go.getName());
+            }
 
             assertEquals(targetRootObjectSet, actualRootObjectSet);
         }
@@ -71,7 +75,7 @@ public class GLTFTest {
     }
 
     @Test
-    public void cubeHasUIText() {
+    public void cubeHasUiText() {
         try (Resource<GLTF> res = GLTF.getResource("testin")) {
             Scene scene = res.get().getDefaultScene();
             GameObject cube =

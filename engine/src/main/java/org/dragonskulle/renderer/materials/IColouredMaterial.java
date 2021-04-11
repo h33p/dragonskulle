@@ -1,10 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer.materials;
 
 import org.joml.Vector4f;
 
 /**
- * Interface for materials with main colour value
+ * Interface for materials with main colour value.
  *
  * @author Aurimas Blažulionis
  */

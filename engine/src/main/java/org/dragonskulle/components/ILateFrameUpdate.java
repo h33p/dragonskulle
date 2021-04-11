@@ -1,10 +1,12 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.components;
 
 /**
- * ILateFrameUpdate interface
+ * ILateFrameUpdate interface.
  *
  * @author Harry Stoltz
+ *
  *     <p>One of the optional interfaces for a component. Has the single method lateFrameUpdate.
  */
 public interface ILateFrameUpdate {

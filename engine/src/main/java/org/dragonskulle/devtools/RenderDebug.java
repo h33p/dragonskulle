@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.devtools;
 
 import lombok.Getter;
@@ -22,7 +23,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 /**
- * Render debug text display
+ * Render debug text display.
  *
  * @author Aurimas Blažulionis
  */
@@ -55,11 +56,15 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
         boolean debugPressed = DEBUG_ACTION.isActivated();
 
         if (mText != null && mText.isValid()) {
-            if (debugPressed && !mLastPressed) mText.get().setEnabled(!mText.get().isEnabled());
+            if (debugPressed && !mLastPressed) {
+                mText.get().setEnabled(!mText.get().isEnabled());
+            }
 
             mLastPressed = debugPressed;
 
-            if (!mText.get().isEnabled()) return;
+            if (!mText.get().isEnabled()) {
+                return;
+            }
 
             Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
 

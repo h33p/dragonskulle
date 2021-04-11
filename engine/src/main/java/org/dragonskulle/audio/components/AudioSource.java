@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.audio.components;
 
 import lombok.Getter;
@@ -31,7 +32,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     @Getter private float mTimeLeft = -1f;
     @Getter private int mLooping = AL11.AL_FALSE;
 
-    /** Update the position of the source to that of the GameObject */
+    /** Update the position of the source to that of the GameObject. */
     private void updatePosition() {
         if (mSource == null) {
             return;
@@ -43,7 +44,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Attach a Source to this AudioSource
+     * Attach a Source to this AudioSource.
      *
      * @param source Source to be attached
      */
@@ -72,7 +73,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         log.info("Attached source " + mSource.getSource());
     }
 
-    /** Detach the Source from this AudioSource if there is one */
+    /** Detach the Source from this AudioSource if there is one. */
     public void detachSource() {
         if (mSource == null) {
             return;
@@ -90,7 +91,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Set the volume of the AudioSource
+     * Set the volume of the AudioSource.
      *
      * @param volume Volume from 0f to 1f
      */
@@ -105,7 +106,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Set whether the AudioSource should loop
+     * Set whether the AudioSource should loop.
      *
      * @param looping Whether to loop or not
      */
@@ -121,10 +122,10 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
      * Set the sound of this AudioSource. It will be played as soon as the AudioSource is given a
      * source by the AudioManager
      *
-     * @param soundID ID that the desired sound was loaded with
+     * @param soundId ID that the desired sound was loaded with
      */
-    public void playSound(int soundID) {
-        WaveSound sound = AudioManager.getInstance().getSound(soundID);
+    public void playSound(int soundId) {
+        WaveSound sound = AudioManager.getInstance().getSound(soundId);
         if (sound == null) {
             return;
         }
@@ -135,7 +136,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Set the pitch of the sound
+     * Set the pitch of the sound.
      *
      * @param pitch Desired pitch (Value between 0f and 1f)
      */
@@ -150,7 +151,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Set the radius from the AudioSource that the sound can be heard from
+     * Set the radius from the AudioSource that the sound can be heard from.
      *
      * @param radius New radius. Must be a positive value
      */

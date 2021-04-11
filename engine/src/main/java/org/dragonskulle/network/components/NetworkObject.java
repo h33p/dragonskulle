@@ -1,10 +1,12 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -56,7 +58,7 @@ public class NetworkObject extends Component {
                     EventRecipients.ACTIVE_CLIENTS,
                     EventTimeframe.LONG_TERM_DELAYABLE);
 
-    /** The network client ID that owns this */
+    /** The network client ID that owns this. */
     @Getter private int mOwnerId;
 
     /**
@@ -74,24 +76,30 @@ public class NetworkObject extends Component {
     }
 
     /**
-     * Check whether this object is owned by the client/server
+     * Check whether this object is owned by the client/server.
      *
      * @return {@code true} if the object is ours, {@code false} otherwise.
      */
     public boolean isMine() {
-        if (mOwnerId < 0 && mIsServer) return true;
+        if (mOwnerId < 0 && mIsServer) {
+            return true;
+        }
 
         ClientNetworkManager clientManager = mNetworkManager.getClientManager();
-        return clientManager != null && clientManager.getNetID() == mOwnerId;
+        return clientManager != null && clientManager.getNetId() == mOwnerId;
     }
 
     public void setOwnerId(int newOwnerID) {
-        if (mIsServer) mOwnerId = newOwnerID;
+        if (mIsServer) {
+            mOwnerId = newOwnerID;
+        }
     }
 
     @Override
     public void onDestroy() {
-        if (!mDestroyed && mIsServer) mDestroyEvent.invoke(NoneData.DATA);
+        if (!mDestroyed && mIsServer) {
+            mDestroyEvent.invoke(NoneData.DATA);
+        }
     }
 
     public void networkInitialize() {
@@ -124,8 +132,12 @@ public class NetworkObject extends Component {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         NetworkObject that = (NetworkObject) o;
         return Objects.equals(mNetworkObjectId, that.mNetworkObjectId);
     }
@@ -170,7 +182,9 @@ public class NetworkObject extends Component {
      * @throws IOException the io exception
      */
     public boolean handleClientRequest(int requestID, DataInputStream stream) throws IOException {
-        if (requestID < 0 || requestID >= mClientRequests.size()) return false;
+        if (requestID < 0 || requestID >= mClientRequests.size()) {
+            return false;
+        }
 
         mClientRequests.get(requestID).handle(stream);
 
@@ -178,7 +192,7 @@ public class NetworkObject extends Component {
     }
 
     /**
-     * Handle a server event
+     * Handle a server event.
      *
      * <p>This will take a server's event and handle it
      *
@@ -193,7 +207,9 @@ public class NetworkObject extends Component {
      * @throws IOException if parsing fails
      */
     public boolean handleServerEvent(int eventID, DataInputStream stream) throws IOException {
-        if (eventID < 0 || eventID >= mServerEvents.size()) return false;
+        if (eventID < 0 || eventID >= mServerEvents.size()) {
+            return false;
+        }
 
         mServerEvents.get(eventID).handle(stream);
 
@@ -212,6 +228,7 @@ public class NetworkObject extends Component {
      * @throws IOException thrown if failed to read client streams
      * @return the owner id of the network object
      */
+
     public int updateFromBytes(DataInputStream stream) throws IOException {
         int ownerId = stream.readInt();
         mOwnerId = ownerId;
@@ -270,7 +287,7 @@ public class NetworkObject extends Component {
 
     /**
      * Broadcasts updates all of the modified children as one message @param broadcastCallback the
-     * broadcast callback
+     * broadcast callback.
      *
      * @param client client to update the values for
      * @param forceUpdate whether or not forcefully update all syncvars
@@ -310,6 +327,7 @@ public class NetworkObject extends Component {
      * @param forceUpdate whether to force update all components
      * @return the bytes to be broadcasted
      */
+    
     private void generateUpdateBytes(
             DataOutputStream stream, boolean[] didChildUpdateMask, boolean forceUpdate)
             throws IOException {
@@ -327,7 +345,9 @@ public class NetworkObject extends Component {
 
         stream.writeByte(byteMask.length);
 
-        for (byte b : byteMask) stream.writeByte(b);
+        for (byte b : byteMask) {
+            stream.writeByte(b);
+        }
 
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {

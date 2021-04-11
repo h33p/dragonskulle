@@ -1,12 +1,19 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.stb.STBTruetype.*;
+import static org.lwjgl.stb.STBTruetype.stbtt_GetCodepointBitmapBox;
+import static org.lwjgl.stb.STBTruetype.stbtt_GetCodepointHMetrics;
+import static org.lwjgl.stb.STBTruetype.stbtt_GetFontVMetrics;
+import static org.lwjgl.stb.STBTruetype.stbtt_InitFont;
+import static org.lwjgl.stb.STBTruetype.stbtt_MakeCodepointBitmap;
+import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForPixelHeight;
 import static org.lwjgl.system.MemoryStack.stackPush;
-
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
@@ -39,26 +46,28 @@ public final class Font extends Texture {
     }
 
     /**
-     * Gets glyph coordinates and advances curpos
+     * Gets glyph coordinates and advances curpos.
      *
      * @param charCode input character
      * @param curpos current cursor position
      * @param outStartPos start of the bounding box that will be written
      * @param outEndPos end of the bounding box that will be written
-     * @param outUVStart lower UV coordinates that will be written
-     * @param outUVEnd upper UV coordinates that will be written
+     * @param outUvStart lower UV coordinates that will be written
+     * @param outUvEnd upper UV coordinates that will be written
      */
     public void getGlyph(
             int charCode,
             int[] curpos,
             Vector2f outStartPos,
             Vector2f outEndPos,
-            Vector2f outUVStart,
-            Vector2f outUVEnd) {
+            Vector2f outUvStart,
+            Vector2f outUvEnd) {
         BoxPacker.BoxNode<Glyph> glyphNode = mCharToGlyph.get(charCode);
 
         // If not found, fallback to default square box
-        if (glyphNode == null) glyphNode = mCharToGlyph.get(0);
+        if (glyphNode == null) {
+            glyphNode = mCharToGlyph.get(0);
+        }
 
         int curX = curpos[0];
         int curY = curpos[1];
@@ -74,12 +83,12 @@ public final class Font extends Texture {
 
         float atlasScale = 1.f / (float) ATLAS_SIZE;
 
-        outUVStart.set(glyphNode.getX(), glyphNode.getY());
-        outUVEnd.set(
+        outUvStart.set(glyphNode.getX(), glyphNode.getY());
+        outUvEnd.set(
                 glyphNode.getX() + glyphNode.getWidth(), glyphNode.getY() + glyphNode.getHeight());
 
-        outUVStart.mul(atlasScale);
-        outUVEnd.mul(atlasScale);
+        outUvStart.mul(atlasScale);
+        outUvEnd.mul(atlasScale);
 
         curpos[0] += glyphNode.getBox().getAdvance();
 

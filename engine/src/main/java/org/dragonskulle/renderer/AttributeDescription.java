@@ -21,7 +21,7 @@ public class AttributeDescription {
     public static final int LIGHT_HALF_SIZE = 4 * 3;
 
     /**
-     * Constructor for AttributeDescription
+     * Constructor for AttributeDescription.
      */
     public AttributeDescription(int bindingId, int location, int format, int offset) {
         this.mBindingId = bindingId;

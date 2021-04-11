@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -27,7 +27,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of selling an owned {@link Building}. */
     protected float mSellProbability = 0.05f;
 
-    /** A Constructor for an AI Player */
+    /** A Constructor for an AI Player. */
     public ProbabilisticAiPlayer() {}
 
     @Override

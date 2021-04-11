@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components;
 
 import java.io.DataInputStream;
@@ -22,6 +23,7 @@ import org.dragonskulle.network.components.NetworkManager.IObjectOwnerModifiedEv
 import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 
 /**
+ *
  * @author Aurimas Blažulionis
  * @author Oscar L
  */
@@ -29,7 +31,7 @@ import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 @Log
 public class ClientNetworkManager {
 
-    /** Describes client connection state */
+    /** Describes client connection state. */
     private static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
@@ -39,7 +41,7 @@ public class ClientNetworkManager {
         CLEAN_DISCONNECTED
     }
 
-    /** Client listener */
+    /** Client listener. */
     private class Listener implements IClientListener {
         @Override
         public void unknownHost() {
@@ -62,8 +64,8 @@ public class ClientNetworkManager {
         }
 
         @Override
-        public void connectedToServer(int netID) {
-            mNetID = netID;
+        public void connectedToServer(int netId) {
+            mNetId = netId;
             mNextConnectionState.set(ConnectionState.CONNECTED);
         }
 
@@ -75,7 +77,7 @@ public class ClientNetworkManager {
         /**
          * Updates a networkable object from server message.
          *
-         * @param payload the payload of the object to be updated
+         * @param stream the payload of the object to be updated
          */
         @Override
         public void updateNetworkObject(DataInputStream stream) throws IOException {
@@ -99,7 +101,7 @@ public class ClientNetworkManager {
         /**
          * Update the server's state on the client.
          *
-         * @param payload payload containing the server's world state
+         * @param stream payload containing the server's world state
          */
         @Override
         public void updateServerState(DataInputStream stream) throws IOException {
@@ -120,17 +122,19 @@ public class ClientNetworkManager {
 
         @Override
         public void objectEvent(DataInputStream stream) throws IOException {
-            int objectID = stream.readInt();
-            ClientObjectEntry entry = getNetworkObjectEntry(objectID);
+            int objectId = stream.readInt();
+            ClientObjectEntry entry = getNetworkObjectEntry(objectId);
             if (entry == null) {
-                log.info("Should have spawned! Couldn't find nob id :" + objectID);
+                log.info("Should have spawned! Couldn't find nob id :" + objectId);
                 return;
             }
             NetworkObject nob = entry.mNetworkObject.get();
 
-            int eventID = stream.readInt();
+            int eventId = stream.readInt();
 
-            if (nob != null) nob.handleServerEvent(eventID, stream);
+            if (nob != null) {
+                nob.handleServerEvent(eventId, stream);
+            }
         }
     }
 
@@ -144,26 +148,26 @@ public class ClientNetworkManager {
         }
     }
 
-    /** Underlying network client instance */
+    /** Underlying network client instance. */
     private final NetworkClient mClient;
-    /** Client event callback listener */
+    /** Client event callback listener. */
     private final IClientListener mListener = new Listener();
-    /** Current connection state */
+    /** Current connection state. */
     @Getter private ConnectionState mConnectionState = ConnectionState.NOT_CONNECTED;
-    /** Next connection state (set by the listener) */
+    /** Next connection state (set by the listener). */
     private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
-    /** Callback for connection result processing */
+    /** Callback for connection result processing. */
     private NetworkManager.IConnectionResultEvent mConnectionHandler;
-    /** Back reference to the network manager */
+    /** Back reference to the network manager. */
     private final NetworkManager mManager;
-    /** How many ticks elapsed without any updates */
+    /** How many ticks elapsed without any updates. */
     private int mTicksWithoutRequests = 0;
-    /** Listeners for spawn events */
+    /** Listeners for spawn events. */
     private List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
-    /** Listeners for owner modification events */
+    /** Listeners for owner modification events. */
     private List<IObjectOwnerModifiedEvent> mModifiedOwnerListeners = new ArrayList<>();
 
-    @Getter private int mNetID = -1;
+    @Getter private int mNetId = -1;
 
     @Getter private float mServerTime = 0f;
 
@@ -171,7 +175,7 @@ public class ClientNetworkManager {
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
 
     /**
-     * Constructor for ClientNetworkManager
+     * Constructor for ClientNetworkManager.
      *
      * @param manager target back reference to {@link NetworkManager}
      * @param ip target connection IP address
@@ -190,7 +194,7 @@ public class ClientNetworkManager {
     }
 
     /**
-     * Send byte message to the server
+     * Send byte message to the server.
      *
      * @param message message to send
      */
@@ -230,7 +234,7 @@ public class ClientNetworkManager {
     }
 
     /**
-     * Gets all network objects as a stream
+     * Gets all network objects as a stream.
      *
      * @return the network object found, if none exists then null.
      */
@@ -265,7 +269,7 @@ public class ClientNetworkManager {
         mManager.onClientDisconnect();
     }
 
-    /** Network update method, called by {@link NetworkManager} */
+    /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
@@ -277,12 +281,14 @@ public class ClientNetworkManager {
                 switch (nextState) {
                     case CONNECTED:
                         joinGame();
-                        if (mConnectionHandler != null)
-                            mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetID);
+                        if (mConnectionHandler != null) {
+                            mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetId);
+                        }
                         break;
                     case CONNECTION_ERROR:
-                        if (mConnectionHandler != null)
+                        if (mConnectionHandler != null) {
                             mConnectionHandler.handle(mManager.getGameScene(), mManager, -1);
+                        }
                         disconnect();
                         break;
                     default:
@@ -302,7 +308,9 @@ public class ClientNetworkManager {
                 } else if (mTicksWithoutRequests == 1000) {
                     log.info("1000 ticks without updates! 2200 more till disconnect!");
                 }
-            } else mTicksWithoutRequests = 0;
+            } else {
+                mTicksWithoutRequests = 0;
+            }
         }
 
         mNetworkObjectReferences
@@ -313,7 +321,7 @@ public class ClientNetworkManager {
     // TODO: implement lobby
     // private void joinLobby() {}
 
-    /** Join the game map */
+    /** Join the game map. */
     private void joinGame() {
         Engine engine = Engine.getInstance();
 
@@ -340,7 +348,7 @@ public class ClientNetworkManager {
     }
 
     /**
-     * Spawn a new network object
+     * Spawn a new network object.
      *
      * @param networkObjectId allocated object ID
      * @param ownerID network owner ID

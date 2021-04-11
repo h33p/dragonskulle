@@ -1,10 +1,13 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components.sync;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
- * Describes a type that can be serialized into stream, and deserialized from a stream
+ * Describes a type that can be serialized into stream, and deserialized from a stream.
  *
  * @author Aurimas Blažulionis
  */

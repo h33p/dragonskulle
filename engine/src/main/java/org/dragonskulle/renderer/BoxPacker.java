@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
 import lombok.Getter;
@@ -13,7 +14,7 @@ import lombok.experimental.Accessors;
  */
 class BoxPacker<T extends IBox> {
 
-    /** Represents a packed box entry */
+    /** Represents a packed box entry. */
     @Accessors(prefix = "m")
     public static class BoxNode<T extends IBox> {
         @Getter private T mBox;
@@ -92,7 +93,7 @@ class BoxPacker<T extends IBox> {
     }
 
     /**
-     * Pack a box
+     * Pack a box.
      *
      * <p>This method will pack elements with specified minimum gap between them
      *
@@ -105,7 +106,7 @@ class BoxPacker<T extends IBox> {
     }
 
     /**
-     * Pack a box
+     * Pack a box.
      *
      * <p>This method will pack elements with no minimum gaps between them
      *

@@ -1,8 +1,9 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer.materials;
 
 /**
- * Interface for materials that support shared references
+ * Interface for materials that support shared references.
  *
  * @author Aurimas Blažulionis
  */

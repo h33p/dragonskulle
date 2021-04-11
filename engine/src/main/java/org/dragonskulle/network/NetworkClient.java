@@ -1,7 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -10,11 +14,13 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
 /**
+ *
  * @author Oscar L
  *     <p>This is the client usage, you will create an instance, by providing the correct server to
  *     connect to. ClientListener is the handler for commands that the client receives. {@link
  *     org.dragonskulle.network.IClientListener}**
  */
+
 @Log
 @Accessors(prefix = "m")
 public class NetworkClient {
@@ -40,7 +46,7 @@ public class NetworkClient {
     private AtomicBoolean didDispose = new AtomicBoolean(false);
 
     private TimeoutInputStream mTimeoutInputStream;
-    /** The input stream from the server */
+    /** The input stream from the server. */
     private DataInputStream mInput;
 
     /**
@@ -79,12 +85,14 @@ public class NetworkClient {
                         mClientListener.disconnected();
                     }
                 }
-                if (mSocket != null) mSocket.close();
+                if (mSocket != null) {
+                    mSocket.close();
+                }
                 if (mClientThread != null) {
                     mClientThread.interrupt();
                     try {
                         mClientThread.join();
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
 
                     }
                 }
@@ -171,7 +179,9 @@ public class NetworkClient {
                 }
             }
 
-            if (mClientListener != null) mClientListener.disconnected();
+            if (mClientListener != null) {
+                mClientListener.disconnected();
+            }
 
             dispose();
             log.info("cancelled successfully");
@@ -191,7 +201,9 @@ public class NetworkClient {
                 mTimeoutInputStream.enableTimeout();
                 processMessage();
 
-                if (cnt > 100) log.info("CNT " + cnt);
+                if (cnt > 100) {
+                    log.info("CNT " + cnt);
+                }
 
                 cnt++;
             }
@@ -207,10 +219,11 @@ public class NetworkClient {
     }
 
     /**
-     * Process a message
+     * Process a message.
      *
      * @return the byteCode of the message processed.
      */
+
     private byte processMessage() throws IOException {
         byte messageType = mInput.readByte();
         log.fine("EXEB - " + messageType);
@@ -248,7 +261,7 @@ public class NetworkClient {
         try {
             mDataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
             mDataOut.flush();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 

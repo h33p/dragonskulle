@@ -1,13 +1,37 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.KHRSurface.*;
-import static org.lwjgl.vulkan.VK10.*;
-
+import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_D24_UNORM_S8_UINT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_D32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_D32_SFLOAT_S8_UINT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_TILING_LINEAR;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_TILING_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+import static org.lwjgl.vulkan.VK10.VK_QUEUE_GRAPHICS_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_16_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_2_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_32_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_4_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_64_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_8_BIT;
+import static org.lwjgl.vulkan.VK10.VK_TRUE;
+import static org.lwjgl.vulkan.VK10.vkEnumerateDeviceExtensionProperties;
+import static org.lwjgl.vulkan.VK10.vkEnumeratePhysicalDevices;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceFeatures;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceFormatProperties;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceMemoryProperties;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceProperties;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceQueueFamilyProperties;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.Set;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -15,10 +39,17 @@ import lombok.extern.java.Log;
 import org.dragonskulle.utils.MathUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkFormatProperties;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
+import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
+import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
 /**
- * Describes a physical vulkan device, and the features it supports
+ * Describes a physical vulkan device, and the features it supports.
  *
  * @author Aurimas Blažulionis
  */
@@ -38,7 +69,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT
     };
 
-    /** Describes indices used for various device queues */
+    /** Describes indices used for various device queues. */
     static class QueueFamilyIndices {
         Integer graphicsFamily;
         Integer presentFamily;
@@ -52,7 +83,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Describes physical graphics feature support */
+    /** Describes physical graphics feature support. */
     static class FeatureSupportDetails {
         boolean anisotropyEnable;
         float maxAnisotropy;
@@ -67,7 +98,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Gathers information about physical device and stores it on `PhysicalDevice` */
+    /** Gathers information about physical device and stores it on `PhysicalDevice`. */
     private PhysicalDevice(VkPhysicalDevice device, long surface) {
         this.mDevice = device;
 
@@ -97,8 +128,9 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             this.mScore = 0;
 
             // Prioritize dedicated graphics cards
-            if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            if (properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
                 this.mScore += 5000;
+            }
 
             // Check maximum texture sizes, prioritize largest
             this.mScore += properties.limits().maxImageDimension2D();
@@ -114,7 +146,9 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             for (int i = 0; i < capacity && !indices.isComplete(); i++) {
                 int queueFlags = buf.get(i).queueFlags();
 
-                if ((queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) indices.graphicsFamily = i;
+                if ((queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+                    indices.graphicsFamily = i;
+                }
 
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, presentSupport);
 
@@ -134,7 +168,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     }
 
     /**
-     * Find supported depth texture format
+     * Find supported depth texture format.
      *
      * @return supported format for depth texture
      */
@@ -146,14 +180,16 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     }
 
     /**
-     * Finds the highest suitable MSAA sample count
+     * Finds the highest suitable MSAA sample count.
      *
      * @param sampleCount wanted sample count
      * @return highest supported sample count that is no larger than {@code sampleCount}
      */
     public int findSuitableMSAACount(int sampleCount) {
         sampleCount = MathUtils.roundDownToPow2(sampleCount);
-        if (sampleCount < 1) sampleCount = 1;
+        if (sampleCount < 1) {
+            sampleCount = 1;
+        }
 
         if (sampleCount >= 64 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_64_BIT) != 0) {
             return VK_SAMPLE_COUNT_64_BIT;
@@ -180,21 +216,24 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             for (int format : candidates) {
                 vkGetPhysicalDeviceFormatProperties(mDevice, format, props);
                 if (tiling == VK_IMAGE_TILING_LINEAR
-                        && (props.linearTilingFeatures() & features) == features) return format;
-                else if (tiling == VK_IMAGE_TILING_OPTIMAL
-                        && (props.optimalTilingFeatures() & features) == features) return format;
+                        && (props.linearTilingFeatures() & features) == features) {
+                    return format;
+                } else if (tiling == VK_IMAGE_TILING_OPTIMAL
+                        && (props.optimalTilingFeatures() & features) == features) {
+                    return format;
+                }
             }
 
             return -1;
         }
     }
 
-    /** Update swapchain support details */
+    /** Update swapchain support details. */
     public void onRecreateSwapchain(long surface) {
         mSwapchainSupport = new SwapchainSupportDetails(mDevice, surface);
     }
 
-    /** Find a suitable memory type for the GPU */
+    /** Find a suitable memory type for the GPU. */
     public int findMemoryType(int filterBits, int properties) {
         try (MemoryStack stack = stackPush()) {
             VkPhysicalDeviceMemoryProperties memProperties =
@@ -213,13 +252,16 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Picks a physical device with required features */
+    /** Picks a physical device with required features. */
     public static PhysicalDevice pickPhysicalDevice(
             VkInstance instance, long surface, String targetDevice, Set<String> neededExtensions) {
         PhysicalDevice[] devices = enumeratePhysicalDevices(instance, surface, neededExtensions);
 
-        if (devices.length == 0) return null;
-        else if (targetDevice == null) return devices[0];
+        if (devices.length == 0) {
+            return null;
+        } else if (targetDevice == null) {
+            return devices[0];
+        }
 
         for (PhysicalDevice d : devices) {
             if (d.mDeviceName.contains(targetDevice)) {
@@ -229,12 +271,14 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
 
         log.severe("Failed to find suitable physical device!");
         log.info("Valid devices:");
-        for (PhysicalDevice d : devices) log.info(d.mDeviceName);
+        for (PhysicalDevice d : devices) {
+            log.info(d.mDeviceName);
+        }
 
         return null;
     }
 
-    /** Collect all compatible physical GPUs into an array, sorted by decreasing score */
+    /** Collect all compatible physical GPUs into an array, sorted by decreasing score. */
     private static PhysicalDevice[] enumeratePhysicalDevices(
             VkInstance instance, long surface, Set<String> extensions) {
         try (MemoryStack stack = stackPush()) {
@@ -262,7 +306,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return properties;
     }
 
-    /** check whether the device in question is suitable for us */
+    /** check whether the device in question is suitable for us. */
     private static boolean isPhysicalDeviceSuitable(PhysicalDevice device, Set<String> extensions) {
         try (MemoryStack stack = stackPush()) {
             return device.mIndices.isComplete()
@@ -275,7 +319,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Utility for retrieving VkQueueFamilyProperties list */
+    /** Utility for retrieving VkQueueFamilyProperties list. */
     private static VkQueueFamilyProperties.Buffer getQueueFamilyProperties(
             VkPhysicalDevice device) {
         try (MemoryStack stack = stackPush()) {

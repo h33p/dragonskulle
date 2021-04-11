@@ -1,22 +1,23 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_INSTANCE;
 
 import lombok.Builder;
 
 /**
- * Describes data layout of a vertex shader binding
+ * Describes data layout of a vertex shader binding.
  *
  * @author Aurimas Blažulionis
  */
 @Builder
 public class BindingDescription {
-    public int bindingID;
-    public int size;
-    public int inputRate;
+    public int mbindingId;
+    public int mSize;
+    public int mInputRate;
 
-    /** Creates a new binding description without default transformation matrix */
+    /** Creates a new binding description without default transformation matrix. */
     public static BindingDescription instanced(int size) {
         return new BindingDescription(1, size, VK_VERTEX_INPUT_RATE_INSTANCE);
     }

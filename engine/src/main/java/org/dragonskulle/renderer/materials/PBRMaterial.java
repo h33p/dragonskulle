@@ -1,8 +1,10 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.renderer.materials;
 
-import static org.lwjgl.vulkan.VK10.*;
-
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32_SFLOAT;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -132,26 +134,26 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
 
     protected SampledTexture[] mFragmentTextures;
 
-    /** Base colour of the surface. It will multiply the texture's colour */
+    /** Base colour of the surface. It will multiply the texture's colour. */
     @Getter private final Vector4f mColour = new Vector4f(1.f);
-    /** Controls which alpha values are cut off */
+    /** Controls which alpha values are cut off. */
     @Getter @Setter private float mAlphaCutoff = 0f;
-    /** Metalicness multiplier */
+    /** Metalicness multiplier. */
     @Getter @Setter private float mMetallic = 1f;
-    /** Roughness multiplier */
+    /** Roughness multiplier. */
     @Getter @Setter private float mRoughness = 1f;
-    /** Normal map multiplier */
+    /** Normal map multiplier. */
     @Getter @Setter private float mNormal = 1f;
-    /** Have transparency */
+    /** Have transparency. */
     @Getter @Setter private boolean mAlphaBlend = false;
 
     private int mRefCount = 0;
 
-    /** Constructor for StandardMaterial */
+    /** Constructor for StandardMaterial. */
     public PBRMaterial() {}
 
     /**
-     * Constructor for StandardMaterial
+     * Constructor for StandardMaterial.
      *
      * @param albedoMap initial albedo/diffuse texture of the object
      */
@@ -160,7 +162,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     }
 
     /**
-     * Constructor for StandardMaterial
+     * Constructor for StandardMaterial.
      *
      * @param albedoMap initial texture of the object
      * @param colour colour of the material
@@ -171,7 +173,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     }
 
     /**
-     * Constructor for StandardMaterial
+     * Constructor for StandardMaterial.
      *
      * @param colour colour of the material
      */
@@ -180,17 +182,25 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     }
 
     public void setAlbedoMap(SampledTexture tex) {
-        if (equalTexs(tex, mAlbedoMap)) return;
+        if (equalTexs(tex, mAlbedoMap)) {
+            return;
+        }
 
-        if (mAlbedoMap != null) mAlbedoMap.free();
+        if (mAlbedoMap != null) {
+            mAlbedoMap.free();
+        }
         mAlbedoMap = tex != null ? tex.clone() : null;
         mFragmentTextures = null;
     }
 
     public void setNormaMap(SampledTexture tex) {
-        if (equalTexs(tex, mNormalMap)) return;
+        if (equalTexs(tex, mNormalMap)) {
+            return;
+        }
 
-        if (mNormalMap != null) mNormalMap.free();
+        if (mNormalMap != null) {
+            mNormalMap.free();
+        }
 
         if (tex != null) {
             mNormalMap = tex.clone();
@@ -203,9 +213,13 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     }
 
     public void setMetalnessRoughnessMap(SampledTexture tex) {
-        if (equalTexs(tex, mMetalnessRoughnessMap)) return;
+        if (equalTexs(tex, mMetalnessRoughnessMap)) {
+            return;
+        }
 
-        if (mMetalnessRoughnessMap != null) mMetalnessRoughnessMap.free();
+        if (mMetalnessRoughnessMap != null) {
+            mMetalnessRoughnessMap.free();
+        }
 
         if (tex != null) {
             mMetalnessRoughnessMap = tex.clone();
@@ -266,8 +280,12 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
 
     public void free() {
         if (--mRefCount < 0) {
-            if (mAlbedoMap != null) mAlbedoMap.free();
-            if (mNormalMap != null) mNormalMap.free();
+            if (mAlbedoMap != null) {
+                mAlbedoMap.free();
+            }
+            if (mNormalMap != null) {
+                mNormalMap.free();
+            }
             if (mMetalnessRoughnessMap != null) {
                 mMetalnessRoughnessMap.free();
             }
@@ -275,8 +293,12 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     }
 
     private boolean equalTexs(SampledTexture a, SampledTexture b) {
-        if ((a == null) != (b == null)) return false;
-        if (a != null) return a.equals(b);
+        if ((a == null) != (b == null)) {
+            return false;
+        }
+        if (a != null) {
+            return a.equals(b);
+        }
         return true;
     }
 }

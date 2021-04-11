@@ -21,6 +21,7 @@ import org.joml.Vector4f;
 
 /**
  * @author Aurimas Blažulionis
+ *
  *     <p>This component provides client sided effects for the map, such as selecting tiles, marking
  *     valid, and invalid tiles, and so on.
  */

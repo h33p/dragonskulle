@@ -1,11 +1,13 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.components;
 
 /**
- * INetworkUpdate interface
+ * INetworkUpdate interface.
  *
  * @author Aurimas Blažulionis
  * @author Harry Stoltz
+ *
  *     <p>One of the optional interfaces for a component. Contains the single method networkUpdate.
  */
 public interface INetworkUpdate {

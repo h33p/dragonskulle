@@ -31,7 +31,7 @@ public class Resource<T> implements NativeResource {
     }
 
     /**
-     * Get the underlying resource object
+     * Get the underlying resource object.
      *
      * @return the underlying {@code T} value. Never {@code null}.
      */
@@ -40,7 +40,7 @@ public class Resource<T> implements NativeResource {
     }
 
     /**
-     * Try reloading the underlying resource object
+     * Try reloading the underlying resource object.
      *
      * @return {@code true} if reload was successful. On false, the underlying object is left
      *     unchanged.

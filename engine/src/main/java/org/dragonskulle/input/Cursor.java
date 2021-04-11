@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.input;
 
 import lombok.experimental.Accessors;
@@ -19,7 +20,7 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
  *       a drag.
  *   <li>The distance of a drag from the start point.
  *   <li>The scaled angle of a drag from the start point.
- * </ul>
+ * </ul>.
  *
  * @author Craig Wilbourne
  */

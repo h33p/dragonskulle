@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
 import org.junit.Assert;
@@ -30,7 +31,7 @@ public class ReferenceTest {
     }
 
     /**
-     * Test that when a reference is cleared, attempting to get the referenced object returns null
+     * Test that when a reference is cleared, attempting to get the referenced object returns null.
      */
     @Test
     public void referenceIsNullWhenCleared() {

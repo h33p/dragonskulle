@@ -27,9 +27,9 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
+import java.util.Objects;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector2fc;
-import java.util.Objects;
 import org.joml.Vector3f;
 
 /**
@@ -207,7 +207,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /** This will choose what to do when the user can see the full map. */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -439,7 +439,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /** Marks visuals to update whenever a new object is spawned. */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) {
             mVisualsNeedUpdate = true;

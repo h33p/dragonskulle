@@ -1,10 +1,12 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.components;
 
 /**
- * IFrameUpdate interface
+ * IFrameUpdate interface.
  *
  * @author Harry Stoltz
+ *
  *     <p>One of the optional interfaces for a component. Has the single method frameUpdate.
  */
 public interface IFrameUpdate {

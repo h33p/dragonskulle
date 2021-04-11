@@ -3,10 +3,10 @@
 package org.dragonskulle.game.map;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 import lombok.extern.java.Log;
 
 /**
+ *
  * @author Leela Muppala
  *
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
@@ -72,7 +72,7 @@ class HexagonTileStore {
     }
 
     /**
-     * Get a hexagon tile
+     * Get a hexagon tile.
      *
      * @param q q coordinate of the tile
      * @param r r coordinate of the tile
@@ -81,13 +81,15 @@ class HexagonTileStore {
         q += mCoordShift;
         r += mCoordShift;
 
-        if (q < 0 || r < 0 || q >= mTiles.length || r >= mTiles.length) return null;
+        if (q < 0 || r < 0 || q >= mTiles.length || r >= mTiles.length) {
+            return null;
+        }
 
         return mTiles[q][r];
     }
 
     /**
-     * Get a stream of all hexagon tiles
+     * Get a stream of all hexagon tiles.
      *
      * @return stream of all non-null hexagon tiles in the map
      */

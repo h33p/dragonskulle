@@ -1,7 +1,11 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.network.components.requests;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.NetworkConfig;
@@ -10,7 +14,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * Allows client to request action from server
+ * Allows client to request action from server.
  *
  * @author Aurimas Blažulionis
  */
@@ -84,7 +88,9 @@ public class ClientRequest<T extends INetSerializable> {
                 oos.flush();
             }
         } catch (IOException e) {
-            if (clientMan != null) clientMan.disconnect();
+            if (clientMan != null) {
+                clientMan.disconnect();
+            }
             e.printStackTrace();
         }
     }

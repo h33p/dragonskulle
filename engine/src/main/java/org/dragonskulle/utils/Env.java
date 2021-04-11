@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.utils;
 
 public class Env {
@@ -9,7 +10,9 @@ public class Env {
 
     public static int envInt(String key, int defaultVal) {
         String envLine = System.getenv(key);
-        if (envLine == null) return defaultVal;
+        if (envLine == null) {
+            return defaultVal;
+        }
         try {
             return Integer.parseInt(envLine);
         } catch (Exception e) {
@@ -19,7 +22,9 @@ public class Env {
 
     public static boolean envBool(String key, boolean defaultVal) {
         String envLine = System.getenv(key);
-        if (envLine == null) return defaultVal;
+        if (envLine == null) {
+            return defaultVal;
+        }
         try {
             return Boolean.parseBoolean(envLine);
         } catch (Exception e) {

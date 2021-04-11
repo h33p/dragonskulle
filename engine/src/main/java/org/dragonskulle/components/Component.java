@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.components;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 
 /**
- * Abstract class for a Component
+ * Abstract class for a Component.
  *
  * @author Harry Stoltz
  *     <p>All components must extend this class, and can also optionally implement any of the
@@ -40,7 +41,9 @@ public abstract class Component implements Serializable {
     public final void engineDestroy() {
         onDestroy();
 
-        if (mGameObject != null) mGameObject.removeComponent(this);
+        if (mGameObject != null) {
+            mGameObject.removeComponent(this);
+        }
         mGameObject = null;
         mReference.clear();
     }
@@ -49,7 +52,7 @@ public abstract class Component implements Serializable {
     protected abstract void onDestroy();
 
     /**
-     * Getter for mReference
+     * Getter for mReference.
      *
      * <p>This getter type checks and casts the reference to a more concrete type
      *
@@ -58,7 +61,9 @@ public abstract class Component implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public final <T extends Component> Reference<T> getReference(Class<T> type) {
-        if (type.isInstance(this)) return (Reference<T>) mReference;
+        if (type.isInstance(this)) {
+            return (Reference<T>) mReference;
+        }
         return null;
     }
 

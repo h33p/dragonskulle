@@ -1,4 +1,5 @@
 /* (C) 2021 DragonSkulle */
+
 package org.dragonskulle.core;
 
 import java.io.ByteArrayInputStream;
@@ -17,7 +18,7 @@ import org.dragonskulle.components.Transform;
 import org.dragonskulle.components.Transform3D;
 
 /**
- * GameObject class
+ * GameObject class.
  *
  * @author Harry Stoltz
  * @author Aurimas Blažulionis
@@ -37,7 +38,7 @@ public class GameObject implements Serializable {
     @Getter private Transform mTransform = new Transform3D();
     @Getter private final String mName;
     @Getter private boolean mEnabled;
-    /** How deep the object is within the game object structure */
+    /** How deep the object is within the game object structure. */
     @Getter private int mDepth = 0;
 
     /**
@@ -57,7 +58,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Create a clone of a GameObject. The cloned GameObject's position is used
+     * Create a clone of a GameObject. The cloned GameObject's position is used.
      *
      * @param object GameObject to be copied
      * @return The new instance of the GameObject
@@ -69,13 +70,14 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Create a clone of a GameObject, providing a new transform for the object
+     * Create a clone of a GameObject, providing a new transform for the object.
      *
      * @param object GameObject to be copied
      * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
      *     instance)
      * @return The new instance of the GameObject
      */
+
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
         transform.setGameObject(instance);
@@ -91,7 +93,8 @@ public class GameObject implements Serializable {
      * @param name Name of the object to search for
      * @return A reference to the first GameObject found, or null if nothing is found
      */
-    public static Reference<GameObject> FindObjectByName(String name) {
+
+    public static Reference<GameObject> findObjectByName(String name) {
         List<Scene> activeScenes = Engine.getInstance().getActiveScenes();
 
         for (Scene s : activeScenes) {
@@ -113,7 +116,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mEnabled to true
+     * Constructor for GameObject, defaults mEnabled to true.
      *
      * @param name The name of the object
      */
@@ -122,7 +125,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject
+     * Constructor for GameObject.
      *
      * @param name The name of the object
      * @param enabled Whether the object is enabled or not
@@ -136,7 +139,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for game object, allows initial setup
+     * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
      * @param enabled controls whether the object is enabled by default
@@ -148,7 +151,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for game object, allows initial setup
+     * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
      * @param handler handler callback that allows to do initial setup
@@ -158,19 +161,20 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for game object, allows initial setup
+     * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
      * @param enabled controls whether the object is enabled by default
      * @param handler handler callback that allows to do initial setup
      */
+
     public GameObject(String name, boolean enabled, IBuildHandler handler) {
         this(name, enabled);
         handler.handleBuild(this);
     }
 
     /**
-     * Constructor for game object, allows initial setup
+     * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
      * @param handler handler callback that allows to do initial setup
@@ -180,7 +184,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructor for GameObject, defaults mEnabled to true
+     * Constructor for GameObject, defaults mEnabled to true.
      *
      * @param name The name of the object
      * @param transform Transformation properties to apply
@@ -190,7 +194,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Constructur for GameObject
+     * Constructor for GameObject.
      *
      * @param name The name of the object
      * @param enabled Whether the object is enabled or not
@@ -206,7 +210,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get all components of a given type T
+     * Get all components of a given type T.
      *
      * @param type Class object of T
      * @param <T> Type of component to be returned
@@ -221,7 +225,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get the first component of type T found
+     * Get the first component of type T found.
      *
      * @param type Class object of T
      * @param <T> Type of component to be returned
@@ -237,7 +241,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get a list of all components that implement the interface I
+     * Get a list of all components that implement the interface I.
      *
      * @param iface Class object of the interface I
      * @param <I> Interface to search by
@@ -251,7 +255,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get a list of all components of a specific type in all children of this GameObject
+     * Get a list of all components of a specific type in all children of this GameObject.
      *
      * @param type Class object of type T
      * @param ret List object to store the references to components found
@@ -323,7 +327,7 @@ public class GameObject implements Serializable {
 
     /**
      * Add a list of children to the GameObject, setting the parent to this and the root to mRoot,
-     * or this if mRoot is null
+     * or this if mRoot is null.
      *
      * @param children List of GameObject to be added
      */
@@ -384,8 +388,7 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public Reference<GameObject> buildChild(
-            String name, boolean enabled, Transform transform, IBuildHandler handler) {
+    public Reference<GameObject> buildChild(String name, boolean enabled, Transform transform, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled, transform);
         this.addChild(go);
         handler.handleBuild(go);
@@ -447,22 +450,26 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Add the GameObject to the list of objects that need to be destroyed in the Engine instance
+     * Add the GameObject to the list of objects that need to be destroyed in the Engine instance.
      */
     public void destroy() {
         Engine.getInstance().mDestroyedObjects.add(this);
     }
 
-    /** Recreate all references within the game object */
+    /** Recreate all references within the game object. */
     void recreateReferences() {
         mReference.clear();
         mReference = new Reference<>(this);
-        for (Component c : mComponents) c.recreateReference();
-        for (GameObject c : mChildren) c.recreateReferences();
+        for (Component c : mComponents) {
+            c.recreateReference();
+        }
+        for (GameObject c : mChildren) {
+            c.recreateReferences();
+        }
     }
 
     /**
-     * Create a deep copy of the GameObject
+     * Create a deep copy of the GameObject.
      *
      * @return New GameObject with identical values as this
      */
@@ -493,7 +500,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mChildren
+     * Getter for mChildren.
      *
      * @return mChildren
      */
@@ -502,7 +509,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mComponents, should only be used by the engine
+     * Getter for mComponents, should only be used by the engine.
      *
      * @return mComponents
      */
@@ -511,7 +518,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mTransform with cast
+     * Getter for mTransform with cast.
      *
      * @return mTransform cast to type if cast is valid, null otherwise
      */
@@ -520,7 +527,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get the transform from the parent of this GameObject
+     * Get the transform from the parent of this GameObject.
      *
      * @return Parent Transform, or null if this is a root GameObject
      */
@@ -529,7 +536,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Check whether a GameObject is a root object
+     * Check whether a GameObject is a root object.
      *
      * @return true if it's a root, false otherwise
      */
@@ -551,13 +558,15 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Setter for mDepth
+     * Setter for mDepth.
      *
      * <p>This method will recursively update mDepth for all mChildren
      */
     protected void setDepth(int newDepth) {
         mDepth = newDepth;
 
-        for (GameObject child : mChildren) child.setDepth(mDepth + 1);
+        for (GameObject child : mChildren) {
+            child.setDepth(mDepth + 1);
+        }
     }
 }
