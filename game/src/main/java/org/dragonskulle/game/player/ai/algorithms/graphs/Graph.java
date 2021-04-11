@@ -8,6 +8,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
 /**
@@ -45,7 +46,9 @@ public class Graph {
      */
     private void convertToNode(HexagonTile tile) {
 
+    	if (tile.getTileType() == TileType.LAND) {
         try {
+        	
             addNode(mNodeNum, tile);
 
             int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
@@ -57,6 +60,11 @@ public class Graph {
         }
         mNodeNum++;
     }
+    	 else {
+    	    	return;
+    	    }
+    }
+   
 
     /**
      * This will add all the connections for a node

@@ -142,7 +142,7 @@ public class CapitalAimer extends AiPlayer {
 
             for (Building attacker : toAttack.getAttackableBuildings()) {
 
-                if (attacker.getOwnerID() == mPlayer.get().getNetworkObject().getOwnerId()) {
+                if (attacker.getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
 
                     mPlayer.get()
                             .getClientAttackRequest()
@@ -172,13 +172,13 @@ public class CapitalAimer extends AiPlayer {
             Node node = mGraph.getNode(nodeNumber);
 
             if (node.getHexTile().get().getClaimant() != null
-                    && node.getHexTile().get().getClaimant().getNetworkObject().getOwnerId()
+                    && node.getHexTile().get().getClaimantId()
                             == mOpponentPlayer.getNetworkObject().getOwnerId()
                     && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
                 mOppCapNode = node;
             } else if (node.getHexTile().get().getClaimant() != null
-                    && node.getHexTile().get().getClaimant().getNetworkObject().getOwnerId()
+                    && node.getHexTile().get().getClaimantId()
                             == mPlayer.get().getNetworkObject().getOwnerId()
                     && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
@@ -197,7 +197,7 @@ public class CapitalAimer extends AiPlayer {
                                 tile -> {
                                     if (tile.getBuilding() != null
                                             && tile.getBuilding().isCapital()
-                                            && tile.getClaimant().getNetworkObject().getOwnerId()
+                                            && tile.getClaimantId()
                                                     == mOpponentPlayer
                                                             .getNetworkObject()
                                                             .getOwnerId()) {
@@ -223,7 +223,7 @@ public class CapitalAimer extends AiPlayer {
                         .anyMatch(
                                 tile -> {
                                     if (tile.getClaimant() != null
-                                            && tile.getClaimant().getNetworkObject().getOwnerId()
+                                            && tile.getClaimantId()
                                                     != mPlayer.get()
                                                             .getNetworkObject()
                                                             .getOwnerId()) {
