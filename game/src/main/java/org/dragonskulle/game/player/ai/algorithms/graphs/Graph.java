@@ -61,7 +61,10 @@ public class Graph {
         mNodeNum++;
     }
     	 else {
-    	    	return;
+    		 
+    		//log.warning("Tried to add somehting which isn't land");
+    		 ;
+    	    	
     	    }
     }
    
@@ -72,20 +75,25 @@ public class Graph {
      * @param tile The {@code HexagonTile} to add connections for in the graph
      */
     private void addConnections(HexagonTile tile) {
-        boolean found = false;
+        if (tile.getTileType() == TileType.LAND) {
         ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
 
         for (HexagonTile tileNeighbour : neighbourTiles) {
             for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {
                 if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
                         && tileNeighbour.getR() == mapEntry.getValue().getHexTile().get().getR()) {
-
+                	
                     addConnection(mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
                 }
             }
         }
         mNodeNum++;
+        }
+        else {
+        	;
+        }
     }
+        
 
     /**
      * This will add a node to a mGraph with no connections
