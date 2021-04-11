@@ -23,15 +23,17 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 @Log
 public class AStar {
 
-    private ArrayList<int[]> mFrontier =
-            new ArrayList<int[]>();; // This will hold the nodes to be mVisited
-    private Set<Integer> mVisited =
-            new HashSet<Integer>(); // This will hold the nodes which has been mVisited
-    private Graph mGraph; // This will hold the mGraph being processed
+    /** This will hold the nodes to be visited */
+    private ArrayList<int[]> mFrontier = new ArrayList<int[]>();
 
-    @Getter
-    private Deque<Integer> mAnswerOfNodes =
-            new ArrayDeque<Integer>(); // This hold the solution of which nodes to visit
+    /** This will hold the nodes which has been visited */
+    private Set<Integer> mVisited = new HashSet<Integer>();
+
+    /** This will hold the mGraph being processed */
+    private Graph mGraph;
+
+    /** This hold the solution of which nodes to visit */
+    @Getter private Deque<Integer> mAnswerOfNodes = new ArrayDeque<Integer>();
 
     /**
      * The constructor which allows you to make the object.

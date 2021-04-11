@@ -21,13 +21,20 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 @Log
 public class CapitalAimer extends AiPlayer {
 
-    private Player mOpponentPlayer;
+    /** This will hold the path to go */
     private Deque<Integer> mPath = new ArrayDeque<Integer>();
+
+    /** This will hold where we have gone */
     private Deque<Integer> mGone;
-    private Graph mGraph = null;
-    private Node mCapNode = null;
-    private Node mOppCapNode = null;
-    private Reference<HexagonTile> mTileToAim = new Reference<HexagonTile>(null);
+
+    /** This is the graph to traverse */
+    private Graph mGraph;
+    
+    /** The opponent to attack */
+    private Player mOpponent;
+    
+    /** The tile which contains the capital */
+    private Reference<HexagonTile> mTileToAim;
 
     public CapitalAimer() {}
 
@@ -36,16 +43,6 @@ public class CapitalAimer extends AiPlayer {
 
         // Checks if we have reached the capital
         if (mPath.size() == 0) {
-
-            // Will find the opponent to attack
-            log.info("Changing opponent");
-            mOpponentPlayer = mPlayer.get();
-            findOpponent();
-
-            // Will find the tile to attack
-            mTileToAim = new Reference<HexagonTile>(null);
-            getTile();
-            log.info("Found Tile");
 
             // Will perform all necessary checks for A*
             aStar();
@@ -164,31 +161,35 @@ public class CapitalAimer extends AiPlayer {
     }
 
     /** This will find the capital node for both you and the opponent */
-    private void findCapital() {
-        Integer[] nodesInGraph = mGraph.getNodes();
+    private Node[] findCapital(Graph graph, Player opponentPlayer) {
+        Integer[] nodesInGraph = graph.getNodes();
 
+        Node[] capitals = new Node[2];
         // Go through all nodes to find the capital
         for (int nodeNumber : nodesInGraph) {
-            Node node = mGraph.getNode(nodeNumber);
+            Node node = graph.getNode(nodeNumber);
 
             if (node.getHexTile().get().getClaimant() != null
                     && node.getHexTile().get().getClaimantId()
-                            == mOpponentPlayer.getNetworkObject().getOwnerId()
+                            == opponentPlayer.getNetworkObject().getOwnerId()
                     && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
-                mOppCapNode = node;
+                capitals[0] = node;
             } else if (node.getHexTile().get().getClaimant() != null
                     && node.getHexTile().get().getClaimantId()
                             == mPlayer.get().getNetworkObject().getOwnerId()
                     && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
-                mCapNode = node;
+                capitals[1] = node;
             }
         }
+        return capitals;
     }
 
     /** This will get the tile which needs to be aimed for */
-    private void getTile() {
+    private Reference<HexagonTile> getTile(Player opponentPlayer) {
+
+        
         boolean foundTile =
                 mPlayer.get()
                         .getMap()
@@ -198,7 +199,7 @@ public class CapitalAimer extends AiPlayer {
                                     if (tile.getBuilding() != null
                                             && tile.getBuilding().isCapital()
                                             && tile.getClaimantId()
-                                                    == mOpponentPlayer
+                                                    == opponentPlayer
                                                             .getNetworkObject()
                                                             .getOwnerId()) {
                                         mTileToAim = new Reference<HexagonTile>(tile);
@@ -210,11 +211,14 @@ public class CapitalAimer extends AiPlayer {
 
         if (!foundTile) {
             log.severe("We have a serious problem");
+            return null;
+        } else {
+            return mTileToAim;
         }
     }
 
     /** This will set the opponent to aim for */
-    private void findOpponent() {
+    private Player findOpponent() {
 
         boolean found =
                 mPlayer.get()
@@ -227,7 +231,7 @@ public class CapitalAimer extends AiPlayer {
                                                     != mPlayer.get()
                                                             .getNetworkObject()
                                                             .getOwnerId()) {
-                                        mOpponentPlayer = tile.getClaimant();
+                                        mOpponent = tile.getClaimant();
                                         return true;
                                     } else {
 
@@ -237,32 +241,47 @@ public class CapitalAimer extends AiPlayer {
 
         if (found == false) {
             log.severe("Houston we have a problem");
+            return null;
+        } else {
+            return mOpponent;
         }
+        
     }
 
     /** This will perform the A* Search and all related operations to it */
     private void aStar() {
+
+        // Will find the opponent to attack
+        log.info("Changing opponent");
+        Player opponentPlayer = findOpponent();
+
+        // Will find the tile to attack
+        Reference<HexagonTile> tileToAim = getTile(opponentPlayer);
+        log.info("Found Tile");
         // Creates a graph
-        Graph tempGraph =
+        Graph graph =
                 new Graph(
                         mPlayer.get().getMap(),
                         mPlayer.get().getNetworkObject().getOwnerId(),
-                        mTileToAim.get());
-        mGraph = tempGraph;
+                        tileToAim.get());
 
+        mGraph = graph;
         // Finds the capitals
-        findCapital();
+        Node[] capitals = findCapital(graph, opponentPlayer);
 
-        if (mCapNode == null || mOppCapNode == null) {
+        Node capNode = capitals[1];
+        Node oppCapNode = capitals[0];
+
+        if (capNode == null || oppCapNode == null) {
 
             // Null pointer check to try and not destroy the server
             mPath = new ArrayDeque<Integer>();
             return;
         }
         // Performs A* Search
-        AStar aStar = new AStar(mGraph);
+        AStar aStar = new AStar(graph);
         try {
-            aStar.aStarAlgorithm(mCapNode.getNode(), mOppCapNode.getNode());
+            aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
             log.severe("Completed");
         } catch (GraphNodeException e) {
             // TODO Shouldn't get here.
