@@ -762,6 +762,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // TODO: Write all checks.
 
+        //Checks you  own the building
+        if (building.getNetworkObject().getOwnerId() != getNetworkObject().getOwnerId()) {
+            log.info("It's not your building");
+            return false;
+        }
+
+
         return true;
     }
 
