@@ -744,6 +744,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // TODO: Add sell logic.
         log.info("SELL HERE.");
+
+        //Adds the tokens
+        mTokens.set(mTokens.get() + building.SELL_PRICE);
+
         return true;
     }
 
