@@ -50,6 +50,19 @@ public class Scene {
     }
 
     /**
+     * Finds a root object by its name
+     *
+     * @param name name of the object
+     * @return the object, if found. {@code null} otherwise.
+     */
+    public GameObject findRootObject(String name) {
+        return mGameObjects.stream()
+                .filter(go -> go.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Remove a single game object from the scene
      *
      * @param object The GameObject to be removed from the scene

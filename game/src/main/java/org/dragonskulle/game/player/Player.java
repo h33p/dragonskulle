@@ -21,6 +21,7 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.player.networkData.AttackData;
@@ -51,6 +52,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
+
+    /** Link to the current capital */
+    private Reference<Building> mCapital = null;
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
@@ -208,17 +212,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("X: " + direction.x + " Y: " + direction.y);
 
             // Convert to Axial coordinates
-            Vector3f coords = new Vector3f(direction.x, direction.y, 0f);
-            TransformHex.cartesianToAxial(coords);
+            Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
+            Vector2f axial = new Vector2f();
+            TransformHex.cartesianToAxial(cartesian, axial);
 
             // Add the building
-            Building buildingToBecomeCapital = createBuilding((int) coords.x, (int) coords.y);
+            Building buildingToBecomeCapital = createBuilding((int) axial.x, (int) axial.y);
             if (buildingToBecomeCapital == null) {
                 log.severe(
                         "Unable to place an initial capital building.  X = "
-                                + (int) coords.x
+                                + (int) axial.x
                                 + " Y = "
-                                + (int) coords.y);
+                                + (int) axial.y);
 
             } else if (!completed) {
                 buildingToBecomeCapital.setCapital(true);
@@ -297,6 +302,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
+        if (tile.getTileType() != TileType.LAND) {
+            return null;
+        }
+
         int playerId = getNetworkObject().getOwnerId();
         int template = getNetworkManager().findTemplateByName("building");
         Reference<NetworkObject> networkObject =
@@ -308,7 +317,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         GameObject gameObject = networkObject.get().getGameObject();
-        gameObject.getTransform(TransformHex.class).setPosition(qPos, rPos);
+        TransformHex transform = gameObject.getTransform(TransformHex.class);
+        transform.setPosition(qPos, rPos);
+        transform.setHeight(tile.getHeight());
         Reference<Building> building = gameObject.getComponent(Building.class);
 
         if (building == null || building.isValid() == false) {
@@ -404,7 +415,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
     public boolean checkBuildingOwnership(Building building) {
-        return building.getOwnerID() == getNetworkObject().getOwnerId();
+        return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
 
     /**
@@ -630,11 +641,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 defender.afterStatChange();
             }
 
-            // Change ownership
-            Player oldOwner = defender.getOwner();
-            oldOwner.removeOwnership(defender);
-            addOwnership(defender);
-
             defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
         }
         log.info("Done");
@@ -680,7 +686,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you're not attacking your own building
-        if (defender.getOwnerID() == attacker.getOwnerID()) {
+        if (defender.getOwnerId() == attacker.getOwnerId()) {
             log.info("ITS YOUR BUILDING DUMMY");
             return false;
         }
@@ -874,5 +880,32 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     public void setOwnsCapital(boolean hasCapital) {
         mOwnsCapital.set(hasCapital);
+    }
+
+    /**
+     * Retrieves the current capital, if one exists
+     *
+     * <p>This method exists on assumption that a player can only lose a capital, but it itself can
+     * not change.
+     *
+     * @return capital, if one exists
+     */
+    public Building getCapital() {
+        if (!mOwnsCapital.get()) return null;
+
+        if (mCapital != null && mCapital.isValid()) {
+            return mCapital.get();
+        }
+
+        mCapital =
+                mOwnedBuildings.values().stream()
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .filter(Building::isCapital)
+                        .map(b -> b.getReference(Building.class))
+                        .findFirst()
+                        .orElse(null);
+
+        return mCapital != null ? mCapital.get() : null;
     }
 }

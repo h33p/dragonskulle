@@ -3,8 +3,12 @@
 
 #include "pbr_frag_base.glsl"
 
+layout(location = LAST_IN_LOCATION + 1) in vec4 inOverlay;
+
 void main() {
 	vec4 color = pbr_base();
+
+	color.rgb = mix(color.rgb, inOverlay.rgb, inOverlay.a);
 
 	// Tonemap
 	// TODO: Do this in post-processing effect

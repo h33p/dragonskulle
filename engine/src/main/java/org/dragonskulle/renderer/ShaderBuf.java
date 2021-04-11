@@ -5,6 +5,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.util.shaderc.Shaderc.*;
 
 import java.nio.ByteBuffer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -79,6 +81,42 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
+     * Processes #include directives and produces final output
+     *
+     * @param data text data to process
+     * @param depth current depth of the file. A hard limit is imposed (currently 20) of how deep
+     *     the file is recursed before ignoring the directives
+     * @return preprocessed text data
+     */
+    private static String processIncludes(String data, int depth) {
+        if (depth >= 20) return data;
+
+        String lines[] = data.split("\\r?\\n");
+
+        // https://stackoverflow.com/a/26493311/13240247
+        Pattern pat = Pattern.compile("\\s*#include\\s*([<\"])([^>\"]+)([>\"])");
+
+        for (int i = 0; i < lines.length; i++) {
+            Matcher match = pat.matcher(lines[i]);
+            if (match.find()) {
+                // Second group contains the file
+                String m = match.group(2);
+
+                try (Resource<String> res =
+                        ResourceManager.getResource(String.class, "shaders/" + m)) {
+                    if (res == null) {
+                        continue;
+                    }
+
+                    lines[i] = processIncludes(res.get(), depth + 1);
+                }
+            }
+        }
+
+        return String.join("\n", lines);
+    }
+
+    /**
      * Compile a shader directly
      *
      * @param data shader bytecode
@@ -95,6 +133,8 @@ public class ShaderBuf implements NativeResource {
             log.warning("Failed to find resource named: " + name);
             return null;
         }
+
+        data = processIncludes(data, 0);
 
         long compiler = shaderc_compiler_initialize();
 

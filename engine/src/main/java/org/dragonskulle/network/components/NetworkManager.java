@@ -159,9 +159,11 @@ public class NetworkManager extends Component implements INetworkUpdate {
                             .map(e -> e.getNetworkObject());
         else if (mClientManager != null) obj = mClientManager.getNetworkObjects();
 
-        return obj.filter(Reference::isValid)
-                .map(Reference::get)
-                .filter(o -> o.getOwnerId() == netId);
+        return obj == null
+                ? null
+                : obj.filter(Reference::isValid)
+                        .map(Reference::get)
+                        .filter(o -> o.getOwnerId() == netId);
     }
 
     /** Called whenever client disconnects */

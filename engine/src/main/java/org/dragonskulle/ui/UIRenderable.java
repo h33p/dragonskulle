@@ -43,6 +43,8 @@ public class UIRenderable extends Renderable implements IOnAwake {
      */
     @Getter @Setter private float mWidthHeightBlend = 0f;
 
+    @Getter @Setter private float mDepthShift = 0f;
+
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
     private final Vector3f mTmpCursorPos = new Vector3f();
@@ -102,7 +104,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Override
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
-        return (float) -getGameObject().getDepth();
+        return (float) -getGameObject().getDepth() + mDepthShift;
     }
 
     public boolean cursorOver() {
