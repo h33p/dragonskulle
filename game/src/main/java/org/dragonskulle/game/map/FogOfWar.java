@@ -75,7 +75,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     @Override
     protected void onDestroy() {
         for (Reference<FogTile> fogTile : mFogTiles.values()) {
-            if (fogTile.isValid()) {
+            if (Reference.isValid(fogTile)) {
                 fogTile.get().getGameObject().destroy();
             }
         }
@@ -95,7 +95,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     private void setFog(HexagonTile tile, boolean enable) {
         Reference<FogTile> tileRef = mFogTiles.get(tile);
 
-        if (tileRef != null && tileRef.isValid()) {
+        if (Reference.isValid(tileRef)) {
             tileRef.get().setFog(enable);
             return;
         }

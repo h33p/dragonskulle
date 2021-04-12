@@ -40,7 +40,7 @@ public class FogTile extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
-        if (mRenderable == null || !mRenderable.isValid()) {
+        if (!Reference.isValid(mRenderable)) {
             return;
         }
 
