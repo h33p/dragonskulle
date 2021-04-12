@@ -748,10 +748,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        //Adds the tokens
+        // Adds the tokens
         mTokens.add(Building.SELL_PRICE);
 
-        //Remove the building
+        // Remove the building
         building.remove();
 
         return true;
@@ -770,13 +770,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        //Checks if the buildings owner is null
-        if (building.getOwner() == null){
+        // Checks if the buildings owner is null
+        if (building.getOwner() == null) {
             log.info("The owner of the building is null");
             return false;
         }
 
-        //Checks that you own the building
+        // Checks that you own the building
         isBuildingOwner(building);
 
         return true;
