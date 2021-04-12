@@ -141,7 +141,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         if (selection.mClear) {
             Reference<HighlightControls> controls = tile.getHighlightControls();
 
-            if (controls.isValid()) {
+            if (Reference.isValid(controls)) {
                 controls.get().setHighlight(0, 0, 0, 0);
             }
             return;
@@ -150,7 +150,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         Reference<HighlightControls> controls = tile.getHighlightControls();
 
-        if (controls.isValid()) {
+        if (Reference.isValid(controls)) {
             controls.get().setHighlight(selection.mOverlay);
         }
 

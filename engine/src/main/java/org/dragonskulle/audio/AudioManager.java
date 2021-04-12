@@ -239,7 +239,7 @@ public class AudioManager {
         }
 
         // First remove any references to AudioSources that are no longer valid
-        mAudioSources.removeIf(ref -> !ref.isValid());
+        mAudioSources.removeIf(Reference::isInvalid);
 
         // All references will be valid because they any invalid ones are removed at the start
         for (int i = 0; i < mAudioSources.size(); i++) {
@@ -247,7 +247,7 @@ public class AudioManager {
 
             // Get the distance of the source from the listener
             float distance = 100000f;
-            if (mAudioListener != null && mAudioListener.isValid()) {
+            if (Reference.isValid(mAudioListener)) {
                 distance = mAudioListener.get().getPosition().distance(audioSource.getPosition());
             }
 

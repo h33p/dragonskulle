@@ -312,7 +312,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Reference<NetworkObject> networkObject =
                 getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
-        if (networkObject == null || networkObject.isValid() == false) {
+        if (!Reference.isValid(networkObject)) {
             log.warning("Unable to create building: Could not create a Network Object.");
             return null;
         }
@@ -323,7 +323,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         transform.setHeight(tile.getHeight());
         Reference<Building> building = gameObject.getComponent(Building.class);
 
-        if (building == null || building.isValid() == false) {
+        if (!Reference.isValid(building)) {
             log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
@@ -447,7 +447,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (map == null) return false;
 
         mMap = map.getReference(HexagonMap.class);
-        if (mMap == null || mMap.isValid() == false) return false;
+        if (!Reference.isValid(mMap)) return false;
         return true;
     }
 
@@ -898,7 +898,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public Building getCapital() {
         if (!mOwnsCapital.get()) return null;
 
-        if (mCapital != null && mCapital.isValid()) {
+        if (Reference.isValid(mCapital)) {
             return mCapital.get();
         }
 
