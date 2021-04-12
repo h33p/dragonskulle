@@ -3,6 +3,7 @@ package org.dragonskulle.ui;
 
 import java.util.Collection;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
@@ -27,6 +28,8 @@ public class UIManager {
      * <p>It will always be the top most element.
      */
     @Getter private Reference<UIRenderable> mHoveredObject;
+    /** Global UI appearence */
+    @Getter @Setter private UIAppearence mAppearence = new UIAppearence();
 
     /**
      * Update which UI element is currently hovered by the cursor

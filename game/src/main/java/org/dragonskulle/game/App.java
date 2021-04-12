@@ -26,7 +26,6 @@ import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.ui.*;
 import org.joml.*;
@@ -162,16 +161,8 @@ public class App implements NativeResource {
                                             box.getTransform(TransformUI.class)
                                                     .setMargin(0f, 0f, 0f, 0.07f);
                                             box.addComponent(
-                                                    new UIRenderable(
-                                                            new SampledTexture(
-                                                                    "ui/wide_button.png")));
-                                            box.addComponent(
                                                     new UIButton(
-                                                            new UIText(
-                                                                    new Vector3f(0f, 0f, 0f),
-                                                                    Font.getFontResource(
-                                                                            "Rise of Kingdom.ttf"),
-                                                                    "Fill game with AI"),
+                                                            "Fill game with AI",
                                                             (a, b) -> {
                                                                 log.info("should fill with ai");
                                                                 networkManager
@@ -229,11 +220,7 @@ public class App implements NativeResource {
 
                                         muteUI.addComponent(
                                                 new UIButton(
-                                                        new UIText(
-                                                                new Vector3f(0f, 0f, 0f),
-                                                                Font.getFontResource(
-                                                                        "Rise of Kingdom.ttf"),
-                                                                "Toggle Mute"),
+                                                        "Toggle Mute",
                                                         (uiButton, __) -> {
                                                             effectSource
                                                                     .get()
@@ -266,11 +253,10 @@ public class App implements NativeResource {
                             t.setParentAnchor(0.4f, 0.05f, 0.8f, 0.05f);
                             t.setMargin(0f, 0f, 0f, 0.2f);
 
-                            title.addComponent(
-                                    new UIText(
-                                            new Vector3f(1f, 1f, 1f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
-                                            "Hex Wars"));
+                            UIText txt = new UIText("Hex Wars");
+                            txt.setSetMarginsOnAwake(false);
+
+                            title.addComponent(txt);
                         });
 
         mainMenu.addRootObject(gameTitle);
@@ -320,10 +306,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Join Game"),
+                                                "Join Game",
                                                 (uiButton, __) -> {
                                                     mainUI.setEnabled(false);
                                                     joinUI.setEnabled(true);
@@ -343,10 +326,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Host Game"),
+                                                "Host Game",
                                                 (uiButton, __) -> {
                                                     mainUI.setEnabled(false);
                                                     hostUI.setEnabled(true);
@@ -365,10 +345,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Settings"),
+                                                "Settings",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
@@ -386,10 +363,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Quit"),
+                                                "Quit",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                     Engine.getInstance().stop();
@@ -408,10 +382,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Quick Reload"),
+                                                "Quick Reload",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                     sReload = true;
@@ -479,10 +450,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Join (Temporary)"),
+                                                "Join (Temporary)",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                     networkManager
@@ -519,10 +487,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Cancel"),
+                                                "Cancel",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                     joinUI.setEnabled(false);
@@ -551,10 +516,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Host (Temporary)"),
+                                                "Host (Temporary)",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                     networkManager
@@ -575,10 +537,7 @@ public class App implements NativeResource {
 
                                 UIButton newButton =
                                         new UIButton(
-                                                new UIText(
-                                                        new Vector3f(0f, 0f, 0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Cancel"),
+                                                "Cancel",
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
                                                     hostUI.setEnabled(false);
@@ -607,6 +566,11 @@ public class App implements NativeResource {
      * @param args the input arguments
      */
     public static void main(String[] args) {
+
+        UIAppearence appearence = UIManager.getInstance().getAppearence();
+        appearence.getTextFont().free();
+        appearence.setTextFont(Font.getFontResource("Rise of Kingdom.ttf"));
+
         do {
             sReload = false;
             Settings.getInstance().loadSettings();

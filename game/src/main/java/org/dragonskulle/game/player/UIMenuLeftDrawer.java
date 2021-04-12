@@ -18,13 +18,10 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
-import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
 
 /** @author Oscar L */
 @Accessors(prefix = "m")
@@ -266,15 +263,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                                                                                     "ui/wide_button_new.png")));
                                                             UIButton button =
                                                                     new UIButton(
-                                                                            new UIText(
-                                                                                    new Vector3f(
-                                                                                            0f, 0f,
-                                                                                            0f),
-                                                                                    Font
-                                                                                            .getFontResource(
-                                                                                                    "Rise of Kingdom.ttf"),
-                                                                                    mButtonChild
-                                                                                            .getText()),
+                                                                            mButtonChild.getText(),
                                                                             mButtonChild
                                                                                     .getOnClick(),
                                                                             mButtonChild
