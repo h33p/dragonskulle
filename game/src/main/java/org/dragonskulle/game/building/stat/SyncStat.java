@@ -116,7 +116,7 @@ public class SyncStat extends SyncInt {
         super.deserialize(in);
 
         // The stats have changed, so call the building's afterStatChange.
-        if (mBuilding == null || mBuilding.isValid() == false) return;
+        if (!Reference.isValid(mBuilding)) return;
         mBuilding.get().afterStatChange();
     }
 

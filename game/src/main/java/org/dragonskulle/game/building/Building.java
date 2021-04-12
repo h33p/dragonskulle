@@ -110,7 +110,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             log.severe("Scene Map is null");
         } else {
             Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
-            if (mapCheck != null && mapCheck.isValid()) {
+            if (Reference.isValid(mapCheck)) {
                 mMap = mapCheck;
             } else {
                 log.severe("mapCheck is null.");
