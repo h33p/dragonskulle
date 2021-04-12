@@ -44,7 +44,7 @@ import org.lwjgl.vulkan.*;
  *
  * @author Aurimas Blažulionis
  *     <p>This renderer allows to draw {@code Renderable} objects on screen. Application needs to
- *     call {@link Renderer#onResized} when its window gets resized.
+ *     call {@link Renderer#onResize} when its window gets resized.
  *     <p>Use {@link Renderer#render} method to render a frame.
  *     <p>This renderer was originally based on<a href="https://vulkan-tutorial.com/">Vulkan
  *     Tutorial</a>, and was later rewritten with a much more manageable design.
