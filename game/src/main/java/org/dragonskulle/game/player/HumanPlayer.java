@@ -161,7 +161,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .orElse(null);
         }
 
-        if (mPlayer == null || !mPlayer.isValid()) return;
+        if (!Reference.isValid(mPlayer)) return;
 
         if (!mMovedCameraToCapital) {
             TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
@@ -181,14 +181,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             return;
         }
         // Update token
-        if (mPlayer.isValid()) {
+        if (Reference.isValid(mPlayer)) {
             updateVisibleTokens();
         }
     }
 
     private void updateVisibleTokens() {
         mLocalTokens = mPlayer.get().getTokens().get();
-        if (mTokenCounter != null && mTokenCounter.isValid()) {
+        if (Reference.isValid(mTokenCounter)) {
             mTokenCounter.get().setLabelReference(mLocalTokens);
         } else {
             mTokenCounter = getGameObject().getComponent(UITokenCounter.class);
@@ -199,7 +199,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
 
-        if (mMenuDrawer != null && mMenuDrawer.isValid()) {
+        if (Reference.isValid(mMenuDrawer)) {
             mMenuDrawer.get().setMenu(mScreenOn);
         }
 
@@ -297,7 +297,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         MapEffects effects = mMapEffects.get();
         if (!mPlayer.get().hasLost()) {
 
-            if (mFogOfWar != null && mFogOfWar.isValid()) {
+            if (Reference.isValid(mFogOfWar)) {
                 mFogOfWar.get().setActivePlayer(mPlayer);
             }
 
@@ -309,20 +309,20 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(null);
                     break;
                 case BUILDING_SELECTED_SCREEN:
-                    if (mMenuDrawer.isValid()) {
-                        if (attack_button != null) {
+                    if (Reference.isValid(mMenuDrawer)) {
+                        if (Reference.isValid(attack_button)) {
                             attack_button.get().setEnabled(true);
                             attack_button.get().getComponent(UIButton.class).get().enable();
                         }
-                        if (sell_button != null && sell_button.isValid()) {
+                        if (Reference.isValid(sell_button)) {
                             sell_button.get().setEnabled(true);
                             sell_button.get().getComponent(UIButton.class).get().enable();
                         }
-                        if (place_button != null && place_button.isValid()) {
+                        if (Reference.isValid(place_button)) {
                             place_button.get().setEnabled(false);
                             place_button.get().getComponent(UIButton.class).get().disable();
                         }
-                        if (upgrade_button != null && upgrade_button.isValid()) {
+                        if (Reference.isValid(upgrade_button)) {
                             upgrade_button.get().setEnabled(true);
                             upgrade_button.get().getComponent(UIButton.class).get().enable();
                         }
@@ -332,20 +332,20 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case TILE_SCREEN:
-                    if (mMenuDrawer.isValid()) {
-                        if (attack_button != null && attack_button.isValid()) {
+                    if (Reference.isValid(mMenuDrawer)) {
+                        if (Reference.isValid(attack_button)) {
                             attack_button.get().setEnabled(false);
                             attack_button.get().getComponent(UIButton.class).get().disable();
                         }
-                        if (sell_button != null && sell_button.isValid()) {
+                        if (Reference.isValid(sell_button)) {
                             sell_button.get().setEnabled(false);
                             sell_button.get().getComponent(UIButton.class).get().disable();
                         }
-                        if (place_button != null && place_button.isValid()) {
+                        if (Reference.isValid(place_button)) {
                             place_button.get().setEnabled(true);
                             place_button.get().getComponent(UIButton.class).get().enable();
                         }
-                        if (upgrade_button != null && upgrade_button.isValid()) {
+                        if (Reference.isValid(upgrade_button)) {
                             upgrade_button.get().setEnabled(false);
                             upgrade_button.get().getComponent(UIButton.class).get().disable();
                         }
@@ -355,20 +355,20 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             (fx) -> highlightSelectedTile(fx, StandardHighlightType.PLAIN));
                     break;
                 case ATTACK_SCREEN:
-                    if (mMenuDrawer.isValid()) {
-                        if (attack_button != null && attack_button.isValid()) {
+                    if (Reference.isValid(mMenuDrawer)) {
+                        if (Reference.isValid(attack_button)) {
                             attack_button.get().setEnabled(true);
                             attack_button.get().getComponent(UIButton.class).get().enable();
                         }
-                        if (sell_button != null && sell_button.isValid()) {
+                        if (Reference.isValid(sell_button)) {
                             sell_button.get().setEnabled(false);
                             sell_button.get().getComponent(UIButton.class).get().disable();
                         }
-                        if (place_button != null && place_button.isValid()) {
+                        if (Reference.isValid(place_button)) {
                             place_button.get().setEnabled(false);
                             place_button.get().getComponent(UIButton.class).get().disable();
                         }
-                        if (upgrade_button != null && upgrade_button.isValid()) {
+                        if (Reference.isValid(upgrade_button)) {
                             upgrade_button.get().setEnabled(false);
                             upgrade_button.get().getComponent(UIButton.class).get().disable();
                         }
@@ -420,7 +420,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * @return true if the player owns the buildingSelectedView, false if not
      */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
-        if (buildingToCheck == null || !buildingToCheck.isValid()) return false;
+        if (!Reference.isValid(buildingToCheck)) return false;
 
         return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;
     }
