@@ -2,6 +2,7 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -12,12 +13,8 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
-import org.dragonskulle.game.building.stat.SyncAttackStat;
-import org.dragonskulle.game.building.stat.SyncDefenceStat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
-import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
-import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
@@ -41,17 +38,19 @@ import org.joml.Vector3i;
 @Log
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
+    /** A map between {@link StatType}s and their {@link SyncStat} values. */
+    EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
+
     /** Stores the attack strength of the building. */
-    @Getter private final SyncAttackStat mAttack = new SyncAttackStat(this);
+    @Getter private final SyncStat mAttack = new SyncStat(this);
     /** Stores the defence strength of the building. */
-    @Getter private final SyncDefenceStat mDefence = new SyncDefenceStat(this);
+    @Getter private final SyncStat mDefence = new SyncStat(this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter
-    private final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
+    @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
     /** Stores the view range of the building. */
-    @Getter private final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
+    @Getter private final SyncStat mViewDistance = new SyncStat(this);
     /** Stores the attack range of the building. */
-    @Getter private final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
+    @Getter private final SyncStat mAttackDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -83,13 +82,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onAwake() {
-        // For debugging, set all stat levels to 5.
-        // TODO: Remove.
-        mAttack.setLevel(5);
-        mDefence.setLevel(5);
-        mTokenGeneration.setLevel(5);
-        mViewDistance.setLevel(5);
-        mAttackDistance.setLevel(5);
+        // Initialise each SyncStat with the relevant StatType.
+        initiliseStat(mAttack, StatType.ATTACK);
+        initiliseStat(mDefence, StatType.DEFENCE);
+        initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
+        initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
+        initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
     }
 
     @Override
@@ -350,22 +348,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an ArrayList of Stats that the Building has.
-     *
-     * @return An ArrayList of Stats.
-     */
-    public ArrayList<SyncStat<?>> getStats() {
-        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>();
-        stats.add(mAttack);
-        stats.add(mDefence);
-        stats.add(mTokenGeneration);
-        stats.add(mViewDistance);
-        stats.add(mAttackDistance);
-
-        return stats;
-    }
-
-    /**
      * Get the ID of the owner of the building.
      *
      * @return The ID of the owner.
@@ -425,8 +407,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /**
      * Remove this building from the game.
      *
-     * <p>
-     *
      * <ul>
      *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
      *   <li>Removes any links to any {@link HexagonTile}s.
@@ -465,17 +445,69 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int cost = 20;
 
         // Update cost on different stats
-        cost += (mDefence.get() * 3);
-        cost += (mAttack.get() * 2);
-        cost += (mTokenGeneration.get());
-        cost += (mViewDistance.get());
-        cost += (mAttackDistance.get());
+        cost += (mDefence.getLevel() * 3);
+        cost += (mAttack.getLevel() * 2);
+        cost += (mTokenGeneration.getLevel());
+        cost += (mViewDistance.getLevel());
+        cost += (mAttackDistance.getLevel());
 
         if (isCapital()) {
             cost += 10;
         }
 
         return cost;
+    }
+
+    /**
+     * Initialise a {@link SyncStat} via specifying a {@link StatType}. The SyncStat will take on
+     * the properties of the StatType, and be stored in {@link #mStats} under the StatType.
+     *
+     * @param stat The SyncStat.
+     * @param type The type of stat the SyncStat should be.
+     */
+    private void initiliseStat(SyncStat stat, StatType type) {
+        // Set the value calculator of the SyncStat.
+        stat.setValueCalculator(type.getValueCalculator());
+        // Store the stat.
+        storeStat(type, stat);
+    }
+
+    /**
+     * Store a {@link SyncStat} in {@link #mStats} using a {@link StatType} as the key.
+     *
+     * @param type The type of stat to be stored.
+     * @param stat The relevant SyncStat.
+     */
+    private void storeStat(StatType type, SyncStat stat) {
+        if (type == null || stat == null) {
+            log.warning("Unable to store stat: type or SyncStat is null.");
+            return;
+        }
+        mStats.put(type, stat);
+    }
+
+    /**
+     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant type.
+     *
+     * @param type The type of the desired stat.
+     * @return The SyncStat, otherwise {@code null}.
+     */
+    public SyncStat getStat(StatType type) {
+        if (type == null) {
+            log.warning("Unable to get stat: type is null.");
+            return null;
+        }
+        return mStats.get(type);
+    }
+
+    /**
+     * Get an {@link ArrayList} of {@link SyncStat}s that the Building has.
+     *
+     * @return An ArrayList of Stats.
+     */
+    public ArrayList<SyncStat> getStats() {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>(mStats.values());
+        return stats;
     }
 
     @Override
