@@ -455,7 +455,7 @@ public class App implements NativeResource {
                                     new TransformUI(true),
                                     (text) -> {
                                         text.getTransform(TransformUI.class)
-                                                .setParentAnchor(0f, 0.12f, 0.5f, 0.12f);
+                                                .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
                                         text.getTransform(TransformUI.class)
                                                 .setMargin(0f, 0f, 0f, 0.07f);
                                         text.addComponent(
@@ -469,12 +469,24 @@ public class App implements NativeResource {
 
                     connectingTextRef.get().setEnabled(false);
 
+                    UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
+
+                    bg.buildChild(
+                            "ipInput",
+                            new TransformUI(true),
+                            (input) -> {
+                                input.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                                input.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                                input.addComponent(ibox);
+                            });
+
                     bg.buildChild(
                             "joinButton",
                             new TransformUI(true),
                             (button) -> {
                                 button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
+                                        .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
                                 button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
 
                                 UIButton newButton =
@@ -485,24 +497,51 @@ public class App implements NativeResource {
                                                         "Join (Temporary)"),
                                                 (uiButton, __) -> {
                                                     effectSource.get().playSound(BUTTON_SFX_ID);
-                                                    networkManager
-                                                            .get()
-                                                            .createClient(
-                                                                    sIP,
-                                                                    sPort,
-                                                                    (gameScene, manager, netID) -> {
-                                                                        if (netID >= 0) {
-                                                                            onConnectedClient(
-                                                                                    gameScene,
-                                                                                    manager, netID);
-                                                                        } else if (connectingTextRef
-                                                                                .isValid()) {
-                                                                            connectingTextRef
-                                                                                    .get()
-                                                                                    .setEnabled(
-                                                                                            false);
-                                                                        }
-                                                                    });
+
+                                                    int port = sPort;
+
+                                                    try {
+                                                        String text = ibox.getInput();
+                                                        String[] elems = text.split(":");
+                                                        String ip = elems[0];
+                                                        String portText =
+                                                                elems.length > 1 ? elems[1] : null;
+
+                                                        if (portText != null) {
+                                                            port = Integer.parseInt(portText);
+                                                        }
+
+                                                        networkManager
+                                                                .get()
+                                                                .createClient(
+                                                                        ip,
+                                                                        port,
+                                                                        (gameScene,
+                                                                                manager,
+                                                                                netID) -> {
+                                                                            if (netID >= 0) {
+                                                                                onConnectedClient(
+                                                                                        gameScene,
+                                                                                        manager,
+                                                                                        netID);
+                                                                            } else if (connectingTextRef
+                                                                                    .isValid()) {
+                                                                                connectingTextRef
+                                                                                        .get()
+                                                                                        .setEnabled(
+                                                                                                false);
+                                                                            }
+                                                                        });
+                                                    } catch (Exception e) {
+
+                                                        e.printStackTrace();
+
+                                                        if (connectingTextRef.isValid())
+                                                            connectingTextRef
+                                                                    .get()
+                                                                    .setText("Invalid input!");
+                                                    }
+
                                                     if (connectingTextRef.isValid())
                                                         connectingTextRef.get().setEnabled(true);
                                                 });

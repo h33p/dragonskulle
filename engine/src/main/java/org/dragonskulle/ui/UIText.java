@@ -4,10 +4,12 @@ package org.dragonskulle.ui;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
@@ -29,9 +31,15 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIText extends Renderable implements IOnAwake {
+public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     @Getter private String mText = "";
     @Getter private Resource<Font> mFont;
+
+    @Getter(AccessLevel.PACKAGE)
+    private int mCursorPos = -1;
+
+    private float mCursorTime = 0f;
+    private float mInterval = 0.5f;
 
     @Getter @Setter private float mVerticalAlignment = 0f;
     @Getter @Setter private float mHorizontalAlignment = 0f;
@@ -40,9 +48,24 @@ public class UIText extends Renderable implements IOnAwake {
 
     private float mTargetAspectRatio = 0f;
 
+    private Mesh mNormalText;
+    private Mesh mTextWithCursor;
+
     @Override
     public void onAwake() {
         setText(mText);
+    }
+
+    @Override
+    public void frameUpdate(float deltaTime) {
+        if (mCursorPos < 0) return;
+
+        float delta = Engine.getInstance().getCurTime() - mCursorTime;
+
+        float mod = (delta % mInterval) / mInterval;
+
+        if (mod > 0.5f) setMesh(mNormalText);
+        else setMesh(mTextWithCursor);
     }
 
     /** Constructor for UIText */
@@ -135,18 +158,39 @@ public class UIText extends Renderable implements IOnAwake {
     public void setText(String text) {
         if (mText.equals(text) && getMesh() != null) return;
         mText = text;
-        setMesh(buildMesh());
+
+        buildMesh();
+
+        setMesh(mCursorPos < 0 ? mNormalText : mTextWithCursor);
+
+        TransformUI transform = getGameObject().getTransform(TransformUI.class);
+        if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
+    }
+
+    void setCursor(int position) {
+        if (mCursorPos == position) {
+            return;
+        }
+
+        mCursorPos = position;
+        mCursorTime = Engine.getInstance().getCurTime();
+
+        buildMesh();
+
+        setMesh(mCursorPos < 0 ? mNormalText : mTextWithCursor);
 
         TransformUI transform = getGameObject().getTransform(TransformUI.class);
         if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
     }
 
     /** Builds a new mesh */
-    private Mesh buildMesh() {
+    private void buildMesh() {
         Font font = mFont.get();
 
         ArrayList<Vertex> vertices = new ArrayList<>(mText.length() * 4);
         ArrayList<Integer> indices = new ArrayList<>(mText.length() * 6);
+        ArrayList<Vector2f> positions = new ArrayList<>(mText.length());
+        ArrayList<Vector2f> positions2 = new ArrayList<>(mText.length());
         final int[] pos = {0, 0};
         final float scale = 0.003f;
 
@@ -157,6 +201,9 @@ public class UIText extends Renderable implements IOnAwake {
         Vector2f endBox = new Vector2f();
         Vector2f startUV = new Vector2f();
         Vector2f endUV = new Vector2f();
+
+        positions.add(new Vector2f(pos[0], pos[1]));
+        positions2.add(new Vector2f());
 
         // Put every character onto the mesh
         mText.chars()
@@ -175,7 +222,13 @@ public class UIText extends Renderable implements IOnAwake {
                                 bbmax.max(endBox);
                                 Mesh.addQuadToList(
                                         vertices, indices, startBox, endBox, startUV, endUV);
+                                positions2
+                                        .get(positions2.size() - 1)
+                                        .set(startBox.x, pos[1] * scale);
+                                positions2.add(new Vector2f(endBox.x, pos[1] * scale));
                             }
+
+                            positions.add(new Vector2f(pos[0], pos[1]));
                         });
 
         float width = bbmax.x() - bbmin.x();
@@ -210,7 +263,43 @@ public class UIText extends Renderable implements IOnAwake {
 
         mTargetAspectRatio = aspect;
 
-        return new Mesh(vertices.stream().toArray(Vertex[]::new), indicesArray);
+        mNormalText = new Mesh(vertices.stream().toArray(Vertex[]::new), indicesArray);
+
+        final boolean withCursor = mCursorPos >= 0 && mCursorPos <= mText.length();
+
+        if (withCursor) {
+            Vector2f p = positions.get(mCursorPos);
+            pos[0] = (int) p.x;
+            pos[1] = (int) p.y;
+            Vector2f p2 = positions2.get(mCursorPos);
+
+            font.getGlyph('|', pos, startBox, endBox, startUV, endUV);
+            startBox.mul(scale);
+            endBox.mul(scale);
+            float xdiff = p2.x - startBox.x - 0.01f;
+            startBox.x += xdiff;
+            endBox.x += xdiff;
+
+            startBox.sub(alignmentCenter.x, alignmentCenter.y);
+            startBox.mul(widthMul, heightMul);
+
+            endBox.sub(alignmentCenter.x, alignmentCenter.y);
+            endBox.mul(widthMul, heightMul);
+
+            Mesh.addQuadToList(
+                    vertices,
+                    indices,
+                    startBox,
+                    endBox,
+                    startUV,
+                    endUV,
+                    new Vector4f(1f, 1f, 1f, 0.8f));
+
+            indicesArray = indices.stream().mapToInt(Integer::intValue).toArray();
+            mTextWithCursor = new Mesh(vertices.stream().toArray(Vertex[]::new), indicesArray);
+        } else {
+            mTextWithCursor = null;
+        }
     }
 
     @Override
