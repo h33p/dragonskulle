@@ -286,27 +286,58 @@ class DrawCallState implements NativeResource {
                         shaderSet, descriptorSetLayouts, device, extent, renderPass, msaaCount);
     }
 
+    /**
+     * Get the list of draw data
+     *
+     * @return {@code mDrawData.values()}
+     */
     public Collection<DrawData> getDrawData() {
         return mDrawData.values();
     }
 
+    /**
+     * Start draw data
+     *
+     * <p>This method will prepare internal data structures for a new frame.
+     */
     public void startDrawData() {
         for (DrawData d : mDrawData.values()) d.mObjects.clear();
 
         mDrawData.entrySet().removeIf(e -> e.getValue().getMesh().getRefCount() <= 0);
     }
 
+    /**
+     * Ends draw data
+     *
+     * @param the index of framebuffer image that's used this frame
+     */
     public void endDrawData(int imageIndex) {
         Long descriptorSet =
                 mDescriptorPool == null ? null : mDescriptorPool.getDescriptorSet(imageIndex);
         for (DrawData d : mDrawData.values()) d.endDrawData(imageIndex, descriptorSet);
     }
 
+    /**
+     * Should this class be removed
+     *
+     * @return whether this class should be removed. If {@code true}, it has automatically freed
+     *     it's data.
+     */
     public boolean shouldCleanup() {
         mDrawData.entrySet().removeIf(e -> e.getValue().mObjects.isEmpty());
+
+        if (mDrawData.isEmpty()) {
+            free();
+        }
+
         return mDrawData.isEmpty();
     }
 
+    /**
+     * Add a renderable to the draw call state
+     *
+     * @param object object to add
+     */
     public void addObject(Renderable object) {
         IMaterial material = object.getMaterial();
         mTmpDrawDataHashKey.setData(material, object);
@@ -335,21 +366,50 @@ class DrawCallState implements NativeResource {
         drawData.mObjects.add(object);
     }
 
+    /**
+     * Update the mesh buffer with new data
+     *
+     * @param meshBuffer mesh buffer to update
+     */
     public void updateMeshBuffer(VulkanMeshBuffer meshBuffer) {
         for (DrawData data : mDrawData.values())
             data.mMeshDescriptor = meshBuffer.addMesh(data.mMesh);
     }
 
+    /**
+     * Sets the instance buffer offset
+     *
+     * <p>Call this method to set an instance buffer offset. It will reserve enough space for itself
+     * and then return the next free offset within the buffer.
+     *
+     * @param offset input offset
+     * @return offset + any data this state needs
+     */
     public int setInstanceBufferOffset(int offset) {
         for (DrawData d : mDrawData.values())
             offset = d.setInstanceBufferOffset(mShaderSet, offset);
         return offset;
     }
 
+    /**
+     * Update the instance buffer with new data
+     *
+     * @param buffer the instance buffer
+     * @param lights lights in the world
+     */
     public void updateInstanceBuffer(ByteBuffer buffer, List<Light> lights) {
         for (DrawData d : mDrawData.values()) d.updateInstanceBuffer(mShaderSet, buffer, lights);
     }
 
+    /**
+     * Update the instance buffer with new data (slow method)
+     *
+     * <p>This method is a fallback in case mapping all memory fails
+     *
+     * @param pData temporary data pointer
+     * @param memory instance buffer memory handle
+     * @param lights lights in the world
+     */
     public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory, List<Light> lights) {
         for (DrawData d : mDrawData.values())
             d.slowUpdateInstanceBuffer(mShaderSet, pData, memory, lights);
@@ -361,6 +421,14 @@ class DrawCallState implements NativeResource {
         mPipeline = null;
     }
 
+    /**
+     * Combine the descriptor sets into one long array
+     *
+     * @param arr previous array. It will be returned out if its length is the same as the number of
+     *     non-null entries
+     * @param entries the entries that will be put into the array
+     * @return all non-null entries as an array
+     */
     private static long[] combineDescriptorSets(long[] arr, Long... entries) {
         int elemCount = 0;
         for (Long l : entries) if (l != null) elemCount++;
@@ -370,6 +438,12 @@ class DrawCallState implements NativeResource {
         return ret;
     }
 
+    /**
+     * Combine the descriptor sets into one long array
+     *
+     * @param entries the entries that will be put into the array
+     * @return all non-null entries as an array
+     */
     private static long[] combineDescriptorSetLayouts(Long... layouts) {
         return combineDescriptorSets(null, layouts);
     }
