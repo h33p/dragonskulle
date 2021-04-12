@@ -47,10 +47,11 @@ public class ReferenceTest {
         Object obj1 = new Object();
         Reference<Object> ref = new Reference<>(obj1);
 
-        Assert.assertTrue("Reference was invalid when it was actually valid", ref.isValid());
+        Assert.assertTrue(
+                "Reference was invalid when it was actually valid", Reference.isValid(ref));
 
         ref.clear();
 
-        Assert.assertFalse("Reference was still valid after being cleared", ref.isValid());
+        Assert.assertFalse("Reference was still valid after being cleared", Reference.isValid(ref));
     }
 }

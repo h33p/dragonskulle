@@ -25,7 +25,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        if (sliderReference.isValid()) {
+        if (Reference.isValid(sliderReference)) {
             ((UIVerticalSlider) sliderReference.get())
                     .setValue(
                             (float)
@@ -57,7 +57,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
         UIVerticalSlider newSlider =
                 new UIVerticalSlider(
                         (uiSlider, val) -> {
-                            if (scrollRef != null && scrollRef.isValid()) {
+                            if (Reference.isValid(scrollRef)) {
                                 scrollRef
                                         .get()
                                         .setTargetLerpTime(
