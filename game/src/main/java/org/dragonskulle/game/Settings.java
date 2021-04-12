@@ -36,9 +36,9 @@ public class Settings {
      */
     void loadSettings(String filePath) {
         try {
-            File sFile = new File(filePath);
-            if (sFile.exists()) {
-                mSettings = new ObjectMapper().readValue(sFile, HashMap.class);
+            File file = new File(filePath);
+            if (file.exists()) {
+                mSettings = new ObjectMapper().readValue(file, HashMap.class);
                 log.info("Loaded Settings");
                 sIsLoaded = true;
             } else {
