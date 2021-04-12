@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import lombok.Getter;
@@ -48,7 +47,9 @@ class BoxPacker<T extends IBox> {
             return null;
         } else if (node.mLeft != null && node.mRight != null) {
             BoxNode<T> ret = pack(node.mLeft, newBox, gap);
-            if (ret == null) ret = pack(node.mRight, newBox, gap);
+            if (ret == null) {
+                ret = pack(node.mRight, newBox, gap);
+            }
             return ret;
         } else {
 

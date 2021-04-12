@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components;
 
 import java.io.DataInputStream;
@@ -225,10 +224,9 @@ public class NetworkObject extends Component {
      * Updates itself from stream authored by server.
      *
      * @param stream the stream containing the payload
-     * @throws IOException thrown if failed to read client streams
      * @return the owner id of the network object
+     * @throws IOException thrown if failed to read client streams
      */
-
     public int updateFromBytes(DataInputStream stream) throws IOException {
         int ownerId = stream.readInt();
         mOwnerId = ownerId;
@@ -327,7 +325,6 @@ public class NetworkObject extends Component {
      * @param forceUpdate whether to force update all components
      * @return the bytes to be broadcasted
      */
-    
     private void generateUpdateBytes(
             DataOutputStream stream, boolean[] didChildUpdateMask, boolean forceUpdate)
             throws IOException {

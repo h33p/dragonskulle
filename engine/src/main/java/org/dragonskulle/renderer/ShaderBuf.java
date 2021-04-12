@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -16,6 +15,7 @@ import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_bytes;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_compilation_status;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_error_message;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
+
 import java.nio.ByteBuffer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

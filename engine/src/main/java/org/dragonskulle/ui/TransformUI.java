@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.ui;
 
 import lombok.Getter;
@@ -22,7 +21,6 @@ import org.joml.Vector4fc;
  * UI Transform class.
  *
  * @author Aurimas Blažulionis
- *
  *     <p>This transform class overrides several {@link Transform} methods to provide screen aspect
  *     ratio correction.
  */

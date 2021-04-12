@@ -1,14 +1,11 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.map;
 
 import java.util.Arrays;
 import lombok.extern.java.Log;
 
 /**
- *
  * @author Leela Muppala
- *
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
  */

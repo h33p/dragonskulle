@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import java.io.Serializable;

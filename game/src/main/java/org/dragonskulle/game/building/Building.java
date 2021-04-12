@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
@@ -316,7 +315,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         Vector3i position = getPosition();
         return position == null ? null : map.getTile(position.x(), position.y());
-
     }
 
     /**

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.player;
 
 import org.dragonskulle.components.Component;
@@ -13,10 +12,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIVerticalSlider;
 import org.dragonskulle.utils.MathUtils;
 
-/**
- *
- * @author Oscar L
- * */
+/** @author Oscar L */
 public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnStart {
     private Reference<ScrollTranslate> mScrollRef;
     private Reference<Component> mSliderReference;

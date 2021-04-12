@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components.sync;
 
 import java.io.DataInputStream;
@@ -8,9 +7,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * @author Oscar L The type Sync Long.
- * */
+/** @author Oscar L The type Sync Long. */
 public class SyncLong implements ISyncVar, Serializable {
 
     /** The Data. */

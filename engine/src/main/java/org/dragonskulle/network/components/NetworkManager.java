@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components;
 
 import java.io.IOException;
@@ -17,7 +16,6 @@ import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.ServerClient;
 
 /**
- *
  * @author Aurimas Blažulionis
  * @author Oscar L
  */
@@ -52,7 +50,7 @@ public class NetworkManager extends Component implements INetworkUpdate {
     /** Registered spawnable templates. */
     @Getter(AccessLevel.PACKAGE)
     protected final TemplateManager mSpawnableTemplates;
-    /** Target game scene */
+    /** Target game scene. */
     @Getter(AccessLevel.PACKAGE)
     private Scene mGameScene;
 

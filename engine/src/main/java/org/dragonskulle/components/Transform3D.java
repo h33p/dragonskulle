@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.components;
 
 import org.dragonskulle.utils.MathUtils;
@@ -105,18 +104,6 @@ public class Transform3D extends Transform {
     /**
      * Set the rotation of the object relative to the parent.
      *
-     * @param rotation Vector3f containing the desired rotation
-     */
-    public void setRotationDeg(Vector3fc rotation) {
-        setRotation(
-                rotation.x() * MathUtils.DEG_TO_RAD,
-                rotation.y() * MathUtils.DEG_TO_RAD,
-                rotation.z() * MathUtils.DEG_TO_RAD);
-    }
-
-    /**
-     * Set the rotation of the object relative to the parent.
-     *
      * @param x X coordinate of rotation
      * @param y Y coordinate of rotation
      * @param z Z coordinate of rotation
@@ -124,6 +111,18 @@ public class Transform3D extends Transform {
     public void setRotation(float x, float y, float z) {
         mRotation.identity().rotateXYZ(x, y, z);
         setUpdateFlag();
+    }
+
+    /**
+     * Set the rotation of the object relative to the parent.
+     *
+     * @param rotation Vector3f containing the desired rotation
+     */
+    public void setRotationDeg(Vector3fc rotation) {
+        setRotation(
+                rotation.x() * MathUtils.DEG_TO_RAD,
+                rotation.y() * MathUtils.DEG_TO_RAD,
+                rotation.z() * MathUtils.DEG_TO_RAD);
     }
 
     /**
@@ -364,24 +363,6 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Sets the local 3D transformation
-     *
-     * <p>This method sets the local transformation of the object to match the input data.
-     *
-     * @param position target local position to set
-     * @param rotation target local rotation to set
-     * @param scale target local scale to set
-     */
-    @Override
-    public void setLocal3DTransformation(
-            Vector3fc position, Quaternionfc rotation, Vector3fc scale) {
-        mPosition.set(position);
-        mRotation.set(rotation);
-        mScale.set(scale);
-        setUpdateFlag();
-    }
-
-    /**
      * Get the rotation of the transform in the world as a Quaternion.
      *
      * @return Quaternionf containing the rotation of the transform
@@ -459,6 +440,24 @@ public class Transform3D extends Transform {
      */
     public void getScale(Vector3f dest) {
         getWorldMatrix().getScale(dest);
+    }
+
+    /**
+     * Sets the local 3D transformation
+     *
+     * <p>This method sets the local transformation of the object to match the input data.
+     *
+     * @param position target local position to set
+     * @param rotation target local rotation to set
+     * @param scale target local scale to set
+     */
+    @Override
+    public void setLocal3DTransformation(
+            Vector3fc position, Quaternionfc rotation, Vector3fc scale) {
+        mPosition.set(position);
+        mRotation.set(rotation);
+        mScale.set(scale);
+        setUpdateFlag();
     }
 
     @Override

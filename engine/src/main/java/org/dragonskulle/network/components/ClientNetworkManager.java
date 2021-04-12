@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components;
 
 import java.io.DataInputStream;
@@ -23,7 +22,6 @@ import org.dragonskulle.network.components.NetworkManager.IObjectOwnerModifiedEv
 import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 
 /**
- *
  * @author Aurimas Blažulionis
  * @author Oscar L
  */

@@ -1,9 +1,7 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
-/**
- *  @author Oscar L The Network config, more configuration van be moved here. */
+/** @author Oscar L The Network config, more configuration van be moved here. */
 public class NetworkConfig {
     public static final int TERMINATE_BYTES_LENGTH = 10;
 

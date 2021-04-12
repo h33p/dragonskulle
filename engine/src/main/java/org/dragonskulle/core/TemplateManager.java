@@ -1,19 +1,16 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.experimental.Accessors;
 
 /**
  * Spawnable template manager.
  *
  * @author Aurimas Blažulionis
- *
  *     <p>This class acts as a collection of spawnable object templates.
  */
 @Accessors(prefix = "m")

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components.requests;
 
 import java.io.ByteArrayOutputStream;

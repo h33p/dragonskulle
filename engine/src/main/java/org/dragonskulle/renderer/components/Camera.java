@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer.components;
 
 import lombok.Getter;
@@ -42,7 +41,7 @@ public class Camera extends Component implements IFrameUpdate {
      */
     public float mNearPlane = 0.1f;
     /**
-     * Controls how far the furthest objects can be from the camera to render
+     * Controls how far the furthest objects can be from the camera to render.
      *
      * <p>Note that too large value for farPlane may lead to visual artifacting
      */

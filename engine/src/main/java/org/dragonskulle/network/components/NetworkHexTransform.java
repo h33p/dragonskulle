@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components;
 
 import lombok.Getter;
@@ -38,11 +37,15 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (getNetworkObject().isServer()) setHexPosition();
+        if (getNetworkObject().isServer()) {
+            setHexPosition();
+        }
     }
 
     private void setHexPosition() {
-        if (mHexTransform == null) mHexTransform = getGameObject().getTransform(TransformHex.class);
+        if (mHexTransform == null) {
+            mHexTransform = getGameObject().getTransform(TransformHex.class);
+        }
 
         if (mHexTransform != null) {
             if (getNetworkObject().isServer()) {

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import java.io.BufferedInputStream;
@@ -187,7 +186,6 @@ public class ServerClient {
     /**
      * Parses a network message from bytes and executes the correct functions. This is for server
      * use.
-     *
      */
     private void parseRequest() throws IOException {
         byte messageType = mInput.readByte();

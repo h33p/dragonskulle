@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components;
 
 import java.io.DataInputStream;
@@ -20,10 +19,8 @@ import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.utils.IOUtils;
 
 /**
- *
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
  */
-
 @Accessors(prefix = "m")
 @Log
 public abstract class NetworkableComponent extends Component {
@@ -269,7 +266,9 @@ public abstract class NetworkableComponent extends Component {
      * @return The NetworkManager, or {@code null}.
      */
     public NetworkManager getNetworkManager() {
-        if (mNetworkObject == null) return null;
+        if (mNetworkObject == null) {
+            return null;
+        }
         return mNetworkObject.getNetworkManager();
     }
 }

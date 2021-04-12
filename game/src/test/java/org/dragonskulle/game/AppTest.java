@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game;
 
 import static org.junit.Assert.assertTrue;

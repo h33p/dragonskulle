@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
@@ -120,6 +119,7 @@ import static org.lwjgl.vulkan.VK10.vkQueueWaitIdle;
 import static org.lwjgl.vulkan.VK10.vkResetFences;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 import static org.lwjgl.vulkan.VK10.vkWaitForFences;
+
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -186,10 +186,8 @@ import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
  * Vulkan renderer.
  *
  * @author Aurimas Blažulionis
- *
  *     <p>This renderer allows to draw {@code Renderable} objects on screen. Application needs to
  *     call {@code onResized} when its window gets resized.
- *
  *     <p>This renderer was originally based on<a href="https://vulkan-tutorial.com/">Vulkan
  *     Tutorial</a>, and was later rewritten with a much more manageable design.
  */
@@ -266,20 +264,20 @@ public class Renderer implements NativeResource {
 
     /** Synchronization objects for when multiple frames are rendered at a time. */
     private class FrameContext {
-        public long imageAvailableSemaphore;
-        public long renderFinishedSemaphore;
-        public long inFlightFence;
+        public long mImageAvailableSemaphore;
+        public long mRenderFinishedSemaphore;
+        public long mInFlightFence;
     }
 
     /** All state for a single frame. */
     private static class ImageContext {
-        public VkCommandBuffer commandBuffer;
-        public long inFlightFence;
-        public long framebuffer;
-        public int imageIndex;
+        public VkCommandBuffer mCommandBuffer;
+        public long mInFlightFence;
+        public long mFramebuffer;
+        public int mImageIndex;
 
-        public int instanceBufferSize;
-        public VulkanBuffer instanceBuffer;
+        public int mInstanceBufferSize;
+        public VulkanBuffer mInstanceBuffer;
 
         private long mImageView;
         private VkDevice mDevice;
@@ -287,14 +285,14 @@ public class Renderer implements NativeResource {
         /** Create a image context. */
         private ImageContext(
                 Renderer renderer, VulkanImage image, int imageIndex, long commandBuffer) {
-            this.commandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
+            this.mCommandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
             this.mImageView = image.createImageView();
-            this.framebuffer = createFramebuffer(renderer);
-            this.imageIndex = imageIndex;
+            this.mFramebuffer = createFramebuffer(renderer);
+            this.mImageIndex = imageIndex;
 
             this.mDevice = renderer.mDevice;
 
-            instanceBufferSize = 0;
+            mInstanceBufferSize = 0;
         }
 
         /** Create a framebuffer from image view. */
@@ -328,10 +326,10 @@ public class Renderer implements NativeResource {
         }
 
         private void free() {
-            if (instanceBuffer != null) {
-                instanceBuffer.free();
+            if (mInstanceBuffer != null) {
+                mInstanceBuffer.free();
             }
-            vkDestroyFramebuffer(mDevice, framebuffer, null);
+            vkDestroyFramebuffer(mDevice, mFramebuffer, null);
             vkDestroyImageView(mDevice, mImageView, null);
         }
     }
@@ -396,7 +394,7 @@ public class Renderer implements NativeResource {
             FrameContext ctx = mFrameContexts[mFrameCounter];
             mFrameCounter = (mFrameCounter + 1) % FRAMES_IN_FLIGHT;
 
-            vkWaitForFences(mDevice, ctx.inFlightFence, true, UINT64_MAX);
+            vkWaitForFences(mDevice, ctx.mInFlightFence, true, UINT64_MAX);
 
             IntBuffer pImageIndex = stack.ints(0);
             int res =
@@ -404,7 +402,7 @@ public class Renderer implements NativeResource {
                             mDevice,
                             mSwapchain,
                             UINT64_MAX,
-                            ctx.imageAvailableSemaphore,
+                            ctx.mImageAvailableSemaphore,
                             VK_NULL_HANDLE,
                             pImageIndex);
             final int imageIndex = pImageIndex.get(0);
@@ -415,11 +413,11 @@ public class Renderer implements NativeResource {
                 return;
             }
 
-            if (image.inFlightFence != 0) {
-                vkWaitForFences(mDevice, image.inFlightFence, true, UINT64_MAX);
+            if (image.mInFlightFence != 0) {
+                vkWaitForFences(mDevice, image.mInFlightFence, true, UINT64_MAX);
             }
 
-            image.inFlightFence = ctx.inFlightFence;
+            image.mInFlightFence = ctx.mInFlightFence;
 
             VulkanMeshBuffer discardedBuffer = mDiscardedMeshBuffers.remove(imageIndex);
 
@@ -433,24 +431,24 @@ public class Renderer implements NativeResource {
             VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
             submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
 
-            LongBuffer waitSemaphores = stack.longs(ctx.imageAvailableSemaphore);
+            LongBuffer waitSemaphores = stack.longs(ctx.mImageAvailableSemaphore);
             IntBuffer waitStages = stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            PointerBuffer commandBuffer = stack.pointers(image.commandBuffer);
+            PointerBuffer commandBuffer = stack.pointers(image.mCommandBuffer);
 
             submitInfo.waitSemaphoreCount(1);
             submitInfo.pWaitSemaphores(waitSemaphores);
             submitInfo.pWaitDstStageMask(waitStages);
             submitInfo.pCommandBuffers(commandBuffer);
 
-            LongBuffer signalSemaphores = stack.longs(ctx.renderFinishedSemaphore);
+            LongBuffer signalSemaphores = stack.longs(ctx.mRenderFinishedSemaphore);
             submitInfo.pSignalSemaphores(signalSemaphores);
 
-            vkResetFences(mDevice, ctx.inFlightFence);
+            vkResetFences(mDevice, ctx.mInFlightFence);
 
-            res = vkQueueSubmit(mGraphicsQueue, submitInfo, ctx.inFlightFence);
+            res = vkQueueSubmit(mGraphicsQueue, submitInfo, ctx.mInFlightFence);
 
             if (res != VK_SUCCESS) {
-                vkResetFences(mDevice, ctx.inFlightFence);
+                vkResetFences(mDevice, ctx.mInFlightFence);
                 throw new RuntimeException(
                         String.format("Failed to submit draw command buffer! Ret: %x", -res));
             }
@@ -511,9 +509,9 @@ public class Renderer implements NativeResource {
     public void free() {
         vkDeviceWaitIdle(mDevice);
         for (FrameContext frame : mFrameContexts) {
-            vkDestroySemaphore(mDevice, frame.renderFinishedSemaphore, null);
-            vkDestroySemaphore(mDevice, frame.imageAvailableSemaphore, null);
-            vkDestroyFence(mDevice, frame.inFlightFence, null);
+            vkDestroySemaphore(mDevice, frame.mRenderFinishedSemaphore, null);
+            vkDestroySemaphore(mDevice, frame.mImageAvailableSemaphore, null);
+            vkDestroyFence(mDevice, frame.mInFlightFence, null);
         }
         cleanupSwapchain();
         mCurrentMeshBuffer.free();
@@ -566,7 +564,7 @@ public class Renderer implements NativeResource {
                     mCommandPool,
                     toPointerBuffer(
                             Arrays.stream(mImageContexts)
-                                    .map(d -> d.commandBuffer)
+                                    .map(d -> d.mCommandBuffer)
                                     .toArray(VkCommandBuffer[]::new),
                             stack));
         }
@@ -862,7 +860,7 @@ public class Renderer implements NativeResource {
                             });
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
-            deviceFeatures.samplerAnisotropy(mPhysicalDevice.getFeatureSupport().anisotropyEnable);
+            deviceFeatures.samplerAnisotropy(mPhysicalDevice.getFeatureSupport().mAnisotropyEnable);
             deviceFeatures.geometryShader(true);
 
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
@@ -901,7 +899,7 @@ public class Renderer implements NativeResource {
     private VkQueue createGraphicsQueue() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pQueue = stack.callocPointer(1);
-            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().graphicsFamily, 0, pQueue);
+            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().mGraphicsFamily, 0, pQueue);
             return new VkQueue(pQueue.get(0), mDevice);
         }
     }
@@ -914,7 +912,7 @@ public class Renderer implements NativeResource {
     private VkQueue createPresentQueue() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pQueue = stack.callocPointer(1);
-            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().presentFamily, 0, pQueue);
+            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().mPresentFamily, 0, pQueue);
             return new VkQueue(pQueue.get(0), mDevice);
         }
     }
@@ -932,7 +930,7 @@ public class Renderer implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
             poolInfo.sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO);
-            poolInfo.queueFamilyIndex(mPhysicalDevice.getIndices().graphicsFamily);
+            poolInfo.queueFamilyIndex(mPhysicalDevice.getIndices().mGraphicsFamily);
             poolInfo.flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
             LongBuffer pCommandPool = stack.longs(0);
@@ -975,8 +973,8 @@ public class Renderer implements NativeResource {
             if (mGraphicsQueue.address() != mPresentQueue.address()) {
                 IntBuffer indices =
                         stack.ints(
-                                mPhysicalDevice.getIndices().graphicsFamily,
-                                mPhysicalDevice.getIndices().presentFamily);
+                                mPhysicalDevice.getIndices().mGraphicsFamily,
+                                mPhysicalDevice.getIndices().mPresentFamily);
                 createInfo.imageSharingMode(VK_SHARING_MODE_CONCURRENT);
                 createInfo.pQueueFamilyIndices(indices);
             } else {
@@ -1314,9 +1312,9 @@ public class Renderer implements NativeResource {
                                                     -res1, -res2, -res2));
                                 }
 
-                                ctx.imageAvailableSemaphore = pSem1.get(0);
-                                ctx.renderFinishedSemaphore = pSem2.get(0);
-                                ctx.inFlightFence = pFence.get(0);
+                                ctx.mImageAvailableSemaphore = pSem1.get(0);
+                                ctx.mRenderFinishedSemaphore = pSem2.get(0);
+                                ctx.mInFlightFence = pFence.get(0);
 
                                 frames[i] = ctx;
                             });
@@ -1401,21 +1399,21 @@ public class Renderer implements NativeResource {
             }
         }
 
-        if (instanceBufferSize > ctx.instanceBufferSize) {
+        if (instanceBufferSize > ctx.mInstanceBufferSize) {
             int cursize = mInstanceBufferSize > 0 ? mInstanceBufferSize : 4096;
             while (instanceBufferSize > cursize) {
                 cursize *= 2;
             }
-            if (ctx.instanceBuffer != null) {
-                ctx.instanceBuffer.free();
+            if (ctx.mInstanceBuffer != null) {
+                ctx.mInstanceBuffer.free();
             }
-            ctx.instanceBuffer = createInstanceBuffer(cursize);
-            ctx.instanceBufferSize = cursize;
+            ctx.mInstanceBuffer = createInstanceBuffer(cursize);
+            ctx.mInstanceBufferSize = cursize;
             mInstanceBufferSize = cursize;
         }
 
         if (mCurrentMeshBuffer.isDirty()) {
-            mDiscardedMeshBuffers.put(ctx.imageIndex, mCurrentMeshBuffer);
+            mDiscardedMeshBuffers.put(ctx.mImageIndex, mCurrentMeshBuffer);
             mCurrentMeshBuffer = mCurrentMeshBuffer.commitChanges(mGraphicsQueue, mCommandPool);
         }
 
@@ -1423,7 +1421,7 @@ public class Renderer implements NativeResource {
             PointerBuffer pData = stack.pointers(0);
             int res =
                     vkMapMemory(
-                            mDevice, ctx.instanceBuffer.memory, 0, instanceBufferSize, 0, pData);
+                            mDevice, ctx.mInstanceBuffer.mMemory, 0, instanceBufferSize, 0, pData);
 
             if (res == VK_SUCCESS) {
                 ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
@@ -1431,16 +1429,16 @@ public class Renderer implements NativeResource {
                 for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
                         state.updateInstanceBuffer(byteBuffer, lights);
-                        state.endDrawData(ctx.imageIndex);
+                        state.endDrawData(ctx.mImageIndex);
                     }
                 }
 
-                vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
+                vkUnmapMemory(mDevice, ctx.mInstanceBuffer.mMemory);
             } else {
                 for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
-                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory, lights);
-                        state.endDrawData(ctx.imageIndex);
+                        state.slowUpdateInstanceBuffer(pData, ctx.mInstanceBuffer.mMemory, lights);
+                        state.endDrawData(ctx.mImageIndex);
                     }
                 }
             }
@@ -1452,8 +1450,8 @@ public class Renderer implements NativeResource {
         mInstancedCalls = 0;
         mSlowCalls = 0;
 
-        mVertexConstants.proj = camera.getProj();
-        mVertexConstants.view = camera.getView();
+        mVertexConstants.mProj = camera.getProj();
+        mVertexConstants.mVieww = camera.getView();
 
         mPreSorted.clear();
         Vector3f camPosition = camera.getGameObject().getTransform().getPosition();
@@ -1500,7 +1498,7 @@ public class Renderer implements NativeResource {
 
             renderPassInfo.pClearValues(clearColor);
 
-            int res = vkBeginCommandBuffer(ctx.commandBuffer, beginInfo);
+            int res = vkBeginCommandBuffer(ctx.mCommandBuffer, beginInfo);
 
             if (res != VK_SUCCESS) {
                 String format =
@@ -1508,16 +1506,16 @@ public class Renderer implements NativeResource {
                 throw new RuntimeException(format);
             }
 
-            renderPassInfo.framebuffer(ctx.framebuffer);
+            renderPassInfo.framebuffer(ctx.mFramebuffer);
 
             // This is the beginning :)
-            vkCmdBeginRenderPass(ctx.commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(ctx.mCommandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             ByteBuffer pConstants = stack.calloc(VertexConstants.SIZEOF);
             mVertexConstants.copyTo(pConstants);
 
             LongBuffer vertexBuffers =
-                    stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.instanceBuffer.buffer);
+                    stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.mInstanceBuffer.mBuffer);
 
             // Render regular objects in an instanced manner
             for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
@@ -1532,11 +1530,13 @@ public class Renderer implements NativeResource {
                     VulkanPipeline pipeline = callState.getPipeline();
 
                     vkCmdBindPipeline(
-                            ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
+                            ctx.mCommandBuffer,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline.mPipeline);
 
                     vkCmdPushConstants(
-                            ctx.commandBuffer,
-                            pipeline.layout,
+                            ctx.mCommandBuffer,
+                            pipeline.mLayout,
                             VK_SHADER_STAGE_VERTEX_BIT,
                             0,
                             pConstants);
@@ -1550,9 +1550,9 @@ public class Renderer implements NativeResource {
                                     innerStack.longs(
                                             meshDescriptor.getVertexOffset(),
                                             drawData.getInstanceBufferOffset());
-                            vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindVertexBuffers(ctx.mCommandBuffer, 0, vertexBuffers, offsets);
                             vkCmdBindIndexBuffer(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     mCurrentMeshBuffer.getIndexBuffer(),
                                     meshDescriptor.getIndexOffset(),
                                     VK_INDEX_TYPE_UINT32);
@@ -1563,9 +1563,9 @@ public class Renderer implements NativeResource {
                                 LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
 
                                 vkCmdBindDescriptorSets(
-                                        ctx.commandBuffer,
+                                        ctx.mCommandBuffer,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipeline.layout,
+                                        pipeline.mLayout,
                                         0,
                                         pDescriptorSets,
                                         null);
@@ -1573,7 +1573,7 @@ public class Renderer implements NativeResource {
 
                             mInstancedCalls++;
                             vkCmdDrawIndexed(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     meshDescriptor.getIndexCount(),
                                     drawData.getObjects().size(),
                                     0,
@@ -1595,13 +1595,13 @@ public class Renderer implements NativeResource {
                                     object.getData().getMeshDescriptor();
 
                             vkCmdBindPipeline(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    pipeline.pipeline);
+                                    pipeline.mPipeline);
 
                             vkCmdPushConstants(
-                                    ctx.commandBuffer,
-                                    pipeline.layout,
+                                    ctx.mCommandBuffer,
+                                    pipeline.mLayout,
                                     VK_SHADER_STAGE_VERTEX_BIT,
                                     0,
                                     pConstants);
@@ -1610,9 +1610,9 @@ public class Renderer implements NativeResource {
                                     innerStack.longs(
                                             meshDescriptor.getVertexOffset(),
                                             object.getInstanceBufferOffset());
-                            vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindVertexBuffers(ctx.mCommandBuffer, 0, vertexBuffers, offsets);
                             vkCmdBindIndexBuffer(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     mCurrentMeshBuffer.getIndexBuffer(),
                                     meshDescriptor.getIndexOffset(),
                                     VK_INDEX_TYPE_UINT32);
@@ -1623,9 +1623,9 @@ public class Renderer implements NativeResource {
                                 LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
 
                                 vkCmdBindDescriptorSets(
-                                        ctx.commandBuffer,
+                                        ctx.mCommandBuffer,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipeline.layout,
+                                        pipeline.mLayout,
                                         0,
                                         pDescriptorSets,
                                         null);
@@ -1633,16 +1633,16 @@ public class Renderer implements NativeResource {
 
                             mSlowCalls++;
                             vkCmdDrawIndexed(
-                                    ctx.commandBuffer, meshDescriptor.getIndexCount(), 1, 0, 0, 0);
+                                    ctx.mCommandBuffer, meshDescriptor.getIndexCount(), 1, 0, 0, 0);
                         }
                     }
                 }
             }
 
-            vkCmdEndRenderPass(ctx.commandBuffer);
+            vkCmdEndRenderPass(ctx.mCommandBuffer);
 
             // And this is the end
-            res = vkEndCommandBuffer(ctx.commandBuffer);
+            res = vkEndCommandBuffer(ctx.mCommandBuffer);
 
             if (res != VK_SUCCESS) {
                 String format =

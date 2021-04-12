@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
@@ -8,6 +7,7 @@ import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
 import java.io.Serializable;
 import lombok.Getter;
 
@@ -75,10 +75,10 @@ public class TextureMapping implements Serializable {
         CLAMP(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE),
         CLAMP_BORDER(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
 
-        @Getter private final int value;
+        @Getter private final int mValue;
 
         private TextureWrapping(int value) {
-            this.value = value;
+            this.mValue = value;
         }
 
         public static TextureWrapping fromGLTF(Integer value) {
@@ -100,7 +100,7 @@ public class TextureMapping implements Serializable {
 
     @Override
     public int hashCode() {
-        return mFiltering.mValue + mWrapU.value * 10 + mWrapV.value * 100 + mWrapW.value * 1000;
+        return mFiltering.mValue + mWrapU.mValue * 10 + mWrapV.mValue * 100 + mWrapW.mValue * 1000;
     }
 
     @Override

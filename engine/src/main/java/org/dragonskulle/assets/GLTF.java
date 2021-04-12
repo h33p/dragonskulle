@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.assets;
 
 import java.lang.reflect.Field;
@@ -46,11 +45,9 @@ import org.lwjgl.system.NativeResource;
  * Allows loading <a href="https://www.khronos.org/gltf/">glTF 2.0</a> assets.
  *
  * @author Aurimas Blažulionis
- *
  *     <p>Our engine mostly follows the glTF standard, except we set up direction to be Z+, instead
  *     of Y+, which is what our engine uses. In addition, "DSKULLE_game_object" extension is
  *     utilized to store components and their properties directly on the glTF files.
- *
  *     <p>Retrieving a {@link GLTF} resource is done through {@link GLTF#getResource} static method.
  *     The resulting resource should be freed when no longer used. It contains parsed {@link Scene}
  *     objects, with {@link GameObject} nodes, which have {@link Component} objects attached to

@@ -1,13 +1,10 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Oscar L
- * */
+/** @author Oscar L */
 public class NetworkMessage {
     /**
      * Converts an Array of Bytes to a byte array.

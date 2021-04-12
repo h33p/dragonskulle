@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer.materials;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -16,7 +16,8 @@ import org.dragonskulle.renderer.ShaderKind;
 import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
-import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
+import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Light;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -67,11 +68,11 @@ public class UnlitMaterial
 
     private int mRefCount = 0;
 
-    /** Constructor for UnlitMaterial */
+    /** Constructor for UnlitMaterial. */
     public UnlitMaterial() {}
 
     /**
-     * Constructor for UnlitMaterial
+     * Constructor for UnlitMaterial.
      *
      * @param texture initial texture of the object
      */
@@ -80,7 +81,7 @@ public class UnlitMaterial
     }
 
     /**
-     * Constructor for UnlitMaterial
+     * Constructor for UnlitMaterial.
      *
      * @param texture initial texture of the object
      * @param colour colour of the material
@@ -91,7 +92,7 @@ public class UnlitMaterial
     }
 
     /**
-     * Constructor for UnlitMaterial
+     * Constructor for UnlitMaterial.
      *
      * @param colour colour of the material
      */
@@ -100,8 +101,7 @@ public class UnlitMaterial
     }
 
     public ShaderSet getShaderSet() {
-        if (mColour.w < 1f) return TRANSPARENT_SET;
-        return OPAQUE_SET;
+        return mColour.w < 1f ? TRANSPARENT_SET : OPAQUE_SET;
     }
 
     public void writeVertexInstanceData(
@@ -120,6 +120,10 @@ public class UnlitMaterial
     }
 
     public void free() {
-        if (--mRefCount < 0) for (SampledTexture tex : mFragmentTextures) tex.free();
+        if (--mRefCount < 0) {
+            for (SampledTexture tex : mFragmentTextures) {
+                tex.free();
+            }
+        }
     }
 }

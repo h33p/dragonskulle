@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -10,12 +9,12 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 import static org.lwjgl.vulkan.VK10.vkCreateSampler;
 import static org.lwjgl.vulkan.VK10.vkDestroySampler;
+
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import lombok.EqualsAndHashCode;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 
@@ -43,8 +42,8 @@ class TextureSamplerFactory implements NativeResource {
 
     public TextureSamplerFactory(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
-        mAnisotropyEnable = physicalDevice.getFeatureSupport().anisotropyEnable;
-        mMaxAnisotropy = physicalDevice.getFeatureSupport().maxAnisotropy;
+        mAnisotropyEnable = physicalDevice.getFeatureSupport().mAnisotropyEnable;
+        mMaxAnisotropy = physicalDevice.getFeatureSupport().mMaxAnisotropy;
         mSamplers = new HashMap<>();
     }
 
@@ -75,9 +74,9 @@ class TextureSamplerFactory implements NativeResource {
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
             samplerInfo.magFilter(desc.mMapping.mFiltering.getmValue());
             samplerInfo.minFilter(desc.mMapping.mFiltering.getmValue());
-            samplerInfo.addressModeU(desc.mMapping.mWrapU.getValue());
-            samplerInfo.addressModeV(desc.mMapping.mWrapV.getValue());
-            samplerInfo.addressModeW(desc.mMapping.mWrapW.getValue());
+            samplerInfo.addressModeU(desc.mMapping.mWrapU.getmValue());
+            samplerInfo.addressModeV(desc.mMapping.mWrapV.getmValue());
+            samplerInfo.addressModeW(desc.mMapping.mWrapW.getmValue());
             samplerInfo.anisotropyEnable(anisotropyEnable);
             samplerInfo.maxAnisotropy(mMaxAnisotropy);
             samplerInfo.borderColor(VK_BORDER_COLOR_INT_TRANSPARENT_BLACK);

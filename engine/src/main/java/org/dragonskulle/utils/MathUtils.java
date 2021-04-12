@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.utils;
 
 /**
@@ -19,7 +18,6 @@ public class MathUtils {
      *     value will be extrapolated outside the bounds.
      * @return interpolated value
      */
-
     public static float lerp(float start, float end, float time) {
         return start + (end - start) * time;
     }

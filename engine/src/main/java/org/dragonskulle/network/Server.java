@@ -1,10 +1,8 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 // originally based on
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 // later rewritten
-
 
 import java.io.IOException;
 import java.net.InetAddress;

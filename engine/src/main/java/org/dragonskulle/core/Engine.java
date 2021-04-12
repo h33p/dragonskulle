@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ import org.dragonskulle.ui.UIManager;
  * Engine core.
  *
  * @author Harry Stoltz
- *
  *     <p>The core of the engine, contains the main loop which executes all game logic. Gives all
  *     components access to engine components such as the AudioManager and InputManager.
  */
@@ -164,7 +162,6 @@ public class Engine {
      *
      * @param scene Scene to unload
      */
-
     public void unloadScene(Scene scene) {
         mScenesToUnload.add(scene);
     }
@@ -201,7 +198,7 @@ public class Engine {
         }
     }
 
-    /** Stops the engine when the current frame has finished.*/
+    /** Stops the engine when the current frame has finished. */
     public void stop() {
         mIsRunning = false;
     }
@@ -295,7 +292,8 @@ public class Engine {
     }
 
     /**
-     * Iterate through a list of components that are enabled but haven't been started and start them.
+     * Iterate through a list of components that are enabled but haven't been started and start
+     * them.
      */
     private void startEnabledComponents() {
         for (Scene s : mActiveScenes) {

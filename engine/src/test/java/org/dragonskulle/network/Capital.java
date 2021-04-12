@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import lombok.Getter;
@@ -11,9 +10,7 @@ import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncString;
 
-/**
- * @author Oscar L The Capital Component.
- * */
+/** @author Oscar L The Capital Component. */
 @Accessors(prefix = "m")
 @Log
 public class Capital extends NetworkableComponent {

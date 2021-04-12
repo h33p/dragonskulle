@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import org.lwjgl.system.NativeResource;
@@ -25,10 +24,10 @@ import org.lwjgl.system.NativeResource;
  */
 public class Resource<T> implements NativeResource {
 
-    private ResourceManager.CountedResource<T> instance;
+    private ResourceManager.CountedResource<T> mInstance;
 
     public Resource(ResourceManager.CountedResource<T> i) {
-        instance = i;
+        mInstance = i;
     }
 
     /**
@@ -37,7 +36,7 @@ public class Resource<T> implements NativeResource {
      * @return the underlying {@code T} value. Never {@code null}.
      */
     public T get() {
-        return instance != null ? instance.getResource() : null;
+        return mInstance != null ? mInstance.getResource() : null;
     }
 
     /**
@@ -47,20 +46,20 @@ public class Resource<T> implements NativeResource {
      *     unchanged.
      */
     public boolean reload() {
-        return instance.reload();
+        return mInstance.reload();
     }
 
     @Override
     public final void free() {
-        if (instance != null) {
-            instance.decrRefCount();
-            instance = null;
+        if (mInstance != null) {
+            mInstance.decrRefCount();
+            mInstance = null;
         }
     }
 
     @Override
     public final Resource<T> clone() {
-        return instance != null ? instance.incRefCount() : null;
+        return mInstance != null ? mInstance.incRefCount() : null;
     }
 
     @SuppressWarnings("unchecked")

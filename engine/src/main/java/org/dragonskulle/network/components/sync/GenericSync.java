@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components.sync;
 
 import java.io.DataInputStream;
@@ -11,7 +10,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- *
  * @author Oscar L The generic sync is a non optimised version of ISyncVar. Either create an
  *     optimised @link{ISyncVar} or extend this class.
  * @param <T> the type parameter

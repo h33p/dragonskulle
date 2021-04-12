@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import static org.dragonskulle.utils.Env.envBool;
@@ -16,6 +15,7 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
 import java.nio.IntBuffer;
 import lombok.Getter;
 import lombok.experimental.Accessors;

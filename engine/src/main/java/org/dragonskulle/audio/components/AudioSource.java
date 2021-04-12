@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.audio.components;
 
 import lombok.Getter;
@@ -65,7 +64,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         AL11.alSourcei(s, AL11.AL_LOOPING, mLooping);
 
         if (mSound != null) {
-            AL11.alSourcei(s, AL11.AL_BUFFER, mSound.buffer);
+            AL11.alSourcei(s, AL11.AL_BUFFER, mSound.mBuffer);
         }
         updatePosition();
 
@@ -132,7 +131,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
 
         mSound = sound;
         detachSource();
-        mTimeLeft = sound.length;
+        mTimeLeft = sound.mLength;
     }
 
     /**
@@ -192,7 +191,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         mTimeLeft -= deltaTime;
 
         while (mLooping == AL11.AL_TRUE && mTimeLeft < 0f) {
-            mTimeLeft += mSound.length;
+            mTimeLeft += mSound.mLength;
         }
 
         if (mTimeLeft < 0f) {

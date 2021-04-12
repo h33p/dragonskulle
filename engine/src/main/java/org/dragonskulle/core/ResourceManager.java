@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import java.io.InputStream;
@@ -7,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -15,14 +13,12 @@ import lombok.experimental.Accessors;
  * Shared resource manager.
  *
  * @author Aurimas Blažulionis
- *
- * <p>This class allows loading and caching of various resources (files, placed under
- * main/resources directory). This allows for better memory usage, and easier resource
- * accessibility. Underlying objects are stored already parsed and loaded to their respective
- * types.
- *
- * <p>example declaring a custom resource:
- * <pre>{@code
+ *     <p>This class allows loading and caching of various resources (files, placed under
+ *     main/resources directory). This allows for better memory usage, and easier resource
+ *     accessibility. Underlying objects are stored already parsed and loaded to their respective
+ *     types.
+ *     <p>example declaring a custom resource:
+ *     <pre>{@code
  * static {
  *     ResourceManager.registerResource(GLTF.class, (a) -> "gltf/" + a + ".gltf", (b, __) -> new GLTF(b));
  * }
@@ -46,15 +42,11 @@ public class ResourceManager {
         registerResource(String.class, (a) -> a.getName(), (b, __) -> new String(b));
     }
 
-    /**
-     * Reference counts the accesses.
-     */
+    /** Reference counts the accesses. */
     @Accessors(prefix = "m")
     static class CountedResource<T> {
-        @Getter
-        private ResourceArguments<T, ?> mArgs;
-        @Getter
-        T mResource;
+        @Getter private ResourceArguments<T, ?> mArgs;
+        @Getter T mResource;
         private int mRefcount;
         private boolean mLinked;
 
@@ -65,9 +57,7 @@ public class ResourceManager {
             mLinked = true;
         }
 
-        /**
-         * Decrease reference count. Potentially free and unlink the resource
-         */
+        /** Decrease reference count. Potentially free and unlink the resource */
         public void decrRefCount() {
             if (--mRefcount == 0) {
                 if (AutoCloseable.class.isInstance(mResource)) {
@@ -119,7 +109,7 @@ public class ResourceManager {
          * Try reloading the underlying resource object.
          *
          * @return {@code true} if reload was successful. On false, the underlying object is left
-         * unchanged.
+         *     unchanged.
          */
         public boolean reload() {
             T res = ResourceManager.loadResource(mArgs);
@@ -138,9 +128,7 @@ public class ResourceManager {
         }
     }
 
-    /**
-     * Simple composed {@link IResourceLoader}.
-     */
+    /** Simple composed {@link IResourceLoader}. */
     private static class CompositeResourceLoader<T, F> implements IResourceLoader<T, F> {
         private final IResourcePathResolver<T, F> mPathResolver;
         private final IResourceBufferLoader<T, F> mBufferLoader;
@@ -164,7 +152,7 @@ public class ResourceManager {
     /**
      * Register a resource loader in a composite way.
      *
-     * @param type         type of the resource
+     * @param type type of the resource
      * @param pathResolver implementation (lambda) of path resolving
      * @param bufferLoader implementation (lambda) of resource loading
      */
@@ -181,8 +169,8 @@ public class ResourceManager {
      * <p>This method is purely for convenience to allow to easily specify the {@code F} type, but
      * does exactly the same as the above method.
      *
-     * @param type         type of the resource
-     * @param argType      type of the argument
+     * @param type type of the resource
+     * @param argType type of the argument
      * @param pathResolver implementation (lambda) of path resolving
      * @param bufferLoader implementation (lambda) of resource loading
      */
@@ -197,7 +185,7 @@ public class ResourceManager {
     /**
      * Register a resource loader.
      *
-     * @param type   type of the resource
+     * @param type type of the resource
      * @param loader loader for the resource
      */
     public static <T, F> void registerResource(Class<T> type, IResourceLoader<T, F> loader) {
@@ -212,7 +200,7 @@ public class ResourceManager {
      *
      * @param arguments arguments used for loading
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     * {@code null} is returned if the object type does not match the input name
+     *     {@code null} is returned if the object type does not match the input name
      */
     public static <T, F> Resource<T> getResource(ResourceArguments<T, F> arguments) {
         CountedResource<?> inst = sLoadedResources.get(arguments);
@@ -230,11 +218,11 @@ public class ResourceManager {
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
-     * @param type           class of {@code T}. Usually {@code T.class}.
-     * @param name           name of the resource to load
+     * @param type class of {@code T}. Usually {@code T.class}.
+     * @param name name of the resource to load
      * @param additionalArgs additional arguments to load with
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     * {@code null} is returned if the object type does not match the input {@code name}
+     *     {@code null} is returned if the object type does not match the input {@code name}
      */
     public static <T, F> Resource<T> getResource(Class<T> type, String name, F additionalArgs) {
         return getResource(new ResourceArguments<>(type, name, additionalArgs));
@@ -249,7 +237,7 @@ public class ResourceManager {
      * @param type class of {@code T}. Usually {@code T.class}.
      * @param name name of the resource to load.
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     * {@code null} is returned if the object type does not match the input {@code name}
+     *     {@code null} is returned if the object type does not match the input {@code name}
      */
     public static <T> Resource<T> getResource(Class<T> type, String name) {
         return getResource(type, name, null);
@@ -326,9 +314,7 @@ public class ResourceManager {
         return inst.incRefCount(arguments.getType());
     }
 
-    /**
-     * Essentially Java 9 readAllBytes.
-     */
+    /** Essentially Java 9 readAllBytes. */
     private static byte[] readAllBytes(InputStream stream) throws Exception {
         List<byte[]> chunks = new ArrayList<byte[]>();
         int n = 0;

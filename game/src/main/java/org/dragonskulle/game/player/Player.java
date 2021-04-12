@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
@@ -70,7 +69,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack. */
-    private final float ATTACK_COOLDOWN = 20f;
+    private static final float ATTACK_COOLDOWN = 20f;
     /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
@@ -86,14 +85,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     };
 
     /** The base rate of tokens which will always be added. */
-    private final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 5;
     /** How frequently the tokens should be added. */
-    private final float TOKEN_TIME = 1f;
+    private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private final int MAX_PLAYERS = 6;
+    private static final int MAX_PLAYERS = 6;
 
     /** Used by the client to request that a building be placed by the server. */
     @Getter private transient ClientRequest<BuildData> mClientBuildRequest;

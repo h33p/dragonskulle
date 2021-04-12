@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import java.io.BufferedInputStream;
@@ -14,13 +13,11 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
 /**
- *
  * @author Oscar L
  *     <p>This is the client usage, you will create an instance, by providing the correct server to
  *     connect to. ClientListener is the handler for commands that the client receives. {@link
  *     org.dragonskulle.network.IClientListener}**
  */
-
 @Log
 @Accessors(prefix = "m")
 public class NetworkClient {
@@ -43,7 +40,7 @@ public class NetworkClient {
     /** The thread that watches @link{dIn} for messages. */
     private Thread mClientThread;
 
-    private AtomicBoolean didDispose = new AtomicBoolean(false);
+    private final AtomicBoolean mDidDispose = new AtomicBoolean(false);
 
     private TimeoutInputStream mTimeoutInputStream;
     /** The input stream from the server. */
@@ -76,8 +73,8 @@ public class NetworkClient {
     /** Dispose. */
     public void dispose() {
         try {
-            if (!didDispose.get()) {
-                didDispose.set(true);
+            if (!mDidDispose.get()) {
+                mDidDispose.set(true);
                 if (mOpen) {
                     mOpen = false;
                     closeAllConnections();
@@ -223,7 +220,6 @@ public class NetworkClient {
      *
      * @return the byteCode of the message processed.
      */
-
     private byte processMessage() throws IOException {
         byte messageType = mInput.readByte();
         log.fine("EXEB - " + messageType);

@@ -2,16 +2,65 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ONE;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_SRC_ALPHA;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ZERO;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_OP_ADD;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_A_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_B_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_G_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_R_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COMPARE_OP_LESS;
+import static org.lwjgl.vulkan.VK10.VK_CULL_MODE_BACK_BIT;
+import static org.lwjgl.vulkan.VK10.VK_FRONT_FACE_COUNTER_CLOCKWISE;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_POLYGON_MODE_FILL;
+import static org.lwjgl.vulkan.VK10.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_GEOMETRY_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkCreateGraphicsPipelines;
+import static org.lwjgl.vulkan.VK10.vkCreatePipelineLayout;
+import static org.lwjgl.vulkan.VK10.vkDestroyPipeline;
+import static org.lwjgl.vulkan.VK10.vkDestroyPipelineLayout;
 
 import java.nio.LongBuffer;
 import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
+import org.lwjgl.vulkan.VkPipelineColorBlendAttachmentState;
+import org.lwjgl.vulkan.VkPipelineColorBlendStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineDepthStencilStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineInputAssemblyStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
+import org.lwjgl.vulkan.VkPipelineMultisampleStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineRasterizationStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
+import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo;
+import org.lwjgl.vulkan.VkPushConstantRange;
+import org.lwjgl.vulkan.VkRect2D;
+import org.lwjgl.vulkan.VkVertexInputAttributeDescription;
+import org.lwjgl.vulkan.VkVertexInputBindingDescription;
+import org.lwjgl.vulkan.VkViewport;
 
 /**
- * Class abstracting a vulkan pipeline
+ * Class abstracting a vulkan pipeline.
  *
  * <p>Normally, one pipeline is created per material, but there could be multiple passes.
  *
@@ -19,13 +68,13 @@ import org.lwjgl.vulkan.*;
  */
 @Log
 class VulkanPipeline implements NativeResource {
-    public long pipeline;
-    public long layout;
+    public long mPipeline;
+    public long mLayout;
 
     private VkDevice mDevice;
     private ShaderSet mShaderSet;
 
-    /** Get vulkan binding descriptors for the vertex shader */
+    /** Get vulkan binding descriptors for the vertex shader. */
     private static VkVertexInputBindingDescription.Buffer getBindingDescriptions(
             MemoryStack stack, BindingDescription instanceBindingDescription) {
 
@@ -38,14 +87,14 @@ class VulkanPipeline implements NativeResource {
         for (int i = 0; i < bindingDescriptions.length; i++) {
             BindingDescription descIn = bindingDescriptions[i];
             VkVertexInputBindingDescription descOut = bindingDescriptionsOut.get(i);
-            descOut.binding(descIn.mbindingId);
+            descOut.binding(descIn.mBindingId);
             descOut.stride(descIn.mSize);
             descOut.inputRate(descIn.mInputRate);
         }
         return bindingDescriptionsOut;
     }
 
-    /** Get memory attribute descriptions for the vertex shader */
+    /** Get memory attribute descriptions for the vertex shader. */
     private static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(
             MemoryStack stack, AttributeDescription... attributeDescriptions) {
 
@@ -70,7 +119,9 @@ class VulkanPipeline implements NativeResource {
                 descOut.offset(descIn.mOffset);
 
                 // Implicitly shift location for per-instance data.
-                if (descIn.mBindingId != 0) descOut.location(descOut.location() + 4);
+                if (descIn.mBindingId != 0) {
+                    descOut.location(descOut.location() + 4);
+                }
             }
         }
 
@@ -98,7 +149,9 @@ class VulkanPipeline implements NativeResource {
         if (vertShaderBuf != null) {
             vertShader = Shader.getShader(vertShaderBuf, mDevice);
 
-            if (vertShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
+            if (vertShader == null) {
+                throw new RuntimeException("Failed to retrieve vertex shader!");
+            }
             shaderStageCount++;
         }
 
@@ -108,7 +161,9 @@ class VulkanPipeline implements NativeResource {
         if (geomShaderBuf != null) {
             geomShader = Shader.getShader(geomShaderBuf, mDevice);
 
-            if (geomShader == null) throw new RuntimeException("Failed to retrieve vertex shader!");
+            if (geomShader == null) {
+                throw new RuntimeException("Failed to retrieve vertex shader!");
+            }
             shaderStageCount++;
         }
 
@@ -118,8 +173,9 @@ class VulkanPipeline implements NativeResource {
         if (fragShaderBuf != null) {
             fragShader = Shader.getShader(fragShaderBuf, mDevice);
 
-            if (fragShader == null)
+            if (fragShader == null) {
                 throw new RuntimeException("Failed to retrieve fragment shader!");
+            }
             shaderStageCount++;
         }
 
@@ -298,7 +354,7 @@ class VulkanPipeline implements NativeResource {
                         String.format("Failed to create pipeline layout! Err: %x", -result));
             }
 
-            layout = pPipelineLayout.get(0);
+            mLayout = pPipelineLayout.get(0);
 
             // Actual pipeline!
 
@@ -310,7 +366,7 @@ class VulkanPipeline implements NativeResource {
             pipelineInfo.pDepthStencilState(depthStencil);
             pipelineInfo.pColorBlendState(colorBlending);
 
-            pipelineInfo.layout(layout);
+            pipelineInfo.layout(mLayout);
             pipelineInfo.renderPass(renderPass);
             pipelineInfo.subpass(0);
 
@@ -329,17 +385,23 @@ class VulkanPipeline implements NativeResource {
                         String.format("Failed to create graphics pipeline! Err: %x", -result));
             }
 
-            if (fragShader != null) fragShader.free();
-            if (geomShader != null) geomShader.free();
-            if (vertShader != null) vertShader.free();
+            if (fragShader != null) {
+                fragShader.free();
+            }
+            if (geomShader != null) {
+                geomShader.free();
+            }
+            if (vertShader != null) {
+                vertShader.free();
+            }
 
-            pipeline = pPipeline.get(0);
+            mPipeline = pPipeline.get(0);
         }
     }
 
     @Override
     public void free() {
-        vkDestroyPipeline(mDevice, pipeline, null);
-        vkDestroyPipelineLayout(mDevice, layout, null);
+        vkDestroyPipeline(mDevice, mPipeline, null);
+        vkDestroyPipelineLayout(mDevice, mLayout, null);
     }
 }

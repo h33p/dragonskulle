@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.components;
 
 import java.io.Serializable;
@@ -48,7 +47,7 @@ public abstract class Component implements Serializable {
         mReference.clear();
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     protected abstract void onDestroy();
 
     /**

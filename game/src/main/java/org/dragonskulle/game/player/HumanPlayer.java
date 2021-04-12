@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.player;
 
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -27,7 +27,6 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
-import java.util.Objects;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
@@ -461,10 +460,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * AURI!!!.
-     *
-     */
+    /** AURI!!!. */
     private void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;

@@ -1,12 +1,10 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 /**
  * Class used for getting system time.
  *
  * @author Harry Stoltz
- *
  *     <p>Simple class to get the current time in seconds
  */
 public class Time {

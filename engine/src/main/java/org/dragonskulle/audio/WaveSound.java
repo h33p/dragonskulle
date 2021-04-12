@@ -26,27 +26,27 @@ import org.lwjgl.openal.AL11;
 @Log
 public class WaveSound implements Serializable {
 
-    public int buffer;
-    public int sampleRate;
-    public int format;
-    public float length;
-    public int bits;
-    public int channels;
+    public int mBuffer;
+    public int mSampleRate;
+    public int mFormat;
+    public float mLength;
+    public int mBits;
+    public int mChannels;
 
     public void setALFormat() {
-        switch (bits) {
+        switch (mBits) {
             case 16:
-                if (channels > 1) {
-                    format = AL11.AL_FORMAT_STEREO16;
+                if (mChannels > 1) {
+                    mFormat = AL11.AL_FORMAT_STEREO16;
                 } else {
-                    format = AL11.AL_FORMAT_MONO16;
+                    mFormat = AL11.AL_FORMAT_MONO16;
                 }
                 break;
             case 8:
-                if (channels > 1) {
-                    format = AL11.AL_FORMAT_STEREO8;
+                if (mChannels > 1) {
+                    mFormat = AL11.AL_FORMAT_STEREO8;
                 } else {
-                    format = AL11.AL_FORMAT_MONO8;
+                    mFormat = AL11.AL_FORMAT_MONO8;
                 }
         }
     }
@@ -96,10 +96,10 @@ public class WaveSound implements Serializable {
             WaveSound sound = new WaveSound();
             AudioFormat format = audioInputStream.getFormat();
 
-            sound.sampleRate = (int) format.getSampleRate();
+            sound.mSampleRate = (int) format.getSampleRate();
 
-            sound.bits = format.getSampleSizeInBits();
-            sound.channels = format.getChannels();
+            sound.mBits = format.getSampleSizeInBits();
+            sound.mChannels = format.getChannels();
             sound.setALFormat();
 
             int audioLength = (int) audioInputStream.getFrameLength() * format.getFrameSize();
@@ -113,17 +113,17 @@ public class WaveSound implements Serializable {
                 return null;
             }
 
-            sound.length = (float) bytesRead / format.getSampleRate();
+            sound.mLength = (float) bytesRead / format.getSampleRate();
 
-            if (sound.bits == 16) {
-                sound.length /= 2;
+            if (sound.mBits == 16) {
+                sound.mLength /= 2;
             }
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
-            ByteBuffer buffer = processRawBytes(audioBytes, sound.bits == 8, order);
+            ByteBuffer buffer = processRawBytes(audioBytes, sound.mBits == 8, order);
 
-            sound.buffer = AL11.alGenBuffers();
-            AL11.alBufferData(sound.buffer, sound.format, buffer, sound.sampleRate);
+            sound.mBuffer = AL11.alGenBuffers();
+            AL11.alBufferData(sound.mBuffer, sound.mFormat, buffer, sound.mSampleRate);
 
             return sound;
         } catch (UnsupportedAudioFileException e) {

@@ -7,14 +7,15 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.Vertex;
-import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
@@ -24,7 +25,7 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
- * Class describing a renderable UI text object
+ * Class describing a renderable UI text object.
  *
  * @author Aurimas Blažulionis
  */
@@ -43,13 +44,13 @@ public class UIText extends Renderable implements IOnAwake {
         setText(mText);
     }
 
-    /** Constructor for UIText */
+    /** Constructor for UIText. */
     public UIText() {
         this(new Vector4f(1f));
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      * @param font font to use for text
@@ -60,7 +61,7 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      * @param font font to use for text
@@ -72,7 +73,7 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGB float colour value
      * @param font font to use for text
@@ -84,7 +85,7 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      */
@@ -93,7 +94,7 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGB float colour value
      */
@@ -102,7 +103,7 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      * @param text text to render
@@ -113,7 +114,7 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGB float colour value
      * @param text text to render
@@ -131,15 +132,19 @@ public class UIText extends Renderable implements IOnAwake {
      * @param text new text value
      */
     public void setText(String text) {
-        if (mText.equals(text) && getMesh() != null) return;
+        if (mText.equals(text) && getMesh() != null) {
+            return;
+        }
         mText = text;
         setMesh(buildMesh());
 
         TransformUI transform = getGameObject().getTransform(TransformUI.class);
-        if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
+        if (transform != null) {
+            transform.setTargetAspectRatio(mTargetAspectRatio);
+        }
     }
 
-    /** Builds a new mesh */
+    /** Builds a new mesh. */
     private Mesh buildMesh() {
         Font font = mFont.get();
 

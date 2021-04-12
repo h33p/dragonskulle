@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
@@ -30,6 +29,7 @@ import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceFormatProperties;
 import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceMemoryProperties;
 import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceProperties;
 import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceQueueFamilyProperties;
+
 import java.nio.IntBuffer;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -65,31 +65,31 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     private int mScore;
     private QueueFamilyIndices mIndices;
 
-    private static int[] DEPTH_FORMATS = {
+    private static final int[] DEPTH_FORMATS = {
         VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT
     };
 
     /** Describes indices used for various device queues. */
     static class QueueFamilyIndices {
-        Integer graphicsFamily;
-        Integer presentFamily;
+        Integer mGraphicsFamily;
+        Integer mPresentFamily;
 
         boolean isComplete() {
-            return graphicsFamily != null && presentFamily != null;
+            return mGraphicsFamily != null && mPresentFamily != null;
         }
 
         int[] uniqueFamilies() {
-            return IntStream.of(graphicsFamily, presentFamily).distinct().toArray();
+            return IntStream.of(mGraphicsFamily, mPresentFamily).distinct().toArray();
         }
     }
 
     /** Describes physical graphics feature support. */
     static class FeatureSupportDetails {
-        boolean anisotropyEnable;
-        float maxAnisotropy;
-        boolean geometryShaders;
-        boolean optimalLinearTiling;
-        int msaaSamples;
+        boolean mAnisotropyEnable;
+        float mMaxAnisotropy;
+        boolean mGeometryShaders;
+        boolean mOptimalLinearTiling;
+        int mMsaaSamples;
 
         static final int[] REQUIRED_TILED_FORMATS = {VK_FORMAT_R8G8B8A8_SRGB};
 
@@ -112,16 +112,16 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             this.mDeviceName = properties.deviceNameString();
 
             this.mFeatureSupport = new FeatureSupportDetails();
-            this.mFeatureSupport.anisotropyEnable = features.samplerAnisotropy();
-            this.mFeatureSupport.maxAnisotropy = properties.limits().maxSamplerAnisotropy();
-            this.mFeatureSupport.geometryShaders = features.geometryShader();
-            this.mFeatureSupport.optimalLinearTiling =
+            this.mFeatureSupport.mAnisotropyEnable = features.samplerAnisotropy();
+            this.mFeatureSupport.mMaxAnisotropy = properties.limits().maxSamplerAnisotropy();
+            this.mFeatureSupport.mGeometryShaders = features.geometryShader();
+            this.mFeatureSupport.mOptimalLinearTiling =
                     findSupportedFormat(
                                     FeatureSupportDetails.REQUIRED_TILED_FORMATS,
                                     VK_IMAGE_TILING_OPTIMAL,
                                     VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
                             != -1;
-            this.mFeatureSupport.msaaSamples =
+            this.mFeatureSupport.mMsaaSamples =
                     properties.limits().framebufferColorSampleCounts()
                             & properties.limits().framebufferDepthSampleCounts();
 
@@ -147,13 +147,13 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 int queueFlags = buf.get(i).queueFlags();
 
                 if ((queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
-                    indices.graphicsFamily = i;
+                    indices.mGraphicsFamily = i;
                 }
 
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, presentSupport);
 
                 if (presentSupport.get(0) == VK_TRUE) {
-                    indices.presentFamily = i;
+                    indices.mPresentFamily = i;
                 }
             }
 
@@ -191,19 +191,22 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             sampleCount = 1;
         }
 
-        if (sampleCount >= 64 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_64_BIT) != 0) {
+        if (sampleCount >= 64 && (mFeatureSupport.mMsaaSamples & VK_SAMPLE_COUNT_64_BIT) != 0) {
             return VK_SAMPLE_COUNT_64_BIT;
         } else if (sampleCount >= 32
-                && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_32_BIT) != 0) {
+                && (mFeatureSupport.mMsaaSamples & VK_SAMPLE_COUNT_32_BIT) != 0) {
             return VK_SAMPLE_COUNT_32_BIT;
         } else if (sampleCount >= 16
-                && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_16_BIT) != 0) {
+                && (mFeatureSupport.mMsaaSamples & VK_SAMPLE_COUNT_16_BIT) != 0) {
             return VK_SAMPLE_COUNT_16_BIT;
-        } else if (sampleCount >= 8 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_8_BIT) != 0) {
+        } else if (sampleCount >= 8
+                && (mFeatureSupport.mMsaaSamples & VK_SAMPLE_COUNT_8_BIT) != 0) {
             return VK_SAMPLE_COUNT_8_BIT;
-        } else if (sampleCount >= 4 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_4_BIT) != 0) {
+        } else if (sampleCount >= 4
+                && (mFeatureSupport.mMsaaSamples & VK_SAMPLE_COUNT_4_BIT) != 0) {
             return VK_SAMPLE_COUNT_4_BIT;
-        } else if (sampleCount >= 2 && (mFeatureSupport.msaaSamples & VK_SAMPLE_COUNT_2_BIT) != 0) {
+        } else if (sampleCount >= 2
+                && (mFeatureSupport.mMsaaSamples & VK_SAMPLE_COUNT_2_BIT) != 0) {
             return VK_SAMPLE_COUNT_2_BIT;
         }
 

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import java.nio.ByteBuffer;
@@ -100,7 +99,7 @@ public class ShaderSet implements NativeResource {
 
     /** Shared uniform data size for the fragment shader. */
     @Getter protected int mFragmentUniformDataSize = 0;
-    /** Should we update the fragment uniform buffer? */
+    /** Should we update the fragment uniform buffer?. */
     @Getter protected boolean mFragmentUniformDataDirty = false;
 
     /** Number of lights used by the shader. */

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -23,9 +22,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.junit.Test;
 import org.lwjgl.system.NativeResource;
 
-/**
- * @author Oscar L
- * */
+/** @author Oscar L */
 @Log
 public class ServerTest {
     private static final long TIMEOUT = 1;
@@ -58,7 +55,7 @@ public class ServerTest {
                 new GameObject("netman", handle -> handle.addComponent(SERVER_NETWORK_MANAGER)));
     }
 
-    private static ReentrantLock mEngineLock = new ReentrantLock();
+    private static ReentrantLock sEngineLock = new ReentrantLock();
 
     private static void cleanupNetmans() {
         log.info("Cleanup netmans");
@@ -109,7 +106,7 @@ public class ServerTest {
                                     mShouldExit = true;
                                 }
                             });
-            mEngineLock.lock();
+            sEngineLock.lock();
 
             cleanupNetmans();
 
@@ -154,39 +151,39 @@ public class ServerTest {
 
         private boolean shouldExit() {
 
-            mEngineLock.unlock();
+            sEngineLock.unlock();
 
             if (mShouldExit) {
                 return false;
             }
 
-            mEngineLock.lock();
+            sEngineLock.lock();
 
             return true;
         }
 
         @Override
         public void free() {
-            mEngineLock.lock();
+            sEngineLock.lock();
             cleanupNetmans();
             mShouldExit = true;
-            mEngineLock.unlock();
+            sEngineLock.unlock();
         }
 
         public <T extends NetworkableComponent> Reference<T> getServerComponent(Class<T> type) {
-            mEngineLock.lock();
+            sEngineLock.lock();
             Reference<T> ret =
                     SERVER_NETWORK_MANAGER.getServerManager().getNetworkObjects().values().stream()
                             .map(c -> c.getNetworkObject().get().getGameObject().getComponent(type))
                             .filter(Objects::nonNull)
                             .findFirst()
                             .orElse(null);
-            mEngineLock.unlock();
+            sEngineLock.unlock();
             return ret;
         }
 
         public <T extends NetworkableComponent> Reference<T> getClientComponent(Class<T> type) {
-            mEngineLock.lock();
+            sEngineLock.lock();
             Reference<T> ret =
                     CLIENT_NETWORK_MANAGER
                             .getClientManager()
@@ -195,7 +192,7 @@ public class ServerTest {
                             .filter(Objects::nonNull)
                             .findFirst()
                             .orElse(null);
-            mEngineLock.unlock();
+            sEngineLock.unlock();
             return ret;
         }
 
@@ -209,7 +206,7 @@ public class ServerTest {
             Reference<Capital> serverCapital = getServerComponent(Capital.class);
             assertNotNull(serverCapital);
 
-            mEngineLock.lock();
+            sEngineLock.lock();
             int capitalId = clientCapital.get().getNetworkObject().getId();
             log.info(
                     "\t-----> " + capitalId + " " + serverCapital.get().getNetworkObject().getId());
@@ -217,22 +214,22 @@ public class ServerTest {
             log.info("\t-----> " + capitalId);
             assert (serverCapital.get().getSyncMe().get() == false);
             assert (serverCapital.get().getSyncMeAlso().get().equals("Hello World"));
-            mEngineLock.unlock();
+            sEngineLock.unlock();
             return serverCapital;
         }
 
         private void modifyServerCapital() {
             Capital component = getServerComponent(Capital.class).get();
-            mEngineLock.lock();
+            sEngineLock.lock();
             component.setBooleanSyncMe(true);
             component.setStringSyncMeAlso("Goodbye World");
-            mEngineLock.unlock();
+            sEngineLock.unlock();
         }
 
         private void testSubmitRequest() {
             testCapitalSpawnDefaultServer();
             Capital cap = getClientComponent(Capital.class).get();
-            mEngineLock.lock();
+            sEngineLock.lock();
             cap.getGameObject()
                     .addComponent(
                             new LambdaOnStart(
@@ -240,13 +237,13 @@ public class ServerTest {
                                         cap.mPasswordRequest.invoke(
                                                 new TestAttackData(Capital.CORRECT_PASSWORD, 354));
                                     }));
-            mEngineLock.unlock();
+            sEngineLock.unlock();
             await().atMost(TIMEOUT, SECONDS)
                     .until(
                             () -> {
-                                mEngineLock.lock();
+                                sEngineLock.lock();
                                 boolean ret = cap.getClientToggled().get() == 354;
-                                mEngineLock.unlock();
+                                sEngineLock.unlock();
                                 return ret;
                             });
         }
@@ -254,16 +251,16 @@ public class ServerTest {
         private void testCanDestroy() {
             testCapitalSpawnDefaultServer();
             Capital cap = getServerComponent(Capital.class).get();
-            mEngineLock.lock();
+            sEngineLock.lock();
             cap.getGameObject()
                     .addComponent(new LambdaOnStart(() -> cap.getGameObject().destroy()));
-            mEngineLock.unlock();
+            sEngineLock.unlock();
             await().atMost(TIMEOUT, SECONDS)
                     .until(
                             () -> {
-                                mEngineLock.lock();
+                                sEngineLock.lock();
                                 boolean ret = getClientComponent(Capital.class) == null;
-                                mEngineLock.unlock();
+                                sEngineLock.unlock();
                                 return ret;
                             });
         }
@@ -286,29 +283,29 @@ public class ServerTest {
                         await().atMost(TIMEOUT, SECONDS)
                                 .until(
                                         () -> {
-                                            mEngineLock.lock();
+                                            sEngineLock.lock();
                                             boolean ret = nc.get().getSyncMe().get() == true;
-                                            mEngineLock.unlock();
+                                            sEngineLock.unlock();
                                             return ret;
                                         });
-                        mEngineLock.lock();
+                        sEngineLock.lock();
                         assert (nc.get().getSyncMe().get() == true);
-                        mEngineLock.unlock();
+                        sEngineLock.unlock();
                         await().atMost(TIMEOUT, SECONDS)
                                 .until(
                                         () -> {
-                                            mEngineLock.lock();
+                                            sEngineLock.lock();
                                             boolean ret =
                                                     nc.get()
                                                             .getSyncMeAlso()
                                                             .get()
                                                             .equals("Goodbye World");
-                                            mEngineLock.unlock();
+                                            sEngineLock.unlock();
                                             return ret;
                                         });
-                        mEngineLock.lock();
+                        sEngineLock.lock();
                         assert (nc.get().getSyncMeAlso().get().equals("Goodbye World"));
-                        mEngineLock.unlock();
+                        sEngineLock.unlock();
                     });
         }
     }
@@ -324,29 +321,29 @@ public class ServerTest {
                         await().atMost(TIMEOUT, SECONDS)
                                 .until(
                                         () -> {
-                                            mEngineLock.lock();
+                                            sEngineLock.lock();
                                             boolean ret = nc.get().getSyncMe().get() == true;
-                                            mEngineLock.unlock();
+                                            sEngineLock.unlock();
                                             return ret;
                                         });
-                        mEngineLock.lock();
+                        sEngineLock.lock();
                         assert (nc.get().getSyncMe().get() == true);
-                        mEngineLock.unlock();
+                        sEngineLock.unlock();
                         await().atMost(TIMEOUT, SECONDS)
                                 .until(
                                         () -> {
-                                            mEngineLock.lock();
+                                            sEngineLock.lock();
                                             boolean ret =
                                                     nc.get()
                                                             .getSyncMeAlso()
                                                             .get()
                                                             .equals("Goodbye World");
-                                            mEngineLock.unlock();
+                                            sEngineLock.unlock();
                                             return ret;
                                         });
-                        mEngineLock.lock();
+                        sEngineLock.lock();
                         assert (nc.get().getSyncMeAlso().get().equals("Goodbye World"));
-                        mEngineLock.unlock();
+                        sEngineLock.unlock();
                     });
         }
     }

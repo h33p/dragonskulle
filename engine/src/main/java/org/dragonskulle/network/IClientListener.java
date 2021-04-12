@@ -1,12 +1,10 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
- *
  * @author Oscar L
  *     <p>This interface is to handle client commands, this can be extended to run command when a
  *     message is received. Important events are logged here

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.components;
 
 import org.dragonskulle.core.GameObject;
@@ -16,11 +15,9 @@ import org.joml.Vector3fc;
  *
  * @author Harry Stoltz
  * @author Aurimas Blažulionis
- *
  *     <p>All GameObjects will have a Transform object which allows it to be positioned, rotated and
  *     scaled in the world, and relative to parents The Transform can be used to get 3D position,
  *     scale and rotation.
- *
  *     <p>More concrete transform types are used to modify the object's transformation.
  */
 public abstract class Transform extends Component {

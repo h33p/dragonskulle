@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.stb.STBTruetype.stbtt_GetCodepointBitmapBox;
@@ -9,6 +8,7 @@ import static org.lwjgl.stb.STBTruetype.stbtt_InitFont;
 import static org.lwjgl.stb.STBTruetype.stbtt_MakeCodepointBitmap;
 import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForPixelHeight;
 import static org.lwjgl.system.MemoryStack.stackPush;
+
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public final class Font extends Texture {
 
         int curX = curpos[0];
         int curY = curpos[1];
-        curY += nextLineOffset - glyphNode.getHeight();
+        curY += mNextLineOffset - glyphNode.getHeight();
 
         float startX = curX + (float) glyphNode.getBox().getXBearing();
         float endX = startX + (float) glyphNode.getWidth();
@@ -96,7 +96,7 @@ public final class Font extends Texture {
     }
 
     private Map<Integer, BoxPacker.BoxNode<Glyph>> mCharToGlyph = new TreeMap<>();
-    private int nextLineOffset = LINE_HEIGHT;
+    private int mNextLineOffset = LINE_HEIGHT;
 
     private static final int[][] GLYPH_RANGES = {
         {' ', '~'},
@@ -131,7 +131,7 @@ public final class Font extends Texture {
                         IntBuffer pLineGap = stack.ints(0);
                         stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
 
-                        ret.nextLineOffset =
+                        ret.mNextLineOffset =
                                 (int) ((pAscent.get(0) - pDescent.get(0)) * scale) + LINE_HEIGHT;
 
                         IntBuffer pOffsetToNext = stack.ints(0);

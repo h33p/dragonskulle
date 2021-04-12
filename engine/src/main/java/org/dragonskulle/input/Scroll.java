@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.input;
 
 import org.lwjgl.glfw.GLFW;

@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.map;
 
 import java.util.ArrayList;
@@ -13,9 +12,7 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Scene;
 
 /**
- *
  * @author Leela Muppala and Craig Wilbourne
- *
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
  */

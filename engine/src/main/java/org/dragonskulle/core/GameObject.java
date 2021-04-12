@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import java.io.ByteArrayInputStream;
@@ -77,7 +76,6 @@ public class GameObject implements Serializable {
      *     instance)
      * @return The new instance of the GameObject
      */
-
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
         transform.setGameObject(instance);
@@ -93,7 +91,6 @@ public class GameObject implements Serializable {
      * @param name Name of the object to search for
      * @return A reference to the first GameObject found, or null if nothing is found
      */
-
     public static Reference<GameObject> findObjectByName(String name) {
         List<Scene> activeScenes = Engine.getInstance().getActiveScenes();
 
@@ -167,7 +164,6 @@ public class GameObject implements Serializable {
      * @param enabled controls whether the object is enabled by default
      * @param handler handler callback that allows to do initial setup
      */
-
     public GameObject(String name, boolean enabled, IBuildHandler handler) {
         this(name, enabled);
         handler.handleBuild(this);
@@ -207,21 +203,6 @@ public class GameObject implements Serializable {
         mEnabled = enabled;
         mTransform = transform;
         mTransform.setGameObject(this);
-    }
-
-    /**
-     * Get all components of a given type T.
-     *
-     * @param type Class object of T
-     * @param <T> Type of component to be returned
-     * @param ret List that will store the components found
-     */
-    public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
-        mComponents.stream()
-                .filter(type::isInstance)
-                .map(component -> component.getReference(type))
-                .filter(Reference::isValid)
-                .collect(Collectors.toCollection(() -> ret));
     }
 
     /**
@@ -266,21 +247,6 @@ public class GameObject implements Serializable {
         for (GameObject child : mChildren) {
             child.getComponents(type, ret);
             child.getComponentsInChildren(type, ret);
-        }
-    }
-
-    /**
-     * Get every child with this GameObject acting as the root in a tree, adding to the list in a
-     * depth-first order.
-     *
-     * <p>Doesn't return a list of references as this method should only be used by the engine which
-     * is responsible for the destroying of objects and therefore won't keep any strong references
-     * to destroyed objects.
-     */
-    protected void getAllChildren(List<GameObject> ret) {
-        for (GameObject child : mChildren) {
-            ret.add(child);
-            child.getAllChildren(ret);
         }
     }
 
@@ -388,7 +354,8 @@ public class GameObject implements Serializable {
      * @param name name of the object
      * @param handler handler callback to do initial setup
      */
-    public Reference<GameObject> buildChild(String name, boolean enabled, Transform transform, IBuildHandler handler) {
+    public Reference<GameObject> buildChild(
+            String name, boolean enabled, Transform transform, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled, transform);
         this.addChild(go);
         handler.handleBuild(go);
@@ -414,39 +381,6 @@ public class GameObject implements Serializable {
      */
     public void removeChild(GameObject child) {
         mChildren.remove(child);
-    }
-
-    /** Handle the destruction of the object. */
-    protected void engineDestroy() {
-        // Create a copy of the list of children this object has
-        ArrayList<GameObject> children = new ArrayList<>(mChildren);
-
-        // Iterate through the children and destroy all of them
-        for (GameObject child : children) {
-            child.engineDestroy();
-        }
-
-        // Add all components to the set of destroyed components.
-        // We do this instead of destroying them here to prevent double-destroys
-        Engine.getInstance().mDestroyedComponents.addAll(mComponents);
-
-        // Destroy the transform of this GameObject
-        if (mTransform != null) {
-            mTransform.destroy();
-            mTransform = null;
-        }
-
-        // After we have finished destroying we need to clear our reference so nothing attempts to
-        // access this after being destroyed
-        mReference.clear();
-
-        // Then remove this GameObject from the parent and remove the link to the parent
-        if (mParent != null) {
-            mParent.removeChild(this);
-            mParent = null;
-            setDepth(0);
-        }
-        mRoot = null;
     }
 
     /**
@@ -509,15 +443,6 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Getter for mComponents, should only be used by the engine.
-     *
-     * @return mComponents
-     */
-    protected ArrayList<Component> getComponents() {
-        return mComponents;
-    }
-
-    /**
      * Getter for mTransform with cast.
      *
      * @return mTransform cast to type if cast is valid, null otherwise
@@ -568,5 +493,77 @@ public class GameObject implements Serializable {
         for (GameObject child : mChildren) {
             child.setDepth(mDepth + 1);
         }
+    }
+
+    /**
+     * Get all components of a given type T.
+     *
+     * @param type Class object of T
+     * @param <T> Type of component to be returned
+     * @param ret List that will store the components found
+     */
+    public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
+        mComponents.stream()
+                .filter(type::isInstance)
+                .map(component -> component.getReference(type))
+                .filter(Reference::isValid)
+                .collect(Collectors.toCollection(() -> ret));
+    }
+
+    /**
+     * Getter for mComponents, should only be used by the engine.
+     *
+     * @return mComponents
+     */
+    protected ArrayList<Component> getComponents() {
+        return mComponents;
+    }
+
+    /**
+     * Get every child with this GameObject acting as the root in a tree, adding to the list in a
+     * depth-first order.
+     *
+     * <p>Doesn't return a list of references as this method should only be used by the engine which
+     * is responsible for the destroying of objects and therefore won't keep any strong references
+     * to destroyed objects.
+     */
+    protected void getAllChildren(List<GameObject> ret) {
+        for (GameObject child : mChildren) {
+            ret.add(child);
+            child.getAllChildren(ret);
+        }
+    }
+
+    /** Handle the destruction of the object. */
+    protected void engineDestroy() {
+        // Create a copy of the list of children this object has
+        ArrayList<GameObject> children = new ArrayList<>(mChildren);
+
+        // Iterate through the children and destroy all of them
+        for (GameObject child : children) {
+            child.engineDestroy();
+        }
+
+        // Add all components to the set of destroyed components.
+        // We do this instead of destroying them here to prevent double-destroys
+        Engine.getInstance().mDestroyedComponents.addAll(mComponents);
+
+        // Destroy the transform of this GameObject
+        if (mTransform != null) {
+            mTransform.destroy();
+            mTransform = null;
+        }
+
+        // After we have finished destroying we need to clear our reference so nothing attempts to
+        // access this after being destroyed
+        mReference.clear();
+
+        // Then remove this GameObject from the parent and remove the link to the parent
+        if (mParent != null) {
+            mParent.removeChild(this);
+            mParent = null;
+            setDepth(0);
+        }
+        mRoot = null;
     }
 }

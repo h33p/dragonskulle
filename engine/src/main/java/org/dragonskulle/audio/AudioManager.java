@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.audio;
 
 import java.io.File;
@@ -25,9 +24,8 @@ import org.lwjgl.openal.ALCapabilities;
  * The manager for the engine's audio system.
  *
  * @author Harry Stoltz
- *
- * <p>This class will handle the loading and buffering of all sound files, and will also manage
- * a pool of sources that can be used by AudioSources to play the sounds back
+ *     <p>This class will handle the loading and buffering of all sound files, and will also manage
+ *     a pool of sources that can be used by AudioSources to play the sounds back
  */
 @Accessors(prefix = "m")
 @Log
@@ -41,18 +39,14 @@ public class AudioManager {
     private final ArrayList<Source> mSources = new ArrayList<>();
     private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
 
-    @Getter
-    private Reference<AudioListener> mAudioListener;
+    @Getter private Reference<AudioListener> mAudioListener;
     private long mAlDev = -1;
     private long mAlCtx = -1;
 
-    @Getter
-    private float mMasterVolume = 1f;
-    @Getter
-    private boolean mMasterMuted = false;
+    @Getter private float mMasterVolume = 1f;
+    @Getter private boolean mMasterMuted = false;
 
-    @Getter
-    private boolean mInitialized = false;
+    @Getter private boolean mInitialized = false;
 
     /**
      * Constructor for AudioManager. It's private as AudioManager is designed as a singleton. Opens
@@ -63,9 +57,7 @@ public class AudioManager {
         initAudioManager();
     }
 
-    /**
-     * Attempt to create MAX_SOURCES sources.
-     */
+    /** Attempt to create MAX_SOURCES sources. */
     private void setupSources() {
         for (int i = 0; i < MAX_SOURCES; i++) {
             int source = AL11.alGenSources();
@@ -188,8 +180,8 @@ public class AudioManager {
      */
     public int loadSound(String file) {
 
-        String[] searchPaths = {"engine/src/main/resources/audio/",
-                "game/src/main/resources/audio/"
+        String[] searchPaths = {
+            "engine/src/main/resources/audio/", "game/src/main/resources/audio/"
         };
 
         for (String p : searchPaths) {
@@ -335,9 +327,7 @@ public class AudioManager {
         setMasterMute(!mMasterMuted);
     }
 
-    /**
-     * Cleanup all resources still in use.
-     */
+    /** Cleanup all resources still in use. */
     public void cleanup() {
         if (mAlDev == -1) {
             return;
@@ -349,7 +339,7 @@ public class AudioManager {
         mSources.clear();
 
         for (WaveSound s : mSounds) {
-            AL11.alDeleteBuffers(s.buffer);
+            AL11.alDeleteBuffers(s.mBuffer);
         }
         mSounds.clear();
 

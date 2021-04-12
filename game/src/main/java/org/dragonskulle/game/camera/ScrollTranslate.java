@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.camera;
 
 import java.util.Arrays;
@@ -28,12 +27,10 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
     }
 
     /** Controls the minimum zoom speed. */
-    @Getter @Setter
-    private float mMinSpeed = 0.01f;
+    @Getter @Setter private float mMinSpeed = 0.01f;
 
     /** Controls the maximum zoom speed. */
-    @Getter @Setter
-    private float mMaxSpeed = 0.1f;
+    @Getter @Setter private float mMaxSpeed = 0.1f;
 
     /**
      * Controls the curvature of scroll speed.
@@ -41,8 +38,7 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
      * <p>Essentially, with values over 1, the less we are zoomed in, the quicker we can zoom in.
      * The more we are zoomed in, the slower additional zoom is.
      */
-    @Getter @Setter
-    private float mPowFactor = 1.5f;
+    @Getter @Setter private float mPowFactor = 1.5f;
 
     @Getter private final Vector3f mStartPos = new Vector3f();
     @Getter private final Vector3f mEndPos = new Vector3f();

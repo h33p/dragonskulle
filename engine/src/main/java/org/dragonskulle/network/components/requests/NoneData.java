@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components.requests;
 
 import java.io.DataInputStream;
@@ -7,9 +6,7 @@ import java.io.DataOutputStream;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- *
  * @author Aurimas Blažulionis
- *
  *     <p>This class represents empty data sent to the server. It takes up 0 bytes.
  */
 public class NoneData implements INetSerializable {

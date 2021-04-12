@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import org.dragonskulle.components.Component;
  * Scene class.
  *
  * @author Harry Stoltz
- *
  *     <p>Represents a single scene in a game, storing a list of all GameObjects in that scene.
  */
 @Accessors(prefix = "m")

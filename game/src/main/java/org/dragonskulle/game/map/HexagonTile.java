@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.map;
 
+import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,11 +13,9 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.Building;
 import org.dragonskulle.game.player.Player;
-import java.util.Arrays;
 
 /**
  * @author Leela Muppala
- *
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
  *     coordinates of each tile.
  */
@@ -50,7 +48,7 @@ public class HexagonTile {
     @Getter(AccessLevel.PACKAGE)
     private final GameObject mGameObject;
 
-    /** Building that is on the tile */
+    /** Building that is on the tile. */
     @Getter @Setter private Building mBuilding;
 
     /** A reference to the building that claims the tile, or {@code null}. */

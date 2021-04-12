@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components.sync;
 
 import java.io.DataInputStream;
@@ -9,9 +8,7 @@ import java.io.Serializable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-/**
- * @author Oscar L
- * */
+/** @author Oscar L */
 public class SyncVector3 implements ISyncVar, Serializable {
     private Vector3f mData = new Vector3f();
 

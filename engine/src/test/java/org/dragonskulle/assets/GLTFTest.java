@@ -1,9 +1,9 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.assets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

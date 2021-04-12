@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
@@ -25,10 +24,7 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/**
- *
- * @author Oscar L
- * */
+/** @author Oscar L */
 @Accessors(prefix = "m")
 @Log
 public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStart {

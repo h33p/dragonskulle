@@ -1,17 +1,13 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components.sync;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.Serializable;
 
 /**
- *
  * @author Aurimas B The type Sync int.
- *
  *     <p>This primitve type is implemented manually more space savings.
  */
 public class SyncInt implements ISyncVar, Serializable {

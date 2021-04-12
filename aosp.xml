@@ -71,7 +71,7 @@
     <module name="LeftCurly">
       <property name="tokens"
                value="ANNOTATION_DEF, CLASS_DEF, CTOR_DEF, ENUM_CONSTANT_DEF, ENUM_DEF,
-                    INTERFACE_DEF, LAMBDA, LITERAL_CASE, LITERAL_CATCH, LITERAL_DEFAULT,
+                    INTERFACE_DEF, LAMBDA, LITERAL_CATCH, LITERAL_DEFAULT,
                     LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF,
                     LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, METHOD_DEF,
                     OBJBLOCK, STATIC_INIT, RECORD_DEF, COMPACT_CTOR_DEF"/>
@@ -127,13 +127,6 @@
     <module name="FallThrough"/>
     <module name="UpperEll"/>
     <module name="ModifierOrder"/>
-    <module name="EmptyLineSeparator">
-      <property name="tokens"
-               value="PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF, INTERFACE_DEF, ENUM_DEF,
-                    STATIC_INIT, INSTANCE_INIT, METHOD_DEF, CTOR_DEF, VARIABLE_DEF, RECORD_DEF,
-                    COMPACT_CTOR_DEF"/>
-      <property name="allowNoEmptyLineBetweenFields" value="true"/>
-    </module>
     <module name="SeparatorWrap">
       <property name="id" value="SeparatorWrapDot"/>
       <property name="tokens" value="DOT"/>
@@ -161,11 +154,6 @@
       <property name="tokens" value="METHOD_REF"/>
       <property name="option" value="nl"/>
     </module>
-    <module name="PackageName">
-      <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9]*)*$"/>
-      <message key="name.invalidPattern"
-             value="Package name ''{0}'' must match pattern ''{1}''."/>
-    </module>
     <module name="TypeName">
       <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF,
                     ANNOTATION_DEF, RECORD_DEF"/>
@@ -173,7 +161,7 @@
              value="Type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="MemberName">
-      <property name="format" value="^m[A-Z][a-za-zA-Z0-9]*$"/>
+      <property name="format" value="^m[A-Z][a-zA-Z0-9]*$"/>
       <message key="name.invalidPattern"
              value="Member name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -200,7 +188,7 @@
              value="Catch parameter name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="LocalVariableName">
-      <property name="format" value="^[a-z]([a-zA-Z0-9][a-za-zA-Z0-9]*)?$"/>
+      <property name="format" value="^[a-z]([a-zA-Z0-9]\_?[a-zA-Z0-9]*)*$"/>
       <message key="name.invalidPattern"
              value="Local variable name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -247,9 +235,10 @@
     </module>
     <module name="Indentation">
       <property name="basicOffset" value="4"/>
-      <property name="braceAdjustment" value="2"/>
+      <property name="braceAdjustment" value="4"/>
       <property name="caseIndent" value="4"/>
       <property name="throwsIndent" value="4"/>
+	  <property name="arrayInitIndent" value="8"/>
       <property name="lineWrappingIndentation" value="4"/>
     </module>
     <module name="AbbreviationAsWordInName">
@@ -307,23 +296,24 @@
     <module name="NonEmptyAtclauseDescription"/>
     <module name="InvalidJavadocPosition"/>
     <module name="SummaryJavadoc">
+	  <property name="severity" value="error" />
       <property name="forbiddenSummaryFragments"
                value="^@return the *|^This method returns |^A [{]@code [a-za-zA-Z0-9]+[}]( is a )"/>
     </module>
-    <module name="JavadocParagraph"/>
-    <module name="RequireEmptyLineBeforeBlockTagGroup"/>
     <module name="AtclauseOrder">
       <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
       <property name="target"
                value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
     </module>
     <module name="JavadocMethod">
+	  <property name="severity" value="error"/>
       <property name="allowMissingParamTags" value="false"/>
       <property name="allowMissingReturnTag" value="false"/>
       <property name="allowedAnnotations" value="Override, Test"/>
       <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF"/>
     </module>
     <module name="MissingJavadocMethod">
+	  <property name="severity" value="error"/>
       <property name="scope" value="private"/>
 	  <property name="allowMissingPropertyJavadoc" value="false"/>
       <property name="allowedAnnotations" value="Override, Test"/>
@@ -331,6 +321,7 @@
                                    COMPACT_CTOR_DEF"/>
     </module>
     <module name="MissingJavadocType">
+	  <property name="severity" value="error"/>
       <property name="scope" value="protected"/>
       <property name="tokens"
                 value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF,
@@ -342,9 +333,8 @@
       <message key="name.invalidPattern"
              value="Method name ''{0}'' must match pattern ''{1}''."/>
     </module>
-    <module name="SingleLineJavadoc"/>
     <module name="EmptyCatchBlock">
-      <property name="exceptionVariableName" value="expected"/>
+      <property name="exceptionVariableName" value="ignored"/>
     </module>
     <module name="CommentsIndentation">
       <property name="tokens" value="SINGLE_LINE_COMMENT, BLOCK_COMMENT_BEGIN"/>

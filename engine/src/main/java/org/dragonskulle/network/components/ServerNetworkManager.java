@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +33,7 @@ import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 @Accessors(prefix = "m")
 @Log
 public class ServerNetworkManager {
-    /** Server event listener */
+    /** Server event listener. */
     public class Listener implements IServerListener {
         /**
          * Client connected event.

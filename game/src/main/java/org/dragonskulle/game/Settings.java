@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,9 +10,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
-/**
- * @author Oscar L For loading in any settings from the settings.json file.
- * */
+/** @author Oscar L For loading in any settings from the settings.json file. */
 @Accessors(prefix = "m")
 @Log
 public class Settings {

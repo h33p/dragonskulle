@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.network;
 
 import org.dragonskulle.components.IFrameUpdate;
@@ -9,7 +8,6 @@ import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 
 /**
- *
  * @author Oscar L A simple version of a networked transform, it moves the x value of the component
  *     forward and backwards.
  */

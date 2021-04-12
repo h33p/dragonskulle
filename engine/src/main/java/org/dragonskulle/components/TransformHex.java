@@ -1,5 +1,4 @@
 /* (C) 2021 DragonSkulle */
-
 package org.dragonskulle.components;
 
 import lombok.Getter;
@@ -16,7 +15,6 @@ import org.joml.Vector3fc;
  * Represents an objects position in hex coordinates.
  *
  * @author Harry Stoltz
- *
  *     <p>This extends Transform, and provides transformations to be done in hex (axial)
  *     coordinates.
  */
@@ -192,8 +190,11 @@ public class TransformHex extends Transform {
             mLocalMatrix.identity().translate(mCartesianPosition).rotateZ(mRotation);
 
             Transform parent = mGameObject.getParentTransform();
-            if (parent != null) mWorldMatrix.set(parent.getMatrixForChildren());
-            else mWorldMatrix.identity();
+            if (parent != null) {
+                mWorldMatrix.set(parent.getMatrixForChildren());
+            } else {
+                mWorldMatrix.identity();
+            }
 
             mWorldMatrix.mul(mLocalMatrix);
         }
@@ -295,7 +296,6 @@ public class TransformHex extends Transform {
      *
      * @param cartesian Vector3f with cartesian coordinates to convert
      */
-
     public static void cartesianToAxial(Vector3f cartesian) {
         // Multiply cartesian by the PIXEL_TO_HEX matrix
         cartesian.mul(WORLD_TO_HEX);
