@@ -259,8 +259,6 @@ public class App implements NativeResource {
                             title.addComponent(txt);
                         });
 
-        mainMenu.addRootObject(gameTitle);
-
         GameObject mainUI =
                 new GameObject(
                         "mainUI",
@@ -268,6 +266,7 @@ public class App implements NativeResource {
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
+                            root.addChild(gameTitle);
                         });
 
         GameObject joinUI =
@@ -391,25 +390,6 @@ public class App implements NativeResource {
 
                                 button.addComponent(newButton);
                             });
-                    bg.buildChild(
-                            "slider",
-                            new TransformUI(true),
-                            (slider) -> {
-                                slider.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
-                                slider.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UISlider newSlider =
-                                        new UISlider((uiSlider, val) -> log.info("Value " + val));
-
-                                newSlider.setValue(
-                                        Settings.getInstance()
-                                                .retrieveFloat("sliderDefaultValue", 0.5f));
-                                newSlider.setRoundStep(0.1f);
-                                newSlider.setMaxValue(10f);
-
-                                slider.addComponent(newSlider);
-                            });
                 });
         joinUI.buildChild(
                 "bg",
@@ -463,15 +443,16 @@ public class App implements NativeResource {
                                                                             onConnectedClient(
                                                                                     gameScene,
                                                                                     manager, netID);
-                                                                        } else if (connectingTextRef
-                                                                                .isValid()) {
+                                                                        } else if (Reference
+                                                                                .isValid(
+                                                                                        connectingTextRef)) {
                                                                             connectingTextRef
                                                                                     .get()
                                                                                     .setEnabled(
                                                                                             false);
                                                                         }
                                                                     });
-                                                    if (connectingTextRef.isValid())
+                                                    if (Reference.isValid(connectingTextRef))
                                                         connectingTextRef.get().setEnabled(true);
                                                 });
                                 button.addComponent(newButton);

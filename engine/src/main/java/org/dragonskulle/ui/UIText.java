@@ -45,10 +45,6 @@ public class UIText extends Renderable implements IOnAwake {
     @Override
     public void onAwake() {
 
-        if (mText.equals("Hex Wars")) {
-            System.out.println("HEX WARRRRRS");
-        }
-
         if (mSetMarginsOnAwake) {
             TransformUI transform = getGameObject().getTransform(TransformUI.class);
             transform.setMargin(-UIManager.getInstance().getAppearence().getTextMargins());
@@ -166,10 +162,6 @@ public class UIText extends Renderable implements IOnAwake {
     private Mesh buildMesh() {
         Font font = mFont.get();
 
-        if (mText.equals("Hex Wars")) {
-            System.out.println("BUILD MESH HW");
-        }
-
         ArrayList<Vertex> vertices = new ArrayList<>(mText.length() * 4);
         ArrayList<Integer> indices = new ArrayList<>(mText.length() * 6);
         final int[] pos = {0, 0};
@@ -251,12 +243,6 @@ public class UIText extends Renderable implements IOnAwake {
 
     @Override
     public void writeVertexInstanceData(int offset, ByteBuffer buffer, List<Light> lights) {
-
-        /*if (mText.equals("Hex Wars")) {
-            TransformUI uit = getGameObject().getTransform(TransformUI.class);
-            System.out.println("HW " + getMesh() + " " + getMaterial() + " " + uit.getTargetAspectRatio() + uit.getLocalCorners().toString());
-        }*/
-
         Matrix4fc mat = getGameObject().getTransform().getWorldMatrix();
         mMaterial.writeVertexInstanceData(offset, buffer, mat, lights);
     }

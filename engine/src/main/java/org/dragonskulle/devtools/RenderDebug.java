@@ -46,6 +46,7 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
             text.setDepthShift(-10f);
             getGameObject().addComponent(text);
             mText = text.getReference(UIText.class);
+            text.setSetMarginsOnAwake(false);
         }
 
         mText.get().setEnabled(false);
@@ -55,7 +56,7 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
     public void frameUpdate(float deltaTime) {
         boolean debugPressed = DEBUG_ACTION.isActivated();
 
-        if (mText != null && mText.isValid()) {
+        if (Reference.isValid(mText)) {
             if (debugPressed && !mLastPressed) mText.get().setEnabled(!mText.get().isEnabled());
 
             mLastPressed = debugPressed;

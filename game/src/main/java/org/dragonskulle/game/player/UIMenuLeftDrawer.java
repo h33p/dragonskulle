@@ -119,7 +119,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
-                    if (buildingChosen != null && buildingChosen.isValid()) {
+                    if (Reference.isValid(buildingChosen)) {
 
                         // TODO Change tiles which can be attacked
                         mSetHexChosen.set(null);
@@ -154,7 +154,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     if (mGetHexChosen.get() != null) {
                         log.info("Running place button lambda");
                         Reference<Player> player = mGetPlayer.get();
-                        if (player != null && player.isValid()) {
+                        if (Reference.isValid(player)) {
                             player.get()
                                     .getClientBuildRequest()
                                     .invoke(new BuildData(mGetHexChosen.get()));
@@ -183,9 +183,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     StatType statType = StatType.ATTACK;
 
                     Reference<Player> player = mGetPlayer.get();
-                    if (player != null && player.isValid()) {
+                    if (Reference.isValid(player)) {
                         Reference<Building> buildingChosen = mGetBuildingChosen.get();
-                        if (buildingChosen != null && buildingChosen.isValid()) {
+                        if (Reference.isValid(buildingChosen)) {
                             player.get()
                                     .getClientStatRequest()
                                     .invoke(
@@ -211,9 +211,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     // sell buildingSelectedView
 
                     Reference<Player> player = mGetPlayer.get();
-                    if (player != null && player.isValid()) {
+                    if (Reference.isValid(player)) {
                         Reference<Building> buildingChosen = mGetBuildingChosen.get();
-                        if (buildingChosen != null && buildingChosen.isValid()) {
+                        if (Reference.isValid(buildingChosen)) {
                             player.get()
                                     .getClientSellRequest()
                                     .invoke(new SellData(buildingChosen.get())); // Send Data
@@ -283,24 +283,24 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         switch (mScreenOn) {
             case BUILDING_SELECTED_SCREEN:
                 button = mButtonReferences.get("place_button");
-                if (button != null && button.isValid()) {}
+                if (Reference.isValid(button)) {}
 
                 break;
             case TILE_SCREEN:
                 button = mButtonReferences.get("sell_button");
-                if (button != null && button.isValid()) {
+                if (Reference.isValid(button)) {
                     // should disable button
                 }
                 break;
             case ATTACK_SCREEN:
                 button = mButtonReferences.get("attack_button");
-                if (button != null && button.isValid()) {
+                if (Reference.isValid(button)) {
                     // should disable button
                 }
                 break;
             case STAT_SCREEN:
                 button = mButtonReferences.get("upgrade_button");
-                if (button != null && button.isValid()) {
+                if (Reference.isValid(button)) {
                     // should disable button
                 }
                 break;

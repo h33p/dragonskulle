@@ -143,7 +143,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
         Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
-        if (buildingReference == null || buildingReference.isValid() == false) {
+        if (!Reference.isValid(buildingReference)) {
             log.info("AI: could not get building to upgrade.");
             return false;
         }
@@ -222,7 +222,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
             Reference<Building> buildingReference =
                     getPlayer().getOwnedBuildings().get(buildingIndex);
-            if (buildingReference == null || buildingReference.isValid() == false) {
+            if (!Reference.isValid(buildingReference)) {
                 log.info("AI: could not get building to sell.");
                 return false;
             }

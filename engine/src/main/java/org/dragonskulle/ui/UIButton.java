@@ -346,7 +346,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         UIAppearence appearence = UIManager.getInstance().getAppearence();
 
         mRenderable = getGameObject().getComponent(UIRenderable.class);
-        if (mRenderable == null || !mRenderable.isValid()) {
+        if (!Reference.isValid(mRenderable)) {
             getGameObject().addComponent(new UIRenderable(appearence.getButtonTexture()));
             mRenderable = getGameObject().getComponent(UIRenderable.class);
         }
