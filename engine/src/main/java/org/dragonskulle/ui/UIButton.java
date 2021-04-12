@@ -322,7 +322,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     @Override
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
-        if (mRenderable == null || !mRenderable.isValid()) {
+        if (!Reference.isValid(mRenderable)) {
             getGameObject()
                     .addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
             mRenderable = getGameObject().getComponent(UIRenderable.class);

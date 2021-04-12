@@ -18,9 +18,9 @@ import org.joml.Vector3f;
 public class UITokenCounter extends Component implements IOnStart {
     public void setLabelReference(int newTokens) {
         Reference<UIButton> buttonRef = getGameObject().getComponent(UIButton.class);
-        if (buttonRef != null && buttonRef.isValid()) {
+        if (Reference.isValid(buttonRef)) {
             Reference<UIText> txt = buttonRef.get().getLabelText();
-            if (txt != null && txt.isValid()) {
+            if (Reference.isValid(txt)) {
                 txt.get().setText("Tokens: " + newTokens);
             }
         }

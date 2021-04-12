@@ -55,17 +55,17 @@ public abstract class Actions {
 
     /** @return dereferenced {@link sOnPress} */
     public static IButtonEvent getOnPress() {
-        return sOnPress != null && sOnPress.isValid() ? sOnPress.get() : null;
+        return Reference.isValid(sOnPress) ? sOnPress.get() : null;
     }
 
     /** @return dereferenced {@link sOnRelease} */
     public static IButtonEvent getOnRelease() {
-        return sOnRelease != null && sOnRelease.isValid() ? sOnRelease.get() : null;
+        return Reference.isValid(sOnRelease) ? sOnRelease.get() : null;
     }
 
     /** @return dereferenced {@link sOnChar} */
     public static ICharEvent getOnChar() {
-        return sOnChar != null && sOnChar.isValid() ? sOnChar.get() : null;
+        return Reference.isValid(sOnChar) ? sOnChar.get() : null;
     }
 
     public static boolean isBeingIntercepted() {

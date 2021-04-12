@@ -524,8 +524,9 @@ public class App implements NativeResource {
                                                                                         gameScene,
                                                                                         manager,
                                                                                         netID);
-                                                                            } else if (connectingTextRef
-                                                                                    .isValid()) {
+                                                                            } else if (Reference
+                                                                                    .isValid(
+                                                                                            connectingTextRef)) {
                                                                                 connectingTextRef
                                                                                         .get()
                                                                                         .setEnabled(
@@ -536,13 +537,13 @@ public class App implements NativeResource {
 
                                                         e.printStackTrace();
 
-                                                        if (connectingTextRef.isValid())
+                                                        if (Reference.isValid(connectingTextRef))
                                                             connectingTextRef
                                                                     .get()
                                                                     .setText("Invalid input!");
                                                     }
 
-                                                    if (connectingTextRef.isValid())
+                                                    if (Reference.isValid(connectingTextRef))
                                                         connectingTextRef.get().setEnabled(true);
                                                 });
                                 button.addComponent(newButton);

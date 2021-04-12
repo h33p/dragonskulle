@@ -141,7 +141,7 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
     @Override
     protected void onDestroy() {
         mOnChar.clear();
-        if (mButton != null && mButton.isValid()) {
+        if (Reference.isValid(mButton)) {
             mButton.get().destroy();
         }
     }
