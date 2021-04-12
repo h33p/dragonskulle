@@ -12,6 +12,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
 
