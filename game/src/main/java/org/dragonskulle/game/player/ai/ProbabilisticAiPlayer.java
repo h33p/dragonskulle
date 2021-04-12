@@ -38,12 +38,6 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     @Override
     protected void simulateInput() {
 
-        // TODO: Remove/formalise this.
-        if (getPlayer().getNumberOfOwnedBuildings() == 0) {
-            log.info("AI player has no buildings... Ending turn.");
-            return;
-        }
-
         // If only one building assumed that its capital
         if (getPlayer().getNumberOfOwnedBuildings() == 1) {
             // TODO: What if there are no valid places to put a building? Should it attack/upgrade
