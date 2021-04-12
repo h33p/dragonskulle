@@ -167,7 +167,16 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
         if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
     }
 
-    void setCursor(int position) {
+    /**
+     * Sets the cursor position
+     *
+     * <p>Sets the cursor position, and makes it visible.
+     *
+     * @param position the cursor position. If the position is non-negative, it will place the
+     *     cursor before the specified character. If position lies out of [0; mText.length()] bounds
+     *     (is negative, or higher than the text length), the cursor will simply not show up.
+     */
+    void setCursorPos(int position) {
         if (mCursorPos == position) {
             return;
         }
@@ -189,8 +198,11 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
 
         ArrayList<Vertex> vertices = new ArrayList<>(mText.length() * 4);
         ArrayList<Integer> indices = new ArrayList<>(mText.length() * 6);
-        ArrayList<Vector2f> positions = new ArrayList<>(mText.length());
-        ArrayList<Vector2f> positions2 = new ArrayList<>(mText.length());
+
+        /** All startBox positions go here */
+        ArrayList<Vector2f> preCharPositions = new ArrayList<>(mText.length());
+        /** All endBox positions go here */
+        ArrayList<Vector2f> postCharPositions = new ArrayList<>(mText.length());
         final int[] pos = {0, 0};
         final float scale = 0.003f;
 
@@ -202,8 +214,8 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
         Vector2f startUV = new Vector2f();
         Vector2f endUV = new Vector2f();
 
-        positions.add(new Vector2f(pos[0], pos[1]));
-        positions2.add(new Vector2f());
+        preCharPositions.add(new Vector2f(pos[0], pos[1]));
+        postCharPositions.add(new Vector2f());
 
         // Put every character onto the mesh
         mText.chars()
@@ -222,13 +234,13 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
                                 bbmax.max(endBox);
                                 Mesh.addQuadToList(
                                         vertices, indices, startBox, endBox, startUV, endUV);
-                                positions2
-                                        .get(positions2.size() - 1)
+                                postCharPositions
+                                        .get(postCharPositions.size() - 1)
                                         .set(startBox.x, pos[1] * scale);
-                                positions2.add(new Vector2f(endBox.x, pos[1] * scale));
+                                postCharPositions.add(new Vector2f(endBox.x, pos[1] * scale));
                             }
 
-                            positions.add(new Vector2f(pos[0], pos[1]));
+                            preCharPositions.add(new Vector2f(pos[0], pos[1]));
                         });
 
         float width = bbmax.x() - bbmin.x();
@@ -268,10 +280,10 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
         final boolean withCursor = mCursorPos >= 0 && mCursorPos <= mText.length();
 
         if (withCursor) {
-            Vector2f p = positions.get(mCursorPos);
+            Vector2f p = preCharPositions.get(mCursorPos);
             pos[0] = (int) p.x;
             pos[1] = (int) p.y;
-            Vector2f p2 = positions2.get(mCursorPos);
+            Vector2f p2 = postCharPositions.get(mCursorPos);
 
             font.getGlyph('|', pos, startBox, endBox, startUV, endUV);
             startBox.mul(scale);

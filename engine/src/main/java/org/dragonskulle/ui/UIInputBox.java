@@ -39,7 +39,7 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
                 text = text.substring(0, mPosition) + c + text.substring(mPosition);
                 mText.get().setText(text);
                 mPosition++;
-                mText.get().setCursor(mPosition);
+                mText.get().setCursorPos(mPosition);
             };
 
     private Reference<ICharEvent> mOnChar;
@@ -68,7 +68,7 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
     public void frameUpdate(float deltaTime) {
 
         if (Actions.getOnChar() != mOnCharInner) {
-            mText.get().setCursor(-1);
+            mText.get().setCursorPos(-1);
             return;
         }
 
@@ -116,7 +116,7 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
             }
         }
 
-        mText.get().setCursor(mPosition);
+        mText.get().setCursorPos(mPosition);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
                         (__, ___) -> {
                             mPosition = mText.get().getText().length();
                             Actions.setOnChar(mOnChar);
-                            mText.get().setCursor(mPosition);
+                            mText.get().setCursorPos(mPosition);
                         });
 
         getGameObject().addComponent(button);
