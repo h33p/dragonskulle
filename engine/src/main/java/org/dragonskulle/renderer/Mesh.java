@@ -25,6 +25,13 @@ public class Mesh implements Serializable {
     /** Indices of the mesh. In pairs of 3, forming triangles */
     private int[] mIndices;
 
+    /** The minimum coordinate of the bounding box */
+    private final Vector3f mBBMin = new Vector3f();
+    /** The maximum coordinate of the bounding box */
+    private final Vector3f mBBMax = new Vector3f();
+    /** The center of the bounding box */
+    private final Vector3f mBBCenter = new Vector3f();
+
     /** Reference count of the mesh used for resource tracking */
     @Getter private int mRefCount = 0;
 
@@ -103,6 +110,22 @@ public class Mesh implements Serializable {
     public Mesh(Vertex[] vertices, int[] indices) {
         mVertices = vertices;
         mIndices = indices;
+        calculateBoundingBox();
+    }
+
+    /** Get the bounding box minimum */
+    public Vector3fc getBBMin() {
+        return mBBMin;
+    }
+
+    /** Get the bounding box maximum */
+    public Vector3fc getBBMax() {
+        return mBBMax;
+    }
+
+    /** Get the bounding box center */
+    public Vector3fc getBBCenter() {
+        return mBBCenter;
     }
 
     public static void addQuadToList(
@@ -187,5 +210,24 @@ public class Mesh implements Serializable {
         // There is a potential chance for collision, yes,
         // but that is extremely unlikely. Billions to one!
         return mVertices.length == mesh.mVertices.length && mIndices.length == mesh.mIndices.length;
+    }
+
+    private void calculateBoundingBox() {
+        if (mVertices.length == 0) {
+            mBBMin.set(0);
+            mBBMax.set(0);
+            mBBCenter.set(0);
+            return;
+        }
+
+        mBBMin.set(Float.POSITIVE_INFINITY);
+        mBBMax.set(Float.NEGATIVE_INFINITY);
+
+        for (Vertex v : mVertices) {
+            mBBMin.min(v.getPos());
+            mBBMax.max(v.getPos());
+        }
+
+        mBBCenter.set(mBBMin).add(mBBMax).mul(0.5f);
     }
 }
