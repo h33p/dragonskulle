@@ -22,7 +22,7 @@ import org.dragonskulle.utils.MathUtils;
 @Log
 public class FogTile extends Component implements IOnAwake, IFrameUpdate {
 
-    @Getter @Setter private float mFadeTime = 0.2f;
+    @Getter @Setter private float mFadeTime = 0.4f;
 
     private float mTarget = 1f;
 

@@ -15,7 +15,6 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.Time;
 import org.dragonskulle.game.player.Player;
 
 /**
@@ -50,8 +49,6 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
 
         if (activePlayer == null) return;
-
-        double time = Time.getPreciseTimeInSeconds();
 
         mMapReference
                 .get()
@@ -98,9 +95,9 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         if (Reference.isValid(tileRef)) {
             tileRef.get().setFog(enable);
             return;
+        } else if (!enable) {
+            return;
         }
-
-        if (!enable) return;
 
         GameObject go =
                 GameObject.instantiate(

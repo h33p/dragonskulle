@@ -18,21 +18,21 @@ import org.joml.*;
 @Accessors(prefix = "m")
 public class Mesh implements Serializable {
     @Getter
-    /** Vertices of the mesh */
+    /** Vertices of the mesh. */
     private Vertex[] mVertices;
 
     @Getter
-    /** Indices of the mesh. In pairs of 3, forming triangles */
+    /** Indices of the mesh. In pairs of 3, forming triangles. */
     private int[] mIndices;
 
-    /** The minimum coordinate of the bounding box */
+    /** The minimum coordinate of the bounding box. */
     private final Vector3f mBBMin = new Vector3f();
-    /** The maximum coordinate of the bounding box */
+    /** The maximum coordinate of the bounding box. */
     private final Vector3f mBBMax = new Vector3f();
-    /** The center of the bounding box */
+    /** The center of the bounding box. */
     private final Vector3f mBBCenter = new Vector3f();
 
-    /** Reference count of the mesh used for resource tracking */
+    /** Reference count of the mesh used for resource tracking. */
     @Getter private int mRefCount = 0;
 
     private int mCachedHashCode = 0;
@@ -113,17 +113,17 @@ public class Mesh implements Serializable {
         calculateBoundingBox();
     }
 
-    /** Get the bounding box minimum */
+    /** Get the bounding box minimum. */
     public Vector3fc getBBMin() {
         return mBBMin;
     }
 
-    /** Get the bounding box maximum */
+    /** Get the bounding box maximum. */
     public Vector3fc getBBMax() {
         return mBBMax;
     }
 
-    /** Get the bounding box center */
+    /** Get the bounding box center. */
     public Vector3fc getBBCenter() {
         return mBBCenter;
     }
