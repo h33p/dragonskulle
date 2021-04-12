@@ -83,6 +83,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return If the stuff is invoked on the server
      */
     public boolean checkBuilding(IHandleBuildingEvent lambdaMethod) {
+    	
         if (getPlayer() == null) {
             return false;
         }
@@ -90,15 +91,21 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
         final int END = index;
 
+        // Goes through the ownedBuildings
         while (true) {
+        	// Check
             boolean completed = lambdaMethod.handleEvent(index);
             if (completed) {
                 return true;
             }
             index++;
+            
+            // If gone over start at 0
             if (index >= getPlayer().getNumberOfOwnedBuildings()) {
                 index = 0;
             }
+            
+            // Checks if we've gone through the whole list
             if (index == END) {
 
                 return false;
@@ -126,12 +133,17 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean tryToAddBuilding(int index) {
         ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
 
+        // Checks the list is valid
         if (buildings.get(index).isValid()
                 && buildings.get(index).get().getViewableTiles().size() != 0) {
-            List<HexagonTile> visibleTiles =
+            
+        	// Get the visible tiles
+        	List<HexagonTile> visibleTiles =
                     new ArrayList<HexagonTile>(buildings.get(index).get().getViewableTiles());
             int j = mRandom.nextInt(visibleTiles.size());
             final int END = j;
+            
+            // Checks if we can use one of the tiles to build from
             while (true) {
                 HexagonTile tile = visibleTiles.get(j);
                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
@@ -202,9 +214,14 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return whether it was invoked
      */
     private boolean tryToAttack(int index) {
+    	
         ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+        
+        // Checks if buildings is valid
         if (buildings.get(index).isValid()
                 && buildings.get(index).get().getAttackableBuildings().size() != 0) {
+        	
+        	// Gets the defending and attacking buildings
             int buildingChoice =
                     mRandom.nextInt(buildings.get(index).get().getAttackableBuildings().size());
             Building defender =
