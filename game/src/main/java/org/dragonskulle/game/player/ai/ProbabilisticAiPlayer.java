@@ -134,7 +134,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
 
         // Checks the list is valid
-        if (buildings.get(index).isValid()
+        if (Reference.isValid(buildings.get(index))
                 && buildings.get(index).get().getViewableTiles().size() != 0) {
 
             // Get the visible tiles
@@ -218,7 +218,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
 
         // Checks if buildings is valid
-        if (buildings.get(index).isValid()
+        if (Reference.isValid(buildings.get(index))
                 && buildings.get(index).get().getAttackableBuildings().size() != 0) {
 
             // Gets the defending and attacking buildings
