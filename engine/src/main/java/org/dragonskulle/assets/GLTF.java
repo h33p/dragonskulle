@@ -422,6 +422,8 @@ public class GLTF implements NativeResource {
                 SampledTexture baseSampled = null;
                 SampledTexture metallicSampled = null;
 
+                String alphaMode = (String) mat.get("alphaMode");
+
                 JSONObject rough = (JSONObject) mat.get("pbrMetallicRoughness");
                 if (rough != null) {
                     JSONArray baseFactor = (JSONArray) rough.get("baseColorFactor");
@@ -460,8 +462,19 @@ public class GLTF implements NativeResource {
                 }
 
                 PBRMaterial pbrMat = new PBRMaterial(baseColor);
+
+                if (alphaMode != null) {
+                    switch (alphaMode) {
+                        case "BLEND":
+                            pbrMat.setAlphaBlend(true);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
                 if (baseSampled != null) pbrMat.setAlbedoMap(baseSampled);
-                if (normalSampled != null) pbrMat.setNormaMap(normalSampled);
+                if (normalSampled != null) pbrMat.setNormalMap(normalSampled);
                 if (metallicSampled != null) {
                     pbrMat.setMetalnessRoughnessMap(metallicSampled);
                 }

@@ -128,11 +128,13 @@ public class UnlitMaterial
      * @param buffer where to write the data to
      * @param matrix the world space matrix of the object
      * @param lights the world lights (unused)
+     * @return the offset after written data
      */
-    public void writeVertexInstanceData(
+    public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         mColour.get(offset, buffer);
+        return offset + 4 * 4;
     }
 
     /**

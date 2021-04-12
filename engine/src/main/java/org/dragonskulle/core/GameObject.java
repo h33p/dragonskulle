@@ -40,6 +40,29 @@ public class GameObject implements Serializable {
     /** How deep the object is within the game object structure */
     @Getter private int mDepth = 0;
 
+    static {
+        Engine.getCloner()
+                .registerFastCloner(
+                        GameObject.class,
+                        (t, cloner, clones) -> {
+                            GameObject toClone = (GameObject) t;
+                            GameObject cloned = new GameObject(toClone.mName);
+                            clones.put(toClone, cloned);
+                            cloned.mRoot = cloner.deepClone(toClone.mRoot, clones);
+                            cloned.mParent = cloner.deepClone(toClone.mParent, clones);
+                            cloned.mTransform = cloner.deepClone(toClone.mTransform, clones);
+                            for (Component comp : toClone.mComponents) {
+                                cloned.mComponents.add(cloner.deepClone(comp, clones));
+                            }
+                            for (GameObject go : toClone.mChildren) {
+                                cloned.mChildren.add(cloner.deepClone(go, clones));
+                            }
+                            cloned.mEnabled = toClone.mEnabled;
+                            cloned.mDepth = toClone.mDepth;
+                            return cloned;
+                        });
+    }
+
     /**
      * A handler interface for building game objects
      *
@@ -65,7 +88,7 @@ public class GameObject implements Serializable {
     public static GameObject instantiate(GameObject object) {
         GameObject instance = object.createClone();
         instance.mTransform.setGameObject(instance);
-        return object.createClone();
+        return instance;
     }
 
     /**
@@ -78,6 +101,40 @@ public class GameObject implements Serializable {
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
+        transform.setGameObject(instance);
+        instance.mTransform = transform;
+        return instance;
+    }
+
+    /**
+     * Create a game object from its byte data
+     *
+     * @param objectData data to deserialize
+     * @return instantiated object
+     */
+    public static GameObject instantiate(byte[] objectData) {
+        if (objectData != null) {
+            try {
+                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
+                return (GameObject) new ObjectInputStream(bais).readObject();
+            } catch (ClassCastException | ClassNotFoundException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create a clone of a GameObject, providing a new transform for the object
+     *
+     * @param objectData data of the object
+     * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
+     *     instance)
+     * @return The new instance of the GameObject
+     */
+    public static GameObject instantiate(byte[] objectData, Transform transform) {
+        GameObject instance = instantiate(objectData);
+        if (instance == null) return null;
         transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
@@ -281,6 +338,21 @@ public class GameObject implements Serializable {
     }
 
     /**
+     * Finds a child by its name
+     *
+     * @param name name of the child
+     * @return child game object if found, {@code null} otherwise
+     */
+    public GameObject findChildByName(String name) {
+        for (GameObject child : mChildren) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Add a component to the GameObject. If the component's GameObject is null, it is set to this
      * If the component's GameObject is another GameObject, the component is removed from that
      * GameObject and is set to this.
@@ -462,11 +534,11 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Create a deep copy of the GameObject
+     * Serialize a game object to bytes
      *
-     * @return New GameObject with identical values as this
+     * @return byte representation of the object
      */
-    public GameObject createClone() {
+    public byte[] serialize() {
         byte[] objectData = null;
 
         try {
@@ -481,15 +553,11 @@ public class GameObject implements Serializable {
             e.printStackTrace();
         }
 
-        if (objectData != null) {
-            try {
-                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
-                return (GameObject) new ObjectInputStream(bais).readObject();
-            } catch (ClassNotFoundException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
+        return objectData;
+    }
+
+    public GameObject createClone() {
+        return Engine.getCloner().deepClone(this);
     }
 
     /**
