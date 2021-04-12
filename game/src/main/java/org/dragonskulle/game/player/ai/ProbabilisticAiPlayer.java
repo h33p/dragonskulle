@@ -82,7 +82,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @param lambdaMethod What to on a building
      * @return If the stuff is invoked on the server
      */
-    public boolean checkBuilding(IHandleBuildingEvent lambdaMethod) {
+    public boolean checkCanRunEvent(IHandleBuildingEvent lambdaMethod) {
 
         if (getPlayer() == null) {
             return false;
@@ -121,7 +121,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean addBuilding() {
         log.info("Placing Building");
 
-        return checkBuilding(this::tryToAddBuilding);
+        return checkCanRunEvent(this::tryToAddBuilding);
     }
 
     /**
@@ -204,7 +204,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean attack() {
         log.info("AI: Attacking");
 
-        return checkBuilding(this::tryToAttack);
+        return checkCanRunEvent(this::tryToAttack);
     }
 
     /**
