@@ -123,9 +123,10 @@ public abstract class Transform extends Component {
      * Get the position of the transform in the world.
      *
      * @param dest Vector3f to store the position
+     * @return dest
      */
-    public void getPosition(Vector3f dest) {
-        getWorldMatrix().getColumn(3, dest);
+    public Vector3f getPosition(Vector3f dest) {
+        return getWorldMatrix().getColumn(3, dest);
     }
 
     /**

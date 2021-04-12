@@ -2,6 +2,8 @@
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -91,7 +93,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 .map(Reference::get)
                 .forEach(
                         building -> {
-                            List<HexagonTile> visibleTiles = building.getViewableTiles();
+                            Collection<HexagonTile> visibleTiles = building.getViewableTiles();
                             // Check each tile is valid.
                             for (HexagonTile tile : visibleTiles) {
                                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {

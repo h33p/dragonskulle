@@ -37,6 +37,8 @@ public class UIText extends Renderable implements IOnAwake {
     @Getter @Setter private float mVerticalAlignment = 0f;
     @Getter @Setter private float mHorizontalAlignment = 0f;
 
+    @Getter @Setter private float mDepthShift = 0f;
+
     private float mTargetAspectRatio = 0f;
 
     @Override
@@ -218,7 +220,7 @@ public class UIText extends Renderable implements IOnAwake {
 
     @Override
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
-        return (float) -getGameObject().getDepth();
+        return (float) -getGameObject().getDepth() + mDepthShift;
     }
 
     @Override

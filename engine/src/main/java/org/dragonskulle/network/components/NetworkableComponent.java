@@ -132,6 +132,8 @@ public abstract class NetworkableComponent extends Component {
 
     protected void afterNetUpdate() {}
 
+    protected void onOwnerIdChange(int newId) {}
+
     /**
      * Reset the changed bitmask.
      *

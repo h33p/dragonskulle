@@ -2,6 +2,7 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -60,7 +61,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
 
     /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
-    @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
+    @Getter private HashSet<HexagonTile> mViewableTiles = new HashSet<HexagonTile>();
 
     /**
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
@@ -93,8 +94,19 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     @Override
-    public void onStart() {
+    public void onOwnerIdChange(int newId) {
+        Player owningPlayer = getOwner();
+        if (owningPlayer != null) owningPlayer.removeOwnership(this);
+        Player newOwningPlayer = getOwner(newId);
+        if (newOwningPlayer == null) {
+            log.severe("New owner is null!");
+            return;
+        }
+        newOwningPlayer.addOwnership(this);
+    }
 
+    @Override
+    public void onStart() {
         // Store the map.
         HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
         if (checkingMapExists == null) {
@@ -177,9 +189,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
-        mViewableTiles = map.getTilesInRadius(getTile(), distance);
-        // View the tile the building is on.
-        mViewableTiles.add(getTile());
+        mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
     }
 
     /**
@@ -381,9 +391,19 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The owning player, or {@code null}.
      */
     public Player getOwner() {
+        return getOwner(getNetworkObject().getOwnerId());
+    }
+
+    /**
+     * Get the {@link Player} which owns the {@link Building}.
+     *
+     * @param ownerId target owner ID
+     * @return The owning player, or {@code null}.
+     */
+    private Player getOwner(int ownerId) {
         return getNetworkObject()
                 .getNetworkManager()
-                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                .getObjectsOwnedBy(ownerId)
                 .map(NetworkObject::getGameObject)
                 .map(go -> go.getComponent(Player.class))
                 .filter(Objects::nonNull)
@@ -414,12 +434,20 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * // TODO: Ensure this is correct.
+     * Remove this building from the game.
      *
-     * <p>Remove this building from the {@link Player} who owns the building and references to it in
-     * any {@link HexagonTile}s.
+     * <p>
+     *
+     * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     *   <li>Calls {@link GameObject#destroy()}.
+     * </ul>
      */
     public void remove() {
+        // Remove the ownership of the building from the owner.
+        getOwner().removeOwnership(this);
+
         // Remove the building from the tile.
         getTile().setBuilding(null);
 
@@ -429,12 +457,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         // Reset the list of claimed, viewable and attackable tiles.
-        mClaimedTiles = new ArrayList<HexagonTile>();
-        mViewableTiles = new ArrayList<HexagonTile>();
-        mAttackableTiles = new ArrayList<HexagonTile>();
+        mClaimedTiles.clear();
+        mViewableTiles.clear();
+        mAttackableTiles.clear();
 
-        // TODO: Request that the building should be destroyed.
-        // destroy();
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
     }
 
     /**

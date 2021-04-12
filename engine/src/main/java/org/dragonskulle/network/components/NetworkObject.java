@@ -19,6 +19,7 @@ import org.dragonskulle.network.components.requests.NoneData;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
+import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -46,7 +47,6 @@ public class NetworkObject extends Component {
 
     private boolean mDestroyed = false;
 
-    @Getter
     private final ServerEvent<NoneData> mDestroyEvent =
             new ServerEvent<>(
                     NoneData.DATA,
@@ -54,6 +54,13 @@ public class NetworkObject extends Component {
                         mDestroyed = true;
                         getGameObject().destroy();
                     },
+                    EventRecipients.ACTIVE_CLIENTS,
+                    EventTimeframe.LONG_TERM_DELAYABLE);
+
+    private final ServerEvent<SyncInt> mOwnerIdChangeEvent =
+            new ServerEvent<>(
+                    new SyncInt(),
+                    (data) -> checkedOwnerIdSet(data.get()),
                     EventRecipients.ACTIVE_CLIENTS,
                     EventTimeframe.LONG_TERM_DELAYABLE);
 
@@ -90,7 +97,23 @@ public class NetworkObject extends Component {
 
     public void setOwnerId(int newOwnerID) {
         if (mIsServer) {
-            mOwnerId = newOwnerID;
+            checkedOwnerIdSet(newOwnerID);
+        }
+    }
+
+    private void checkedOwnerIdSet(int newOwnerId) {
+        if (newOwnerId != mOwnerId) {
+            for (Reference<NetworkableComponent> netComp : mNetworkableComponents) {
+                if (netComp.isValid()) {
+                    netComp.get().onOwnerIdChange(newOwnerId);
+                }
+            }
+
+            mOwnerId = newOwnerId;
+
+            if (mIsServer) {
+                mOwnerIdChangeEvent.invoke((d) -> d.set(mOwnerId));
+            }
         }
     }
 
@@ -105,6 +128,7 @@ public class NetworkObject extends Component {
         getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
 
         mServerEvents.add(mDestroyEvent);
+        mServerEvents.add(mOwnerIdChangeEvent);
 
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
@@ -228,9 +252,6 @@ public class NetworkObject extends Component {
      * @throws IOException thrown if failed to read client streams
      */
     public int updateFromBytes(DataInputStream stream) throws IOException {
-        int ownerId = stream.readInt();
-        mOwnerId = ownerId;
-
         int maskLength = stream.readByte();
 
         byte[] mask = IOUtils.readNBytes(stream, maskLength);
@@ -243,7 +264,7 @@ public class NetworkObject extends Component {
             if (shouldUpdate) {
                 log.fine(
                         "Parent id of child to update is :"
-                                + ownerId
+                                + mOwnerId
                                 + "\nComponent id of children bytes to update is : "
                                 + i);
                 if (i < mNetworkableComponentsSize) {
@@ -304,15 +325,12 @@ public class NetworkObject extends Component {
             }
         }
         if (shouldBroadcast) {
-            try {
-                DataOutputStream stream = client.getDataOut();
+            try (DataOutputStream stream = client.getDataOut()) {
                 stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
                 generateUpdateBytes(stream, didChildUpdateMask, forceUpdate);
-                stream.flush();
             } catch (IOException e) {
                 log.warning("Failed to serialize data!");
                 e.printStackTrace();
-                client.closeSocket();
             }
         }
     }
@@ -336,7 +354,6 @@ public class NetworkObject extends Component {
         }
 
         stream.writeInt(getNetworkObjectId());
-        stream.writeInt(getOwnerId());
 
         byte[] byteMask = NetworkMessage.convertBoolArrayToBytes(mask);
 

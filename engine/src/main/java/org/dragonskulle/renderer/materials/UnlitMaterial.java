@@ -104,10 +104,11 @@ public class UnlitMaterial
         return mColour.w < 1f ? TRANSPARENT_SET : OPAQUE_SET;
     }
 
-    public void writeVertexInstanceData(
+    public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         mColour.get(offset, buffer);
+        return offset + 4 * 4;
     }
 
     public SampledTexture[] getFragmentTextures() {

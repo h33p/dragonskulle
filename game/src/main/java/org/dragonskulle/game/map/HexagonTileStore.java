@@ -1,8 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import com.flowpowered.noise.Noise;
+import com.flowpowered.noise.NoiseQuality;
 import java.util.Arrays;
 import lombok.extern.java.Log;
+import org.dragonskulle.utils.MathUtils;
 
 /**
  * @author Leela Muppala
@@ -13,11 +16,13 @@ import lombok.extern.java.Log;
 class HexagonTileStore {
     private HexagonTile[][] mTiles;
     private final int mCoordShift;
+    private final int mSeed;
 
     /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */
-    public HexagonTileStore(int size) {
+    public HexagonTileStore(int size, int seed) {
         mTiles = new HexagonTile[size][size];
-        mCoordShift = size / 2;
+        mSeed = seed;
+        mCoordShift = mSize / 2;
 
         int max_empty = getSpaces(size); // The max number of empty spaces in one row of the array
         int loop = size / 2;
@@ -35,7 +40,8 @@ class HexagonTileStore {
                 } else {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
-                    setTile(new HexagonTile(q1, r1, -q1 - r1));
+                    float height = getHeight(q1, r1);
+                    setTile(new HexagonTile(q1, r1, height));
                 }
             }
             empty--;
@@ -46,7 +52,8 @@ class HexagonTileStore {
         for (int q = 0; q < size; q++) {
             int q1 = q - mCoordShift;
             int r1 = r_m - mCoordShift;
-            setTile(new HexagonTile(q1, r1, -q1 - r1));
+            float height = getHeight(q1, r1);
+            setTile(new HexagonTile(q1, r1, height));
         }
 
         /* Generates the last part of the map */
@@ -61,7 +68,8 @@ class HexagonTileStore {
                 if (inside_val <= current_val) {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
-                    setTile(new HexagonTile(q1, r1, -q1 - r1));
+                    float height = getHeight(q1, r1);
+                    setTile(new HexagonTile(q1, r1, height));
                     inside_val++;
                 } // otherwise we do not need a tile
             }
@@ -112,5 +120,32 @@ class HexagonTileStore {
             log.warning("The size is not an odd number");
         }
         return (input - 1) / 2;
+    }
+
+    private static final float NOISE_STEP = 0.2f;
+
+    private static final float[][] OCTAVES = {
+        {0.1f, 0.9f},
+        {0.3f, 0.2f},
+        {0.6f, 0.1f}
+    };
+
+    private float getHeight(int q, int r) {
+
+        float sum = 0f;
+
+        for (float[] vals : OCTAVES) {
+            sum +=
+                    (float)
+                                    Noise.valueCoherentNoise3D(
+                                            q * vals[0],
+                                            r * vals[0],
+                                            (-q - r) * vals[0],
+                                            mSeed,
+                                            NoiseQuality.BEST)
+                            * vals[1];
+        }
+
+        return MathUtils.roundStep(sum, NOISE_STEP);
     }
 }

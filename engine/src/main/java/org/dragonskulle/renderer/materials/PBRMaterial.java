@@ -29,10 +29,9 @@ import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
 /**
- * Reference unlit material
+ * Reference PBR material
  *
- * <p>This material provides basic unlit rendering of objects with textures. One texture is
- * settable, alongside per-object colour value.
+ * <p>This material provides physically based rendering of objects with textures.
  *
  * @author Aurimas Blažulionis
  */
@@ -42,11 +41,20 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     private static final Map<Integer, ShaderSet> sShaderSets = new TreeMap<Integer, ShaderSet>();
 
     public static class StandardShaderSet extends ShaderSet {
+
         public StandardShaderSet(PBRMaterial mat) {
+            this(mat, "standard", new ArrayList<>(), new ArrayList<>(), 0);
+        }
+
+        public StandardShaderSet(
+                PBRMaterial mat,
+                String shaderName,
+                List<MacroDefinition> fragMacroDefs,
+                List<MacroDefinition> vertMacroDefs,
+                int extraInstanceDataSize,
+                AttributeDescription... extraDescriptions) {
 
             int textureCount = 0;
-            List<MacroDefinition> fragMacroDefs = new ArrayList<>();
-            List<MacroDefinition> vertMacroDefs = new ArrayList<>();
             if (mat.mAlbedoMap != null) {
                 fragMacroDefs.add(
                         new MacroDefinition("ALBEDO_BINDING", Integer.toString(textureCount++)));
@@ -79,37 +87,48 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
 
             mVertexShader =
                     ShaderBuf.getResource(
-                            "standard",
+                            shaderName,
                             ShaderKind.VERTEX_SHADER,
                             vertMacroDefs.stream().toArray(MacroDefinition[]::new));
             mFragmentShader =
                     ShaderBuf.getResource(
-                            "standard",
+                            shaderName,
                             ShaderKind.FRAGMENT_SHADER,
                             fragMacroDefs.stream().toArray(MacroDefinition[]::new));
 
             mVertexBindingDescription =
-                    BindingDescription.instancedWithMatrixAndLights(NORMAL_OFFSET + 4, mLightCount);
+                    BindingDescription.instancedWithMatrixAndLights(
+                            NORMAL_OFFSET + 4 + extraInstanceDataSize, mLightCount);
+
+            ArrayList<AttributeDescription> descriptions = new ArrayList<>();
+
+            AttributeDescription[] regAttributes = {
+                new AttributeDescription(1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
+                new AttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
+                new AttributeDescription(1, 2, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
+                new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
+                new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
+                new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET)
+            };
+
+            for (AttributeDescription desc : regAttributes) descriptions.add(desc);
+
+            int binding = 5;
+
+            for (AttributeDescription desc : extraDescriptions)
+                descriptions.add(
+                        new AttributeDescription(
+                                1, ++binding, desc.format, NORMAL_OFFSET + 4 + desc.offset));
+
             mVertexAttributeDescriptions =
                     AttributeDescription.withMatrix(
                             AttributeDescription.withLights(
                                     mLightCount,
-                                    new AttributeDescription(
-                                            1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
-                                    new AttributeDescription(
-                                            1, 1, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
-                                    new AttributeDescription(
-                                            1, 2, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
-                                    new AttributeDescription(
-                                            1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
-                                    new AttributeDescription(
-                                            1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
-                                    new AttributeDescription(
-                                            1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET)));
+                                    descriptions.stream().toArray(AttributeDescription[]::new)));
         }
     }
 
-    private int hashShaderSet() {
+    protected int hashShaderSet() {
         int ret = 0;
         ret |= mAlbedoMap != null ? 1 : 0;
         ret <<= 1;
@@ -193,7 +212,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
         mFragmentTextures = null;
     }
 
-    public void setNormaMap(SampledTexture tex) {
+    public void setNormalMap(SampledTexture tex) {
         if (equalTexs(tex, mNormalMap)) {
             return;
         }
@@ -244,7 +263,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
         return ret;
     }
 
-    public void writeVertexInstanceData(
+    public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         offset = Light.writeLights(offset, buffer, lights, getShaderSet().getLightCount());
@@ -260,6 +279,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
         buf.putFloat(mMetallic);
         buf.putFloat(mRoughness);
         buf.putFloat(mNormal);
+        return buf.position();
     }
 
     public SampledTexture[] getFragmentTextures() {

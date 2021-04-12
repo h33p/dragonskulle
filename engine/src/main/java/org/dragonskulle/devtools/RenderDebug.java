@@ -43,6 +43,7 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
 
         if (mText == null) {
             UIText text = new UIText();
+            text.setDepthShift(-10f);
             getGameObject().addComponent(text);
             mText = text.getReference(UIText.class);
         }

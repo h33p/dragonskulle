@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
+import com.rits.cloning.Cloner;
 import java.util.ArrayList;
 import java.util.HashSet;
 import lombok.Getter;
@@ -37,6 +38,10 @@ public class Engine {
 
     private static final int WINDOW_WIDTH = 1600;
     private static final int WINDOW_HEIGHT = 900;
+
+    @Accessors(prefix = "s")
+    @Getter
+    private static final Cloner sCloner = new Cloner();
 
     private boolean mIsRunning = false;
 

@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
@@ -26,6 +27,18 @@ public class Transform3D extends Transform {
     private final Vector3f mPosition = new Vector3f();
     private final Quaternionf mRotation = new Quaternionf();
     private final Vector3f mScale = new Vector3f(1f);
+
+    static {
+        Engine.getCloner()
+                .registerFastCloner(
+                        Transform3D.class,
+                        (t, cloner, clones) -> {
+                            Transform3D toClone = (Transform3D) t;
+                            Transform3D cloned = new Transform3D(toClone.getLocalMatrix());
+                            cloned.mGameObject = cloner.deepClone(toClone.mGameObject, clones);
+                            return cloned;
+                        });
+    }
 
     /** Default constructor. mLocalMatrix is just the identity matrix */
     public Transform3D() {}
@@ -109,7 +122,7 @@ public class Transform3D extends Transform {
      * @param z Z coordinate of rotation
      */
     public void setRotation(float x, float y, float z) {
-        mRotation.identity().rotateXYZ(x, y, z);
+        mRotation.identity().rotateZYX(z, y, x);
         setUpdateFlag();
     }
 
@@ -400,26 +413,6 @@ public class Transform3D extends Transform {
      */
     public void getRotationAngles(AxisAngle4f dest) {
         getWorldMatrix().getRotation(dest);
-    }
-
-    /**
-     * Get the position of the transform in the world.
-     *
-     * @return Vector3f containing the world position
-     */
-    public Vector3f getPosition() {
-        Vector3f position = new Vector3f();
-        getWorldMatrix().getColumn(3, position);
-        return position;
-    }
-
-    /**
-     * Get the position of the transform in the world.
-     *
-     * @param dest Vector3f to store the position
-     */
-    public void getPosition(Vector3f dest) {
-        getWorldMatrix().getColumn(3, dest);
     }
 
     /**

@@ -69,27 +69,22 @@ public class ClientRequest<T extends INetSerializable> {
 
         ClientNetworkManager clientMan = mNetworkObject.getNetworkManager().getClientManager();
 
-        try {
-            if (!mNetworkObject.isMine()) {
-                log.warning(
-                        "Invoked "
-                                + data.getClass().getName()
-                                + "event called on non-owned object! This is wrong!");
-            } else if (mNetworkObject.isServer()) {
-                mHandler.invokeHandler(data);
-            } else {
-                DataOutputStream oos = clientMan.getDataOut();
+        if (!mNetworkObject.isMine()) {
+            log.warning(
+                    "Invoked "
+                            + data.getClass().getName()
+                            + "event called on non-owned object! This is wrong!");
+        } else if (mNetworkObject.isServer()) {
+            mHandler.invokeHandler(data);
+        } else {
+            try (DataOutputStream oos = clientMan.getDataOut()) {
                 oos.writeByte(NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST);
                 oos.writeInt(mNetworkObject.getId());
                 oos.writeInt(mRequestId);
                 data.serialize(oos);
-                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            if (clientMan != null) {
-                clientMan.disconnect();
-            }
-            e.printStackTrace();
         }
     }
 

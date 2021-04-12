@@ -48,6 +48,10 @@ public class MathUtils {
         return n >> 1;
     }
 
+    public static float roundStep(float val, float step) {
+        return Math.round(val / step) * step;
+    }
+
     public static double mapOneRangeToAnother(
             double sourceNumber,
             double fromA,

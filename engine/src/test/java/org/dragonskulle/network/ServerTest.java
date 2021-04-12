@@ -264,6 +264,27 @@ public class ServerTest {
                                 return ret;
                             });
         }
+
+        private void testSetOwnerId() {
+            testCapitalSpawnDefaultServer();
+            Capital cap = getServerComponent(Capital.class).get();
+            Capital clientCap = getClientComponent(Capital.class).get();
+            mEngineLock.lock();
+            int ownerId = cap.getNetworkObject().getOwnerId();
+            int clientOwnerId = clientCap.getNetworkObject().getOwnerId();
+            cap.getNetworkObject().setOwnerId(ownerId + 1);
+            assert (ownerId != cap.getNetworkObject().getOwnerId());
+            mEngineLock.unlock();
+            assert (ownerId == clientOwnerId);
+            await().atMost(TIMEOUT, SECONDS)
+                    .until(
+                            () -> {
+                                mEngineLock.lock();
+                                boolean ret = clientCap.getNetworkObject().getOwnerId() != ownerId;
+                                mEngineLock.unlock();
+                                return ret;
+                            });
+        }
     }
 
     @Test
@@ -362,6 +383,16 @@ public class ServerTest {
     public void testCanDestroy() throws Throwable {
         try (TestContext ctx = new TestContext(7007)) {
             ctx.run(ctx::testCanDestroy);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Test
+    public void testSetOwnerId() throws Throwable {
+        try (TestContext ctx = new TestContext(7007)) {
+            ctx.run(ctx::testSetOwnerId);
         } catch (Throwable e) {
             e.printStackTrace();
             throw e;
