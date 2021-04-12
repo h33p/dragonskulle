@@ -53,17 +53,17 @@ public abstract class Actions {
     /** An event which gets triggered when a character is inputted */
     @Setter private static Reference<ICharEvent> sOnChar;
 
-    /** @return dereferenced {@link Input#sOnPress} */
+    /** @return dereferenced {@link sOnPress} */
     public static IButtonEvent getOnPress() {
         return sOnPress != null && sOnPress.isValid() ? sOnPress.get() : null;
     }
 
-    /** @return dereferenced {@link Input#sOnRelease} */
+    /** @return dereferenced {@link sOnRelease} */
     public static IButtonEvent getOnRelease() {
         return sOnRelease != null && sOnRelease.isValid() ? sOnRelease.get() : null;
     }
 
-    /** @return dereferenced {@link Input#sOnChar} */
+    /** @return dereferenced {@link sOnChar} */
     public static ICharEvent getOnChar() {
         return sOnChar != null && sOnChar.isValid() ? sOnChar.get() : null;
     }
