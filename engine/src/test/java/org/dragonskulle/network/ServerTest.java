@@ -269,19 +269,19 @@ public class ServerTest {
             testCapitalSpawnDefaultServer();
             Capital cap = getServerComponent(Capital.class).get();
             Capital clientCap = getClientComponent(Capital.class).get();
-            mEngineLock.lock();
+            sEngineLock.lock();
             int ownerId = cap.getNetworkObject().getOwnerId();
             int clientOwnerId = clientCap.getNetworkObject().getOwnerId();
             cap.getNetworkObject().setOwnerId(ownerId + 1);
             assert (ownerId != cap.getNetworkObject().getOwnerId());
-            mEngineLock.unlock();
+            sEngineLock.unlock();
             assert (ownerId == clientOwnerId);
             await().atMost(TIMEOUT, SECONDS)
                     .until(
                             () -> {
-                                mEngineLock.lock();
+                                sEngineLock.lock();
                                 boolean ret = clientCap.getNetworkObject().getOwnerId() != ownerId;
-                                mEngineLock.unlock();
+                                sEngineLock.unlock();
                                 return ret;
                             });
         }

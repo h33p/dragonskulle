@@ -72,11 +72,11 @@ class TextureSamplerFactory implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.callocStack(stack);
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-            samplerInfo.magFilter(desc.mMapping.mFiltering.getmValue());
-            samplerInfo.minFilter(desc.mMapping.mFiltering.getmValue());
-            samplerInfo.addressModeU(desc.mMapping.mWrapU.getmValue());
-            samplerInfo.addressModeV(desc.mMapping.mWrapV.getmValue());
-            samplerInfo.addressModeW(desc.mMapping.mWrapW.getmValue());
+            samplerInfo.magFilter(desc.mMapping.mFiltering.getValue());
+            samplerInfo.minFilter(desc.mMapping.mFiltering.getValue());
+            samplerInfo.addressModeU(desc.mMapping.mWrapU.getValue());
+            samplerInfo.addressModeV(desc.mMapping.mWrapV.getValue());
+            samplerInfo.addressModeW(desc.mMapping.mWrapW.getValue());
             samplerInfo.anisotropyEnable(anisotropyEnable);
             samplerInfo.maxAnisotropy(mMaxAnisotropy);
             samplerInfo.borderColor(VK_BORDER_COLOR_INT_TRANSPARENT_BLACK);

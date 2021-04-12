@@ -125,7 +125,7 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Create a clone of a GameObject, providing a new transform for the object
+     * Create a clone of a GameObject, providing a new transform for the object.
      *
      * @param objectData data of the object
      * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
@@ -134,7 +134,9 @@ public class GameObject implements Serializable {
      */
     public static GameObject instantiate(byte[] objectData, Transform transform) {
         GameObject instance = instantiate(objectData);
-        if (instance == null) return null;
+        if (instance == null) {
+            return null;
+        }
         transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
@@ -600,21 +602,6 @@ public class GameObject implements Serializable {
      */
     protected ArrayList<Component> getComponents() {
         return mComponents;
-    }
-
-    /**
-     * Get every child with this GameObject acting as the root in a tree, adding to the list in a
-     * depth-first order.
-     *
-     * <p>Doesn't return a list of references as this method should only be used by the engine which
-     * is responsible for the destroying of objects and therefore won't keep any strong references
-     * to destroyed objects.
-     */
-    protected void getAllChildren(List<GameObject> ret) {
-        for (GameObject child : mChildren) {
-            ret.add(child);
-            child.getAllChildren(ret);
-        }
     }
 
     /** Handle the destruction of the object. */

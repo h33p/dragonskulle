@@ -10,13 +10,12 @@ import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
-import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
 
 /**
- *
  * @author Leela Muppala
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
  *     coordinates of each tile.
@@ -82,7 +81,7 @@ public class HexagonTile {
     private Reference<Building> mClaimedBy = new Reference<Building>(null);
 
     /**
-     * Constructor that creates the HexagonTile
+     * Constructor that creates the HexagonTile.
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
@@ -92,9 +91,13 @@ public class HexagonTile {
         this.mR = r;
         this.mHeight = height;
 
-        if (height <= WATER_THRESHOLD) mTileType = TileType.WATER;
-        else if (height >= MOUNTAINS_THRESHOLD) mTileType = TileType.MOUNTAIN;
-        else mTileType = TileType.LAND;
+        if (height <= WATER_THRESHOLD) {
+            mTileType = TileType.WATER;
+        } else if (height >= MOUNTAINS_THRESHOLD) {
+            mTileType = TileType.MOUNTAIN;
+        } else {
+            mTileType = TileType.LAND;
+        }
 
         switch (mTileType) {
             case WATER:
@@ -115,8 +118,11 @@ public class HexagonTile {
         }
 
         Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
-        if (controls == null) mHighlightControls = new Reference<>(null);
-        else mHighlightControls = controls;
+        if (controls == null) {
+            mHighlightControls = new Reference<>(null);
+        } else {
+            mHighlightControls = controls;
+        }
     }
 
     /**
@@ -135,7 +141,7 @@ public class HexagonTile {
     }
 
     /**
-     * Retrieve the third (cube) coordinate
+     * Retrieve the third (cube) coordinate.
      *
      * <p>This coordinate will always be equal to -getQ() -getR()
      */
@@ -225,7 +231,9 @@ public class HexagonTile {
      * @return The Building on the HexagonTile, otherwise {@code null}.
      */
     public Building getBuilding() {
-        if (mBuilding == null || mBuilding.isValid() == false) return null;
+        if (mBuilding == null || mBuilding.isValid() == false) {
+            return null;
+        }
 
         return mBuilding.get();
     }

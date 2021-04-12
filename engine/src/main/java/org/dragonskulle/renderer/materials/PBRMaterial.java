@@ -111,14 +111,20 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
                 new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET)
             };
 
-            for (AttributeDescription desc : regAttributes) descriptions.add(desc);
+            for (AttributeDescription desc : regAttributes) {
+                descriptions.add(desc);
+            }
 
             int binding = 5;
 
-            for (AttributeDescription desc : extraDescriptions)
+            for (AttributeDescription desc : extraDescriptions) {
                 descriptions.add(
                         new AttributeDescription(
-                                1, ++binding, desc.format, NORMAL_OFFSET + 4 + desc.offset));
+                                1,
+                                ++binding,
+                                desc.getFormat(),
+                                NORMAL_OFFSET + 4 + desc.getOffset()));
+            }
 
             mVertexAttributeDescriptions =
                     AttributeDescription.withMatrix(

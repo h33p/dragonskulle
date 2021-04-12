@@ -10,26 +10,20 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.map.FogOfWar;
-import org.dragonskulle.game.map.HexagonMap;
-import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.networkData.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
-import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
@@ -108,9 +102,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild(
                                 "zoom_slider",
                                 new TransformUI(true),
-                                (go) -> {
-                                    go.addComponent(new UILinkedScrollBar());
-                                });
+                                (go) -> go.addComponent(new UILinkedScrollBar()));
 
         Reference<GameObject> tmpRef =
                 getGameObject()
@@ -273,7 +265,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             log.info("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
-                            return;
                         } else {
                             // If you can build
                             log.info("Human:Change Screen");
@@ -284,7 +275,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             } else if (GameActions.RIGHT_CLICK.isActivated()) {
                 HexagonTile tile = mPlayer.get().getMap().cursorToTile();
                 Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
-                log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
+                log.info("[DEBUG] RCL Position From Camera : " + pos);
             }
         }
     }
@@ -430,10 +421,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     *
-     * @param newScreen
-     */
+    /** @param newScreen */
     private void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;

@@ -96,7 +96,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Override
     public void onOwnerIdChange(int newId) {
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.removeOwnership(this);
+        if (owningPlayer != null) {
+            owningPlayer.removeOwnership(this);
+        }
         Player newOwningPlayer = getOwner(newId);
         if (newOwningPlayer == null) {
             log.severe("New owner is null!");

@@ -273,7 +273,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Gets the nearest hex from a fractional axial position
+     * Gets the nearest hex from a fractional axial position.
      *
      * @param axialPoint the fractional axial coordinate
      * @param cubeCoordsOut 3D vector that will store cube coordinates
@@ -319,7 +319,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Convert axial vector to cube coordinates
+     * Convert axial vector to cube coordinates.
      *
      * @param q the q axial coordinate
      * @param r the r axial cooredinate

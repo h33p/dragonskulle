@@ -10,6 +10,7 @@ import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
 import java.io.Serializable;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * Describe the way texture is mapped on surfaces.
@@ -43,6 +44,7 @@ public class TextureMapping implements Serializable {
         this(TextureFiltering.LINEAR, TextureWrapping.CLAMP);
     }
 
+    @Accessors(prefix = "m")
     public static enum TextureFiltering {
         NEAREST(VK_FILTER_NEAREST),
         LINEAR(VK_FILTER_LINEAR);
@@ -69,6 +71,7 @@ public class TextureMapping implements Serializable {
         }
     }
 
+    @Accessors(prefix = "m")
     public static enum TextureWrapping {
         REPEAT(VK_SAMPLER_ADDRESS_MODE_REPEAT),
         MIRROR(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT),

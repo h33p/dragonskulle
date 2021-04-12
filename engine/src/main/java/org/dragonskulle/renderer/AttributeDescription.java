@@ -4,16 +4,20 @@ package org.dragonskulle.renderer;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
  * Describes layout of all attributes on the vertex shader.
  *
  * @author Aurimas Blažulionis
  */
+@Accessors(prefix = "m")
 public class AttributeDescription {
     public int mBindingId;
     public int mLocation;
-    public int mFormat;
-    public int mOffset;
+    @Getter public int mFormat;
+    @Getter public int mOffset;
 
     public static final int MATRIX_ROW_SIZE = 4 * 4;
     public static final int MATRIX_SIZE = MATRIX_ROW_SIZE * 4;

@@ -4,6 +4,7 @@ package org.dragonskulle.game.map;
 import com.flowpowered.noise.Noise;
 import com.flowpowered.noise.NoiseQuality;
 import java.util.Arrays;
+import java.util.stream.Stream;
 import lombok.extern.java.Log;
 import org.dragonskulle.utils.MathUtils;
 
@@ -22,7 +23,7 @@ class HexagonTileStore {
     public HexagonTileStore(int size, int seed) {
         mTiles = new HexagonTile[size][size];
         mSeed = seed;
-        mCoordShift = mSize / 2;
+        mCoordShift = size / 2;
 
         int max_empty = getSpaces(size); // The max number of empty spaces in one row of the array
         int loop = size / 2;

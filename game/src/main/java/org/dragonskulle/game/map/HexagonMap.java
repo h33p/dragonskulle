@@ -136,12 +136,16 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     public HexagonTile cursorToTile() {
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 
-        if (mainCam == null) return null;
+        if (mainCam == null) {
+            return null;
+        }
 
         // Retrieve scaled screen coordinates
         Cursor cursor = Actions.getCursor();
 
-        if (cursor == null) return null;
+        if (cursor == null) {
+            return null;
+        }
 
         Vector2fc screenPos = cursor.getPosition();
 
@@ -187,7 +191,9 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
                 closestDistance = dist;
                 closestTile = tile;
 
-                if (dist <= TransformHex.HEX_SIZE) return closestTile;
+                if (dist <= TransformHex.HEX_SIZE) {
+                    return closestTile;
+                }
             }
         }
 

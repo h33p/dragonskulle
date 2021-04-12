@@ -1451,7 +1451,7 @@ public class Renderer implements NativeResource {
         mSlowCalls = 0;
 
         mVertexConstants.mProj = camera.getProj();
-        mVertexConstants.mVieww = camera.getView();
+        mVertexConstants.mView = camera.getView();
 
         mPreSorted.clear();
         Vector3f camPosition = camera.getGameObject().getTransform().getPosition();
