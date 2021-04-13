@@ -9,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -163,7 +164,7 @@ public class ServerClient {
                 byte[] bytes = IOUtils.readExactlyNBytes(input, len);
                 mRequests.add(bytes);
             }
-        } catch (EOFException e) {
+        } catch (EOFException | SocketException e) {
         } catch (Exception exception) {
             exception.printStackTrace();
         } finally {

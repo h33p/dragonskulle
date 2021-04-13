@@ -245,12 +245,6 @@ public class ClientNetworkManager {
      * <p>This method will disconnect from the server and tell {@link NetworkManager} about it.
      */
     public void disconnect() {
-        Engine engine = Engine.getInstance();
-
-        if (engine.getPresentationScene() == mManager.getGameScene()) {
-            engine.loadPresentationScene(Scene.getActiveScene());
-        }
-
         mConnectionState = ConnectionState.NOT_CONNECTED;
         mClient.dispose();
 
@@ -261,12 +255,32 @@ public class ClientNetworkManager {
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
         mNetworkObjectReferences.clear();
-
-        mManager.onClientDisconnect();
     }
 
     /** Network update method, called by {@link NetworkManager} */
     void networkUpdate() {
+        if (mConnectionState == ConnectionState.JOINED_GAME) {
+            if (mClient.processRequests() <= 0) {
+                mTicksWithoutRequests++;
+                if (mTicksWithoutRequests > 3200) {
+                    disconnect();
+                } else if (mTicksWithoutRequests == 1000) {
+                    log.info("1000 ticks without updates! 2200 more till disconnect!");
+                }
+            } else mTicksWithoutRequests = 0;
+        }
+
+        mNetworkObjectReferences
+                .entrySet()
+                .removeIf(entry -> !Reference.isValid(entry.getValue().mNetworkObject));
+    }
+
+    /**
+     * Late network update method, called by {@link NetworkManager}.
+     *
+     * <p>This stage is used to handle state changes (scene changes, disconnections, etc.)
+     */
+    void lateNetworkUpdate() {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
         if (nextState != null) {
@@ -294,20 +308,16 @@ public class ClientNetworkManager {
             }
         }
 
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
-            if (mClient.processRequests() <= 0) {
-                mTicksWithoutRequests++;
-                if (mTicksWithoutRequests > 3200) {
-                    disconnect();
-                } else if (mTicksWithoutRequests == 1000) {
-                    log.info("1000 ticks without updates! 2200 more till disconnect!");
-                }
-            } else mTicksWithoutRequests = 0;
-        }
+        if (mConnectionState == ConnectionState.NOT_CONNECTED) {
+            log.info("NOT CONNECTEDDD");
+            Engine engine = Engine.getInstance();
 
-        mNetworkObjectReferences
-                .entrySet()
-                .removeIf(entry -> !Reference.isValid(entry.getValue().mNetworkObject));
+            if (engine.getPresentationScene() == mManager.getGameScene()) {
+                engine.loadPresentationScene(Scene.getActiveScene());
+            }
+
+            mManager.onClientDisconnect();
+        }
     }
 
     // TODO: implement lobby

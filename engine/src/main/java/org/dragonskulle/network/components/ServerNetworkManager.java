@@ -304,7 +304,10 @@ public class ServerNetworkManager {
                 entry.updateClient(c);
             }
         }
+    }
 
+    /** Late network update, called by {@link NetworkManager} */
+    void lateNetworkUpdate() {
         mNetworkObjects
                 .entrySet()
                 .removeIf(
