@@ -9,7 +9,6 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ai.algorithms.AStar;
-import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
@@ -169,18 +168,17 @@ public class CapitalAimer extends AiPlayer {
         for (int nodeNumber : nodesInGraph) {
             Node node = graph.getNode(nodeNumber);
 
-            if (node.getHexTile().get().getClaimant() != null && node.getHexTile().get().getBuilding() != null
+            if (node.getHexTile().get().getClaimant() != null
+                    && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
-            if (node.getHexTile().get().getClaimantId()
-                            == opponentPlayer.getNetworkObject().getOwnerId()
-                    ) {
-                capitals[0] = node;
-            } else if (
-                     node.getHexTile().get().getClaimantId()
-                            == mPlayer.get().getNetworkObject().getOwnerId()
-                    ) {
-                capitals[1] = node;
-            }}
+                if (node.getHexTile().get().getClaimantId()
+                        == opponentPlayer.getNetworkObject().getOwnerId()) {
+                    capitals[0] = node;
+                } else if (node.getHexTile().get().getClaimantId()
+                        == mPlayer.get().getNetworkObject().getOwnerId()) {
+                    capitals[1] = node;
+                }
+            }
         }
         return capitals;
     }
@@ -277,13 +275,8 @@ public class CapitalAimer extends AiPlayer {
         }
         // Performs A* Search
         AStar aStar = new AStar(graph);
-        try {
-            aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
-            log.severe("Completed");
-        } catch (GraphNodeException e) {
-            // TODO Shouldn't get here.
-            log.severe("EXCEPTION");
-        }
+        aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
+        log.severe("Completed");
 
         mPath = aStar.getAnswerOfNodes();
 

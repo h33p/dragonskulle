@@ -9,7 +9,6 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 
@@ -51,7 +50,7 @@ public class AStar {
      * @param endNode The goal node
      * @throws GraphNodeException If there is a problem with the graph -- shouldn't happen
      */
-    public void aStarAlgorithm(int currentNode, int endNode) throws GraphNodeException {
+    public void aStarAlgorithm(int currentNode, int endNode) {
 
         boolean finished = false; // This checks if it finished
         int oldFNode = 0; // This is what the previous f node value was

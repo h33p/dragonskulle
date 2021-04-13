@@ -9,7 +9,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
-import org.dragonskulle.game.player.ai.algorithms.exceptions.GraphNodeException;
 
 /**
  * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure.
@@ -47,17 +46,13 @@ public class Graph {
     private void convertToNode(HexagonTile tile) {
 
         if (tile.getTileType() == TileType.LAND) {
-            try {
 
-                addNode(mNodeNum, tile);
+            addNode(mNodeNum, tile);
 
-                int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
+            int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
 
-                setNodeSpecial(mNodeNum, heuristic);
+            setNodeSpecial(mNodeNum, heuristic);
 
-            } catch (GraphNodeException e) { // TODO shouldn't need
-                // TODO Already in mGraph
-            }
             mNodeNum++;
         } else {
 
@@ -98,7 +93,7 @@ public class Graph {
      * @param tile The {@code HexagonTile} it corresponds to
      * @throws GraphNodeException If the node already exists
      */
-    public void addNode(int nodeToAdd, HexagonTile tile) throws GraphNodeException {
+    public void addNode(int nodeToAdd, HexagonTile tile) {
 
         Node newNode = new Node(nodeToAdd, tile); // Makes a new node
         mGraph.put(nodeToAdd, newNode); // Adds to mGraph
@@ -126,11 +121,11 @@ public class Graph {
      * @return The connections
      * @throws GraphNodeException If the node does not exist
      */
-    public ArrayList<Connection> getConnection(int nodeNum) throws GraphNodeException {
+    public ArrayList<Connection> getConnection(int nodeNum) {
 
         Node node = mGraph.get(nodeNum);
         if (node == null) {
-            throw new GraphNodeException();
+            return new ArrayList<Connection>();
         } else {
             return mGraph.get(nodeNum).getConnections();
         }
@@ -143,15 +138,9 @@ public class Graph {
      * @return the extra info for that node
      * @throws GraphNodeException If the node does not exist -- shouldn't happen
      */
-    public int getNodeSpecial(int nodeToGet) throws GraphNodeException {
+    public int getNodeSpecial(int nodeToGet) {
 
-        Node node = mGraph.get(nodeToGet);
-        if (node == null) {
-            throw new GraphNodeException();
-        } else {
-
-            return mGraph.get(nodeToGet).getExtraInfo();
-        }
+        return mGraph.get(nodeToGet).getExtraInfo();
     }
 
     /**
@@ -161,12 +150,10 @@ public class Graph {
      * @param newInfo The extra info to change
      * @throws GraphNodeException If the node does not exist -- shouldn't happen
      */
-    public void setNodeSpecial(int nodeToChange, int newInfo) throws GraphNodeException {
+    public void setNodeSpecial(int nodeToChange, int newInfo) {
 
         Node node = mGraph.get(nodeToChange);
-        if (node == null) {
-            throw new GraphNodeException();
-        }
+
         node.setExtraInfo(newInfo);
         mGraph.replace(nodeToChange, node);
     }
