@@ -22,16 +22,13 @@ import org.dragonskulle.network.components.sync.SyncInt;
 @Log
 public class SyncStat extends SyncInt {
 
-    /** The cost of upgrading a stat if there is an error. */
-    private static final int sErrorCost = 9999;
-
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 1;
     /** The highest level possible. */
     public static final int LEVEL_MAX = 5;
 
-    /** Stores the building the stat is related to. */
-    private Reference<Building> mBuilding = new Reference<Building>(null);
+    /** The cost of upgrading a stat if there is an error. */
+    private static final int sErrorCost = 9999;
 
     /** An interface for getting the value of a stat at a given level. */
     public static interface IValueCalculator extends Serializable {
@@ -43,6 +40,9 @@ public class SyncStat extends SyncInt {
 
     /** Store the type of the stat for ease of access. */
     @Getter private StatType mType;
+
+    /** Stores the building the stat is related to. */
+    private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /**
      * Create a new SyncStat, providing the method that will be used to calculate the value of the
