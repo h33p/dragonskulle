@@ -3,6 +3,7 @@ package org.dragonskulle.audio.formats;
 
 import com.sun.media.sound.WaveFileReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -125,9 +126,11 @@ public class WaveSound extends Sound implements Serializable {
 
             return sound;
         } catch (UnsupportedAudioFileException e) {
-            log.warning("Attempted to load unsupported audio file");
+            log.warning("Attempted to load unsupported audio file " + file.getAbsolutePath());
+        } catch (FileNotFoundException e) {
+            log.warning("Attempted to load file that doesn't exist: " + file.getAbsolutePath());
         } catch (IOException e) {
-            log.warning("Attempted to load file that doesn't exist");
+            log.warning("IOException when reading audio file " + file.getAbsolutePath());
         }
         return null;
     }
