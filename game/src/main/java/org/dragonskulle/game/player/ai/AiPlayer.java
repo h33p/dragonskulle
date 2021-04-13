@@ -83,8 +83,8 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     }
 
     /**
-     * This will simulate the action to be done by the AI player. For the base class this will be
-     * done using probability
+     * This will simulate the action to be done by the AI player. This will only be called when we
+     * have not lost. For the base class this will be done using probability
      */
     protected abstract void simulateInput();
 }

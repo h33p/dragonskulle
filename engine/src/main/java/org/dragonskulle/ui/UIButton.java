@@ -27,7 +27,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /** Input action that needs to be bound for UI button presses to function */
-    public static final Action UI_PRESS = new Action("UI_PRESS");
+    public static final Action UI_PRESS = new Action("UI_PRESS", false);
 
     private Vector4fc mRegularColour = new Vector4f(1f);
     private Vector4fc mHoveredColour = new Vector4f(0.8f, 0.8f, 0.8f, 1f);

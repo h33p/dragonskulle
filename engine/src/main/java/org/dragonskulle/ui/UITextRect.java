@@ -15,7 +15,7 @@ import org.dragonskulle.renderer.SampledTexture;
  */
 @Accessors(prefix = "m")
 public class UITextRect extends Component implements IOnAwake {
-    protected Reference<UIRenderable> mRenderable;
+    @Getter protected Reference<UIRenderable> mRenderable;
     protected UIMaterial mMaterial;
 
     @Getter @Setter protected SampledTexture mRectTexture = null;
@@ -25,7 +25,9 @@ public class UITextRect extends Component implements IOnAwake {
     private UIText mLabelTextComp;
     @Getter private Reference<UIText> mLabelText;
 
-    public UITextRect() {}
+    public UITextRect() {
+        mLabelTextComp = new UIText();
+    }
 
     public UITextRect(UIText label) {
         mLabelTextComp = label;

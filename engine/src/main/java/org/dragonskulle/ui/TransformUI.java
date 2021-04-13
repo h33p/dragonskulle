@@ -29,7 +29,7 @@ public class TransformUI extends Transform {
     /** Maintain aspect ratio of the UI element */
     @Getter @Setter private boolean mMaintainAspect;
     /** Target aspect ratio of the element */
-    @Getter @Setter private float mTargetAspectRatio = 1.f;
+    @Getter private float mTargetAspectRatio = 1.f;
 
     /** Describes how local coordinates are anchored to parent */
     private final Vector4f mParentAnchor = new Vector4f(0f, 0f, 1f, 1f);
@@ -205,6 +205,11 @@ public class TransformUI extends Transform {
         }
 
         return mBoxMatrix;
+    }
+
+    public void setTargetAspectRatio(float targetAspectRatio) {
+        mTargetAspectRatio = targetAspectRatio;
+        setUpdateFlag();
     }
 
     /**
