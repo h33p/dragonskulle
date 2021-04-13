@@ -772,12 +772,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // Checks if the buildings owner is null
-        if (building.getOwner() == null) {
-            log.info("The owner of the building is null");
-            return false;
-        }
-
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
             log.info("You do not own the building");
