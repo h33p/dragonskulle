@@ -97,7 +97,9 @@ public class AStar {
             int nextNodeIndex = nextNode();
 
             if (nextNodeIndex != -1) { // As long as the mFrontier is not empty
-                int[] nextNode = mFrontier.remove(nextNodeIndex); // Removes the element with the smallest fNode
+                int[] nextNode =
+                        mFrontier.remove(
+                                nextNodeIndex); // Removes the element with the smallest fNode
                 int[] connectionHere = {nextNode[3], nextNode[0]}; // The connection
                 connectionsFinal.add(connectionHere); // Add it to the final connections
                 if (nextNode[0] == endNode) { // If it ends at the final node
@@ -131,24 +133,26 @@ public class AStar {
     }
 
     /**
-     * This will go through mFrontier and will find the next node to expand by checking what the fNode is.
+     * This will go through mFrontier and will find the next node to expand by checking what the
+     * fNode is.
+     *
      * @return the index of the next node to check or -1 if the list is empty
      */
     private int nextNode() {
-    	int smallest = Integer.MAX_VALUE;
-    	int index = -1;
-    	int i = 0;
-    	for (int[] node : mFrontier) {
-    		if (node[1] < smallest) {
-    			smallest = node[1];
-    			index = i;
-    		}
-    		i++;
-    	}
-    	
-    	return index;
+        int smallest = Integer.MAX_VALUE;
+        int index = -1;
+        int i = 0;
+        for (int[] node : mFrontier) {
+            if (node[1] < smallest) {
+                smallest = node[1];
+                index = i;
+            }
+            i++;
+        }
+
+        return index;
     }
-    
+
     /**
      * Performs a linear search on the data
      *
