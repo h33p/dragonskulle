@@ -44,21 +44,21 @@ public enum StatType {
             }),
 
     VIEW_DISTANCE(
-            // Regardless of the level, the view distance will always be 3.
+            // Regardless of the level, the view distance will always be the same.
             (level) -> {
                 return 3;
             }),
 
     ATTACK_DISTANCE(
-            // Regardless of the level, the attack distance will always be 3.
+            // Regardless of the level, the attack distance will always be the same.
             (level) -> {
                 return 3;
             }),
 
     BUILD_DISTANCE(
-            // Regardless of the level, the build distance will always be 3.
+            // Regardless of the level, the build distance will always be the same.
             (level) -> {
-                return 3;
+                return 2;
             });
 
     /** Set the IDs of the Stats. */
