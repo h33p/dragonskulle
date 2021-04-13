@@ -172,7 +172,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         if (Reference.isValid(controls)) {
             controls.get().setHighlight(selection.mOverlay);
-            tile.startFadeHighlight(selection.mOverlay, 0.1f);
         }
 
         mHighlightedTiles.add(tile);
