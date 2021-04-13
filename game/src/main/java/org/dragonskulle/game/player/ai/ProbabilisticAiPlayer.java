@@ -142,23 +142,23 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean tryToAddBuilding(Building building) {
 
-        if (building.getViewableTiles().size() != 0) {
+        if (building.getBuildableTiles().size() != 0) {
 
-            // Get the visible tiles
-            List<HexagonTile> visibleTiles =
-                    new ArrayList<HexagonTile>(building.getViewableTiles());
-            int index = mRandom.nextInt(visibleTiles.size());
+            // Get the buildable tiles
+            List<HexagonTile> buildableTiles =
+                    new ArrayList<HexagonTile>(building.getBuildableTiles());
+            int index = mRandom.nextInt(buildableTiles.size());
             final int END = index;
 
             // Checks if we can use one of the tiles to build from
             while (true) {
-                HexagonTile tile = visibleTiles.get(index);
+                HexagonTile tile = buildableTiles.get(index);
                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
                     getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
                     return true;
                 }
                 index++;
-                if (index >= visibleTiles.size()) {
+                if (index >= buildableTiles.size()) {
                     index = 0;
                 }
                 if (index == END) {
