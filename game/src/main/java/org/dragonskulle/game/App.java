@@ -495,15 +495,16 @@ public class App implements NativeResource {
                                                                             onConnectedClient(
                                                                                     gameScene,
                                                                                     manager, netID);
-                                                                        } else if (connectingTextRef
-                                                                                .isValid()) {
+                                                                        } else if (Reference
+                                                                                .isValid(
+                                                                                        connectingTextRef)) {
                                                                             connectingTextRef
                                                                                     .get()
                                                                                     .setEnabled(
                                                                                             false);
                                                                         }
                                                                     });
-                                                    if (connectingTextRef.isValid())
+                                                    if (Reference.isValid(connectingTextRef))
                                                         connectingTextRef.get().setEnabled(true);
                                                 });
                                 button.addComponent(newButton);

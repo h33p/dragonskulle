@@ -307,7 +307,7 @@ public class ClientNetworkManager {
 
         mNetworkObjectReferences
                 .entrySet()
-                .removeIf(entry -> !entry.getValue().mNetworkObject.isValid());
+                .removeIf(entry -> !Reference.isValid(entry.getValue().mNetworkObject));
     }
 
     // TODO: implement lobby
