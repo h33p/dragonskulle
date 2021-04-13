@@ -665,6 +665,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        if (mTokens.get() < defender.getAttackCost()) {
+            log.warning("You don't have the cash");
+            return false;
+        }
+
         if (attacker == null) {
             log.info("Attacker is null.");
             return false;
