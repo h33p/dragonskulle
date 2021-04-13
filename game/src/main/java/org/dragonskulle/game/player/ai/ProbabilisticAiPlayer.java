@@ -99,12 +99,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         // Goes through the ownedBuildings
         while (true) {
             ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
+            Reference<Building> building = buildings.get(index);
 
-            // Checks the list is valid
-            if (Reference.isValid(buildings.get(index))
-                    && buildings.get(index).get().getViewableTiles().size() != 0) {
+            // Checks the building is valid
+            if (Reference.isValid(building) && building.get().getViewableTiles().size() != 0) {
                 // Check
-                boolean completed = lambdaMethod.runEvent(buildings.get(index).get());
+                boolean completed = lambdaMethod.runEvent(building.get());
                 if (completed) {
                     return true;
                 }
@@ -147,21 +147,21 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             // Get the visible tiles
             List<HexagonTile> visibleTiles =
                     new ArrayList<HexagonTile>(building.getViewableTiles());
-            int j = mRandom.nextInt(visibleTiles.size());
-            final int END = j;
+            int index = mRandom.nextInt(visibleTiles.size());
+            final int END = index;
 
             // Checks if we can use one of the tiles to build from
             while (true) {
-                HexagonTile tile = visibleTiles.get(j);
+                HexagonTile tile = visibleTiles.get(index);
                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
                     getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
                     return true;
                 }
-                j++;
-                if (j >= visibleTiles.size()) {
-                    j = 0;
+                index++;
+                if (index >= visibleTiles.size()) {
+                    index = 0;
                 }
-                if (j == END) {
+                if (index == END) {
                     return false;
                 }
             }
