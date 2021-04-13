@@ -58,8 +58,6 @@ public class CapitalAimer extends AiPlayer {
             return;
         }
 
-        
-
         // Checks if we are at our capital.  If so will build one on
         if (mGone.size() == 0) {
             log.info("mGone == 0");
@@ -142,21 +140,20 @@ public class CapitalAimer extends AiPlayer {
             }
             Building toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
             if (toAttackCheck == null) {
-            	if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
-            		HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
-            		mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
-            	}
-            	else {
-            		nextNode = mGone.pop();
-            		toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
-            	}
+                if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
+                    HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
+                    mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
+                } else {
+                    nextNode = mGone.pop();
+                    toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+                }
             }
 
             for (Building attacker : toAttackCheck.getAttackableBuildings()) {
 
                 if (attacker.getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
 
-                	Building toAttack = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+                    Building toAttack = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
                     mPlayer.get()
                             .getClientAttackRequest()
                             .invoke(d -> d.setData(attacker, toAttack));
