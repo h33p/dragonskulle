@@ -19,6 +19,11 @@ public class Time {
         return ((double) System.nanoTime()) / NS_PER_S;
     }
 
+    /**
+     * Gets time in seconds.
+     *
+     * @return the time in seconds
+     */
     public static float getTimeInSeconds() {
         return (float) getPreciseTimeInSeconds();
     }

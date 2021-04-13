@@ -66,7 +66,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIRenderable
+     * Constructor for UIRenderable.
      *
      * @param colour colour of the rendered UI element
      */

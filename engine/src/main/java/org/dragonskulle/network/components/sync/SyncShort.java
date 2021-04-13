@@ -7,9 +7,13 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
+ * The type Sync short.
+ *
  * @author Aurimas B
- *     <p>The type Sync short.
- *     <p>This primitve type is implemented manually more space savings.
+ *
+ * <p>The type Sync short.
+ *
+ * <p>This primitve type is implemented manually more space savings.
  */
 public class SyncShort implements ISyncVar, Serializable {
     /** The Data. */

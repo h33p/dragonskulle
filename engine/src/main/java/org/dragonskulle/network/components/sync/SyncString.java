@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L The type Sync String. */
+/**
+ * The type Sync string.
+ *
+ * @author Oscar L The type Sync String.
+ */
 public class SyncString implements ISyncVar, Serializable {
 
     /** The Data. */

@@ -12,7 +12,11 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIVerticalSlider;
 import org.dragonskulle.utils.MathUtils;
 
-/** @author Oscar L */
+/**
+ * A scroll bar that is linked to the mouse scroll position and map zoom.
+ *
+ * @author Oscar L
+ */
 public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnStart {
     private Reference<ScrollTranslate> mScrollRef;
     private Reference<Component> mSliderReference;

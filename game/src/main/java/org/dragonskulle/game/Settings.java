@@ -10,7 +10,11 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
-/** @author Oscar L For loading in any settings from the settings.json file. */
+/**
+ * This class can be used to load settings from the settings file.
+ *
+ * @author Oscar L For loading in any settings from the settings.json file.
+ */
 @Accessors(prefix = "m")
 @Log
 public class Settings {
@@ -23,6 +27,9 @@ public class Settings {
 
     private HashMap mSettings = new HashMap<>();
 
+    /**
+     * Singleton constructor.
+     */
     private Settings() {}
 
     /** Loads settings from the default location. root/settings.json */

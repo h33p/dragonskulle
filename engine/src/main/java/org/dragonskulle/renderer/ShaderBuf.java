@@ -101,9 +101,11 @@ public class ShaderBuf implements NativeResource {
      * @return preprocessed text data
      */
     private static String processIncludes(String data, int depth) {
-        if (depth >= 20) return data;
+        if (depth >= 20) {
+            return data;
+        }
 
-        String lines[] = data.split("\\r?\\n");
+        String[] lines = data.split("\\r?\\n");
 
         // https://stackoverflow.com/a/26493311/13240247
         Pattern pat = Pattern.compile("\\s*#include\\s*([<\"])([^>\"]+)([>\"])");

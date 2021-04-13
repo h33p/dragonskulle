@@ -21,8 +21,18 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
     private Transform3D mTransform;
     private float mTotalTime = 0.f;
 
+    /**
+     * Instantiates a new Spinner.
+     */
     public Spinner() {}
 
+    /**
+     * Instantiates a new Spinner.
+     *
+     * @param spinSpeed     the spin speed
+     * @param sineSpeed     the sine speed
+     * @param sineAmplitude the sine amplitude
+     */
     public Spinner(float spinSpeed, float sineSpeed, float sineAmplitude) {
         this.mSpinSpeed = spinSpeed;
         this.mSineSpeed = sineSpeed;

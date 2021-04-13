@@ -26,10 +26,14 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * The menu drawer on the left side of the screen.
+ *
+ * @author Oscar L
+ */
 @Accessors(prefix = "m")
 @Log
-public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStart {
+public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetBuildingChosen mGetBuildingChosen;
     private final ISetBuildingChosen mSetBuildingChosen;
     private final IGetHexChosen mGetHexChosen;
@@ -39,58 +43,107 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
     @Getter private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
     private final float mOffsetToTop = 0.46f;
 
+    /**
+     * Notify the parent of the screen change and set it.
+     */
     public interface INotifyScreenChange {
+        /**
+         * Call the function.
+         *
+         * @param newScreen the new screen
+         */
         void call(Screen newScreen);
     }
 
+    /**
+     * Get the player reference from the parent.
+     */
     public interface IGetPlayer {
+        /**
+         * Get the player reference.
+         *
+         * @return the reference
+         */
         Reference<Player> get();
     }
 
+    /**
+     * Get the building chosen from the parent.
+     */
     public interface IGetBuildingChosen {
+        /**
+         * Get the building.
+         *
+         * @return the reference
+         */
         Reference<Building> get();
     }
 
+    /**
+     * Get the hex chosen from the parent.
+     */
     public interface IGetHexChosen {
+        /**
+         * Get the hexagon tile.
+         *
+         * @return the hexagon tile
+         */
         HexagonTile get();
     }
 
+    /**
+     * Set the parent hex tile.
+     */
     public interface ISetHexChosen {
+        /**
+         * Set.
+         *
+         * @param tile the tile to set it to
+         */
         void set(HexagonTile tile);
     }
 
+    /**
+     * Set the building on the parent.
+     */
     public interface ISetBuildingChosen {
+        /**
+         * Set the building.
+         *
+         * @param tile the tile
+         */
         void set(Reference<Building> tile);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param getBuildingChosen  the get building chosen callback
+     * @param setBuildingChosen  the set building chosen callback
+     * @param getHexChosen       the get hex chosen callback
+     * @param setHexChosen       the set hex chosen callback
+     * @param notifyScreenChange the notify screen change callback
+     * @param getPlayer         the get player callback
+     */
     public UIMenuLeftDrawer(
             IGetBuildingChosen getBuildingChosen,
             ISetBuildingChosen setBuildingChosen,
             IGetHexChosen getHexChosen,
             ISetHexChosen setHexChosen,
             INotifyScreenChange notifyScreenChange,
-            IGetPlayer mGetPlayer) {
+            IGetPlayer getPlayer) {
         super();
         this.mGetBuildingChosen = getBuildingChosen;
         this.mSetBuildingChosen = setBuildingChosen;
         this.mGetHexChosen = getHexChosen;
         this.mSetHexChosen = setHexChosen;
         this.mNotifyScreenChange = notifyScreenChange;
-        this.mGetPlayer = mGetPlayer;
+        this.mGetPlayer = getPlayer;
     }
 
     /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
-
-    /**
-     * Frame Update is called every single render frame, before any fixed updates. There can be
-     * multiple, or none, fixed updates between calls to frameUpdate.
-     *
-     * @param deltaTime Approximate time since last call to frameUpdate
-     */
-    @Override
-    public void frameUpdate(float deltaTime) {}
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -115,6 +168,11 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
         getGameObject().addComponent(drawer);
     }
 
+    /**
+     * Build the attack button frame.
+     *
+     * @return the ui text button frame
+     */
     private UITextButtonFrame buildAttackButtonFrame() {
         return new UITextButtonFrame(
                 "attack_button",
@@ -136,6 +194,11 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 false);
     }
 
+    /**
+     * Build the deselect button frame.
+     *
+     * @return the ui text button frame
+     */
     private UITextButtonFrame buildDeselectButtonFrame() {
         return new UITextButtonFrame(
                 "deselect_button",
@@ -148,6 +211,11 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 true);
     }
 
+    /**
+     * Build the place button frame.
+     *
+     * @return the ui text button frame
+     */
     private UITextButtonFrame buildPlaceButtonFrame() {
         return new UITextButtonFrame(
                 "place_button",
@@ -171,6 +239,11 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 true);
     }
 
+    /**
+     * Build the upgrade button frame.
+     *
+     * @return the ui text button frame
+     */
     private UITextButtonFrame buildUpgradeButtonFrame() {
         return new UITextButtonFrame(
                 "upgrade_button",
@@ -205,6 +278,11 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 false);
     }
 
+    /**
+     * Build the sell button frame.
+     *
+     * @return the ui text button frame
+     */
     private UITextButtonFrame buildSellButtonFrame() {
         return new UITextButtonFrame(
                 "sell_button",
@@ -230,17 +308,23 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                 false);
     }
 
+    /**
+     * Build the menu hash map.
+     *
+     * @param buttonChildren the button children
+     * @return the hash map
+     */
     private HashMap<String, Reference<GameObject>> buildMenu(
-            List<UITextButtonFrame> mButtonChildren) {
+            List<UITextButtonFrame> buttonChildren) {
         HashMap<String, Reference<GameObject>> buttonMap = new HashMap<>();
         getGameObject()
                 .buildChild(
                         "auto_built_children",
                         (menu) -> {
-                            for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
+                            for (int i = 0, mButtonChildrenSize = buttonChildren.size();
                                     i < mButtonChildrenSize;
                                     i++) {
-                                UITextButtonFrame mButtonChild = mButtonChildren.get(i);
+                                UITextButtonFrame mButtonChild = buttonChildren.get(i);
                                 int finalI = i;
                                 Reference<GameObject> button_reference =
                                         getGameObject()
@@ -287,34 +371,5 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                         });
 
         return buttonMap;
-    }
-
-    public void setMenu(Screen mScreenOn) {
-        Reference<GameObject> button;
-        switch (mScreenOn) {
-            case BUILDING_SELECTED_SCREEN:
-                button = mButtonReferences.get("place_button");
-                if (button != null && button.isValid()) {}
-
-                break;
-            case TILE_SCREEN:
-                button = mButtonReferences.get("sell_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
-                break;
-            case ATTACK_SCREEN:
-                button = mButtonReferences.get("attack_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
-                break;
-            case STAT_SCREEN:
-                button = mButtonReferences.get("upgrade_button");
-                if (button != null && button.isValid()) {
-                    // should disable button
-                }
-                break;
-        }
     }
 }

@@ -59,6 +59,10 @@ public class ServerClient {
         mServerListener = serverListener;
     }
 
+    /**
+     * Creates a new NetworkMessageStream from the outputstream on the server socket.
+     * @return the new stream
+     */
     public DataOutputStream getDataOut() {
         return new NetworkMessageStream(mDataOut);
     }
@@ -108,7 +112,7 @@ public class ServerClient {
     public void closeSocket() {
         try (DataOutputStream dataOut = getDataOut()) {
             dataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 
@@ -175,6 +179,9 @@ public class ServerClient {
         triggerDisconnect();
     }
 
+    /**
+     * Start disconnecting the client.
+     */
     private void triggerDisconnect() {
         if (mRunning) {
             mRunning = false;
@@ -205,6 +212,12 @@ public class ServerClient {
         }
     }
 
+    /**
+     * Handle a client request for an object.
+     *
+     * @param stream the stream
+     * @throws IOException the io exception
+     */
     private void handleClientRequest(DataInputStream stream) throws IOException {
         int objectID = stream.readInt();
         int requestID = stream.readInt();

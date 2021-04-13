@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L The type Sync Long. */
+/**
+ * The type Sync long.
+ *
+ * @author Oscar L The type Sync Long.
+ */
 public class SyncLong implements ISyncVar, Serializable {
 
     /** The Data. */

@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L */
+/**
+ * The type Sync float.
+ *
+ * @author Oscar L
+ */
 public class SyncFloat implements ISyncVar, Serializable {
 
     private float mData;

@@ -56,7 +56,10 @@ public class UIManager {
         }
     }
 
-    /** Get singleton UIManager instance. */
+    /**
+     * Get singleton UIManager instance.
+     * @return the instance
+     */
     public static UIManager getInstance() {
         return SINGLETON;
     }

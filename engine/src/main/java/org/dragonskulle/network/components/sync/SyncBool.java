@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L The type Sync bool. */
+/**
+ * The type Sync bool.
+ *
+ * @author Oscar L The type Sync bool.
+ */
 public class SyncBool implements ISyncVar, Serializable {
 
     /** The Data. */

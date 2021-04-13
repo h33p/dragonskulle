@@ -15,7 +15,7 @@ import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector3f;
 
 /**
- * Allows to move an object towards a target
+ * Allows to move an object towards a target.
  *
  * @author Aurimas Blažulionis
  */
@@ -31,16 +31,21 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
 
     @Getter @Setter private float mHoldTime = 0.1f;
 
-    @Getter private Vector3f mDirectionMul = new Vector3f(1f, 1f, 0f);
+    @Getter private final Vector3f mDirectionMul = new Vector3f(1f, 1f, 0f);
 
     private transient Transform3D mTransform;
 
-    private Vector3f mTmpVec1 = new Vector3f();
-    private Vector3f mTmpVec2 = new Vector3f();
-    private float curHoldTime = 0f;
+    private final Vector3f mTmpVec1 = new Vector3f();
+    private final Vector3f mTmpVec2 = new Vector3f();
+    private float mCurHoldTime = 0f;
 
     @Getter private Reference<Transform> mTarget = null;
 
+    /**
+     * Sets target level.
+     *
+     * @param target the target
+     */
     public void setTarget(Transform target) {
         mTarget = target.getReference(Transform.class);
     }
@@ -60,19 +65,21 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
             mTmpVec2.sub(mTmpVec1).mul(mDirectionMul);
 
             if (mTmpVec2.lengthSquared() <= mEndDelta * mEndDelta) {
-                if (curHoldTime >= mHoldTime) {
+                if (mCurHoldTime >= mHoldTime) {
                     mTarget = null;
                     return;
                 }
             } else {
-                curHoldTime = 0f;
+                mCurHoldTime = 0f;
             }
 
-            curHoldTime += deltaTime;
+            mCurHoldTime += deltaTime;
 
             float dist = mTmpVec2.length();
 
-            if (dist <= 1e-20f) return;
+            if (dist <= 1e-20f) {
+                return;
+            }
 
             float moveSpeed =
                     MathUtils.lerp(

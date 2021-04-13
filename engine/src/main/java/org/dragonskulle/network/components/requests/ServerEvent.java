@@ -43,6 +43,11 @@ public class ServerEvent<T extends INetSerializable> {
 
         @Getter private final byte mValue;
 
+        /**
+         * Constructor.
+         *
+         * @param value the enum byte value
+         */
         private EventRecipients(byte value) {
             mValue = value;
         }
@@ -65,12 +70,27 @@ public class ServerEvent<T extends INetSerializable> {
 
         @Getter private final byte mValue;
 
+        /**
+         * Constructor.
+         *
+         * @param value the byte value
+         */
         private EventTimeframe(byte value) {
             mValue = value;
         }
     }
 
+    /**
+     * The interface for settings the values in an server invokation.
+     *
+     * @param <T> the type parameter for the Invoke type
+     */
     public static interface IInvokationSetter<T extends INetSerializable> {
+        /**
+         * Runs the invokation setter.
+         *
+         * @param data the data
+         */
         void setValues(T data);
     }
 
@@ -106,6 +126,12 @@ public class ServerEvent<T extends INetSerializable> {
         this(defaultValue, handler, EventRecipients.ACTIVE_CLIENTS, EventTimeframe.INSTANT);
     }
 
+    /**
+     * Attaches a network object to an event Id.
+     *
+     * @param obj the obj
+     * @param id  the id
+     */
     public void attachNetworkObject(NetworkObject obj, int id) {
         mNetworkObject = obj;
         mEventId = id;
@@ -163,6 +189,12 @@ public class ServerEvent<T extends INetSerializable> {
         }
     }
 
+    /**
+     * Handles an event with its corresponding invokation.
+     *
+     * @param inStream the data stream
+     * @throws IOException thrown when an error reading from the stream.
+     */
     public void handle(DataInputStream inStream) throws IOException {
         mTmpData.deserialize(inStream);
         mHandler.invokeHandler(mTmpData);
