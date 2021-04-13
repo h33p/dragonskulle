@@ -482,8 +482,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @param type The type of stat the SyncStat should be.
      */
     private void initiliseStat(SyncStat stat, StatType type) {
-        // Set the value calculator of the SyncStat.
-        stat.setValueCalculator(type.getValueCalculator());
+        // Initialise the SyncStat.
+        stat.initialise(type);
         // Store the stat.
         storeStat(type, stat);
     }
