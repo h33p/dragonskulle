@@ -89,16 +89,23 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     public boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
 
-        if (getPlayer() == null) {
+        Player player = getPlayer();
+
+        if (player == null) {
             return false;
         }
 
-        int index = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-        final int END = index;
+        if (player.getNumberOfOwnedBuildings() == 0) {
+            return false;
+        }
+
+        int index = mRandom.nextInt(player.getNumberOfOwnedBuildings());
+        final int end = index;
+
+        ArrayList<Reference<Building>> buildings = player.getOwnedBuildings();
 
         // Goes through the ownedBuildings
         while (true) {
-            ArrayList<Reference<Building>> buildings = getPlayer().getOwnedBuildings();
             Reference<Building> building = buildings.get(index);
 
             // Checks the building is valid
@@ -112,12 +119,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             index++;
 
             // If gone over start at 0
-            if (index >= getPlayer().getNumberOfOwnedBuildings()) {
+            if (index >= player.getNumberOfOwnedBuildings()) {
                 index = 0;
             }
 
             // Checks if we've gone through the whole list
-            if (index == END) {
+            if (index == end) {
                 return false;
             }
         }
@@ -135,10 +142,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * Will try and building a building
+     * Try and place a {@link Building} from the specified Building.
      *
-     * @param index the index to check
-     * @return whether the code was invoked
+     * @param building The building to place from.
+     * @return Whether building placement was invoked.
      */
     private boolean tryToAddBuilding(Building building) {
 
@@ -178,23 +185,16 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     private boolean upgradeBuilding() {
         log.info("AI: Upgrading");
 
-        if (getPlayer() == null) {
-            return false;
-        }
-        if (getPlayer().getNumberOfOwnedBuildings() == 0) {
-            return false;
-        }
+        return attemptRunEvent(this::tryToUpgrade);
+    }
 
-        int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
-        Reference<Building> buildingReference = getPlayer().getOwnedBuildings().get(buildingIndex);
-        if (!Reference.isValid(buildingReference)) {
-            log.info("AI: could not get building to upgrade.");
-            return false;
-        }
-
-        // Get the Building.
-        Building building = buildingReference.get();
-
+    /**
+     * Try and upgrade a building.
+     *
+     * @param building The building to upgrade.
+     * @return Whether upgrading was invoked.
+     */
+    private boolean tryToUpgrade(Building building) {
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
         if (stats.size() == 0) return false;
 
@@ -229,10 +229,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * This will try to attack from a building
+     * This will try to attack from a building.
      *
-     * @param index where in the list to get it
-     * @return whether it was invoked
+     * @param building The building to attack from.
+     * @return Whether attacking was invoked.
      */
     private boolean tryToAttack(Building attacker) {
 
@@ -278,9 +278,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * Gets the player
+     * Gets the player.
      *
-     * @return the player
+     * @return The player.
      */
     private Player getPlayer() {
         Player player = mPlayer.get();
