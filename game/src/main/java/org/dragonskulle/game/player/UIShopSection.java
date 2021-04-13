@@ -16,18 +16,26 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart {
-    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Getter
+    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Setter
+    @Getter
+    private ShopState mLastState = ShopState.CLOSED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private UIBuildingOptions mBuildingOptions;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
-    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter
+    @Getter
+    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> titleRef;
 
     public UIShopSection(
@@ -48,41 +56,47 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     protected void setState(ShopState state) {
-        Reference<GameObject> newPanel;
-        log.warning("setting visible state to " + state.toString());
-        switch (state) {
-            case CLOSED:
-                show(false);
-                if (Reference.isValid(mCurrentPanel)) {
-                    show(mCurrentPanel, false);
-                }
-                return;
-            case ATTACK_SCREEN:
-                show(true);
-                newPanel = new Reference<>(null);
-                break;
-            case BUILDING_NEW:
-                show(true);
-                newPanel = mNewBuildingPanel;
-                break;
-            case MY_BUILDING_SELECTED: // todo is BUILDING_SELECTED the same as the upgrade panel?
-                show(true);
-                newPanel = mUpgradePanel;
-                break;
-            default:
-                log.warning("Menu hasn't been updated to reflect this screen yet");
-                setState(ShopState.CLOSED);
-                return;
+        if(state!=getLastState()) {
+            Reference<GameObject> newPanel;
+            log.warning("setting visible state to " + state.toString());
+            switch (state) {
+                case CLOSED:
+                    show(false);
+                    if (Reference.isValid(mCurrentPanel)) {
+                        show(mCurrentPanel, false);
+                    }
+                    return;
+                case ATTACK_SCREEN:
+                    show(true);
+                    newPanel = new Reference<>(null);
+                    break;
+                case BUILDING_NEW:
+                    show(true);
+                    newPanel = mNewBuildingPanel;
+                    break;
+                case MY_BUILDING_SELECTED: // todo is BUILDING_SELECTED the same as the upgrade panel?
+                    show(true);
+                    newPanel = mUpgradePanel;
+                    break;
+                default:
+                    log.warning("Menu hasn't been updated to reflect this screen yet");
+                    setState(ShopState.CLOSED);
+                    return;
+            }
+            if (Reference.isValid(titleRef)) {
+                titleRef.get().setText(state.toString());
+            }
+            setLastState(state);
+            swapPanels(newPanel);
         }
-        if (Reference.isValid(titleRef)) {
-            titleRef.get().setText(state.toString());
-        }
-        swapPanels(newPanel);
     }
 
     private void show(boolean showShow) {
@@ -105,12 +119,10 @@ public class UIShopSection extends Component implements IOnStart {
     }
 
     private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
-        if (newPanel != null) {
-            // check if valid reference then reassign
-            if (Reference.isValid(newPanel)) {
-                show(newPanel, true);
-                return newPanel;
-            }
+        // check if valid reference then reassign
+        if (Reference.isValid(newPanel)) {
+            show(newPanel, true);
+            return newPanel;
         }
         return new Reference<>(null);
     }

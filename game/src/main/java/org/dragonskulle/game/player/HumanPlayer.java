@@ -192,7 +192,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Choose which screen to show
 
         if (Reference.isValid(mMenuDrawer)) {
-            mMenuDrawer.get().setMenu(mScreenOn);
+            mMenuDrawer.get().setVisibleScreen(mScreenOn);
         }
 
         mapScreen();

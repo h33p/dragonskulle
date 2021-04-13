@@ -11,16 +11,23 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2fc;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
 
+    private static final float X_SIZE_OFFSET_TO_POINT = 0.015f;
+    private static final float Y_SIZE_OFFSET_TO_POINT = 0.025f;
     private TransformUI mCursorTransform;
     private UIRenderable mFancyCursor;
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -31,8 +38,8 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
     @Override
     public void frameUpdate(float deltaTime) {
         final Vector2fc position = GameActions.getCursor().getPosition();
-        float x = (position.x() + 1) * 0.5f;
-        float y = (position.y() + 1) * 0.5f;
+        float x = (position.x() + 1) * 0.5f + X_SIZE_OFFSET_TO_POINT;
+        float y = (position.y() + 1) * 0.5f + Y_SIZE_OFFSET_TO_POINT;
         mCursorTransform.setParentAnchor(x, y, x, y);
         //
         //        if(GameActions.LEFT_CLICK.isActivated()){
@@ -47,6 +54,7 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
     @Override
     public void onStart() {
         mFancyCursor = new UIRenderable(new SampledTexture("ui/cursor.png"));
+        mFancyCursor.setDepthShift(Float.NEGATIVE_INFINITY);
         getGameObject().addComponent(mFancyCursor);
         mCursorTransform = getGameObject().getTransform(TransformUI.class);
         //        mCursorTransform.setParentAnchor(0.01f, 0f, 0.01f, 1f);

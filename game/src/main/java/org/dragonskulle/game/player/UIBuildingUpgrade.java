@@ -48,13 +48,16 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                 buildStatUpgradeChildren(builder, building);
             }
         }
-        if (textReference != null && textReference.isValid()) {
+        if (Reference.isValid(textReference)) {
             textReference.get().setText(builder.toString());
         }
     }
 
     private void buildStatUpgradeChildren(StringBuilder builder, Building building) {
-        List<SyncStat<?>> stats = building.getStats();
+        List<SyncStat> stats = building.getStats();
+        if(Reference.isValid(mStatChildren)){
+            mStatChildren.get().destroy();
+        }
         mStatChildren =
                 mBuildingUpgradeComponent
                         .get()
@@ -111,7 +114,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                 });
     }
 
-    private Component buildSingleStatChild(SyncStat<?> stat, float offset) {
+    private Component buildSingleStatChild(SyncStat stat, float offset) {
 
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         // set transform depending on offset

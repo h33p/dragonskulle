@@ -14,14 +14,14 @@ import org.joml.Vector3f;
 
 /** @author Oscar L */
 public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate {
-    private final SyncStat<?> stat;
+    private final SyncStat stat;
     private final IUpgradeStat mStatIncreaserMethod;
 
     protected interface IUpgradeStat {
         void call();
     }
 
-    public UIStatUpgrader(SyncStat<?> stat, IUpgradeStat statIncreaserMethod) {
+    public UIStatUpgrader(SyncStat stat, IUpgradeStat statIncreaserMethod) {
         super();
         this.stat = stat;
         this.mStatIncreaserMethod = statIncreaserMethod;

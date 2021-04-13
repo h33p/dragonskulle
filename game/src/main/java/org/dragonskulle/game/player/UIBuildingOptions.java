@@ -120,7 +120,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
     public void frameUpdate(float deltaTime) {
         if (getGameObject().isEnabled()) {
             int currentTokens = 0;
-            if (mGetPlayer.get().isValid()) {
+            if (Reference.isValid(mGetPlayer.get())) {
                 currentTokens = mGetPlayer.get().get().getTokens().get();
             }
 
