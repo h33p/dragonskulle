@@ -14,6 +14,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -189,6 +190,9 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                     if (Reference.isValid(player)) {
                         Reference<Building> buildingChosen = mGetBuildingChosen.get();
                         if (Reference.isValid(buildingChosen)) {
+                            for (SyncStat stat : buildingChosen.get().getStats()) {
+                                System.out.println(stat + ": " + stat.getCost());
+                            }
                             player.get()
                                     .getClientStatRequest()
                                     .invoke(
