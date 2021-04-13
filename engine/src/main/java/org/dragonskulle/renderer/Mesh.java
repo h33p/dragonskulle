@@ -43,24 +43,12 @@ public class Mesh implements Serializable {
 
     /** Vertices for a 2D hexagon */
     private static final Vertexc[] HEXAGON_VERTICES = {
-        new Vertex(
-                new Vector3f(0.86603f, -0.5f, 0.0f),
-                new Vector3f(1.0f),
-                new Vector2f(0.86603f, -0.5f)),
-        new Vertex(
-                new Vector3f(0.86603f, 0.5f, 0.0f),
-                new Vector3f(1.0f),
-                new Vector2f(0.86603f, 0.5f)),
-        new Vertex(new Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, 1.0f)),
-        new Vertex(
-                new Vector3f(-0.86603f, 0.5f, 0.0f),
-                new Vector3f(1.0f),
-                new Vector2f(-0.86603f, 0.5f)),
-        new Vertex(
-                new Vector3f(-0.86603f, -0.5f, 0.0f),
-                new Vector3f(1.0f),
-                new Vector2f(-0.86603f, -0.5f)),
-        new Vertex(new Vector3f(0.0f, -1.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, -1.0f)),
+        new Vertex(new Vector3f(0.86603f, -0.5f, 0.0f), new Vector2f(0.86603f, -0.5f)),
+        new Vertex(new Vector3f(0.86603f, 0.5f, 0.0f), new Vector2f(0.86603f, 0.5f)),
+        new Vertex(new Vector3f(0.0f, 1.0f, 0.0f), new Vector2f(0.0f, 1.0f)),
+        new Vertex(new Vector3f(-0.86603f, 0.5f, 0.0f), new Vector2f(-0.86603f, 0.5f)),
+        new Vertex(new Vector3f(-0.86603f, -0.5f, 0.0f), new Vector2f(-0.86603f, -0.5f)),
+        new Vertex(new Vector3f(0.0f, -1.0f, 0.0f), new Vector2f(0.0f, -1.0f)),
     };
 
     /** Indices for the 2D hexagon */
@@ -68,14 +56,14 @@ public class Mesh implements Serializable {
 
     /** Vertices for a cube */
     private static final Vertexc[] CUBE_VERTICES = {
-        new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector3f(1.f), new Vector2f(0.0f, 0.0f)),
-        new Vertex(new Vector3f(0.5f, -0.5f, -0.5f), new Vector3f(1.f), new Vector2f(1.0f, 0.0f)),
-        new Vertex(new Vector3f(0.5f, 0.5f, -0.5f), new Vector3f(1.f), new Vector2f(1.0f, 1.0f)),
-        new Vertex(new Vector3f(-0.5f, 0.5f, -0.5f), new Vector3f(1.f), new Vector2f(0.0f, 1.0f)),
-        new Vertex(new Vector3f(-0.5f, -0.5f, 0.5f), new Vector3f(1.f), new Vector2f(0.0f, 1.0f)),
-        new Vertex(new Vector3f(0.5f, -0.5f, 0.5f), new Vector3f(1.f), new Vector2f(1.0f, 1.0f)),
-        new Vertex(new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f(1.f), new Vector2f(1.0f, 0.0f)),
-        new Vertex(new Vector3f(-0.5f, 0.5f, 0.5f), new Vector3f(1.f), new Vector2f(0.0f, 0.0f))
+        new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
+        new Vertex(new Vector3f(0.5f, -0.5f, -0.5f), new Vector2f(1.0f, 0.0f)),
+        new Vertex(new Vector3f(0.5f, 0.5f, -0.5f), new Vector2f(1.0f, 1.0f)),
+        new Vertex(new Vector3f(-0.5f, 0.5f, -0.5f), new Vector2f(0.0f, 1.0f)),
+        new Vertex(new Vector3f(-0.5f, -0.5f, 0.5f), new Vector2f(0.0f, 1.0f)),
+        new Vertex(new Vector3f(0.5f, -0.5f, 0.5f), new Vector2f(1.0f, 1.0f)),
+        new Vertex(new Vector3f(0.5f, 0.5f, 0.5f), new Vector2f(1.0f, 0.0f)),
+        new Vertex(new Vector3f(-0.5f, 0.5f, 0.5f), new Vector2f(0.0f, 0.0f))
     };
 
     /** Indices for the cube */
@@ -96,10 +84,10 @@ public class Mesh implements Serializable {
 
     /** Vertices for a 2D quad plane */
     private static final Vertexc[] QUAD_VERTICES = {
-        new Vertex(new Vector3f(0f, 0f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
-        new Vertex(new Vector3f(0f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
-        new Vertex(new Vector3f(1.f, 0f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
-        new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 1f)),
+        new Vertex(new Vector3f(0f, 0f, 0.f), new Vector2f(0.f, 0.f)),
+        new Vertex(new Vector3f(0f, 1.f, 0.f), new Vector2f(0f, 1f)),
+        new Vertex(new Vector3f(1.f, 0f, 0.f), new Vector2f(1f, 0f)),
+        new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector2f(1f, 1f)),
     };
 
     /** Indices for the 2D quad */
@@ -161,6 +149,17 @@ public class Mesh implements Serializable {
             Vector2fc endCoords,
             Vector2fc startUV,
             Vector2fc endUV) {
+        addQuadToList(vertices, indices, startCoords, endCoords, startUV, endUV, new Vector4f(1f));
+    }
+
+    public static void addQuadToList(
+            List<Vertex> vertices,
+            List<Integer> indices,
+            Vector2fc startCoords,
+            Vector2fc endCoords,
+            Vector2fc startUV,
+            Vector2fc endUV,
+            Vector4f colour) {
         int start = vertices.size();
 
         indices.add(start);
@@ -173,22 +172,22 @@ public class Mesh implements Serializable {
         vertices.add(
                 new Vertex(
                         new Vector3f(startCoords.x(), startCoords.y(), 0.f),
-                        new Vector3f(1f),
+                        colour,
                         new Vector2f(startUV)));
         vertices.add(
                 new Vertex(
                         new Vector3f(startCoords.x(), endCoords.y(), 0.f),
-                        new Vector3f(1f),
+                        colour,
                         new Vector2f(startUV.x(), endUV.y())));
         vertices.add(
                 new Vertex(
                         new Vector3f(endCoords.x(), startCoords.y(), 0.f),
-                        new Vector3f(1f),
+                        colour,
                         new Vector2f(endUV.x(), startUV.y())));
         vertices.add(
                 new Vertex(
                         new Vector3f(endCoords.x(), endCoords.y(), 0.f),
-                        new Vector3f(1f),
+                        colour,
                         new Vector2f(endUV)));
     }
 
@@ -204,16 +203,16 @@ public class Mesh implements Serializable {
             Vector2fc startCoords, Vector2fc endCoords, Vector2fc startUV, Vector2fc endUV) {
         final Vertex[] vertices = {
             new Vertex(
-                    new Vector3f(startCoords.x(), startCoords.y(), 0.f), new Vector3f(1f), startUV),
+                    new Vector3f(startCoords.x(), startCoords.y(), 0.f), new Vector4f(1f), startUV),
             new Vertex(
                     new Vector3f(startCoords.x(), endCoords.y(), 0.f),
-                    new Vector3f(1f),
+                    new Vector4f(1f),
                     new Vector2f(startUV.x(), endUV.y())),
             new Vertex(
                     new Vector3f(endCoords.x(), startCoords.y(), 0.f),
-                    new Vector3f(1f),
+                    new Vector4f(1f),
                     new Vector2f(endUV.x(), startUV.y())),
-            new Vertex(new Vector3f(endCoords.x(), endCoords.y(), 0.f), new Vector3f(1f), endUV),
+            new Vertex(new Vector3f(endCoords.x(), endCoords.y(), 0.f), new Vector4f(1f), endUV),
         };
         return new Mesh(vertices, QUAD_INDICES);
     }

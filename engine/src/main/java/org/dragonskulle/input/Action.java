@@ -1,6 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import org.dragonskulle.core.Engine;
+
 /**
  * An action that can either be activated or deactivated.
  *
@@ -8,19 +12,26 @@ package org.dragonskulle.input;
  *
  * @author Craig Wilbourne
  */
+@Accessors(prefix = "m")
 public class Action {
 
     /** A name used for display purposes only. */
     private String mName;
 
     /** Whether the action is currently activated. */
-    private Boolean mActivated = false;
+    @Getter private boolean mActivated = false;
 
     /** Whether the action has been activated this frame. */
-    private Boolean mJustActivated = false;
+    @Getter private boolean mJustActivated = false;
 
     /** Whether the action has been <b>de</b>activated this frame. */
-    private Boolean mJustDeactivated = false;
+    @Getter private boolean mJustDeactivated = false;
+
+    /** Last Engine time when the action was activated */
+    @Getter private float mActivationTime = 0f;
+
+    /** Whether the action gets deactivated when input is being intercepted */
+    @Getter private boolean mIgnoreOnIntercept = true;
 
     /** Create a new (unnamed) action. */
     public Action() {}
@@ -36,12 +47,23 @@ public class Action {
     }
 
     /**
-     * Get if the action is currently activated.
+     * Create an action and give it a display name.
      *
-     * @return Whether the action is currently activated.
+     * @param name The name of the action.
+     * @param ignoreOnIntercept control whether the action gets deactivated on input intercept
      */
-    public boolean isActivated() {
-        return mActivated;
+    public Action(String name, boolean ignoreOnIntercept) {
+        this(name);
+        this.mIgnoreOnIntercept = ignoreOnIntercept;
+    }
+
+    /**
+     * Get for how long the action has been activated
+     *
+     * @return {@code Engine::getCurTime() - getActivationTime()} if active, {@code 0} otherwise.
+     */
+    public float getTimeActivated() {
+        return mActivated ? Engine.getInstance().getCurTime() - mActivationTime : 0f;
     }
 
     /**
@@ -50,6 +72,12 @@ public class Action {
      * @param activated Whether the action should be activated.
      */
     void setActivated(boolean activated) {
+
+        // If being intercepted, only allow deactivating the action
+        if (mIgnoreOnIntercept && activated && Actions.isBeingIntercepted()) {
+            return;
+        }
+
         if (mActivated == false && activated == true) {
             // If the action is currently false and it will become true, this shows the action has
             // just been activated.
@@ -64,15 +92,6 @@ public class Action {
     }
 
     /**
-     * Get whether the action has been activated this frame.
-     *
-     * @return {@code true} if the action was activated this frame, otherwise {@code false}.
-     */
-    public boolean isJustActivated() {
-        return mJustActivated;
-    }
-
-    /**
      * Set whether the action has just been activated this frame.
      *
      * <p>If the action has just been activated- so {@code activated} is {@code true}- the {@link
@@ -83,17 +102,9 @@ public class Action {
     void setJustActivated(boolean activated) {
         if (activated == true) {
             Actions.addJustActivated(this);
+            mActivationTime = Engine.getInstance().getCurTime();
         }
         mJustActivated = activated;
-    }
-
-    /**
-     * Get whether the action has been deactivated this frame.
-     *
-     * @return {@code true} if the action was deactivated this frame, otherwise {@code false}.
-     */
-    public boolean isJustDeactivated() {
-        return mJustDeactivated;
     }
 
     /**
@@ -116,6 +127,6 @@ public class Action {
         // If no name is available, display the action name as blank.
         String name = mName != null ? mName : "---";
 
-        return String.format("Action{name:%s}", name);
+        return String.format("Action{name:%s; ignore:%b}", name, mIgnoreOnIntercept);
     }
 }

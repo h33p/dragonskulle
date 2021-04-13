@@ -46,6 +46,9 @@ public class SyncStat extends SyncInt {
      */
     public SyncStat(Building building) {
         mBuilding = building.getReference(Building.class);
+
+        // Initialise the level to the minimum value.
+        setLevel(LEVEL_MIN);
     }
 
     /**

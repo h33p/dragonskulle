@@ -2,6 +2,7 @@
 package org.dragonskulle.input;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -93,6 +94,15 @@ public class Bindings {
             return new ArrayList<Action>();
         }
         return binding.getActions();
+    }
+
+    /**
+     * Get all actions that have bindings.
+     *
+     * @return A {@code Collection} of {@link Action}s that have buttons bound to them.
+     */
+    Collection<Action> getActions() {
+        return mActionToButtons.keySet();
     }
 
     /**

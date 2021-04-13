@@ -226,7 +226,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int highestDefence = 0;
 
         // Roll a die a number of times defined by the attack stat.
-        for (int i = 1; i < attack; i++) {
+        for (int i = 0; i <= attack; i++) {
             int value = (int) (Math.random() * (maxValue) + 1);
             // Store the highest value achieved.
             if (value > highestAttack) {
@@ -235,7 +235,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         // Roll a die a number of times defined by the defence stat.
-        for (int i = 1; i < defence; i++) {
+        for (int i = 0; i <= defence; i++) {
             int value = (int) (Math.random() * (maxValue) + 1);
             // Store the highest value achieved.
             if (value > highestDefence) {
@@ -244,11 +244,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         // Check to see who has the highest value, and won.
-        if (highestAttack > highestDefence) {
-            return true;
-        } else {
-            return false;
-        }
+        return highestAttack > highestDefence;
     }
 
     /**
