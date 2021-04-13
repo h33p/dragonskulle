@@ -665,11 +665,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (mTokens.get() < defender.getAttackCost()) {
-            log.warning("You don't have the cash");
-            return false;
-        }
-
         if (attacker == null) {
             log.info("Attacker is null.");
             return false;
@@ -677,6 +672,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (defender == null) {
             log.info("Defender is null.");
+            return false;
+        }
+
+        // Checks you have the cash
+        if (mTokens.get() < defender.getAttackCost()) {
+            log.warning("You don't have the cash");
             return false;
         }
 
