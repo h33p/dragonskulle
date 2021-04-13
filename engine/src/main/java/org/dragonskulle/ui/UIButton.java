@@ -325,7 +325,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
         }
     }
 
-    private void setAppearance() {
+    private void updateAppearance() {
         mRegularColour = mAppearance.getRegularColour();
         mHoveredColour = mAppearance.getHoveredColour();
         mPressedColour = mAppearance.getPressedColour();
@@ -338,7 +338,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
     @Override
     public void onAwake() {
-        setAppearance();
+        updateAppearance();
 
         super.onAwake();
 
