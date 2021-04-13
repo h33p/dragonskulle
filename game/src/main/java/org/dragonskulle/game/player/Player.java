@@ -229,6 +229,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             } else if (!completed) {
                 buildingToBecomeCapital.setCapital(true);
                 completed = true;
+                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
             }
         }
     }
@@ -304,6 +305,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (tile.getTileType() != TileType.LAND) {
+        	log.warning("Unable to create Building: Tile placed is not land");
             return null;
         }
 
