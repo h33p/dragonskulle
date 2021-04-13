@@ -44,7 +44,8 @@ import org.lwjgl.vulkan.*;
  *
  * @author Aurimas Blažulionis
  *     <p>This renderer allows to draw {@code Renderable} objects on screen. Application needs to
- *     call {@code onResized} when its window gets resized.
+ *     call {@link Renderer#onResize} when its window gets resized.
+ *     <p>Use {@link Renderer#render} method to render a frame.
  *     <p>This renderer was originally based on<a href="https://vulkan-tutorial.com/">Vulkan
  *     Tutorial</a>, and was later rewritten with a much more manageable design.
  */
@@ -53,93 +54,199 @@ import org.lwjgl.vulkan.*;
 @Log
 public class Renderer implements NativeResource {
 
+    /** Reference to the GLFW window */
     private long mWindow;
 
+    /** A vulkan context instance */
     private VkInstance mInstance;
+    /** Debug messenger used to log validation errors when {@code DEBUG_RENDERER} is enabled */
     private long mDebugMessenger;
+    /** Surface of the window */
     private long mSurface;
 
+    /** Active physical device */
     private PhysicalDevice mPhysicalDevice;
+    /** Number of Multi-Sampled Anti-Aliasing (MSAA) samples used */
     private int mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
+    /** Logical device */
     private VkDevice mDevice;
+    /** Queue that's used to submit graphics commands to */
     private VkQueue mGraphicsQueue;
+    /** Queue that's used to present things on screen */
     private VkQueue mPresentQueue;
 
+    /** Pool for command buffers */
     private long mCommandPool;
 
+    /** Factory for on-GPU texture samplers */
     private TextureSamplerFactory mSamplerFactory;
+    /** Factory for on-GPU sampled textures */
     private VulkanSampledTextureFactory mTextureFactory;
+    /** Factory for descriptor set layouts when using a number of textures */
     private TextureSetLayoutFactory mTextureSetLayoutFactory;
+    /** Factory for individual image descriptor sets */
     private TextureSetFactory mTextureSetFactory;
+    /**
+     * Constants that are passed to vertex shaders (camera view and perspective projection matrices)
+     */
     private VertexConstants mVertexConstants = new VertexConstants();
 
+    /** Active surface format */
     private VkSurfaceFormatKHR mSurfaceFormat;
+    /** Dimensions of the window */
     private VkExtent2D mExtent;
+    /** Handle to swapchain */
     private long mSwapchain;
+    /** Handle to the default render pass */
     private long mRenderPass;
 
+    /**
+     * An array of image contexts. This is used so that we keep the GPU fed with commands, and tell
+     * it to draw the next frame before the previous ones have finished rendering
+     */
     private ImageContext[] mImageContexts;
+    /**
+     * An array of frame contexts. This has size FRAMES_IN_FLIGHT which controls how many frames we
+     * are supposed to have in flight.
+     */
     private FrameContext[] mFrameContexts;
 
+    /** Size of the instance buffer in bytes */
     @Getter(AccessLevel.PUBLIC)
     private int mInstanceBufferSize = 0;
 
+    /** Handle to colour attachment (multisampled off-screen buffer) */
     private VulkanImage mColorImage;
+    /** View to {@code mColorImage} */
     private long mColorImageView;
 
+    /** Handle to depth attachment (off-screen buffer) */
     private VulkanImage mDepthImage;
+    /** View to {@code mDepthImage} */
     private long mDepthImageView;
 
+    /** Number of frames elapsed */
     private int mFrameCounter = 0;
 
+    /** Tells how many instanced draw calls happened last frame */
     @Getter(AccessLevel.PUBLIC)
     private int mInstancedCalls = 0;
 
+    /** Tells how many non-instanced draw calls happened last frame */
     @Getter(AccessLevel.PUBLIC)
     private int mSlowCalls = 0;
 
+    /** The current mesh buffer that contains all meshes on the GPU */
     private VulkanMeshBuffer mCurrentMeshBuffer;
+    /**
+     * Maps image index to any mesh buffers that were discarded on that frame. This is so we free
+     * the mesh buffer the next time the same image is used, and we can guarantee that all frames
+     * that used the buffer have rendered.
+     *
+     * <p>It would be possible to optimize the release of resources in cases where mesh buffer is
+     * updated every frame, but that would be a future improvement.
+     */
     private Map<Integer, VulkanMeshBuffer> mDiscardedMeshBuffers = new HashMap<>();
-    private Map<Integer, Map<DrawCallState.HashKey, DrawCallState>> mDrawInstances =
-            new TreeMap<>();
 
+    /**
+     * Maps render orders to maps of draw call states. This allows us to change the order draws are
+     * done in and keep similar draws packed together in instantiatable draw calls.
+     *
+     * <p>TreeMap is used to iterate through the maps in correct order.
+     *
+     * <p>A future expansion here would be to add another layer of indirection for individual render
+     * passes.
+     */
+    private TreeMap<Integer, Map<ShaderSet, DrawCallState>> mDrawInstances = new TreeMap<>();
+
+    /**
+     * Maps a render order to a list of unsorted objects that are not supposed to be drawn in
+     * instanced fashion
+     */
+    private TreeMap<Integer, List<DrawCallState>> mToPresort = new TreeMap<>();
+    /** Maps a render order to list of non-instanced draw calls */
+    private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
+
+    /** List of validation layers to activate when debug mode is on */
     private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
             Arrays.asList("VK_LAYER_KHRONOS_validation");
+    /** List of device extensions that are required for the renderer to work */
     private static final Set<String> DEVICE_EXTENSIONS =
             Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
 
+    /**
+     * Controls whether debug mode is on or off. Set an environment variable {@code DEBUG_RENDERER}
+     * to enable debug mode. This mode enables Vulkan validation layers which are extremely useful
+     * in tracking down renderer bugs, if there are any. But, it requires the layers to be installed
+     * (Khronos Vulkan SDK if on windows)
+     */
     static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
+    /**
+     * Target GPU to use. When {@code TARGET_GPU} environment variale is set, the renderer will only
+     * pick GPUs that contain the substring of the provided value in their name. If no such GPU
+     * exists, the renderer will refuse to initialise.
+     */
     private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
-    private static final int INSTANCE_BUFFER_SIZE = envInt("INSTANCE_BUFFER_SIZE", 1);
-
+    /**
+     * Target number of MSAA samples. If the picked physical device does not support this number of
+     * samples, the highest number (that is not higher than the one provided) will be picked
+     */
     private static final int MSAA_SAMPLES = envInt("MSAA_SAMPLES", 4);
 
+    /** Highest value of UINT64, it's 0xffffffffffffffff */
     private static final long UINT64_MAX = -1L;
+    /**
+     * Maximum number of frames that we can render at the same time. In practice, the minimum of
+     * {@code FRAMES_IN_FLIGHT}, and GPU image count will be the actual number of frames that get
+     * drawn at the same time.
+     */
     private static final int FRAMES_IN_FLIGHT = 4;
 
     /** Synchronization objects for when multiple frames are rendered at a time */
     private class FrameContext {
+        /** Semaphore for when the image is ready to be redrawn */
         public long imageAvailableSemaphore;
+        /** Semaphore for when the image has finished rendering and is able to be displayed */
         public long renderFinishedSemaphore;
+        /** Fence that is used to synchronize the frame */
         public long inFlightFence;
     }
 
     /** All state for a single frame */
     private static class ImageContext {
+        /** Command buffer of the image */
         public VkCommandBuffer commandBuffer;
+        /**
+         * Reference to a FrameContext fence, if there is a frame that's already rendering on the
+         * image
+         */
         public long inFlightFence;
+        /** Handle to the framebuffer */
         public long framebuffer;
+        /** The index of this image context */
         public int imageIndex;
 
+        /** The current size of the instance buffer for this image */
         public int instanceBufferSize;
+        /** The actual instance buffer (a buffer for per-instance shader data) */
         public VulkanBuffer instanceBuffer;
 
+        /** A view to this image */
         private long mImageView;
+        /** Reference to {@link Renderer#mDevice} */
         private VkDevice mDevice;
 
-        /** Create a image context */
+        /**
+         * Create a image context
+         *
+         * @param renderer handle to the parent renderer. It is needed to store reference to the
+         *     underlying device, and creating a framebuffer
+         * @param image the swapchain image that things will be drawn to
+         * @param imageIndex the index of this image
+         * @param commandBuffer the command buffer that will be used to record rendering commands to
+         */
         private ImageContext(
                 Renderer renderer, VulkanImage image, int imageIndex, long commandBuffer) {
             this.commandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
@@ -152,7 +259,12 @@ public class Renderer implements NativeResource {
             instanceBufferSize = 0;
         }
 
-        /** Create a framebuffer from image view */
+        /**
+         * Create a framebuffer from image view
+         *
+         * @param renderer the parent renderer.
+         * @return handle to the framebuffer.
+         */
         private long createFramebuffer(Renderer renderer) {
             try (MemoryStack stack = stackPush()) {
                 VkFramebufferCreateInfo createInfo = VkFramebufferCreateInfo.callocStack(stack);
@@ -182,6 +294,7 @@ public class Renderer implements NativeResource {
             }
         }
 
+        /** Free the underlying resources */
         private void free() {
             if (instanceBuffer != null) instanceBuffer.free();
             vkDestroyFramebuffer(mDevice, framebuffer, null);
@@ -193,7 +306,7 @@ public class Renderer implements NativeResource {
      * Create a renderer
      *
      * <p>This constructor will create a Vulkan renderer instance, and set everything up so that
-     * {@code render} method can be called.
+     * {@link Renderer#render} method can be called.
      *
      * @param appName name of the rendered application.
      * @param window handle to GLFW window.
@@ -201,7 +314,7 @@ public class Renderer implements NativeResource {
      */
     public Renderer(String appName, long window) throws RuntimeException {
         log.info("Initialize renderer");
-        mInstanceBufferSize = INSTANCE_BUFFER_SIZE * 4096;
+        mInstanceBufferSize = 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
         if (DEBUG_MODE) mDebugMessenger = createDebugLogger();
@@ -225,8 +338,8 @@ public class Renderer implements NativeResource {
     /**
      * Render a frame
      *
-     * <p>This method will take a list of renderable objects, and render them from the camera point
-     * of view.
+     * <p>This method will take a list of renderable objects, alongside lights, and render them from
+     * the camera point of view.
      *
      * @param camera object from where the renderer should render
      * @param objects list of objects that should be rendered
@@ -415,7 +528,7 @@ public class Renderer implements NativeResource {
 
         mImageContexts = null;
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values())
             for (DrawCallState state : stateMap.values()) state.free();
         mDrawInstances.clear();
 
@@ -471,6 +584,8 @@ public class Renderer implements NativeResource {
      *
      * <p>Vulkan instance is needed for the duration of the renderer. If debug mode is on, the
      * instance will also enable debug validation layers, which allow to track down issues.
+     *
+     * @return the created VkInstance
      */
     private VkInstance createInstance(String appName) {
         log.fine("Create instance");
@@ -492,7 +607,7 @@ public class Renderer implements NativeResource {
             createInfo.sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO);
             createInfo.pApplicationInfo(appInfo);
             // set required GLFW extensions
-            createInfo.ppEnabledExtensionNames(getExtensions(createInfo, stack));
+            createInfo.ppEnabledExtensionNames(getExtensions(stack));
 
             // use validation layers if enabled, and setup debugging
             if (DEBUG_MODE) {
@@ -515,9 +630,15 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /** Returns required extensions for the VK context */
-    private PointerBuffer getExtensions(
-            VkInstanceCreateInfo createInfoMemoryStack, MemoryStack stack) {
+    /**
+     * Returns required extensions for the VK context
+     *
+     * @param stack the stack that will be used to put the extensions to (if debug mode is on,
+     *     otherwise just glfwExtensions will be returned)
+     * @return pointer buffer with the names of the extensions that are required for the Vulkan
+     *     context.
+     */
+    private PointerBuffer getExtensions(MemoryStack stack) {
         PointerBuffer glfwExtensions = glfwGetRequiredInstanceExtensions();
 
         if (DEBUG_MODE) {
@@ -531,10 +652,13 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Returns validation layers used for debugging
+     * Sets up validation layers used for debugging
      *
      * <p>Throws if the layers were not available, createInfo gets bound to the data on the stack
      * frame. Do not pop the stack before using up createInfo!!!
+     *
+     * @param createInfo instance creation info that will have the validation layers set
+     * @param stack stack of the caller for where the validation layer info will be stored on
      */
     private void setupDebugValidationLayers(VkInstanceCreateInfo createInfo, MemoryStack stack) {
         log.fine("Setup VK validation layers");
@@ -557,21 +681,38 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /** Utility for converting collection to pointer buffer */
+    /**
+     * Utility for converting collection to pointer buffer
+     *
+     * @param collection collection to convert the pointer buffer to
+     * @param stack stack of the caller for where the data will be stored on
+     * @return the pointer buffer of strings
+     */
     private PointerBuffer toPointerBuffer(Collection<String> collection, MemoryStack stack) {
         PointerBuffer buffer = stack.mallocPointer(collection.size());
         collection.stream().map(stack::UTF8).forEach(buffer::put);
         return buffer.rewind();
     }
 
-    /** Utility for converting a collection of pointer types to pointer buffer */
+    /**
+     * Utility for converting a collection of pointer types to pointer buffer
+     *
+     * @param array the array to convert
+     * @param stack stack of the caller for where the data will be stored on
+     * @return the pointer buffer representing the data
+     */
     private <T extends Pointer> PointerBuffer toPointerBuffer(T[] array, MemoryStack stack) {
         PointerBuffer buffer = stack.mallocPointer(array.length);
         Arrays.stream(array).forEach(buffer::put);
         return buffer.rewind();
     }
 
-    /** Utility for retrieving instance VkLayerProperties list */
+    /**
+     * Utility for retrieving instance VkLayerProperties list
+     *
+     * @param stack stack of the caller for where the data will be stored on
+     * @return properties for the instance layers
+     */
     private VkLayerProperties.Buffer getInstanceLayerProperties(MemoryStack stack) {
         IntBuffer propertyCount = stack.ints(0);
         vkEnumerateInstanceLayerProperties(propertyCount, null);
@@ -581,7 +722,12 @@ public class Renderer implements NativeResource {
         return properties;
     }
 
-    /** Creates default debug messenger info for logging */
+    /**
+     * Creates default debug messenger info for logging
+     *
+     * @param stack stack of the caller for where the data will be stored on
+     * @return create struct for the debug messenger that's used for validation layers
+     */
     private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
                 VkDebugUtilsMessengerCreateInfoEXT.callocStack(stack);
@@ -604,7 +750,15 @@ public class Renderer implements NativeResource {
 
     /// Setup debug logging
 
-    /** VK logging entrypoint */
+    /**
+     * VK logging entrypoint
+     *
+     * @param messageSeverity severity of the message, which will be translated to log level
+     * @param messageType type of the message, unused
+     * @param pCallbackData pointer to the callback data
+     * @param pUserData pointer to the user data (unused)
+     * @return VK_FALSE
+     */
     private static int debugCallback(
             int messageSeverity, int messageType, long pCallbackData, long pUserData) {
         VkDebugUtilsMessengerCallbackDataEXT callbackData =
@@ -625,7 +779,11 @@ public class Renderer implements NativeResource {
         return VK_FALSE;
     }
 
-    /** Initializes debugMessenger to receive VK log messages */
+    /**
+     * Initializes debugMessenger to receive VK log messages
+     *
+     * @return handle to the newly created debug messenger
+     */
     private long createDebugLogger() {
         try (MemoryStack stack = stackPush()) {
             LongBuffer pDebugMessenger = stack.longs(0);
@@ -644,6 +802,8 @@ public class Renderer implements NativeResource {
      * Create a window surface
      *
      * <p>This method uses window to get its surface that the renderer will draw to
+     *
+     * @return the surface
      */
     private long createSurface() {
         log.fine("Create surface");
@@ -661,7 +821,11 @@ public class Renderer implements NativeResource {
 
     /// Physical device setup
 
-    /** Sets up one physical device for use */
+    /**
+     * Sets up one physical device for use
+     *
+     * @return the most optimal physical device
+     */
     private PhysicalDevice pickPhysicalDevice() {
         log.fine("Pick physical device");
         PhysicalDevice physicalDevice =
@@ -676,7 +840,11 @@ public class Renderer implements NativeResource {
 
     /// Logical device setup
 
-    /** Creates a logical device with required features */
+    /**
+     * Creates a logical device with required features
+     *
+     * @return the logical device
+     */
     private VkDevice createLogicalDevice() {
         log.fine("Create logical device");
 
@@ -733,6 +901,8 @@ public class Renderer implements NativeResource {
      * Create a graphics queue
      *
      * <p>This queue is used to submit graphics commands every frame
+     *
+     * @return the graphics queue
      */
     private VkQueue createGraphicsQueue() {
         try (MemoryStack stack = stackPush()) {
@@ -746,6 +916,8 @@ public class Renderer implements NativeResource {
      * Create a presentation queue
      *
      * <p>This queue is used to display rendered frames on the screen
+     *
+     * @return the presentation queue
      */
     private VkQueue createPresentQueue() {
         try (MemoryStack stack = stackPush()) {
@@ -761,6 +933,8 @@ public class Renderer implements NativeResource {
      * Create a command pool
      *
      * <p>This method creates a command pool which is used for creating command buffers.
+     *
+     * @return the command pool
      */
     private long createCommandPool() {
         log.fine("Create command pool");
@@ -786,7 +960,11 @@ public class Renderer implements NativeResource {
 
     /// Swapchain setup
 
-    /** Sets up the swapchain required for rendering */
+    /**
+     * Sets up the swapchain required for rendering
+     *
+     * @return the swapchain that's used to present drawn frames on the screen
+     */
     private long createSwapchain() {
         log.fine("Setup swapchain");
 
@@ -838,7 +1016,11 @@ public class Renderer implements NativeResource {
 
     /// Per swapchain image setup
 
-    /** Get the number of images swapchain was created with */
+    /**
+     * Get the number of images swapchain was created with
+     *
+     * @return the image count
+     */
     private int getImageCount() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer pImageCount = stack.ints(0);
@@ -849,7 +1031,13 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /** Create a context for each swapchain image */
+    /**
+     * Create a context for each swapchain image
+     *
+     * @param imageCount the number of images that the swapchain has
+     * @return imageCount size ImageContext array that represents a context for a single swachain
+     *     image
+     */
     private ImageContext[] createImageContexts(int imageCount) {
         try (MemoryStack stack = stackPush()) {
             // Get swapchain images
@@ -900,6 +1088,8 @@ public class Renderer implements NativeResource {
      * <p>This method will describe how a single render pass should behave.
      *
      * <p>TODO: move to material system? Move to render pass manager?
+     *
+     * @return the render pass
      */
     private long createRenderPass() {
         log.fine("Create render pass");
@@ -998,6 +1188,11 @@ public class Renderer implements NativeResource {
 
     /// Color texture setup
 
+    /**
+     * Create a colour attachment image
+     *
+     * @return the colour image
+     */
     private VulkanImage createColorImage() {
         VkCommandBuffer tmpCommandBuffer = beginSingleUseCommandBuffer();
         VulkanImage colorImage =
@@ -1019,6 +1214,11 @@ public class Renderer implements NativeResource {
 
     /// Depth texture setup
 
+    /**
+     * Create a depth image that is used for depth testing
+     *
+     * @return the depth image
+     */
     private VulkanImage createDepthImage() {
         VkCommandBuffer tmpCommandBuffer = beginSingleUseCommandBuffer();
         VulkanImage depthImage =
@@ -1039,6 +1239,8 @@ public class Renderer implements NativeResource {
      * Create a instance buffer
      *
      * <p>As the name implies, this buffer holds base per-instance data
+     *
+     * @return the instance buffer
      */
     private VulkanBuffer createInstanceBuffer(int sizeOfBuffer) {
         log.fine("Create instance buffer");
@@ -1058,6 +1260,10 @@ public class Renderer implements NativeResource {
      * Create a single use command buffer.
      *
      * <p>This command buffer can be flushed with {@code endSingleUseCommandBuffer}
+     *
+     * @param device the device to create the command buffer on
+     * @param commandPool the command pool that's used to create the command buffer from
+     * @return the newly created command buffer
      */
     static VkCommandBuffer beginSingleUseCommandBuffer(VkDevice device, long commandPool) {
         try (MemoryStack stack = stackPush()) {
@@ -1082,11 +1288,25 @@ public class Renderer implements NativeResource {
         }
     }
 
+    /**
+     * Create a single use command buffer
+     *
+     * <p>this method is a wrapper around {@link beginSingleUseCommandBuffer(VkDevice, long)}
+     *
+     * @return the newly created command buffer
+     */
     private VkCommandBuffer beginSingleUseCommandBuffer() {
         return beginSingleUseCommandBuffer(mDevice, mCommandPool);
     }
 
-    /** Ends and frees the single use command buffer */
+    /**
+     * Ends and frees the single use command buffer
+     *
+     * @param commandBuffer the command buffer to end
+     * @param device the device that the command buffer is on
+     * @param graphicsQueue the queue that the command buffer will be submitted to
+     * @param commandPool the pool of the command buffers
+     */
     static void endSingleUseCommandBuffer(
             VkCommandBuffer commandBuffer,
             VkDevice device,
@@ -1108,12 +1328,26 @@ public class Renderer implements NativeResource {
         }
     }
 
+    /**
+     * Ends and frees the single use command buffer
+     *
+     * <p>This method is essentially a wrapper around {@link
+     * Renderer#endSingleUseCommandBuffer(VkCommandBuffer, VkDevice, VkQueue, long)}
+     *
+     * @param commandBuffer the command buffer to end
+     */
     private void endSingleUseCommandBuffer(VkCommandBuffer commandBuffer) {
         endSingleUseCommandBuffer(commandBuffer, mDevice, mGraphicsQueue, mCommandPool);
     }
 
     /// Frame Context setup
 
+    /**
+     * Create the frame context (synchronizatin objects)
+     *
+     * @param framesInFlight the number of frames that can be drawn at the same time
+     * @return framesInFlight sized array of FrameContext
+     */
     private FrameContext[] createFrameContexts(int framesInFlight) {
         log.fine("Setup sync objects");
 
@@ -1161,42 +1395,43 @@ public class Renderer implements NativeResource {
 
     /// Record command buffer to temporary object
 
-    private TreeMap<Integer, List<DrawCallState>> mToPresort = new TreeMap<>();
-    private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
-
+    /**
+     * Updates the instance buffer
+     *
+     * <p>This method will update the instance buffer, load any unloaded meshes, batch up the list
+     * of objects into instantiatable draw calls, and generate a list of non-instanced draws
+     *
+     * @param ctx the image context to update the instance buffer for
+     * @param renderables the list of objects that need to be rendered
+     * @param lights the list of lights that exist in the world
+     */
     void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables, List<Light> lights) {
 
         mToPresort.clear();
 
         mCurrentMeshBuffer.cleanupUnusedMeshes();
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values())
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values())
             for (DrawCallState state : stateMap.values()) state.startDrawData();
-
-        DrawCallState.HashKey tmpKey = new DrawCallState.HashKey();
 
         for (Renderable renderable : renderables) {
             if (renderable.getMesh() == null) continue;
 
-            tmpKey.setRenderable(renderable);
-
             ShaderSet shaderSet = renderable.getMaterial().getShaderSet();
             Integer renderOrder = shaderSet.mRenderOrder;
 
-            Map<DrawCallState.HashKey, DrawCallState> stateMap = mDrawInstances.get(renderOrder);
+            Map<ShaderSet, DrawCallState> stateMap = mDrawInstances.get(renderOrder);
 
             if (stateMap == null) {
                 stateMap = new HashMap<>();
                 mDrawInstances.put(renderOrder, stateMap);
             }
 
-            DrawCallState state = stateMap.get(tmpKey);
+            DrawCallState state = stateMap.get(shaderSet);
             if (state == null) {
-                // We don't want to put the temp key in, becuase it changes values
-                DrawCallState.HashKey newKey = new DrawCallState.HashKey(renderable);
-                state = new DrawCallState(this, mImageContexts.length, newKey);
+                state = new DrawCallState(this, mImageContexts.length, shaderSet);
                 state.startDrawData();
-                stateMap.put(newKey, state);
+                stateMap.put(shaderSet, state);
             }
             state.addObject(renderable);
         }
@@ -1211,7 +1446,7 @@ public class Renderer implements NativeResource {
 
         int instanceBufferSize = 0;
 
-        for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
             for (DrawCallState state : stateMap.values()) {
                 state.updateMeshBuffer(mCurrentMeshBuffer);
                 instanceBufferSize = state.setInstanceBufferOffset(instanceBufferSize);
@@ -1254,7 +1489,7 @@ public class Renderer implements NativeResource {
             if (res == VK_SUCCESS) {
                 ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
 
-                for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
                         state.updateInstanceBuffer(byteBuffer, lights);
                         state.endDrawData(ctx.imageIndex);
@@ -1263,7 +1498,7 @@ public class Renderer implements NativeResource {
 
                 vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
             } else {
-                for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+                for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
                         state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory, lights);
                         state.endDrawData(ctx.imageIndex);
@@ -1273,6 +1508,15 @@ public class Renderer implements NativeResource {
         }
     }
 
+    /**
+     * Record the command buffer for the image context
+     *
+     * <p>This method will record the actual draw commands that will be executed bu the GPU. Those
+     * draw commands will make things go on screen.
+     *
+     * @param ctx the image context to record the command buffer for
+     * @param camera the camera to render from
+     */
     void recordCommandBuffer(ImageContext ctx, Camera camera) {
 
         mInstancedCalls = 0;
@@ -1346,7 +1590,7 @@ public class Renderer implements NativeResource {
                     stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.instanceBuffer.buffer);
 
             // Render regular objects in an instanced manner
-            for (Map<DrawCallState.HashKey, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                 for (DrawCallState callState : stateMap.values()) {
 
                     Collection<DrawData> drawDataCollection = callState.getDrawData();

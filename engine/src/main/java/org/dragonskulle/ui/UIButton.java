@@ -30,7 +30,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /** Input action that needs to be bound for UI button presses to function */
-    public static final Action UI_PRESS = new Action("UI_PRESS");
+    public static final Action UI_PRESS = new Action("UI_PRESS", false);
 
     private Vector4fc mRegularColor = new Vector4f(1f);
     private Vector4fc mHoveredColor = new Vector4f(0.8f, 0.8f, 0.8f, 1f);
@@ -44,7 +44,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private boolean mIsEnabled = true;
 
     private float mCurTimer = 0f;
-    private Reference<UIRenderable> mRenderable;
+    @Getter private Reference<UIRenderable> mRenderable;
     private UIMaterial mMaterial;
 
     private UIText mLabelTextComp;
@@ -322,7 +322,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     @Override
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
-        if (mRenderable == null || !mRenderable.isValid()) {
+        if (!Reference.isValid(mRenderable)) {
             getGameObject()
                     .addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
             mRenderable = getGameObject().getComponent(UIRenderable.class);

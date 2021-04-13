@@ -9,9 +9,13 @@ import static org.lwjgl.vulkan.VK10.*;
  * @author Aurimas Blažulionis
  */
 public class AttributeDescription {
+    /** Which binding on the shader this attribute will have */
     public int bindingID;
+    /** Which location on the shader this attribute will have */
     public int location;
+    /** What is the layout of the attribute */
     public int format;
+    /** What is the offset of the attribute within the bound memory */
     public int offset;
 
     public static final int MATRIX_ROW_SIZE = 4 * 4;

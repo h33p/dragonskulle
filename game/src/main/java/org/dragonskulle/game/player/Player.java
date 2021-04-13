@@ -18,16 +18,17 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.HighlightSelection;
-import org.dragonskulle.game.player.networkData.AttackData;
-import org.dragonskulle.game.player.networkData.BuildData;
-import org.dragonskulle.game.player.networkData.SellData;
-import org.dragonskulle.game.player.networkData.StatData;
+import org.dragonskulle.game.player.network_data.AttackData;
+import org.dragonskulle.game.player.network_data.BuildData;
+import org.dragonskulle.game.player.network_data.SellData;
+import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
@@ -73,7 +74,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack */
-    private final float ATTACK_COOLDOWN = 20f;
+    private final float ATTACK_COOLDOWN = 2f;
     /** When the last time a player attacked */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
@@ -311,7 +312,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Reference<NetworkObject> networkObject =
                 getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
-        if (networkObject == null || networkObject.isValid() == false) {
+        if (!Reference.isValid(networkObject)) {
             log.warning("Unable to create building: Could not create a Network Object.");
             return null;
         }
@@ -322,7 +323,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         transform.setHeight(tile.getHeight());
         Reference<Building> building = gameObject.getComponent(Building.class);
 
-        if (building == null || building.isValid() == false) {
+        if (!Reference.isValid(building)) {
             log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
@@ -446,7 +447,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (map == null) return false;
 
         mMap = map.getReference(HexagonMap.class);
-        if (mMap == null || mMap.isValid() == false) return false;
+        if (!Reference.isValid(mMap)) return false;
         return true;
     }
 
@@ -552,6 +553,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Ensure the building is placed within a set radius of an owned building.
+        // TODO Remove hard coded value.
         final int radius = 3;
         ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
 
@@ -632,9 +634,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 defender.setCapital(false);
 
                 // Update stats
-                ArrayList<SyncStat<?>> stats = defender.getStats();
-                for (SyncStat<?> stat : stats) {
-                    stat.set(0);
+                ArrayList<SyncStat> stats = defender.getStats();
+                for (SyncStat stat : stats) {
+                    stat.set(SyncStat.LEVEL_MIN);
                 }
 
                 defender.getOwner().setOwnsCapital(false);
@@ -674,7 +676,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (attacker.getNetworkObject().getOwnerId() != getNetworkObject().getOwnerId()) {
+        if (checkBuildingOwnership(attacker) == false) {
             log.info("It's not your building");
             return false;
         }
@@ -783,11 +785,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to increase the stats of
-     * a {@link Building}.
+     * Process and parse an event in which the <b>client</b> player wishes to increase a specific
+     * {@link StatType} of a {@link Building}.
      *
      * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #statAttempt(Building)}.
+     * #statAttempt(Building, StatType)}.
      *
      * @param data The {@link StatData} sent by the client.
      */
@@ -810,29 +812,34 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
+        StatType statType = data.getStat();
+        if (statType == null) {
+            log.warning("Unable to parse StatData: StatType from StatData is null.");
+            return;
+        }
+
         // Try to change the stats of the building.
-        statAttempt(building, null); // TODO: Pass through the stat to be changed.
+        statAttempt(building, statType);
     }
 
     /**
-     * Attempt to increase a specific stat of a {@link Building}.
+     * Attempt to increase a specific {@link StatType} of a {@link Building}.
      *
      * <p>This first checks the building and stat to make sure that they are fully eligible before
      * any stat changes happen.
      *
-     * @param building The building whose stats will be changed.
-     * @param stat The stat to increase.
-     * @return Whether the attempt to change the stats where successful.
+     * @param building The building whose stat will be changed.
+     * @param statType The stat to increase.
+     * @return Whether the attempt to change the stat was successful.
      */
-    private boolean statAttempt(Building building, SyncStat<?> stat) {
-        if (statCheck(building) == false) {
+    private boolean statAttempt(Building building, StatType statType) {
+        if (statCheck(building, statType) == false) {
             log.info("Unable to pass stat check.");
             return false;
         }
 
-        // TODO: Add stat increase logic.
-        log.info("INCREASE SPECIFIC STAT HERE.");
-
+        // Increase the stat level.
+        building.getStat(statType).increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -840,20 +847,39 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Ensure that the {@link Building} is eligible to have its stats changed.
+     * Ensure that the {@link Building} is eligible to have its {@link StatType} changed.
      *
-     * @param building The building to have its stats increased.
-     * @return {@code true} if the tile is eligible, otherwise {@code false}.
+     * @param building The building to have its stat increased.
+     * @param statType The stat to increase.
+     * @return {@code true} if the building and stat is eligible, otherwise {@code false}.
      */
-    public boolean statCheck(Building building) {
+    public boolean statCheck(Building building, StatType statType) {
 
         if (building == null) {
             log.warning("Building is null.");
             return false;
         }
 
-        // TODO: Write all checks.
-        // TODO: Also check the desired stat.
+        if (statType == null) {
+            log.warning("StatType is null.");
+            return false;
+        }
+
+        // Checks you own the building
+        if (checkBuildingOwnership(building) == false) {
+            log.info("Building not owned.");
+            return false;
+        }
+
+        if (building.getStat(statType) == null) {
+            log.info("Building is missing specified stat.");
+            return false;
+        }
+
+        if (building.getStat(statType).getLevel() >= SyncStat.LEVEL_MAX) {
+            log.info("Building stat already fully upgraded.");
+            return false;
+        }
 
         return true;
     }
@@ -883,7 +909,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public Building getCapital() {
         if (!mOwnsCapital.get()) return null;
 
-        if (mCapital != null && mCapital.isValid()) {
+        if (Reference.isValid(mCapital)) {
             return mCapital.get();
         }
 

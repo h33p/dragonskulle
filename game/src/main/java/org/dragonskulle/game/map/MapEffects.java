@@ -13,7 +13,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.materials.*;
 import org.joml.Vector4f;
 
@@ -114,12 +113,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     @Getter @Setter private Reference<Player> mActivePlayer;
 
-    public static IRefCountedMaterial highlightMaterialFromColour(float r, float g, float b) {
-        return new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(r, g, b, 0.5f));
-    }
-
     public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
-        return HighlightSelection.with(new Vector4f(r, g, b, 0.8f));
+        return HighlightSelection.with(new Vector4f(r, g, b, 0.2f));
     }
 
     /**
@@ -141,7 +136,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         if (selection.mClear) {
             Reference<HighlightControls> controls = tile.getHighlightControls();
 
-            if (controls.isValid()) {
+            if (Reference.isValid(controls)) {
                 controls.get().setHighlight(0, 0, 0, 0);
             }
             return;
@@ -150,7 +145,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         Reference<HighlightControls> controls = tile.getHighlightControls();
 
-        if (controls.isValid()) {
+        if (Reference.isValid(controls)) {
             controls.get().setHighlight(selection.mOverlay);
         }
 
