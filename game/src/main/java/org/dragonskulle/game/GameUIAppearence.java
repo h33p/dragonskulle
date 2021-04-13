@@ -12,7 +12,7 @@ import org.dragonskulle.ui.UIAppearence;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 
-public class GameAppearence {
+public class GameUIAppearence {
 
     private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-10.wav");
 
@@ -49,7 +49,7 @@ public class GameAppearence {
                     new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")
                 });
         appearence.setRectTextVertMargin(0.3f);
-        appearence.setOnClick(GameAppearence::onClick);
+        appearence.setOnClick(GameUIAppearence::onClick);
     }
 
     /** Inject a sound to every button click */

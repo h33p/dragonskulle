@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.game.GameAppearence;
+import org.dragonskulle.game.GameUIAppearence;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UITextRect;
 
@@ -34,7 +34,7 @@ public class UITokenCounter extends Component implements IOnAwake {
         UITextRect textRect = new UITextRect("Tokens: 0");
 
         getGameObject().addComponent(textRect);
-        textRect.setRectTexture(GameAppearence.getInfoBoxTexture());
+        textRect.setRectTexture(GameUIAppearence.getInfoBoxTexture());
 
         mTextRect = textRect.getReference(UITextRect.class);
     }
