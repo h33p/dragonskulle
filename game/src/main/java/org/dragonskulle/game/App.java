@@ -25,7 +25,6 @@ import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.components.*;
 import org.dragonskulle.ui.*;
 import org.joml.*;
@@ -254,10 +253,12 @@ public class App implements NativeResource {
                             t.setMargin(0f, 0f, 0f, 0.2f);
 
                             UIText txt = new UIText("Hex Wars");
-                            txt.setSetMarginsOnAwake(false);
+                            txt.setDepthShift(-1f);
 
                             title.addComponent(txt);
                         });
+
+        mainMenu.addRootObject(gameTitle);
 
         GameObject mainUI =
                 new GameObject(
@@ -266,7 +267,6 @@ public class App implements NativeResource {
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
-                            root.addChild(gameTitle);
                         });
 
         GameObject joinUI =
@@ -409,11 +409,7 @@ public class App implements NativeResource {
                                                 .setParentAnchor(0f, 0.12f, 0.5f, 0.12f);
                                         text.getTransform(TransformUI.class)
                                                 .setMargin(0f, 0f, 0f, 0.07f);
-                                        text.addComponent(
-                                                new UIText(
-                                                        new Vector3f(0f),
-                                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                                        "Connecting..."));
+                                        text.addComponent(new UIText("Connecting..."));
                                     });
                     final Reference<UIText> connectingTextRef =
                             connectingRef.get().getComponent(UIText.class);
@@ -548,9 +544,7 @@ public class App implements NativeResource {
      */
     public static void main(String[] args) {
 
-        UIAppearence appearence = UIManager.getInstance().getAppearence();
-        appearence.getTextFont().free();
-        appearence.setTextFont(Font.getFontResource("Rise of Kingdom.ttf"));
+        GameAppearence.initialise();
 
         do {
             sReload = false;

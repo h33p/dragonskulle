@@ -8,6 +8,7 @@ import org.dragonskulle.core.Resource;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.joml.Vector4f;
+import org.lwjgl.system.NativeResource;
 
 /**
  * Describes UI appearence and visual behaviour
@@ -17,7 +18,7 @@ import org.joml.Vector4f;
 @Accessors(prefix = "m")
 @Getter
 @Setter
-public class UIAppearence {
+public class UIAppearence implements NativeResource {
     /** Regular colour for a button */
     private Vector4f mRegularColour = new Vector4f(1f);
     /** Hovered colour for a button */
@@ -33,11 +34,53 @@ public class UIAppearence {
     /** The colour text has */
     private Vector4f mTextColour = new Vector4f(0f, 0f, 0f, 1f);
     /** Margins from parent box edges that are set for text */
-    private float mTextMargins = 0.05f;
+    private float mRectTextVertMargin = 0.05f;
+    /** Margins from parent box edges that are set for text */
+    private float mRectTextHorizMargin = 0.05f;
     /** Size slider knobs have */
     private float mSliderKnobSize = 10f;
     /** Texture of a regular button */
     private SampledTexture mButtonTexture = new SampledTexture("ui/wide_button.png");
     /** Texture of a slider knob */
     private SampledTexture mSliderKnobTexture = new SampledTexture("ui/round_knob.png");
+    /** Texture of a regular rectangle */
+    private SampledTexture[] mRectTextures = {new SampledTexture("white.bmp")};
+
+    public void setTextFont(Resource<Font> textFont) {
+        if (mTextFont != null) {
+            mTextFont.free();
+        }
+        mTextFont = textFont;
+    }
+
+    public void setButtonTexture(SampledTexture buttonTexture) {
+        if (mButtonTexture != null) {
+            mButtonTexture.free();
+        }
+        mButtonTexture = buttonTexture;
+    }
+
+    public void setSliderKnobTexture(SampledTexture sliderKnobTexture) {
+        if (mSliderKnobTexture != null) {
+            mSliderKnobTexture.free();
+        }
+        mSliderKnobTexture = sliderKnobTexture;
+    }
+
+    public void setRectTextures(SampledTexture[] rectTextures) {
+        if (mRectTextures != null) {
+            for (SampledTexture tex : mRectTextures) {
+                tex.free();
+            }
+        }
+        this.mRectTextures = rectTextures;
+    }
+
+    @Override
+    public void free() {
+        setTextFont(null);
+        setButtonTexture(null);
+        setSliderKnobTexture(null);
+        setRectTextures(null);
+    }
 }

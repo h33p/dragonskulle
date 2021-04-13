@@ -1,10 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
-import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
-import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
@@ -15,7 +13,7 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIButton extends Component implements IOnAwake, IFrameUpdate {
+public class UIButton extends UITextRect implements IFrameUpdate {
 
     /** Simple interface describing button callback events */
     public interface IButtonEvent {
@@ -43,11 +41,6 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private boolean mIsEnabled = true;
 
     private float mCurTimer = 0f;
-    private Reference<UIRenderable> mRenderable;
-    private UIMaterial mMaterial;
-
-    private UIText mLabelTextComp;
-    @Getter private Reference<UIText> mLabelText;
 
     private IButtonEvent mOnPressDown;
     private IButtonEvent mOnRelease;
@@ -61,8 +54,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private boolean mHadReleasedHover = true;
     private boolean mPressedDown = false;
 
-    /** Default Constructor for UIButton. */
-    public UIButton() {
+    private void setAppearence() {
         UIAppearence appearence = UIManager.getInstance().getAppearence();
 
         mRegularColour = appearence.getRegularColour();
@@ -71,6 +63,14 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
         mDisabledColour = appearence.getDisabledColour();
 
         mTransitionTime = appearence.getTransitionTime();
+
+        mRectTexture = appearence.getButtonTexture().clone();
+    }
+
+    /** Default Constructor for UIButton. */
+    public UIButton() {
+        super();
+        setAppearence();
     }
 
     /**
@@ -79,8 +79,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param label a text label to render inside the button
      */
     public UIButton(UIText label) {
-        this();
-        mLabelTextComp = label;
+        super(label);
+        setAppearence();
     }
 
     /**
@@ -89,8 +89,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param label a text label to render inside the button
      */
     public UIButton(String label) {
-        this();
-        mLabelTextComp = new UIText(label);
+        super(label);
+        setAppearence();
     }
 
     /**
@@ -343,37 +343,11 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void onAwake() {
-        UIAppearence appearence = UIManager.getInstance().getAppearence();
-
-        mRenderable = getGameObject().getComponent(UIRenderable.class);
-        if (!Reference.isValid(mRenderable)) {
-            getGameObject().addComponent(new UIRenderable(appearence.getButtonTexture()));
-            mRenderable = getGameObject().getComponent(UIRenderable.class);
-        }
-
-        UIRenderable rend = mRenderable.get();
-
-        if (rend != null) {
-            if (rend.getMaterial() instanceof UIMaterial)
-                mMaterial = (UIMaterial) rend.getMaterial();
-        }
+        super.onAwake();
 
         if (!mIsEnabled) {
             mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
             mMaterial.colour.set(mTmpLerp);
-        }
-
-        if (mLabelTextComp != null) {
-            getGameObject()
-                    .buildChild(
-                            "label",
-                            new TransformUI(true),
-                            (handle) -> {
-                                handle.getTransform(TransformUI.class)
-                                        .setMargin(-appearence.getTextMargins());
-                                mLabelText = mLabelTextComp.getReference(UIText.class);
-                                handle.addComponent(mLabelTextComp);
-                            });
         }
     }
 

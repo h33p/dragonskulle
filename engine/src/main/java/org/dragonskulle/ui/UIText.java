@@ -40,16 +40,8 @@ public class UIText extends Renderable implements IOnAwake {
 
     private float mTargetAspectRatio = 0f;
 
-    @Getter @Setter private boolean mSetMarginsOnAwake = true;
-
     @Override
     public void onAwake() {
-
-        if (mSetMarginsOnAwake) {
-            TransformUI transform = getGameObject().getTransform(TransformUI.class);
-            transform.setMargin(-UIManager.getInstance().getAppearence().getTextMargins());
-        }
-
         setText(mText);
     }
 

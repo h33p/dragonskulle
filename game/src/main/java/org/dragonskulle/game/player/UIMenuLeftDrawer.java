@@ -12,13 +12,13 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameAppearence;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIRenderable;
@@ -104,7 +104,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
 
         mButtonReferences = buildMenu(menuButtons);
 
-        UIRenderable drawer = new UIRenderable(new SampledTexture("ui/drawer.png"));
+        UIRenderable drawer = new UIRenderable(GameAppearence.getDrawerTexture());
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setMargin(0f, 0f, 0f, 0f);
         tran.setPivotOffset(0f, 0f);
@@ -257,10 +257,6 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
                                                                     .setMargin(
                                                                             0.075f, 0f, -0.075f,
                                                                             0f);
-                                                            self.addComponent(
-                                                                    new UIRenderable(
-                                                                            new SampledTexture(
-                                                                                    "ui/wide_button_new.png")));
                                                             UIButton button =
                                                                     new UIButton(
                                                                             mButtonChild.getText(),
