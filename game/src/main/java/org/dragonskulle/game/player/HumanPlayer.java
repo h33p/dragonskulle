@@ -218,7 +218,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
 
-                log.info("Human:Got the Hexagon to enter");
+                log.fine("Human:Got the Hexagon to enter");
 
                 if (mHexChosen != null) {
                     if (mHexChosen.hasBuilding()) {

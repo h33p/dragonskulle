@@ -52,6 +52,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     @Setter
     @Getter
     private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter
+    @Getter
+    private Screen mLastScreen = null;
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -144,64 +147,45 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     }
 
     public void setVisibleScreen(Screen screen) {
-        Reference<GameObject> newScreen = new Reference<>(null);
-        log.warning("setting visible screen to " + screen.toString());
-        switch (screen) {
-            case MAP_SCREEN:
-                newScreen = mMapScreenMenu;
-                setShopState(ShopState.CLOSED);
-                break;
-            case UPGRADE_SCREEN:
-            case BUILDING_SELECTED_SCREEN:
-                newScreen = mBuildScreenMenu;
-                setShopState(ShopState.MY_BUILDING_SELECTED);
-                break;
-            case BUILD_TILE_SCREEN:
-                newScreen = mTileSelectedMenu;
-                final HexagonTile tile = mGetHexChosen.get();
-                if (tile != null && tile.isBuildable(mGetPlayer.get().get())) {
-                    setShopState(ShopState.BUILDING_NEW);
-                }
-                break;
-            case ATTACK_SCREEN:
-                newScreen = mAttackScreenMenu;
-                setShopState(ShopState.CLOSED);
-                break;
-            case ATTACKING_SCREEN:
-                newScreen = mAttackScreenMenu;
-                setShopState(ShopState.CLOSED);
-                break;
-            default:
-                log.warning("Menu hasn't been updated to reflect this screen yet");
-                newScreen = mMapScreenMenu;
-                setShopState(ShopState.CLOSED);
+        if (screen != getLastScreen()) {
+            Reference<GameObject> newScreen = new Reference<>(null);
+            log.warning("setting visible screen to " + screen.toString());
+            switch (screen) {
+                case MAP_SCREEN:
+                    newScreen = mMapScreenMenu;
+                    setShopState(ShopState.CLOSED);
+                    break;
+                case UPGRADE_SCREEN:
+                case BUILDING_SELECTED_SCREEN:
+                    newScreen = mBuildScreenMenu;
+                    setShopState(ShopState.MY_BUILDING_SELECTED);
+                    break;
+                case BUILD_TILE_SCREEN:
+                    newScreen = mTileSelectedMenu;
+                    final HexagonTile tile = mGetHexChosen.get();
+                    if (tile != null && tile.isBuildable(mGetPlayer.get().get())) {
+                        setShopState(ShopState.BUILDING_NEW);
+                    }
+                    break;
+                case ATTACK_SCREEN:
+                    newScreen = mAttackScreenMenu;
+                    setShopState(ShopState.CLOSED);
+                    break;
+                case ATTACKING_SCREEN:
+                    newScreen = mAttackScreenMenu;
+                    setShopState(ShopState.CLOSED);
+                    break;
+                default:
+                    log.warning("Menu hasn't been updated to reflect this screen yet");
+                    newScreen = mMapScreenMenu;
+                    setShopState(ShopState.CLOSED);
+            }
+            setLastScreen(screen);
+            swapScreens(newScreen);
         }
-        swapScreens(newScreen);
     }
 
-    //    private void swapScreens(Reference<GameObject> newScreen) {
-    //        log.warning("Swapping screens");
-    //        final boolean lastIsValid = mCurrentScreen.isValid();
-    //        if (!newScreen.isValid()) {
-    //            if (lastIsValid) {
-    //                mCurrentScreen.get().setEnabled(false); // disable last
-    //            }
-    //            mCurrentScreen = newScreen; // replace
-    //        } else if (mCurrentScreen == null || !lastIsValid) {
-    //            mCurrentScreen = newScreen; // replace old
-    //            mCurrentScreen.get().setEnabled(true); // enable new
-    //        } else if (!mCurrentScreen.equals(newScreen)) { // if the screens are not the same
-    //            mCurrentScreen.get().setEnabled(false);
-    //            mCurrentScreen = newScreen;
-    //            mCurrentScreen.get().setEnabled(true);
-    //
-    //        } else {
-    //            log.warning("the screens are the same.");
-    //        }
-    //    }
-
     private void swapScreens(Reference<GameObject> newScreen) {
-        log.warning("swapping screens");
         if (Reference.isValid(mCurrentScreen)) {
             // there is a screen being shown
             // deactivate the panel

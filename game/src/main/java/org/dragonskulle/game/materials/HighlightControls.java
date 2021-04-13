@@ -13,7 +13,7 @@ import org.joml.Vector4fc;
 
 /**
  * @author Aurimas Blažulionis This class converts object's materials to highlightable ones, and
- *     allows to change their highlighting.
+ * allows to change their highlighting.
  */
 @Accessors(prefix = "m")
 @Log
@@ -66,5 +66,6 @@ public class HighlightControls extends Component implements IOnAwake {
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 }

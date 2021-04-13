@@ -2,6 +2,7 @@
 package org.dragonskulle.game.map;
 
 import java.util.HashSet;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -19,14 +20,16 @@ import org.joml.Vector4f;
 
 /**
  * @author Aurimas Blažulionis
- *     <p>This component provides client sided effects for the map, such as selecting tiles, marking
- *     valid, and invalid tiles, and so on.
+ * <p>This component provides client sided effects for the map, such as selecting tiles, marking
+ * valid, and invalid tiles, and so on.
  */
 @Accessors(prefix = "m")
 @Log
 public class MapEffects extends Component implements IOnStart, ILateFrameUpdate {
 
-    /** Describes tile highlight option */
+    /**
+     * Describes tile highlight option
+     */
     public static enum StandardHighlightType {
         VALID(0),
         INVALID(1),
@@ -57,14 +60,17 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         }
     }
 
-    /** A class describing a sleection. Value of null means ignoring */
+    /**
+     * A class describing a sleection. Value of null means ignoring
+     */
     public static class HighlightSelection {
         private boolean mClear;
         private Vector4f mOverlay = new Vector4f();
 
         public static final HighlightSelection CLEARED = cleared();
 
-        private HighlightSelection() {}
+        private HighlightSelection() {
+        }
 
         public static HighlightSelection ignored() {
             return null;
@@ -83,12 +89,16 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         }
     }
 
-    /** A simple interface that gets called to overlay */
+    /**
+     * A simple interface that gets called to overlay
+     */
     public static interface IHighlightOverlay {
         public void onOverlay(MapEffects effects);
     }
 
-    /** A simple tile highlight selection interface */
+    /**
+     * A simple tile highlight selection interface
+     */
     public static interface IHighlightSelector {
         public HighlightSelection handleTile(HexagonTile tile);
     }
@@ -107,12 +117,22 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
     private Reference<HexagonMap> mMapReference = null;
 
-    /** Turn on to enable default highlighting (teritory bounds) */
-    @Getter @Setter private boolean mDefaultHighlight = true;
-    /** This interface gets called to allow overlaying any selections on top */
-    @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
+    /**
+     * Turn on to enable default highlighting (teritory bounds)
+     */
+    @Getter
+    @Setter
+    private boolean mDefaultHighlight = true;
+    /**
+     * This interface gets called to allow overlaying any selections on top
+     */
+    @Getter
+    @Setter
+    private IHighlightOverlay mHighlightOverlay = null;
 
-    @Getter @Setter private Reference<Player> mActivePlayer;
+    @Getter
+    @Setter
+    private Reference<Player> mActivePlayer;
 
     public static IRefCountedMaterial highlightMaterialFromColour(float r, float g, float b) {
         return new UnlitMaterial(new SampledTexture("white.bmp"), new Vector4f(r, g, b, 0.5f));
@@ -125,7 +145,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     /**
      * Select a single tile, overriding previous selection
      *
-     * @param tile tile to select
+     * @param tile      tile to select
      * @param selection type of highlight to use
      */
     public void highlightTile(HexagonTile tile, HighlightSelection selection) {
@@ -152,6 +172,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         if (Reference.isValid(controls)) {
             controls.get().setHighlight(selection.mOverlay);
+            tile.startFadeHighlight(selection.mOverlay, 0.1f);
         }
 
         mHighlightedTiles.add(tile);

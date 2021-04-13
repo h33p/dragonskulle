@@ -63,8 +63,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                         .get()
                         .buildChild(
                                 "stats_upgrade_children",
-                                new TransformUI(),
+                                new TransformUI(true),
                                 (self) -> {
+                                    self.addComponent(new UIText(
+                                            new Vector3f(0f, 0f, 0f),
+                                            Font.getFontResource("Rise of Kingdom.ttf"),
+                                            "can this be seen?"));
                                     stats.forEach(
                                             stat -> {
                                                 self.buildChild(
@@ -98,7 +102,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                     final TransformUI transform =
                                             self.getTransform(TransformUI.class);
                                     transform.setParentAnchor(0.1f, 0.6f);
-                                    transform.setMargin(0, -0.2f, 0, 0.2f);
+                                    transform.setMargin(0, -0.2f, 0, -0.2f);
 
                                     UIText mWindowText =
                                             new UIText(

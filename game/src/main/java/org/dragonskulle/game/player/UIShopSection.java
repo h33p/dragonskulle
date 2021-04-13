@@ -64,16 +64,19 @@ public class UIShopSection extends Component implements IOnStart {
     }
 
     protected void setState(ShopState state) {
-        if(state!=getLastState()) {
+        if (state != getLastState()) {
+            if (state.equals(ShopState.CLOSED)) {
+                show(false);
+                if (Reference.isValid(mCurrentPanel)) {
+                    show(mCurrentPanel, false);
+                }
+                setLastState(state);
+                swapPanels(new Reference<>(null));
+                return;
+            }
             Reference<GameObject> newPanel;
-            log.warning("setting visible state to " + state.toString());
+            log.warning("setting visible state to " + state);
             switch (state) {
-                case CLOSED:
-                    show(false);
-                    if (Reference.isValid(mCurrentPanel)) {
-                        show(mCurrentPanel, false);
-                    }
-                    return;
                 case ATTACK_SCREEN:
                     show(true);
                     newPanel = new Reference<>(null);
@@ -87,7 +90,7 @@ public class UIShopSection extends Component implements IOnStart {
                     newPanel = mUpgradePanel;
                     break;
                 default:
-                    log.warning("Menu hasn't been updated to reflect this screen yet");
+                    log.warning("Menu hasn't been updated to reflect this screen yet  " + state);
                     setState(ShopState.CLOSED);
                     return;
             }
@@ -99,8 +102,8 @@ public class UIShopSection extends Component implements IOnStart {
         }
     }
 
-    private void show(boolean showShow) {
-        getGameObject().setEnabled(showShow);
+    private void show(boolean shouldShow) {
+        getGameObject().setEnabled(shouldShow);
     }
 
     private void show(Reference<GameObject> gameObject, boolean show) {
@@ -108,7 +111,6 @@ public class UIShopSection extends Component implements IOnStart {
     }
 
     private void swapPanels(Reference<GameObject> newPanel) {
-        log.warning("swapping panels");
         if (Reference.isValid(mCurrentPanel)) {
             // there is a screen being shown
             // deactivate the panel
