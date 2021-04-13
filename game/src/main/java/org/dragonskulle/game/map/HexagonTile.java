@@ -5,15 +5,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
 
 /**
@@ -29,17 +30,39 @@ public class HexagonTile {
 
     /** Describes a template for land hex tile */
     static final GameObject LAND_TILE =
-            TEMPLATES.get().getDefaultScene().getGameObjects().stream()
-                    .filter(go -> go.getName().equals("Land Hex"))
-                    .findFirst()
-                    .orElse(null);
+            TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
+
+    /** Describes a template for water hex tile */
+    static final GameObject WATER_TILE =
+            TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
+
+    /** Describes a template for water hex tile */
+    static final GameObject MOUNTAIN_TILE =
+            TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
+
+    public static enum TileType {
+        LAND((byte) 0),
+        WATER((byte) 1),
+        MOUNTAIN((byte) 2);
+
+        @Getter private final byte mValue;
+
+        private TileType(byte value) {
+            mValue = value;
+        }
+    }
+
+    private static final float WATER_THRESHOLD = -0.3f;
+    private static final float MOUNTAINS_THRESHOLD = 0.8f;
 
     /** This is the axial storage system for each tile */
     @Getter private final int mQ;
 
     @Getter private final int mR;
 
-    @Getter private final int mS;
+    @Getter private final float mHeight;
+
+    @Getter private final TileType mTileType;
 
     /**
      * Associated game object.
@@ -50,28 +73,51 @@ public class HexagonTile {
     @Getter(AccessLevel.PACKAGE)
     private final GameObject mGameObject;
 
-    /** Building that is on the tile */
-    @Getter @Setter private Building mBuilding;
+    @Getter(AccessLevel.PACKAGE)
+    private final Reference<HighlightControls> mHighlightControls;
+
+    /** Reference to the {@link Building} that is on the tile. */
+    private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /** A reference to the building that claims the tile, or {@code null}. */
     private Reference<Building> mClaimedBy = new Reference<Building>(null);
 
     /**
-     * Constructor that creates the HexagonTile with a test to see if all the coordinates add up to
-     * 0.
+     * Constructor that creates the HexagonTile
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
-     * @param s The third coordinate.
      */
-    HexagonTile(int q, int r, int s) {
+    HexagonTile(int q, int r, float height) {
         this.mQ = q;
         this.mR = r;
-        this.mS = s;
-        mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR));
-        if (q + r + s != 0) {
-            log.warning("The coordinates do not add up to 0");
+        this.mHeight = height;
+
+        if (height <= WATER_THRESHOLD) mTileType = TileType.WATER;
+        else if (height >= MOUNTAINS_THRESHOLD) mTileType = TileType.MOUNTAIN;
+        else mTileType = TileType.LAND;
+
+        switch (mTileType) {
+            case WATER:
+                mGameObject =
+                        GameObject.instantiate(
+                                WATER_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
+                mGameObject
+                        .findChildByName("Water Floor")
+                        .getTransform(Transform3D.class)
+                        .setPosition(0f, 0f, height - WATER_THRESHOLD - 0.1f);
+                break;
+            case MOUNTAIN:
+                mGameObject =
+                        GameObject.instantiate(MOUNTAIN_TILE, new TransformHex(mQ, mR, height));
+                break;
+            default:
+                mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR, height));
         }
+
+        Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
+        if (controls == null) mHighlightControls = new Reference<>(null);
+        else mHighlightControls = controls;
     }
 
     /**
@@ -80,18 +126,27 @@ public class HexagonTile {
      * @return The length of the tile from the origin.
      */
     public int length() {
-        return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(mS)) / 2);
+        return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(getS())) / 2);
     }
 
     public int distTo(int q, int r) {
         int s = -q - r;
 
-        return (int) ((Math.abs(q - mQ) + Math.abs(r - mR) + Math.abs(s - mS)) / 2);
+        return (int) ((Math.abs(q - mQ) + Math.abs(r - mR) + Math.abs(s - getS())) / 2);
+    }
+
+    /**
+     * Retrieve the third (cube) coordinate
+     *
+     * <p>This coordinate will always be equal to -getQ() -getR()
+     */
+    public int getS() {
+        return -mQ - mR;
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(new int[] {this.mQ, this.mR, this.mS});
+        return Arrays.toString(new int[] {this.mQ, this.mR});
     }
 
     /**
@@ -115,7 +170,7 @@ public class HexagonTile {
      * @return Whether the tile is claimed by a building.
      */
     public boolean isClaimed() {
-        return (mClaimedBy != null && mClaimedBy.isValid());
+        return Reference.isValid(mClaimedBy);
     }
 
     /**
@@ -132,12 +187,55 @@ public class HexagonTile {
     }
 
     /**
+     * Get the ID of the Player who claimed the HexagonTile.
+     *
+     * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
+     * then this should be used.
+     *
+     * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
+     *     claimant.
+     */
+    public Integer getClaimantId() {
+        if (!isClaimed()) {
+            return null;
+        }
+        return mClaimedBy.get().getOwnerId();
+    }
+
+    /**
+     * Store the {@link Building} on the HexagonTile.
+     *
+     * <p>To stop storing the Building, {@code null} can be provided.
+     *
+     * @param building The Building on the tile, or {@code null} if there is no Building.
+     */
+    public void setBuilding(Building building) {
+        // If null is provided, set a reference to null.
+        if (building == null) {
+            mBuilding = new Reference<Building>(null);
+            return;
+        }
+        mBuilding = building.getReference(Building.class);
+    }
+
+    /**
+     * Get the {@link Building} on the tile, if it exists.
+     *
+     * @return The Building on the HexagonTile, otherwise {@code null}.
+     */
+    public Building getBuilding() {
+        if (!Reference.isValid(mBuilding)) return null;
+
+        return mBuilding.get();
+    }
+
+    /**
      * Get whether there is a {@link Building} on this tile.
      *
      * @return Whether there is a building on this tile.
      */
     public boolean hasBuilding() {
-        return mBuilding != null;
+        return getBuilding() != null;
     }
 
     public boolean isBuildable(Player player) {

@@ -3,6 +3,7 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -14,8 +15,10 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.UIShopSection.ShopState;
-import org.dragonskulle.game.player.networkData.BuildData;
-import org.dragonskulle.game.player.networkData.SellData;
+import org.dragonskulle.game.building.stat.StatType;
+import org.dragonskulle.game.player.network_data.BuildData;
+import org.dragonskulle.game.player.network_data.SellData;
+import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
@@ -24,7 +27,9 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
@@ -36,14 +41,17 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetPlayer mGetPlayer;
 
     private final float mOffsetToTop = 0.46f;
-    @Getter private Reference<UIShopSection> mShop;
+    @Getter
+    private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mStatScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
 
-    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter
+    @Getter
+    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -85,9 +93,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -191,7 +202,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
 
     private void swapScreens(Reference<GameObject> newScreen) {
         log.warning("swapping screens");
-        if (mCurrentScreen.isValid()) {
+        if (Reference.isValid(mCurrentScreen)) {
             // there is a screen being shown
             // deactivate the panel
             show(mCurrentScreen, false);
@@ -209,18 +220,16 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     }
 
     private Reference<GameObject> activateNewScreen(Reference<GameObject> newScreen) {
-        if (newScreen != null) {
-            // check if valid reference then reassign
-            if (newScreen.isValid()) {
-                show(newScreen, true);
-                return newScreen;
-            }
+        // check if valid reference then reassign
+        if (Reference.isValid(newScreen)) {
+            show(newScreen, true);
+            return newScreen;
         }
         return new Reference<>(null);
     }
 
     private void setShopState(ShopState shopState) {
-        if (mShop != null && getShop().isValid()) {
+        if (Reference.isValid(mShop)) {
             getShop().get().setState(shopState);
         }
     }
@@ -232,7 +241,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
-                    if (buildingChosen != null && buildingChosen.isValid()) {
+                    if (Reference.isValid(buildingChosen)) {
 
                         // TODO Change tiles which can be attacked
                         mSetHexChosen.set(null);
@@ -267,7 +276,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     if (mGetHexChosen.get() != null) {
                         log.info("Running place button lambda");
                         Reference<Player> player = mGetPlayer.get();
-                        if (player != null && player.isValid()) {
+                        if (Reference.isValid(player)) {
                             player.get()
                                     .getClientBuildRequest()
                                     .invoke(new BuildData(mGetHexChosen.get()));
@@ -290,6 +299,26 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     // show options to upgrade
                     // buildingSelectedView stats.  Will leave
                     // until after prototype
+
+                    // TODO Properly implement.
+
+                    StatType statType = StatType.ATTACK;
+
+                    Reference<Player> player = mGetPlayer.get();
+                    if (Reference.isValid(player)) {
+                        Reference<Building> buildingChosen = mGetBuildingChosen.get();
+                        if (Reference.isValid(buildingChosen)) {
+                            player.get()
+                                    .getClientStatRequest()
+                                    .invoke(
+                                            new StatData(
+                                                    buildingChosen.get(), statType)); // Send Data
+                        }
+                    }
+
+                    mSetHexChosen.set(null);
+                    mSetBuildingChosen.set(null);
+
                     mNotifyScreenChange.call(Screen.UPGRADE_SCREEN);
                 },
                 true);
@@ -304,9 +333,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     // sell buildingSelectedView
 
                     Reference<Player> player = mGetPlayer.get();
-                    if (player != null && player.isValid()) {
+                    if (Reference.isValid(player)) {
                         Reference<Building> buildingChosen = mGetBuildingChosen.get();
-                        if (buildingChosen != null && buildingChosen.isValid()) {
+                        if (Reference.isValid(buildingChosen)) {
                             player.get()
                                     .getClientSellRequest()
                                     .invoke(new SellData(buildingChosen.get())); // Send Data
@@ -334,8 +363,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                 new TransformUI(),
                                 (root) -> {
                                     for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-                                            i < mButtonChildrenSize;
-                                            i++) {
+                                         i < mButtonChildrenSize;
+                                         i++) {
                                         UITextButtonFrame mButtonChild = mButtonChildren.get(i);
                                         int finalI = i;
                                         root.buildChild(
@@ -346,9 +375,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                                             .setPosition(
                                                                     0f,
                                                                     (0.8f
-                                                                                    * finalI
-                                                                                    / mButtonChildrenSize
-                                                                                    * 1.3f)
+                                                                            * finalI
+                                                                            / mButtonChildrenSize
+                                                                            * 1.3f)
                                                                             - mOffsetToTop);
                                                     self.getTransform(TransformUI.class)
                                                             .setMargin(0.075f, 0f, -0.075f, 0f);

@@ -50,6 +50,19 @@ public class Scene {
     }
 
     /**
+     * Finds a root object by its name
+     *
+     * @param name name of the object
+     * @return the object, if found. {@code null} otherwise.
+     */
+    public GameObject findRootObject(String name) {
+        return mGameObjects.stream()
+                .filter(go -> go.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Remove a single game object from the scene
      *
      * @param object The GameObject to be removed from the scene
@@ -97,7 +110,7 @@ public class Scene {
         Class<?> type = comp.getClass();
         Reference<Component> current = mSingletons.get(type);
 
-        if (current != null && current.isValid()) return false;
+        if (Reference.isValid(current)) return false;
 
         current = comp.getReference();
         mSingletons.put(type, current);
@@ -113,7 +126,7 @@ public class Scene {
     @SuppressWarnings("unchecked")
     public <T extends Component> T getSingleton(Class<T> type) {
         Reference<Component> current = mSingletons.get(type);
-        if (current == null || !current.isValid()) return null;
+        if (!Reference.isValid(current)) return null;
         return (T) current.get();
     }
 

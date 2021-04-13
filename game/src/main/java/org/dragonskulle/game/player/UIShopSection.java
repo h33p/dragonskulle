@@ -58,7 +58,7 @@ public class UIShopSection extends Component implements IOnStart {
         switch (state) {
             case CLOSED:
                 show(false);
-                if (mCurrentPanel != null && mCurrentPanel.isValid()) {
+                if (Reference.isValid(mCurrentPanel)) {
                     show(mCurrentPanel, false);
                 }
                 return;
@@ -79,7 +79,7 @@ public class UIShopSection extends Component implements IOnStart {
                 setState(ShopState.CLOSED);
                 return;
         }
-        if (titleRef != null && titleRef.isValid()) {
+        if (Reference.isValid(titleRef)) {
             titleRef.get().setText(state.toString());
         }
         swapPanels(newPanel);
@@ -95,7 +95,7 @@ public class UIShopSection extends Component implements IOnStart {
 
     private void swapPanels(Reference<GameObject> newPanel) {
         log.warning("swapping panels");
-        if (mCurrentPanel.isValid()) {
+        if (Reference.isValid(mCurrentPanel)) {
             // there is a screen being shown
             // deactivate the panel
             show(mCurrentPanel, false);
@@ -107,7 +107,7 @@ public class UIShopSection extends Component implements IOnStart {
     private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
         if (newPanel != null) {
             // check if valid reference then reassign
-            if (newPanel.isValid()) {
+            if (Reference.isValid(newPanel)) {
                 show(newPanel, true);
                 return newPanel;
             }

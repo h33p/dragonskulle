@@ -119,13 +119,14 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
         return OPAQUE_SET;
     }
 
-    public void writeVertexInstanceData(
+    public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
         mColour.get(offset, buffer);
         mTexColour.get(offset + 4 * 4, buffer);
         buffer.putFloat(offset + 4 * 8, mDistancePow);
         buffer.putFloat(offset + 4 * 9, mVertexDistance);
+        return offset + 4 * 10;
     }
 
     public SampledTexture[] getFragmentTextures() {

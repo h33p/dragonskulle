@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
@@ -130,7 +131,6 @@ public class ServerEvent<T extends INetSerializable> {
      */
     public void invoke(T data) {
         try {
-
             if (!mNetworkObject.isServer()) {
                 log.warning(
                         "Server event invoked on the client obj "
@@ -149,7 +149,12 @@ public class ServerEvent<T extends INetSerializable> {
             }
             bos.flush();
             bos.close();
-            mNetworkObject.getNetworkManager().getServerManager().sendEvent(this, bos);
+
+            ServerNetworkManager serverManager =
+                    mNetworkObject.getNetworkManager().getServerManager();
+            if (serverManager != null) {
+                serverManager.sendEvent(this, bos);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

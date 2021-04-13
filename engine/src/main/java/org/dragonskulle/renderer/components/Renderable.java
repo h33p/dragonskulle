@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
@@ -24,6 +25,22 @@ public class Renderable extends Component {
     @Getter private Mesh mMesh = Mesh.HEXAGON;
     /** Material of the object */
     @Getter @Setter protected IMaterial mMaterial = new UnlitMaterial();
+
+    static {
+        Engine.getCloner()
+                .registerFastCloner(
+                        Renderable.class,
+                        (t, cloner, clones) -> {
+                            Renderable toClone = (Renderable) t;
+                            Renderable cloned =
+                                    new Renderable(
+                                            toClone.mMesh,
+                                            cloner.deepClone(toClone.mMaterial, clones));
+                            clones.put(toClone, cloned);
+                            cloned.mGameObject = cloner.deepClone(toClone.mGameObject, clones);
+                            return cloned;
+                        });
+    }
 
     /** Construct a Renderable with default parameters */
     public Renderable() {
@@ -74,7 +91,8 @@ public class Renderable extends Component {
      * @param tmpVec temporary vector that can be used for calculations
      */
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
-        getGameObject().getTransform().getPosition(tmpVec);
+        tmpVec.set(mMesh.getBBCenter());
+        tmpVec.mulPosition(getGameObject().getTransform().getWorldMatrix());
         return camPosition.distanceSquared(tmpVec);
     }
 

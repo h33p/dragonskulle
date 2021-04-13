@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -11,18 +12,17 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.map.MapEffects.HighlightSelection;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
-import org.dragonskulle.game.player.networkData.AttackData;
+import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.*;
-import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
@@ -40,9 +40,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter @Setter private HexagonTile mHexChosen;
+    @Getter
+    @Setter
+    private HexagonTile mHexChosen;
 
-    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter
+    @Setter
+    private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -53,25 +57,24 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
+    private Reference<FogOfWar> mFogOfWar;
     private boolean mVisualsNeedUpdate;
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
 
+    private boolean mMovedCameraToCapital = false;
+
     /**
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netID The human player's network ID.
+     * @param netID          The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
         mNetID = netID;
         mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
-        mNetworkManager
-                .get()
-                .getClientManager()
-                .registerOwnershipModificationListener(this::onOwnerModifiedObject);
     }
 
     @Override
@@ -81,7 +84,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 Scene.getActiveScene()
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
-        mVisualsNeedUpdate = true;
+
+        mFogOfWar =
+                Scene.getActiveScene().getSingleton(FogOfWar.class).getReference(FogOfWar.class);
 
         getGameObject()
                 .buildChild(
@@ -116,6 +121,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
+
+        mVisualsNeedUpdate = true;
     }
 
     private Reference<Player> getPlayer() {
@@ -123,7 +130,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -145,7 +153,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .orElse(null);
         }
 
-        if (mPlayer == null || !mPlayer.isValid()) return;
+        if (!Reference.isValid(mPlayer)) return;
+
+        if (!mMovedCameraToCapital) {
+            TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
+
+            Building capital = mPlayer.get().getCapital();
+
+            if (targetRig != null && capital != null) {
+                log.info("MOVE TO CAPITAL BRUDDY!");
+                targetRig.setTarget(capital.getGameObject().getTransform());
+                mMovedCameraToCapital = true;
+            }
+        }
 
         if (mPlayer.get().hasLost()) {
             log.warning("You've lost your capital");
@@ -153,14 +173,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             return;
         }
         // Update token
-        if (mPlayer.isValid()) {
+        if (Reference.isValid(mPlayer)) {
             updateVisibleTokens();
         }
     }
 
     private void updateVisibleTokens() {
         mLocalTokens = mPlayer.get().getTokens().get();
-        if (mTokenCounter != null && mTokenCounter.isValid()) {
+        if (Reference.isValid(mTokenCounter)) {
             mTokenCounter.get().setLabelReference(mLocalTokens);
         } else {
             mTokenCounter = getGameObject().getComponent(UITokenCounter.class);
@@ -170,39 +190,31 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
+
+        if (Reference.isValid(mMenuDrawer)) {
+            mMenuDrawer.get().setMenu(mScreenOn);
+        }
+
         mapScreen();
 
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
-        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
         if (GameActions.LEFT_CLICK.isActivated()) {
-            if (UIManager.getInstance().getHoveredObject() == null && mainCam != null) {
-                // Retrieve scaled screen coordinates
-                Vector2fc screenPos = GameActions.getCursor().getPosition();
-                // Convert those coordinates to local coordinates within the map
-                Vector3f pos =
-                        mainCam.screenToPlane(
-                                mPlayer.get().getMap().getGameObject().getTransform(),
-                                screenPos.x(),
-                                screenPos.y(),
-                                new Vector3f());
-
-                // Convert those coordinates to axial
-                TransformHex.cartesianToAxial(pos);
-                // And round them
-                TransformHex.roundAxial(pos);
+            if (UIManager.getInstance().getHoveredObject() == null) {
                 // And then select the tile
                 Player player = mPlayer.get();
                 if (player != null) {
                     HexagonMap component = player.getMap();
                     if (component != null) {
                         mLastHexChosen = mHexChosen;
-                        mHexChosen = component.getTile((int) pos.x, (int) pos.y);
+                        mHexChosen = component.cursorToTile();
                     }
                 }
 
@@ -248,119 +260,86 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         }
                     }
                 }
-            } else if (GameActions.RIGHT_CLICK.isActivated() && mainCam != null) {
-                Vector2fc screenPos = GameActions.getCursor().getPosition();
-                // Convert those coordinates to local coordinates within the map
-                Vector3f pos =
-                        mainCam.screenToPlane(
-                                mPlayer.get().getMap().getGameObject().getTransform(),
-                                screenPos.x(),
-                                screenPos.y(),
-                                new Vector3f());
-
-                log.info("[DEBUG] RCL Position : " + screenPos.toString());
+            } else if (GameActions.RIGHT_CLICK.isActivated()) {
+                HexagonTile tile = mPlayer.get().getMap().cursorToTile();
+                Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
                 log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
             }
         }
     }
 
-    /** AURI!! This updates what the user can see */
+    /**
+     * AURI!! This updates what the user can see
+     */
     private void updateVisuals() {
-        mVisualsNeedUpdate = false;
-
         if (mMapEffects == null || mPlayer == null) return;
+
+        mVisualsNeedUpdate = false;
 
         Player player = mPlayer.get();
 
         if (player == null) return;
 
         MapEffects effects = mMapEffects.get();
-        if (mMenuDrawer.isValid()) {
-            mMenuDrawer.get().setVisibleScreen(mScreenOn);
-        }
-        switch (mScreenOn) {
-            case MAP_SCREEN:
-                log.info("UPDATE MAP SCREEN");
-                undoLastHighlight();
-                highlightOwners();
-                highlightSelectedTile(StandardHighlightType.PLAIN);
-                break;
-            case BUILDING_SELECTED_SCREEN:
-                undoLastHighlight();
-                highlightSelectedTile(StandardHighlightType.PLAIN);
-                break;
-            case BUILD_TILE_SCREEN:
-                undoLastHighlight();
-                highlightSelectedTile(StandardHighlightType.VALID);
-                break;
-            case ATTACK_SCREEN:
-                highlightSelectedTile(StandardHighlightType.VALID);
-                for (Building attackableBuilding :
-                        mHexChosen.getBuilding().getAttackableBuildings()) {
-                    effects.highlightTile(
-                            attackableBuilding.getTile(),
-                            StandardHighlightType.ATTACK.asSelection());
-                }
-                break;
-            case UPGRADE_SCREEN:
-                break;
-            case ATTACKING_SCREEN:
-                break;
-        }
-    }
+        if (!mPlayer.get().hasLost()) {
+            if (Reference.isValid(mMenuDrawer)) {
+                mMenuDrawer.get().setVisibleScreen(mScreenOn);
+            }
 
-    private void highlightOwners() {
-        mMapEffects
-                .get()
-                .highlightTiles(
-                        (tile) -> {
-                            Player owner = tile.getClaimant();
-                            if (owner != null) {
-                                return owner.getPlayerHighlightSelection();
-                            }
-                            return HighlightSelection.CLEARED;
-                        });
-    }
+            if (Reference.isValid(mFogOfWar)) {
+                mFogOfWar.get().setActivePlayer(mPlayer);
+            }
 
-    private void highlightSelectedTile(StandardHighlightType highlight) {
-        if (mHexChosen != null) {
-            mMapEffects.get().highlightTile(mHexChosen, highlight.asSelection());
-        }
-    }
+            effects.setActivePlayer(mPlayer);
 
-    private void undoLastHighlight() {
-        MapEffects effects = mMapEffects.get();
-        if (effects != null && mLastHexChosen != null) {
-            final Player lastTileOwner = mLastHexChosen.getClaimant();
-            if (lastTileOwner != null) {
-                effects.highlightTile(
-                        mLastHexChosen,
-                        lastTileOwner
-                                .getPlayerHighlightSelection()); // set tile to what it was before
-            } else {
-                effects.unhighlightTile(mLastHexChosen);
+            switch (mScreenOn) {
+                case MAP_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(null);
+                    break;
+                case BUILDING_SELECTED_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                    break;
+                case BUILD_TILE_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.PLAIN));
+                    break;
+                case ATTACK_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                    for (Building attackableBuilding :
+                            mHexChosen.getBuilding().getAttackableBuildings()) {
+                        effects.highlightTile(
+                                attackableBuilding.getTile(),
+                                StandardHighlightType.ATTACK.asSelection());
+                    }
+                    break;
+                case UPGRADE_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(null);
+                    break;
+                case ATTACKING_SCREEN:
+
+                    break;
             }
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
+        if (mHexChosen != null) {
+            fx.highlightTile(mHexChosen, highlight.asSelection());
+        }
+    }
+
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
-    }
-
-    /** Marks visuals to update whenever a new object is spawned */
-    private void onOwnerModifiedObject(Reference<NetworkObject> obj) {
-        // remove from self as owned if exists, then we need to check if we are the owner again
-        if (obj.isValid()) {
-            final Reference<Building> buildingReference =
-                    obj.get().getGameObject().getComponent(Building.class);
-            if (obj.get().isMine()) {
-                mPlayer.get().addOwnership(buildingReference.get());
-            } else if (buildingReference != null
-                    && mPlayer.get().checkBuildingOwnership(buildingReference.get())) {
-                mPlayer.get().removeOwnership(buildingReference.get());
-            }
-        }
     }
 
     /**
@@ -381,7 +360,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * @return true if the player owns the buildingSelectedView, false if not
      */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
-        if (buildingToCheck == null || !buildingToCheck.isValid()) return false;
+        if (!Reference.isValid(buildingToCheck)) return false;
 
         return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;
     }

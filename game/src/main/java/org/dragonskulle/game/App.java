@@ -19,8 +19,10 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
+import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.FancyCursor;
@@ -76,7 +78,7 @@ public class App implements NativeResource {
                         "light",
                         (light) -> {
                             light.addComponent(new Light());
-                            light.getTransform(Transform3D.class).setRotation(45f, 0f, 45f);
+                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, 0f);
                         }));
 
         GameObject cameraRig =
@@ -85,6 +87,7 @@ public class App implements NativeResource {
                         (rig) -> {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
                             rig.addComponent(keyboardMovement);
+                            rig.addComponent(new TargetMovement());
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
 
@@ -109,6 +112,7 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
+                                                    camera.addComponent(new FogOfWar());
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);
@@ -480,15 +484,16 @@ public class App implements NativeResource {
                                                                             onConnectedClient(
                                                                                     gameScene,
                                                                                     manager, netID);
-                                                                        } else if (connectingTextRef
-                                                                                .isValid()) {
+                                                                        } else if (Reference
+                                                                                .isValid(
+                                                                                        connectingTextRef)) {
                                                                             connectingTextRef
                                                                                     .get()
                                                                                     .setEnabled(
                                                                                             false);
                                                                         }
                                                                     });
-                                                    if (connectingTextRef.isValid())
+                                                    if (Reference.isValid(connectingTextRef))
                                                         connectingTextRef.get().setEnabled(true);
                                                 });
                                 button.addComponent(newButton);

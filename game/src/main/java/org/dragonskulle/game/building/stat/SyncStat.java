@@ -4,7 +4,9 @@ package org.dragonskulle.game.building.stat;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -15,20 +17,86 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * <p>This level value is synchronised with the server.
  *
  * @author Craig Wilbourne
- * @param <T> The datatype of the stat value.
  */
 @Accessors(prefix = "m")
-public abstract class SyncStat<T extends Serializable> extends SyncInt {
+@Log
+public class SyncStat extends SyncInt {
 
     /** The lowest level possible. */
-    public static final int LEVEL_MIN = 0;
+    public static final int LEVEL_MIN = 1;
     /** The highest level possible. */
     public static final int LEVEL_MAX = 5;
 
+    /** Stores the building the stat is related to. */
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
+    /** An interface for getting the value of a stat at a given level. */
+    public static interface IValueCalculator extends Serializable {
+        int getValue(int level);
+    }
+
+    /** Store the function used to calculate the value of the stat. */
+    @Setter private IValueCalculator mValueCalculator;
+
+    /**
+     * Create a new SyncStat, providing the method that will be used to calculate the value of the
+     * stat for given levels, and the {@link Building} the stat relates to.
+     *
+     * @param building The Building the stat relates to.
+     */
     public SyncStat(Building building) {
-        this.mBuilding = building.getReference(Building.class);
+        mBuilding = building.getReference(Building.class);
+    }
+
+    /**
+     * Get the value of the stat at the current level.
+     *
+     * @return The value of the stat, or {@code -1} on error.
+     */
+    public int getValue() {
+        if (mValueCalculator == null) {
+            log.warning("mValueCalculator is null.");
+            return 0;
+        }
+        return mValueCalculator.getValue(getLevel());
+    }
+
+    /**
+     * Get the stat's current level.
+     *
+     * <p>This level will be between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     *
+     * @return The level.
+     */
+    public int getLevel() {
+        return super.get();
+    }
+
+    /**
+     * Bound the input level value between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
+     *
+     * @param level The level value.
+     * @return The level, bounded between the minimum and maximum possible levels.
+     */
+    private int getBoundedLevel(int level) {
+        if (getLevel() < LEVEL_MIN) {
+            return LEVEL_MIN;
+        } else if (getLevel() > LEVEL_MAX) {
+            return LEVEL_MAX;
+        }
+        return level;
+    }
+
+    /** Increase the level of the stat and calculate the new value. */
+    public void increaseLevel() {
+        int level = getLevel() + 1;
+        setLevel(level);
+    }
+
+    /** Decrease the level of the stat and calculate the new value. */
+    public void decreaseLevel() {
+        int level = getLevel() - 1;
+        setLevel(level);
     }
 
     /**
@@ -43,46 +111,22 @@ public abstract class SyncStat<T extends Serializable> extends SyncInt {
         set(level);
     }
 
-    /** Increase the level of the stat and calculate the new value. */
-    public void increaseLevel() {
-        int level = get() + 1;
-        setLevel(level);
-    }
-
-    /** Decrease the level of the stat and calculate the new value. */
-    public void decreaseLevel() {
-        int level = get() - 1;
-        setLevel(level);
-    }
-
-    /**
-     * Bound the input level value between {@link #LEVEL_MIN} and {@link #LEVEL_MAX}.
-     *
-     * @param level The level value.
-     * @return The level, bounded between the minimum and maximum possible levels.
-     */
-    private int getBoundedLevel(int level) {
-        if (get() < LEVEL_MIN) {
-            return LEVEL_MIN;
-        } else if (get() > LEVEL_MAX) {
-            return LEVEL_MAX;
-        }
-        return level;
-    }
-
-    /**
-     * Get the value of the stat, of type {@code T}, at the current level.
-     *
-     * @return The value of the stat.
-     */
-    public abstract T getValue();
-
     @Override
     public void deserialize(DataInputStream in) throws IOException {
         super.deserialize(in);
 
         // The stats have changed, so call the building's afterStatChange.
-        if (mBuilding == null || mBuilding.isValid() == false) return;
+        if (!Reference.isValid(mBuilding)) return;
         mBuilding.get().afterStatChange();
+    }
+
+    /**
+     * @deprecated Please use #getLevel() for clarity.
+     *     <p>Get the stat's current level.
+     * @return The level.
+     */
+    @Override
+    public int get() {
+        return getLevel();
     }
 }
