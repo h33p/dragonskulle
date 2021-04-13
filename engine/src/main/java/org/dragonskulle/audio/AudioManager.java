@@ -245,9 +245,9 @@ public class AudioManager {
         Vector3f up = t.getUpVector();
         Vector3f forward = t.getForwardVector();
 
-        AL11.alListenerfv(AL11.AL_ORIENTATION,
+        AL11.alListenerfv(
+                AL11.AL_ORIENTATION,
                 new float[] {forward.x, forward.y, forward.z, up.x, up.y, up.z});
-
     }
 
     /**
@@ -272,8 +272,13 @@ public class AudioManager {
             // Get the distance of the source from the listener
             float distance = 100000f;
             if (Reference.isValid(mAudioListener)) {
-                distance = mAudioListener.get().getGameObject()
-                        .getTransform().getPosition().distance(audioSource.getPosition());
+                distance =
+                        mAudioListener
+                                .get()
+                                .getGameObject()
+                                .getTransform()
+                                .getPosition()
+                                .distance(audioSource.getPosition());
             }
 
             // Don't attach a source if the AudioSource:
