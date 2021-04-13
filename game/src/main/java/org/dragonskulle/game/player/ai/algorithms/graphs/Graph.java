@@ -91,7 +91,6 @@ public class Graph {
      *
      * @param nodeToAdd The node number
      * @param tile The {@code HexagonTile} it corresponds to
-     * @throws GraphNodeException If the node already exists
      */
     public void addNode(int nodeToAdd, HexagonTile tile) {
 
@@ -119,7 +118,6 @@ public class Graph {
      *
      * @param nodeNum The node to find
      * @return The connections
-     * @throws GraphNodeException If the node does not exist
      */
     public ArrayList<Connection> getConnection(int nodeNum) {
 
@@ -136,7 +134,6 @@ public class Graph {
      *
      * @param nodeToGet The node which has the special info to get
      * @return the extra info for that node
-     * @throws GraphNodeException If the node does not exist -- shouldn't happen
      */
     public int getNodeSpecial(int nodeToGet) {
 
@@ -148,7 +145,6 @@ public class Graph {
      *
      * @param nodeToChange The node to change
      * @param newInfo The extra info to change
-     * @throws GraphNodeException If the node does not exist -- shouldn't happen
      */
     public void setNodeSpecial(int nodeToChange, int newInfo) {
 

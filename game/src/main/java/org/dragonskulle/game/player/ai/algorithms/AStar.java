@@ -48,7 +48,6 @@ public class AStar {
      *
      * @param currentNode The node to start from
      * @param endNode The goal node
-     * @throws GraphNodeException If there is a problem with the graph -- shouldn't happen
      */
     public void aStarAlgorithm(int currentNode, int endNode) {
 
