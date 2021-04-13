@@ -305,7 +305,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (tile.getTileType() != TileType.LAND) {
-        	log.warning("Unable to create Building: Tile placed is not land");
+            log.warning("Unable to create Building: Tile placed is not land");
             return null;
         }
 
