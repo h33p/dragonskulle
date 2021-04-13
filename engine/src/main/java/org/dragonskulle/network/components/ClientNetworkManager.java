@@ -43,11 +43,13 @@ public class ClientNetworkManager {
     private class Listener implements IClientListener {
         @Override
         public void unknownHost() {
+            log.info("unknown host");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
         @Override
         public void couldNotConnect() {
+            log.info("could not connect");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -58,6 +60,7 @@ public class ClientNetworkManager {
 
         @Override
         public void disconnected() {
+            log.info("disconnected");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -69,6 +72,7 @@ public class ClientNetworkManager {
 
         @Override
         public void error(String s) {
+            log.info("error: " + s);
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -149,7 +153,7 @@ public class ClientNetworkManager {
     /** Client event callback listener */
     private final IClientListener mListener = new Listener();
     /** Current connection state */
-    @Getter private ConnectionState mConnectionState = ConnectionState.NOT_CONNECTED;
+    @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener) */
     private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
     /** Callback for connection result processing */
@@ -309,7 +313,6 @@ public class ClientNetworkManager {
         }
 
         if (mConnectionState == ConnectionState.NOT_CONNECTED) {
-            log.info("NOT CONNECTEDDD");
             Engine engine = Engine.getInstance();
 
             if (engine.getPresentationScene() == mManager.getGameScene()) {
