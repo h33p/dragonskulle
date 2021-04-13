@@ -676,7 +676,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (checkBuildingOwnership(attacker) == false) {
+        if (isBuildingOwner(attacker) == false) {
             log.info("It's not your building");
             return false;
         }
@@ -866,7 +866,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (checkBuildingOwnership(building) == false) {
+        if (isBuildingOwner(building) == false) {
             log.info("Building not owned.");
             return false;
         }
