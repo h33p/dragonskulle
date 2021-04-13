@@ -22,6 +22,10 @@ public class MathUtils {
         return start + (end - start) * time;
     }
 
+    public static float clamp(float val, float min, float max) {
+        return Math.min(Math.max(val, min), max);
+    }
+
     /**
      * Calculate a logarithm in specified base
      *

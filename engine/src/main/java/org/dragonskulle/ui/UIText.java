@@ -268,7 +268,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
                     Vector3f newVec = new Vector3f(v.getPos());
                     newVec.sub(alignmentCenter);
                     newVec.mul(widthMul, heightMul, 1f);
-                    v.setPos(newVec);
+                    v.getPos().set(newVec);
                 });
 
         int[] indicesArray = indices.stream().mapToInt(Integer::intValue).toArray();
