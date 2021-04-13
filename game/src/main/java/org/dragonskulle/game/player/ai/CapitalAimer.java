@@ -169,19 +169,18 @@ public class CapitalAimer extends AiPlayer {
         for (int nodeNumber : nodesInGraph) {
             Node node = graph.getNode(nodeNumber);
 
-            if (node.getHexTile().get().getClaimant() != null
-                    && node.getHexTile().get().getClaimantId()
+            if (node.getHexTile().get().getClaimant() != null && node.getHexTile().get().getBuilding() != null
+                    && node.getHexTile().get().getBuilding().isCapital()) {
+            if (node.getHexTile().get().getClaimantId()
                             == opponentPlayer.getNetworkObject().getOwnerId()
-                    && node.getHexTile().get().getBuilding() != null
-                    && node.getHexTile().get().getBuilding().isCapital()) {
+                    ) {
                 capitals[0] = node;
-            } else if (node.getHexTile().get().getClaimant() != null
-                    && node.getHexTile().get().getClaimantId()
+            } else if (
+                     node.getHexTile().get().getClaimantId()
                             == mPlayer.get().getNetworkObject().getOwnerId()
-                    && node.getHexTile().get().getBuilding() != null
-                    && node.getHexTile().get().getBuilding().isCapital()) {
+                    ) {
                 capitals[1] = node;
-            }
+            }}
         }
         return capitals;
     }
