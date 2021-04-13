@@ -54,23 +54,9 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     private boolean mHadReleasedHover = true;
     private boolean mPressedDown = false;
 
-    private void setAppearence() {
-        UIAppearence appearence = UIManager.getInstance().getAppearence();
-
-        mRegularColour = appearence.getRegularColour();
-        mHoveredColour = appearence.getHoveredColour();
-        mPressedColour = appearence.getPressedColour();
-        mDisabledColour = appearence.getDisabledColour();
-
-        mTransitionTime = appearence.getTransitionTime();
-
-        mRectTexture = appearence.getButtonTexture().clone();
-    }
-
     /** Default Constructor for UIButton. */
     public UIButton() {
         super();
-        setAppearence();
     }
 
     /**
@@ -80,7 +66,6 @@ public class UIButton extends UITextRect implements IFrameUpdate {
      */
     public UIButton(UIText label) {
         super(label);
-        setAppearence();
     }
 
     /**
@@ -90,7 +75,6 @@ public class UIButton extends UITextRect implements IFrameUpdate {
      */
     public UIButton(String label) {
         super(label);
-        setAppearence();
     }
 
     /**
@@ -341,8 +325,21 @@ public class UIButton extends UITextRect implements IFrameUpdate {
         }
     }
 
+    private void setAppearence() {
+        mRegularColour = mAppearence.getRegularColour();
+        mHoveredColour = mAppearence.getHoveredColour();
+        mPressedColour = mAppearence.getPressedColour();
+        mDisabledColour = mAppearence.getDisabledColour();
+
+        mTransitionTime = mAppearence.getTransitionTime();
+
+        mRectTexture = mAppearence.getButtonTexture().clone();
+    }
+
     @Override
     public void onAwake() {
+        setAppearence();
+
         super.onAwake();
 
         if (!mIsEnabled) {
@@ -371,8 +368,14 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                 if (mHadReleasedHover) {
                     if (!mouseDown) {
                         // Call mOnClick if we pressed this button
-                        if (mLastMouseDown && mOnClick != null)
-                            mOnClick.eventHandler(this, deltaTime);
+                        if (mLastMouseDown) {
+                            if (mAppearence.getOnClick() != null) {
+                                mAppearence.getOnClick().eventHandler(this, deltaTime);
+                            }
+                            if (mOnClick != null) {
+                                mOnClick.eventHandler(this, deltaTime);
+                            }
+                        }
                     } else if (!mLastMouseDown) {
                         mPressedDown = true;
                         // Call mOnPressDown if we pressed down the button

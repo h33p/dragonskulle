@@ -20,6 +20,8 @@ public class UITextRect extends Component implements IOnAwake {
 
     @Getter @Setter protected SampledTexture mRectTexture = null;
 
+    @Getter @Setter protected UIAppearence mAppearence = UIManager.getInstance().getAppearence();
+
     private UIText mLabelTextComp;
     @Getter private Reference<UIText> mLabelText;
 
@@ -35,8 +37,6 @@ public class UITextRect extends Component implements IOnAwake {
 
     @Override
     public void onAwake() {
-        UIAppearence appearence = UIManager.getInstance().getAppearence();
-
         mRenderable = getGameObject().getComponent(UIRenderable.class);
         if (!Reference.isValid(mRenderable)) {
             getGameObject().addComponent(new UIRenderable(mRectTexture));
@@ -58,8 +58,8 @@ public class UITextRect extends Component implements IOnAwake {
                             (handle) -> {
                                 handle.getTransform(TransformUI.class)
                                         .setMargin(
-                                                appearence.getRectTextHorizMargin(),
-                                                appearence.getRectTextVertMargin());
+                                                mAppearence.getRectTextHorizMargin(),
+                                                mAppearence.getRectTextVertMargin());
                                 mLabelText = mLabelTextComp.getReference(UIText.class);
                                 handle.addComponent(mLabelTextComp);
                             });

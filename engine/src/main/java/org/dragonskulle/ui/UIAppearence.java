@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.ui.UIButton.IButtonEvent;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
@@ -45,6 +46,8 @@ public class UIAppearence implements NativeResource {
     private SampledTexture mSliderKnobTexture = new SampledTexture("ui/round_knob.png");
     /** Texture of a regular rectangle */
     private SampledTexture[] mRectTextures = {new SampledTexture("white.bmp")};
+    /** Injected onClick event to play sounds or something */
+    private IButtonEvent mOnClick = null;
 
     public void setTextFont(Resource<Font> textFont) {
         if (mTextFont != null) {

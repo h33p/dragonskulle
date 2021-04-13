@@ -36,7 +36,6 @@ public class App implements NativeResource {
     private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
     private static final int BGM2_ID =
             AudioManager.getInstance().loadSound("country_background_short.wav");
-    private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-10.wav");
 
     private static String sIP = "127.0.0.1";
     private static int sPort = 7000;
@@ -203,8 +202,6 @@ public class App implements NativeResource {
                             handle.addComponent(networkManager.get());
                         });
 
-        Reference<AudioSource> effectSource = new Reference<>(new AudioSource());
-
         GameObject audio =
                 new GameObject(
                         "audio",
@@ -221,16 +218,10 @@ public class App implements NativeResource {
                                                 new UIButton(
                                                         "Toggle Mute",
                                                         (uiButton, __) -> {
-                                                            effectSource
-                                                                    .get()
-                                                                    .playSound(BUTTON_SFX_ID);
                                                             AudioManager.getInstance()
                                                                     .toggleMasterMute();
                                                         }));
                                     });
-
-                            audioRoot.addComponent(effectSource.get());
-                            effectSource.get().setVolume(0.1f);
 
                             AudioSource bgm = new AudioSource();
                             bgm.setVolume(0.1f);
@@ -310,7 +301,6 @@ public class App implements NativeResource {
                                                     mainUI.setEnabled(false);
                                                     joinUI.setEnabled(true);
                                                     hostUI.setEnabled(false);
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
                                 button.addComponent(newButton);
                             });
@@ -329,7 +319,6 @@ public class App implements NativeResource {
                                                 (uiButton, __) -> {
                                                     mainUI.setEnabled(false);
                                                     hostUI.setEnabled(true);
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                 });
                                 button.addComponent(newButton);
                             });
@@ -342,13 +331,7 @@ public class App implements NativeResource {
                                         .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
                                 button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Settings",
-                                                (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
-                                                });
-
+                                UIButton newButton = new UIButton("Settings");
                                 button.addComponent(newButton);
                             });
 
@@ -364,7 +347,6 @@ public class App implements NativeResource {
                                         new UIButton(
                                                 "Quit",
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     Engine.getInstance().stop();
                                                 });
 
@@ -383,7 +365,6 @@ public class App implements NativeResource {
                                         new UIButton(
                                                 "Quick Reload",
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     sReload = true;
                                                     Engine.getInstance().stop();
                                                 });
@@ -428,7 +409,6 @@ public class App implements NativeResource {
                                         new UIButton(
                                                 "Join (Temporary)",
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     networkManager
                                                             .get()
                                                             .createClient(
@@ -466,7 +446,6 @@ public class App implements NativeResource {
                                         new UIButton(
                                                 "Cancel",
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     joinUI.setEnabled(false);
                                                     mainUI.setEnabled(true);
                                                 });
@@ -495,7 +474,6 @@ public class App implements NativeResource {
                                         new UIButton(
                                                 "Host (Temporary)",
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     networkManager
                                                             .get()
                                                             .createServer(
@@ -516,7 +494,6 @@ public class App implements NativeResource {
                                         new UIButton(
                                                 "Cancel",
                                                 (uiButton, __) -> {
-                                                    effectSource.get().playSound(BUTTON_SFX_ID);
                                                     hostUI.setEnabled(false);
                                                     mainUI.setEnabled(true);
                                                 });
