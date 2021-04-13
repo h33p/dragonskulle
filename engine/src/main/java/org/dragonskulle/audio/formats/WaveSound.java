@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio.formats;
 
-import com.sun.media.sound.WaveFileReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,6 +10,7 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.java.Log;
 import org.lwjgl.openal.AL11;
@@ -90,7 +90,7 @@ public class WaveSound extends Sound implements Serializable {
      */
     public static WaveSound loadWave(File file) {
         try {
-            AudioInputStream audioInputStream = new WaveFileReader().getAudioInputStream(file);
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
 
             WaveSound sound = new WaveSound();
             AudioFormat format = audioInputStream.getFormat();
