@@ -100,15 +100,15 @@ public class SyncStat extends SyncInt {
      * <p>Will be {@code false} if:
      *
      * <ul>
-     *   <li>It is impossible to upgrade the stat (as {@link StatType#isUpgradeable()} is {@code
-     *       false}).
+     *   <li>It is impossible to upgrade the stat (as {@link StatType#isFixedValue()} is {@code
+     *       true}).
      *   <li>The current level is at the {@link #LEVEL_MAX}.
      * </ul>
      *
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
      */
     public boolean isUpgradeable() {
-        return (mType.isUpgradeable()) ? getLevel() < LEVEL_MAX : false;
+        return (mType.isFixedValue()) ? false : getLevel() < LEVEL_MAX;
     }
 
     /**

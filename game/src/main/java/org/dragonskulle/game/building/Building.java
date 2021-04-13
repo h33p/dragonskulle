@@ -517,16 +517,35 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an {@link ArrayList} of the Building's upgradeable {@link SyncStat}s.
+     * Get an {@link ArrayList} of non-fixed {@link SyncStat}s. These stats can theoretically be
+     * upgraded.
      *
-     * @return An ArrayList of Stats that are upgradeable.
+     * @return An ArrayList of SyncStats which are not fixed at one value.
      */
     public ArrayList<SyncStat> getStats() {
         ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
 
-        for (StatType statType : mStats.keySet()) {
-            if (statType.isUpgradeable()) {
-                stats.add(mStats.get(statType));
+        for (SyncStat stat : mStats.values()) {
+            StatType type = stat.getType();
+            if (type != null && type.isFixedValue() == false) {
+                stats.add(stat);
+            }
+        }
+
+        return stats;
+    }
+
+    /**
+     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded.
+     *
+     * @return An ArrayList of SyncStats that can currently be upgraded.
+     */
+    public ArrayList<SyncStat> getUpgradeableStats() {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+
+        for (SyncStat stat : mStats.values()) {
+            if (stat.isUpgradeable()) {
+                stats.add(stat);
             }
         }
 

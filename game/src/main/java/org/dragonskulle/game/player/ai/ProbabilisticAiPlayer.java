@@ -195,7 +195,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         // Get the Building.
         Building building = buildingReference.get();
 
-        ArrayList<SyncStat> stats = building.getStats();
+        ArrayList<SyncStat> stats = building.getUpgradeableStats();
         if (stats.size() == 0) return false;
 
         int index = mRandom.nextInt(stats.size());

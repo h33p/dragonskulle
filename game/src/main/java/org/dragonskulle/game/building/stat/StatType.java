@@ -64,8 +64,8 @@ public enum StatType {
     /** The method used to turn a level ({@code int}) into a value ({@code int}). */
     @Getter private IValueCalculator mValueCalculator;
 
-    /** Whether the stat can actually be upgraded. */
-    @Getter private final boolean mUpgradeable;
+    /** Whether the stat always returns a fixed value. */
+    @Getter private final boolean mFixedValue;
 
     /**
      * Create a new type of stat.
@@ -73,17 +73,17 @@ public enum StatType {
      * @param valueCalculator The method used to turn a level into a value.
      */
     StatType(IValueCalculator valueCalculator) {
-        mUpgradeable = true;
+        mFixedValue = false;
         mValueCalculator = valueCalculator;
     }
 
     /**
-     * Create a new type of stat that is not upgradeable.
+     * Create a new type of stat that is permanently one value.
      *
      * @param value The value of the stat, regardless of level.
      */
     StatType(int value) {
-        mUpgradeable = false;
+        mFixedValue = true;
         mValueCalculator =
                 (__) -> {
                     return value;

@@ -90,7 +90,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     };
 
     /** The base rate of tokens which will always be added. */
-    private final int TOKEN_RATE = 1;
+    private final int TOKEN_RATE = 5;
     /** How frequently the tokens should be added. */
     private final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
