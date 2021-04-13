@@ -30,29 +30,4 @@ public class Connection {
         this.mDestinationNode = node2;
         this.mWeight = mWeight;
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + mDestinationNode;
-        result = prime * result + mOriginNode;
-        long temp;
-        temp = Double.doubleToLongBits(mWeight);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        Connection other = (Connection) obj;
-        if (mDestinationNode != other.mDestinationNode) return false;
-        if (mOriginNode != other.mOriginNode) return false;
-        if (Double.doubleToLongBits(mWeight) != Double.doubleToLongBits(other.mWeight))
-            return false;
-        return true;
-    }
 }

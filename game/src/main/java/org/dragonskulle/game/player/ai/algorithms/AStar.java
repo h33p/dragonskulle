@@ -94,10 +94,10 @@ public class AStar {
                 }
             }
 
-            sort(); // Sorts the mFrontier
+            int nextNodeIndex = nextNode();
 
-            if (!mFrontier.isEmpty()) { // As long as the mFrontier is not empty
-                int[] nextNode = mFrontier.remove(0); // Removes the first element
+            if (nextNodeIndex != -1) { // As long as the mFrontier is not empty
+                int[] nextNode = mFrontier.remove(nextNodeIndex); // Removes the element with the smallest fNode
                 int[] connectionHere = {nextNode[3], nextNode[0]}; // The connection
                 connectionsFinal.add(connectionHere); // Add it to the final connections
                 if (nextNode[0] == endNode) { // If it ends at the final node
@@ -130,96 +130,25 @@ public class AStar {
         }
     }
 
-    /** Performs a sort on the mFrontier */
-    private void sort() {
-
-        mergesort(0, mFrontier.size() - 1);
-    }
-
     /**
-     * Performs a merge sort on the data
-     *
-     * @param data The data to be sorted
-     * @param left The left index
-     * @param right the right index
-     * @return the data sorted
+     * This will go through mFrontier and will find the next node to expand by checking what the fNode is.
+     * @return the index of the next node to check or -1 if the list is empty
      */
-    private void mergesort(int left, int right) {
-
-        if (left < right) { // While the left and right points are the correct ends
-
-            int mid = (left + right) / 2; // Finds the mid index
-            mergesort(left, mid); // Sorts the left side
-            mergesort(mid + 1, right); // Sorts the right side
-            merge(left, mid, right); // Merges the 2 sides together
-        }
+    private int nextNode() {
+    	int smallest = Integer.MAX_VALUE;
+    	int index = -1;
+    	int i = 0;
+    	for (int[] node : mFrontier) {
+    		if (node[1] < smallest) {
+    			smallest = node[1];
+    			index = i;
+    		}
+    		i++;
+    	}
+    	
+    	return index;
     }
-
-    /**
-     * Merges the data in mergesort
-     *
-     * @param a The data to be merged
-     * @param left the left index
-     * @param mid the middle of the data
-     * @param right The right index
-     * @return the data sorted
-     */
-    private void merge(int left, int mid, int right) {
-
-        int[][] b = new int[right - left + 1][2]; // The array which will be sorted
-        int bcount = 0; // Where you are in the b array
-        int lcount = left; // Where you are in the left side
-        int rcount = mid + 1; // Where you are in the right side
-
-        while ((lcount <= mid) && (rcount <= right)) { // Whilst both sides are not sorted
-
-            if (mFrontier.get(lcount)[1]
-                    <= mFrontier
-                            .get(rcount)[
-                            1]) { // If the data on the left side is smaller than the data on the
-                // right side
-                b[bcount] =
-                        mFrontier.get(
-                                lcount); // Put that data in the first available space in the b
-                // array
-                bcount++; // Increase the b and l pointer
-                lcount++;
-            } else { // If the data on the right side is larger
-                b[bcount] =
-                        mFrontier.get(
-                                rcount); // Put that data in the first available space in the b
-                // array
-                bcount++; // Increase the b and l pointer
-                rcount++;
-            }
-        }
-
-        if (lcount > mid) { // If the l count is larger than mid (eg the left side is sorted)
-
-            while (rcount <= right) { // Add all the data from the right side
-
-                b[bcount] = mFrontier.get(rcount);
-                bcount++;
-                rcount++;
-            }
-        } else { // If the l count is smaller
-
-            while (lcount <= mid) { // Add all the data from the left side
-
-                b[bcount] = mFrontier.get(lcount);
-                bcount++;
-                lcount++;
-            }
-        }
-
-        // Adds all the data sorted back into the array
-        for (bcount = 0; bcount < right - left + 1; bcount++) {
-
-            mFrontier.remove(left + bcount);
-            mFrontier.add(left + bcount, b[bcount]);
-        }
-    }
-
+    
     /**
      * Performs a linear search on the data
      *

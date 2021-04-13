@@ -50,7 +50,7 @@ public class CapitalAimer extends AiPlayer {
             return;
         }
 
-        // Checks if path size is 0
+        // Checks if path size is 0 -- will only be ran if there are no enemies which exist
         if (mPath.size() == 0) {
             return;
         }
