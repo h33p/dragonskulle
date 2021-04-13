@@ -8,7 +8,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.ui.UIAppearence;
+import org.dragonskulle.ui.UIAppearance;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 
@@ -17,7 +17,7 @@ import org.dragonskulle.ui.UIManager;
  *
  * @author Aurimas Blažulionis
  */
-public class GameUIAppearence {
+public class GameUIAppearance {
 
     private static final int BUTTON_DOWN_SFX_ID =
             AudioManager.getInstance().loadSound("button-down.wav");
@@ -33,7 +33,7 @@ public class GameUIAppearence {
      *     callee
      */
     public static SampledTexture getInfoBoxTexture() {
-        return UIManager.getInstance().getAppearence().getRectTextures()[INFO_BOX].clone();
+        return UIManager.getInstance().getAppearance().getRectTextures()[INFO_BOX].clone();
     }
 
     /**
@@ -43,27 +43,27 @@ public class GameUIAppearence {
      *     the callee
      */
     public static SampledTexture getDrawerTexture() {
-        return UIManager.getInstance().getAppearence().getRectTextures()[DRAWER].clone();
+        return UIManager.getInstance().getAppearance().getRectTextures()[DRAWER].clone();
     }
 
     /**
-     * Initialise the UI appearence
+     * Initialise the UI appearance
      *
      * <p>This method will set the game's UI settings to look consistent.
      */
     public static void initialise() {
-        UIAppearence appearence = UIManager.getInstance().getAppearence();
-        appearence.getTextFont().free();
-        appearence.setTextFont(Font.getFontResource("fatpixel.ttf"));
-        appearence.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));
-        appearence.setRectTextures(
+        UIAppearance appearance = UIManager.getInstance().getAppearance();
+        appearance.getTextFont().free();
+        appearance.setTextFont(Font.getFontResource("fatpixel.ttf"));
+        appearance.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));
+        appearance.setRectTextures(
                 new SampledTexture[] {
                     new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")
                 });
-        appearence.setRectTextVertMargin(0.3f);
-        appearence.setRectTextHorizMargin(0.1f);
-        appearence.setOnClick(GameUIAppearence::onClick);
-        appearence.setOnPressDown(GameUIAppearence::onPressDown);
+        appearance.setRectTextVertMargin(0.3f);
+        appearance.setRectTextHorizMargin(0.1f);
+        appearance.setOnClick(GameUIAppearance::onClick);
+        appearance.setOnPressDown(GameUIAppearance::onPressDown);
     }
 
     /** Inject a sound to every button click */

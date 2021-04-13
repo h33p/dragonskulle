@@ -559,7 +559,7 @@ public class App implements NativeResource {
      */
     public static void main(String[] args) {
 
-        GameUIAppearence.initialise();
+        GameUIAppearance.initialise();
 
         do {
             sReload = false;

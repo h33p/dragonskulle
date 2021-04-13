@@ -325,20 +325,20 @@ public class UIButton extends UITextRect implements IFrameUpdate {
         }
     }
 
-    private void setAppearence() {
-        mRegularColour = mAppearence.getRegularColour();
-        mHoveredColour = mAppearence.getHoveredColour();
-        mPressedColour = mAppearence.getPressedColour();
-        mDisabledColour = mAppearence.getDisabledColour();
+    private void setAppearance() {
+        mRegularColour = mAppearance.getRegularColour();
+        mHoveredColour = mAppearance.getHoveredColour();
+        mPressedColour = mAppearance.getPressedColour();
+        mDisabledColour = mAppearance.getDisabledColour();
 
-        mTransitionTime = mAppearence.getTransitionTime();
+        mTransitionTime = mAppearance.getTransitionTime();
 
-        mRectTexture = mAppearence.getButtonTexture().clone();
+        mRectTexture = mAppearance.getButtonTexture().clone();
     }
 
     @Override
     public void onAwake() {
-        setAppearence();
+        setAppearance();
 
         super.onAwake();
 
@@ -369,8 +369,8 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                     if (!mouseDown) {
                         // Call mOnClick if we pressed this button
                         if (mLastMouseDown) {
-                            if (mAppearence.getOnClick() != null) {
-                                mAppearence.getOnClick().eventHandler(this, deltaTime);
+                            if (mAppearance.getOnClick() != null) {
+                                mAppearance.getOnClick().eventHandler(this, deltaTime);
                             }
                             if (mOnClick != null) {
                                 mOnClick.eventHandler(this, deltaTime);
@@ -379,8 +379,8 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                     } else if (!mLastMouseDown) {
                         mPressedDown = true;
                         // Call mOnPressDown if we pressed down the button
-                        if (mAppearence.getOnPressDown() != null) {
-                            mAppearence.getOnPressDown().eventHandler(this, deltaTime);
+                        if (mAppearance.getOnPressDown() != null) {
+                            mAppearance.getOnPressDown().eventHandler(this, deltaTime);
                         }
                         if (mOnPressDown != null) {
                             mOnPressDown.eventHandler(this, deltaTime);

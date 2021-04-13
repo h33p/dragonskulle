@@ -12,7 +12,7 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.game.GameUIAppearence;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
@@ -104,7 +104,7 @@ public class UIMenuLeftDrawer extends Component implements IFrameUpdate, IOnStar
 
         mButtonReferences = buildMenu(menuButtons);
 
-        UIRenderable drawer = new UIRenderable(GameUIAppearence.getDrawerTexture());
+        UIRenderable drawer = new UIRenderable(GameUIAppearance.getDrawerTexture());
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setMargin(0f, 0f, 0f, 0f);
         tran.setPivotOffset(0f, 0f);

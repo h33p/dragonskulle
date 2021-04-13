@@ -20,7 +20,7 @@ public class UITextRect extends Component implements IOnAwake {
 
     @Getter @Setter protected SampledTexture mRectTexture = null;
 
-    @Getter @Setter protected UIAppearence mAppearence = UIManager.getInstance().getAppearence();
+    @Getter @Setter protected UIAppearance mAppearance = UIManager.getInstance().getAppearance();
 
     private UIText mLabelTextComp;
     @Getter private Reference<UIText> mLabelText;
@@ -60,8 +60,8 @@ public class UITextRect extends Component implements IOnAwake {
                             (handle) -> {
                                 handle.getTransform(TransformUI.class)
                                         .setMargin(
-                                                mAppearence.getRectTextHorizMargin(),
-                                                mAppearence.getRectTextVertMargin());
+                                                mAppearance.getRectTextHorizMargin(),
+                                                mAppearance.getRectTextVertMargin());
                                 mLabelText = mLabelTextComp.getReference(UIText.class);
                                 handle.addComponent(mLabelTextComp);
                             });

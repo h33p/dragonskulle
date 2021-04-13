@@ -12,14 +12,14 @@ import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Describes UI appearence and visual behaviour
+ * Describes UI appearance and visual behaviour
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 @Getter
 @Setter
-public class UIAppearence implements NativeResource {
+public class UIAppearance implements NativeResource {
     /** Regular colour for a button */
     private Vector4f mRegularColour = new Vector4f(1f);
     /** Hovered colour for a button */

@@ -28,8 +28,8 @@ public class UIManager {
      * <p>It will always be the top most element.
      */
     @Getter private Reference<UIRenderable> mHoveredObject;
-    /** Global UI appearence */
-    @Getter @Setter private UIAppearence mAppearence = new UIAppearence();
+    /** Global UI appearance */
+    @Getter @Setter private UIAppearance mAppearance = new UIAppearance();
 
     /**
      * Update which UI element is currently hovered by the cursor
