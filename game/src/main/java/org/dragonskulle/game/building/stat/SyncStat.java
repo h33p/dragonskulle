@@ -100,8 +100,7 @@ public class SyncStat extends SyncInt {
      * <p>Will be {@code false} if:
      *
      * <ul>
-     *   <li>It is impossible to upgrade the stat (as {@link StatType#isFixedValue()} is {@code
-     *       true}).
+     *   <li>It is impossible to upgrade the stat (as its value is fixed).
      *   <li>The current level is at the {@link #LEVEL_MAX}.
      * </ul>
      *
