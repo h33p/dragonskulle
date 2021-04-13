@@ -4,12 +4,11 @@ package org.dragonskulle.network;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.apache.commons.codec.binary.Hex;
-import org.dragonskulle.exceptions.DecodingException;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * @author Oscar L
@@ -18,12 +17,13 @@ import org.dragonskulle.exceptions.DecodingException;
  *     org.dragonskulle.network.IClientListener}**
  */
 @Log
+@Accessors(prefix = "m")
 public class NetworkClient {
 
     /** The Socket connection to the server. */
     private Socket mSocket;
     /** The byte output stream. */
-    private DataOutputStream mDOut;
+    private DataOutputStream mDataOut;
     /** The byte input stream. */
     private BufferedInputStream mBIn;
 
@@ -32,18 +32,20 @@ public class NetworkClient {
     /** True if the socket is open. */
     private boolean mOpen = true;
 
-    /** Stores all requests from the server once scheduled. */
-    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
     /** The Runnable for @{mClientThread}. */
     private ClientRunner mClientRunner;
 
-    /**
-     * The thread that watches @link{dIn} for messages and adds them to the message
-     * queue @link{mRequests}.
-     */
+    /** The thread that watches @link{dIn} for messages. */
     private Thread mClientThread;
 
     private AtomicBoolean didDispose = new AtomicBoolean(false);
+
+    /** Stores all requests from the server once scheduled. */
+    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
+
+    public DataOutputStream getDataOut() {
+        return new NetworkMessageStream(mDataOut);
+    }
 
     /**
      * Instantiates a new Network client.
@@ -69,53 +71,33 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Execute bytes after parsing. This is the client version.
-     *
-     * @param messageType the message type
-     * @param payload the payload
-     * @return the byteCode of the message processed.
-     */
-    public byte executeBytes(byte messageType, byte[] payload) {
-        log.fine("EXEB - " + messageType);
-        switch (messageType) {
-            case NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT:
-                log.fine("Should update requested network object");
-                mClientListener.updateNetworkObject(payload);
-                break;
-            case NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT:
-                log.fine("Spawn a networked object");
-                mClientListener.spawnNetworkObject(payload);
-                break;
-            default:
-                log.info("unsure of what to do with message as unknown type byte " + messageType);
-                break;
-        }
-        return messageType;
-    }
-
     /** Dispose. */
     public void dispose() {
         try {
             if (!didDispose.get()) {
                 didDispose.set(true);
                 if (mOpen) {
-                    this.sendBytes(new byte[NetworkConfig.MAX_TRANSMISSION_SIZE]);
                     mOpen = false;
                     closeAllConnections();
                     if (mClientListener != null) {
                         mClientListener.disconnected();
                     }
                 }
-                mSocket = null;
-                mDOut = null;
-                mClientListener = null;
+                if (mSocket != null) mSocket.close();
                 if (mClientThread != null) {
                     mClientThread.interrupt();
-                    mClientThread.join();
+                    try {
+                        mClientThread.join();
+                    } catch (InterruptedException e) {
+
+                    }
                 }
+                mSocket = null;
+                mDataOut = null;
+                mClientListener = null;
             }
         } catch (Exception exception) {
+            exception.printStackTrace();
             log.severe(exception.getMessage());
         }
     }
@@ -138,12 +120,11 @@ public class NetworkClient {
     public void sendBytes(byte[] bytes) {
         if (mOpen) {
             try {
-                if (mDOut != null) {
-                    log.fine("sending bytes");
-                    mDOut.write(bytes);
-                }
+                mDataOut.writeShort(bytes.length);
+                mDataOut.write(bytes);
             } catch (IOException e) {
                 log.fine("Failed to send bytes");
+                mClientThread.interrupt();
             }
         }
     }
@@ -163,8 +144,6 @@ public class NetworkClient {
      */
     @SuppressWarnings("")
     private class ClientRunner implements Runnable {
-        final AtomicBoolean didTryDispose = new AtomicBoolean(false);
-
         private String mIP;
         private int mPort;
 
@@ -172,39 +151,27 @@ public class NetworkClient {
         public void run() {
             try {
                 mSocket = new Socket(mIP, mPort);
+                mDataOut = new DataOutputStream(mSocket.getOutputStream());
                 mBIn = new BufferedInputStream(mSocket.getInputStream());
-                mDOut = new DataOutputStream(mSocket.getOutputStream());
-                byte[] netID = {-1};
-                mBIn.read(netID);
-                mClientListener.connectedToServer((int) netID[0]);
+                DataInputStream input = new DataInputStream(mBIn);
+                byte netID = input.readByte();
+                mClientListener.connectedToServer(netID);
+
+                while (mOpen && mSocket.isConnected()) {
+                    try {
+                        short len = input.readShort();
+                        byte[] bytes = IOUtils.readExactlyNBytes(input, len);
+                        mRequests.add(bytes);
+                    } catch (IOException e) {
+                        break;
+                    }
+                }
             } catch (UnknownHostException exception) {
                 mOpen = false;
                 mClientListener.unknownHost();
             } catch (IOException exception) {
                 mOpen = false;
                 mClientListener.couldNotConnect();
-            }
-
-            byte[] bArray;
-            byte[] terminateBytes =
-                    new byte[NetworkConfig.TERMINATE_BYTES_LENGTH]; // max flatbuffer size
-            while (mOpen) {
-                try {
-                    bArray = NetworkMessage.readMessageFromStream(mBIn);
-                    if (bArray.length != 0) {
-                        if (Arrays.equals(bArray, terminateBytes)) {
-                            break;
-                        } else {
-                            queueRequest(bArray);
-                        }
-                    }
-
-                } catch (IOException ignore) { // if fails to read from in stream
-                    if (mClientListener != null) {
-                        mClientListener.error("failed to read from input stream");
-                    }
-                    break;
-                }
             }
 
             if (mClientListener != null) mClientListener.disconnected();
@@ -214,50 +181,76 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Queue a new request for the client to process.
-     *
-     * @param bArray the bytes
-     */
-    private void queueRequest(byte[] bArray) {
-        log.fine("queuing request :: " + Hex.encodeHexString(bArray));
-        this.mRequests.add(bArray);
-    }
-
     /** Processes all requests. */
     public int processRequests() {
         log.fine("processing all " + this.mRequests.size() + " requests");
         int cnt = 0;
-        while (!this.mRequests.isEmpty()) {
-            byte[] requestBytes = this.mRequests.poll();
-            if (requestBytes != null) {
-                parseBytes(requestBytes);
-            }
-            if (cnt > 100) log.info("CNT " + cnt);
 
-            cnt++;
+        while (!this.mRequests.isEmpty()) {
+            byte[] requestBytes = mRequests.poll();
+            if (requestBytes != null) {
+                try {
+                    ByteArrayInputStream bin = new ByteArrayInputStream(requestBytes);
+                    DataInputStream stream = new DataInputStream(bin);
+                    processMessage(stream);
+                    stream.close();
+                    bin.close();
+                    cnt++;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // closeAllConnections();
+                }
+            }
         }
+
         return cnt;
     }
 
     /**
-     * Parses bytes from a message.
+     * Process a message
      *
-     * @param bytes the bytes
-     * @throws DecodingException the decoding exception
+     * @param stream stream to read the message from
+     * @return the byteCode of the message processed.
      */
-    private void parseBytes(byte[] bytes) {
-        try {
-            NetworkMessage.parse(bytes, this);
-        } catch (Exception e) {
-            log.fine("error parsing bytes");
-            log.severe(e.getMessage());
+    private byte processMessage(DataInputStream stream) throws IOException {
+        byte messageType = stream.readByte();
+        log.fine("EXEB - " + messageType);
+        switch (messageType) {
+            case NetworkConfig.Codes.MESSAGE_DISCONNECT:
+                mClientThread.interrupt();
+                break;
+            case NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT:
+                log.fine("Should update requested network object");
+                mClientListener.updateNetworkObject(stream);
+                break;
+            case NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT:
+                log.fine("Spawn a networked object");
+                mClientListener.spawnNetworkObject(stream);
+                break;
+            case NetworkConfig.Codes.MESSAGE_UPDATE_STATE:
+                log.fine("Update server's state");
+                mClientListener.updateServerState(stream);
+                break;
+            case NetworkConfig.Codes.MESSAGE_SERVER_EVENT:
+                log.fine("A server object event");
+                mClientListener.objectEvent(stream);
+                break;
+            default:
+                log.info("unsure of what to do with message as unknown type byte " + messageType);
+                break;
         }
+        return messageType;
     }
 
     /** Closes all connections. */
     private void closeAllConnections() {
         mOpen = false;
+
+        try (DataOutputStream dataOut = getDataOut()) {
+            dataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
+        } catch (Exception e) {
+
+        }
 
         try {
             if (mSocket != null) {
@@ -268,9 +261,9 @@ public class NetworkClient {
             log.severe(exception.getMessage());
         }
         try {
-            if (mDOut != null) {
-                mDOut.close();
-                mDOut = null;
+            if (mDataOut != null) {
+                mDataOut.close();
+                mDataOut = null;
             }
         } catch (Exception exception) {
             log.severe(exception.getMessage());

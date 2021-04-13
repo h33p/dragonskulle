@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.networkData;
+package org.dragonskulle.game.player.network_data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,6 +28,10 @@ public class BuildData implements INetSerializable {
      * @param hexTileToAdd The {@code HexagonTile} to build on
      */
     public BuildData(HexagonTile hexTileToAdd) {
+        setTile(hexTileToAdd);
+    }
+
+    public void setTile(HexagonTile hexTileToAdd) {
         mQ = hexTileToAdd.getQ();
         mR = hexTileToAdd.getR();
     }

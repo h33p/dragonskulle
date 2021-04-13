@@ -68,6 +68,9 @@ class VulkanPipeline implements NativeResource {
                 descOut.location(descIn.location);
                 descOut.format(descIn.format);
                 descOut.offset(descIn.offset);
+
+                // Implicitly shift location for per-instance data.
+                if (descIn.bindingID != 0) descOut.location(descOut.location() + 4);
             }
         }
 
@@ -79,7 +82,8 @@ class VulkanPipeline implements NativeResource {
             long[] descriptorSetLayouts,
             VkDevice device,
             VkExtent2D extent,
-            long renderPass) {
+            long renderPass,
+            int msaaCount) {
         log.fine("Setup pipeline");
 
         mDevice = device;
@@ -211,12 +215,11 @@ class VulkanPipeline implements NativeResource {
             // Used for shadowmaps, which we currently don't have...
             rasterizer.depthBiasEnable(false);
 
-            // TODO: Enable MSAA optionally/on feature check
             VkPipelineMultisampleStateCreateInfo multisampling =
                     VkPipelineMultisampleStateCreateInfo.callocStack(stack);
             multisampling.sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
             multisampling.sampleShadingEnable(false);
-            multisampling.rasterizationSamples(VK_SAMPLE_COUNT_1_BIT);
+            multisampling.rasterizationSamples(msaaCount);
 
             VkPipelineDepthStencilStateCreateInfo depthStencil =
                     VkPipelineDepthStencilStateCreateInfo.callocStack(stack);

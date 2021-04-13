@@ -79,7 +79,11 @@ public class Server {
         mServerListener = listener;
 
         mServerSocket =
-                new ServerSocket(port, 0, InetAddress.getByName(null)); // sets up on localhost
+                new ServerSocket(
+                        port,
+                        0,
+                        InetAddress.getByAddress(
+                                new byte[] {0x00, 0x00, 0x00, 0x00})); // sets up on localhost
         mServerSocket.setSoTimeout(SO_TIMEOUT);
 
         if (this.mPort == 0) {
@@ -93,6 +97,10 @@ public class Server {
         mServerThread.setName("Server");
         log.fine("[S] Starting server");
         mServerThread.start();
+    }
+
+    public ServerClient getClient(Integer id) {
+        return mClients.get(id);
     }
 
     public Collection<ServerClient> getClients() {
@@ -109,13 +117,9 @@ public class Server {
         ServerClient c;
         while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
-        byte[] netID = {-1};
-
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
-            netID[0] = (byte) c.getNetworkID();
-            c.sendBytes(netID);
             mServerListener.clientActivated(c);
         }
 
@@ -137,6 +141,10 @@ public class Server {
         int cnt = 0;
 
         for (ServerClient c : mClients.values()) cnt += c.processRequests(clientRequests);
+
+        // Clients may have gracefully shut down, remove them from the list
+        ServerClient c;
+        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
 
         return cnt;
     }
@@ -212,7 +220,6 @@ public class Server {
             try {
                 s.shutdownOutput();
                 s.close();
-                mClientCount--;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -250,6 +257,7 @@ public class Server {
                 }
 
                 if (clientSocket != null) {
+                    log.info("ACCEPT SOCKET: " + clientSocket);
                     mPendingClients.add(clientSocket);
                 }
             }

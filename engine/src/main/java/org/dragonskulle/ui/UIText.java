@@ -3,6 +3,7 @@ package org.dragonskulle.ui;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -34,6 +35,8 @@ public class UIText extends Renderable implements IOnAwake {
 
     @Getter @Setter private float mVerticalAlignment = 0f;
     @Getter @Setter private float mHorizontalAlignment = 0f;
+
+    @Getter @Setter private float mDepthShift = 0f;
 
     private float mTargetAspectRatio = 0f;
 
@@ -212,7 +215,7 @@ public class UIText extends Renderable implements IOnAwake {
 
     @Override
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
-        return (float) -getGameObject().getDepth();
+        return (float) -getGameObject().getDepth() + mDepthShift;
     }
 
     @Override
@@ -222,8 +225,8 @@ public class UIText extends Renderable implements IOnAwake {
     }
 
     @Override
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
+    public void writeVertexInstanceData(int offset, ByteBuffer buffer, List<Light> lights) {
         Matrix4fc mat = getGameObject().getTransform().getWorldMatrix();
-        mMaterial.writeVertexInstanceData(offset, buffer, mat);
+        mMaterial.writeVertexInstanceData(offset, buffer, mat, lights);
     }
 }

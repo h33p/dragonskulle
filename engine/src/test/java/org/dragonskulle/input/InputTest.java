@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.dragonskulle.input.test_bindings.TestActions;
 import org.dragonskulle.input.test_bindings.TestBindings;
-import org.joml.Vector2d;
+import org.joml.Vector2f;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -284,18 +284,18 @@ public class InputTest {
         assertEquals("Scroll amount has been reset and should be 0.", scroll.getAmount(), 0, 0);
     }
 
-    /** Ensure the cursor position is correctly stored. */
+    /** Ensure the raw cursor position is correctly stored. */
     @Test
     public void cursorPositionShouldBeStored() {
         Cursor cursor = Actions.getCursor();
         assertNotNull(cursor);
 
-        cursor.setPosition(123d, 456d);
-        Vector2d desired = new Vector2d(123d, 456d);
+        cursor.setPosition(123f, 456f);
+        Vector2f desired = new Vector2f(123f, 456f);
 
         assertEquals(
-                "Cursor position should equal Vector2d(123d, 456d).",
-                cursor.getPosition(),
+                "Raw cursor position should equal Vector2d(123d, 456d).",
+                cursor.getRawPosition(),
                 desired);
     }
 
@@ -320,88 +320,29 @@ public class InputTest {
                 "No drag has begun, so the drag angle should be 0.", cursor.getDragAngle(), 0, 0);
     }
 
-    /** Ensure that dragging correctly stores the start position. */
-    @Test
-    public void cursorDragStartPosition() {
-        Cursor cursor = Actions.getCursor();
-        assertNotNull(cursor);
-
-        // Set the cursor's position.
-        cursor.setPosition(123d, 456d);
-        Vector2d desired = new Vector2d(123d, 456d);
-
-        // Start the drag.
-        cursor.startDrag();
-        assertEquals(
-                "Drag start should equal Vector2d(123d, 456d).", cursor.getDragStart(), desired);
-
-        // Move the cursor.
-        cursor.setPosition(789d, 876d);
-        assertEquals(
-                "The cursor has moved. Drag start should equal Vector2d(123d, 456d).",
-                cursor.getDragStart(),
-                desired);
-
-        // End the drag.
-        cursor.endDrag();
-        assertNull("Dragging has ended, so DragStart should be null.", cursor.getDragStart());
-    }
-
-    /** Ensure the distance calculated between the drag start and current position is correct. */
-    @Test
-    public void cursorDistanceCorrect() {
-        Cursor cursor = Actions.getCursor();
-        assertNotNull(cursor);
-
-        Vector2d desiredStart = new Vector2d(123d, 456d);
-        Vector2d desiredEnd1 = new Vector2d(6d, 110d);
-        Vector2d desiredEnd2 = new Vector2d(777d, 0d);
-        double desiredDistance1 = desiredEnd1.distance(desiredStart);
-        double desiredDistance2 = desiredEnd2.distance(desiredStart);
-
-        cursor.setPosition(123d, 456d);
-        cursor.startDrag();
-
-        cursor.setPosition(6d, 110d);
-        assertEquals(
-                "The distance from the drag start point to the current position is not correct.",
-                cursor.getDragDistance(),
-                desiredDistance1,
-                1e-15);
-
-        cursor.setPosition(777d, 0d);
-        assertEquals(
-                "The distance from the drag start point to the current position is not correct.",
-                cursor.getDragDistance(),
-                desiredDistance2,
-                1e-15);
-
-        cursor.endDrag();
-    }
-
     /** Ensure the angle calculated between the drag start and current position is correct. */
     @Test
     public void cursorAngleCorrect() {
         Cursor cursor = Actions.getCursor();
         assertNotNull(cursor);
 
-        Vector2d desiredStart = new Vector2d(123d, 456d);
-        Vector2d desiredEnd1 = new Vector2d(6d, 110d);
-        Vector2d desiredEnd2 = new Vector2d(777d, 0d);
+        Vector2f desiredStart = new Vector2f(123f, 456f);
+        Vector2f desiredEnd1 = new Vector2f(6f, 110f);
+        Vector2f desiredEnd2 = new Vector2f(777f, 0f);
         double desiredAngle1 = desiredEnd1.angle(desiredStart);
         double desiredAngle2 = desiredEnd2.angle(desiredStart);
 
-        cursor.setPosition(123d, 456d);
+        cursor.setPosition(123f, 456f);
         cursor.startDrag();
 
-        cursor.setPosition(6d, 110d);
+        cursor.setPosition(6f, 110f);
         assertEquals(
                 "The angle between the drag start point and current position is not correct.",
                 cursor.getDragAngle(),
                 desiredAngle1,
                 1e-15);
 
-        cursor.setPosition(777d, 0d);
+        cursor.setPosition(777f, 0f);
         assertEquals(
                 "The angle between the drag start point and current position is not correct.",
                 cursor.getDragAngle(),

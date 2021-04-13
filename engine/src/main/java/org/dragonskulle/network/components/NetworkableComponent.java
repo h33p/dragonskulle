@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,7 +13,9 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.ISyncVar;
+import org.dragonskulle.utils.IOUtils;
 
 /**
  * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
@@ -47,8 +47,12 @@ public abstract class NetworkableComponent extends Component {
      * Init fields. @param networkObject the network object
      *
      * @param outRequests the requests it can deal with
+     * @param outEvents the events it can deal with
      */
-    public void initialize(NetworkObject networkObject, List<ClientRequest<?>> outRequests) {
+    public void initialize(
+            NetworkObject networkObject,
+            List<ClientRequest<?>> outRequests,
+            List<ServerEvent<?>> outEvents) {
 
         mNetworkObject = networkObject;
 
@@ -58,6 +62,10 @@ public abstract class NetworkableComponent extends Component {
                 Arrays.stream(this.getClass().getDeclaredFields())
                         .filter(field -> ISyncVar.class.isAssignableFrom(field.getType()))
                         .toArray(Field[]::new);
+
+        for (Field f : mFields) {
+            f.setAccessible(true);
+        }
 
         Field[] requestFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -69,6 +77,21 @@ public abstract class NetworkableComponent extends Component {
                 f.setAccessible(true);
                 ClientRequest<?> req = (ClientRequest<?>) f.get(this);
                 outRequests.add(req);
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        Field[] eventFields =
+                Arrays.stream(this.getClass().getDeclaredFields())
+                        .filter(field -> ServerEvent.class.isAssignableFrom(field.getType()))
+                        .toArray(Field[]::new);
+
+        try {
+            for (Field f : eventFields) {
+                f.setAccessible(true);
+                ServerEvent<?> req = (ServerEvent<?>) f.get(this);
+                outEvents.add(req);
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -106,87 +129,73 @@ public abstract class NetworkableComponent extends Component {
 
     protected void afterNetUpdate() {}
 
+    protected void onOwnerIdChange(int newId) {}
+
     /**
      * Reset the changed bitmask
      *
      * <p>Call this after every network update, once all clients had their state updated
      */
     void resetUpdateMask() {
-        for (int i = 0; i < mFieldsMask.length; i++) mFieldsMask[i] = false;
+        Arrays.fill(mFieldsMask, false);
     }
 
     /**
      * Serialize component.
      *
+     * @param stream the stream to write to
      * @param force whether to write all fields in
-     * @return the bytes of the component
      */
-    public byte[] serialize(boolean force) {
+    public void serialize(DataOutputStream stream, boolean force) throws IOException {
         int maskLength = this.mFields.length; // 1byte
-        ArrayList<Byte> mask = new ArrayList<>(maskLength);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            DataOutputStream stream = new DataOutputStream(bos);
-            for (int i = 0; i < this.mFields.length; i++) {
-                boolean didVarChange = this.mFieldsMask[i];
-                Field f = this.mFields[i];
-                if (didVarChange || force) {
-                    try {
-                        mask.add((byte) 1);
-                        ((ISyncVar) f.get(this)).serialize(stream);
-                    } catch (IllegalAccessException | IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    mask.add((byte) 0);
+        boolean[] mask = new boolean[maskLength];
+
+        for (int i = 0; i < mFields.length; i++) {
+            mask[i] = force || mFieldsMask[i];
+        }
+
+        byte[] byteMask = NetworkMessage.convertBoolArrayToBytes(mask);
+
+        stream.writeByte(byteMask.length);
+
+        for (byte b : byteMask) stream.writeByte(b);
+
+        for (int i = 0; i < this.mFields.length; i++) {
+            Field f = this.mFields[i];
+            if (mask[i]) {
+                try {
+                    ((ISyncVar) f.get(this)).serialize(stream);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
             }
-            stream.flush();
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-        ArrayList<Byte> payload = new ArrayList<>();
-        payload.add((byte) maskLength);
-        payload.addAll(mask);
-
-        for (byte b : bos.toByteArray()) {
-            payload.add(b);
-        }
-
-        return NetworkMessage.toByteArray(payload);
     }
 
     /**
-     * Serialize component.
+     * Update fields from a stream.
      *
-     * @return the bytes of the component
-     */
-    public byte[] serialize() {
-        return serialize(false);
-    }
-
-    /**
-     * Serialize fully byte, is this ran on spawn when the whole component needs creating.
-     *
-     * @return the bytes
-     */
-    public byte[] serializeFully() {
-        return serialize(true);
-    }
-
-    /**
-     * Update fields from bytes.
-     *
-     * @param payload the payload
+     * @param stream stream containing the payload
      * @throws IOException the io exception
      */
-    public void updateFromBytes(byte[] payload) throws IOException {
-        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
+    public void updateFromStream(DataInputStream stream) throws IOException {
+        int maskLength = stream.readByte();
         // cast to one byte
-        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, MASK_OFFSET);
-        updateSyncVarsFromBytes(masks, payload, MASK_OFFSET + maskLength);
+        boolean[] mask = NetworkMessage.getMaskFromBytes(IOUtils.readNBytes(stream, maskLength));
+
+        for (int i = 0; i < mask.length && i < mFields.length; i++) {
+            if (mask[i]) {
+                try {
+                    Field field = this.mFields[i];
+                    ISyncVar obj = (ISyncVar) field.get(this);
+                    obj.deserialize(stream);
+                } catch (Exception e) {
+                    log.fine("Failed to deserialize " + this.mFields[i].getName());
+                    e.printStackTrace();
+                }
+            }
+        }
+
         afterNetUpdate();
     }
 
@@ -237,36 +246,6 @@ public abstract class NetworkableComponent extends Component {
                 + ", fields="
                 + fieldsString
                 + '}';
-    }
-
-    /**
-     * Gets contents from bytes.
-     *
-     * @param mask the mask
-     * @param buff the buff
-     * @param offset the offset
-     * @throws IOException the io exception
-     */
-    private void updateSyncVarsFromBytes(boolean[] mask, byte[] buff, int offset)
-            throws IOException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        final long didSkip = bis.skip(offset);
-
-        DataInputStream stream = new DataInputStream(bis);
-
-        if (didSkip != offset) return;
-        for (int i = 0; i < mask.length && i < mFields.length; i++) {
-            if (mask[i]) {
-                try {
-                    Field field = this.mFields[i];
-                    ISyncVar obj = (ISyncVar) field.get(this);
-                    obj.deserialize(stream);
-                } catch (Exception e) {
-                    log.fine("Failed to deserialize " + this.mFields[i].getName());
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     /**

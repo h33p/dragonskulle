@@ -16,8 +16,10 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
+import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
@@ -45,9 +47,35 @@ public class App implements NativeResource {
     private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
 
+    private static void addDebugUI(Scene scene) {
+        GameObject debugUI =
+                new GameObject(
+                        "debugUI",
+                        new TransformUI(true),
+                        (handle) -> {
+                            handle.getTransform(TransformUI.class)
+                                    .setParentAnchor(0.0f, 1f, 0.5f, 1f);
+                            handle.getTransform(TransformUI.class).setMargin(0f, -0.3f, 0f, 0f);
+                            handle.getTransform(TransformUI.class).setPivotOffset(0f, 1f);
+                            handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
+                        });
+
+        scene.addRootObject(debugUI);
+    }
+
     private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
+
+        addDebugUI(mainScene);
+
+        mainScene.addRootObject(
+                new GameObject(
+                        "light",
+                        (light) -> {
+                            light.addComponent(new Light());
+                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, 0f);
+                        }));
 
         GameObject cameraRig =
                 new GameObject(
@@ -55,6 +83,7 @@ public class App implements NativeResource {
                         (rig) -> {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
                             rig.addComponent(keyboardMovement);
+                            rig.addComponent(new TargetMovement());
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
 
@@ -79,6 +108,7 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
+                                                    camera.addComponent(new FogOfWar());
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);
@@ -120,7 +150,8 @@ public class App implements NativeResource {
                             "hostGameUI",
                             new TransformUI(false),
                             (root) -> {
-                                root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                                // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
+                                // 0.1f)));
                                 root.getTransform(TransformUI.class).setParentAnchor(0f);
                                 root.buildChild(
                                         "populate_with_ai",
@@ -162,6 +193,8 @@ public class App implements NativeResource {
 
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
+
+        addDebugUI(mainMenu);
 
         TemplateManager templates = new TemplateManager();
 
@@ -462,15 +495,16 @@ public class App implements NativeResource {
                                                                             onConnectedClient(
                                                                                     gameScene,
                                                                                     manager, netID);
-                                                                        } else if (connectingTextRef
-                                                                                .isValid()) {
+                                                                        } else if (Reference
+                                                                                .isValid(
+                                                                                        connectingTextRef)) {
                                                                             connectingTextRef
                                                                                     .get()
                                                                                     .setEnabled(
                                                                                             false);
                                                                         }
                                                                     });
-                                                    if (connectingTextRef.isValid())
+                                                    if (Reference.isValid(connectingTextRef))
                                                         connectingTextRef.get().setEnabled(true);
                                                 });
                                 button.addComponent(newButton);
@@ -636,8 +670,6 @@ public class App implements NativeResource {
     private void onClientConnected(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("cube"));
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("capital"));
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 

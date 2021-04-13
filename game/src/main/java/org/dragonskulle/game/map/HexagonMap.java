@@ -9,8 +9,14 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.Building;
+import org.dragonskulle.input.Actions;
+import org.dragonskulle.input.Cursor;
+import org.dragonskulle.renderer.components.Camera;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
 
 /**
  * @author Leela Muppala and Craig Wilbourne
@@ -36,12 +42,11 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     public HexagonMap(int size) {
         this.mSize = size;
 
-        if (size < 0) {
-            size = 0;
-            log.warning("The size should be greater than 0");
+        if (size <= 0) {
+            throw new RuntimeException("The size must be greater than 0");
         }
 
-        mTiles = new HexagonTileStore(mSize);
+        mTiles = new HexagonTileStore(mSize, 3);
     }
 
     /**
@@ -65,59 +70,6 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * @deprecated Use {@link HexagonTile}{@code .getBuilding()} instead.
-     *     <p>Get the building at the specified position, or {@code null} if the building does not
-     *     exist.
-     * @param q The q coordinate.
-     * @param r The r coordinate.
-     * @return The building, or {@code null} if there is no building at that position.
-     */
-    public Building getBuilding(int q, int r) {
-        HexagonTile tile = getTile(q, r);
-
-        if (tile == null) return null;
-
-        return tile.getBuilding();
-    }
-
-    /**
-     * @deprecated This is now done within each {@link Building}.
-     *     <p>Store a reference to the {@link Building} at the specified position.
-     * @param building The Building to be stored.
-     * @param q The q coordinate.
-     * @param r The r coordinate.
-     * @return {@code true} if the building was stored. {@code false} if coordinate was invalid, or
-     *     building already exists at the location (remove it first).
-     */
-    public boolean storeBuilding(Building building, int q, int r) {
-        HexagonTile tile = getTile(q, r);
-
-        if (tile == null || tile.getBuilding() != null) return false;
-
-        tile.setBuilding(building);
-
-        return true;
-    }
-
-    /**
-     * @deprecated This should be done directly via {@link Building#remove()}.
-     *     <p>Stop storing the reference to the Building at the specified position.
-     *     <p>Stores {@code null} at the position instead.
-     * @param q The q coordinate.
-     * @param r The r coordinate.
-     * @return {@code true} if tile was valid, {@code false} otherwise.
-     */
-    public boolean removeBuilding(int q, int r) {
-        HexagonTile tile = getTile(q, r);
-
-        if (tile == null) return false;
-
-        tile.setBuilding(null);
-
-        return true;
-    }
-
-    /**
      * Get all of the {@link HexagonTile}s in a radius around the selected tile. If {@code
      * includeTile} is {@code true}, the selected tile will be included in the list.
      *
@@ -129,10 +81,36 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      */
     public ArrayList<HexagonTile> getTilesInRadius(
             HexagonTile tile, int radius, boolean includeTile) {
-        ArrayList<HexagonTile> tiles = getTilesInRadius(tile, radius);
-        if (tile != null && includeTile) {
-            tiles.add(tile);
+        return getTilesInRadius(tile.getQ(), tile.getR(), radius, includeTile);
+    }
+
+    public ArrayList<HexagonTile> getTilesInRadius(
+            int q, int r, int radius, boolean includeCentre) {
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+
+        // Get the tile's q and r coordinates.
+        int qCentre = q;
+        int rCentre = r;
+
+        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
+            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
+                // Only get tiles whose s coordinates are within the desired range.
+                int sOffset = -qOffset - rOffset;
+
+                // Do not include tiles outside of the radius.
+                if (sOffset > radius || sOffset < -radius) continue;
+                // Do not include the building's HexagonTile.
+                if (!includeCentre && qOffset == 0 && rOffset == 0) continue;
+
+                // Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = getTile(qCentre + qOffset, rCentre + rOffset);
+                if (selectedTile == null) continue;
+
+                // Add the tile to the list.
+                tiles.add(selectedTile);
+            }
         }
+
         return tiles;
     }
 
@@ -146,33 +124,82 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      *     an empty ArrayList.
      */
     public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-        if (tile == null) return tiles;
+        return getTilesInRadius(tile, radius, false);
+    }
 
-        // Get the tile's q and r coordinates.
-        int qCentre = tile.getQ();
-        int rCentre = tile.getR();
+    public HexagonTile cursorToTile() {
+        Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
+        if (mainCam == null) return null;
 
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (qOffset == 0 && rOffset == 0) continue;
+        // Retrieve scaled screen coordinates
+        Cursor cursor = Actions.getCursor();
 
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = getTile(qCentre + qOffset, rCentre + rOffset);
-                if (selectedTile == null) continue;
+        if (cursor == null) return null;
 
-                // Add the tile to the list.
-                tiles.add(selectedTile);
+        Vector2fc screenPos = cursor.getPosition();
+
+        // Convert those coordinates to local coordinates within the map
+        Vector3f pos =
+                mainCam.screenToPlane(
+                        getGameObject().getTransform(),
+                        screenPos.x(),
+                        screenPos.y(),
+                        new Vector3f());
+
+        Vector2f axial = new Vector2f();
+
+        // Convert those coordinates to axial
+        TransformHex.cartesianToAxial(pos, axial);
+        // And round them
+        TransformHex.roundAxial(axial, pos);
+
+        HexagonTile closestTile = null;
+        float closestDistance = 1e30f;
+
+        ArrayList<HexagonTile> tiles = getTilesInRadius((int) axial.x, (int) axial.y, 4, true);
+
+        Vector3f va = new Vector3f();
+        Vector3f vb = new Vector3f();
+        Vector3f camPos = mainCam.getGameObject().getTransform().getPosition();
+
+        tiles.sort(
+                (a, b) ->
+                        Float.compare(
+                                a.getGameObject()
+                                        .getTransform()
+                                        .getPosition(va)
+                                        .distanceSquared(camPos),
+                                b.getGameObject()
+                                        .getTransform()
+                                        .getPosition(vb)
+                                        .distanceSquared(camPos)));
+
+        for (HexagonTile tile : tiles) {
+            float dist = cursorDistanceFromCenter(tile, mainCam, screenPos, pos);
+            if (dist < closestDistance) {
+                closestDistance = dist;
+                closestTile = tile;
+
+                if (dist <= TransformHex.HEX_SIZE) return closestTile;
             }
         }
 
-        return tiles;
+        return closestTile;
+    }
+
+    private float cursorDistanceFromCenter(
+            HexagonTile tile, Camera cam, Vector2fc screenPos, Vector3f pos) {
+        pos =
+                cam.screenToPlane(
+                        tile.getGameObject().getTransform(), screenPos.x(), screenPos.y(), pos);
+
+        Vector2f axial = new Vector2f();
+
+        // Convert those coordinates to axial
+        TransformHex.cartesianToAxial(pos, axial);
+
+        return (Math.abs(axial.x) + Math.abs(axial.y) + Math.abs(-axial.x - axial.y));
     }
 
     @Override

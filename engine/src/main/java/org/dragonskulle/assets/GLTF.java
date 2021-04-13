@@ -258,6 +258,39 @@ public class GLTF implements NativeResource {
     private int mDefaultScene = 0;
     private List<Scene> mScenes = new ArrayList<>();
     private List<Camera> mCameras = new ArrayList<>();
+    private List<Light> mLights = new ArrayList<>();
+
+    static {
+        ResourceManager.registerResource(
+                GLTF.class,
+                (args) -> String.format("gltf/%s.gltf", args.getName()),
+                (buffer, __) -> new GLTF(new String(buffer)));
+    }
+
+    /**
+     * Load a GLTF resource
+     *
+     * @param name name of the glTF file. gltf subdirectory will be added, alongside the .gltf
+     *     extension.
+     * @return GLTF resource if successfully loaded, {@code null} otherwise
+     */
+    public static Resource<GLTF> getResource(String name) {
+        return ResourceManager.getResource(GLTF.class, name);
+    }
+
+    /**
+     * Parses a floating point variable from JSON object
+     *
+     * @param obj JSON to parse from
+     * @param key JSON key to read
+     * @param defaultValue default float value
+     * @return parsed float value (defaultValue if failed to parse).
+     */
+    private static boolean parseBool(JSONObject obj, String key, boolean defaultValue) {
+        Object val = obj.get(key);
+        if (val != null) return Boolean.parseBoolean(val.toString());
+        return defaultValue;
+    }
 
     /**
      * Parses a floating point variable from JSON object
@@ -341,6 +374,7 @@ public class GLTF implements NativeResource {
         if (images != null) {
             for (Object image : images) {
                 String uri = (String) ((JSONObject) image).get("uri");
+                if (uri.startsWith("../textures/")) uri = uri.replaceFirst("../textures/", "");
                 loadedImages.add(Texture.getResource(uri));
             }
         }
@@ -386,6 +420,9 @@ public class GLTF implements NativeResource {
                 float roughness = 1f;
                 baseColor.set(1f);
                 SampledTexture baseSampled = null;
+                SampledTexture metallicSampled = null;
+
+                String alphaMode = (String) mat.get("alphaMode");
 
                 JSONObject rough = (JSONObject) mat.get("pbrMetallicRoughness");
                 if (rough != null) {
@@ -403,6 +440,13 @@ public class GLTF implements NativeResource {
                         if (texIdx != null) baseSampled = texs.get(texIdx);
                     }
 
+                    JSONObject metalTex = (JSONObject) rough.get("metallicRoughnessTexture");
+
+                    if (metalTex != null) {
+                        Integer texIdx = parseInt(metalTex, "index");
+                        if (texIdx != null) metallicSampled = texs.get(texIdx);
+                    }
+
                     metallic = parseFloat(rough, "metallicFactor", 1f);
                     roughness = parseFloat(rough, "roughnessFactor", 1f);
                 }
@@ -418,8 +462,22 @@ public class GLTF implements NativeResource {
                 }
 
                 PBRMaterial pbrMat = new PBRMaterial(baseColor);
-                if (baseSampled != null) pbrMat.getFragmentTextures()[0] = baseSampled.clone();
-                if (normalSampled != null) pbrMat.getFragmentTextures()[1] = normalSampled.clone();
+
+                if (alphaMode != null) {
+                    switch (alphaMode) {
+                        case "BLEND":
+                            pbrMat.setAlphaBlend(true);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                if (baseSampled != null) pbrMat.setAlbedoMap(baseSampled);
+                if (normalSampled != null) pbrMat.setNormalMap(normalSampled);
+                if (metallicSampled != null) {
+                    pbrMat.setMetalnessRoughnessMap(metallicSampled);
+                }
                 pbrMat.setMetallic(metallic);
                 pbrMat.setRoughness(roughness);
                 pbrMat.setNormal(normal);
@@ -436,7 +494,7 @@ public class GLTF implements NativeResource {
                 JSONObject buf = (JSONObject) obj;
                 bufferList.add(
                         ResourceManager.getResource(
-                                byte[].class, (b) -> b, "gltf/" + (String) buf.get("uri")));
+                                byte[].class, "gltf/" + (String) buf.get("uri")));
             }
         }
 
@@ -574,6 +632,42 @@ public class GLTF implements NativeResource {
             }
         }
 
+        JSONObject extensions = (JSONObject) decoded.get("extensions");
+        if (extensions != null) {
+            JSONObject khrLights = (JSONObject) extensions.get("KHR_lights_punctual");
+            if (khrLights != null) {
+                JSONArray lights = (JSONArray) khrLights.get("lights");
+                if (lights != null) {
+                    for (Object obj : lights) {
+                        JSONObject light = (JSONObject) obj;
+
+                        Light addLight = new Light();
+
+                        addLight.setIntensity(parseFloat(light, "intensity", 1f));
+
+                        String type = (String) light.get("type");
+
+                        switch (type) {
+                            default:
+                                break;
+                        }
+
+                        JSONArray col = (JSONArray) light.get("color");
+
+                        if (col != null) {
+                            addLight.getColour()
+                                    .set(
+                                            parseFloat(col.get(0)),
+                                            parseFloat(col.get(1)),
+                                            parseFloat(col.get(2)));
+                        }
+
+                        mLights.add(addLight);
+                    }
+                }
+            }
+        }
+
         JSONArray nodes = (JSONArray) decoded.get("nodes");
 
         mDefaultScene = parseInt(decoded, "scene", 0);
@@ -641,10 +735,15 @@ public class GLTF implements NativeResource {
 
         JSONObject extensions = (JSONObject) node.get("extensions");
         JSONObject gameObj;
+        JSONObject lights;
 
         if (extensions != null) {
             gameObj = (JSONObject) extensions.get("DSKULLE_game_object");
-        } else gameObj = null;
+            lights = (JSONObject) extensions.get("KHR_lights_punctual");
+        } else {
+            gameObj = null;
+            lights = null;
+        }
 
         String transformType = gameObj != null ? (String) gameObj.get("transform") : null;
 
@@ -673,7 +772,12 @@ public class GLTF implements NativeResource {
                             Integer camera = parseInt(node, "camera");
                             if (camera != null) handle.addComponent(mCameras.get(camera));
 
-                            // TODO: parse lights
+                            if (lights != null) {
+                                Integer lidx = parseInt(lights, "light");
+                                if (lidx != null && lidx >= 0 && mLights.size() > lidx) {
+                                    handle.addComponent(mLights.get(lidx));
+                                }
+                            }
 
                             if (gameObj != null) {
                                 JSONArray comps = (JSONArray) gameObj.get("components");
@@ -770,6 +874,10 @@ public class GLTF implements NativeResource {
                     assignComponentField(comp, name, value);
                 }
             }
+
+            boolean enabled = parseBool(component, "enabled", true);
+
+            comp.setEnabled(enabled);
 
             gameObject.addComponent(comp);
         } catch (ClassNotFoundException e) {
@@ -888,29 +996,6 @@ public class GLTF implements NativeResource {
      */
     public Scene getScene(String name) {
         return mScenes.stream().filter(s -> s.getName().equals(name)).findFirst().orElse(null);
-    }
-
-    /**
-     * Load a GLTF resource
-     *
-     * @param name name of the glTF file. gltf subdirectory will be added, alongside the .gltf
-     *     extension.
-     * @return GLTF resource if successfully loaded, {@code null} otherwise
-     */
-    public static Resource<GLTF> getResource(String name) {
-        name = String.format("gltf/%s.gltf", name);
-
-        return ResourceManager.getResource(
-                GLTF.class,
-                (buffer) -> {
-                    try {
-                        return new GLTF(new String(buffer));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                },
-                name);
     }
 
     @Override

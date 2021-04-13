@@ -22,6 +22,10 @@ public class MathUtils {
         return start + (end - start) * time;
     }
 
+    public static float clamp(float val, float min, float max) {
+        return Math.min(Math.max(val, min), max);
+    }
+
     /**
      * Calculate a logarithm in specified base
      *
@@ -30,6 +34,26 @@ public class MathUtils {
      */
     public static int log(int val, int base) {
         return (int) (Math.log(val) / Math.log(base));
+    }
+
+    /**
+     * Round a number down to the lower power of two.
+     *
+     * @param n number to round down
+     * @return rounded down number
+     */
+    public static int roundDownToPow2(int n) {
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n++;
+        return n >> 1;
+    }
+
+    public static float roundStep(float val, float step) {
+        return Math.round(val / step) * step;
     }
 
     public static double mapOneRangeToAnother(

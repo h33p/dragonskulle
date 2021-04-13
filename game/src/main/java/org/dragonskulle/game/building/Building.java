@@ -2,6 +2,8 @@
 package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -11,12 +13,8 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.building.stat.SyncAttackDistanceStat;
-import org.dragonskulle.game.building.stat.SyncAttackStat;
-import org.dragonskulle.game.building.stat.SyncDefenceStat;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
-import org.dragonskulle.game.building.stat.SyncTokenGenerationStat;
-import org.dragonskulle.game.building.stat.SyncViewDistanceStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
@@ -34,35 +32,34 @@ import org.joml.Vector3i;
  *
  * <p>The owner of the Building also needs to be set via {@link NetworkObject#setOwnerId}.
  *
- * <p>The building needs to be added to the relevant {@link HexagonTile} (which can be done via
- * {@link HexagonMap#storeBuilding(Building, int, int)}).
- *
  * @author Craig Wilbourne
  */
 @Accessors(prefix = "m")
 @Log
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
+    /** A map between {@link StatType}s and their {@link SyncStat} values. */
+    EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
+
     /** Stores the attack strength of the building. */
-    @Getter public final SyncAttackStat mAttack = new SyncAttackStat(this);
+    @Getter private final SyncStat mAttack = new SyncStat(this);
     /** Stores the defence strength of the building. */
-    @Getter public final SyncDefenceStat mDefence = new SyncDefenceStat(this);
+    @Getter private final SyncStat mDefence = new SyncStat(this);
     /** Stores how many tokens the building can generate in one go. */
-    @Getter
-    public final SyncTokenGenerationStat mTokenGeneration = new SyncTokenGenerationStat(this);
+    @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
     /** Stores the view range of the building. */
-    @Getter public final SyncViewDistanceStat mViewDistance = new SyncViewDistanceStat(this);
+    @Getter private final SyncStat mViewDistance = new SyncStat(this);
     /** Stores the attack range of the building. */
-    @Getter public final SyncAttackDistanceStat mAttackDistance = new SyncAttackDistanceStat(this);
+    @Getter private final SyncStat mAttackDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
-    public final SyncBool mIsCapital = new SyncBool(false);
+    private final SyncBool mIsCapital = new SyncBool(false);
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
 
     /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
-    @Getter private ArrayList<HexagonTile> mViewableTiles = new ArrayList<HexagonTile>();
+    @Getter private HashSet<HexagonTile> mViewableTiles = new HashSet<HexagonTile>();
 
     /**
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
@@ -74,6 +71,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
+    /** Store the {@link HexagonMap} that the {@link Building} is on. */
+    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
@@ -82,17 +82,41 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onAwake() {
-        // For debugging, set all stat levels to 5.
-        // TODO: Remove.
-        mAttack.setLevel(5);
-        mDefence.setLevel(5);
-        mTokenGeneration.setLevel(5);
-        mViewDistance.setLevel(5);
-        mAttackDistance.setLevel(5);
+        // Initialise each SyncStat with the relevant StatType.
+        initiliseStat(mAttack, StatType.ATTACK);
+        initiliseStat(mDefence, StatType.DEFENCE);
+        initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
+        initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
+        initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
+    }
+
+    @Override
+    public void onOwnerIdChange(int newId) {
+        Player owningPlayer = getOwner();
+        if (owningPlayer != null) owningPlayer.removeOwnership(this);
+        Player newOwningPlayer = getOwner(newId);
+        if (newOwningPlayer == null) {
+            log.severe("New owner is null!");
+            return;
+        }
+        newOwningPlayer.addOwnership(this);
     }
 
     @Override
     public void onStart() {
+        // Store the map.
+        HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
+        if (checkingMapExists == null) {
+            log.severe("Scene Map is null");
+        } else {
+            Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
+            if (Reference.isValid(mapCheck)) {
+                mMap = mapCheck;
+            } else {
+                log.severe("mapCheck is null.");
+            }
+        }
+
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
         if (owningPlayer != null) owningPlayer.addOwnership(this);
@@ -156,9 +180,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
-        mViewableTiles = map.getTilesInRadius(getTile(), distance);
-        // View the tile the building is on.
-        mViewableTiles.add(getTile());
+        mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
     }
 
     /**
@@ -193,8 +215,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         final int maxValue = 1000;
 
         // Get the attacker and defender's stats.
-        int attack = mAttack.getValue();
-        int defence = opponent.mDefence.getValue();
+        int attack = getAttack().getValue();
+        int defence = opponent.getDefence().getValue();
 
         // Stores the highest result of rolling a dice a set number of times, defined by the attack
         // stat.
@@ -216,7 +238,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         for (int i = 1; i < defence; i++) {
             int value = (int) (Math.random() * (maxValue) + 1);
             // Store the highest value achieved.
-            if (value > defence) {
+            if (value > highestDefence) {
                 highestDefence = value;
             }
         }
@@ -250,8 +272,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             if (building == null) continue;
 
             // Ensure the building is not owned by the owner of this building.
-            if (getOwnerID() == building.getOwnerID()) {
-                log.info("Building owned by same player.");
+            if (getOwnerId() == building.getOwnerId()) {
+                log.fine("Building owned by same player.");
                 continue;
             }
 
@@ -322,23 +344,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The map.
      */
     private HexagonMap getMap() {
-        return Scene.getActiveScene().getSingleton(HexagonMap.class);
-    }
-
-    /**
-     * Get an ArrayList of Stats that the Building has.
-     *
-     * @return An ArrayList of Stats.
-     */
-    public ArrayList<SyncStat<?>> getStats() {
-        ArrayList<SyncStat<?>> stats = new ArrayList<SyncStat<?>>();
-        stats.add(mAttack);
-        stats.add(mDefence);
-        stats.add(mTokenGeneration);
-        stats.add(mViewDistance);
-        stats.add(mAttackDistance);
-
-        return stats;
+        return mMap.get();
     }
 
     /**
@@ -346,7 +352,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      *
      * @return The ID of the owner.
      */
-    public int getOwnerID() {
+    public int getOwnerId() {
         return getNetworkObject().getOwnerId();
     }
 
@@ -356,12 +362,21 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The owning player, or {@code null}.
      */
     public Player getOwner() {
+        return getOwner(getNetworkObject().getOwnerId());
+    }
+
+    /**
+     * Get the {@link Player} which owns the {@link Building}.
+     *
+     * @param ownerId target owner ID
+     * @return The owning player, or {@code null}.
+     */
+    private Player getOwner(int ownerId) {
         return getNetworkObject()
                 .getNetworkManager()
-                .getObjectsOwnedBy(getNetworkObject().getOwnerId())
+                .getObjectsOwnedBy(ownerId)
                 .map(NetworkObject::getGameObject)
                 .map(go -> go.getComponent(Player.class))
-                .filter(ref -> ref != null)
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .findFirst()
@@ -389,12 +404,18 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * // TODO: Ensure this is correct.
+     * Remove this building from the game.
      *
-     * <p>Remove this building from the {@link Player} who owns the building and references to it in
-     * any {@link HexagonTile}s.
+     * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     *   <li>Calls {@link GameObject#destroy()}.
+     * </ul>
      */
     public void remove() {
+        // Remove the ownership of the building from the owner.
+        getOwner().removeOwnership(this);
+
         // Remove the building from the tile.
         getTile().setBuilding(null);
 
@@ -404,12 +425,88 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         // Reset the list of claimed, viewable and attackable tiles.
-        mClaimedTiles = new ArrayList<HexagonTile>();
-        mViewableTiles = new ArrayList<HexagonTile>();
-        mAttackableTiles = new ArrayList<HexagonTile>();
+        mClaimedTiles.clear();
+        mViewableTiles.clear();
+        mAttackableTiles.clear();
 
-        // TODO: Request that the building should be destroyed.
-        // destroy();
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
+    }
+
+    /**
+     * This will create and return a base cost for attacking
+     *
+     * @return The cost for attacking
+     */
+    public int getAttackCost() {
+
+        // Base cost
+        int cost = 20;
+
+        // Update cost on different stats
+        cost += (mDefence.getLevel() * 3);
+        cost += (mAttack.getLevel() * 2);
+        cost += (mTokenGeneration.getLevel());
+        cost += (mViewDistance.getLevel());
+        cost += (mAttackDistance.getLevel());
+
+        if (isCapital()) {
+            cost += 10;
+        }
+
+        return cost;
+    }
+
+    /**
+     * Initialise a {@link SyncStat} via specifying a {@link StatType}. The SyncStat will take on
+     * the properties of the StatType, and be stored in {@link #mStats} under the StatType.
+     *
+     * @param stat The SyncStat.
+     * @param type The type of stat the SyncStat should be.
+     */
+    private void initiliseStat(SyncStat stat, StatType type) {
+        // Set the value calculator of the SyncStat.
+        stat.setValueCalculator(type.getValueCalculator());
+        // Store the stat.
+        storeStat(type, stat);
+    }
+
+    /**
+     * Store a {@link SyncStat} in {@link #mStats} using a {@link StatType} as the key.
+     *
+     * @param type The type of stat to be stored.
+     * @param stat The relevant SyncStat.
+     */
+    private void storeStat(StatType type, SyncStat stat) {
+        if (type == null || stat == null) {
+            log.warning("Unable to store stat: type or SyncStat is null.");
+            return;
+        }
+        mStats.put(type, stat);
+    }
+
+    /**
+     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant type.
+     *
+     * @param type The type of the desired stat.
+     * @return The SyncStat, otherwise {@code null}.
+     */
+    public SyncStat getStat(StatType type) {
+        if (type == null) {
+            log.warning("Unable to get stat: type is null.");
+            return null;
+        }
+        return mStats.get(type);
+    }
+
+    /**
+     * Get an {@link ArrayList} of {@link SyncStat}s that the Building has.
+     *
+     * @return An ArrayList of Stats.
+     */
+    public ArrayList<SyncStat> getStats() {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>(mStats.values());
+        return stats;
     }
 
     @Override

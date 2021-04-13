@@ -16,6 +16,12 @@ public class Action {
     /** Whether the action is currently activated. */
     private Boolean mActivated = false;
 
+    /** Whether the action has been activated this frame. */
+    private Boolean mJustActivated = false;
+
+    /** Whether the action has been <b>de</b>activated this frame. */
+    private Boolean mJustDeactivated = false;
+
     /** Create a new (unnamed) action. */
     public Action() {}
 
@@ -44,7 +50,65 @@ public class Action {
      * @param activated Whether the action should be activated.
      */
     void setActivated(boolean activated) {
+        if (mActivated == false && activated == true) {
+            // If the action is currently false and it will become true, this shows the action has
+            // just been activated.
+            setJustActivated(true);
+        } else if (mActivated == true && activated == false) {
+            // If the action is currently true and it will become false, this shows the action has
+            // just been deactivated.
+            setJustDeactivated(true);
+        }
+
         mActivated = activated;
+    }
+
+    /**
+     * Get whether the action has been activated this frame.
+     *
+     * @return {@code true} if the action was activated this frame, otherwise {@code false}.
+     */
+    public boolean isJustActivated() {
+        return mJustActivated;
+    }
+
+    /**
+     * Set whether the action has just been activated this frame.
+     *
+     * <p>If the action has just been activated- so {@code activated} is {@code true}- the {@link
+     * Action} will be added to {@link Actions}' list of just activated actions.
+     *
+     * @param activated Whether the action has been activated this frame.
+     */
+    void setJustActivated(boolean activated) {
+        if (activated == true) {
+            Actions.addJustActivated(this);
+        }
+        mJustActivated = activated;
+    }
+
+    /**
+     * Get whether the action has been deactivated this frame.
+     *
+     * @return {@code true} if the action was deactivated this frame, otherwise {@code false}.
+     */
+    public boolean isJustDeactivated() {
+        return mJustDeactivated;
+    }
+
+    /**
+     * Set whether the action has just been deactivated this frame.
+     *
+     * <p>If the action has just been deactivated- so {@code deactivated} is {@code true}- the
+     * {@link Action} will be added to {@link Actions}' list of just deactivated actions.
+     *
+     * @param deactivated Whether the action has been deactivated this frame.
+     */
+    void setJustDeactivated(boolean deactivated) {
+        if (deactivated == true) {
+            Actions.addJustDeactivated(this);
+        }
+        mJustDeactivated = deactivated;
     }
 
     @Override

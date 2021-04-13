@@ -1,36 +1,45 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player.networkData;
+package org.dragonskulle.game.player.network_data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * The Class which holds the data to be sent for upgrading stats
+ * The Class which holds the data so buildings can be sold
  *
- * @author low101043
+ * @author DragonSkulle
  */
-@Accessors(prefix = "m")
-public class StatData implements INetSerializable {
-
-    private SyncStat<?> mStat;
+public final class SellData implements INetSerializable {
 
     private int mQ;
     private int mR;
 
-    public StatData() {}
+    public SellData() {}
 
-    public StatData(Building building, SyncStat<?> stat) {
-        if (building == null) return;
+    /**
+     * The Constructor
+     *
+     * @param toSell The building to sell
+     */
+    public SellData(Building toSell) {
+        setData(toSell);
+    }
 
-        mQ = building.getTile().getQ();
-        mR = building.getTile().getR();
+    /**
+     * Sets the request's data
+     *
+     * @param toSell The building to sell
+     */
+    public void setData(Building toSell) {
+        HexagonTile tileToSell = toSell.getTile();
+
+        mQ = tileToSell.getQ();
+        mR = tileToSell.getR();
     }
 
     @Override
@@ -45,12 +54,8 @@ public class StatData implements INetSerializable {
         mR = stream.readInt();
     }
 
-    public HexagonTile getTile(HexagonMap map) {
-        return map.getTile(mQ, mR);
-    }
-
     public Building getBuilding(HexagonMap map) {
-        if (getTile(map) == null) return null;
-        return getTile(map).getBuilding();
+        HexagonTile tile = map.getTile(mQ, mR);
+        return tile == null ? null : tile.getBuilding();
     }
 }

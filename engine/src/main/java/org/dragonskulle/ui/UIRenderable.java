@@ -2,10 +2,12 @@
 package org.dragonskulle.ui;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
@@ -40,6 +42,8 @@ public class UIRenderable extends Renderable implements IOnAwake {
      * scale bounds.
      */
     @Getter @Setter private float mWidthHeightBlend = 0f;
+
+    @Getter @Setter private float mDepthShift = 0f;
 
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
@@ -93,20 +97,20 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     @Override
-    public void writeVertexInstanceData(int offset, ByteBuffer buffer) {
+    public void writeVertexInstanceData(int offset, ByteBuffer buffer, List<Light> lights) {
         mMaterial.writeVertexInstanceData(
-                offset, buffer, getGameObject().getTransform().getWorldMatrix());
+                offset, buffer, getGameObject().getTransform().getWorldMatrix(), lights);
     }
 
     @Override
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
-        return (float) -getGameObject().getDepth();
+        return (float) -getGameObject().getDepth() + mDepthShift;
     }
 
     public boolean cursorOver() {
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2f cursorCoords = UIManager.getInstance().getScaledCursorCoords();
+        Vector2f cursorCoords = Actions.getCursor().getPosition();
 
         mTmpMatrix.invert();
 

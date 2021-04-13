@@ -22,7 +22,7 @@ import org.lwjgl.system.NativeResource;
 /** @author Oscar L */
 @Log
 public class ServerTest {
-    private static final long TIMEOUT = 8;
+    private static final long TIMEOUT = 1;
 
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
     private static final Scene CLIENT_NETMAN_SCENE = new Scene("client_netman_test");
@@ -85,16 +85,21 @@ public class ServerTest {
         private boolean mShouldExit;
         private int mPort;
 
+        private Throwable toThrow = null;
+
         public TestContext(int port) {
             mPort = port;
         }
 
-        public synchronized void run(Runnable runnable) {
+        public synchronized void run(Runnable runnable) throws Throwable {
             mTestThread =
                     new Thread(
                             () -> {
-                                runnable.run();
-                                mShouldExit = true;
+                                try {
+                                    runnable.run();
+                                } finally {
+                                    mShouldExit = true;
+                                }
                             });
             mEngineLock.lock();
 
@@ -118,6 +123,10 @@ public class ServerTest {
                         assertTrue(netid >= 0);
                     });
 
+            mTestThread.setUncaughtExceptionHandler(
+                    (t, e) -> {
+                        toThrow = e;
+                    });
             mTestThread.start();
 
             Engine.getInstance().loadScene(CLIENT_NETMAN_SCENE, true);
@@ -126,8 +135,11 @@ public class ServerTest {
 
             try {
                 mTestThread.join();
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+
+            if (toThrow != null) throw toThrow;
         }
 
         private boolean shouldExit() {
@@ -226,17 +238,55 @@ public class ServerTest {
                                 return ret;
                             });
         }
+
+        private void testCanDestroy() {
+            testCapitalSpawnDefaultServer();
+            Capital cap = getServerComponent(Capital.class).get();
+            mEngineLock.lock();
+            cap.getGameObject()
+                    .addComponent(new LambdaOnStart(() -> cap.getGameObject().destroy()));
+            mEngineLock.unlock();
+            await().atMost(TIMEOUT, SECONDS)
+                    .until(
+                            () -> {
+                                mEngineLock.lock();
+                                boolean ret = getClientComponent(Capital.class) == null;
+                                mEngineLock.unlock();
+                                return ret;
+                            });
+        }
+
+        private void testSetOwnerId() {
+            testCapitalSpawnDefaultServer();
+            Capital cap = getServerComponent(Capital.class).get();
+            Capital clientCap = getClientComponent(Capital.class).get();
+            mEngineLock.lock();
+            int ownerId = cap.getNetworkObject().getOwnerId();
+            int clientOwnerId = clientCap.getNetworkObject().getOwnerId();
+            cap.getNetworkObject().setOwnerId(ownerId + 1);
+            assert (ownerId != cap.getNetworkObject().getOwnerId());
+            mEngineLock.unlock();
+            assert (ownerId == clientOwnerId);
+            await().atMost(TIMEOUT, SECONDS)
+                    .until(
+                            () -> {
+                                mEngineLock.lock();
+                                boolean ret = clientCap.getNetworkObject().getOwnerId() != ownerId;
+                                mEngineLock.unlock();
+                                return ret;
+                            });
+        }
     }
 
     @Test
-    public void testCapitalSpawnedServer() {
+    public void testCapitalSpawnedServer() throws Throwable {
         try (TestContext ctx = new TestContext(7002)) {
             ctx.run(ctx::testCapitalSpawnDefaultServer);
         }
     }
 
     @Test
-    public void testCapitalUpdatedServer() {
+    public void testCapitalUpdatedServer() throws Throwable {
         try (TestContext ctx = new TestContext(7003)) {
             ctx.run(
                     () -> {
@@ -273,7 +323,7 @@ public class ServerTest {
     }
 
     @Test
-    public void testCapitalUpdatedClient() {
+    public void testCapitalUpdatedClient() throws Throwable {
         try (TestContext ctx = new TestContext(7005)) {
             ctx.run(
                     () -> {
@@ -311,9 +361,32 @@ public class ServerTest {
     }
 
     @Test
-    public void testComponentCanSubmitActionRequest() {
+    public void testComponentCanSubmitActionRequest() throws Throwable {
         try (TestContext ctx = new TestContext(7006)) {
             ctx.run(ctx::testSubmitRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Test
+    public void testCanDestroy() throws Throwable {
+        try (TestContext ctx = new TestContext(7007)) {
+            ctx.run(ctx::testCanDestroy);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Test
+    public void testSetOwnerId() throws Throwable {
+        try (TestContext ctx = new TestContext(7007)) {
+            ctx.run(ctx::testSetOwnerId);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 }

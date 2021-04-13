@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 import lombok.Getter;
@@ -14,6 +14,11 @@ import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.NoneData;
+import org.dragonskulle.network.components.requests.ServerEvent;
+import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
+import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
+import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -37,6 +42,26 @@ public class NetworkObject extends Component {
             new ArrayList<>();
 
     @Getter private final ArrayList<ClientRequest<?>> mClientRequests = new ArrayList<>();
+    @Getter private final ArrayList<ServerEvent<?>> mServerEvents = new ArrayList<>();
+
+    private boolean mDestroyed = false;
+
+    private final ServerEvent<NoneData> mDestroyEvent =
+            new ServerEvent<>(
+                    NoneData.DATA,
+                    (__) -> {
+                        mDestroyed = true;
+                        getGameObject().destroy();
+                    },
+                    EventRecipients.ACTIVE_CLIENTS,
+                    EventTimeframe.LONG_TERM_DELAYABLE);
+
+    private final ServerEvent<SyncInt> mOwnerIdChangeEvent =
+            new ServerEvent<>(
+                    new SyncInt(),
+                    (data) -> checkedOwnerIdSet(data.get()),
+                    EventRecipients.ACTIVE_CLIENTS,
+                    EventTimeframe.LONG_TERM_DELAYABLE);
 
     /** The network client ID that owns this */
     @Getter private int mOwnerId;
@@ -68,37 +93,46 @@ public class NetworkObject extends Component {
     }
 
     public void setOwnerId(int newOwnerID) {
-        if (mIsServer) mOwnerId = newOwnerID;
+        if (mIsServer) checkedOwnerIdSet(newOwnerID);
+    }
+
+    private void checkedOwnerIdSet(int newOwnerId) {
+        if (newOwnerId != mOwnerId) {
+            for (Reference<NetworkableComponent> netComp : mNetworkableComponents) {
+                if (Reference.isValid(netComp)) netComp.get().onOwnerIdChange(newOwnerId);
+            }
+
+            mOwnerId = newOwnerId;
+
+            if (mIsServer) mOwnerIdChangeEvent.invoke((d) -> d.set(mOwnerId));
+        }
     }
 
     @Override
-    public void onDestroy() {}
+    public void onDestroy() {
+        if (!mDestroyed && mIsServer) mDestroyEvent.invoke(NoneData.DATA);
+    }
 
     public void networkInitialize() {
         getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
 
+        mServerEvents.add(mDestroyEvent);
+        mServerEvents.add(mOwnerIdChangeEvent);
+
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
-            nc.initialize(this, mClientRequests);
+            nc.initialize(this, mClientRequests, mServerEvents);
         }
 
         int id = 0;
         for (ClientRequest<?> req : mClientRequests) {
             req.attachNetworkObject(this, id++);
         }
-    }
 
-    /**
-     * Gets id from bytes.
-     *
-     * @param payload the payload
-     * @param offset the offset
-     * @return the id from bytes
-     */
-    public static int getIntFromBytes(byte[] payload, int offset) {
-        byte[] bytes = Arrays.copyOfRange(payload, offset, offset + 4);
-
-        return NetworkMessage.convertByteArrayToInt(bytes);
+        id = 0;
+        for (ServerEvent<?> event : mServerEvents) {
+            event.attachNetworkObject(this, id++);
+        }
     }
 
     public void beforeNetSerialize() {
@@ -163,38 +197,55 @@ public class NetworkObject extends Component {
         return true;
     }
 
+    /**
+     * Handle a server event
+     *
+     * <p>This will take a server's event and handle it
+     *
+     * <p>The dataflow looks like so:
+     *
+     * <p>ServerEvent::invoke on the server, goes to the client, here, and then to
+     * ServerEvent::handle
+     *
+     * @param eventID the event ID
+     * @param stream the input stream
+     * @return true if executed successfully.
+     * @throws IOException if parsing fails
+     */
+    public boolean handleServerEvent(int eventID, DataInputStream stream) throws IOException {
+        if (eventID < 0 || eventID >= mServerEvents.size()) return false;
+
+        mServerEvents.get(eventID).handle(stream);
+
+        return true;
+    }
+
     public static final int ID_OFFSET = 0;
     public static final int OWNER_ID_OFFSET = ID_OFFSET + 4;
     public static final int MASK_LENGTH_OFFSET = OWNER_ID_OFFSET + 4;
     public static final int MASK_OFFSET = MASK_LENGTH_OFFSET + 1;
 
     /**
-     * Updates itself from bytes authored by server.
+     * Updates itself from stream authored by server.
      *
-     * @param payload the payload
+     * @param stream the stream containing the payload
      * @throws IOException thrown if failed to read client streams
      * @return the owner id of the network object
      */
-    public int updateFromBytes(byte[] payload) throws IOException {
-        // TODO clear this up by using ByteStreams
-        int networkObjectId = getIntFromBytes(payload, ID_OFFSET);
+    public int updateFromBytes(DataInputStream stream) throws IOException {
+        int maskLength = stream.readByte();
 
-        int ownerId = getIntFromBytes(payload, OWNER_ID_OFFSET);
-        mOwnerId = ownerId;
+        byte[] mask = IOUtils.readNBytes(stream, maskLength);
 
-        int maskLength = NetworkMessage.getFieldLengthFromBytes(payload, MASK_LENGTH_OFFSET);
+        boolean[] masks = NetworkMessage.getMaskFromBytes(mask);
 
-        boolean[] masks = NetworkMessage.getMaskFromBytes(payload, maskLength, MASK_OFFSET);
-        ArrayList<byte[]> arrayOfChildrenBytes =
-                getChildrenUpdateBytes(payload, MASK_OFFSET + maskLength);
-        int j = 0;
         final int mNetworkableComponentsSize = mNetworkableComponents.size();
         for (int i = 0; i < masks.length; i++) {
             boolean shouldUpdate = masks[i];
             if (shouldUpdate) {
                 log.fine(
                         "Parent id of child to update is :"
-                                + ownerId
+                                + mOwnerId
                                 + "\nComponent id of children bytes to update is : "
                                 + i);
                 if (i < mNetworkableComponentsSize) {
@@ -203,56 +254,14 @@ public class NetworkObject extends Component {
                     if (noc == null) {
                         throw new IOException(String.format("Can't find component %d", i));
                     } else {
-                        noc.updateFromBytes(arrayOfChildrenBytes.get(j));
+                        noc.updateFromStream(stream);
                     }
                 }
-                j++;
             } else {
                 log.fine("Shouldn't update child");
             }
         }
         return mOwnerId;
-    }
-
-    /**
-     * Seperates the updates for each children from the bytes it receives.
-     *
-     * @param buff the buff
-     * @param offset the offset
-     * @return the children update bytes
-     * @throws IOException the io exception
-     */
-    private ArrayList<byte[]> getChildrenUpdateBytes(byte[] buff, int offset) throws IOException {
-        ArrayList<byte[]> out = new ArrayList<>();
-        ArrayList<Byte> objectBytes;
-        ByteArrayInputStream bis = new ByteArrayInputStream(buff);
-        final long didSkip = bis.skip(offset); // ignores the mask length and mask bytes
-        if (didSkip == offset) {
-            objectBytes = new ArrayList<>();
-            while (bis.available() > 0) {
-                bis.mark(NetworkMessage.FIELD_SEPERATOR.length);
-
-                byte[] nextFiveBytes =
-                        IOUtils.readNBytes(bis, NetworkMessage.FIELD_SEPERATOR.length);
-                bis.reset();
-                if (Arrays.equals(nextFiveBytes, NetworkMessage.FIELD_SEPERATOR)) {
-                    // seek field bytes
-                    IOUtils.readExactlyNBytes(bis, 5);
-                    // end of sync var;
-                    // try to deserialize.
-                    out.add(NetworkMessage.toByteArray(objectBytes));
-                    objectBytes.clear(); // clears current sync bytes that have been read
-                } else {
-                    for (byte b : IOUtils.readNBytes(bis, 1)) {
-                        objectBytes.add(b); // read one byte from stream
-                    }
-                }
-            }
-            if (!objectBytes.isEmpty()) {
-                out.add(NetworkMessage.toByteArray(objectBytes));
-            }
-        }
-        return out;
     }
 
     /**
@@ -297,90 +306,46 @@ public class NetworkObject extends Component {
             }
         }
         if (shouldBroadcast) {
-            byte[] bytes = generateUpdateBytes(didChildUpdateMask, forceUpdate);
-            log.fine(
-                    "Update update size for client "
-                            + client.getNetworkID()
-                            + ":: "
-                            + bytes.length);
-            client.sendBytes(
-                    NetworkMessage.build(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT, bytes));
+            try (DataOutputStream stream = client.getDataOut()) {
+                stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
+                generateUpdateBytes(stream, didChildUpdateMask, forceUpdate);
+            } catch (IOException e) {
+                log.warning("Failed to serialize data!");
+                e.printStackTrace();
+            }
         }
     }
 
     /**
      * Generates the updates for all of its children which changed.
      *
+     * @param stream stream to write to
      * @param didChildUpdateMask the mask of children which updates
+     * @param forceUpdate whether to force update all components
      * @return the bytes to be broadcasted
      */
-    private byte[] generateUpdateBytes(boolean[] didChildUpdateMask, boolean forceUpdate) {
+    private void generateUpdateBytes(
+            DataOutputStream stream, boolean[] didChildUpdateMask, boolean forceUpdate)
+            throws IOException {
         //        log.fine("generating broadcast update bytes");
-        ArrayList<Byte> bytes = new ArrayList<>();
+        boolean[] mask = new boolean[didChildUpdateMask.length];
 
-        byte[] idBytes = NetworkMessage.convertIntToByteArray(this.getNetworkObjectId()); // 4
-        byte[] ownerIdBytes = NetworkMessage.convertIntToByteArray(this.getOwnerId()); // 4
-        byte sizeOfMaskBytes = (byte) didChildUpdateMask.length; // 1
+        for (int i = 0; i < didChildUpdateMask.length; i++) {
+            mask[i] = forceUpdate || didChildUpdateMask[i];
+        }
 
-        ArrayList<Byte> childChunk = new ArrayList<>();
-        ArrayList<Byte> contents = new ArrayList<>();
+        stream.writeInt(getNetworkObjectId());
+
+        byte[] byteMask = NetworkMessage.convertBoolArrayToBytes(mask);
+
+        stream.writeByte(byteMask.length);
+
+        for (byte b : byteMask) stream.writeByte(b);
 
         for (int i = 0; i < didChildUpdateMask.length; i++) {
             if (didChildUpdateMask[i]) {
-
-                childChunk.clear();
-
-                // child did update
-                byte[] childBytes = mNetworkableComponents.get(i).get().serialize(forceUpdate);
-                for (byte childByte : childBytes) {
-                    childChunk.add(childByte);
-                }
-
-                if (i < didChildUpdateMask.length - 1) {
-                    for (byte b : NetworkMessage.FIELD_SEPERATOR) {
-                        childChunk.add(b);
-                    }
-                }
-
-                contents.addAll(childChunk);
+                mNetworkableComponents.get(i).get().serialize(stream, forceUpdate);
             }
         }
-
-        // add id
-        for (byte idByte : idBytes) {
-            bytes.add(idByte);
-        }
-
-        // add owner id
-        for (byte idByte : ownerIdBytes) {
-            bytes.add(idByte);
-        }
-
-        // add size of mask only one byte
-        bytes.add(sizeOfMaskBytes);
-
-        // add mask
-        for (int i = 0; i < didChildUpdateMask.length; i++) {
-            boolean didChildUpdate = didChildUpdateMask[i];
-            if (didChildUpdate) {
-                bytes.add((byte) 1);
-            } else {
-                bytes.add((byte) 0);
-            }
-        }
-
-        // add contents
-        bytes.addAll(contents);
-        return NetworkMessage.toByteArray(bytes);
-    }
-
-    /**
-     * Gets id of the object from the bytes.
-     *
-     * @param payload the payload
-     * @return the id from bytes
-     */
-    public static int getIdFromBytes(byte[] payload) {
-        return NetworkMessage.convertByteArrayToInt(Arrays.copyOf(payload, 4));
     }
 }

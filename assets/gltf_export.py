@@ -24,7 +24,7 @@ try:
 
     scene_name = path.splitext(path.basename(bpy.data.filepath))[0]
 
-    tex_dir = path.join(respath, "textures", "gltf", scene_name);
+    tex_dir = path.join(respath, "textures", "gltf");
     gltf_dir = path.join(respath, "gltf")
     out_path = path.join(gltf_dir, scene_name + ".gltf");
 
