@@ -12,6 +12,11 @@ import org.dragonskulle.ui.UIAppearence;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 
+/**
+ * This class controls how UI looks throughout the game
+ *
+ * @author Aurimas Blažulionis
+ */
 public class GameUIAppearence {
 
     private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-10.wav");
@@ -39,6 +44,11 @@ public class GameUIAppearence {
         return UIManager.getInstance().getAppearence().getRectTextures()[DRAWER].clone();
     }
 
+    /**
+     * Initialise the UI appearence
+     *
+     * <p>This method will set the game's UI settings to look consistent.
+     */
     public static void initialise() {
         UIAppearence appearence = UIManager.getInstance().getAppearence();
         appearence.getTextFont().free();
