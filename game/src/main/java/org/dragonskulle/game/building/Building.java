@@ -377,7 +377,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                 .getObjectsOwnedBy(ownerId)
                 .map(NetworkObject::getGameObject)
                 .map(go -> go.getComponent(Player.class))
-                .filter(ref -> ref != null)
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .findFirst()
