@@ -22,6 +22,9 @@ import org.dragonskulle.network.components.sync.SyncInt;
 @Log
 public class SyncStat extends SyncInt {
 
+    /** The cost of upgrading a stat if there is an error. */
+    private static final int sErrorCost = 9999;
+
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 1;
     /** The highest level possible. */
@@ -62,6 +65,17 @@ public class SyncStat extends SyncInt {
             return 0;
         }
         return mValueCalculator.getValue(getLevel());
+    }
+
+    /**
+     * Get the cost of increasing this stat.
+     *
+     * @return The cost; otherwise {@value #sErrorCost}.
+     */
+    public int getCost() {
+        if (!Reference.isValid(mBuilding)) return sErrorCost;
+
+        return 1 + (getLevel() / 2) + mBuilding.get().getStatBaseCost();
     }
 
     /**

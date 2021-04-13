@@ -42,17 +42,12 @@ public enum StatType {
                 }
                 return tokens;
             }),
-    VIEW_DISTANCE(
-            // Regardless of the level, the view distance will always be 3.
-            (level) -> {
-                return 3;
-            }),
 
-    ATTACK_DISTANCE(
-            // Regardless of the level, the attack distance will always be 3.
-            (level) -> {
-                return 3;
-            });
+    // Regardless of the level, the view distance will always be 3.
+    VIEW_DISTANCE(3),
+
+    // Regardless of the level, the attack distance will always be 3.
+    ATTACK_DISTANCE(3);
 
     /** Set the IDs of the Stats. */
     static {
@@ -69,8 +64,30 @@ public enum StatType {
     /** The method used to turn a level ({@code int}) into a value ({@code int}). */
     @Getter private IValueCalculator mValueCalculator;
 
+    /** Whether the stat can actually be upgraded. */
+    @Getter private final boolean mUpgradeable;
+
+    /**
+     * Create a new type of stat.
+     *
+     * @param valueCalculator The method used to turn a level into a value.
+     */
     StatType(IValueCalculator valueCalculator) {
+        mUpgradeable = true;
         mValueCalculator = valueCalculator;
+    }
+
+    /**
+     * Create a new type of stat that is not upgradeable.
+     *
+     * @param value The value of the stat, regardless of level.
+     */
+    StatType(int value) {
+        mUpgradeable = false;
+        mValueCalculator =
+                (__) -> {
+                    return value;
+                };
     }
 
     /**
