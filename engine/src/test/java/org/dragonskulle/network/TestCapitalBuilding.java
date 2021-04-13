@@ -10,10 +10,14 @@ import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncString;
 
-/** @author Oscar L The Capital Component. */
+/**
+ * This is a class for a synced 'Capital' Building. It is only used for testing.
+ *
+ * @author Oscar L The Capital Component.
+ */
 @Accessors(prefix = "m")
 @Log
-public class Capital extends NetworkableComponent {
+public class TestCapitalBuilding extends NetworkableComponent {
 
     /** A syncable field. */
     @Getter private SyncBool mSyncMe = new SyncBool(false);

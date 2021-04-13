@@ -27,9 +27,7 @@ public class Settings {
 
     private HashMap mSettings = new HashMap<>();
 
-    /**
-     * Singleton constructor.
-     */
+    /** Singleton constructor. */
     private Settings() {}
 
     /** Loads settings from the default location. root/settings.json */

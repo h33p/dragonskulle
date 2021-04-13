@@ -251,7 +251,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public void lateFrameUpdate(float deltaTime) {
         if (mDefaultHighlight) {
             defaultHighlight();
-            if (mHighlightOverlay != null) mHighlightOverlay.onOverlay(this);
+            if (mHighlightOverlay != null) {
+                mHighlightOverlay.onOverlay(this);
+            }
             mDefaultHighlight = true;
         } else if (mHighlightOverlay != null) {
             mHighlightOverlay.onOverlay(this);

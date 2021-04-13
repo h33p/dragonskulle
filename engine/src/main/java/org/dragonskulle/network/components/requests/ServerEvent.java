@@ -130,7 +130,7 @@ public class ServerEvent<T extends INetSerializable> {
      * Attaches a network object to an event Id.
      *
      * @param obj the obj
-     * @param id  the id
+     * @param id the id
      */
     public void attachNetworkObject(NetworkObject obj, int id) {
         mNetworkObject = obj;

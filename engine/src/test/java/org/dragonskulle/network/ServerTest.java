@@ -46,7 +46,7 @@ public class ServerTest {
                 new GameObject(
                         "capital",
                         (handle) -> {
-                            handle.addComponent(new Capital());
+                            handle.addComponent(new TestCapitalBuilding());
                         }));
 
         CLIENT_NETMAN_SCENE.addRootObject(
@@ -196,14 +196,17 @@ public class ServerTest {
             return ret;
         }
 
-        private Reference<Capital> testCapitalSpawnDefaultServer() {
-            await().atMost(6, SECONDS).until(() -> getServerComponent(Capital.class) != null);
+        private Reference<TestCapitalBuilding> testCapitalSpawnDefaultServer() {
+            await().atMost(6, SECONDS)
+                    .until(() -> getServerComponent(TestCapitalBuilding.class) != null);
             await().atMost(TIMEOUT * 2, SECONDS)
-                    .until(() -> getClientComponent(Capital.class) != null);
+                    .until(() -> getClientComponent(TestCapitalBuilding.class) != null);
 
-            Reference<Capital> clientCapital = getClientComponent(Capital.class);
+            Reference<TestCapitalBuilding> clientCapital =
+                    getClientComponent(TestCapitalBuilding.class);
             assertNotNull(clientCapital);
-            Reference<Capital> serverCapital = getServerComponent(Capital.class);
+            Reference<TestCapitalBuilding> serverCapital =
+                    getServerComponent(TestCapitalBuilding.class);
             assertNotNull(serverCapital);
 
             sEngineLock.lock();
@@ -219,7 +222,7 @@ public class ServerTest {
         }
 
         private void modifyServerCapital() {
-            Capital component = getServerComponent(Capital.class).get();
+            TestCapitalBuilding component = getServerComponent(TestCapitalBuilding.class).get();
             sEngineLock.lock();
             component.setBooleanSyncMe(true);
             component.setStringSyncMeAlso("Goodbye World");
@@ -228,14 +231,15 @@ public class ServerTest {
 
         private void testSubmitRequest() {
             testCapitalSpawnDefaultServer();
-            Capital cap = getClientComponent(Capital.class).get();
+            TestCapitalBuilding cap = getClientComponent(TestCapitalBuilding.class).get();
             sEngineLock.lock();
             cap.getGameObject()
                     .addComponent(
                             new LambdaOnStart(
                                     () -> {
                                         cap.mPasswordRequest.invoke(
-                                                new TestAttackData(Capital.CORRECT_PASSWORD, 354));
+                                                new TestAttackData(
+                                                        TestCapitalBuilding.CORRECT_PASSWORD, 354));
                                     }));
             sEngineLock.unlock();
             await().atMost(TIMEOUT, SECONDS)
@@ -250,7 +254,7 @@ public class ServerTest {
 
         private void testCanDestroy() {
             testCapitalSpawnDefaultServer();
-            Capital cap = getServerComponent(Capital.class).get();
+            TestCapitalBuilding cap = getServerComponent(TestCapitalBuilding.class).get();
             sEngineLock.lock();
             cap.getGameObject()
                     .addComponent(new LambdaOnStart(() -> cap.getGameObject().destroy()));
@@ -259,7 +263,7 @@ public class ServerTest {
                     .until(
                             () -> {
                                 sEngineLock.lock();
-                                boolean ret = getClientComponent(Capital.class) == null;
+                                boolean ret = getClientComponent(TestCapitalBuilding.class) == null;
                                 sEngineLock.unlock();
                                 return ret;
                             });
@@ -267,8 +271,8 @@ public class ServerTest {
 
         private void testSetOwnerId() {
             testCapitalSpawnDefaultServer();
-            Capital cap = getServerComponent(Capital.class).get();
-            Capital clientCap = getClientComponent(Capital.class).get();
+            TestCapitalBuilding cap = getServerComponent(TestCapitalBuilding.class).get();
+            TestCapitalBuilding clientCap = getClientComponent(TestCapitalBuilding.class).get();
             sEngineLock.lock();
             int ownerId = cap.getNetworkObject().getOwnerId();
             int clientOwnerId = clientCap.getNetworkObject().getOwnerId();
@@ -299,7 +303,7 @@ public class ServerTest {
         try (TestContext ctx = new TestContext(7003)) {
             ctx.run(
                     () -> {
-                        Reference<Capital> nc = ctx.testCapitalSpawnDefaultServer();
+                        Reference<TestCapitalBuilding> nc = ctx.testCapitalSpawnDefaultServer();
                         ctx.modifyServerCapital();
                         await().atMost(TIMEOUT, SECONDS)
                                 .until(
@@ -338,7 +342,8 @@ public class ServerTest {
                     () -> {
                         ctx.testCapitalSpawnDefaultServer();
                         ctx.modifyServerCapital();
-                        Reference<Capital> nc = ctx.getClientComponent(Capital.class);
+                        Reference<TestCapitalBuilding> nc =
+                                ctx.getClientComponent(TestCapitalBuilding.class);
                         await().atMost(TIMEOUT, SECONDS)
                                 .until(
                                         () -> {

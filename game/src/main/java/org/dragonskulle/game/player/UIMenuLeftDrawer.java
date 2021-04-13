@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -43,9 +42,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     @Getter private HashMap<String, Reference<GameObject>> mButtonReferences = new HashMap<>();
     private final float mOffsetToTop = 0.46f;
 
-    /**
-     * Notify the parent of the screen change and set it.
-     */
+    /** Notify the parent of the screen change and set it. */
     public interface INotifyScreenChange {
         /**
          * Call the function.
@@ -55,9 +52,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void call(Screen newScreen);
     }
 
-    /**
-     * Get the player reference from the parent.
-     */
+    /** Get the player reference from the parent. */
     public interface IGetPlayer {
         /**
          * Get the player reference.
@@ -67,9 +62,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         Reference<Player> get();
     }
 
-    /**
-     * Get the building chosen from the parent.
-     */
+    /** Get the building chosen from the parent. */
     public interface IGetBuildingChosen {
         /**
          * Get the building.
@@ -79,9 +72,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         Reference<Building> get();
     }
 
-    /**
-     * Get the hex chosen from the parent.
-     */
+    /** Get the hex chosen from the parent. */
     public interface IGetHexChosen {
         /**
          * Get the hexagon tile.
@@ -91,9 +82,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         HexagonTile get();
     }
 
-    /**
-     * Set the parent hex tile.
-     */
+    /** Set the parent hex tile. */
     public interface ISetHexChosen {
         /**
          * Set.
@@ -103,9 +92,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void set(HexagonTile tile);
     }
 
-    /**
-     * Set the building on the parent.
-     */
+    /** Set the building on the parent. */
     public interface ISetBuildingChosen {
         /**
          * Set the building.
@@ -118,12 +105,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     /**
      * Constructor.
      *
-     * @param getBuildingChosen  the get building chosen callback
-     * @param setBuildingChosen  the set building chosen callback
-     * @param getHexChosen       the get hex chosen callback
-     * @param setHexChosen       the set hex chosen callback
+     * @param getBuildingChosen the get building chosen callback
+     * @param setBuildingChosen the set building chosen callback
+     * @param getHexChosen the get hex chosen callback
+     * @param setHexChosen the set hex chosen callback
      * @param notifyScreenChange the notify screen change callback
-     * @param getPlayer         the get player callback
+     * @param getPlayer the get player callback
      */
     public UIMenuLeftDrawer(
             IGetBuildingChosen getBuildingChosen,

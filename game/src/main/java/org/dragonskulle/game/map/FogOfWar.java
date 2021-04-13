@@ -45,11 +45,15 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     @Override
     public void lateFrameUpdate(float deltaTime) {
 
-        if (!ensureMapReference()) return;
+        if (!ensureMapReference()) {
+            return;
+        }
 
         Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
 
-        if (activePlayer == null) return;
+        if (activePlayer == null) {
+            return;
+        }
 
         double time = Time.getPreciseTimeInSeconds();
 
@@ -84,7 +88,9 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) return true;
+        if (mMapReference != null) {
+            return true;
+        }
         mMapReference =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)
@@ -95,11 +101,15 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     private void setFog(HexagonTile tile, boolean enable) {
         if (!enable) {
             Reference<GameObject> go = mFogTiles.remove(tile);
-            if (go != null && go.isValid()) go.get().destroy();
+            if (go != null && go.isValid()) {
+                go.get().destroy();
+            }
             return;
         }
 
-        if (mFogTiles.containsKey(tile)) return;
+        if (mFogTiles.containsKey(tile)) {
+            return;
+        }
 
         GameObject go =
                 GameObject.instantiate(

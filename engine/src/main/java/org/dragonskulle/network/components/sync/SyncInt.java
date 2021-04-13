@@ -10,8 +10,7 @@ import java.io.Serializable;
  * The type Sync int.
  *
  * @author Aurimas B The type Sync int.
- *
- * <p>This primitve type is implemented manually more space savings.
+ *     <p>This primitve type is implemented manually more space savings.
  */
 public class SyncInt implements ISyncVar, Serializable {
     /** The Data. */

@@ -10,9 +10,12 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * The type Generic sync, all syncables can lazily extend this class or their own custom class can
+ * be defined.
+ *
+ * @param <T> the type parameter
  * @author Oscar L The generic sync is a non optimised version of ISyncVar. Either create an
  *     optimised @link{ISyncVar} or extend this class.
- * @param <T> the type parameter
  */
 public abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {
 

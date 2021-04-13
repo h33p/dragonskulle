@@ -172,7 +172,13 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
                         });
     }
 
-    private void buttonPressDown(UIButton button, float __) {
+    /**
+     * Runs on Button down.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonPressDown(UIButton button, float ignored) {
         // Extract the starting mouse offset so we "pin" the knob to the mouse
         Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
 
@@ -185,7 +191,13 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
         mPressed = true;
     }
 
-    private void buttonRelease(UIButton button, float __) {
+    /**
+     * Ran on Button release.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonRelease(UIButton button, float ignored) {
         mPressed = false;
     }
 

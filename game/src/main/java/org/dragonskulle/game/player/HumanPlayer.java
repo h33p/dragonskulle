@@ -424,7 +424,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** @param newScreen */
+    /**
+     * Sets screen and notifies that an update is needed for the visuals..
+     *
+     * @param newScreen the new screen
+     */
     private void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;

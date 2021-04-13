@@ -61,6 +61,7 @@ public class ServerClient {
 
     /**
      * Creates a new NetworkMessageStream from the outputstream on the server socket.
+     *
      * @return the new stream
      */
     public DataOutputStream getDataOut() {
@@ -179,9 +180,7 @@ public class ServerClient {
         triggerDisconnect();
     }
 
-    /**
-     * Start disconnecting the client.
-     */
+    /** Start disconnecting the client. */
     private void triggerDisconnect() {
         if (mRunning) {
             mRunning = false;

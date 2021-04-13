@@ -907,7 +907,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return capital, if one exists
      */
     public Building getCapital() {
-        if (!mOwnsCapital.get()) return null;
+        if (!mOwnsCapital.get()) {
+            return null;
+        }
 
         if (mCapital != null && mCapital.isValid()) {
             return mCapital.get();

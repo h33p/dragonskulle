@@ -15,10 +15,11 @@ import lombok.extern.java.Log;
 import org.dragonskulle.utils.IOUtils;
 
 /**
+ * This is the client usage, you will create an instance, by providing the correct server to connect
+ * to. ClientListener is the handler for commands that the client receives. {@link *
+ * org.dragonskulle.network.IClientListener}.
+ *
  * @author Oscar L
- *     <p>This is the client usage, you will create an instance, by providing the correct server to
- *     connect to. ClientListener is the handler for commands that the client receives. {@link
- *     org.dragonskulle.network.IClientListener}**
  */
 @Log
 @Accessors(prefix = "m")

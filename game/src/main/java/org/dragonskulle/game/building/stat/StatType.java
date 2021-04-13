@@ -24,7 +24,12 @@ public enum StatType {
     ATTACK((level) -> level), // The attack value is identical to the current level number.
     ATTACK_DISTANCE((level) -> 3), // Regardless of the level, the attack distance will always be 3.
     DEFENCE((level) -> level), // The defence value is identical to the current level number.
-    TOKEN_GENERATION((level) -> Math.max(level - 1, 0)), // The number of tokens to generate is identical to the current level number minus one.
+    TOKEN_GENERATION(
+            (level) ->
+                    Math.max(
+                            level - 1,
+                            0)), // The number of tokens to generate is identical to the current
+    // level number minus one.
     VIEW_DISTANCE((level) -> 3); // Regardless of the level, the view distance will always be 3.
 
     /* Set the IDs of the Stats. */
@@ -36,16 +41,11 @@ public enum StatType {
         }
     }
 
-    /**
-     * The index of the specific StatType in {@link #values()}.
-     */
+    /** The index of the specific StatType in {@link #values()}. */
     private int mID;
 
-    /**
-     * The method used to turn a level ({@code int}) into a value ({@code int}).
-     */
-    @Getter
-    private final IValueCalculator mValueCalculator;
+    /** The method used to turn a level ({@code int}) into a value ({@code int}). */
+    @Getter private final IValueCalculator mValueCalculator;
 
     /**
      * Instantiates a new Stat type.

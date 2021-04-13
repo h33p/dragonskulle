@@ -34,7 +34,9 @@ public class NetworkMessageStream extends DataOutputStream {
 
         byte[] bytes = mRawStream.toByteArray();
 
-        if (bytes.length > 1 << 15) throw new IOException("Message size exceeds limit!");
+        if (bytes.length > 1 << 15) {
+            throw new IOException("Message size exceeds limit!");
+        }
 
         mRealOutputStream.writeShort((short) bytes.length);
         mRealOutputStream.write(bytes);

@@ -171,7 +171,13 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                         });
     }
 
-    private void buttonPressDown(UIButton button, float __) {
+    /**
+     * Runs on button down.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonPressDown(UIButton button, float ignored) {
         // Extract the starting mouse offset so we "pin" the knob to the mouse
         Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
 
@@ -184,7 +190,13 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
         mPressed = true;
     }
 
-    private void buttonRelease(UIButton button, float __) {
+    /**
+     * Runs on button release.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonRelease(UIButton button, float ignored) {
         mPressed = false;
     }
 
