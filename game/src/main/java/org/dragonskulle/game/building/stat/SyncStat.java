@@ -95,8 +95,15 @@ public class SyncStat extends SyncInt {
     }
 
     /**
-     * Get whether the stat is able to be upgraded at this point in time (whether the current level
-     * is not at the {@value #LEVEL_MAX}).
+     * Get whether the stat is able to be upgraded at this point in time.
+     *
+     * <p>Will be {@code false} if:
+     *
+     * <ul>
+     *   <li>It is impossible to upgrade the stat (as {@link StatType#isUpgradeable()} is {@code
+     *       false}).
+     *   <li>The current level is at the {@link #LEVEL_MAX}.
+     * </ul>
      *
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
      */
