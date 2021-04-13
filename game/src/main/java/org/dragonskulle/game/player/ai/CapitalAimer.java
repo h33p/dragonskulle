@@ -2,7 +2,10 @@
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
+import java.util.Random;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -46,13 +49,16 @@ public class CapitalAimer extends AiPlayer {
             // Will perform all necessary checks for A*
             aStar();
             log.severe("A* Ran");
+            // Checks if path size is 0
+            if (mPath.size() == 0) {
+                // Will build randomly
+                buildRandomly();
+                return;
+            }
             return;
         }
 
-        // Checks if path size is 0 -- will only be ran if there are no enemies which exist
-        if (mPath.size() == 0) {
-            return;
-        }
+        
 
         // Checks if we are at our capital.  If so will build one on
         if (mGone.size() == 0) {
@@ -134,12 +140,23 @@ public class CapitalAimer extends AiPlayer {
                 mGone.push(nextNode);
                 nextNode = mPath.pop();
             }
-            Building toAttack = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+            Building toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+            if (toAttackCheck == null) {
+            	if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
+            		HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
+            		mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
+            	}
+            	else {
+            		nextNode = mGone.pop();
+            		toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+            	}
+            }
 
-            for (Building attacker : toAttack.getAttackableBuildings()) {
+            for (Building attacker : toAttackCheck.getAttackableBuildings()) {
 
                 if (attacker.getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
 
+                	Building toAttack = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
                     mPlayer.get()
                             .getClientAttackRequest()
                             .invoke(d -> d.setData(attacker, toAttack));
@@ -153,6 +170,61 @@ public class CapitalAimer extends AiPlayer {
                                     == mPlayer.get().getNetworkObject().getOwnerId()) {
                         mGone.push(nextNode);
                     }
+                    return;
+                }
+            }
+        }
+    }
+
+    private void buildRandomly() {
+
+        Random random = new Random();
+        int index = random.nextInt(mPlayer.get().getNumberOfOwnedBuildings());
+        final int END = index;
+
+        // Goes through the ownedBuildings
+        while (true) {
+            ArrayList<Reference<Building>> buildings = mPlayer.get().getOwnedBuildings();
+
+            // Checks the list is valid
+            if (Reference.isValid(buildings.get(index))
+                    && buildings.get(index).get().getViewableTiles().size() != 0) {
+
+                Building building = buildings.get(index).get();
+                // Check
+                if (building.getViewableTiles().size() != 0) {
+
+                    // Get the visible tiles
+                    List<HexagonTile> visibleTiles =
+                            new ArrayList<HexagonTile>(building.getViewableTiles());
+                    int j = random.nextInt(visibleTiles.size());
+                    final int END2 = j;
+
+                    // Checks if we can use one of the tiles to build from
+                    while (true) {
+                        HexagonTile tile = visibleTiles.get(j);
+                        if (tile.isClaimed() == false && tile.hasBuilding() == false) {
+                            mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(tile));
+                            return;
+                        }
+                        j++;
+                        if (j >= visibleTiles.size()) {
+                            j = 0;
+                        }
+                        if (j == END2) {
+                            return;
+                        }
+                    }
+                }
+                index++;
+
+                // If gone over start at 0
+                if (index >= mPlayer.get().getNumberOfOwnedBuildings()) {
+                    index = 0;
+                }
+
+                // Checks if we've gone through the whole list
+                if (index == END) {
                     return;
                 }
             }
@@ -216,31 +288,18 @@ public class CapitalAimer extends AiPlayer {
     /** This will set the opponent to aim for */
     private Player findOpponent() {
 
-        boolean found =
-                mPlayer.get()
-                        .getMap()
-                        .getAllTiles()
-                        .anyMatch(
-                                tile -> {
-                                    if (tile.getClaimant() != null
-                                            && tile.getClaimantId()
-                                                    != mPlayer.get()
-                                                            .getNetworkObject()
-                                                            .getOwnerId()) {
-                                        mOpponent = tile.getClaimant();
-                                        return true;
-                                    } else {
+        ArrayList<Reference<Building>> ownedBuildings = mPlayer.get().getOwnedBuildings();
+        for (Reference<Building> building : ownedBuildings) {
+            if (Reference.isValid(building)) {
+                ArrayList<Building> visibleTiles = building.get().getAttackableBuildings();
 
-                                        return false;
-                                    }
-                                });
-
-        if (found == false) {
-            log.severe("Houston we have a problem");
-            return null;
-        } else {
-            return mOpponent;
+                if (visibleTiles.size() != 0) {
+                    Building buildingToAim = visibleTiles.get(0);
+                    return buildingToAim.getOwner();
+                }
+            }
         }
+        return null;
     }
 
     /** This will perform the A* Search and all related operations to it */
@@ -250,46 +309,50 @@ public class CapitalAimer extends AiPlayer {
         log.info("Changing opponent");
         Player opponentPlayer = findOpponent();
 
-        // Will find the tile to attack
-        Reference<HexagonTile> tileToAim = getTile(opponentPlayer);
-        log.info("Found Tile");
-        // Creates a graph
-        Graph graph =
-                new Graph(
-                        mPlayer.get().getMap(),
-                        mPlayer.get().getNetworkObject().getOwnerId(),
-                        tileToAim.get());
+        if (opponentPlayer != null) {
+            // Will find the tile to attack
+            Reference<HexagonTile> tileToAim = getTile(opponentPlayer);
+            log.info("Found Tile");
+            // Creates a graph
+            Graph graph =
+                    new Graph(
+                            mPlayer.get().getMap(),
+                            mPlayer.get().getNetworkObject().getOwnerId(),
+                            tileToAim.get());
 
-        mGraph = graph;
-        // Finds the capitals
-        Node[] capitals = findCapital(graph, opponentPlayer);
+            mGraph = graph;
+            // Finds the capitals
+            Node[] capitals = findCapital(graph, opponentPlayer);
 
-        Node capNode = capitals[1];
-        Node oppCapNode = capitals[0];
+            Node capNode = capitals[1];
+            Node oppCapNode = capitals[0];
 
-        if (capNode == null || oppCapNode == null) {
+            if (capNode == null || oppCapNode == null) {
 
-            // Null pointer check to try and not destroy the server
+                // Null pointer check to try and not destroy the server
+                mPath = new ArrayDeque<Integer>();
+                return;
+            }
+            // Performs A* Search
+            AStar aStar = new AStar(graph);
+            aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
+            log.severe("Completed");
+
+            mPath = aStar.getAnswerOfNodes();
+
+            // TODO Testing - remove before PR
+            String answer = "";
+            if (mPath.size() == 0) {
+                log.severe("HOWWWWW");
+            }
+            for (int node : mPath) {
+                answer = answer + node + " ->";
+            }
+            log.info(answer);
+
+            mGone = new ArrayDeque<Integer>();
+        } else {
             mPath = new ArrayDeque<Integer>();
-            return;
         }
-        // Performs A* Search
-        AStar aStar = new AStar(graph);
-        aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
-        log.severe("Completed");
-
-        mPath = aStar.getAnswerOfNodes();
-
-        // TODO Testing - remove before PR
-        String answer = "";
-        if (mPath.size() == 0) {
-            log.severe("HOWWWWW");
-        }
-        for (int node : mPath) {
-            answer = answer + node + " ->";
-        }
-        log.info(answer);
-
-        mGone = new ArrayDeque<Integer>();
     }
 }
