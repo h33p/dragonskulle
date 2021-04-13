@@ -3,26 +3,20 @@ package org.dragonskulle.game.player;
 
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
+import org.dragonskulle.ui.UITextRect;
 
 /** @author Oscar L */
 @Accessors(prefix = "m")
-public class UITokenCounter extends Component implements IOnStart {
+public class UITokenCounter extends Component implements IOnAwake {
+    private Reference<UITextRect> mTextRect;
+
     public void setLabelReference(int newTokens) {
-        Reference<UIButton> buttonRef = getGameObject().getComponent(UIButton.class);
-        if (Reference.isValid(buttonRef)) {
-            Reference<UIText> txt = buttonRef.get().getLabelText();
-            if (Reference.isValid(txt)) {
-                txt.get().setText("Tokens: " + newTokens);
-            }
+        if (Reference.isValid(mTextRect) && Reference.isValid(mTextRect.get().getLabelText())) {
+            mTextRect.get().getLabelText().get().setText("Tokens: " + newTokens);
         }
     }
 
@@ -30,24 +24,18 @@ public class UITokenCounter extends Component implements IOnStart {
     @Override
     protected void onDestroy() {}
 
-    /**
-     * Called when a component is first added to a scene, after onAwake and before the first
-     * frameUpdate. Used for setup of references to necessary Components and GameObjects
-     */
     @Override
-    public void onStart() {
+    public void onAwake() {
         final TransformUI transform = getGameObject().getTransform(TransformUI.class);
         transform.setMaintainAspect(false);
         transform.setParentAnchor(0.37f, 0.08f, 0.37f, 0.08f);
         transform.setMargin(-0.285f, -0.034f, 0.285f, 0.034f);
-        getGameObject().addComponent(new UIRenderable(new SampledTexture("ui/info_box.png")));
 
-        getGameObject()
-                .addComponent(
-                        new UIButton(
-                                new UIText(
-                                        new Vector3f(0f, 0f, 0f),
-                                        Font.getFontResource("Rise of Kingdom.ttf"),
-                                        "Tokens: 0")));
+        UITextRect textRect = new UITextRect("Tokens: 0");
+
+        getGameObject().addComponent(textRect);
+        textRect.setRectTexture(GameUIAppearance.getInfoBoxTexture());
+
+        mTextRect = textRect.getReference(UITextRect.class);
     }
 }

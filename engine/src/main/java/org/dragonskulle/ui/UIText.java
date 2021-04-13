@@ -70,7 +70,16 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
 
     /** Constructor for UIText */
     public UIText() {
-        this(new Vector4f(1f));
+        this(UIManager.getInstance().getAppearance());
+    }
+
+    public UIText(UIAppearance appearance) {
+        this(appearance.getTextColour(), appearance.getTextFont().clone());
+    }
+
+    public UIText(String text) {
+        this();
+        mText = text;
     }
 
     /**
@@ -114,7 +123,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
      * @param colour RGBA float colour value
      */
     public UIText(Vector4fc colour) {
-        this(colour, Font.getFontResource("CascadiaCode.ttf"));
+        this(colour, UIManager.getInstance().getAppearance().getTextFont());
     }
 
     /**

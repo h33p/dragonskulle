@@ -34,6 +34,8 @@ public class GLFWState implements NativeResource {
 
     public static final boolean DEBUG_MODE = envBool("DEBUG_GLFW", false);
 
+    public static final boolean LOAD_RENDERDOC = envBool("LOAD_RENDERDOC", false);
+
     /**
      * Entrypoint of the app instance
      *
@@ -46,6 +48,10 @@ public class GLFWState implements NativeResource {
     public GLFWState(int width, int height, String appName, Bindings bindings)
             throws RuntimeException {
         DEBUG.set(DEBUG_MODE);
+
+        if (LOAD_RENDERDOC) {
+            System.loadLibrary("renderdoc");
+        }
 
         initWindow(width, height, appName);
         mRenderer = new Renderer(appName, mWindow);
