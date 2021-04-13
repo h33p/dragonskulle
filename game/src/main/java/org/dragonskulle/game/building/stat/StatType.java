@@ -42,6 +42,7 @@ public enum StatType {
                 }
                 return tokens;
             }),
+
     VIEW_DISTANCE(
             // Regardless of the level, the view distance will always be 3.
             (level) -> {
@@ -50,6 +51,12 @@ public enum StatType {
 
     ATTACK_DISTANCE(
             // Regardless of the level, the attack distance will always be 3.
+            (level) -> {
+                return 3;
+            }),
+
+    BUILD_DISTANCE(
+            // Regardless of the level, the build distance will always be 3.
             (level) -> {
                 return 3;
             });

@@ -17,6 +17,7 @@ import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -51,6 +52,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private final SyncStat mViewDistance = new SyncStat(this);
     /** Stores the attack range of the building. */
     @Getter private final SyncStat mAttackDistance = new SyncStat(this);
+    /** Stores the build range of the building. */
+    @Getter private final SyncStat mBuildDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -65,6 +68,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
      */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+
+    /**
+     * The tiles the land tiles surrounding the building.
+     *
+     * <p>Does not deal with whether tiles or claimed or not.
+     */
+    @Getter private HashSet<HexagonTile> mBuildableTiles = new HashSet<HexagonTile>();
 
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
@@ -88,6 +98,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
+        initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
     }
 
     @Override
@@ -135,6 +146,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     private void generateTileLists() {
         generateViewTiles();
         generateAttackableTiles();
+        generateBuildableTiles();
     }
 
     /**
@@ -196,6 +208,26 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
         mAttackableTiles = map.getTilesInRadius(getTile(), distance);
+    }
+
+    /** Store the tiles that are suitable for placing a building on. */
+    private void generateBuildableTiles() {
+        // Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+
+        // Get the current build distance.
+        int distance = mBuildDistance.getValue();
+        // Clear the current list of buildable tiles.
+        mBuildableTiles.clear();
+        map.getTilesInRadius(getTile(), distance, false)
+                .forEach(
+                        (tile) -> {
+                            // Add each tile that is a land tile.
+                            if (tile.getTileType() == TileType.LAND) {
+                                mBuildableTiles.add(tile);
+                            }
+                        });
     }
 
     /**
@@ -424,6 +456,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mClaimedTiles.clear();
         mViewableTiles.clear();
         mAttackableTiles.clear();
+        mBuildableTiles.clear();
 
         // Request that the entire building GameObject should be destroyed.
         getGameObject().destroy();
