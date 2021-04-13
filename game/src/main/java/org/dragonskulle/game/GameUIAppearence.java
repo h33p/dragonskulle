@@ -59,6 +59,7 @@ public class GameUIAppearence {
                     new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")
                 });
         appearence.setRectTextVertMargin(0.3f);
+        appearence.setRectTextVertMargin(0.1f);
         appearence.setOnClick(GameUIAppearence::onClick);
     }
 
