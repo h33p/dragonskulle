@@ -22,7 +22,7 @@ public class Vertex extends Vertexc {
     /** Normal vector of the vertex (used for lighting calculations) */
     @Getter private Vector3f mNormal = new Vector3f(0f, 0f, 1f);
     /** Colour of the vertex */
-    @Getter private Vector3f mColor = new Vector3f(1f);
+    @Getter private Vector4f mColor = new Vector4f(1f);
     /** UV coordinate of the vertex */
     @Getter private Vector2f mUv = new Vector2f();
 
@@ -36,7 +36,7 @@ public class Vertex extends Vertexc {
      * @param color colour of the vertex
      * @param uv UV texture coordinate of the vertex
      */
-    public Vertex(Vector3fc pos, Vector3fc color, Vector2fc uv) {
+    public Vertex(Vector3fc pos, Vector4fc color, Vector2fc uv) {
         this(pos, new Vector3f(0f, 0f, 1f), color, uv);
     }
 
@@ -48,10 +48,14 @@ public class Vertex extends Vertexc {
      * @param color colour of the vertex
      * @param uv UV texture coordinate of the vertex
      */
-    public Vertex(Vector3fc pos, Vector3fc normal, Vector3fc color, Vector2fc uv) {
+    public Vertex(Vector3fc pos, Vector3fc normal, Vector4fc color, Vector2fc uv) {
         mPos.set(pos);
         mNormal.set(normal);
         mColor.set(color);
         mUv.set(uv);
+    }
+
+    public Vertex(Vector3fc pos, Vector2fc uv) {
+        this(pos, new Vector3f(0f, 0f, 1f), new Vector4f(1f), uv);
     }
 }

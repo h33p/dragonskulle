@@ -3,7 +3,9 @@ package org.dragonskulle.input;
 
 import java.util.ArrayList;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.Reference;
 
 /**
  * Used to access all actions and input related values. Extended to add actions (that can be
@@ -43,6 +45,32 @@ public abstract class Actions {
 
     /** A list of {@link Action}s that have been deactivated this frame. */
     private static ArrayList<Action> mJustDeactivated = new ArrayList<Action>();
+
+    /** An event which gets triggered when a key is pressed */
+    @Setter private static Reference<IButtonEvent> sOnPress;
+    /** An event which gets triggered when a key is released */
+    @Setter private static Reference<IButtonEvent> sOnRelease;
+    /** An event which gets triggered when a character is inputted */
+    @Setter private static Reference<ICharEvent> sOnChar;
+
+    /** @return dereferenced {@link sOnPress} */
+    public static IButtonEvent getOnPress() {
+        return Reference.isValid(sOnPress) ? sOnPress.get() : null;
+    }
+
+    /** @return dereferenced {@link sOnRelease} */
+    public static IButtonEvent getOnRelease() {
+        return Reference.isValid(sOnRelease) ? sOnRelease.get() : null;
+    }
+
+    /** @return dereferenced {@link sOnChar} */
+    public static ICharEvent getOnChar() {
+        return Reference.isValid(sOnChar) ? sOnChar.get() : null;
+    }
+
+    public static boolean isBeingIntercepted() {
+        return getOnPress() != null || getOnRelease() != null || getOnChar() != null;
+    }
 
     /** Refresh select values back to their defaults, ready for their new values. */
     static void refresh() {

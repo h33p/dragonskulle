@@ -16,7 +16,7 @@ public abstract class Vertexc implements Serializable {
     public static int POS_OFFSET = 0;
     public static int NORMAL_OFFSET = POS_OFFSET + 3 * 4;
     public static int COL_OFFSET = NORMAL_OFFSET + 3 * 4;
-    public static int UV_OFFSET = COL_OFFSET + 3 * 4;
+    public static int UV_OFFSET = COL_OFFSET + 4 * 4;
 
     public static int SIZEOF = UV_OFFSET + 3 * 4;
 
@@ -28,7 +28,7 @@ public abstract class Vertexc implements Serializable {
     public static final AttributeDescription[] ATTRIBUTE_DESCRIPTIONS = {
         new AttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, POS_OFFSET),
         new AttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, NORMAL_OFFSET),
-        new AttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, COL_OFFSET),
+        new AttributeDescription(0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
         new AttributeDescription(0, 3, VK_FORMAT_R32G32_SFLOAT, UV_OFFSET),
     };
 
@@ -39,7 +39,7 @@ public abstract class Vertexc implements Serializable {
     public abstract Vector3fc getNormal();
 
     /** @return colour of the vertex */
-    public abstract Vector3fc getColor();
+    public abstract Vector4fc getColor();
 
     /** @return UV coordinate of the vertex */
     public abstract Vector2fc getUv();
