@@ -420,22 +420,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
-     *
-     * @param tiles The tiles to check.
-     * @return {@code true} if the list of tiles contains at least one building that the player
-     *     owns; otherwise {@code false}.
-     */
-    public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && checkBuildingOwnership(tile.getBuilding())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Assign a reference to the current {@link HexagonMap} to {@link #mMap}.
      *
      * <p>This assumes that the current active scene contains the HexagonMap.
