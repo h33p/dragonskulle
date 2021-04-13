@@ -22,8 +22,11 @@ import org.lwjgl.system.NativeResource;
  */
 @Accessors(prefix = "m")
 public class SampledTexture implements NativeResource, Serializable {
+    /** The underlying texture image */
     @Getter private Resource<Texture> mTexture;
+    /** The settings for texture sampling */
     @Getter private TextureMapping mMapping;
+    /** Controls whether the image is sRGB or linear */
     @Getter @Setter private boolean mLinear;
 
     /**

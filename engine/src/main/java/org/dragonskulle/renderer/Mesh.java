@@ -19,7 +19,7 @@ import org.joml.*;
 public class Mesh implements Serializable {
     @Getter
     /** Vertices of the mesh. */
-    private Vertex[] mVertices;
+    private Vertexc[] mVertices;
 
     @Getter
     /** Indices of the mesh. In pairs of 3, forming triangles. */
@@ -35,9 +35,14 @@ public class Mesh implements Serializable {
     /** Reference count of the mesh used for resource tracking. */
     @Getter private int mRefCount = 0;
 
+    /**
+     * Cached hash code this hashcode is cached so that there is no need to recalculate it every
+     * time the method is called
+     */
     private int mCachedHashCode = 0;
 
-    private static final Vertex[] HEXAGON_VERTICES = {
+    /** Vertices for a 2D hexagon */
+    private static final Vertexc[] HEXAGON_VERTICES = {
         new Vertex(
                 new Vector3f(0.86603f, -0.5f, 0.0f),
                 new Vector3f(1.0f),
@@ -58,9 +63,11 @@ public class Mesh implements Serializable {
         new Vertex(new Vector3f(0.0f, -1.0f, 0.0f), new Vector3f(1.0f), new Vector2f(0.0f, -1.0f)),
     };
 
+    /** Indices for the 2D hexagon */
     private static final int[] HEXAGON_INDICES = {0, 4, 5, 1, 2, 3, 0, 1, 3, 0, 3, 4};
 
-    private static final Vertex[] CUBE_VERTICES = {
+    /** Vertices for a cube */
+    private static final Vertexc[] CUBE_VERTICES = {
         new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector3f(1.f), new Vector2f(0.0f, 0.0f)),
         new Vertex(new Vector3f(0.5f, -0.5f, -0.5f), new Vector3f(1.f), new Vector2f(1.0f, 0.0f)),
         new Vertex(new Vector3f(0.5f, 0.5f, -0.5f), new Vector3f(1.f), new Vector2f(1.0f, 1.0f)),
@@ -71,6 +78,7 @@ public class Mesh implements Serializable {
         new Vertex(new Vector3f(-0.5f, 0.5f, 0.5f), new Vector3f(1.f), new Vector2f(0.0f, 0.0f))
     };
 
+    /** Indices for the cube */
     private static final int[] CUBE_INDICES = {
         0, 2, 1,
         0, 3, 2,
@@ -86,13 +94,15 @@ public class Mesh implements Serializable {
         0, 5, 4
     };
 
-    private static final Vertex[] QUAD_VERTICES = {
+    /** Vertices for a 2D quad plane */
+    private static final Vertexc[] QUAD_VERTICES = {
         new Vertex(new Vector3f(0f, 0f, 0.f), new Vector3f(1f), new Vector2f(0.f, 0.f)),
         new Vertex(new Vector3f(0f, 1.f, 0.f), new Vector3f(1f), new Vector2f(0f, 1f)),
         new Vertex(new Vector3f(1.f, 0f, 0.f), new Vector3f(1f), new Vector2f(1f, 0f)),
         new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector3f(1f), new Vector2f(1f, 1f)),
     };
 
+    /** Indices for the 2D quad */
     private static final int[] QUAD_INDICES = {
         0, 1, 2,
         1, 3, 2
@@ -107,7 +117,13 @@ public class Mesh implements Serializable {
     /** Standard quad mesh */
     public static final Mesh QUAD = new Mesh(QUAD_VERTICES, QUAD_INDICES);
 
-    public Mesh(Vertex[] vertices, int[] indices) {
+    /**
+     * Create a mesh with vertices and indices
+     *
+     * @param vertices vertices of the mesh
+     * @param indices indices of the mesh
+     */
+    public Mesh(Vertexc[] vertices, int[] indices) {
         mVertices = vertices;
         mIndices = indices;
         calculateBoundingBox();
@@ -128,6 +144,16 @@ public class Mesh implements Serializable {
         return mBBCenter;
     }
 
+    /**
+     * Builds and appends a quad to a list of vertices and indices
+     *
+     * @param vertices the vertices to add the quad to
+     * @param indices the indices to add the quad to
+     * @param startCoords starting coordinates where to place the quad
+     * @param endCoords ending coordinates where to place the quad
+     * @param startUV UV coordinates at startCoords
+     * @param endUV UV coordinates and endCoords
+     */
     public static void addQuadToList(
             List<Vertex> vertices,
             List<Integer> indices,
@@ -166,6 +192,14 @@ public class Mesh implements Serializable {
                         new Vector2f(endUV)));
     }
 
+    /**
+     * Build a quad mesh with specified coordinates
+     *
+     * @param startCoords starting coordinates where to place the quad
+     * @param endCoords ending coordinates where to place the quad
+     * @param startUV UV coordinates at startCoords
+     * @param endUV UV coordinates and endCoords
+     */
     public static Mesh buildQuad(
             Vector2fc startCoords, Vector2fc endCoords, Vector2fc startUV, Vector2fc endUV) {
         final Vertex[] vertices = {
@@ -186,10 +220,12 @@ public class Mesh implements Serializable {
 
     // TODO: mesh optimization methods, and other utilities
 
+    /** Increase the reference count of the mesh */
     public void incRefCount() {
         mRefCount++;
     }
 
+    /** Decrease the reference count of the mesh */
     public void decRefCount() {
         mRefCount--;
     }
@@ -223,7 +259,7 @@ public class Mesh implements Serializable {
         mBBMin.set(Float.POSITIVE_INFINITY);
         mBBMax.set(Float.NEGATIVE_INFINITY);
 
-        for (Vertex v : mVertices) {
+        for (Vertexc v : mVertices) {
             mBBMin.min(v.getPos());
             mBBMax.max(v.getPos());
         }
