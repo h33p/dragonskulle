@@ -379,7 +379,12 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                     } else if (!mLastMouseDown) {
                         mPressedDown = true;
                         // Call mOnPressDown if we pressed down the button
-                        if (mOnPressDown != null) mOnPressDown.eventHandler(this, deltaTime);
+                        if (mAppearence.getOnPressDown() != null) {
+                            mAppearence.getOnPressDown().eventHandler(this, deltaTime);
+                        }
+                        if (mOnPressDown != null) {
+                            mOnPressDown.eventHandler(this, deltaTime);
+                        }
                     }
                 }
 

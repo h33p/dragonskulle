@@ -19,7 +19,9 @@ import org.dragonskulle.ui.UIManager;
  */
 public class GameUIAppearence {
 
-    private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-10.wav");
+    private static final int BUTTON_DOWN_SFX_ID =
+            AudioManager.getInstance().loadSound("button-down.wav");
+    private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-up.wav");
 
     public static final int INFO_BOX = 0;
     public static final int DRAWER = 1;
@@ -61,10 +63,28 @@ public class GameUIAppearence {
         appearence.setRectTextVertMargin(0.3f);
         appearence.setRectTextHorizMargin(0.1f);
         appearence.setOnClick(GameUIAppearence::onClick);
+        appearence.setOnPressDown(GameUIAppearence::onPressDown);
     }
 
     /** Inject a sound to every button click */
     private static void onClick(UIButton button, float deltaTime) {
+        AudioSource source = getSource();
+
+        if (source != null) {
+            source.playSound(BUTTON_SFX_ID);
+        }
+    }
+
+    /** Inject a sound to every button down press */
+    private static void onPressDown(UIButton button, float deltaTime) {
+        AudioSource source = getSource();
+
+        if (source != null) {
+            source.playSound(BUTTON_DOWN_SFX_ID);
+        }
+    }
+
+    private static AudioSource getSource() {
         AudioSource singleton = Scene.getActiveScene().getSingleton(AudioSource.class);
 
         if (singleton == null) {
@@ -74,12 +94,10 @@ public class GameUIAppearence {
                 singleton = new AudioSource();
                 listener.get().getGameObject().addComponent(singleton);
                 Scene.getActiveScene().registerSingleton(singleton);
-                singleton.setVolume(0.1f);
+                singleton.setVolume(0.5f);
             }
         }
 
-        if (singleton != null) {
-            singleton.playSound(BUTTON_SFX_ID);
-        }
+        return singleton;
     }
 }

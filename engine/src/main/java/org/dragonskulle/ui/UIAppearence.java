@@ -48,6 +48,8 @@ public class UIAppearence implements NativeResource {
     private SampledTexture[] mRectTextures = {new SampledTexture("white.bmp")};
     /** Injected onClick event to play sounds or something */
     private IButtonEvent mOnClick = null;
+    /** Injected onPressDown event to play sounds or something */
+    private IButtonEvent mOnPressDown = null;
 
     public void setTextFont(Resource<Font> textFont) {
         if (mTextFont != null) {
