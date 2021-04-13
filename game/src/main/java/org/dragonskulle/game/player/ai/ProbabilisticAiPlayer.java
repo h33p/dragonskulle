@@ -203,8 +203,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         do {
             SyncStat stat = stats.get(index);
 
-            // If the stat is still able to be upgraded, attempt an upgrade.
-            if (stat.isUpgradeable()) {
+            // If the stat is still able to be upgraded and can be afforded, attempt an upgrade.
+            if (stat.isUpgradeable() && stat.getCost() <= getPlayer().getTokens().get()) {
                 getPlayer().getClientStatRequest().invoke(d -> d.setData(building, stat));
                 return true;
             }
