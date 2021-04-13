@@ -148,9 +148,12 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                         mPlayer.get()
                                 .getClientBuildRequest()
                                 .invoke((d) -> d.setTile(tileToBuildOn));
+                        mGone.push(nextNode);
+                        return;
                     } else {
-                        nextNode = mGone.pop();
-                        toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+                    	mPath.push(nextNode);
+                        super.attack();
+                        return;
                     }
                 }
 

@@ -87,7 +87,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @param lambdaMethod What to on a building
      * @return If the stuff is invoked on the server
      */
-    public boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
+    protected boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
 
         if (getPlayer() == null) {
             return false;
@@ -208,7 +208,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      *
      * @return Whether the attempt to attack an opponent was invoked.
      */
-    private boolean attack() {
+    protected boolean attack() {
         log.info("AI: Attacking");
 
         return attemptRunEvent(this::tryToAttack);
