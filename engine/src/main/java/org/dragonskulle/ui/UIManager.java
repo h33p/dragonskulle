@@ -68,6 +68,13 @@ public class UIManager {
         void handleUIBuild(GameObject go);
     }
 
+    public abstract static class UIBuildableComponent extends Component implements IUIBuildHandler {
+        @Override
+        public void handleUIBuild(GameObject go) {
+            go.addComponent(this);
+        }
+    }
+
     /**
      * Build a vertical UI on the object
      *

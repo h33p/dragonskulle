@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 
 /**
  * Class describing a drop down menu
@@ -16,7 +16,7 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUIBuildHandler {
+public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
 
     /** Interface that is invoked when an event occurs for the drop down */
     public static interface IDropDownEvent {
@@ -24,10 +24,25 @@ public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUI
     }
 
     private String[] mOptions;
+
+    /**
+     * Currently selected UI element. If outside the range of {@link mOptions}, nothing will be
+     * displayed as selected. Thus, value of {@code -1} will never have a selected element
+     */
     @Getter @Setter private int mSelected = -1;
 
+    /**
+     * Event which gets called whenever an element gets selected by the user.
+     *
+     * <p>This event will only be called on user clicks, it will not be invoked by setting {@link
+     * mSelected}. Once the event is invoked, {@link mSelected} will already have a new value set.
+     */
     @Getter @Setter private IDropDownEvent mOnSelect;
 
+    /**
+     * Currently displayed item. By default set to {@code -2} to trigger a menu update in {@link
+     * frameUpdate}
+     */
     private int mDisplayed = -2;
 
     private Reference<UIButton> mButton;
@@ -74,9 +89,16 @@ public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUI
      * @return String value of the selected option, or {@code null} if no valid option is selected
      */
     public String getSelectedOption() {
-        return mOptions != null && mSelected >= 0 && mSelected < mOptions.length
-                ? mOptions[mSelected]
-                : null;
+        return hasSelection() ? mOptions[mSelected] : null;
+    }
+
+    /**
+     * Check whether the dropdown has a selection
+     *
+     * @return {@code true} if the dropdown has a selection, {@code false} if it doesn't
+     */
+    public boolean hasSelection() {
+        return mOptions != null && mSelected >= 0 && mSelected < mOptions.length;
     }
 
     /**
@@ -152,11 +174,6 @@ public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUI
         if (mOnSelect != null) {
             mOnSelect.handle(this);
         }
-    }
-
-    @Override
-    public void handleUIBuild(GameObject go) {
-        go.addComponent(this);
     }
 
     @Override

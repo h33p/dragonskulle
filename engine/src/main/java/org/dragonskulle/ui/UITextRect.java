@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -18,7 +18,7 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
+public class UITextRect extends UIBuildableComponent implements IOnAwake, IUIBuildHandler {
     @Getter protected Reference<UIRenderable> mRenderable;
     protected UIMaterial mMaterial;
 
@@ -79,11 +79,6 @@ public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
             SampledTexture rectTexture) {
         this(label, labelColour, colour, overrideAspect);
         mRectTexture = rectTexture;
-    }
-
-    @Override
-    public void handleUIBuild(GameObject go) {
-        go.addComponent(this);
     }
 
     @Override

@@ -3,12 +3,11 @@ package org.dragonskulle.ui;
 
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.ICharEvent;
-import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 
 /**
  * Class describing a interactive UI input box
@@ -16,7 +15,7 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIInputBox extends Component implements IOnAwake, IFrameUpdate, IUIBuildHandler {
+public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
 
     public static final Action CURSOR_LEFT = new Action("CURSOR_LEFT", false);
     public static final Action CURSOR_RIGHT = new Action("CURSOR_RIGHT", false);
@@ -63,11 +62,6 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate, IUI
         Reference<UIRenderable> hovered = UIManager.getInstance().getHoveredObject();
 
         return hovered != mButton.get().getRenderable();
-    }
-
-    @Override
-    public void handleUIBuild(GameObject go) {
-        go.addComponent(this);
     }
 
     @Override
