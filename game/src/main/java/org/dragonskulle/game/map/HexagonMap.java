@@ -80,9 +80,9 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
     public ArrayList<HexagonTile> getTilesInRadius(
-            HexagonTile tile, int distance, boolean includeTile) {
+            HexagonTile tile, int radius, boolean includeTile) {
         int minimum = includeTile ? 0 : 1;
-        return getTilesInRadius(tile, minimum, distance);
+        return getTilesInRadius(tile, minimum, radius);
     }
 
     /**
