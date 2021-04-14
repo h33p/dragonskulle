@@ -144,7 +144,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                 // Checks if building exists
                 Building toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
                 if (toAttackCheck == null) {
-                	// Checks if we have to build
+                    // Checks if we have to build
                     if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
                         HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
                         mPlayer.get()
@@ -152,20 +152,20 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                                 .invoke((d) -> d.setTile(tileToBuildOn));
                         mGone.push(nextNode);
                         return;
-                    
+
                     } else {
-                    	// Will attack instead and remove 
-                    	while (mGraph.getNode(nextNode).getHexTile().get().getBuilding() == null) {
-                    		mPath.push(nextNode);
-                    		nextNode = mGone.pop();
-                    				
-                    	}
-                    	super.tryToAttack(mGraph.getNode(nextNode).getHexTile().get().getBuilding());
-                    	
-                    	// Assumption is that the code at the start of the method will move back to correct postion
-                    	mPath.push(nextNode);
-                    	
-                        
+                        // Will attack instead and remove
+                        while (mGraph.getNode(nextNode).getHexTile().get().getBuilding() == null) {
+                            mPath.push(nextNode);
+                            nextNode = mGone.pop();
+                        }
+                        super.tryToAttack(
+                                mGraph.getNode(nextNode).getHexTile().get().getBuilding());
+
+                        // Assumption is that the code at the start of the method will move back to
+                        // correct postion
+                        mPath.push(nextNode);
+
                         return;
                     }
                 }
@@ -283,46 +283,46 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             // TODO null check
 
             if (Reference.isValid(tileToAim)) {
-            // Creates a graph
-            Graph graph =
-                    new Graph(
-                            mPlayer.get().getMap(),
-                            mPlayer.get().getNetworkObject().getOwnerId(),
-                            tileToAim.get());
+                // Creates a graph
+                Graph graph =
+                        new Graph(
+                                mPlayer.get().getMap(),
+                                mPlayer.get().getNetworkObject().getOwnerId(),
+                                tileToAim.get());
 
-            mGraph = graph;
-            // Finds the capitals
-            Node[] capitals = findCapital(graph, opponentPlayer);
+                mGraph = graph;
+                // Finds the capitals
+                Node[] capitals = findCapital(graph, opponentPlayer);
 
-            Node capNode = capitals[1];
-            Node oppCapNode = capitals[0];
+                Node capNode = capitals[1];
+                Node oppCapNode = capitals[0];
 
-            if (capNode == null || oppCapNode == null) {
+                if (capNode == null || oppCapNode == null) {
 
-                // Null pointer check to try and not destroy the server
+                    // Null pointer check to try and not destroy the server
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
+                // Performs A* Search
+                AStar aStar = new AStar(graph);
+                aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
+                log.severe("Completed");
+
+                mPath = aStar.getAnswerOfNodes();
+
+                // TODO Testing - remove before PR
+                String answer = "";
+                if (mPath.size() == 0) {
+                    log.severe("HOWWWWW");
+                }
+                for (int node : mPath) {
+                    answer = answer + node + " ->";
+                }
+                log.info(answer);
+
+                mGone = new ArrayDeque<Integer>();
+            } else {
                 mPath = new ArrayDeque<Integer>();
-                return;
-            }
-            // Performs A* Search
-            AStar aStar = new AStar(graph);
-            aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
-            log.severe("Completed");
-
-            mPath = aStar.getAnswerOfNodes();
-
-            // TODO Testing - remove before PR
-            String answer = "";
-            if (mPath.size() == 0) {
-                log.severe("HOWWWWW");
-            }
-            for (int node : mPath) {
-                answer = answer + node + " ->";
-            }
-            log.info(answer);
-
-            mGone = new ArrayDeque<Integer>();}
-            else {
-            	mPath = new ArrayDeque<Integer>();
             }
         } else {
             mPath = new ArrayDeque<Integer>();
