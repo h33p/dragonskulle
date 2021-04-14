@@ -71,8 +71,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
-    /** The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}. */
-    @Getter private int mStatBaseCost = 0;
+    /**
+     * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
+     * Should alwyas be at least {@code 1}.
+     */
+    @Getter private int mStatBaseCost = 1;
 
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
@@ -168,7 +171,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             totalUpgrades += stat.getLevel() - SyncStat.LEVEL_MIN;
         }
 
-        mStatBaseCost = totalUpgrades / 2;
+        mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
     /** Claim the tiles around the building and the tile the building is on. */

@@ -91,7 +91,7 @@ public class SyncStat extends SyncInt {
     public int getCost() {
         if (!Reference.isValid(mBuilding)) return sErrorCost;
 
-        return 1 + (getLevel() / 2) + mBuilding.get().getStatBaseCost();
+        return (getLevel() / 2) + mBuilding.get().getStatBaseCost();
     }
 
     /**
