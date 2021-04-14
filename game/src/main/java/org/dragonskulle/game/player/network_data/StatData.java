@@ -7,6 +7,7 @@ import java.io.IOException;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
@@ -42,6 +43,10 @@ public class StatData implements INetSerializable {
         mQ = building.getTile().getQ();
         mR = building.getTile().getR();
         mStatTypeID = statType.getID();
+    }
+
+    public void setData(Building building, SyncStat stat) {
+        setData(building, stat.getType());
     }
 
     @Override

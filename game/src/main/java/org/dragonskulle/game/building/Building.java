@@ -92,6 +92,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
+    /**
+     * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
+     * Should alwyas be at least {@code 1}.
+     */
+    @Getter private int mStatBaseCost = 1;
+
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
@@ -152,12 +158,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         generateClaimTiles();
         // Generate the lists of tiles that are influenced by the Stats of the Building.
         generateTileLists();
-    }
 
-    /** Generate the stored lists of {@link HexagonTile}s. */
-    private void generateTileLists() {
-        generateViewTiles();
-        generateAttackableTiles();
+        // Generate the base cost of upgrading stats.
+        generateStatBaseCost();
         generatePlaceableTiles();
     }
 
@@ -171,7 +174,28 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     public void afterStatChange() {
         log.info("After stats change.");
+
+        generateStatBaseCost();
         generateTileLists();
+    }
+
+    /** Generate the stored lists of {@link HexagonTile}s. */
+    private void generateTileLists() {
+        generateViewTiles();
+        generateAttackableTiles();
+    }
+
+    /**
+     * Generate the base cost of buying an upgrade. The more upgraded a building is, the higher the
+     * base cost.
+     */
+    private void generateStatBaseCost() {
+        int totalUpgrades = 0;
+        for (SyncStat stat : getStats()) {
+            totalUpgrades += stat.getLevel() - SyncStat.LEVEL_MIN;
+        }
+
+        mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
     /** Claim the tiles around the building and the tile the building is on. */
@@ -530,8 +554,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @param type The type of stat the SyncStat should be.
      */
     private void initiliseStat(SyncStat stat, StatType type) {
-        // Set the value calculator of the SyncStat.
-        stat.setValueCalculator(type.getValueCalculator());
+        // Initialise the SyncStat.
+        stat.initialise(type);
         // Store the stat.
         storeStat(type, stat);
     }
@@ -565,12 +589,38 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an {@link ArrayList} of {@link SyncStat}s that the Building has.
+     * Get an {@link ArrayList} of non-fixed {@link SyncStat}s. These stats can theoretically be
+     * upgraded.
      *
-     * @return An ArrayList of Stats.
+     * @return An ArrayList of SyncStats which are not fixed at one value.
      */
     public ArrayList<SyncStat> getStats() {
-        ArrayList<SyncStat> stats = new ArrayList<SyncStat>(mStats.values());
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+
+        for (SyncStat stat : mStats.values()) {
+            StatType type = stat.getType();
+            if (type != null && type.isFixedValue() == false) {
+                stats.add(stat);
+            }
+        }
+
+        return stats;
+    }
+
+    /**
+     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded.
+     *
+     * @return An ArrayList of SyncStats that can currently be upgraded.
+     */
+    public ArrayList<SyncStat> getUpgradeableStats() {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+
+        for (SyncStat stat : mStats.values()) {
+            if (stat.isUpgradeable()) {
+                stats.add(stat);
+            }
+        }
+
         return stats;
     }
 
