@@ -93,6 +93,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Override
     public void onAwake() {
+
+        if (!mMaintainAspect) {
+            return;
+        }
+
         SampledTexture[] texs = mMaterial.getFragmentTextures();
         Texture tex =
                 texs != null && texs.length > 0 && texs[0] != null && texs[0].getTexture() != null

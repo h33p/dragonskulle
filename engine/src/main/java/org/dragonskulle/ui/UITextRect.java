@@ -9,6 +9,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.joml.Vector4f;
 
 /**
  * Class describing a rectangle with text
@@ -24,10 +25,18 @@ public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
 
     @Getter @Setter protected UIAppearance mAppearance = UIManager.getInstance().getAppearance();
 
+    @Getter protected final Vector4f mColour = new Vector4f(1f);
+
     private UIText mLabelTextComp;
     @Getter private Reference<UIText> mLabelText;
 
     @Getter @Setter SampledTexture mIcon;
+
+    /**
+     * Overriden aspect ratio value. If set, texture's aspect ratio will be ignored, and this ratio
+     * will be used
+     */
+    @Getter @Setter Float mOverrideAspectRatio = null;
 
     public UITextRect() {
         mLabelTextComp = new UIText();
@@ -50,7 +59,19 @@ public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
         if (!Reference.isValid(mRenderable)) {
-            getGameObject().addComponent(new UIRenderable(mRectTexture));
+            UIRenderable uiRenderable =
+                    mRectTexture != null
+                            ? new UIRenderable(mColour, mRectTexture)
+                            : new UIRenderable(mColour);
+            if (mOverrideAspectRatio != null) {
+                TransformUI uiTransform = getGameObject().getTransform(TransformUI.class);
+                if (uiTransform != null) {
+                    uiRenderable.setMaintainAspect(false);
+                    uiTransform.setMaintainAspect(true);
+                    uiTransform.setTargetAspectRatio(mOverrideAspectRatio);
+                }
+            }
+            getGameObject().addComponent(uiRenderable);
             mRenderable = getGameObject().getComponent(UIRenderable.class);
         }
 

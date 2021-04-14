@@ -278,194 +278,159 @@ public class App implements NativeResource {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
+        GameObject settingsUI =
+                new GameObject(
+                        "settingsUI",
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
+
         final UIManager uiManager = UIManager.getInstance();
 
-        mainUI.buildChild(
-                "bg",
-                new TransformUI(false),
-                (bg) -> {
-                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
+        uiManager.buildVerticalUI(
+                mainUI,
+                0.05f,
+                0,
+                0.25f,
+                new UIButton(
+                        "Join Game",
+                        (__, ___) -> {
+                            mainUI.setEnabled(false);
+                            joinUI.setEnabled(true);
+                            hostUI.setEnabled(false);
+                        }),
+                new UIButton(
+                        "Host Game",
+                        (__, ___) -> {
+                            mainUI.setEnabled(false);
+                            hostUI.setEnabled(true);
+                        }),
+                new UIButton(
+                        "Settings",
+                        (__, ___) -> {
+                            mainUI.setEnabled(false);
+                            settingsUI.setEnabled(true);
+                        }),
+                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
+                new UIButton(
+                        "Quick Reload",
+                        (__, ___) -> {
+                            sReload = true;
+                            Engine.getInstance().stop();
+                        }),
+                new UIDropDown(
+                        1,
+                        (drop) -> System.out.println("NEW SELECTION: " + drop.getSelected()),
+                        "A1",
+                        "34",
+                        "MY NAME IS H33P",
+                        "No JEFF"));
 
-                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
+        final UITextRect connectingText = new UITextRect("");
+        connectingText.setEnabled(false);
+        connectingText.setOverrideAspectRatio(4f);
+        connectingText.getColour().set(0f);
 
-                    uiManager.buildVerticalUI(
-                            bg,
-                            0.05f,
-                            0,
-                            0.5f,
-                            new UIButton(
-                                    "Join Game",
-                                    (__, ___) -> {
-                                        mainUI.setEnabled(false);
-                                        joinUI.setEnabled(true);
-                                        hostUI.setEnabled(false);
-                                    }),
-                            new UIButton(
-                                    "Host Game",
-                                    (__, ___) -> {
-                                        mainUI.setEnabled(false);
-                                        hostUI.setEnabled(true);
-                                    }),
-                            new UIButton("Settings"),
-                            new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
-                            new UIButton(
-                                    "Quick Reload",
-                                    (__, ___) -> {
-                                        sReload = true;
-                                        Engine.getInstance().stop();
-                                    }),
-                            new UIDropDown(
-                                    1,
-                                    (drop) ->
-                                            System.out.println(
-                                                    "NEW SELECTION: " + drop.getSelected()),
-                                    "A1",
-                                    "34",
-                                    "MY NAME IS H33P",
-                                    "No JEFF"));
-                });
+        UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
 
-        joinUI.buildChild(
-                "bg",
-                new TransformUI(false),
-                (bg) -> {
-                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
+        uiManager.buildVerticalUI(
+                joinUI,
+                0.05f,
+                0f,
+                0.25f,
+                ibox,
+                new UIButton(
+                        "Join (Temporary)",
+                        (uiButton, __) -> {
+                            int port = sPort;
 
-                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
+                            connectingText.setEnabled(true);
+                            connectingText.getGameObject().setEnabled(true);
 
-                    final Reference<GameObject> connectingRef =
-                            bg.buildChild(
-                                    "connecting",
-                                    false,
-                                    new TransformUI(true),
-                                    (text) -> {
-                                        text.getTransform(TransformUI.class)
-                                                .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                                        text.getTransform(TransformUI.class)
-                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                        text.addComponent(new UIText("Connecting..."));
-                                    });
-                    final Reference<UIText> connectingTextRef =
-                            connectingRef.get().getComponent(UIText.class);
+                            try {
+                                String text = ibox.getInput();
+                                String[] elems = text.split(":");
+                                String ip = elems[0];
+                                String portText = elems.length > 1 ? elems[1] : null;
 
-                    connectingTextRef.get().setEnabled(false);
+                                if (portText != null) {
+                                    port = Integer.parseInt(portText);
+                                }
 
-                    UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
+                                connectingText.getLabelText().get().setText("Connecting...");
 
-                    uiManager.buildVerticalUI(
-                            bg,
-                            0.05f,
-                            0f,
-                            0.5f,
-                            ibox,
-                            new UIButton(
-                                    "Join (Temporary)",
-                                    (uiButton, __) -> {
-                                        int port = sPort;
-
-                                        try {
-                                            String text = ibox.getInput();
-                                            String[] elems = text.split(":");
-                                            String ip = elems[0];
-                                            String portText = elems.length > 1 ? elems[1] : null;
-
-                                            if (portText != null) {
-                                                port = Integer.parseInt(portText);
-                                            }
-
-                                            networkManager
-                                                    .get()
-                                                    .createClient(
-                                                            ip,
-                                                            port,
-                                                            (gameScene, manager, netID) -> {
-                                                                if (netID >= 0) {
-                                                                    onConnectedClient(
-                                                                            gameScene, manager,
-                                                                            netID);
-                                                                } else if (Reference.isValid(
-                                                                        connectingTextRef)) {
-                                                                    connectingTextRef
-                                                                            .get()
-                                                                            .setEnabled(false);
-                                                                }
-                                                            });
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-
-                                            if (Reference.isValid(connectingTextRef))
-                                                connectingTextRef.get().setText("Invalid input!");
-                                        }
-
-                                        if (Reference.isValid(connectingTextRef))
-                                            connectingTextRef.get().setEnabled(true);
-                                    }),
-                            null,
-                            null,
-                            new UIButton(
-                                    "Cancel",
-                                    (uiButton, __) -> {
-                                        joinUI.setEnabled(false);
-                                        mainUI.setEnabled(true);
-                                    }));
-                });
-
-        hostUI.buildChild(
-                "bg",
-                new TransformUI(false),
-                (bg) -> {
-                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
-
-                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
-
-                    bg.buildChild(
-                            "joinButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Host (Temporary)",
-                                                (uiButton, __) -> {
-                                                    networkManager
-                                                            .get()
-                                                            .createServer(
-                                                                    sPort, this::onClientConnected);
+                                networkManager
+                                        .get()
+                                        .createClient(
+                                                ip,
+                                                port,
+                                                (gameScene, manager, netID) -> {
+                                                    if (netID >= 0) {
+                                                        onConnectedClient(
+                                                                gameScene, manager, netID);
+                                                    } else {
+                                                        connectingText.setEnabled(false);
+                                                        connectingText
+                                                                .getGameObject()
+                                                                .setEnabled(false);
+                                                    }
                                                 });
-                                button.addComponent(newButton);
-                            });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                connectingText.getLabelText().get().setText("Invalid input!");
+                            }
+                        }),
+                connectingText,
+                new UIButton(
+                        "Cancel",
+                        (uiButton, __) -> {
+                            joinUI.setEnabled(false);
+                            mainUI.setEnabled(true);
+                        }));
 
-                    bg.buildChild(
-                            "cancelButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+        uiManager.buildVerticalUI(
+                settingsUI,
+                0.05f,
+                0f,
+                0.25f,
+                new UIButton("Sound"),
+                new UIButton("Graphics"),
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            settingsUI.setEnabled(false);
+                            mainUI.setEnabled(true);
+                        }));
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Cancel",
-                                                (uiButton, __) -> {
-                                                    hostUI.setEnabled(false);
-                                                    mainUI.setEnabled(true);
-                                                });
-
-                                button.addComponent(newButton);
-                            });
-                });
+        uiManager.buildVerticalUI(
+                hostUI,
+                0.05f,
+                0f,
+                0.25f,
+                new UIButton(
+                        "Host (Temporary)",
+                        (__, ___) -> {
+                            networkManager.get().createServer(sPort, this::onClientConnected);
+                        }),
+                new UIButton(
+                        "Cancel",
+                        (uiButton, __) -> {
+                            hostUI.setEnabled(false);
+                            mainUI.setEnabled(true);
+                        }));
 
         joinUI.setEnabled(false);
         hostUI.setEnabled(false);
+        settingsUI.setEnabled(false);
 
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
+        mainMenu.addRootObject(settingsUI);
 
         return mainMenu;
     }
