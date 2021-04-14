@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-import java.util.HashSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

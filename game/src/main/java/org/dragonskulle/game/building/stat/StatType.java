@@ -43,16 +43,16 @@ public enum StatType {
                 return tokens;
             }),
 
-	 // Regardless of the level, the view distance will always be the same.
+    // Regardless of the level, the view distance will always be the same.
     VIEW_DISTANCE(3),
 
-	// Regardless of the level, the attack distance will always be the same.
+    // Regardless of the level, the attack distance will always be the same.
     ATTACK_DISTANCE(3),
 
-	// Regardless of the level, the build distance will always be the same.
+    // Regardless of the level, the build distance will always be the same.
     BUILD_DISTANCE(2),
 
-	// Regardless of the level, the claim distance will always be the same.
+    // Regardless of the level, the claim distance will always be the same.
     CLAIM_DISTANCE(1);
 
     /** Set the IDs of the Stats. */
