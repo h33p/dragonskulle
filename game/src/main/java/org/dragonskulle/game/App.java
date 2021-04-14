@@ -342,14 +342,7 @@ public class App implements NativeResource {
                         (__, ___) -> {
                             sReload = true;
                             Engine.getInstance().stop();
-                        }),
-                new UIDropDown(
-                        1,
-                        (drop) -> System.out.println("NEW SELECTION: " + drop.getSelected()),
-                        "A1",
-                        "34",
-                        "MY NAME IS H33P",
-                        "No JEFF"));
+                        }));
 
         final UITextRect connectingText = new UITextRect("");
         connectingText.setEnabled(false);
