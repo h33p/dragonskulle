@@ -110,7 +110,7 @@ public class Scene {
         Class<?> type = comp.getClass();
         Reference<Component> current = mSingletons.get(type);
 
-        if (current != null && current.isValid()) {
+        if (Reference.isValid(current)) {
             return false;
         }
 
@@ -128,7 +128,7 @@ public class Scene {
     @SuppressWarnings("unchecked")
     public <T extends Component> T getSingleton(Class<T> type) {
         Reference<Component> current = mSingletons.get(type);
-        if (current == null || !current.isValid()) {
+        if (!Reference.isValid(current)) {
             return null;
         }
         return (T) current.get();

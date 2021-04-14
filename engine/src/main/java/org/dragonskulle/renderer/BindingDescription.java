@@ -12,8 +12,11 @@ import lombok.Builder;
  */
 @Builder
 public class BindingDescription {
-    public int mBindingId;
+    /** Which binding the data is bound to. */
+    public int mBindingID;
+    /** The size of the data. */
     public int mSize;
+    /** Controls at what rate the data is being inputted (per-vertex or per-instance). */
     public int mInputRate;
 
     /** Creates a new binding description without default transformation matrix. */

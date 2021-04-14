@@ -22,15 +22,14 @@ import org.dragonskulle.game.building.stat.SyncStat.IValueCalculator;
 @Accessors(prefix = "m")
 public enum StatType {
     ATTACK((level) -> level), // The attack value is identical to the current level number.
-    ATTACK_DISTANCE((level) -> 3), // Regardless of the level, the attack distance will always be 3.
+    ATTACK_DISTANCE(3), // Regardless of the level, the attack distance will always be 3.
     DEFENCE((level) -> level), // The defence value is identical to the current level number.
     TOKEN_GENERATION(
-            (level) ->
-                    Math.max(
-                            level - 1,
-                            0)), // The number of tokens to generate is identical to the current
-    // level number minus one.
-    VIEW_DISTANCE((level) -> 3); // Regardless of the level, the view distance will always be 3.
+            (level) -> {
+                return Math.max(level - 1, 0);
+            }), // The number of tokens to generate is identical to the current level number minus
+    // one.
+    VIEW_DISTANCE(3); // Regardless of the level, the view distance will always be 3.
 
     /* Set the IDs of the Stats. */
     static {
@@ -47,13 +46,30 @@ public enum StatType {
     /** The method used to turn a level ({@code int}) into a value ({@code int}). */
     @Getter private final IValueCalculator mValueCalculator;
 
+    /** Whether the stat always returns a fixed value. */
+    @Getter private final boolean mFixedValue;
+
     /**
-     * Instantiates a new Stat type.
+     * Create a new type of stat.
      *
-     * @param valueCalculator the calculator for the stat.
+     * @param valueCalculator The method used to turn a level into a value.
      */
     StatType(IValueCalculator valueCalculator) {
+        mFixedValue = false;
         mValueCalculator = valueCalculator;
+    }
+
+    /**
+     * Create a new type of stat that is permanently one value.
+     *
+     * @param value The value of the stat, regardless of level.
+     */
+    StatType(int value) {
+        mFixedValue = true;
+        mValueCalculator =
+                (__) -> {
+                    return value;
+                };
     }
 
     /**

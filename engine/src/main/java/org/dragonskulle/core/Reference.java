@@ -45,10 +45,23 @@ public class Reference<T> implements Serializable {
     /**
      * Check whether the reference has been cleared.
      *
-     * @return true if the reference is still valid, false otherwise
+     * @param ref reference to check
+     * @return {@code true} if the reference is non-null and still valid, {@code false} otherwise
      */
-    public boolean isValid() {
-        return mObject != null;
+    public static boolean isValid(Reference<?> ref) {
+        return ref != null && ref.mObject != null;
+    }
+
+    /**
+     * Check whether the reference has been cleared
+     *
+     * <p>This method is opposite of {@link isValid}
+     *
+     * @param ref reference to check
+     * @return {@code false} if the reference is non-null and still valid, {@code true} otherwise
+     */
+    public static boolean isInvalid(Reference<?> ref) {
+        return !isValid(ref);
     }
 
     /**

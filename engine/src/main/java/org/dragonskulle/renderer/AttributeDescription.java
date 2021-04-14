@@ -14,9 +14,13 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "m")
 public class AttributeDescription {
+    /** Which binding on the shader this attribute will have. */
     public int mBindingId;
+    /** Which location on the shader this attribute will have. */
     public int mLocation;
+    /** What is the layout of the attribute. */
     @Getter public int mFormat;
+    /** What is the offset of the attribute within the bound memory. */
     @Getter public int mOffset;
 
     public static final int MATRIX_ROW_SIZE = 4 * 4;

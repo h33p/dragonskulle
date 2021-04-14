@@ -7,5 +7,12 @@ package org.dragonskulle.renderer.materials;
  * @author Aurimas Blažulionis
  */
 public interface IRefCountedMaterial extends IMaterial {
+    /**
+     * Increase the reference count for the material.
+     *
+     * <p>This is equivalent to cloning, except the material reference is the same
+     *
+     * @return cloned material reference. It will need to be freed when no longer in use
+     */
     IRefCountedMaterial incRefCount();
 }

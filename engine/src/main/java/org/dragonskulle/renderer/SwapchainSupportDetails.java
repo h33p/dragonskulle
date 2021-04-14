@@ -22,6 +22,11 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
+/**
+ * This provides details about swapchain support for particular physical device
+ *
+ * @author Aurimas Blažulionis
+ */
 @Log
 class SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR mCapabilities;
@@ -30,6 +35,12 @@ class SwapchainSupportDetails {
 
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_FIFO_KHR);
 
+    /**
+     * Constructor for {@link SwapchainSupportDetails}
+     *
+     * @param device physical device handle
+     * @param surface surface that we want to display on
+     */
     public SwapchainSupportDetails(VkPhysicalDevice device, long surface) {
         mCapabilities = VkSurfaceCapabilitiesKHR.create();
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, mCapabilities);
@@ -51,11 +62,21 @@ class SwapchainSupportDetails {
         }
     }
 
+    /**
+     * Check if the swapchain is supported for this device
+     *
+     * @return {@code true} if possible to use this device for presentation, {@code false}
+     *     otherwise.
+     */
     public boolean isAdequate() {
         return mFormats != null && mPresentNodes != null;
     }
 
-    /** Choose a compatible surface format, prioritizing SRGB. */
+    /**
+     * Choose a compatible surface format, prioritizing sRGB.
+     *
+     * @return first compatible surface format.
+     */
     public VkSurfaceFormatKHR chooseSurfaceFormat() {
         VkSurfaceFormatKHR format =
                 mFormats.stream()
@@ -72,7 +93,11 @@ class SwapchainSupportDetails {
         return format;
     }
 
-    /** Choose a compatible presentation mode, prioritizing Triple Buffered VSync. */
+    /**
+     * Choose a compatible presentation mode, prioritizing Triple Buffered VSync.
+     *
+     * @return compatible presentation mode
+     */
     public int choosePresentMode() {
         // VSync - guaranteed to be available
         int presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -91,7 +116,12 @@ class SwapchainSupportDetails {
         return presentMode;
     }
 
-    /** Choose a compatible resolution, targetting current window resolution. */
+    /**
+     * Choose a compatible resolution, targetting current window resolution.
+     *
+     * @param window handle to the window
+     * @return window extent bounds
+     */
     public VkExtent2D chooseExtent(long window) {
         try (MemoryStack stack = stackPush()) {
             IntBuffer x = stack.ints(0);

@@ -58,7 +58,7 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
 
     @Override
     public void frameUpdate(float deltaTime) {
-        if (mTransform != null && mTarget != null && mTarget.isValid()) {
+        if (mTransform != null && Reference.isValid(mTarget)) {
 
             mTransform.getPosition(mTmpVec1);
             mTarget.get().getPosition(mTmpVec2);

@@ -104,7 +104,7 @@ public class NetworkObject extends Component {
     private void checkedOwnerIdSet(int newOwnerId) {
         if (newOwnerId != mOwnerId) {
             for (Reference<NetworkableComponent> netComp : mNetworkableComponents) {
-                if (netComp.isValid()) {
+                if (Reference.isValid(netComp)) {
                     netComp.get().onOwnerIdChange(newOwnerId);
                 }
             }

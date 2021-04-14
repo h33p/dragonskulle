@@ -260,6 +260,7 @@ public class Engine {
                     cumulativeDeltaTime -= UPDATE_TIME;
 
                     fixedUpdate();
+                    AudioManager.getInstance().update();
                 } while (cumulativeTime > UPDATE_TIME);
             }
 
@@ -270,8 +271,6 @@ public class Engine {
 
                 // Call LateFrameUpdate on the presentation scene
                 lateFrameUpdate((float) deltaTime);
-
-                AudioManager.getInstance().update();
 
                 renderFrame();
                 Scene.setActiveScene(null);

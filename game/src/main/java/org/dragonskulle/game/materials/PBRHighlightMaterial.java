@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.AttributeDescription;
 import org.dragonskulle.renderer.SampledTexture;
@@ -38,15 +39,25 @@ public class PBRHighlightMaterial extends PBRMaterial {
                     "highlight_pbr",
                     new ArrayList<>(),
                     new ArrayList<>(),
-                    OVERLAY_COL_OFFSET + 4 * 4,
+                    OVERLAY_ALPHAMUL_OFFSET + 4 * 4,
                     new AttributeDescription(
-                            1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, OVERLAY_COL_OFFSET));
+                            1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, OVERLAY_COL_OFFSET),
+                    new AttributeDescription(1, 1, VK_FORMAT_R32_SFLOAT, OVERLAY_MINDIST_OFFSET),
+                    new AttributeDescription(1, 2, VK_FORMAT_R32_SFLOAT, OVERLAY_DISTPOW_OFFSET),
+                    new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, OVERLAY_ALPHAMUL_OFFSET));
         }
     }
 
     private static final int OVERLAY_COL_OFFSET = 0;
+    private static final int OVERLAY_MINDIST_OFFSET = OVERLAY_COL_OFFSET + 4 * 4;
+    private static final int OVERLAY_DISTPOW_OFFSET = OVERLAY_MINDIST_OFFSET + 4;
+    private static final int OVERLAY_ALPHAMUL_OFFSET = OVERLAY_DISTPOW_OFFSET + 4;
 
     @Getter private Vector4f mOverlayColour = new Vector4f(0f);
+
+    @Getter @Setter private float mMinDist = 0.5f;
+    @Getter @Setter private float mDistPow = 5f;
+    @Getter @Setter private float mAlphaMul = 4f;
 
     @Override
     protected int hashShaderSet() {
@@ -109,7 +120,10 @@ public class PBRHighlightMaterial extends PBRMaterial {
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = super.writeVertexInstanceData(offset, buffer, matrix, lights);
         mOverlayColour.get(offset + OVERLAY_COL_OFFSET, buffer);
-        return offset + 4 * 4;
+        buffer.putFloat(offset + OVERLAY_MINDIST_OFFSET, mMinDist);
+        buffer.putFloat(offset + OVERLAY_DISTPOW_OFFSET, mDistPow);
+        buffer.putFloat(offset + OVERLAY_ALPHAMUL_OFFSET, mAlphaMul);
+        return offset + OVERLAY_ALPHAMUL_OFFSET + 4;
     }
 
     public ShaderSet getShaderSet() {

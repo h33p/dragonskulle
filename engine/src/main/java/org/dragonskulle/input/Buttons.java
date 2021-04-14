@@ -69,13 +69,14 @@ class Buttons {
         // Set the listeners.
         GLFW.glfwSetKeyCallback(window, new KeyboardListener());
         GLFW.glfwSetMouseButtonCallback(window, new MouseListener());
+        GLFW.glfwSetCharCallback(window, (__, cp) -> inputCharacter(cp));
     }
 
     /**
      * Called when a GLFW button is being pressed.
      *
      * <p>Activate any {@link Action}s associated with that button, according to the mapping in
-     * {@link Bindings}.
+     * {@link Bindings}, if not being intercepted.
      *
      * @param button The button being pressed.
      */
@@ -85,13 +86,19 @@ class Buttons {
         for (Action action : mBindings.getActions(button)) {
             action.setActivated(true);
         }
+
+        IButtonEvent event = Actions.getOnPress();
+
+        if (event != null) {
+            event.handle(button);
+        }
     }
 
     /**
      * Called when a GLFW button is released.
      *
      * <p>If there are no other buttons, according to the mapping in {@link Bindings}, activating an
-     * {@link Action}: deactivate the action.
+     * {@link Action}: deactivate the action, unless intercepted.
      *
      * @param button The button being released.
      */
@@ -102,6 +109,27 @@ class Buttons {
         // currently triggering it.
         for (Action action : mBindings.getActions(button)) {
             attemptDeactivate(action);
+        }
+
+        IButtonEvent event = Actions.getOnRelease();
+
+        if (event != null) {
+            event.handle(button);
+        }
+    }
+
+    /**
+     * Called when a character is being inputted.
+     *
+     * <p>If there is an event listener attached somewhere, it will invoke it.
+     *
+     * @param codepoint the character codepoint
+     */
+    void inputCharacter(int codepoint) {
+        ICharEvent event = Actions.getOnChar();
+
+        if (event != null) {
+            event.handle((char) codepoint);
         }
     }
 

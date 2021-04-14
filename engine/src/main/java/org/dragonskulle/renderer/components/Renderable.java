@@ -95,7 +95,8 @@ public class Renderable extends Component {
      * @param tmpVec temporary vector that can be used for calculations
      */
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
-        getGameObject().getTransform().getPosition(tmpVec);
+        tmpVec.set(mMesh.getBBCenter());
+        tmpVec.mulPosition(getGameObject().getTransform().getWorldMatrix());
         return camPosition.distanceSquared(tmpVec);
     }
 

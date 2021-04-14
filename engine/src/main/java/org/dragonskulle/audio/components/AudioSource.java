@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.Source;
-import org.dragonskulle.audio.WaveSound;
+import org.dragonskulle.audio.formats.Sound;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
@@ -23,7 +23,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     private final Reference<AudioSource> mReference = getReference(AudioSource.class);
     @Getter private final Vector3f mPosition = new Vector3f();
 
-    @Getter private WaveSound mSound = null;
+    @Getter private Sound mSound = null;
     @Getter private Source mSource = null;
     @Getter private float mVolume = 1f;
     @Getter private float mPitch = 1f;
@@ -124,7 +124,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
      * @param soundId ID that the desired sound was loaded with
      */
     public void playSound(int soundId) {
-        WaveSound sound = AudioManager.getInstance().getSound(soundId);
+        Sound sound = AudioManager.getInstance().getSound(soundId);
         if (sound == null) {
             return;
         }

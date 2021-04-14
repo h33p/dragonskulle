@@ -178,7 +178,7 @@ public class HexagonTile {
      * @return Whether the tile is claimed by a building.
      */
     public boolean isClaimed() {
-        return (mClaimedBy != null && mClaimedBy.isValid());
+        return Reference.isValid(mClaimedBy);
     }
 
     /**
@@ -232,7 +232,7 @@ public class HexagonTile {
      * @return The Building on the HexagonTile, otherwise {@code null}.
      */
     public Building getBuilding() {
-        if (mBuilding == null || mBuilding.isValid() == false) {
+        if (!Reference.isValid(mBuilding)) {
             return null;
         }
 

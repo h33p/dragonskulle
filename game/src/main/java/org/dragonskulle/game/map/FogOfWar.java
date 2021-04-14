@@ -15,7 +15,6 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.Time;
 import org.dragonskulle.game.player.Player;
 
 /**
@@ -26,7 +25,7 @@ import org.dragonskulle.game.player.Player;
 @Log
 public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
-    private HashMap<HexagonTile, Reference<GameObject>> mFogTiles = new HashMap<>();
+    private HashMap<HexagonTile, Reference<FogTile>> mFogTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
     @Getter @Setter private Reference<Player> mActivePlayer;
 
@@ -55,8 +54,6 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
             return;
         }
 
-        double time = Time.getPreciseTimeInSeconds();
-
         mMapReference
                 .get()
                 .getAllTiles()
@@ -78,9 +75,9 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
     @Override
     protected void onDestroy() {
-        for (Reference<GameObject> go : mFogTiles.values()) {
-            if (go.isValid()) {
-                go.get().destroy();
+        for (Reference<FogTile> fogTile : mFogTiles.values()) {
+            if (Reference.isValid(fogTile)) {
+                fogTile.get().getGameObject().destroy();
             }
         }
 
@@ -99,15 +96,12 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     }
 
     private void setFog(HexagonTile tile, boolean enable) {
-        if (!enable) {
-            Reference<GameObject> go = mFogTiles.remove(tile);
-            if (go != null && go.isValid()) {
-                go.get().destroy();
-            }
-            return;
-        }
+        Reference<FogTile> tileRef = mFogTiles.get(tile);
 
-        if (mFogTiles.containsKey(tile)) {
+        if (Reference.isValid(tileRef)) {
+            tileRef.get().setFog(enable);
+            return;
+        } else if (!enable) {
             return;
         }
 
@@ -115,8 +109,16 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
                 GameObject.instantiate(
                         FOG_OBJECT, new TransformHex(tile.getQ(), tile.getR(), tile.getHeight()));
 
+        tileRef = go.getComponent(FogTile.class);
+
+        if (tileRef == null) {
+            FogTile fogTile = new FogTile();
+            go.addComponent(fogTile);
+            tileRef = fogTile.getReference(FogTile.class);
+        }
+
         mMapReference.get().getGameObject().addChild(go);
 
-        mFogTiles.put(tile, go.getReference());
+        mFogTiles.put(tile, tileRef);
     }
 }

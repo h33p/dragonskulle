@@ -227,7 +227,7 @@ class VulkanMeshBuffer implements NativeResource {
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
                 for (MeshBufferEntry entry : mEntries) {
                     int voff = entry.mMeshDescriptor.mVertexOffset;
-                    for (Vertex v : entry.mMesh.getVertices()) {
+                    for (Vertexc v : entry.mMesh.getVertices()) {
                         v.copyTo(voff, byteBuffer);
                         voff += Vertex.SIZEOF;
                     }

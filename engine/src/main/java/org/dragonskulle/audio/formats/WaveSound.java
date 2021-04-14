@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.audio;
+package org.dragonskulle.audio.formats;
 
-import com.sun.media.sound.WaveFileReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.java.Log;
 import org.lwjgl.openal.AL11;
@@ -24,16 +25,14 @@ import org.lwjgl.openal.AL11;
  *     then buffered using alBufferData.
  */
 @Log
-public class WaveSound implements Serializable {
+public class WaveSound extends Sound implements Serializable {
 
-    public int mBuffer;
-    public int mSampleRate;
-    public int mFormat;
-    public float mLength;
-    public int mBits;
-    public int mChannels;
+    private int mSampleRate;
+    private int mFormat;
+    private int mBits;
+    private int mChannels;
 
-    public void setALFormat() {
+    private void setALFormat() {
         switch (mBits) {
             case 16:
                 if (mChannels > 1) {
@@ -91,7 +90,7 @@ public class WaveSound implements Serializable {
      */
     public static WaveSound loadWave(File file) {
         try {
-            AudioInputStream audioInputStream = new WaveFileReader().getAudioInputStream(file);
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
 
             WaveSound sound = new WaveSound();
             AudioFormat format = audioInputStream.getFormat();
@@ -127,9 +126,11 @@ public class WaveSound implements Serializable {
 
             return sound;
         } catch (UnsupportedAudioFileException e) {
-            log.warning("Attempted to load unsupported audio file");
+            log.warning("Attempted to load unsupported audio file " + file.getAbsolutePath());
+        } catch (FileNotFoundException e) {
+            log.warning("Attempted to load file that doesn't exist: " + file.getAbsolutePath());
         } catch (IOException e) {
-            log.warning("Attempted to load file that doesn't exist");
+            log.warning("IOException when reading audio file " + file.getAbsolutePath());
         }
         return null;
     }

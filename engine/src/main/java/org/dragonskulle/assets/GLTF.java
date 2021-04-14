@@ -611,9 +611,9 @@ public class GLTF implements NativeResource {
                                     Vector3f norm = (Vector3f) normAccessor.get(i);
                                     Vector2f uv = (Vector2f) uvAccessor.get(i);
                                     vertices[i] = new Vertex();
-                                    vertices[i].setPos(pos);
-                                    vertices[i].setNormal(norm);
-                                    vertices[i].setUv(uv);
+                                    vertices[i].getPos().set(pos);
+                                    vertices[i].getNormal().set(norm);
+                                    vertices[i].getUv().set(uv);
                                 }
                             }
                         }

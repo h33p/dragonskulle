@@ -19,12 +19,24 @@ import lombok.experimental.Accessors;
  */
 public class TextureMapping implements Serializable {
 
+    /** Controls whether the texture uses linear or nearest filtering */
     public TextureFiltering mFiltering;
 
+    /** How the texture will wrap on the U coordinate */
     public TextureWrapping mWrapU;
+    /** How the texture will wrap on the V coordinate */
     public TextureWrapping mWrapV;
+    /** How the texture will wrap on the W coordinate */
     public TextureWrapping mWrapW;
 
+    /**
+     * Constructor for {@link TextureMapping}.
+     *
+     * @param filtering filtering mode to use
+     * @param wrapU U coordinate wrapping
+     * @param wrapV V coordinate wrapping
+     * @param wrapW W coordinate wrapping
+     */
     public TextureMapping(
             TextureFiltering filtering,
             TextureWrapping wrapU,
@@ -36,17 +48,27 @@ public class TextureMapping implements Serializable {
         this.mWrapW = wrapW;
     }
 
+    /**
+     * Constructor for {@link TextureMapping}.
+     *
+     * @param filtering filtering mode to use
+     * @param wrap wrapping mode for all texture coordinates
+     */
     public TextureMapping(TextureFiltering filtering, TextureWrapping wrap) {
         this(filtering, wrap, wrap, wrap);
     }
 
+    /** Default constructor for {@link TextureMapping}. */
     public TextureMapping() {
         this(TextureFiltering.LINEAR, TextureWrapping.CLAMP);
     }
 
+    /** Describes texture filtering. */
     @Accessors(prefix = "m")
     public static enum TextureFiltering {
+        /** Nearest filtering looks pixelated. */
         NEAREST(VK_FILTER_NEAREST),
+        /** Linear filtering is smooth. */
         LINEAR(VK_FILTER_LINEAR);
 
         @Getter private final int mValue;
@@ -55,6 +77,7 @@ public class TextureMapping implements Serializable {
             this.mValue = value;
         }
 
+        /** Create texture filtering from glTF filtering values. */
         public static TextureFiltering fromGLTF(Integer value) {
             if (value == null) {
                 return LINEAR;
@@ -71,11 +94,16 @@ public class TextureMapping implements Serializable {
         }
     }
 
+    /** Describes texture wrapping. */
     @Accessors(prefix = "m")
     public static enum TextureWrapping {
+        /** Repeat the texture. */
         REPEAT(VK_SAMPLER_ADDRESS_MODE_REPEAT),
+        /** Repeat and mirror the texture. */
         MIRROR(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT),
+        /** Clamp the pixels to their edge values. */
         CLAMP(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE),
+        /** Clamp the texture to a solid border colour. */
         CLAMP_BORDER(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
 
         @Getter private final int mValue;
@@ -84,6 +112,7 @@ public class TextureMapping implements Serializable {
             this.mValue = value;
         }
 
+        /** Create a {@link TextureWrapping} from glTF wrapping value. */
         public static TextureWrapping fromGLTF(Integer value) {
             if (value == null) {
                 return REPEAT;

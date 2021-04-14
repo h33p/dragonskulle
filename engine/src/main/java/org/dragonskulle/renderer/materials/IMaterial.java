@@ -34,5 +34,11 @@ public interface IMaterial extends NativeResource {
     int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights);
 
+    /**
+     * Gets the list of fragment shader textures used. It should be the same size as {@link
+     * ShaderSet#mNumFragmentTextures}
+     *
+     * @return the array of SampledTexture
+     */
     SampledTexture[] getFragmentTextures();
 }

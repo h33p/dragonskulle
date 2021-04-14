@@ -11,8 +11,12 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
+import org.dragonskulle.audio.formats.Sound;
+import org.dragonskulle.audio.formats.WaveSound;
+import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.joml.Vector3f;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC;
@@ -35,7 +39,7 @@ public class AudioManager {
     // TODO: Decide how many simultaneous audio sources we want to support
     private static final int MAX_SOURCES = 32;
 
-    private final ArrayList<WaveSound> mSounds = new ArrayList<>();
+    private final ArrayList<Sound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
     private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
 
@@ -204,7 +208,7 @@ public class AudioManager {
             return -1;
         }
 
-        WaveSound sound = WaveSound.loadWave(file);
+        Sound sound = WaveSound.loadWave(file);
 
         if (sound == null) {
             return -1;
@@ -222,7 +226,7 @@ public class AudioManager {
      * @param id Integer of id that the sound was loaded with
      * @return A WaveSound object representing the sound, or null if there was no sound with that id
      */
-    public WaveSound getSound(int id) {
+    public Sound getSound(int id) {
         if (id < 0 || id >= mSounds.size()) {
             return null;
         } else {
@@ -231,17 +235,37 @@ public class AudioManager {
     }
 
     /**
+     * Updates the OpenAL listener position and rotation from the singleton audio listener in the
+     * scene
+     */
+    private void updateListenerPosAndRot() {
+        Transform t = mAudioListener.get().getGameObject().getTransform();
+
+        Vector3f pos = t.getPosition();
+        AL11.alListener3f(AL11.AL_POSITION, pos.x, pos.y, pos.z);
+
+        Vector3f up = t.getUpVector();
+        Vector3f forward = t.getForwardVector();
+
+        AL11.alListenerfv(
+                AL11.AL_ORIENTATION,
+                new float[] {forward.x, forward.y, forward.z, up.x, up.y, up.z});
+    }
+
+    /**
      * Handles the distribution of sources between all of the AudioSources in the scene, assigning
      * sources to those that have the highest priority and removing them from those that no longer
      * need them.
      */
     public void update() {
-        if (mAudioListener == null) {
+        if (!mInitialized || mAudioListener == null) {
             return;
         }
 
-        // First remove any references to AudioSources that are no longer valid
-        mAudioSources.removeIf(ref -> !ref.isValid());
+        updateListenerPosAndRot();
+
+        // remove any references to AudioSources that are no longer valid
+        mAudioSources.removeIf(Reference::isInvalid);
 
         // All references will be valid because they any invalid ones are removed at the start
         for (int i = 0; i < mAudioSources.size(); i++) {
@@ -249,8 +273,14 @@ public class AudioManager {
 
             // Get the distance of the source from the listener
             float distance = 100000f;
-            if (mAudioListener != null && mAudioListener.isValid()) {
-                distance = mAudioListener.get().getPosition().distance(audioSource.getPosition());
+            if (Reference.isValid(mAudioListener)) {
+                distance =
+                        mAudioListener
+                                .get()
+                                .getGameObject()
+                                .getTransform()
+                                .getPosition()
+                                .distance(audioSource.getPosition());
             }
 
             // Don't attach a source if the AudioSource:
@@ -266,6 +296,7 @@ public class AudioManager {
             }
         }
 
+        // TODO: Sort audio sources by priority
         // List is not sorted by priority for now but will be in the future so
         // detach all sources from index mSources.size() onwards
         if (mAudioSources.size() > mSources.size()) {
@@ -338,7 +369,7 @@ public class AudioManager {
         }
         mSources.clear();
 
-        for (WaveSound s : mSounds) {
+        for (Sound s : mSounds) {
             AL11.alDeleteBuffers(s.mBuffer);
         }
         mSounds.clear();

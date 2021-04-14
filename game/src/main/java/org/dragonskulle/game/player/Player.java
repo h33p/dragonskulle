@@ -74,7 +74,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack. */
-    private static final float ATTACK_COOLDOWN = 20f;
+    private static final float ATTACK_COOLDOWN = 2f;
     /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
@@ -316,7 +316,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Reference<NetworkObject> networkObject =
                 getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
-        if (networkObject == null || !networkObject.isValid()) {
+        if (!Reference.isValid(networkObject)) {
             log.warning("Unable to create building: Could not create a Network Object.");
             return null;
         }
@@ -327,7 +327,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         transform.setHeight(tile.getHeight());
         Reference<Building> building = gameObject.getComponent(Building.class);
 
-        if (building == null || !building.isValid()) {
+        if (!Reference.isValid(building)) {
             log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
@@ -425,7 +425,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to check.
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
-    public boolean checkBuildingOwnership(Building building) {
+    public boolean isBuildingOwner(Building building) {
         return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
 
@@ -438,7 +438,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && checkBuildingOwnership(tile.getBuilding())) {
+            if (tile.hasBuilding() && isBuildingOwner(tile.getBuilding())) {
                 return true;
             }
         }
@@ -459,7 +459,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         mMap = map.getReference(HexagonMap.class);
-        return mMap != null && mMap.isValid();
+        return Reference.isValid(mMap);
     }
 
     /**
@@ -523,7 +523,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Subtract the cost.
-        mTokens.add(-Building.BUY_PRICE);
+        mTokens.subtract(Building.BUY_PRICE);
 
         log.info("Added building.");
         return true;
@@ -628,7 +628,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attacking");
 
         // ATTACK!!! (Sorry...)
-        mTokens.set(mTokens.get() - defender.getAttackCost());
+        mTokens.subtract(defender.getAttackCost());
         boolean won;
         if (defender.getOwner().hasLost()) {
             won = true;
@@ -686,8 +686,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        // Checks you have the cash
+        if (mTokens.get() < defender.getAttackCost()) {
+            log.warning("You don't have the cash");
+            return false;
+        }
+
         // Checks you own the building
-        if (checkBuildingOwnership(attacker) == false) {
+        if (isBuildingOwner(attacker) == false) {
             log.info("It's not your building");
             return false;
         }
@@ -761,8 +767,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Add sell logic.
-        log.info("SELL HERE.");
+        // Adds the tokens
+        mTokens.add(Building.SELL_PRICE);
+
+        // Remove the building
+        building.remove();
+
         return true;
     }
 
@@ -779,7 +789,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Write all checks.
+        // Checks that you own the building
+        if (isBuildingOwner(building) == false) {
+            log.info("You do not own the building");
+            return false;
+        }
 
         return true;
     }
@@ -838,8 +852,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        SyncStat stat = building.getStat(statType);
+        // Remove the cost.
+        mTokens.subtract(stat.getCost());
         // Increase the stat level.
-        building.getStat(statType).increaseLevel();
+        stat.increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -866,18 +883,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (checkBuildingOwnership(building) == false) {
+        if (isBuildingOwner(building) == false) {
             log.info("Building not owned.");
             return false;
         }
 
-        if (building.getStat(statType) == null) {
+        SyncStat stat = building.getStat(statType);
+
+        if (stat == null) {
             log.info("Building is missing specified stat.");
             return false;
         }
 
-        if (building.getStat(statType).getLevel() >= SyncStat.LEVEL_MAX) {
-            log.info("Building stat already fully upgraded.");
+        if (stat.isUpgradeable() == false) {
+            log.info("Building stat not upgradeable.");
+            return false;
+        }
+
+        if (mTokens.get() < stat.getCost()) {
+            log.info("Cannot afford building upgrade.");
             return false;
         }
 
@@ -911,7 +935,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        if (mCapital != null && mCapital.isValid()) {
+        if (Reference.isValid(mCapital)) {
             return mCapital.get();
         }
 

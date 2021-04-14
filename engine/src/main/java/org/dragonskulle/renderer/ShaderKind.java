@@ -8,11 +8,17 @@ import static org.lwjgl.util.shaderc.Shaderc.shaderc_glsl_vertex_shader;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+/**
+ * Describes the kind of shader
+ *
+ * @author Aurimas Blažulionis
+ */
 public enum ShaderKind {
     VERTEX_SHADER(shaderc_glsl_vertex_shader),
     GEOMETRY_SHADER(shaderc_glsl_geometry_shader),
     FRAGMENT_SHADER(shaderc_glsl_fragment_shader);
 
+    /** Numerical value of the shader */
     @Accessors(prefix = "m")
     @Getter
     private final int mKind;
