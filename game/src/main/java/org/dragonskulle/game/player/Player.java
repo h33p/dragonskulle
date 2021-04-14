@@ -417,7 +417,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to check.
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
-    public boolean checkBuildingOwnership(Building building) {
+    public boolean isBuildingOwner(Building building) {
         return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
 
@@ -430,7 +430,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
         for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && checkBuildingOwnership(tile.getBuilding())) {
+            if (tile.hasBuilding() && isBuildingOwner(tile.getBuilding())) {
                 return true;
             }
         }
@@ -677,8 +677,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        // Checks you have the cash
+        if (mTokens.get() < defender.getAttackCost()) {
+            log.warning("You don't have the cash");
+            return false;
+        }
+
         // Checks you own the building
-        if (checkBuildingOwnership(attacker) == false) {
+        if (isBuildingOwner(attacker) == false) {
             log.info("It's not your building");
             return false;
         }
@@ -752,8 +758,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Add sell logic.
-        log.info("SELL HERE.");
+        // Adds the tokens
+        mTokens.add(Building.SELL_PRICE);
+
+        // Remove the building
+        building.remove();
+
         return true;
     }
 
@@ -770,7 +780,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO: Write all checks.
+        // Checks that you own the building
+        if (isBuildingOwner(building) == false) {
+            log.info("You do not own the building");
+            return false;
+        }
 
         return true;
     }
@@ -857,7 +871,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you own the building
-        if (checkBuildingOwnership(building) == false) {
+        if (isBuildingOwner(building) == false) {
             log.info("Building not owned.");
             return false;
         }
