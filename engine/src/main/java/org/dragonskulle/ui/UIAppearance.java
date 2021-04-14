@@ -34,6 +34,8 @@ public class UIAppearance implements NativeResource {
     private Resource<Font> mTextFont = Font.getFontResource("CascadiaCode.ttf");
     /** The colour text has */
     private Vector4f mTextColour = new Vector4f(0f, 0f, 0f, 1f);
+    /** How much of a button is used by its icon (on the left side) */
+    private float mButtonIconSplit = 0.2f;
     /** Margins from parent box edges that are set for text */
     private float mRectTextVertMargin = 0.05f;
     /** Margins from parent box edges that are set for text */
@@ -42,6 +44,8 @@ public class UIAppearance implements NativeResource {
     private float mSliderKnobSize = 10f;
     /** Texture of a regular button */
     private SampledTexture mButtonTexture = new SampledTexture("ui/wide_button.png");
+    /** Texture of a drop down menu icon */
+    private SampledTexture mDropDownIconTexture = new SampledTexture("ui/drop_down_icon.png");
     /** Texture of a slider knob */
     private SampledTexture mSliderKnobTexture = new SampledTexture("ui/round_knob.png");
     /** Texture of a regular rectangle */
@@ -65,6 +69,13 @@ public class UIAppearance implements NativeResource {
         mButtonTexture = buttonTexture;
     }
 
+    public void setDropDownIconTexture(SampledTexture dropDownIconTexture) {
+        if (mDropDownIconTexture != null) {
+            mDropDownIconTexture.free();
+        }
+        mDropDownIconTexture = dropDownIconTexture;
+    }
+
     public void setSliderKnobTexture(SampledTexture sliderKnobTexture) {
         if (mSliderKnobTexture != null) {
             mSliderKnobTexture.free();
@@ -85,6 +96,7 @@ public class UIAppearance implements NativeResource {
     public void free() {
         setTextFont(null);
         setButtonTexture(null);
+        setDropDownIconTexture(null);
         setSliderKnobTexture(null);
         setRectTextures(null);
     }

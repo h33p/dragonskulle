@@ -56,6 +56,7 @@ public class GameUIAppearance {
         appearance.getTextFont().free();
         appearance.setTextFont(Font.getFontResource("fatpixel.ttf"));
         appearance.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));
+        appearance.setDropDownIconTexture(new SampledTexture("ui/drop_down_icon_new.png"));
         appearance.setRectTextures(
                 new SampledTexture[] {
                     new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")

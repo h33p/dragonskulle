@@ -371,6 +371,29 @@ public class App implements NativeResource {
 
                                 button.addComponent(newButton);
                             });
+
+                    bg.buildChild(
+                            "testDropdown",
+                            new TransformUI(true),
+                            (button) -> {
+                                button.getTransform(TransformUI.class)
+                                        .setParentAnchor(0f, 0.55f, 0.5f, 0.55f);
+                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+
+                                UIDropDown newDropDown =
+                                        new UIDropDown(
+                                                1,
+                                                (drop) ->
+                                                        System.out.println(
+                                                                "NEW SELECTION: "
+                                                                        + drop.getSelected()),
+                                                "A1",
+                                                "34",
+                                                "MY NAME IS H33P",
+                                                "No JEFF");
+
+                                button.addComponent(newDropDown);
+                            });
                 });
         joinUI.buildChild(
                 "bg",

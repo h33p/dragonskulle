@@ -25,6 +25,8 @@ public class UITextRect extends Component implements IOnAwake {
     private UIText mLabelTextComp;
     @Getter private Reference<UIText> mLabelText;
 
+    @Getter @Setter SampledTexture mIcon;
+
     public UITextRect() {
         mLabelTextComp = new UIText();
     }
@@ -53,15 +55,46 @@ public class UITextRect extends Component implements IOnAwake {
         }
 
         if (mLabelTextComp != null) {
+            if (mIcon != null) {
+                getGameObject()
+                        .buildChild(
+                                "icon",
+                                new TransformUI(true),
+                                (handle) -> {
+                                    TransformUI transform = handle.getTransform(TransformUI.class);
+                                    transform.setMargin(
+                                            mAppearance.getRectTextHorizMargin(),
+                                            mAppearance.getRectTextVertMargin(),
+                                            0,
+                                            -mAppearance.getRectTextVertMargin());
+
+                                    transform.setParentAnchor(
+                                            0, 0, mAppearance.getButtonIconSplit(), 1);
+
+                                    UIRenderable iconRend = new UIRenderable(mIcon);
+                                    iconRend.setHoverable(false);
+                                    handle.addComponent(iconRend);
+                                });
+            }
+
             getGameObject()
                     .buildChild(
                             "label",
                             new TransformUI(true),
                             (handle) -> {
-                                handle.getTransform(TransformUI.class)
-                                        .setMargin(
-                                                mAppearance.getRectTextHorizMargin(),
-                                                mAppearance.getRectTextVertMargin());
+                                TransformUI transform = handle.getTransform(TransformUI.class);
+                                transform.setMargin(
+                                        mAppearance.getRectTextHorizMargin(),
+                                        mAppearance.getRectTextVertMargin());
+
+                                if (mIcon != null) {
+                                    transform.setParentAnchor(
+                                            mAppearance.getButtonIconSplit(), 0, 1, 1);
+                                    transform.setPivotOffset(
+                                            Math.max(0f, 0.5f - mAppearance.getButtonIconSplit()),
+                                            0.5f);
+                                }
+
                                 mLabelText = mLabelTextComp.getReference(UIText.class);
                                 handle.addComponent(mLabelTextComp);
                             });
