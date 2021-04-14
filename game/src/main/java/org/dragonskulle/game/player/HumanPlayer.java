@@ -205,11 +205,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
-
-        if (Reference.isValid(mMenuDrawer)) {
-            mMenuDrawer.get().setMenu(mScreenOn);
-        }
-
         mapScreen();
 
         if (mVisualsNeedUpdate) {

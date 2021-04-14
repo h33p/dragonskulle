@@ -449,7 +449,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                 } else {
                     mRegularColour.lerp(mHoveredColour, mCurTimer / mTransitionTime, mTmpLerp);
                 }
-                mMaterial.colour.set(mTmpLerp);
+                mMaterial.mColour.set(mTmpLerp);
             }
         }
     }
