@@ -512,7 +512,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Subtract the cost.
-        mTokens.add(-Building.BUY_PRICE);
+        mTokens.subtract(Building.BUY_PRICE);
 
         log.info("Added building.");
         return true;
@@ -617,7 +617,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attacking");
 
         // ATTACK!!! (Sorry...)
-        mTokens.set(mTokens.get() - defender.getAttackCost());
+        mTokens.subtract(defender.getAttackCost());
         boolean won;
         if (defender.getOwner().hasLost()) {
             won = true;
@@ -841,8 +841,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        SyncStat stat = building.getStat(statType);
+        // Remove the cost.
+        mTokens.subtract(stat.getCost());
         // Increase the stat level.
-        building.getStat(statType).increaseLevel();
+        stat.increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -874,13 +877,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (building.getStat(statType) == null) {
+        SyncStat stat = building.getStat(statType);
+
+        if (stat == null) {
             log.info("Building is missing specified stat.");
             return false;
         }
 
-        if (building.getStat(statType).getLevel() >= SyncStat.LEVEL_MAX) {
-            log.info("Building stat already fully upgraded.");
+        if (stat.isUpgradeable() == false) {
+            log.info("Building stat not upgradeable.");
+            return false;
+        }
+
+        if (mTokens.get() < stat.getCost()) {
+            log.info("Cannot afford building upgrade.");
             return false;
         }
 

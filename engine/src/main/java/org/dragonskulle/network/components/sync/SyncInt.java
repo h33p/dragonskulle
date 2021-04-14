@@ -52,6 +52,15 @@ public class SyncInt implements ISyncVar, Serializable {
     }
 
     /**
+     * Subtract a value from the current data.
+     *
+     * @param value The value to subtract.
+     */
+    public void subtract(int value) {
+        set(get() - value);
+    }
+
+    /**
      * Get integer value.
      *
      * @return the value
