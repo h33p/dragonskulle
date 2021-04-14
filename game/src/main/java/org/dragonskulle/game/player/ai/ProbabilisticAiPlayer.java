@@ -137,7 +137,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Will try and building a building
      *
-     * @param index the index to check
+     * @param building the {@code Building} to try and build from.
      * @return whether the code was invoked
      */
     private boolean tryToAddBuilding(Building building) {
@@ -215,10 +215,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * This will try to attack from a building
+     * This will try to attack from a building.
      *
-     * @param index where in the list to get it
-     * @return whether it was invoked
+     * @param attacker The building to lauch the attack from.
+     * @return whether it was invoked.
      */
     protected boolean tryToAttack(Building attacker) {
 
