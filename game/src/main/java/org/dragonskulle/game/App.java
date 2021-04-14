@@ -437,15 +437,11 @@ public class App implements NativeResource {
                 0.05f,
                 0f,
                 MENU_BASEWIDTH,
-                (go) -> {
-                    go.addComponent(new UITextRect("Master volume:"));
-
-                    uiManager.buildRightOf(
-                            go,
-                            new UISlider(
-                                    AudioManager.getInstance().getMasterVolume(),
-                                    (__, val) -> AudioManager.getInstance().setMasterVolume(val)));
-                },
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Master volume:"),
+                        new UISlider(
+                                AudioManager.getInstance().getMasterVolume(),
+                                (__, val) -> AudioManager.getInstance().setMasterVolume(val))),
                 new UIButton(
                         "Back",
                         (__, ___) -> {
@@ -458,20 +454,17 @@ public class App implements NativeResource {
                 0.05f,
                 0f,
                 MENU_BASEWIDTH,
-                (go) -> {
-                    go.addComponent(new UITextRect("Fullscreen mode:"));
-                    uiManager.buildRightOf(
-                            go,
-                            new UIDropDown(
-                                    0,
-                                    (drop) -> {
-                                        Engine.getInstance()
-                                                .getGLFWState()
-                                                .setFullscreen(drop.getSelected() == 1);
-                                    },
-                                    "Windowed",
-                                    "Fullscreen"));
-                },
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Fullscreen mode:"),
+                        new UIDropDown(
+                                0,
+                                (drop) -> {
+                                    Engine.getInstance()
+                                            .getGLFWState()
+                                            .setFullscreen(drop.getSelected() == 1);
+                                },
+                                "Windowed",
+                                "Fullscreen")),
                 new UIButton(
                         "Back",
                         (__, ___) -> {

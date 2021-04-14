@@ -164,6 +164,21 @@ public class UIManager {
         buildWithAnchorOffset(go, 1f, 0f, 1f, 1f, 1f + mAppearance.getHorizUIElemGap(), 0f, elems);
     }
 
+    /**
+     * Builds an object with some children right of it.
+     *
+     * @param first the main object to build.
+     * @param elems the elements that will be built right of {@code first}.
+     * @return wrapped build handler that will build first on the object, and elems as children.
+     */
+    public IUIBuildHandler buildWithChildrenRightOf(
+            IUIBuildHandler first, IUIBuildHandler... elems) {
+        return (go) -> {
+            first.handleUIBuild(go);
+            buildRightOf(go, elems);
+        };
+    }
+
     /** Get singleton UIManager instance */
     public static UIManager getInstance() {
         return SINGLETON;
