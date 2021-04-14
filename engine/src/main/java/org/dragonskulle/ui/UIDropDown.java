@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 
 /**
  * Class describing a drop down menu
@@ -15,7 +16,7 @@ import org.dragonskulle.core.Reference;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIDropDown extends Component implements IOnAwake, IFrameUpdate {
+public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUIBuildHandler {
 
     /** Interface that is invoked when an event occurs for the drop down */
     public static interface IDropDownEvent {
@@ -146,6 +147,11 @@ public class UIDropDown extends Component implements IOnAwake, IFrameUpdate {
         if (mOnSelect != null) {
             mOnSelect.handle(this);
         }
+    }
+
+    @Override
+    public void handleUIBuild(GameObject go) {
+        go.addComponent(this);
     }
 
     @Override

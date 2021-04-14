@@ -278,6 +278,8 @@ public class App implements NativeResource {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
+        final UIManager uiManager = UIManager.getInstance();
+
         mainUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -286,115 +288,43 @@ public class App implements NativeResource {
 
                     bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
 
-                    bg.buildChild(
-                            "joinButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Join Game",
-                                                (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    joinUI.setEnabled(true);
-                                                    hostUI.setEnabled(false);
-                                                });
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "hostButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Host Game",
-                                                (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    hostUI.setEnabled(true);
-                                                });
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "settingsButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton = new UIButton("Settings");
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "quitButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Quit",
-                                                (uiButton, __) -> {
-                                                    Engine.getInstance().stop();
-                                                });
-
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "reloadButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Quick Reload",
-                                                (uiButton, __) -> {
-                                                    sReload = true;
-                                                    Engine.getInstance().stop();
-                                                });
-
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "testDropdown",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.55f, 0.5f, 0.55f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIDropDown newDropDown =
-                                        new UIDropDown(
-                                                1,
-                                                (drop) ->
-                                                        System.out.println(
-                                                                "NEW SELECTION: "
-                                                                        + drop.getSelected()),
-                                                "A1",
-                                                "34",
-                                                "MY NAME IS H33P",
-                                                "No JEFF");
-
-                                button.addComponent(newDropDown);
-                            });
+                    uiManager.buildVerticalUI(
+                            bg,
+                            0.05f,
+                            0,
+                            0.5f,
+                            new UIButton(
+                                    "Join Game",
+                                    (__, ___) -> {
+                                        mainUI.setEnabled(false);
+                                        joinUI.setEnabled(true);
+                                        hostUI.setEnabled(false);
+                                    }),
+                            new UIButton(
+                                    "Host Game",
+                                    (__, ___) -> {
+                                        mainUI.setEnabled(false);
+                                        hostUI.setEnabled(true);
+                                    }),
+                            new UIButton("Settings"),
+                            new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
+                            new UIButton(
+                                    "Quick Reload",
+                                    (__, ___) -> {
+                                        sReload = true;
+                                        Engine.getInstance().stop();
+                                    }),
+                            new UIDropDown(
+                                    1,
+                                    (drop) ->
+                                            System.out.println(
+                                                    "NEW SELECTION: " + drop.getSelected()),
+                                    "A1",
+                                    "34",
+                                    "MY NAME IS H33P",
+                                    "No JEFF"));
                 });
+
         joinUI.buildChild(
                 "bg",
                 new TransformUI(false),
@@ -422,97 +352,62 @@ public class App implements NativeResource {
 
                     UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
 
-                    bg.buildChild(
-                            "ipInput",
-                            new TransformUI(true),
-                            (input) -> {
-                                input.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                                input.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                                input.addComponent(ibox);
-                            });
+                    uiManager.buildVerticalUI(
+                            bg,
+                            0.05f,
+                            0f,
+                            0.5f,
+                            ibox,
+                            new UIButton(
+                                    "Join (Temporary)",
+                                    (uiButton, __) -> {
+                                        int port = sPort;
 
-                    bg.buildChild(
-                            "joinButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                                        try {
+                                            String text = ibox.getInput();
+                                            String[] elems = text.split(":");
+                                            String ip = elems[0];
+                                            String portText = elems.length > 1 ? elems[1] : null;
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Join (Temporary)",
-                                                (uiButton, __) -> {
-                                                    int port = sPort;
+                                            if (portText != null) {
+                                                port = Integer.parseInt(portText);
+                                            }
 
-                                                    try {
-                                                        String text = ibox.getInput();
-                                                        String[] elems = text.split(":");
-                                                        String ip = elems[0];
-                                                        String portText =
-                                                                elems.length > 1 ? elems[1] : null;
+                                            networkManager
+                                                    .get()
+                                                    .createClient(
+                                                            ip,
+                                                            port,
+                                                            (gameScene, manager, netID) -> {
+                                                                if (netID >= 0) {
+                                                                    onConnectedClient(
+                                                                            gameScene, manager,
+                                                                            netID);
+                                                                } else if (Reference.isValid(
+                                                                        connectingTextRef)) {
+                                                                    connectingTextRef
+                                                                            .get()
+                                                                            .setEnabled(false);
+                                                                }
+                                                            });
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
 
-                                                        if (portText != null) {
-                                                            port = Integer.parseInt(portText);
-                                                        }
+                                            if (Reference.isValid(connectingTextRef))
+                                                connectingTextRef.get().setText("Invalid input!");
+                                        }
 
-                                                        networkManager
-                                                                .get()
-                                                                .createClient(
-                                                                        ip,
-                                                                        port,
-                                                                        (gameScene,
-                                                                                manager,
-                                                                                netID) -> {
-                                                                            if (netID >= 0) {
-                                                                                onConnectedClient(
-                                                                                        gameScene,
-                                                                                        manager,
-                                                                                        netID);
-                                                                            } else if (Reference
-                                                                                    .isValid(
-                                                                                            connectingTextRef)) {
-                                                                                connectingTextRef
-                                                                                        .get()
-                                                                                        .setEnabled(
-                                                                                                false);
-                                                                            }
-                                                                        });
-                                                    } catch (Exception e) {
-
-                                                        e.printStackTrace();
-
-                                                        if (Reference.isValid(connectingTextRef))
-                                                            connectingTextRef
-                                                                    .get()
-                                                                    .setText("Invalid input!");
-                                                    }
-
-                                                    if (Reference.isValid(connectingTextRef))
-                                                        connectingTextRef.get().setEnabled(true);
-                                                });
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "cancelButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Cancel",
-                                                (uiButton, __) -> {
-                                                    joinUI.setEnabled(false);
-                                                    mainUI.setEnabled(true);
-                                                });
-
-                                button.addComponent(newButton);
-                            });
+                                        if (Reference.isValid(connectingTextRef))
+                                            connectingTextRef.get().setEnabled(true);
+                                    }),
+                            null,
+                            null,
+                            new UIButton(
+                                    "Cancel",
+                                    (uiButton, __) -> {
+                                        joinUI.setEnabled(false);
+                                        mainUI.setEnabled(true);
+                                    }));
                 });
 
         hostUI.buildChild(

@@ -42,6 +42,10 @@ public class UIAppearance implements NativeResource {
     private float mRectTextHorizMargin = 0.05f;
     /** Size slider knobs have */
     private float mSliderKnobSize = 10f;
+    /** Height of a UI element in vertical UI */
+    private float mVerticalUIElemHeight = 0.07f;
+    /** Gap between UI elements in vertical UI */
+    private float mVerticalUIElemGap = 0.03f;
     /** Texture of a regular button */
     private SampledTexture mButtonTexture = new SampledTexture("ui/wide_button.png");
     /** Texture of a drop down menu icon */

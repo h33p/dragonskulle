@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 
 /**
  * Class describing a rectangle with text
@@ -14,7 +16,7 @@ import org.dragonskulle.renderer.SampledTexture;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UITextRect extends Component implements IOnAwake {
+public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
     @Getter protected Reference<UIRenderable> mRenderable;
     protected UIMaterial mMaterial;
 
@@ -37,6 +39,11 @@ public class UITextRect extends Component implements IOnAwake {
 
     public UITextRect(String label) {
         mLabelTextComp = new UIText(label);
+    }
+
+    @Override
+    public void handleUIBuild(GameObject go) {
+        go.addComponent(this);
     }
 
     @Override
