@@ -56,7 +56,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private final SyncStat mBuildDistance = new SyncStat(this);
     /** Stores the claim range of the building. */
     @Getter private final SyncStat mClaimDistance = new SyncStat(this);
-    
+
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
 
@@ -72,16 +72,18 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
     /**
-     * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a Building.
-     * <p>
-     * Tiles excluded from this set:
+     * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
+     * Building.
+     *
+     * <p>Tiles excluded from this set:
+     *
      * <ul>
-     * <li>Non-land tiles.</li>
-     * <li>Tiles claimed by <b>this</b> building.</li>
+     *   <li>Non-land tiles.
+     *   <li>Tiles claimed by <b>this</b> building.
      * </ul>
      *
-     * <p>
-     * To actually get a more refined set that discludes tiles claimed by other buildings, please use: {@link #getBuildableTiles()}.
+     * <p>To actually get a more refined set that discludes tiles claimed by other buildings, please
+     * use: {@link #getBuildableTiles()}.
      */
     private HashSet<HexagonTile> mPlaceableTiles = new HashSet<HexagonTile>();
 
@@ -229,7 +231,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Clear the current list of buildable tiles.
         mPlaceableTiles.clear();
-        
+
         // Get the currently claimed radius.
         int claimedRadius = mClaimDistance.getValue() + 1;
         // Get the current build distance.
@@ -240,7 +242,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                         (tile) -> {
                             // Add each tile that is a land tile.
                             if (tile.getTileType() == TileType.LAND) {
-                            	mPlaceableTiles.add(tile);
+                                mPlaceableTiles.add(tile);
                             }
                         });
     }
@@ -343,22 +345,24 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get a {@link HashSet} of {@link HexagonTile}s surrounding this building that are currently able to have {@link Building}s placed on them.
-     * 
+     * Get a {@link HashSet} of {@link HexagonTile}s surrounding this building that are currently
+     * able to have {@link Building}s placed on them.
+     *
      * @return Nearby HexagonTiles able to have Buildings placed on them.
      */
     public HashSet<HexagonTile> getBuildableTiles() {
-    	HashSet<HexagonTile> buildableTiles = new HashSet<HexagonTile>();
-    	
-    	mPlaceableTiles.forEach((tile) -> {
-    		if(!tile.isClaimed() && !tile.hasBuilding()) {
-    			buildableTiles.add(tile);
-    		}
-    	});
-    	
-    	return buildableTiles;
+        HashSet<HexagonTile> buildableTiles = new HashSet<HexagonTile>();
+
+        mPlaceableTiles.forEach(
+                (tile) -> {
+                    if (!tile.isClaimed() && !tile.hasBuilding()) {
+                        buildableTiles.add(tile);
+                    }
+                });
+
+        return buildableTiles;
     }
-    
+
     /**
      * Get the {@link HexagonTile} the {@link Building} is on.
      *

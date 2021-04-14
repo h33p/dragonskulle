@@ -79,76 +79,78 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      *     ArrayList}.
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int distance, boolean includeTile) {
+    public ArrayList<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int distance, boolean includeTile) {
         int minimum = includeTile ? 0 : 1;
-    	return getTilesInRadius(tile, minimum, distance);
+        return getTilesInRadius(tile, minimum, distance);
     }
-    
+
     /**
      * Get the tiles within a minimum and maximum radius of the target tile.
-     * <p>
-     * A min radius of 0 will include the target tile.
-     * <br>
+     *
+     * <p>A min radius of 0 will include the target tile. <br>
      * A min radius of 1 will exclude the target tile.
-     * 
+     *
      * @param tile The target tile.
      * @param min The minimum radius of tiles to include.
      * @param max The maximum radius of tiles to include.
-     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius, inclusive.
+     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius,
+     *     inclusive.
      */
     public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int min, int max) {
-    	if(tile == null) return new ArrayList<HexagonTile>();
-    	
+        if (tile == null) return new ArrayList<HexagonTile>();
+
         return getTilesInRadius(tile.getQ(), tile.getR(), min, max);
     }
 
     /**
      * Get the tiles within a minimum and maximum radius of the target tile position.
-     * <p>
-     * A min radius of 0 will include the target tile.
-     * <br>
+     *
+     * <p>A min radius of 0 will include the target tile. <br>
      * A min radius of 1 will exclude the target tile.
-     * <p>
-     * Based off pseudocode found here: https://www.redblobgames.com/grids/hexagons/#range
-     * 
+     *
+     * <p>Based off pseudocode found here: https://www.redblobgames.com/grids/hexagons/#range
+     *
      * @param tileQ The target tile Q position.
      * @param tileR The target tile R position.
      * @param min The minimum radius of tiles to include.
      * @param max The maximum radius of tiles to include.
-     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius, inclusive.
+     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius,
+     *     inclusive.
      */
     private ArrayList<HexagonTile> getTilesInRadius(int tileQ, int tileR, int min, int max) {
-    	ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-    	
-    	for(int q = -max; q <= max; q++) {
-    		// Only generate valid tile coordinates.
-    		int lower = Math.max(-max, -q - max);
-        	int upper = Math.min(max, -q + max);
-        	for(int r = lower; r <= upper; r++) {
-        		int s = -q - r;
-        		
-        		// Ensure tile isn't within the minimum.
-        		int distance = getDistance(q, r, s);
-        		if(distance < min) continue;
-        		
-        		// Attempt to get the desired tile, and check if it exists.
+        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+
+        for (int q = -max; q <= max; q++) {
+            // Only generate valid tile coordinates.
+            int lower = Math.max(-max, -q - max);
+            int upper = Math.min(max, -q + max);
+            for (int r = lower; r <= upper; r++) {
+                int s = -q - r;
+
+                // Ensure tile isn't within the minimum.
+                int distance = getDistance(q, r, s);
+                if (distance < min) continue;
+
+                // Attempt to get the desired tile, and check if it exists.
                 HexagonTile selectedTile = getTile(tileQ + q, tileR + r);
                 if (selectedTile == null) continue;
 
                 // Add the tile to the list.
                 tiles.add(selectedTile);
-        	}
-    	}
-    	
+            }
+        }
+
         return tiles;
     }
 
     /**
      * Calculate the distance from the centre (0, 0, 0).
+     *
      * @return
      */
     private int getDistance(int q, int r, int s) {
-    	return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
+        return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
     }
 
     public HexagonTile cursorToTile() {

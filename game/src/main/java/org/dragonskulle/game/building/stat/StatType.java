@@ -60,12 +60,13 @@ public enum StatType {
             (level) -> {
                 return 2;
             }),
-    
+
     CLAIM_DISTANCE(
             // Regardless of the level, the claim distance will always be the same.
             (level) -> {
                 return 1;
-            });;
+            });
+    ;
 
     /** Set the IDs of the Stats. */
     static {
