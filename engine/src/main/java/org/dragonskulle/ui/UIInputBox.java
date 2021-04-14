@@ -7,7 +7,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.ICharEvent;
-import org.joml.Vector4f;
 
 /**
  * Class describing a interactive UI input box
@@ -29,9 +28,9 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
 
     private Reference<UIButton> mButton;
     private Reference<UIText> mText;
-    private UIText mTextComp;
 
     private int mPosition = 0;
+    private final String mInitialText;
 
     private final ICharEvent mOnCharInner =
             (c) -> {
@@ -49,7 +48,7 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
     }
 
     public UIInputBox(String text) {
-        mTextComp = new UIText(new Vector4f(0f, 0f, 0f, 1f), text);
+        mInitialText = text;
     }
 
     public String getInput() {
@@ -66,6 +65,16 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
+
+        if (!Reference.isValid(mText)) {
+            if (Reference.isValid(mButton)) {
+                mText = mButton.get().getLabelText();
+            }
+
+            if (!Reference.isValid(mText)) {
+                return;
+            }
+        }
 
         if (Actions.getOnChar() != mOnCharInner) {
             mText.get().setCursorPos(-1);
@@ -125,17 +134,18 @@ public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
 
         UIButton button =
                 new UIButton(
-                        mTextComp,
+                        mInitialText,
                         (__, ___) -> {
-                            mPosition = mText.get().getText().length();
-                            Actions.setOnChar(mOnChar);
-                            mText.get().setCursorPos(mPosition);
+                            if (Reference.isValid(mText)) {
+                                mPosition = mText.get().getText().length();
+                                Actions.setOnChar(mOnChar);
+                                mText.get().setCursorPos(mPosition);
+                            }
                         });
 
         getGameObject().addComponent(button);
 
         mButton = button.getReference(UIButton.class);
-        mText = mTextComp.getReference(UIText.class);
     }
 
     @Override
