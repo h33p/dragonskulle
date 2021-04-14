@@ -139,6 +139,8 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
 
     @Override
     public void onAwake() {
+        UIAppearance appearance = UIManager.getInstance().getAppearance();
+
         getGameObject().getTransform(TransformUI.class).setTargetAspectRatio(1f);
         getGameObject()
                 .buildChild(
@@ -157,7 +159,7 @@ public class UIVerticalSlider extends Component implements IOnAwake, IFrameUpdat
                                     (knob) -> {
                                         knob.addComponent(
                                                 new UIRenderable(
-                                                        new SampledTexture("ui/slider_bar.png")));
+                                                        appearance.getSliderKnobTexture().clone()));
                                         mKnobTransform = knob.getTransform(TransformUI.class);
                                         mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
                                         mKnobTransform.setMargin(-15f, -15f, 15f, 15f);

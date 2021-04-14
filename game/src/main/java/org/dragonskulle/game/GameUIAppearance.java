@@ -56,13 +56,15 @@ public class GameUIAppearance {
         appearance.getTextFont().free();
         appearance.setTextFont(Font.getFontResource("fatpixel.ttf"));
         appearance.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));
+        appearance.setTextRectTexture(new SampledTexture("ui/info_box.png"));
         appearance.setDropDownIconTexture(new SampledTexture("ui/drop_down_icon_new.png"));
+        appearance.setSliderKnobTexture(new SampledTexture("ui/slider_bar.png"));
         appearance.setRectTextures(
                 new SampledTexture[] {
                     new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")
                 });
         appearance.setRectTextVertMargin(0.3f);
-        appearance.setRectTextHorizMargin(0.1f);
+        appearance.setRectTextHorizMargin(0.15f);
         appearance.setOnClick(GameUIAppearance::onClick);
         appearance.setOnPressDown(GameUIAppearance::onPressDown);
     }

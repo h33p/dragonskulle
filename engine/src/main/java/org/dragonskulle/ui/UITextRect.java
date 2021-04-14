@@ -10,6 +10,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 /**
  * Class describing a rectangle with text
@@ -50,6 +51,36 @@ public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
         mLabelTextComp = new UIText(label);
     }
 
+    public UITextRect(String label, Vector4fc labelColour) {
+        mLabelTextComp = new UIText(labelColour, label);
+    }
+
+    public UITextRect(String label, Vector4fc labelColour, Vector4fc colour) {
+        this(label, labelColour);
+        mColour.set(colour);
+    }
+
+    public UITextRect(String label, Vector4fc labelColour, Vector4fc colour, float overrideAspect) {
+        this(label, labelColour, colour);
+        mOverrideAspectRatio = overrideAspect;
+    }
+
+    public UITextRect(String label, float overrideAspect, SampledTexture rectTexture) {
+        this(label);
+        mOverrideAspectRatio = overrideAspect;
+        mRectTexture = rectTexture;
+    }
+
+    public UITextRect(
+            String label,
+            Vector4fc labelColour,
+            Vector4fc colour,
+            float overrideAspect,
+            SampledTexture rectTexture) {
+        this(label, labelColour, colour, overrideAspect);
+        mRectTexture = rectTexture;
+    }
+
     @Override
     public void handleUIBuild(GameObject go) {
         go.addComponent(this);
@@ -59,16 +90,22 @@ public class UITextRect extends Component implements IOnAwake, IUIBuildHandler {
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
         if (!Reference.isValid(mRenderable)) {
-            UIRenderable uiRenderable =
-                    mRectTexture != null
-                            ? new UIRenderable(mColour, mRectTexture)
-                            : new UIRenderable(mColour);
+
+            if (mRectTexture == null) {
+                mRectTexture = mAppearance.getTextRectTexture().clone();
+            }
+
+            UIRenderable uiRenderable = new UIRenderable(mColour, mRectTexture);
             if (mOverrideAspectRatio != null) {
                 TransformUI uiTransform = getGameObject().getTransform(TransformUI.class);
                 if (uiTransform != null) {
                     uiRenderable.setMaintainAspect(false);
-                    uiTransform.setMaintainAspect(true);
-                    uiTransform.setTargetAspectRatio(mOverrideAspectRatio);
+                    if (mOverrideAspectRatio > 0f) {
+                        uiTransform.setMaintainAspect(true);
+                        uiTransform.setTargetAspectRatio(mOverrideAspectRatio);
+                    } else {
+                        uiTransform.setMaintainAspect(false);
+                    }
                 }
             }
             getGameObject().addComponent(uiRenderable);

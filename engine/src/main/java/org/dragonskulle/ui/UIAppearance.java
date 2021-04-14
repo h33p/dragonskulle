@@ -46,8 +46,12 @@ public class UIAppearance implements NativeResource {
     private float mVerticalUIElemHeight = 0.07f;
     /** Gap between UI elements in vertical UI */
     private float mVerticalUIElemGap = 0.03f;
+    /** Gap between UI elements in vertical UI */
+    private float mHorizUIElemGap = 0.03f;
     /** Texture of a regular button */
     private SampledTexture mButtonTexture = new SampledTexture("ui/wide_button.png");
+    /** Texture of a regular text rect */
+    private SampledTexture mTextRectTexture = new SampledTexture("ui/wide_button.png");
     /** Texture of a drop down menu icon */
     private SampledTexture mDropDownIconTexture = new SampledTexture("ui/drop_down_icon.png");
     /** Texture of a slider knob */
@@ -71,6 +75,13 @@ public class UIAppearance implements NativeResource {
             mButtonTexture.free();
         }
         mButtonTexture = buttonTexture;
+    }
+
+    public void setTextRect(SampledTexture textRectTexture) {
+        if (mTextRectTexture != null) {
+            mTextRectTexture.free();
+        }
+        mTextRectTexture = textRectTexture;
     }
 
     public void setDropDownIconTexture(SampledTexture dropDownIconTexture) {
@@ -100,6 +111,7 @@ public class UIAppearance implements NativeResource {
     public void free() {
         setTextFont(null);
         setButtonTexture(null);
+        setTextRectTexture(null);
         setDropDownIconTexture(null);
         setSliderKnobTexture(null);
         setRectTextures(null);

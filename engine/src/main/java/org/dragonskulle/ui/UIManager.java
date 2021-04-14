@@ -108,6 +108,62 @@ public class UIManager {
         }
     }
 
+    /**
+     * Build child UI elements at specified anchor offsets.
+     *
+     * @param go game object to build the children on.
+     * @param initialX initial X starting anchor.
+     * @param initialY initial Y starting anchor.
+     * @param width consistent anchor based width to keep.
+     * @param height consistent anchor based height to keep.
+     * @param offsetX how much each element will be offset from one another on X axis.
+     * @param offsetY how much each element will be offset from one another on Y axis.
+     */
+    public void buildWithAnchorOffset(
+            GameObject go,
+            float initialX,
+            float initialY,
+            float width,
+            float height,
+            float offsetX,
+            float offsetY,
+            IUIBuildHandler... elems) {
+        int cnt = 0;
+
+        for (IUIBuildHandler handler : elems) {
+            final float curX = initialX + offsetX * cnt;
+            final float curY = initialY + offsetY * cnt;
+            final float endX = curX + width;
+            final float endY = curY + height;
+
+            if (handler != null) {
+                go.buildChild(
+                        "ui_child",
+                        new TransformUI(true),
+                        (child) -> {
+                            TransformUI transform = child.getTransform(TransformUI.class);
+                            transform.setParentAnchor(curX, curY, endX, endY);
+                            handler.handleUIBuild(child);
+                        });
+            }
+
+            cnt++;
+        }
+    }
+
+    /**
+     * Build child UI elements to the right of the object.
+     *
+     * <p>This method will use anchors to place {@code elems} almost immediately after this object
+     * on the right.
+     *
+     * @param go object to build children on.
+     * @param elems objects to build.
+     */
+    public void buildRightOf(GameObject go, IUIBuildHandler... elems) {
+        buildWithAnchorOffset(go, 1f, 0f, 1f, 1f, 1f + mAppearance.getHorizUIElemGap(), 0f, elems);
+    }
+
     /** Get singleton UIManager instance */
     public static UIManager getInstance() {
         return SINGLETON;

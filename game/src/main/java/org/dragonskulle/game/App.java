@@ -44,6 +44,8 @@ public class App implements NativeResource {
     private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
 
+    public static final float MENU_BASEWIDTH = 0.2f;
+
     private static void addDebugUI(Scene scene) {
         GameObject debugUI =
                 new GameObject(
@@ -316,7 +318,7 @@ public class App implements NativeResource {
                 mainUI,
                 0.05f,
                 0,
-                0.25f,
+                MENU_BASEWIDTH,
                 new UIButton(
                         "Join Game",
                         (__, ___) -> {
@@ -355,7 +357,7 @@ public class App implements NativeResource {
                 joinUI,
                 0.05f,
                 0f,
-                0.25f,
+                MENU_BASEWIDTH,
                 ibox,
                 new UIButton(
                         "Join (Temporary)",
@@ -410,7 +412,7 @@ public class App implements NativeResource {
                 settingsUI,
                 0.05f,
                 0f,
-                0.25f,
+                MENU_BASEWIDTH,
                 new UIButton(
                         "Sound",
                         (__, ___) -> {
@@ -434,11 +436,16 @@ public class App implements NativeResource {
                 audioSettingsUI,
                 0.05f,
                 0f,
-                0.25f,
-                new UITextRect("Master volume:"),
-                new UISlider(
-                        AudioManager.getInstance().getMasterVolume(),
-                        (__, val) -> AudioManager.getInstance().setMasterVolume(val)),
+                MENU_BASEWIDTH,
+                (go) -> {
+                    go.addComponent(new UITextRect("Master volume:"));
+
+                    uiManager.buildRightOf(
+                            go,
+                            new UISlider(
+                                    AudioManager.getInstance().getMasterVolume(),
+                                    (__, val) -> AudioManager.getInstance().setMasterVolume(val)));
+                },
                 new UIButton(
                         "Back",
                         (__, ___) -> {
@@ -450,16 +457,21 @@ public class App implements NativeResource {
                 graphicsSettingsUI,
                 0.05f,
                 0f,
-                0.25f,
-                new UIDropDown(
-                        0,
-                        (drop) -> {
-                            Engine.getInstance()
-                                    .getGLFWState()
-                                    .setFullscreen(drop.getSelected() == 1);
-                        },
-                        "Windowed",
-                        "Fullscreen"),
+                MENU_BASEWIDTH,
+                (go) -> {
+                    go.addComponent(new UITextRect("Fullscreen mode:"));
+                    uiManager.buildRightOf(
+                            go,
+                            new UIDropDown(
+                                    0,
+                                    (drop) -> {
+                                        Engine.getInstance()
+                                                .getGLFWState()
+                                                .setFullscreen(drop.getSelected() == 1);
+                                    },
+                                    "Windowed",
+                                    "Fullscreen"));
+                },
                 new UIButton(
                         "Back",
                         (__, ___) -> {
@@ -471,7 +483,7 @@ public class App implements NativeResource {
                 hostUI,
                 0.05f,
                 0f,
-                0.25f,
+                MENU_BASEWIDTH,
                 new UIButton(
                         "Host (Temporary)",
                         (__, ___) -> {
