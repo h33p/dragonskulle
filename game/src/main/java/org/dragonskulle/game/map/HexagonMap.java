@@ -79,52 +79,76 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      *     ArrayList}.
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(
-            HexagonTile tile, int radius, boolean includeTile) {
-        return getTilesInRadius(tile.getQ(), tile.getR(), radius, includeTile);
+    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int distance, boolean includeTile) {
+        int minimum = includeTile ? 0 : 1;
+    	return getTilesInRadius(tile, minimum, distance);
+    }
+    
+    /**
+     * Get the tiles within a minimum and maximum radius of the target tile.
+     * <p>
+     * A min radius of 0 will include the target tile.
+     * <br>
+     * A min radius of 1 will exclude the target tile.
+     * 
+     * @param tile The target tile.
+     * @param min The minimum radius of tiles to include.
+     * @param max The maximum radius of tiles to include.
+     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius, inclusive.
+     */
+    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int min, int max) {
+    	if(tile == null) return new ArrayList<HexagonTile>();
+    	
+        return getTilesInRadius(tile.getQ(), tile.getR(), min, max);
     }
 
-    public ArrayList<HexagonTile> getTilesInRadius(
-            int q, int r, int radius, boolean includeCentre) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
-        // Get the tile's q and r coordinates.
-        int qCentre = q;
-        int rCentre = r;
-
-        for (int rOffset = -radius; rOffset <= radius; rOffset++) {
-            for (int qOffset = -radius; qOffset <= radius; qOffset++) {
-                // Only get tiles whose s coordinates are within the desired range.
-                int sOffset = -qOffset - rOffset;
-
-                // Do not include tiles outside of the radius.
-                if (sOffset > radius || sOffset < -radius) continue;
-                // Do not include the building's HexagonTile.
-                if (!includeCentre && qOffset == 0 && rOffset == 0) continue;
-
-                // Attempt to get the desired tile, and check if it exists.
-                HexagonTile selectedTile = getTile(qCentre + qOffset, rCentre + rOffset);
+    /**
+     * Get the tiles within a minimum and maximum radius of the target tile position.
+     * <p>
+     * A min radius of 0 will include the target tile.
+     * <br>
+     * A min radius of 1 will exclude the target tile.
+     * <p>
+     * Based off pseudocode found here: https://www.redblobgames.com/grids/hexagons/#range
+     * 
+     * @param tileQ The target tile Q position.
+     * @param tileR The target tile R position.
+     * @param min The minimum radius of tiles to include.
+     * @param max The maximum radius of tiles to include.
+     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius, inclusive.
+     */
+    private ArrayList<HexagonTile> getTilesInRadius(int tileQ, int tileR, int min, int max) {
+    	ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
+    	
+    	for(int q = -max; q <= max; q++) {
+    		// Only generate valid tile coordinates.
+    		int lower = Math.max(-max, -q - max);
+        	int upper = Math.min(max, -q + max);
+        	for(int r = lower; r <= upper; r++) {
+        		int s = -q - r;
+        		
+        		// Ensure tile isn't within the minimum.
+        		int distance = getDistance(q, r, s);
+        		if(distance < min) continue;
+        		
+        		// Attempt to get the desired tile, and check if it exists.
+                HexagonTile selectedTile = getTile(tileQ + q, tileR + r);
                 if (selectedTile == null) continue;
 
                 // Add the tile to the list.
                 tiles.add(selectedTile);
-            }
-        }
-
+        	}
+    	}
+    	
         return tiles;
     }
 
     /**
-     * Get all of the {@link HexagonTile}s in a radius around the selected tile, not including the
-     * tile.
-     *
-     * @param tile The selected tile.
-     * @param radius The radius around the selected tile.
-     * @return An {@link ArrayList} of tiles around, but not including, the selected tile; otherwise
-     *     an empty ArrayList.
+     * Calculate the distance from the centre (0, 0, 0).
+     * @return
      */
-    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int radius) {
-        return getTilesInRadius(tile, radius, false);
+    private int getDistance(int q, int r, int s) {
+    	return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
     }
 
     public HexagonTile cursorToTile() {
@@ -157,7 +181,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         HexagonTile closestTile = null;
         float closestDistance = 1e30f;
 
-        ArrayList<HexagonTile> tiles = getTilesInRadius((int) axial.x, (int) axial.y, 4, true);
+        ArrayList<HexagonTile> tiles = getTilesInRadius((int) axial.x, (int) axial.y, 0, 4);
 
         Vector3f va = new Vector3f();
         Vector3f vb = new Vector3f();

@@ -169,7 +169,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         if (map == null) return;
 
         // Claim the tiles around the building.
-        mClaimedTiles = map.getTilesInRadius(getTile(), 1);
+        mClaimedTiles = map.getTilesInRadius(getTile(), 1, false);
         // Claim the tile the building is on.
         mClaimedTiles.add(getTile());
 
@@ -207,7 +207,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = map.getTilesInRadius(getTile(), distance);
+        mAttackableTiles = map.getTilesInRadius(getTile(), distance, false);
     }
 
     /** Store the tiles that are suitable for placing a building on. */
