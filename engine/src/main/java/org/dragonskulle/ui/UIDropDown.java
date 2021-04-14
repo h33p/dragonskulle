@@ -133,6 +133,11 @@ public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUI
 
     /** Toggle between showing and not showing the option list */
     private void toggleOptions() {
+
+        if (Reference.isValid(mButton)) {
+            mButton.get().setLockPressed(mOptionObjects.size() == 0);
+        }
+
         if (mOptionObjects.size() == 0) {
             showOptions();
         } else {
@@ -165,20 +170,21 @@ public class UIDropDown extends Component implements IOnAwake, IFrameUpdate, IUI
     @Override
     public void frameUpdate(float deltaTime) {
 
+        if (!Reference.isValid(mButton)) {
+            return;
+        }
+
+        UIButton button = mButton.get();
+
         if (UIButton.UI_PRESS.isJustDeactivated()
-                && UIManager.getInstance().getHoveredObject() != mButton.get().getRenderable()) {
+                && UIManager.getInstance().getHoveredObject() != button.getRenderable()) {
+            button.setLockPressed(false);
             cleanOptions();
         }
 
         if (mDisplayed == mSelected) {
             return;
         }
-
-        if (!Reference.isValid(mButton)) {
-            return;
-        }
-
-        UIButton button = mButton.get();
 
         if (!Reference.isValid(button.getLabelText())) {
             return;
