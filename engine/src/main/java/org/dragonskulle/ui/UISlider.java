@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
@@ -19,7 +21,7 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UISlider extends Component implements IOnAwake, IFrameUpdate {
+public class UISlider extends Component implements IOnAwake, IFrameUpdate, IUIBuildHandler {
     /** Simple interface describing slider callback events */
     public interface ISliderValueEvent {
         /**
@@ -134,6 +136,11 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
             ISliderValueEvent onValueChange) {
         this(value, minValue, maxValue, roundStep);
         mOnValueChange = onValueChange;
+    }
+
+    @Override
+    public void handleUIBuild(GameObject go) {
+        go.addComponent(this);
     }
 
     @Override

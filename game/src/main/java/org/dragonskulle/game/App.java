@@ -263,6 +263,7 @@ public class App implements NativeResource {
         GameObject joinUI =
                 new GameObject(
                         "joinUI",
+                        false,
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
@@ -272,6 +273,7 @@ public class App implements NativeResource {
         GameObject hostUI =
                 new GameObject(
                         "hostUI",
+                        false,
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
@@ -281,6 +283,27 @@ public class App implements NativeResource {
         GameObject settingsUI =
                 new GameObject(
                         "settingsUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
+
+        GameObject audioSettingsUI =
+                new GameObject(
+                        "audioSettingsUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
+
+        GameObject graphicsSettingsUI =
+                new GameObject(
+                        "graphicsSettingsUI",
+                        false,
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
@@ -395,13 +418,60 @@ public class App implements NativeResource {
                 0.05f,
                 0f,
                 0.25f,
-                new UIButton("Sound"),
-                new UIButton("Graphics"),
+                new UIButton(
+                        "Sound",
+                        (__, ___) -> {
+                            settingsUI.setEnabled(false);
+                            audioSettingsUI.setEnabled(true);
+                        }),
+                new UIButton(
+                        "Graphics",
+                        (__, ___) -> {
+                            settingsUI.setEnabled(false);
+                            graphicsSettingsUI.setEnabled(true);
+                        }),
                 new UIButton(
                         "Back",
                         (__, ___) -> {
                             settingsUI.setEnabled(false);
                             mainUI.setEnabled(true);
+                        }));
+
+        uiManager.buildVerticalUI(
+                audioSettingsUI,
+                0.05f,
+                0f,
+                0.25f,
+                new UITextRect("Master volume:"),
+                new UISlider(
+                        AudioManager.getInstance().getMasterVolume(),
+                        (__, val) -> AudioManager.getInstance().setMasterVolume(val)),
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            audioSettingsUI.setEnabled(false);
+                            settingsUI.setEnabled(true);
+                        }));
+
+        uiManager.buildVerticalUI(
+                graphicsSettingsUI,
+                0.05f,
+                0f,
+                0.25f,
+                new UIDropDown(
+                        0,
+                        (drop) -> {
+                            Engine.getInstance()
+                                    .getGLFWState()
+                                    .setFullscreen(drop.getSelected() == 1);
+                        },
+                        "Windowed",
+                        "Fullscreen"),
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            graphicsSettingsUI.setEnabled(false);
+                            settingsUI.setEnabled(true);
                         }));
 
         uiManager.buildVerticalUI(
@@ -421,16 +491,14 @@ public class App implements NativeResource {
                             mainUI.setEnabled(true);
                         }));
 
-        joinUI.setEnabled(false);
-        hostUI.setEnabled(false);
-        settingsUI.setEnabled(false);
-
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
         mainMenu.addRootObject(mainUI);
         mainMenu.addRootObject(settingsUI);
+        mainMenu.addRootObject(audioSettingsUI);
+        mainMenu.addRootObject(graphicsSettingsUI);
 
         return mainMenu;
     }
