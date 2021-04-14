@@ -141,8 +141,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                     nextNode = mPath.pop();
                 }
 
+                // Checks if building exists
                 Building toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
                 if (toAttackCheck == null) {
+                	// Checks if we have to build
                     if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
                         HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
                         mPlayer.get()
@@ -150,9 +152,20 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                                 .invoke((d) -> d.setTile(tileToBuildOn));
                         mGone.push(nextNode);
                         return;
+                    
                     } else {
+                    	// Will attack instead and remove 
+                    	while (mGraph.getNode(nextNode).getHexTile().get().getBuilding() == null) {
+                    		mPath.push(nextNode);
+                    		nextNode = mGone.pop();
+                    				
+                    	}
+                    	super.tryToAttack(mGraph.getNode(nextNode).getHexTile().get().getBuilding());
+                    	
+                    	// Assumption is that the code at the start of the method will move back to correct postion
                     	mPath.push(nextNode);
-                        super.attack();
+                    	
+                        
                         return;
                     }
                 }
@@ -269,6 +282,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             log.info("Found Tile");
             // TODO null check
 
+            if (Reference.isValid(tileToAim)) {
             // Creates a graph
             Graph graph =
                     new Graph(
@@ -306,7 +320,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             }
             log.info(answer);
 
-            mGone = new ArrayDeque<Integer>();
+            mGone = new ArrayDeque<Integer>();}
+            else {
+            	mPath = new ArrayDeque<Integer>();
+            }
         } else {
             mPath = new ArrayDeque<Integer>();
         }

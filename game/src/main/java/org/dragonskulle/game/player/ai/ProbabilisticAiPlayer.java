@@ -208,7 +208,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      *
      * @return Whether the attempt to attack an opponent was invoked.
      */
-    protected boolean attack() {
+    private boolean attack() {
         log.info("AI: Attacking");
 
         return attemptRunEvent(this::tryToAttack);
@@ -220,7 +220,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @param index where in the list to get it
      * @return whether it was invoked
      */
-    private boolean tryToAttack(Building attacker) {
+    protected boolean tryToAttack(Building attacker) {
 
         if (attacker.getAttackableBuildings().size() != 0) {
             // Gets the defending and attacking buildings
