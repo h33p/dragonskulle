@@ -180,10 +180,10 @@ public class HexagonTile {
      * Get the {@link Player} who has claimed this tile (either because there is a building on it or
      * because it is adjacent to a building).
      *
-     * @return The Player who has claimed this tile, or {@code null} if no Player claims it.
+     * @return The Player who has claimed this tile; otherwise {@code null}.
      */
     public Player getClaimant() {
-        if (!isClaimed()) {
+        if (!isClaimed() || !Reference.isValid(mClaimedBy)) {
             return null;
         }
         return mClaimedBy.get().getOwner();
@@ -195,11 +195,10 @@ public class HexagonTile {
      * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
      * then this should be used.
      *
-     * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
-     *     claimant.
+     * @return The owner ID of the Player as an {@link Integer}; otherwise {@code null}.
      */
     public Integer getClaimantId() {
-        if (!isClaimed()) {
+        if (!isClaimed() || !Reference.isValid(mClaimedBy)) {
             return null;
         }
         return mClaimedBy.get().getOwnerId();
