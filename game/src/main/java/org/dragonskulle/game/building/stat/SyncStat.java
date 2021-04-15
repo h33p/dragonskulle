@@ -4,7 +4,7 @@ package org.dragonskulle.game.building.stat;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import lombok.Setter;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
@@ -27,8 +27,8 @@ public class SyncStat extends SyncInt {
     /** The highest level possible. */
     public static final int LEVEL_MAX = 5;
 
-    /** Stores the building the stat is related to. */
-    private Reference<Building> mBuilding = new Reference<Building>(null);
+    /** The cost of upgrading a stat if there is an error. */
+    private static final int sErrorCost = 9999;
 
     /** An interface for getting the value of a stat at a given level. */
     public static interface IValueCalculator extends Serializable {
@@ -36,7 +36,13 @@ public class SyncStat extends SyncInt {
     }
 
     /** Store the function used to calculate the value of the stat. */
-    @Setter private IValueCalculator mValueCalculator;
+    private IValueCalculator mValueCalculator;
+
+    /** Store the type of the stat for ease of access. */
+    @Getter private StatType mType;
+
+    /** Stores the building the stat is related to. */
+    private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /**
      * Create a new SyncStat, providing the method that will be used to calculate the value of the
@@ -46,6 +52,22 @@ public class SyncStat extends SyncInt {
      */
     public SyncStat(Building building) {
         mBuilding = building.getReference(Building.class);
+
+        // Initialise the level to the minimum value.
+        setLevel(LEVEL_MIN);
+    }
+
+    /**
+     * Initialise the stat by providing a {@link StatType}. The stat will take on the properties of
+     * the specified StatType.
+     *
+     * @param type The type of stat to be.
+     */
+    public void initialise(StatType type) {
+        // Store the type.
+        mType = type;
+        // Get the method used for calculating value.
+        mValueCalculator = type.getValueCalculator();
     }
 
     /**
@@ -59,6 +81,33 @@ public class SyncStat extends SyncInt {
             return 0;
         }
         return mValueCalculator.getValue(getLevel());
+    }
+
+    /**
+     * Get the cost of increasing this stat.
+     *
+     * @return The cost; otherwise {@value #sErrorCost}.
+     */
+    public int getCost() {
+        if (!Reference.isValid(mBuilding)) return sErrorCost;
+
+        return (getLevel() / 2) + mBuilding.get().getStatBaseCost();
+    }
+
+    /**
+     * Get whether the stat is able to be upgraded at this point in time.
+     *
+     * <p>Will be {@code false} if:
+     *
+     * <ul>
+     *   <li>It is impossible to upgrade the stat (as its value is fixed).
+     *   <li>The current level is at the {@link #LEVEL_MAX}.
+     * </ul>
+     *
+     * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
+     */
+    public boolean isUpgradeable() {
+        return (mType.isFixedValue()) ? false : getLevel() < LEVEL_MAX;
     }
 
     /**

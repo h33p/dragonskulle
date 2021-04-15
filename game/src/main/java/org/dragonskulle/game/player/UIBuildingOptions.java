@@ -1,8 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -15,26 +18,35 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIDropDown;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFrameUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Getter private Building mSelectedBuilding;
-    @Getter private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
-    @Setter private Reference<GameObject> mPastOptionsRef;
+    @Getter
+    private Building mSelectedBuilding;
+    @Getter
+    private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
+    @Setter
+    private Reference<GameObject> mPastOptionsRef;
     private Reference<GameObject> mPossibleBuildingComponent;
 
     public UIBuildingOptions(UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -63,37 +75,11 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
                                 "built_upgradable_options",
                                 new TransformUI(),
                                 (root) -> {
-                                    for (int i = 0, mButtonChildrenSize = mOptionsChildren.size();
-                                            i < mButtonChildrenSize;
-                                            i++) {
-                                        String mChildString = mOptionsChildren.get(i);
-
-                                        int finalI = i;
-                                        root.buildChild(
-                                                "built_child_" + i,
-                                                new TransformUI(true),
-                                                (self) -> {
-                                                    final UIText uiText =
-                                                            new UIText(
-                                                                    new Vector3f(0f, 0f, 0f),
-                                                                    Font.getFontResource(
-                                                                            "Rise of Kingdom.ttf"),
-                                                                    mChildString);
-
-                                                    self.addComponent(uiText);
-                                                    final TransformUI transform =
-                                                            self.getTransform(TransformUI.class);
-                                                    transform.setPosition(
-                                                            0f,
-                                                            (0.2f
-                                                                            * finalI
-                                                                            / mButtonChildrenSize
-                                                                            * 1f)
-                                                                    - 0.15f);
-
-                                                    transform.setMargin(0.075f, 0f, -0.075f, 0f);
-                                                });
-                                    }
+                                    new UIDropDown(
+                                            0,
+                                            (drop) -> log.warning("will place building, " + drop.getSelectedOption()),
+                                            String.valueOf(mOptionsChildren.stream())
+                                    );
                                 });
         ref.get().setEnabled(false);
         replaceOptions(ref);

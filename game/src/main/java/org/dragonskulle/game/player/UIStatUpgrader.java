@@ -48,10 +48,7 @@ public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate 
     @Override
     public void onStart() {
         UIText name =
-                new UIText(
-                        new Vector3f(0f, 0f, 0f),
-                        Font.getFontResource("Rise of Kingdom.ttf"),
-                        stat.getClass().getSimpleName());
+                new UIText( stat.getClass().getSimpleName());
         UIRenderable upgradeGraphic = new UIRenderable(new SampledTexture("ui/upgrade_button.png"));
         UIButton upgradeButton = new UIButton((__, _____) -> mStatIncreaserMethod.call());
     }

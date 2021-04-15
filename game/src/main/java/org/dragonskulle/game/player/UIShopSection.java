@@ -172,10 +172,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 new TransformUI(true),
                                 (self) -> {
                                     UIText mWindowText =
-                                            new UIText(
-                                                    new Vector3f(0f, 0f, 0f),
-                                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "PLACEHOLDER SHOP TEXT");
+                                            new UIText("PLACEHOLDER SHOP TEXT");
                                     self.addComponent(mWindowText);
 
                                     titleRef = mWindowText.getReference(UIText.class);

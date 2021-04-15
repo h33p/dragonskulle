@@ -1,22 +1,32 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIDropDown;
 import org.dragonskulle.ui.UIText;
 import org.joml.Vector3f;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpdate {
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
@@ -28,9 +38,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
         this.mGetHexChosen = mGetHexChosen;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+    }
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -55,7 +68,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
 
     private void buildStatUpgradeChildren(StringBuilder builder, Building building) {
         List<SyncStat> stats = building.getStats();
-        if(Reference.isValid(mStatChildren)){
+        if (Reference.isValid(mStatChildren)) {
             mStatChildren.get().destroy();
         }
         mStatChildren =
@@ -66,24 +79,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                 new TransformUI(true),
                                 (self) -> {
                                     self.addComponent(new UIText(
-                                            new Vector3f(0f, 0f, 0f),
-                                            Font.getFontResource("Rise of Kingdom.ttf"),
                                             "can this be seen?"));
-                                    stats.forEach(
-                                            stat -> {
-                                                self.buildChild(
-                                                        "child_" + stat.getClass().getSimpleName(),
-                                                        (child) -> {
-                                                            float offset = 0.03f;
-                                                            child.addComponent(
-                                                                    buildSingleStatChild(
-                                                                            stat, offset));
-                                                        });
-                                                builder.append(stat.getClass().getSimpleName())
-                                                        .append("::")
-                                                        .append(stat.getValue())
-                                                        .append(",\n");
-                                            });
+                                    new UIDropDown(
+                                            0,
+                                            (drop) -> log.warning("will upgrade stat " + drop.getSelectedOption()),
+                                            String.valueOf(stats.stream().map((stat) -> MessageFormat.format("{0}::{1}", stat.getClass().getSimpleName(), stat.getValue())).collect(Collectors.toList())));
                                 });
     }
 
@@ -105,10 +105,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                     transform.setMargin(0, -0.2f, 0, -0.2f);
 
                                     UIText mWindowText =
-                                            new UIText(
-                                                    new Vector3f(0f, 0f, 0f),
-                                                    Font.getFontResource("Rise of Kingdom.ttf"),
-                                                    "PLACEHOLDER UPGRADE TEXT");
+                                            new UIText( "PLACEHOLDER UPGRADE TEXT");
                                     textReference = mWindowText.getReference(UIText.class);
                                     self.addComponent(mWindowText);
 

@@ -14,6 +14,7 @@ import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
 import org.joml.Vector2i;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 
@@ -32,7 +33,15 @@ public class GLFWState implements NativeResource {
     @Getter private Renderer mRenderer;
     private boolean mFramebufferResized = false;
 
+    private boolean mFullscreen = false;
+    private int mOldX = 0;
+    private int mOldY = 0;
+    private int mOldWidth = 1600;
+    private int mOldHeight = 900;
+
     public static final boolean DEBUG_MODE = envBool("DEBUG_GLFW", false);
+
+    public static final boolean LOAD_RENDERDOC = envBool("LOAD_RENDERDOC", false);
 
     /**
      * Entrypoint of the app instance
@@ -47,11 +56,49 @@ public class GLFWState implements NativeResource {
             throws RuntimeException {
         DEBUG.set(DEBUG_MODE);
 
+        if (LOAD_RENDERDOC) {
+            System.loadLibrary("renderdoc");
+        }
+
         initWindow(width, height, appName);
         mRenderer = new Renderer(appName, mWindow);
 
         // Start detecting user input from the specified window, based on the bindings.
         Input.initialise(mWindow, bindings);
+    }
+
+    /**
+     * Set fullscreen mode for the current window
+     *
+     * @param fullscreen whether to make the window fullscreen or not. If set to true, the window
+     *     will be made full screen, if set to false, the window will no longer be fullscreen. An
+     *     attempt will be made to restore the window to the same position and size it was before
+     *     entering full screen mode.
+     */
+    public void setFullscreen(boolean fullscreen) {
+        if (fullscreen) {
+            long primaryMonitor = glfwGetPrimaryMonitor();
+            GLFWVidMode mode = glfwGetVideoMode(primaryMonitor);
+
+            int[] xpos = {0};
+            int[] ypos = {0};
+            glfwGetWindowPos(mWindow, xpos, ypos);
+            mOldX = xpos[0];
+            mOldY = ypos[0];
+
+            int[] width = {0};
+            int[] height = {0};
+            glfwGetWindowSize(mWindow, width, height);
+            mOldWidth = width[0];
+            mOldHeight = height[0];
+
+            glfwSetWindowMonitor(
+                    mWindow, primaryMonitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
+            mFullscreen = true;
+        } else if (mFullscreen) {
+            glfwSetWindowMonitor(mWindow, 0, mOldX, mOldY, mOldWidth, mOldHeight, GLFW_DONT_CARE);
+            mFullscreen = false;
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.UIShopSection.ShopState;
@@ -19,13 +20,9 @@ import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
-import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
 
 /**
  * @author Oscar L
@@ -138,7 +135,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         setVisibleScreen(Screen.MAP_SCREEN);
         mShop = buildShop();
 
-        UIRenderable drawer = new UIRenderable(new SampledTexture("ui/drawer.png"));
+        UIRenderable drawer = new UIRenderable(GameUIAppearance.getDrawerTexture());
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setMargin(0f, 0f, 0f, 0f);
         tran.setPivotOffset(0f, 0f);
@@ -365,18 +362,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                                                             - mOffsetToTop);
                                                     self.getTransform(TransformUI.class)
                                                             .setMargin(0.075f, 0f, -0.075f, 0f);
-                                                    self.addComponent(
-                                                            new UIRenderable(
-                                                                    new SampledTexture(
-                                                                            "ui/wide_button_new.png")));
+
                                                     UIButton button =
                                                             new UIButton(
-                                                                    new UIText(
-                                                                            new Vector3f(
-                                                                                    0f, 0f, 0f),
-                                                                            Font.getFontResource(
-                                                                                    "Rise of Kingdom.ttf"),
-                                                                            mButtonChild.getText()),
+
+                                                                            mButtonChild.getText(),
                                                                     mButtonChild.getOnClick(),
                                                                     mButtonChild.isStartEnabled());
                                                     self.addComponent(button);

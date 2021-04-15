@@ -15,7 +15,7 @@ layout(push_constant) uniform PushConsts {
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec3 inColor;
+layout(location = 2) in vec4 inColor;
 layout(location = 3) in vec2 inUV;
 
 layout(location = 4) in mat4 model;
@@ -52,7 +52,7 @@ void pbr_base() {
 	vec4 pos = model * vec4(inPosition, 1.0);
 	fragPos = pos.xyz;
 	gl_Position = consts.proj * consts.view * pos;
-	fragColor = vec4(inColor, 1.0) * instColor;
+	fragColor = inColor * instColor;
 	fragNormal = normalize(transpose(inverse(mat3(model))) * inNormal);
 	fragUV = inUV;
 

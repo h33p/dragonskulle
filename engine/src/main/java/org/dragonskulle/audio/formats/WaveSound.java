@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.audio;
+package org.dragonskulle.audio.formats;
 
-import com.sun.media.sound.WaveFileReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.java.Log;
 import org.lwjgl.openal.AL11;
@@ -24,29 +25,27 @@ import org.lwjgl.openal.AL11;
  *     then buffered using alBufferData.
  */
 @Log
-public class WaveSound implements Serializable {
+public class WaveSound extends Sound implements Serializable {
 
-    public int buffer;
-    public int sampleRate;
-    public int format;
-    public float length;
-    public int bits;
-    public int channels;
+    private int mSampleRate;
+    private int mFormat;
+    private int mBits;
+    private int mChannels;
 
-    public void setALFormat() {
-        switch (bits) {
+    private void setALFormat() {
+        switch (mBits) {
             case 16:
-                if (channels > 1) {
-                    format = AL11.AL_FORMAT_STEREO16;
+                if (mChannels > 1) {
+                    mFormat = AL11.AL_FORMAT_STEREO16;
                 } else {
-                    format = AL11.AL_FORMAT_MONO16;
+                    mFormat = AL11.AL_FORMAT_MONO16;
                 }
                 break;
             case 8:
-                if (channels > 1) {
-                    format = AL11.AL_FORMAT_STEREO8;
+                if (mChannels > 1) {
+                    mFormat = AL11.AL_FORMAT_STEREO8;
                 } else {
-                    format = AL11.AL_FORMAT_MONO8;
+                    mFormat = AL11.AL_FORMAT_MONO8;
                 }
         }
     }
@@ -91,15 +90,15 @@ public class WaveSound implements Serializable {
      */
     public static WaveSound loadWave(File file) {
         try {
-            AudioInputStream audioInputStream = new WaveFileReader().getAudioInputStream(file);
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
 
             WaveSound sound = new WaveSound();
             AudioFormat format = audioInputStream.getFormat();
 
-            sound.sampleRate = (int) format.getSampleRate();
+            sound.mSampleRate = (int) format.getSampleRate();
 
-            sound.bits = format.getSampleSizeInBits();
-            sound.channels = format.getChannels();
+            sound.mBits = format.getSampleSizeInBits();
+            sound.mChannels = format.getChannels();
             sound.setALFormat();
 
             int audioLength = (int) audioInputStream.getFrameLength() * format.getFrameSize();
@@ -115,21 +114,23 @@ public class WaveSound implements Serializable {
 
             sound.length = (float) bytesRead / format.getSampleRate();
 
-            if (sound.bits == 16) {
+            if (sound.mBits == 16) {
                 sound.length /= 2;
             }
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
-            ByteBuffer buffer = processRawBytes(audioBytes, sound.bits == 8, order);
+            ByteBuffer buffer = processRawBytes(audioBytes, sound.mBits == 8, order);
 
             sound.buffer = AL11.alGenBuffers();
-            AL11.alBufferData(sound.buffer, sound.format, buffer, sound.sampleRate);
+            AL11.alBufferData(sound.buffer, sound.mFormat, buffer, sound.mSampleRate);
 
             return sound;
         } catch (UnsupportedAudioFileException e) {
-            log.warning("Attempted to load unsupported audio file");
+            log.warning("Attempted to load unsupported audio file " + file.getAbsolutePath());
+        } catch (FileNotFoundException e) {
+            log.warning("Attempted to load file that doesn't exist: " + file.getAbsolutePath());
         } catch (IOException e) {
-            log.warning("Attempted to load file that doesn't exist");
+            log.warning("IOException when reading audio file " + file.getAbsolutePath());
         }
         return null;
     }

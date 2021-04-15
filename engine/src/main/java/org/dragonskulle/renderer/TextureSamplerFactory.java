@@ -18,14 +18,21 @@ import org.lwjgl.vulkan.VkDevice;
  * @author Aurimas Blažulionis
  */
 class TextureSamplerFactory implements NativeResource {
+    /** Underlying vulkan device */
     private VkDevice mDevice;
+    /** Highest anisotrophic filtering value */
     private float mMaxAnisotropy;
+    /** Controls whether anisotrophic filtering is enabled */
     private boolean mAnisotropyEnable;
+    /** Stored sampler handles */
     private HashMap<SamplerDescriptor, Long> mSamplers;
 
+    /** Describes a sampler */
     @EqualsAndHashCode
     private static class SamplerDescriptor {
+        /** Texture mapping used */
         TextureMapping mMapping;
+        /** Number of mip map levels used */
         int mMipLevels;
 
         public SamplerDescriptor(TextureMapping mapping, int mipLevels) {
@@ -34,6 +41,12 @@ class TextureSamplerFactory implements NativeResource {
         }
     }
 
+    /**
+     * Constructor for {@link TextureSamplerFactory}
+     *
+     * @param device vulkan logical device to use
+     * @param physicalDevice vulkan physical device to use (must be the same one for {@code device})
+     */
     public TextureSamplerFactory(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
         mAnisotropyEnable = physicalDevice.getFeatureSupport().anisotropyEnable;
@@ -62,6 +75,13 @@ class TextureSamplerFactory implements NativeResource {
         mSamplers.values().stream().forEach(d -> vkDestroySampler(mDevice, d, null));
     }
 
+    /**
+     * Create a sampler
+     *
+     * @param desc sampler description
+     * @param anisotropyEnable controls whether anisotrophic filtering is enabled
+     * @return handle to the sampler
+     */
     private long createSampler(SamplerDescriptor desc, boolean anisotropyEnable) {
         try (MemoryStack stack = stackPush()) {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.callocStack(stack);

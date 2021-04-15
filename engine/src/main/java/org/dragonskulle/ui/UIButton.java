@@ -2,11 +2,10 @@
 package org.dragonskulle.ui;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
-import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
-import org.dragonskulle.renderer.SampledTexture;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -16,7 +15,7 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIButton extends Component implements IOnAwake, IFrameUpdate {
+public class UIButton extends UITextRect implements IFrameUpdate {
 
     /** Simple interface describing button callback events */
     public interface IButtonEvent {
@@ -30,12 +29,14 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /** Input action that needs to be bound for UI button presses to function */
-    public static final Action UI_PRESS = new Action("UI_PRESS");
+    public static final Action UI_PRESS = new Action("UI_PRESS", false);
 
-    private Vector4fc mRegularColor = new Vector4f(1f);
-    private Vector4fc mHoveredColor = new Vector4f(0.8f, 0.8f, 0.8f, 1f);
-    private Vector4fc mPressedColor = new Vector4f(0.6f, 0.6f, 0.6f, 1f);
+    private Vector4fc mRegularColour = new Vector4f(1f);
+    private Vector4fc mHoveredColour = new Vector4f(0.8f, 0.8f, 0.8f, 1f);
+    private Vector4fc mPressedColour = new Vector4f(0.6f, 0.6f, 0.6f, 1f);
     private Vector4fc mDisabledColour = new Vector4f(0.882f, 0.027f, 0.019f, 1f);
+
+    @Getter @Setter private boolean mLockPressed = false;
 
     private Vector4f mTmpLerp = new Vector4f(1f);
 
@@ -44,11 +45,6 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private boolean mIsEnabled = true;
 
     private float mCurTimer = 0f;
-    private Reference<UIRenderable> mRenderable;
-    private UIMaterial mMaterial;
-
-    private UIText mLabelTextComp;
-    @Getter private Reference<UIText> mLabelText;
 
     private IButtonEvent mOnPressDown;
     private IButtonEvent mOnRelease;
@@ -63,7 +59,9 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     private boolean mPressedDown = false;
 
     /** Default Constructor for UIButton. */
-    public UIButton() {}
+    public UIButton() {
+        super();
+    }
 
     /**
      * Constructor for UIButton
@@ -71,7 +69,16 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param label a text label to render inside the button
      */
     public UIButton(UIText label) {
-        mLabelTextComp = label;
+        super(label);
+    }
+
+    /**
+     * Constructor for UIButton
+     *
+     * @param label a text label to render inside the button
+     */
+    public UIButton(String label) {
+        super(label);
     }
 
     /**
@@ -80,6 +87,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param startEnabled true if the button should react to clicks onStart.
      */
     public UIButton(boolean startEnabled) {
+        this();
         mIsEnabled = startEnabled;
     }
 
@@ -89,9 +97,9 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param label a text label to render inside the button
      * @param startEnabled true if the button should react to clicks onStart.
      */
-    public UIButton(UIText label, boolean startEnabled) {
+    public UIButton(String label, boolean startEnabled) {
+        this(label);
         mIsEnabled = startEnabled;
-        mLabelTextComp = label;
     }
 
     /**
@@ -100,8 +108,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
      */
-    public UIButton(UIText label, IButtonEvent onClick) {
-        mLabelTextComp = label;
+    public UIButton(String label, IButtonEvent onClick) {
+        this(label);
         mOnClick = onClick;
     }
 
@@ -112,9 +120,9 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param onClick callback to be called when the button is clicked
      * @param startEnabled true if the button should react to clicks onStart.
      */
-    public UIButton(UIText label, IButtonEvent onClick, boolean startEnabled) {
+    public UIButton(String label, IButtonEvent onClick, boolean startEnabled) {
+        this(label);
         mIsEnabled = startEnabled;
-        mLabelTextComp = label;
         mOnClick = onClick;
     }
 
@@ -124,6 +132,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param onClick callback to be called when the button is clicked
      */
     public UIButton(IButtonEvent onClick) {
+        this();
         mOnClick = onClick;
     }
 
@@ -134,6 +143,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param startEnabled true if the button should react to clicks onStart.
      */
     public UIButton(IButtonEvent onClick, boolean startEnabled) {
+        this();
         mIsEnabled = startEnabled;
         mOnClick = onClick;
     }
@@ -179,7 +189,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param onRelease callback to be called when the button gets released
      */
     public UIButton(
-            UIText label, IButtonEvent onClick, IButtonEvent onPressDown, IButtonEvent onRelease) {
+            String label, IButtonEvent onClick, IButtonEvent onPressDown, IButtonEvent onRelease) {
         this(label, onClick);
         mOnPressDown = onPressDown;
         mOnRelease = onRelease;
@@ -195,7 +205,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param startEnabled true if the button should react to clicks onStart.
      */
     public UIButton(
-            UIText label,
+            String label,
             IButtonEvent onClick,
             IButtonEvent onPressDown,
             IButtonEvent onRelease,
@@ -217,7 +227,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param offHover callback to be called once the button is no longer hovered by the cursor
      */
     public UIButton(
-            UIText label,
+            String label,
             IButtonEvent onClick,
             IButtonEvent onPressDown,
             IButtonEvent onRelease,
@@ -240,7 +250,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param startEnabled true if the button should react to clicks onStart.
      */
     public UIButton(
-            UIText label,
+            String label,
             IButtonEvent onClick,
             IButtonEvent onPressDown,
             IButtonEvent onRelease,
@@ -265,7 +275,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param whileHover callback to be called every frame while the button is hovered
      */
     public UIButton(
-            UIText label,
+            String label,
             IButtonEvent onClick,
             IButtonEvent onPressDown,
             IButtonEvent onRelease,
@@ -289,7 +299,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
      * @param startEnabled true if the button should react to clicks onStart.
      */
     public UIButton(
-            UIText label,
+            String label,
             IButtonEvent onClick,
             IButtonEvent onPressDown,
             IButtonEvent onRelease,
@@ -306,7 +316,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     public void enable() {
         mIsEnabled = true;
         if (mMaterial != null) {
-            mMaterial.colour.set(mRegularColor);
+            mMaterial.colour.set(mRegularColour);
         }
     }
 
@@ -314,42 +324,31 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
     public void disable() {
         mIsEnabled = false;
         if (mMaterial != null) {
-            mRegularColor.lerp(mDisabledColour, 0.8f, mTmpLerp);
+            mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
             mMaterial.colour.set(mTmpLerp);
         }
     }
 
+    private void updateAppearance() {
+        mRegularColour = mAppearance.getRegularColour();
+        mHoveredColour = mAppearance.getHoveredColour();
+        mPressedColour = mAppearance.getPressedColour();
+        mDisabledColour = mAppearance.getDisabledColour();
+
+        mTransitionTime = mAppearance.getTransitionTime();
+
+        mRectTexture = mAppearance.getButtonTexture().clone();
+    }
+
     @Override
     public void onAwake() {
-        mRenderable = getGameObject().getComponent(UIRenderable.class);
-        if (!Reference.isValid(mRenderable)) {
-            getGameObject()
-                    .addComponent(new UIRenderable(new SampledTexture("ui/wide_button.png")));
-            mRenderable = getGameObject().getComponent(UIRenderable.class);
-        }
+        updateAppearance();
 
-        UIRenderable rend = mRenderable.get();
-
-        if (rend != null) {
-            if (rend.getMaterial() instanceof UIMaterial)
-                mMaterial = (UIMaterial) rend.getMaterial();
-        }
+        super.onAwake();
 
         if (!mIsEnabled) {
-            mRegularColor.lerp(mDisabledColour, 0.8f, mTmpLerp);
+            mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
             mMaterial.colour.set(mTmpLerp);
-        }
-
-        if (mLabelTextComp != null) {
-            getGameObject()
-                    .buildChild(
-                            "label",
-                            new TransformUI(true),
-                            (handle) -> {
-                                handle.getTransform(TransformUI.class).setParentAnchor(0.05f);
-                                mLabelText = mLabelTextComp.getReference(UIText.class);
-                                handle.addComponent(mLabelTextComp);
-                            });
         }
     }
 
@@ -373,12 +372,23 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
                 if (mHadReleasedHover) {
                     if (!mouseDown) {
                         // Call mOnClick if we pressed this button
-                        if (mLastMouseDown && mOnClick != null)
-                            mOnClick.eventHandler(this, deltaTime);
+                        if (mLastMouseDown) {
+                            if (mAppearance.getOnClick() != null) {
+                                mAppearance.getOnClick().eventHandler(this, deltaTime);
+                            }
+                            if (mOnClick != null) {
+                                mOnClick.eventHandler(this, deltaTime);
+                            }
+                        }
                     } else if (!mLastMouseDown) {
                         mPressedDown = true;
                         // Call mOnPressDown if we pressed down the button
-                        if (mOnPressDown != null) mOnPressDown.eventHandler(this, deltaTime);
+                        if (mAppearance.getOnPressDown() != null) {
+                            mAppearance.getOnPressDown().eventHandler(this, deltaTime);
+                        }
+                        if (mOnPressDown != null) {
+                            mOnPressDown.eventHandler(this, deltaTime);
+                        }
                     }
                 }
 
@@ -399,7 +409,7 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
             }
 
             // Transition color interpolation value depending on the state of button press
-            if (mPressedDown) {
+            if (mPressedDown || mLockPressed) {
                 mCurTimer += deltaTime;
                 if (mCurTimer > 2f * mTransitionTime) mCurTimer = 2f * mTransitionTime;
             } else if (mLastHovered) {
@@ -420,8 +430,8 @@ public class UIButton extends Component implements IOnAwake, IFrameUpdate {
             if (mMaterial != null) {
                 // Interpolate material colours to represent button click state
                 if (mCurTimer > mTransitionTime)
-                    mHoveredColor.lerp(mPressedColor, mCurTimer / mTransitionTime - 1f, mTmpLerp);
-                else mRegularColor.lerp(mHoveredColor, mCurTimer / mTransitionTime, mTmpLerp);
+                    mHoveredColour.lerp(mPressedColour, mCurTimer / mTransitionTime - 1f, mTmpLerp);
+                else mRegularColour.lerp(mHoveredColour, mCurTimer / mTransitionTime, mTmpLerp);
                 mMaterial.colour.set(mTmpLerp);
             }
         }

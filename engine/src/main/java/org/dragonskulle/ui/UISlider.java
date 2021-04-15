@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.*;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.*;
 
@@ -18,7 +19,7 @@ import java.lang.Math;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UISlider extends Component implements IOnAwake, IFrameUpdate {
+public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
     /** Simple interface describing slider callback events */
     public interface ISliderValueEvent {
         /**
@@ -137,6 +138,9 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void onAwake() {
+
+        UIAppearance appearance = UIManager.getInstance().getAppearance();
+
         getGameObject().getTransform(TransformUI.class).setTargetAspectRatio(4f);
         getGameObject()
                 .buildChild(
@@ -147,7 +151,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                                     new UIRenderable(
                                             new Vector4f(0.5f), new SampledTexture("white.bmp")));
                             TransformUI barTransform = bar.getTransform(TransformUI.class);
-                            barTransform.setParentAnchor(0f, 0f, 1f, 0f);
+                            barTransform.setParentAnchor(0f, 0.5f, 1f, 0.5f);
                             barTransform.setMargin(0.05f, -0.01f, -0.05f, 0.01f);
                             bar.buildChild(
                                     "slider knob",
@@ -155,7 +159,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                                     (knob) -> {
                                         knob.addComponent(
                                                 new UIRenderable(
-                                                        new SampledTexture("ui/round_knob.png")));
+                                                        appearance.getSliderKnobTexture().clone()));
                                         mKnobTransform = knob.getTransform(TransformUI.class);
                                         mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
                                         mKnobTransform.setMargin(-10f, -10f, 10f, 10f);
