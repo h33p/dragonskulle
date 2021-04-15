@@ -298,16 +298,17 @@ public class ServerNetworkManager {
                         });
 
         clientUpdate();
+    }
+
+    /** Late network update, called by {@link NetworkManager} */
+    void lateNetworkUpdate() {
 
         for (ServerClient c : mServer.getClients()) {
             for (ServerObjectEntry entry : mNetworkObjects.values()) {
                 entry.updateClient(c);
             }
         }
-    }
 
-    /** Late network update, called by {@link NetworkManager} */
-    void lateNetworkUpdate() {
         mNetworkObjects
                 .entrySet()
                 .removeIf(
