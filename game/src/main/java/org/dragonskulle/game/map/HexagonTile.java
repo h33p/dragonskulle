@@ -149,18 +149,22 @@ public class HexagonTile {
     }
 
     /**
-     * Set which {@link Building} claims the tile. Do not claim the tile if another building already
-     * claimed it.
+     * Set which {@link Building} claims the HexagonTile. Cannot claim the tile if another building
+     * already claimed it.
      *
-     * @param building The building which claimed the tile.
-     * @return {@code true} if the claim was successful, otherwise {@code false} if the tile is
-     *     already claimed.
+     * @param building The Building which claimed the tile.
+     * @return {@code true} if the claim was successful; otherwise {@code false}.
      */
     public boolean setClaimedBy(Building building) {
-        if (isClaimed()) return false;
+        if (building == null || isClaimed()) return false;
 
         mClaimedBy = building.getReference(Building.class);
         return true;
+    }
+
+    /** Remove any claim over the HexagonTile. */
+    public void removeClaim() {
+        mClaimedBy = new Reference<Building>(null);
     }
 
     /**
