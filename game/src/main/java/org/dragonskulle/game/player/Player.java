@@ -780,8 +780,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
-            log.info("You do not own the building");
+            log.info("You do not own the building.");
             return false;
+        }
+        
+        if(building.isCapital()) {
+        	log.info("You cannot sell your capital.");
+        	return false;
         }
 
         return true;
