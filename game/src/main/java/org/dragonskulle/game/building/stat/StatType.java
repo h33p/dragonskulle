@@ -50,7 +50,7 @@ public enum StatType {
     ATTACK_DISTANCE(3),
 
     // Regardless of the level, the build distance will always be the same.
-    BUILD_DISTANCE(2),
+    BUILD_DISTANCE(3),
 
     // Regardless of the level, the claim distance will always be the same.
     CLAIM_DISTANCE(1);
