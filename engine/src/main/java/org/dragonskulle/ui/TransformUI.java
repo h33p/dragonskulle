@@ -111,7 +111,7 @@ public class TransformUI extends Transform {
             if (targetHeight < curHeight) {
                 float heightDiff = curHeight - targetHeight;
                 mScaledLocalCorners.add(
-                        0f, heightDiff * mPivotOffset.x, 0f, -heightDiff * (1f - mPivotOffset.x));
+                        0f, heightDiff * mPivotOffset.y, 0f, -heightDiff * (1f - mPivotOffset.y));
             } else {
                 float widthDiff = curWidth - targetWidth;
                 mScaledLocalCorners.add(
