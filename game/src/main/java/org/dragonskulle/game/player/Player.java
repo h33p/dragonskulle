@@ -78,17 +78,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** When the last time a player attacked */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
-    private static final Vector3f[] COLOURS = {
-        new Vector3f(0.5f, 1f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.86f),
-        new Vector3f(0.89f, 0.05f, 1f),
-        new Vector3f(0.1f, 0.56f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.1f, 0.05f, 0.56f),
-        new Vector3f(0f, 0f, 0f)
-    };
-
     /** The base rate of tokens which will always be added. */
     private final int TOKEN_RATE = 5;
     /** How frequently the tokens should be added. */
@@ -114,9 +103,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     protected void onConnectedSyncvars() {
         if (getNetworkObject().isServer()) {
-            int id = getNetworkObject().getOwnerId() % COLOURS.length;
-            if (id < 0) id += COLOURS.length;
-            mPlayerColour.set(COLOURS[id]);
+            int id = getNetworkObject().getOwnerId();
+            mPlayerColour.set(PlayerColour.getColour(id));
         }
     }
 
@@ -783,10 +771,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.info("You do not own the building.");
             return false;
         }
-        
-        if(building.isCapital()) {
-        	log.info("You cannot sell your capital.");
-        	return false;
+
+        if (building.isCapital()) {
+            log.info("You cannot sell your capital.");
+            return false;
         }
 
         return true;
