@@ -10,7 +10,7 @@ import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
-import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -143,6 +143,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
         UIAppearance appearance = UIManager.getInstance().getAppearance();
 
         getGameObject().getTransform(TransformUI.class).setTargetAspectRatio(4f);
+
         getGameObject()
                 .buildChild(
                         "slider bar",
@@ -177,7 +178,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
         // Extract the starting mouse offset so we "pin" the knob to the mouse
         Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
 
-        Vector2f cursorCoords = Actions.getCursor().getPosition();
+        Vector2fc cursorCoords = Actions.getCursor().getPosition();
 
         mTmpCursorPos.set(cursorCoords.x(), cursorCoords.y(), 0f);
 
@@ -200,15 +201,15 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
             // do accurate retransformation in one step here?
 
             // First, let's figure out the delta from value 0
-            mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
+            mKnobTransform.setParentAnchor(0f, 0.5f, 0f, 0.5f);
             Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
-            Vector2f cursorCoords = Actions.getCursor().getPosition();
+            Vector2fc cursorCoords = Actions.getCursor().getPosition();
             mTmpCursorPos2.set(cursorCoords.x(), cursorCoords.y(), 0f);
             mTmpCursorPos2.mulPosition(invMatrix);
             mTmpCursorPos2.sub(mTmpCursorPos);
             float x1 = mTmpCursorPos2.x();
             // Second, figure out the delta from value 1
-            mKnobTransform.setParentAnchor(1f, 0f, 1f, 0f);
+            mKnobTransform.setParentAnchor(1f, 0.5f, 1f, 0.5f);
             invMatrix = mKnobTransform.getInvWorldMatrix();
             mTmpCursorPos2.set(cursorCoords.x(), cursorCoords.y(), 0f);
             mTmpCursorPos2.mulPosition(invMatrix);

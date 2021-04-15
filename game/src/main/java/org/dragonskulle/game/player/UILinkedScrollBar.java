@@ -9,7 +9,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIVerticalSlider;
+import org.dragonskulle.ui.UISlider;
 import org.dragonskulle.utils.MathUtils;
 
 /** @author Oscar L */
@@ -26,7 +26,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
     @Override
     public void frameUpdate(float deltaTime) {
         if (Reference.isValid(sliderReference)) {
-            ((UIVerticalSlider) sliderReference.get())
+            ((UISlider) sliderReference.get())
                     .setValue(
                             (float)
                                     MathUtils.mapOneRangeToAnother(
@@ -50,12 +50,13 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
                         .getGameObject()
                         .getComponent(ScrollTranslate.class);
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        tran.setParentAnchor(1f, 0f, 1f, 0f);
-        tran.setPivotOffset(1f, 0f);
-        tran.setMargin(-0.1f, 0.13f, 0f, 0.2f);
+        tran.setParentAnchor(0.95f, 0.01f, 0.95f, 0.01f);
+        tran.setPivotOffset(0f, 1f);
+        tran.setMargin(0f, -0.2f, 0.2f, 0f);
+        tran.setRotationDeg(90f);
 
-        UIVerticalSlider newSlider =
-                new UIVerticalSlider(
+        UISlider newSlider =
+                new UISlider(
                         (uiSlider, val) -> {
                             if (Reference.isValid(scrollRef)) {
                                 scrollRef
