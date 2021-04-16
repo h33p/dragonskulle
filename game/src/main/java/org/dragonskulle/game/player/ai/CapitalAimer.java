@@ -62,7 +62,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             log.info("mGone == 0");
             int nextDoor = mPath.pop();
             mGone.push(nextDoor);
-            int firstElement = mPath.pop(); // TODO Null check
+            int firstElement = mPath.pop();
             if (mGraph.getNode(firstElement)
                             .getHexTile()
                             .get()
@@ -85,8 +85,8 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
             boolean onYourNode = false;
             while (!onYourNode) {
-                if (mGraph.getNode(previousNode).getHexTile().get().getClaimant()
-                        == null) { // TODO null checks please
+                if (Reference.isValid(mGraph.getNode(previousNode).getHexTile())
+                        && mGraph.getNode(previousNode).getHexTile().get().getClaimant() == null) {
                     mPath.push(previousNode);
                     previousNode = mGone.pop();
                 } else if (mGraph.getNode(previousNode)
@@ -107,46 +107,46 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
             // This will point us to the next tile to use
             int nextNode = mPath.pop();
-            while (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null
-                    && mGraph.getNode(nextNode)
-                                    .getHexTile()
-                                    .get()
-                                    .getClaimant()
-                                    .getNetworkObject()
-                                    .getOwnerId()
+            HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
+            Player nextTilePlayer = nextTile.getClaimant();
+            while (nextTile != null
+                    && nextTilePlayer != null
+                    && nextTilePlayer.getNetworkObject().getOwnerId()
                             == mPlayer.get().getNetworkObject().getOwnerId()) {
                 mGone.push(nextNode);
                 nextNode = mPath.pop();
+                nextTile = mGraph.getNode(nextNode).getHexTile().get();
+                nextTilePlayer = nextTile.getClaimant();
             }
 
             // Checks whether to build or to attack
-            if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
+            if (nextTilePlayer == null) {
                 log.info("Building");
+                HexagonTile tileToBuildOn = nextTile;
                 // BUILD
-                HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
-                mPlayer.get()
-                        .getClientBuildRequest()
-                        .invoke((d) -> d.setTile(tileToBuildOn)); // TODO Make as close as final as
-                // possible
+                mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
                 mGone.push(nextNode);
                 return;
-            } else if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null) {
+            } else if (nextTilePlayer != null) {
 
                 log.info("Attacking");
                 // ATTACK
-                if (!mGraph.getNode(nextNode).getHexTile().get().hasBuilding()) {
+                if (!nextTile.hasBuilding()) {
                     // Assuming that the building is on the next node
 
                     mGone.push(nextNode);
                     nextNode = mPath.pop();
+                    nextTile = mGraph.getNode(nextNode).getHexTile().get();
+                    nextTilePlayer = nextTile.getClaimant();
                 }
 
                 // Checks if building exists
-                Building toAttackCheck = mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+                Building toAttackCheck = nextTile.getBuilding();
                 if (toAttackCheck == null) {
                     // Checks if we have to build
-                    if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
-                        HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
+                    if (nextTilePlayer == null) {
+
+                        HexagonTile tileToBuildOn = nextTile;
                         mPlayer.get()
                                 .getClientBuildRequest()
                                 .invoke((d) -> d.setTile(tileToBuildOn));
@@ -154,13 +154,16 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                         return;
 
                     } else {
+                        Building building = nextTile.getBuilding();
                         // Will attack instead and remove
-                        while (mGraph.getNode(nextNode).getHexTile().get().getBuilding() == null) {
+                        while (building == null) {
                             mPath.push(nextNode);
                             nextNode = mGone.pop();
+                            nextTile = mGraph.getNode(nextNode).getHexTile().get();
+                            nextTilePlayer = nextTile.getClaimant();
+                            building = nextTile.getBuilding();
                         }
-                        super.tryToAttack(
-                                mGraph.getNode(nextNode).getHexTile().get().getBuilding());
+                        super.tryToAttack(building);
 
                         // Assumption is that the code at the start of the method will move back to
                         // correct postion
@@ -174,18 +177,12 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
                     if (attacker.getOwnerId() == mPlayer.get().getNetworkObject().getOwnerId()) {
 
-                        Building toAttack =
-                                mGraph.getNode(nextNode).getHexTile().get().getBuilding();
+                        Building toAttack = nextTile.getBuilding();
                         mPlayer.get()
                                 .getClientAttackRequest()
                                 .invoke(d -> d.setData(attacker, toAttack));
-                        if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() != null
-                                && mGraph.getNode(nextNode)
-                                                .getHexTile()
-                                                .get()
-                                                .getClaimant()
-                                                .getNetworkObject()
-                                                .getOwnerId()
+                        if (nextTilePlayer != null
+                                && nextTilePlayer.getNetworkObject().getOwnerId()
                                         == mPlayer.get().getNetworkObject().getOwnerId()) {
                             mGone.push(nextNode);
                         }
@@ -280,7 +277,6 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             // Will find the tile to attack
             Reference<HexagonTile> tileToAim = getTile(opponentPlayer);
             log.info("Found Tile");
-            // TODO null check
 
             if (Reference.isValid(tileToAim)) {
                 // Creates a graph
