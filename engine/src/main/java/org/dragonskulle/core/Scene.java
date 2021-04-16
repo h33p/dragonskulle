@@ -50,7 +50,7 @@ public class Scene {
     }
 
     /**
-     * Finds a root object by its name
+     * Finds a root object by its name.
      *
      * @param name name of the object
      * @return the object, if found. {@code null} otherwise.

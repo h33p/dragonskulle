@@ -23,7 +23,7 @@ import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 /**
- * This provides details about swapchain support for particular physical device
+ * This provides details about swapchain support for particular physical device.
  *
  * @author Aurimas Blažulionis
  */
@@ -36,7 +36,7 @@ class SwapchainSupportDetails {
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_FIFO_KHR);
 
     /**
-     * Constructor for {@link SwapchainSupportDetails}
+     * Constructor for {@link SwapchainSupportDetails}.
      *
      * @param device physical device handle
      * @param surface surface that we want to display on
@@ -63,7 +63,7 @@ class SwapchainSupportDetails {
     }
 
     /**
-     * Check if the swapchain is supported for this device
+     * Check if the swapchain is supported for this device.
      *
      * @return {@code true} if possible to use this device for presentation, {@code false}
      *     otherwise.

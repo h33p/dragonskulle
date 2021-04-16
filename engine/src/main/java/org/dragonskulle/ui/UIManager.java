@@ -28,7 +28,7 @@ public class UIManager {
      * <p>It will always be the top most element.
      */
     @Getter private Reference<UIRenderable> mHoveredObject;
-    /** Global UI appearance */
+    /** Global UI appearance. */
     @Getter @Setter private UIAppearance mAppearance = new UIAppearance();
 
     /**

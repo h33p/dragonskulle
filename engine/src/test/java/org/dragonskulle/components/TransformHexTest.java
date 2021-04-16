@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 import org.junit.Test;
 
 public class TransformHexTest {
-    /** Test whether a child GameObject's parent always has the child */
+    /** Test whether a child GameObject's parent always has the child. */
     @Test
     public void testAxialTranslation() {
         TransformHex transform = new TransformHex();
@@ -19,7 +19,7 @@ public class TransformHexTest {
         assert (pos.y == 3f);
     }
 
-    /** Test whether a child GameObject's parent always has the child */
+    /** Test whether a child GameObject's parent always has the child. */
     @Test
     public void testHexTranslation() {
         TransformHex transform = new TransformHex();

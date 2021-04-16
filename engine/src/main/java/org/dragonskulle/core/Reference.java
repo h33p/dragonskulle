@@ -53,7 +53,7 @@ public class Reference<T> implements Serializable {
     }
 
     /**
-     * Check whether the reference has been cleared
+     * Check whether the reference has been cleared.
      *
      * <p>This method is opposite of {@link isValid}
      *

@@ -202,7 +202,7 @@ public class Renderer implements NativeResource {
 
     /** A vulkan context instance. */
     private VkInstance mInstance;
-    /** Debug messenger used to log validation errors when {@code DEBUG_RENDERER} is enabled */
+    /** Debug messenger used to log validation errors when {@code DEBUG_RENDERER} is enabled. */
     private long mDebugMessenger;
     /** Surface of the window. */
     private long mSurface;
@@ -350,9 +350,9 @@ public class Renderer implements NativeResource {
 
     /** Synchronization objects for when multiple frames are rendered at a time. */
     private class FrameContext {
-        /** Semaphore for when the image is ready to be redrawn */
+        /** Semaphore for when the image is ready to be redrawn. */
         public long mImageAvailableSemaphore;
-        /** Semaphore for when the image has finished rendering and is able to be displayed */
+        /** Semaphore for when the image has finished rendering and is able to be displayed. */
         public long mRenderFinishedSemaphore;
         /** Fence that is used to synchronize the frame. */
         public long mInFlightFence;
@@ -1453,7 +1453,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Create a single use command buffer
+     * Create a single use command buffer.
      *
      * <p>this method is a wrapper around {@link Renderer#beginSingleUseCommandBuffer(VkDevice,
      * long)}
@@ -1494,7 +1494,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Ends and frees the single use command buffer
+     * Ends and frees the single use command buffer.
      *
      * <p>This method is essentially a wrapper around {@link
      * Renderer#endSingleUseCommandBuffer(VkCommandBuffer, VkDevice, VkQueue, long)}
@@ -1561,7 +1561,7 @@ public class Renderer implements NativeResource {
     /// Record command buffer to temporary object
 
     /**
-     * Updates the instance buffer
+     * Updates the instance buffer.
      *
      * <p>This method will update the instance buffer, load any unloaded meshes, batch up the list
      * of objects into instantiatable draw calls, and generate a list of non-instanced draws

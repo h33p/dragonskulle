@@ -65,13 +65,13 @@ public class PBRHighlightMaterial extends PBRMaterial {
         return super.hashShaderSet();
     }
 
-    /** Constructor for StandardMaterial */
+    /** Constructor for StandardMaterial. */
     public PBRHighlightMaterial() {
         super();
     }
 
     /**
-     * Constructor for {@link PBRHighlightMaterial}
+     * Constructor for {@link PBRHighlightMaterial}.
      *
      * <p>This constructor accepts a {@link PBRMaterial}, and clones its values
      */
@@ -89,7 +89,7 @@ public class PBRHighlightMaterial extends PBRMaterial {
     }
 
     /**
-     * Constructor for StandardMaterial
+     * Constructor for StandardMaterial.
      *
      * @param albedoMap initial albedo/diffuse texture of the object
      */
@@ -98,7 +98,7 @@ public class PBRHighlightMaterial extends PBRMaterial {
     }
 
     /**
-     * Constructor for StandardMaterial
+     * Constructor for StandardMaterial.
      *
      * @param albedoMap initial texture of the object
      * @param colour colour of the material
@@ -108,7 +108,7 @@ public class PBRHighlightMaterial extends PBRMaterial {
     }
 
     /**
-     * Constructor for StandardMaterial
+     * Constructor for StandardMaterial.
      *
      * @param colour colour of the material
      */

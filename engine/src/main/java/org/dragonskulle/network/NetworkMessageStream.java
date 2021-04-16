@@ -7,7 +7,7 @@ import java.io.IOException;
 import lombok.experimental.Accessors;
 
 /**
- * Describes a wrapped output stream that adds message size at the start of the stream (as short)
+ * Describes a wrapped output stream that adds message size at the start of the stream (as short).
  *
  * @author Aurimas Blažulionis
  */

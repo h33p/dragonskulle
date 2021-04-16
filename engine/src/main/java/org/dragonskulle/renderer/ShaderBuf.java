@@ -34,15 +34,15 @@ import org.lwjgl.system.NativeResource;
  */
 @Log
 public class ShaderBuf implements NativeResource {
-    /** Handle to compiled SPIR-V shader */
+    /** Handle to compiled SPIR-V shader. */
     private long mHandle;
 
-    /** Byte view to the shader */
+    /** Byte view to the shader. */
     @Accessors(prefix = "m")
     @Getter
     private ByteBuffer mBuffer;
 
-    /** macro key value pairs */
+    /** macro key value pairs. */
     @Accessors(prefix = "m")
     @Getter
     public static class MacroDefinition {
@@ -55,7 +55,7 @@ public class ShaderBuf implements NativeResource {
         }
     }
 
-    /** Arguments that can be set when loading {@link ShaderBuf}s */
+    /** Arguments that can be set when loading {@link ShaderBuf}s. */
     @EqualsAndHashCode
     private static class ShaderBufLoadArgs {
         private final ShaderKind mKind;
@@ -97,7 +97,7 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
-     * Processes #include directives and produces final output
+     * Processes #include directives and produces final output.
      *
      * @param data text data to process
      * @param depth current depth of the file. A hard limit is imposed (currently 20) of how deep

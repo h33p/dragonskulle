@@ -46,24 +46,24 @@ public abstract class Actions {
     /** A list of {@link Action}s that have been deactivated this frame. */
     private static ArrayList<Action> sJustDeactivated = new ArrayList<Action>();
 
-    /** An event which gets triggered when a key is pressed */
+    /** An event which gets triggered when a key is pressed. */
     @Setter private static Reference<IButtonEvent> sOnPress;
-    /** An event which gets triggered when a key is released */
+    /** An event which gets triggered when a key is released. */
     @Setter private static Reference<IButtonEvent> sOnRelease;
-    /** An event which gets triggered when a character is inputted */
+    /** An event which gets triggered when a character is inputted. */
     @Setter private static Reference<ICharEvent> sOnChar;
 
-    /** @return dereferenced {@link sOnPress} */
+    /** @return dereferenced {@link sOnPress}. */
     public static IButtonEvent getOnPress() {
         return Reference.isValid(sOnPress) ? sOnPress.get() : null;
     }
 
-    /** @return dereferenced {@link sOnRelease} */
+    /** @return dereferenced {@link sOnRelease}. */
     public static IButtonEvent getOnRelease() {
         return Reference.isValid(sOnRelease) ? sOnRelease.get() : null;
     }
 
-    /** @return dereferenced {@link sOnChar} */
+    /** @return dereferenced {@link sOnChar}. */
     public static ICharEvent getOnChar() {
         return Reference.isValid(sOnChar) ? sOnChar.get() : null;
     }

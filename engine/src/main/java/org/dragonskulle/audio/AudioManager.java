@@ -236,7 +236,7 @@ public class AudioManager {
 
     /**
      * Updates the OpenAL listener position and rotation from the singleton audio listener in the
-     * scene
+     * scene.
      */
     private void updateListenerPosAndRot() {
         Transform t = mAudioListener.get().getGameObject().getTransform();

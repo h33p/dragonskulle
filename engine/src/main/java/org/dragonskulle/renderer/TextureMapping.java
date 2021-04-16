@@ -19,14 +19,14 @@ import lombok.experimental.Accessors;
  */
 public class TextureMapping implements Serializable {
 
-    /** Controls whether the texture uses linear or nearest filtering */
+    /** Controls whether the texture uses linear or nearest filtering. */
     public TextureFiltering mFiltering;
 
-    /** How the texture will wrap on the U coordinate */
+    /** How the texture will wrap on the U coordinate. */
     public TextureWrapping mWrapU;
-    /** How the texture will wrap on the V coordinate */
+    /** How the texture will wrap on the V coordinate. */
     public TextureWrapping mWrapV;
-    /** How the texture will wrap on the W coordinate */
+    /** How the texture will wrap on the W coordinate. */
     public TextureWrapping mWrapW;
 
     /**

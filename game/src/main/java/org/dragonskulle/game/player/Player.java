@@ -54,7 +54,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
-    /** Link to the current capital */
+    /** Link to the current capital. */
     private Reference<Building> mCapital = null;
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();

@@ -105,9 +105,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
     private Reference<HexagonMap> mMapReference = null;
 
-    /** Turn on to enable default highlighting (teritory bounds) */
+    /** Turn on to enable default highlighting (teritory bounds). */
     @Getter @Setter private boolean mDefaultHighlight = true;
-    /** This interface gets called to allow overlaying any selections on top */
+    /** This interface gets called to allow overlaying any selections on top. */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
 
     @Getter @Setter private Reference<Player> mActivePlayer;
@@ -205,7 +205,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     /**
-     * Highlight all tiles using default colours
+     * Highlight all tiles using default colours.
      *
      * <p>This option essentially draws map bounds of different player teritories
      */

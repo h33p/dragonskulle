@@ -16,19 +16,19 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.NativeResource;
 
-/** Describes a texture resource */
+/** Describes a texture resource. */
 @Accessors(prefix = "m")
 @Getter
 public class Texture implements NativeResource {
-    /** Width of the texture */
+    /** Width of the texture. */
     protected int mWidth;
-    /** Height of the texture */
+    /** Height of the texture. */
     protected int mHeight;
-    /** Number of colour channels */
+    /** Number of colour channels. */
     protected int mChannels;
-    /** Underlying byte view of the texture */
+    /** Underlying byte view of the texture. */
     protected ByteBuffer mBuffer;
-    /** Name of the texture */
+    /** Name of the texture. */
     protected String mName;
 
     static {

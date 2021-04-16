@@ -25,10 +25,10 @@ import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
  */
 @Log
 public class Shader implements NativeResource {
-    /** Vulkan device that the shader is loaded on */
+    /** Vulkan device that the shader is loaded on. */
     private VkDevice mDevice;
 
-    /** Handle to the loaded shader module */
+    /** Handle to the loaded shader module. */
     @Accessors(prefix = "m")
     @Getter
     private long mModule;
