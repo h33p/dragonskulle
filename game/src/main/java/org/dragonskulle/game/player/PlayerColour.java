@@ -3,7 +3,9 @@ package org.dragonskulle.game.player;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Stores the various possible player colours.
@@ -29,52 +31,27 @@ enum PlayerColour {
     // PINK(255, 0, 255),
     WHITE(255, 255, 255);
 
-    /** The minimum RBG value. */
+    /** The minimum normal RBG value. */
     private static final int sMin = 0;
-    /** The maximum RBG value. */
+    /** The maximum normal RBG value. */
     private static final int sMax = 255;
 
     /** The colour in RGB form, normalised between 0 and 1. */
-    @Getter private final Vector3f mColour;
+    @Getter private final Vector3fc mColour;
 
     /**
      * Create a new colour able to be used to denote a player.
      *
-     * @param red The red value, between 0 and 255.
-     * @param green The green value, between 0 and 255.
-     * @param blue The blue value, between 0 and 255.
+     * @param red The red value, normally between 0 and 255.
+     * @param green The green value, normally between 0 and 255.
+     * @param blue The blue value, normally between 0 and 255.
      */
     PlayerColour(int red, int green, int blue) {
         mColour = normaliseRGB(red, green, blue);
     }
 
     /**
-     * Bound the input value so it is a valid rgb value (between {@value #sMin} and {@value #sMax}
-     * inclusive).
-     *
-     * @param value The value.
-     * @return The value bound between {@value #sMin} and {@value #sMax}, inclusive.
-     */
-    private int bound(int value) {
-        if (value < sMin) return sMin;
-        if (value > sMax) return sMax;
-        return value;
-    }
-
-    /**
-     * Normalise a value between {@link #sMin} and {@link #sMax}.
-     *
-     * @param value The value.
-     * @return The value, normalised.
-     */
-    private float normalise(int value) {
-        return (float) (value - sMin) / (sMax - sMin);
-    }
-
-    /**
-     * Turns an RGB combination into a combination normalised between 0 and 1.
-     *
-     * <p>The red, green and blue values will be automatically bound to the valid region.
+     * Normalise the RGB combination.
      *
      * @param red The red value.
      * @param green The green value.
@@ -83,9 +60,9 @@ enum PlayerColour {
      *     and 1.
      */
     private Vector3f normaliseRGB(int red, int green, int blue) {
-        float normalisedRed = normalise(bound(red));
-        float normalisedGreen = normalise(bound(green));
-        float normalisedBlue = normalise(bound(blue));
+        float normalisedRed = MathUtils.normalise(red, sMin, sMax);
+        float normalisedGreen = MathUtils.normalise(green, sMin, sMax);
+        float normalisedBlue = MathUtils.normalise(blue, sMin, sMax);
 
         return new Vector3f(normalisedRed, normalisedGreen, normalisedBlue);
     }
@@ -101,10 +78,9 @@ enum PlayerColour {
      * @param index The index of the desired colour.
      * @return A {@link Vector3f} containing the colour, in RGB normalised between 0 and 1.
      */
-    public static Vector3f getColour(int index) {
+    public static Vector3fc getColour(int index) {
         PlayerColour[] colours = values();
         PlayerColour selectedColour = colours[Math.floorMod(index, colours.length)];
-        System.out.println(selectedColour);
         return selectedColour.getColour();
     }
 }
