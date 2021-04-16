@@ -336,7 +336,6 @@ public class App implements NativeResource {
                             settingsUI.setEnabled(true);
                         }),
                 new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
-                new UIButton("Qe"),
                 new UIButton(
                         "Quick Reload",
                         (__, ___) -> {

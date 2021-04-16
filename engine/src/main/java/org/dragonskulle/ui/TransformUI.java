@@ -181,7 +181,7 @@ public class TransformUI extends Transform {
     private float mScreenAspectRatio = 1f;
 
     /** Check whether screen aspect ratio changed. If so, dirty all transforms */
-    private void checkScrenChange() {
+    private void checkScreenChange() {
         Camera main = Scene.getActiveScene().getSingleton(Camera.class);
         float width = main == null ? 1f : main.getAspectRatio();
 
@@ -211,7 +211,7 @@ public class TransformUI extends Transform {
      */
     @Override
     public Matrix4fc getMatrixForChildren() {
-        checkScrenChange();
+        checkScreenChange();
 
         if (mShouldUpdate) {
             updateLocalCorners();
