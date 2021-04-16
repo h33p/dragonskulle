@@ -9,12 +9,10 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
 
 /**
  * @author Oscar L
@@ -29,24 +27,18 @@ public class UIShopSection extends Component implements IOnStart {
     private ShopState mLastState = ShopState.CLOSED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
-    private UIBuildingOptions mBuildingOptions;
-    private Reference<GameObject> mNewBuildingPanel;
-    private Reference<GameObject> mUpgradePanel;
+    private Reference<Component> mNewBuildingPanel;
+    private Reference<Component> mUpgradePanel;
 
     @Setter
     @Getter
-    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    private Reference<Component> mCurrentPanel = new Reference<Component>(null);
     private Reference<UIText> titleRef;
 
     public UIShopSection(
             UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
         this.mGetPlayer = mGetPlayer;
         this.mGetHexChosen = mGetHexChosen;
-    }
-
-    public void setRandomState() {
-        final ShopState[] values = ShopState.values();
-        setState(values[(int) (Math.random() * values.length)]);
     }
 
     public enum ShopState {
@@ -66,7 +58,7 @@ public class UIShopSection extends Component implements IOnStart {
     protected void setState(ShopState state) {
         if (state != getLastState()) {
             if (state.equals(ShopState.CLOSED)) {
-                show(false);
+                show(mNewBuildingPanel, false);
                 if (Reference.isValid(mCurrentPanel)) {
                     show(mCurrentPanel, false);
                 }
@@ -74,19 +66,20 @@ public class UIShopSection extends Component implements IOnStart {
                 swapPanels(new Reference<>(null));
                 return;
             }
-            Reference<GameObject> newPanel;
+            Reference<Component> newPanel;
             log.warning("setting visible state to " + state);
             switch (state) {
                 case ATTACK_SCREEN:
-                    show(true);
+                    show(mNewBuildingPanel, true);
                     newPanel = new Reference<>(null);
                     break;
                 case BUILDING_NEW:
-                    show(true);
-                    newPanel = mNewBuildingPanel;
+                    show(mNewBuildingPanel, true);
+//                    newPanel = mNewBuildingPanel;
+                    newPanel = new Reference<>(null);
                     break;
                 case MY_BUILDING_SELECTED: // todo is BUILDING_SELECTED the same as the upgrade panel?
-                    show(true);
+                    show(mNewBuildingPanel, true);
                     newPanel = mUpgradePanel;
                     break;
                 default:
@@ -102,15 +95,13 @@ public class UIShopSection extends Component implements IOnStart {
         }
     }
 
-    private void show(boolean shouldShow) {
-        getGameObject().setEnabled(shouldShow);
+    private void show(Reference<Component> component, boolean shouldShow) {
+        if(Reference.isValid(component)) {
+            component.get().setEnabled(shouldShow);
+        }
     }
 
-    private void show(Reference<GameObject> gameObject, boolean show) {
-        gameObject.get().setEnabled(show);
-    }
-
-    private void swapPanels(Reference<GameObject> newPanel) {
+    private void swapPanels(Reference<Component> newPanel) {
         if (Reference.isValid(mCurrentPanel)) {
             // there is a screen being shown
             // deactivate the panel
@@ -120,7 +111,7 @@ public class UIShopSection extends Component implements IOnStart {
         mCurrentPanel = activateNewPanel(newPanel);
     }
 
-    private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
+    private Reference<Component> activateNewPanel(Reference<Component> newPanel) {
         // check if valid reference then reassign
         if (Reference.isValid(newPanel)) {
             show(newPanel, true);
@@ -136,35 +127,24 @@ public class UIShopSection extends Component implements IOnStart {
     @Override
     public void onStart() {
 
-        mUpgradePanel =
-                getGameObject()
-                        .buildChild(
-                                "building_upgrade_panel",
-                                new TransformUI(true),
-                                (self) -> {
-                                    UIBuildingUpgrade mUpgradeComponent =
-                                            new UIBuildingUpgrade(mGetHexChosen);
-                                    self.addComponent(mUpgradeComponent);
-                                });
+        UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(mGetHexChosen);
+        getGameObject().addComponent(uiBuildingUpgrade);
+        mUpgradePanel = uiBuildingUpgrade.getReference();
         show(mUpgradePanel, false);
 
-        mNewBuildingPanel =
-                getGameObject()
-                        .buildChild(
-                                "building_new_options",
-                                new TransformUI(true),
-                                (self) -> {
-                                    mBuildingOptions = new UIBuildingOptions(mGetPlayer);
-                                    self.addComponent(mBuildingOptions);
-                                    TransformUI tran =
-                                            getGameObject().getTransform(TransformUI.class);
-                                    tran.setParentAnchor(0.08f, 0.8f, 1 - 0.08f, 1 - 0.04f);
-                                });
+        UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(mGetPlayer);
+        getGameObject().addComponent(uiBuildingOptions);
+        mNewBuildingPanel = uiBuildingOptions.getReference();
+
         show(mNewBuildingPanel, false);
+
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
-        getGameObject().addComponent(new UIRenderable(new SampledTexture("white.bmp")));
+
+        getGameObject().
+
+                addComponent(new UIRenderable(new SampledTexture("white.bmp")));
         Reference<GameObject> textObj =
                 getGameObject()
                         .buildChild(
