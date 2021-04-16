@@ -101,7 +101,6 @@ public class NetworkClient {
                 }
                 mSocket = null;
                 mDataOut = null;
-                mClientListener = null;
             }
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -191,6 +190,11 @@ public class NetworkClient {
 
     /** Processes all requests. */
     public int processRequests() {
+
+        if (mDidDispose.get()) {
+            return 0;
+        }
+
         log.fine("processing all " + this.mRequests.size() + " requests");
         int cnt = 0;
 

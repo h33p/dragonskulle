@@ -9,6 +9,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.ICharEvent;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 
 /**
  * Class describing a interactive UI input box.
@@ -16,7 +17,7 @@ import org.dragonskulle.input.ICharEvent;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIInputBox extends Component implements IOnAwake, IFrameUpdate {
+public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
 
     public static final Action CURSOR_LEFT = new Action("CURSOR_LEFT", false);
     public static final Action CURSOR_RIGHT = new Action("CURSOR_RIGHT", false);

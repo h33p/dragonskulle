@@ -128,7 +128,9 @@ public class UIMaterial implements IMaterial, Serializable {
 
     public void free() {
         for (SampledTexture tex : mFragmentTextures) {
-            tex.free();
+            if (tex != null) {
+                tex.free();
+            }
         }
     }
 }

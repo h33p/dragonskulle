@@ -12,6 +12,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
+import org.dragonskulle.components.ILateNetworkUpdate;
 import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
@@ -227,6 +228,8 @@ public class Engine {
 
             cumulativeTime += deltaTime;
 
+            boolean triggerFixedUpdate = cumulativeTime > UPDATE_TIME;
+
             // Update scenes
             switchScenes();
 
@@ -251,7 +254,7 @@ public class Engine {
                 Scene.setActiveScene(null);
             }
 
-            if (cumulativeTime > UPDATE_TIME) {
+            if (triggerFixedUpdate) {
                 networkUpdate();
 
                 do {
@@ -274,6 +277,10 @@ public class Engine {
 
                 renderFrame();
                 Scene.setActiveScene(null);
+            }
+
+            if (triggerFixedUpdate) {
+                lateNetworkUpdate();
             }
 
             // Destroy all objects and components that were destroyed this frame
@@ -339,12 +346,26 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
+    /** Do all Network Updates on components that implement it. */
     private void networkUpdate() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
             for (Component component : s.getEnabledComponents()) {
                 if (component instanceof INetworkUpdate) {
                     ((INetworkUpdate) component).networkUpdate();
+                }
+            }
+        }
+        Scene.setActiveScene(null);
+    }
+
+    /** Do all Late Network Updates on components that implement it. */
+    private void lateNetworkUpdate() {
+        for (Scene s : mActiveScenes) {
+            Scene.setActiveScene(s);
+            for (Component component : s.getEnabledComponents()) {
+                if (component instanceof ILateNetworkUpdate) {
+                    ((ILateNetworkUpdate) component).lateNetworkUpdate();
                 }
             }
         }

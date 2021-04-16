@@ -44,7 +44,7 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
     @Getter private final Vector3f mEndPos = new Vector3f();
 
     private Vector3f mTmpTransform = new Vector3f();
-    @Setter private float mTargetLerpTime = 0f;
+    @Getter @Setter private float mTargetLerpTime = 0f;
     private float mZoomLerpTime = 0.1f;
     @Getter private float mZoomLevel = 0f;
     private transient Transform3D mTransform;

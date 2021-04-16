@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.input.Action;
@@ -33,6 +35,8 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     private Vector4fc mHoveredColour = new Vector4f(0.8f, 0.8f, 0.8f, 1f);
     private Vector4fc mPressedColour = new Vector4f(0.6f, 0.6f, 0.6f, 1f);
     private Vector4fc mDisabledColour = new Vector4f(0.882f, 0.027f, 0.019f, 1f);
+
+    @Getter @Setter private boolean mLockPressed = false;
 
     private Vector4f mTmpLerp = new Vector4f(1f);
 
@@ -416,7 +420,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
             }
 
             // Transition color interpolation value depending on the state of button press
-            if (mPressedDown) {
+            if (mPressedDown || mLockPressed) {
                 mCurTimer += deltaTime;
                 if (mCurTimer > 2f * mTransitionTime) {
                     mCurTimer = 2f * mTransitionTime;

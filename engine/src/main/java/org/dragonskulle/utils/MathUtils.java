@@ -72,4 +72,16 @@ public class MathUtils {
         int calcScale = (int) Math.pow(10, decimalPrecision);
         return (double) Math.round(finalNumber * calcScale) / calcScale;
     }
+
+    /**
+     * Normalise a value between 0 and 1, by providing the range the value is situated in.
+     *
+     * @param value The value to normalise.
+     * @param minimum The lowest value the input could be.
+     * @param maximum The highest value the input could be.
+     * @return The value normalised between 0 and 1.
+     */
+    public static float normalise(float value, float minimum, float maximum) {
+        return (float) mapOneRangeToAnother(value, minimum, maximum, 0, 1, 9);
+    }
 }

@@ -14,7 +14,7 @@ import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4fc;
@@ -45,6 +45,15 @@ public class UIRenderable extends Renderable implements IOnAwake {
     @Getter @Setter private float mWidthHeightBlend = 0f;
 
     @Getter @Setter private float mDepthShift = 0f;
+
+    /**
+     * Controls whether the object is hoverable
+     *
+     * <p>If set to {@code true} (default), this renderable will obstruct other UI elements, and
+     * make things like buttons behind it not selectable. If set to {@code false}, it will be
+     * ignored.
+     */
+    @Getter @Setter private boolean mHoverable = true;
 
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
@@ -85,6 +94,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Override
     public void onAwake() {
+
+        if (!mMaintainAspect) {
+            return;
+        }
+
         SampledTexture[] texs = mMaterial.getFragmentTextures();
         Texture tex =
                 texs != null && texs.length > 0 && texs[0] != null && texs[0].getTexture() != null
@@ -110,9 +124,14 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     public boolean cursorOver() {
+
+        if (!mHoverable) {
+            return false;
+        }
+
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2f cursorCoords = Actions.getCursor().getPosition();
+        Vector2fc cursorCoords = Actions.getCursor().getPosition();
 
         mTmpMatrix.invert();
 

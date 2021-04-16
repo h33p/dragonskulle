@@ -8,6 +8,10 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 /**
  * Class describing a rectangle with text.
@@ -15,7 +19,7 @@ import org.dragonskulle.renderer.SampledTexture;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UITextRect extends Component implements IOnAwake {
+public class UITextRect extends UIBuildableComponent implements IOnAwake, IUIBuildHandler {
     @Getter protected Reference<UIRenderable> mRenderable;
     protected UIMaterial mMaterial;
 
@@ -23,8 +27,18 @@ public class UITextRect extends Component implements IOnAwake {
 
     @Getter @Setter protected UIAppearance mAppearance = UIManager.getInstance().getAppearance();
 
+    @Getter protected final Vector4f mColour = new Vector4f(1f);
+
     private UIText mLabelTextComp;
     @Getter private Reference<UIText> mLabelText;
+
+    @Getter @Setter SampledTexture mIcon;
+
+    /**
+     * Overriden aspect ratio value. If set, texture's aspect ratio will be ignored, and this ratio
+     * will be used
+     */
+    @Getter @Setter Float mOverrideAspectRatio = null;
 
     public UITextRect() {
         mLabelTextComp = new UIText();
@@ -38,11 +52,59 @@ public class UITextRect extends Component implements IOnAwake {
         mLabelTextComp = new UIText(label);
     }
 
+    public UITextRect(String label, Vector4fc labelColour) {
+        mLabelTextComp = new UIText(labelColour, label);
+    }
+
+    public UITextRect(String label, Vector4fc labelColour, Vector4fc colour) {
+        this(label, labelColour);
+        mColour.set(colour);
+    }
+
+    public UITextRect(String label, Vector4fc labelColour, Vector4fc colour, float overrideAspect) {
+        this(label, labelColour, colour);
+        mOverrideAspectRatio = overrideAspect;
+    }
+
+    public UITextRect(String label, float overrideAspect, SampledTexture rectTexture) {
+        this(label);
+        mOverrideAspectRatio = overrideAspect;
+        mRectTexture = rectTexture;
+    }
+
+    public UITextRect(
+            String label,
+            Vector4fc labelColour,
+            Vector4fc colour,
+            float overrideAspect,
+            SampledTexture rectTexture) {
+        this(label, labelColour, colour, overrideAspect);
+        mRectTexture = rectTexture;
+    }
+
     @Override
     public void onAwake() {
         mRenderable = getGameObject().getComponent(UIRenderable.class);
         if (!Reference.isValid(mRenderable)) {
-            getGameObject().addComponent(new UIRenderable(mRectTexture));
+
+            if (mRectTexture == null) {
+                mRectTexture = mAppearance.getTextRectTexture().clone();
+            }
+
+            UIRenderable uiRenderable = new UIRenderable(mColour, mRectTexture);
+            if (mOverrideAspectRatio != null) {
+                TransformUI uiTransform = getGameObject().getTransform(TransformUI.class);
+                if (uiTransform != null) {
+                    uiRenderable.setMaintainAspect(false);
+                    if (mOverrideAspectRatio > 0f) {
+                        uiTransform.setMaintainAspect(true);
+                        uiTransform.setTargetAspectRatio(mOverrideAspectRatio);
+                    } else {
+                        uiTransform.setMaintainAspect(false);
+                    }
+                }
+            }
+            getGameObject().addComponent(uiRenderable);
             mRenderable = getGameObject().getComponent(UIRenderable.class);
         }
 
@@ -55,15 +117,46 @@ public class UITextRect extends Component implements IOnAwake {
         }
 
         if (mLabelTextComp != null) {
+            if (mIcon != null) {
+                getGameObject()
+                        .buildChild(
+                                "icon",
+                                new TransformUI(true),
+                                (handle) -> {
+                                    TransformUI transform = handle.getTransform(TransformUI.class);
+                                    transform.setMargin(
+                                            mAppearance.getRectTextHorizMargin(),
+                                            mAppearance.getRectTextVertMargin(),
+                                            0,
+                                            -mAppearance.getRectTextVertMargin());
+
+                                    transform.setParentAnchor(
+                                            0, 0, mAppearance.getButtonIconSplit(), 1);
+
+                                    UIRenderable iconRend = new UIRenderable(mIcon);
+                                    iconRend.setHoverable(false);
+                                    handle.addComponent(iconRend);
+                                });
+            }
+
             getGameObject()
                     .buildChild(
                             "label",
                             new TransformUI(true),
                             (handle) -> {
-                                handle.getTransform(TransformUI.class)
-                                        .setMargin(
-                                                mAppearance.getRectTextHorizMargin(),
-                                                mAppearance.getRectTextVertMargin());
+                                TransformUI transform = handle.getTransform(TransformUI.class);
+                                transform.setMargin(
+                                        mAppearance.getRectTextHorizMargin(),
+                                        mAppearance.getRectTextVertMargin());
+
+                                if (mIcon != null) {
+                                    transform.setParentAnchor(
+                                            mAppearance.getButtonIconSplit(), 0, 1, 1);
+                                    transform.setPivotOffset(
+                                            Math.max(0f, 0.5f - mAppearance.getButtonIconSplit()),
+                                            0.5f);
+                                }
+
                                 mLabelText = mLabelTextComp.getReference(UIText.class);
                                 handle.addComponent(mLabelTextComp);
                             });
