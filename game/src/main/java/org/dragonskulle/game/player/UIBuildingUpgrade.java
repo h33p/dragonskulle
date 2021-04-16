@@ -1,41 +1,40 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFrameUpdate;
-import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.core.Engine;
+import org.dragonskulle.components.*;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.network.components.sync.SyncInt;
-import org.dragonskulle.renderer.Font;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIDropDown;
-import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
+import org.dragonskulle.game.player.network_data.StatData;
+import org.dragonskulle.ui.*;
 
 /**
  * @author Oscar L
  */
 @Log
-public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpdate {
+@Accessors(prefix = "m")
+public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpdate, IFixedUpdate {
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
-    private Reference<UIText> textReference;
+    @Getter
+    private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private Reference<GameObject> mBuildingUpgradeComponent;
     private Reference<GameObject> mStatChildren;
+    @Setter
+    private Building mLastBuilding;
+    private int ctr;
 
-    public UIBuildingUpgrade(UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
+    public UIBuildingUpgrade(UIMenuLeftDrawer.IGetHexChosen mGetHexChosen, UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
         this.mGetHexChosen = mGetHexChosen;
+        this.mGetPlayer = mGetPlayer;
     }
 
     /**
@@ -53,24 +52,24 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        StringBuilder builder = new StringBuilder();
         final HexagonTile hexagonTile = mGetHexChosen.get();
         if (hexagonTile != null) {
             final Building building = hexagonTile.getBuilding();
-            if (building != null) {
-                buildStatUpgradeChildren(builder, building);
+            if (building != null && (!building.equals(mLastBuilding) || building.isDidStatsChange())) {
+                log.info("bupdating");
+                building.setDidStatsChange(false);
+                mLastBuilding = building;
+                if (Reference.isValid(mStatChildren)) {
+                    mStatChildren.get().destroy();
+                }
+                buildStatUpgradeChildren(building);
             }
-        }
-        if (Reference.isValid(textReference)) {
-            textReference.get().setText(builder.toString());
         }
     }
 
-    private void buildStatUpgradeChildren(StringBuilder builder, Building building) {
+    private void buildStatUpgradeChildren(Building building) {
         List<SyncStat> stats = building.getStats();
-        if (Reference.isValid(mStatChildren)) {
-            mStatChildren.get().destroy();
-        }
+
         mStatChildren =
                 mBuildingUpgradeComponent
                         .get()
@@ -78,14 +77,35 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                 "stats_upgrade_children",
                                 new TransformUI(true),
                                 (self) -> {
-                                    self.addComponent(new UIText(
-                                            "can this be seen?"));
-                                    new UIDropDown(
-                                            0,
-                                            (drop) -> log.warning("will upgrade stat " + drop.getSelectedOption()),
-                                            String.valueOf(stats.stream().map((stat) -> MessageFormat.format("{0}::{1}", stat.getClass().getSimpleName(), stat.getValue())).collect(Collectors.toList())));
+                                    TransformUI transform = getGameObject().getTransform(TransformUI.class);
+                                    SyncStat syncStat = stats.get(0);
+                                    UIButton statValue = new UIButton("attack :: " + syncStat.getValue(),
+                                            (button, __) -> {
+                                                Reference<Player> playerReference = getGetPlayer().get();
+                                                if (Reference.isValid(playerReference)) {
+                                                    playerReference.get().getClientStatRequest().invoke(
+                                                            new StatData(building, StatType.ATTACK)
+                                                    );
+                                                }
+                                            });
+
+//                                    UIDropDown uiDropDown = new UIDropDown(
+//                                            0,
+//                                            (drop) -> {
+//                                                log.warning("will upgrade stat " + drop.getSelectedOption());
+//                                                SyncStat selected = stats.get(drop.getSelected() - 1);
+//                                                statValue.getLabelText().get().setText(selected.getClass().getSimpleName() + " :: " + selected.getValue());
+//                                            },
+//                                            "mAttack",
+//                                            "mDefence",
+//                                            "mTokenGeneration",
+//                                            "mViewDistance",
+//                                            "mAttackDistance");
+                                    self.addComponent(statValue); // will display increaser next to dropdown
+//                                    self.addComponent(uiDropDown);
                                 });
     }
+
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -101,25 +121,27 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                 (self) -> {
                                     final TransformUI transform =
                                             self.getTransform(TransformUI.class);
-                                    transform.setParentAnchor(0.1f, 0.6f);
-                                    transform.setMargin(0, -0.2f, 0, -0.2f);
-
+                                    transform.setParentAnchor(0.05f, 0.01f);
+                                    transform.setMargin(0.9f);
                                     UIText mWindowText =
-                                            new UIText( "PLACEHOLDER UPGRADE TEXT");
-                                    textReference = mWindowText.getReference(UIText.class);
+                                            new UIText("PLACEHOLDER UPGRADE TEXT");
                                     self.addComponent(mWindowText);
-
-                                    TransformUI textTransform =
-                                            self.getTransform(TransformUI.class);
-                                    textTransform.setMargin(0.2f, 0f, -0.2f, 0f);
                                 });
     }
 
-    private Component buildSingleStatChild(SyncStat stat, float offset) {
-
-        TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        // set transform depending on offset
-        //        tran.setParentAnchor(0.3f, 0.4f + offset);
-        return new UIStatUpgrader(stat, null); // TODO add actual method
+    @Override
+    public void fixedUpdate(float deltaTime) {
+        if (ctr++ >= 100) {
+            StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
+            HexagonTile tile = mGetHexChosen.get();
+            if (tile != null) {
+                Building building = tile.getBuilding();
+                if (building != null) {
+                    building.getStats().forEach(s -> builder.append(s.getType()).append(" -> ").append(s.getValue()).append("\n"));
+                }
+            }
+            log.info(builder.toString());
+            ctr = 0;
+        }
     }
 }

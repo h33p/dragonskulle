@@ -27,12 +27,12 @@ public class UIShopSection extends Component implements IOnStart {
     private ShopState mLastState = ShopState.CLOSED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
-    private Reference<Component> mNewBuildingPanel;
-    private Reference<Component> mUpgradePanel;
+    private Reference<GameObject> mNewBuildingPanel;
+    private Reference<GameObject> mUpgradePanel;
 
     @Setter
     @Getter
-    private Reference<Component> mCurrentPanel = new Reference<Component>(null);
+    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> titleRef;
 
     public UIShopSection(
@@ -59,28 +59,25 @@ public class UIShopSection extends Component implements IOnStart {
         if (state != getLastState()) {
             if (state.equals(ShopState.CLOSED)) {
                 show(mNewBuildingPanel, false);
-                if (Reference.isValid(mCurrentPanel)) {
-                    show(mCurrentPanel, false);
-                }
+                show(mCurrentPanel, false);
                 setLastState(state);
                 swapPanels(new Reference<>(null));
                 return;
             }
-            Reference<Component> newPanel;
+            Reference<GameObject> newPanel;
             log.warning("setting visible state to " + state);
             switch (state) {
                 case ATTACK_SCREEN:
-                    show(mNewBuildingPanel, true);
                     newPanel = new Reference<>(null);
                     break;
                 case BUILDING_NEW:
-                    show(mNewBuildingPanel, true);
+//                    show(mNewBuildingPanel, true);
 //                    newPanel = mNewBuildingPanel;
                     newPanel = new Reference<>(null);
                     break;
-                case MY_BUILDING_SELECTED: // todo is BUILDING_SELECTED the same as the upgrade panel?
-                    show(mNewBuildingPanel, true);
+                case MY_BUILDING_SELECTED:
                     newPanel = mUpgradePanel;
+                    log.warning("my selected case");
                     break;
                 default:
                     log.warning("Menu hasn't been updated to reflect this screen yet  " + state);
@@ -95,23 +92,37 @@ public class UIShopSection extends Component implements IOnStart {
         }
     }
 
-    private void show(Reference<Component> component, boolean shouldShow) {
-        if(Reference.isValid(component)) {
+    private void show(Reference<GameObject> component, boolean shouldShow) {
+        if (Reference.isValid(component)) {
             component.get().setEnabled(shouldShow);
         }
     }
 
-    private void swapPanels(Reference<Component> newPanel) {
+    private void swapPanels(Reference<GameObject> newPanel) {
+        log.info("swapping panels");
+        // if there is a screen being shown
+        // deactivate the panel
         if (Reference.isValid(mCurrentPanel)) {
-            // there is a screen being shown
-            // deactivate the panel
-            show(mCurrentPanel, false);
+            if (mCurrentPanel.equals(mUpgradePanel)) {
+                mUpgradePanel.get().getComponent(UIBuildingUpgrade.class).get().setLastBuilding(null);
+            }
+            mCurrentPanel.get().setEnabled(false);
+        } else {
+            log.info("mCurrentPanel is invalid");
         }
-        // activate the new panel and assign the last current variable
-        mCurrentPanel = activateNewPanel(newPanel);
+        log.info("maybe showing newPanel");
+        if (Reference.isValid(newPanel)) {
+            log.info("showing new panel");
+            newPanel.get().setEnabled(true);
+        } else {
+            log.info("newPanel is invalid");
+        }
+        mCurrentPanel = newPanel;
+//        show(mCurrentPanel, false);
+//        mCurrentPanel = activateNewPanel(newPanel);// activate the new panel and assign the last current variable
     }
 
-    private Reference<Component> activateNewPanel(Reference<Component> newPanel) {
+    private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
         // check if valid reference then reassign
         if (Reference.isValid(newPanel)) {
             show(newPanel, true);
@@ -127,15 +138,14 @@ public class UIShopSection extends Component implements IOnStart {
     @Override
     public void onStart() {
 
-        UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(mGetHexChosen);
-        getGameObject().addComponent(uiBuildingUpgrade);
-        mUpgradePanel = uiBuildingUpgrade.getReference();
+        UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(mGetHexChosen, mGetPlayer);
+        mUpgradePanel = getGameObject().buildChild("upgrade_object", new TransformUI(true),
+                (self) -> self.addComponent(uiBuildingUpgrade));
         show(mUpgradePanel, false);
 
         UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(mGetPlayer);
-        getGameObject().addComponent(uiBuildingOptions);
-        mNewBuildingPanel = uiBuildingOptions.getReference();
-
+        mNewBuildingPanel = getGameObject().buildChild("building_object", new TransformUI(true),
+                (self) -> self.addComponent(uiBuildingOptions));
         show(mNewBuildingPanel, false);
 
         // Outer window stuff
