@@ -10,12 +10,11 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UISlider;
-import org.dragonskulle.utils.MathUtils;
 
 /** @author Oscar L */
 public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnStart {
     private Reference<ScrollTranslate> scrollRef;
-    private Reference<Component> sliderReference;
+    private Reference<UISlider> sliderReference;
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -26,11 +25,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
     @Override
     public void frameUpdate(float deltaTime) {
         if (Reference.isValid(sliderReference)) {
-            ((UISlider) sliderReference.get())
-                    .setValue(
-                            (float)
-                                    MathUtils.mapOneRangeToAnother(
-                                            scrollRef.get().getZoomLevel(), 0, 1, 0, 100, 0));
+            sliderReference.get().setValue(scrollRef.get().getZoomLevel());
         }
     }
 
@@ -59,18 +54,13 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
                 new UISlider(
                         (uiSlider, val) -> {
                             if (Reference.isValid(scrollRef)) {
-                                scrollRef
-                                        .get()
-                                        .setTargetLerpTime(
-                                                (float)
-                                                        MathUtils.mapOneRangeToAnother(
-                                                                val, 0f, 100f, 0f, 1f, 2));
+                                scrollRef.get().setTargetLerpTime(val);
                             }
                         });
 
-        sliderReference = newSlider.getReference();
-        newSlider.setRoundStep(1f);
-        newSlider.setMaxValue(100f);
+        sliderReference = newSlider.getReference(UISlider.class);
+        newSlider.setRoundStep(0.01f);
+        newSlider.setMaxValue(1f);
         newSlider.setMinValue(0f);
         getGameObject().addComponent(newSlider);
     }
