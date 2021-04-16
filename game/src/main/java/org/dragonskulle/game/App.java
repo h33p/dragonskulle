@@ -128,7 +128,7 @@ public class App implements NativeResource {
                         "hexagon map",
                         new Transform3D(),
                         (map) -> {
-                            map.addComponent(new HexagonMap(51));
+                            map.addComponent(new HexagonMap(3));
                         });
 
         mainScene.addRootObject(hexagonMap);

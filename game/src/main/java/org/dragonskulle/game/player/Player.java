@@ -163,7 +163,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will randomly place a capital using an angle so each person is within their own slice
      */
     private void distributeCoordinates() {
-        
+
         final int attempts = 20;
         int i = 0;
         boolean completed = false;
@@ -178,22 +178,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             if (playersOnlineNow < 0) {
                 playersOnlineNow += MAX_PLAYERS; // handle AI Players
             }
-            
+
             float angleToStart;
             float angleToEnd;
 
             // This will expand the search if we cannot place in the first part
-            if (i < attempts/2) {
-            // This gives us the angle to find our coordinates.  Stored in degrees
-            angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
-            angleToEnd =
-                    ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
-            }
-            else {
-            	// This gives us the angle to find our coordinates.  Stored in degrees
-                angleToStart = playersOnlineNow * angleOfCircle;
+            if (i < attempts / 2) {
+                // This gives us the angle to find our coordinates.  Stored in degrees
+                angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
                 angleToEnd =
-                        (playersOnlineNow + 1) * angleOfCircle;
+                        ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
+            } else {
+                // This gives us the angle to find our coordinates.  Stored in degrees
+                angleToStart = playersOnlineNow * angleOfCircle;
+                angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
             }
 
             Random random = new Random();
@@ -229,36 +227,42 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                 + " Y = "
                                 + (int) axial.y);
                 i++;
-                
+
             } else if (i < attempts) {
-            	
-            	// This part of the code checks we are not in an island which we cannot get out of
-            	ArrayList<HexagonTile> buildableTiles = new ArrayList<HexagonTile>(getBuildableTiles());
-            	int numberOfSpaces = 0;
-            	
-            	// This is set so there is multiple places to leave in case there is a second capital nearby which gets there first
-            	final int spacesWanted = 2;
-            	int j = 0;
-            	while (j < buildableTiles.size() && numberOfSpaces < spacesWanted) {
-            		HexagonTile tile = buildableTiles.get(j);
-            		if (tile.getTileType() == TileType.LAND && tile.getClaimant() == null) {
-            			numberOfSpaces++;
-            		}
-            	}
-            	
-            	if (numberOfSpaces >= spacesWanted) {
-                buildingToBecomeCapital.setCapital(true);
-                i = attempts;
-                completed = true;
-                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());}
-            	else {
-            		buildingToBecomeCapital.remove();
-            		i++;
-            	}
+
+                // This part of the code checks we are not in an island which we cannot get out of
+                ArrayList<HexagonTile> buildableTiles =
+                        new ArrayList<HexagonTile>(buildingToBecomeCapital.getBuildableTiles());
+                int numberOfSpaces = 0;
+
+                // This is set so there is multiple places to leave in case there is a second
+                // capital nearby which gets there first
+                final int spacesWanted = 2;
+                int j = 0;
+                while (j < buildableTiles.size() && numberOfSpaces < spacesWanted) {
+                    HexagonTile tile = buildableTiles.get(j);
+                    if (tile.getTileType() == TileType.LAND && tile.getClaimant() == null) {
+                        numberOfSpaces++;
+                    }
+                }
+
+                if (numberOfSpaces >= spacesWanted) {
+                    buildingToBecomeCapital.setCapital(true);
+                    i = attempts;
+                    completed = true;
+                    log.info(
+                            "Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+                } else {
+                    buildingToBecomeCapital.remove();
+                    i++;
+                }
             }
         }
         if (!completed) {
-        	//TODO Destroy the characters
+
+            // Cannot add a capital
+            setOwnsCapital(false);
+            getGameObject().destroy();
         }
     }
 
