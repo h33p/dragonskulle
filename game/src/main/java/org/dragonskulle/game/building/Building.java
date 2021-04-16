@@ -509,7 +509,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Remove any claims.
         for (HexagonTile hexagonTile : mClaimedTiles) {
-            hexagonTile.setClaimedBy(null);
+            hexagonTile.removeClaim();
         }
 
         // Reset the list of claimed, viewable and attackable tiles.
