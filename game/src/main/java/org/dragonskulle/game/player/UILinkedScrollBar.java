@@ -25,7 +25,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
     @Override
     public void frameUpdate(float deltaTime) {
         if (Reference.isValid(sliderReference)) {
-            sliderReference.get().setValue(scrollRef.get().getZoomLevel());
+            sliderReference.get().setValue(scrollRef.get().getTargetLerpTime());
         }
     }
 
