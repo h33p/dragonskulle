@@ -79,7 +79,7 @@ public class HexagonTile {
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /** A reference to the building that claims the tile, or {@code null}. */
-    private Reference<Building> mClaimedBy = new Reference<Building>(null);
+    private Reference<Building> mClaimedBy = null;
 
     /**
      * Constructor that creates the HexagonTile
@@ -164,11 +164,11 @@ public class HexagonTile {
 
     /** Remove any claim over the HexagonTile. */
     public void removeClaim() {
-        mClaimedBy = new Reference<Building>(null);
+        mClaimedBy = null;
     }
 
     /**
-     * Whether the tile is claimed by a building.
+     * Get whether a valid claim has been made.
      *
      * @return Whether the tile is claimed by a building.
      */
@@ -183,7 +183,7 @@ public class HexagonTile {
      * @return The Player who has claimed this tile; otherwise {@code null}.
      */
     public Player getClaimant() {
-        if (!isClaimed() || !Reference.isValid(mClaimedBy)) {
+        if (!isClaimed()) {
             return null;
         }
         return mClaimedBy.get().getOwner();
@@ -198,7 +198,7 @@ public class HexagonTile {
      * @return The owner ID of the Player as an {@link Integer}; otherwise {@code null}.
      */
     public Integer getClaimantId() {
-        if (!isClaimed() || !Reference.isValid(mClaimedBy)) {
+        if (!isClaimed()) {
             return null;
         }
         return mClaimedBy.get().getOwnerId();
