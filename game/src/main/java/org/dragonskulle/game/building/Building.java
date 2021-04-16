@@ -17,6 +17,7 @@ import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -51,6 +52,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private final SyncStat mViewDistance = new SyncStat(this);
     /** Stores the attack range of the building. */
     @Getter private final SyncStat mAttackDistance = new SyncStat(this);
+    /** Stores the build range of the building. */
+    @Getter private final SyncStat mBuildDistance = new SyncStat(this);
+    /** Stores the claim range of the building. */
+    @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -65,6 +70,22 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
      */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+
+    /**
+     * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
+     * Building.
+     *
+     * <p>Tiles excluded from this set:
+     *
+     * <ul>
+     *   <li>Non-land tiles.
+     *   <li>Tiles claimed by <b>this</b> building.
+     * </ul>
+     *
+     * <p>To actually get a more refined set that discludes tiles claimed by other buildings, please
+     * use: {@link #getBuildableTiles()}.
+     */
+    private HashSet<HexagonTile> mPlaceableTiles = new HashSet<HexagonTile>();
 
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
@@ -94,6 +115,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
+        initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
+        initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
     }
 
     @Override
@@ -138,6 +161,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Generate the base cost of upgrading stats.
         generateStatBaseCost();
+        generatePlaceableTiles();
     }
 
     /**
@@ -180,8 +204,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         HexagonMap map = getMap();
         if (map == null) return;
 
+        int distance = mClaimDistance.getValue();
         // Claim the tiles around the building.
-        mClaimedTiles = map.getTilesInRadius(getTile(), 1);
+        mClaimedTiles = map.getTilesInRadius(getTile(), distance, false);
         // Claim the tile the building is on.
         mClaimedTiles.add(getTile());
 
@@ -219,7 +244,31 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = map.getTilesInRadius(getTile(), distance);
+        mAttackableTiles = map.getTilesInRadius(getTile(), distance, false);
+    }
+
+    /** Store the tiles that are suitable for placing a building on. */
+    private void generatePlaceableTiles() {
+        // Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+
+        // Clear the current list of buildable tiles.
+        mPlaceableTiles.clear();
+
+        // Get the currently claimed radius.
+        int claimedRadius = mClaimDistance.getValue() + 1;
+        // Get the current build distance.
+        int distance = mBuildDistance.getValue();
+        // Get the tiles outside of the claimed radius, but within the build distance.
+        map.getTilesInRadius(getTile(), claimedRadius, distance)
+                .forEach(
+                        (tile) -> {
+                            // Add each tile that is a land tile.
+                            if (tile.getTileType() == TileType.LAND) {
+                                mPlaceableTiles.add(tile);
+                            }
+                        });
     }
 
     /**
@@ -317,6 +366,25 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             if (tile.equals(targetTile)) return true;
         }
         return false;
+    }
+
+    /**
+     * Get a {@link HashSet} of {@link HexagonTile}s surrounding this building that are currently
+     * able to have {@link Building}s placed on them.
+     *
+     * @return Nearby HexagonTiles able to have Buildings placed on them.
+     */
+    public HashSet<HexagonTile> getBuildableTiles() {
+        HashSet<HexagonTile> buildableTiles = new HashSet<HexagonTile>();
+
+        mPlaceableTiles.forEach(
+                (tile) -> {
+                    if (!tile.isClaimed() && !tile.hasBuilding()) {
+                        buildableTiles.add(tile);
+                    }
+                });
+
+        return buildableTiles;
     }
 
     /**
@@ -448,6 +516,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mClaimedTiles.clear();
         mViewableTiles.clear();
         mAttackableTiles.clear();
+        mPlaceableTiles.clear();
 
         // Request that the entire building GameObject should be destroyed.
         getGameObject().destroy();

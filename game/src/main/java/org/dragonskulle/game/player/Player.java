@@ -420,22 +420,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
-     *
-     * @param tiles The tiles to check.
-     * @return {@code true} if the list of tiles contains at least one building that the player
-     *     owns; otherwise {@code false}.
-     */
-    public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && isBuildingOwner(tile.getBuilding())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Assign a reference to the current {@link HexagonMap} to {@link #mMap}.
      *
      * <p>This assumes that the current active scene contains the HexagonMap.
@@ -552,13 +536,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // Ensure the building is placed within a set radius of an owned building.
-        // TODO Remove hard coded value.
-        final int radius = 3;
-        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
+        // Ensure that the tile is in the buildable range of at least one owned building.
+        boolean buildable = false;
+        for (Reference<Building> buildingReference : getOwnedBuildings()) {
+            if (Reference.isValid(buildingReference)
+                    && buildingReference.get().getBuildableTiles().contains(tile)) {
+                buildable = true;
+                break;
+            }
+        }
 
-        if (containsOwnedBuilding(tiles) == false) {
-            log.info("Building is placed too far away from preexisting buildings.");
+        if (buildable == false) {
+            log.info("Building not in buildable range/on suitable tile.");
             return false;
         }
 
