@@ -234,8 +234,6 @@ public class App implements NativeResource {
                             audioRoot.addComponent(new AudioListener());
                         });
 
-        mainMenu.addRootObject(audio);
-
         GameObject gameTitle =
                 new GameObject(
                         "title",
@@ -243,15 +241,14 @@ public class App implements NativeResource {
                         (title) -> {
                             TransformUI t = title.getTransform(TransformUI.class);
                             t.setParentAnchor(0.4f, 0.05f, 0.8f, 0.05f);
-                            t.setMargin(0f, 0f, 0f, 0.2f);
+                            t.setMargin(0f, 0f, 0f, 0.15f);
+                            t.setPivotOffset(0.5f, 0.3f);
 
                             UIText txt = new UIText("Hex Wars");
                             txt.setDepthShift(-1f);
 
                             title.addComponent(txt);
                         });
-
-        mainMenu.addRootObject(gameTitle);
 
         GameObject mainUI =
                 new GameObject(
@@ -491,9 +488,12 @@ public class App implements NativeResource {
 
         mainMenu.addRootObject(networkManagerObject);
 
+        mainMenu.addRootObject(audio);
+        mainMenu.addRootObject(gameTitle);
+
+        mainMenu.addRootObject(mainUI);
         mainMenu.addRootObject(hostUI);
         mainMenu.addRootObject(joinUI);
-        mainMenu.addRootObject(mainUI);
         mainMenu.addRootObject(settingsUI);
         mainMenu.addRootObject(audioSettingsUI);
         mainMenu.addRootObject(graphicsSettingsUI);
