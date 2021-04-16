@@ -91,19 +91,23 @@ public class ServerTest {
             mPort = port;
         }
 
-        public synchronized void run(Runnable runnable) throws Throwable {
-            mTestThread =
-                    new Thread(
-                            () -> {
-                                try {
-                                    runnable.run();
-                                } finally {
-                                    mShouldExit = true;
-                                }
-                            });
-            mEngineLock.lock();
+        /**
+         * Network manager destruction does not occur immediately, wait until that stage is reached,
+         * and only then recreate netmans.
+         */
+        private void ensureNetworkIsRecreated() {
+            boolean closed = false;
 
-            cleanupNetmans();
+            while (!closed) {
+                closed = true;
+
+                mEngineLock.lock();
+                if (CLIENT_NETWORK_MANAGER.getClientManager() != null) closed = false;
+                if (SERVER_NETWORK_MANAGER.getServerManager() != null) closed = false;
+                mEngineLock.unlock();
+            }
+
+            mEngineLock.lock();
 
             SERVER_NETWORK_MANAGER.createServer(
                     mPort,
@@ -122,6 +126,26 @@ public class ServerTest {
                         log.info("CONNECTED CLIENT");
                         assertTrue(netid >= 0);
                     });
+
+            mEngineLock.unlock();
+        }
+
+        public synchronized void run(Runnable runnable) throws Throwable {
+            mTestThread =
+                    new Thread(
+                            () -> {
+                                try {
+
+                                    ensureNetworkIsRecreated();
+
+                                    runnable.run();
+                                } finally {
+                                    mShouldExit = true;
+                                }
+                            });
+            mEngineLock.lock();
+
+            cleanupNetmans();
 
             mTestThread.setUncaughtExceptionHandler(
                     (t, e) -> {

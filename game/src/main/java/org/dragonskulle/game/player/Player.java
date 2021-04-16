@@ -78,17 +78,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** When the last time a player attacked */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
-    private static final Vector3f[] COLOURS = {
-        new Vector3f(0.5f, 1f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.86f),
-        new Vector3f(0.89f, 0.05f, 1f),
-        new Vector3f(0.1f, 0.56f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.1f, 0.05f, 0.56f),
-        new Vector3f(0f, 0f, 0f)
-    };
-
     /** The base rate of tokens which will always be added. */
     private final int TOKEN_RATE = 5;
     /** How frequently the tokens should be added. */
@@ -114,9 +103,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     protected void onConnectedSyncvars() {
         if (getNetworkObject().isServer()) {
-            int id = getNetworkObject().getOwnerId() % COLOURS.length;
-            if (id < 0) id += COLOURS.length;
-            mPlayerColour.set(COLOURS[id]);
+            int id = getNetworkObject().getOwnerId();
+            mPlayerColour.set(PlayerColour.getColour(id));
         }
     }
 
@@ -462,22 +450,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
-     *
-     * @param tiles The tiles to check.
-     * @return {@code true} if the list of tiles contains at least one building that the player
-     *     owns; otherwise {@code false}.
-     */
-    public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && isBuildingOwner(tile.getBuilding())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Assign a reference to the current {@link HexagonMap} to {@link #mMap}.
      *
      * <p>This assumes that the current active scene contains the HexagonMap.
@@ -554,7 +526,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Subtract the cost.
-        mTokens.add(-Building.BUY_PRICE);
+        mTokens.subtract(Building.BUY_PRICE);
 
         log.info("Added building.");
         return true;
@@ -594,13 +566,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // Ensure the building is placed within a set radius of an owned building.
-        // TODO Remove hard coded value.
-        final int radius = 3;
-        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
+        // Ensure that the tile is in the buildable range of at least one owned building.
+        boolean buildable = false;
+        for (Reference<Building> buildingReference : getOwnedBuildings()) {
+            if (Reference.isValid(buildingReference)
+                    && buildingReference.get().getBuildableTiles().contains(tile)) {
+                buildable = true;
+                break;
+            }
+        }
 
-        if (containsOwnedBuilding(tiles) == false) {
-            log.info("Building is placed too far away from preexisting buildings.");
+        if (buildable == false) {
+            log.info("Building not in buildable range/on suitable tile.");
             return false;
         }
 
@@ -659,7 +636,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attacking");
 
         // ATTACK!!! (Sorry...)
-        mTokens.set(mTokens.get() - defender.getAttackCost());
+        mTokens.subtract(defender.getAttackCost());
         boolean won;
         if (defender.getOwner().hasLost()) {
             won = true;
@@ -822,7 +799,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
-            log.info("You do not own the building");
+            log.info("You do not own the building.");
+            return false;
+        }
+
+        if (building.isCapital()) {
+            log.info("You cannot sell your capital.");
             return false;
         }
 
@@ -883,8 +865,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        SyncStat stat = building.getStat(statType);
+        // Remove the cost.
+        mTokens.subtract(stat.getCost());
         // Increase the stat level.
-        building.getStat(statType).increaseLevel();
+        stat.increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -916,13 +901,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (building.getStat(statType) == null) {
+        SyncStat stat = building.getStat(statType);
+
+        if (stat == null) {
             log.info("Building is missing specified stat.");
             return false;
         }
 
-        if (building.getStat(statType).getLevel() >= SyncStat.LEVEL_MAX) {
-            log.info("Building stat already fully upgraded.");
+        if (stat.isUpgradeable() == false) {
+            log.info("Building stat not upgradeable.");
+            return false;
+        }
+
+        if (mTokens.get() < stat.getCost()) {
+            log.info("Cannot afford building upgrade.");
             return false;
         }
 

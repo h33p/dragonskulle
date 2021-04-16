@@ -13,6 +13,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionfc;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
@@ -39,7 +40,11 @@ public class TransformUI extends Transform {
 
     /** Base position of the transform */
     private final Vector2f mPosition = new Vector2f(0f);
-    /** Controls which part of the rect is on position. I.e. controls center of rotation */
+    /**
+     * Controls which part of the rect is on position. I.e. controls center of rotation
+     *
+     * <p>These coordinates are in range [[0; 1], [0; 1]]
+     */
     private final Vector2f mPivotOffset = new Vector2f(0.5f);
     /** Scale of the transform, propagated to child transforms */
     private final Vector2f mScale = new Vector2f(1f);
@@ -47,7 +52,8 @@ public class TransformUI extends Transform {
     private final Vector4f mLocalCorners = new Vector4f(0f);
     private final Vector4f mScaledLocalCorners = new Vector4f(0f);
 
-    // @Getter
+    private final Vector4f mParentCorners = new Vector4f(0f);
+
     private float mRotation = 0f;
 
     /** Whether or not we should clip children that are out of bounds */
@@ -71,26 +77,37 @@ public class TransformUI extends Transform {
         this(width, height, false);
     }
 
+    private final Vector2f mParentPivotPoint = new Vector2f();
+
+    private void updateParentCorners() {
+        Transform parentGen = getGameObject().getParentTransform();
+
+        // If we have a proper UI transform get the parent scaled corners
+        if (parentGen != null && parentGen instanceof TransformUI) {
+            TransformUI parent = (TransformUI) parentGen;
+            mParentCorners.set(parent.getScaledLocalCorners());
+            mParentPivotPoint.set(parent.mPivotOffset);
+        } else {
+            // Otherwise just use regular screen bounds
+            Camera main = Scene.getActiveScene().getSingleton(Camera.class);
+            float width = main == null ? 1f : main.getAspectRatio();
+            mParentCorners.set(-width, -1f, width, 1f);
+            mParentPivotPoint.set(0.5f, 0.5f);
+        }
+
+        float width = mParentCorners.z() - mParentCorners.x();
+        float height = mParentCorners.w() - mParentCorners.y();
+
+        mParentPivotPoint.mul(width, height);
+    }
+
     private void updateLocalCorners() {
         // Update local corners
         mLocalCorners.set(mParentAnchor);
         mLocalCorners.add(mMargin);
 
-        Transform parentGen = getGameObject().getParentTransform();
-
-        Vector4f off = new Vector4f(0f);
-
-        // If we have a proper UI transform get the parent scaled corners
-        if (parentGen != null && parentGen instanceof TransformUI) {
-            TransformUI parent = (TransformUI) parentGen;
-            mScaledLocalCorners.set(parent.getScaledLocalCorners());
-        } else {
-            // Otherwise just use regular screen bounds
-            Camera main = Scene.getActiveScene().getSingleton(Camera.class);
-            float width = main == null ? 1f : main.getAspectRatio();
-            mScaledLocalCorners.set(-width, -1f, width, 1f);
-            off.set(-width, -1f, -width, -1f);
-        }
+        updateParentCorners();
+        mScaledLocalCorners.set(mParentCorners);
 
         float width = mScaledLocalCorners.z() - mScaledLocalCorners.x();
         float height = mScaledLocalCorners.w() - mScaledLocalCorners.y();
@@ -98,7 +115,16 @@ public class TransformUI extends Transform {
         mScaledLocalCorners.set(width, height, width, height);
         mScaledLocalCorners.mul(mLocalCorners);
 
-        mScaledLocalCorners.add(off);
+        float ox = mScaledLocalCorners.x();
+        float oy = mScaledLocalCorners.y();
+
+        width = mScaledLocalCorners.z() - mScaledLocalCorners.x();
+        height = mScaledLocalCorners.w() - mScaledLocalCorners.y();
+
+        float pivotX = mPivotOffset.x() * width + ox;
+        float pivotY = mPivotOffset.y() * height + oy;
+
+        mScaledLocalCorners.sub(pivotX, pivotY, pivotX, pivotY);
 
         // Right here we have a chance to fit object's aspect ratio
         if (mMaintainAspect) {
@@ -109,20 +135,26 @@ public class TransformUI extends Transform {
             float targetWidth = curHeight * mTargetAspectRatio;
 
             if (targetHeight < curHeight) {
-                float heightDiff = curHeight - targetHeight;
-                mScaledLocalCorners.add(
-                        0f, heightDiff * mPivotOffset.x, 0f, -heightDiff * (1f - mPivotOffset.x));
+                float factor = targetHeight / curHeight;
+                mScaledLocalCorners.mul(1, factor, 1, factor);
             } else {
-                float widthDiff = curWidth - targetWidth;
-                mScaledLocalCorners.add(
-                        widthDiff * mPivotOffset.x, 0f, -widthDiff * (1f - mPivotOffset.x), 0f);
+                float factor = targetWidth / curWidth;
+                mScaledLocalCorners.mul(factor, 1, factor, 1);
             }
         }
+
+        mScaledLocalCorners.add(pivotX, pivotY, pivotX, pivotY);
+
+        mPivotPoint.set(
+                MathUtils.lerp(mScaledLocalCorners.x(), mScaledLocalCorners.z(), mPivotOffset.x()),
+                MathUtils.lerp(mScaledLocalCorners.y(), mScaledLocalCorners.w(), mPivotOffset.y()));
     }
 
     private Matrix4f mCornerMatrix = new Matrix4f();
     private Matrix4f mLocalCornersMatrix = new Matrix4f();
     private Matrix4f mScreenCornerMatrix = new Matrix4f();
+
+    private final Vector2f mPivotPoint = new Vector2f();
 
     public Matrix4fc cornersToWorld() {
         mCornerMatrix.identity().set(getMatrixForChildren());
@@ -130,21 +162,16 @@ public class TransformUI extends Transform {
         float scaleX = mScaledLocalCorners.z() - mScaledLocalCorners.x();
         float scaleY = mScaledLocalCorners.w() - mScaledLocalCorners.y();
 
-        float pivotX = mPivotOffset.x() * scaleX;
-        float pivotY = mPivotOffset.y() * scaleY;
-
-        // TODO: fix scaling issues
-
-        // We want to apply rotation on object's pivot point
+        // We want to apply rotation on object's pivot point. Shift the rectangle
+        // to counteract the shift that happens in getMatrixForChildren
         mLocalCornersMatrix
                 .identity()
-                .scale(scaleX, scaleY, 1f)
-                .translateLocal(-pivotX, -pivotY, 0f);
+                .translate(-mPivotPoint.x(), -mPivotPoint.y(), 0)
+                .translate(mScaledLocalCorners.x(), mScaledLocalCorners.y(), 0)
+                .scale(scaleX, scaleY, 1f);
 
         // We multiply by parent and shift it back to where it belongs
         mCornerMatrix.mul(mLocalCornersMatrix);
-
-        mCornerMatrix.translateLocal(pivotX, pivotY, 0f);
 
         return mCornerMatrix;
     }
@@ -154,7 +181,7 @@ public class TransformUI extends Transform {
     private float mScreenAspectRatio = 1f;
 
     /** Check whether screen aspect ratio changed. If so, dirty all transforms */
-    private void checkScrenChange() {
+    private void checkScreenChange() {
         Camera main = Scene.getActiveScene().getSingleton(Camera.class);
         float width = main == null ? 1f : main.getAspectRatio();
 
@@ -184,23 +211,29 @@ public class TransformUI extends Transform {
      */
     @Override
     public Matrix4fc getMatrixForChildren() {
-        checkScrenChange();
+        checkScreenChange();
 
         if (mShouldUpdate) {
-            mShouldUpdate = false;
             updateLocalCorners();
+            mShouldUpdate = false;
+
+            float tx = mPivotPoint.x() - mParentPivotPoint.x();
+            float ty = mPivotPoint.y() - mParentPivotPoint.y();
 
             mBoxMatrix
                     .identity()
                     .translate(mPosition.x(), mPosition.y(), 0f)
-                    .translate(mScaledLocalCorners.x(), mScaledLocalCorners.y(), 0f)
+                    .translate(tx, ty, 0)
                     .rotateZ(mRotation)
-                    .scaleLocal(mScale.x(), mScale.y(), 1f);
+                    .scale(mScale.x(), mScale.y(), 1f);
 
             Transform parentTransform = getGameObject().getParentTransform();
 
-            if (parentTransform != null) {
-                parentTransform.getMatrixForChildren().mul(mBoxMatrix, mBoxMatrix);
+            Matrix4fc parentMatrix =
+                    parentTransform != null ? parentTransform.getMatrixForChildren() : null;
+
+            if (parentMatrix != null) {
+                parentMatrix.mul(mBoxMatrix, mBoxMatrix);
             }
         }
 
@@ -247,16 +280,29 @@ public class TransformUI extends Transform {
         return mScaledLocalCorners;
     }
 
-    // TODO: fix scaling issues and expose this
-    /*private void scale(float scale) {
+    public void scale(float scale) {
         mScale.mul(scale);
         setUpdateFlag();
     }
 
-    private void scale(float x, float y) {
+    public void scale(float x, float y) {
         mScale.mul(x, y);
         setUpdateFlag();
-    }*/
+    }
+
+    public void setScale(float scale) {
+        mScale.set(scale);
+        setUpdateFlag();
+    }
+
+    public void setScale(float x, float y) {
+        mScale.set(x, y);
+        setUpdateFlag();
+    }
+
+    public Vector2fc getPivotOffset() {
+        return mPivotOffset;
+    }
 
     /** Set the pivot offset */
     public void setPivotOffset(float x, float y) {
@@ -297,6 +343,11 @@ public class TransformUI extends Transform {
 
     public void rotateDeg(float deg) {
         mRotation += deg * MathUtils.DEG_TO_RAD;
+        setUpdateFlag();
+    }
+
+    public void setRotationDeg(float deg) {
+        mRotation = deg * MathUtils.DEG_TO_RAD;
         setUpdateFlag();
     }
 
