@@ -29,8 +29,6 @@ import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
-import org.dragonskulle.network.components.ClientNetworkManager;
-import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
@@ -109,8 +107,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             mPlayerColour.set(PlayerColour.getColour(id));
         }
     }
-    
-    private boolean mCreated;
 
     /**
      * We need to initialise client requests here, since java does not like to serialise lambdas.
@@ -154,22 +150,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (!hasLost() && mCreated) {
+        if (!hasLost()) {
             // Update the token count.
             updateTokens(deltaTime);
-        }
-        else if (!mCreated) {
-        	log.severe("Disconnecting");
-        	if (getNetworkObject().getOwnerId() >= 0) {
-        		NetworkObject no = getNetworkObject();
-             	NetworkManager nm = no.getNetworkManager();
-             	ClientNetworkManager cm = nm.getClientManager();
-             	cm.disconnect();
-             	
-            }
-        	getNetworkObject().destroy();
-            getGameObject().destroy();
-            mCreated = true;
         }
     }
 
@@ -186,7 +169,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         boolean completed = false;
         while (i < attempts) {
 
-        	log.severe("This is attempt number " + i);
+            log.severe("This is attempt number " + i);
             float angleOfCircle = 360f / (MAX_PLAYERS + 1);
             float angleBetween =
                     (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
@@ -268,7 +251,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                     buildingToBecomeCapital.setCapital(true);
                     i = attempts;
                     completed = true;
-                    mCreated = true;
                     log.info(
                             "Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
                 } else {
@@ -281,7 +263,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             // Cannot add a capital
             setOwnsCapital(false);
-            mCreated = false;
+
+            log.severe("Disconnecting");
+
+            if (getNetworkObject().getOwnerId() < 0) {
+                // This is AI so can destroy it
+                getNetworkObject().destroy();
+            }
         }
     }
 
