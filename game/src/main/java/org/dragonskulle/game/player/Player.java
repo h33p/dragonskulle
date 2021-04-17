@@ -272,7 +272,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                     + (int) axial.x
                                     + " Y = "
                                     + (int) axial.y);
-                    buildingToBecomeCapital.remove();
+                    GameObject go = buildingToBecomeCapital.getGameObject();
+                    go.destroy();
                     i++;
                 }
             }
