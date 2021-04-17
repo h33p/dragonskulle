@@ -11,8 +11,6 @@ import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.*;
 
-import java.lang.Math;
-
 /**
  * Class describing a interactive UI slider
  *

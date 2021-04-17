@@ -3,7 +3,6 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -14,9 +13,9 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.UIShopSection.ShopState;
-import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
@@ -24,9 +23,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIRenderable;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
@@ -38,20 +35,15 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetPlayer mGetPlayer;
 
     private final float mOffsetToTop = 0.46f;
-    @Getter
-    private Reference<UIShopSection> mShop;
+    @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mStatScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
-    @Setter
-    @Getter
-    private Screen mLastScreen = null;
+    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter @Getter private Screen mLastScreen = null;
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -93,12 +85,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -159,10 +148,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     break;
                 case BUILD_TILE_SCREEN:
                     newScreen = mTileSelectedMenu;
-                    final HexagonTile tile = mGetHexChosen.get();
-                    if (tile != null && tile.isBuildable(mGetPlayer.get().get())) {
-                        setShopState(ShopState.BUILDING_NEW);
-                    }
+                    setShopState(ShopState.CLOSED);
+                    //                    final HexagonTile tile = mGetHexChosen.get();
+                    //                    if (tile != null &&
+                    // tile.isBuildable(mGetPlayer.get().get())) {
+                    //                        setShopState(ShopState.BUILDING_NEW);
+                    //                    } TODO we can add this functionality if needed
                     break;
                 case ATTACK_SCREEN:
                     newScreen = mAttackScreenMenu;
@@ -344,8 +335,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                 new TransformUI(),
                                 (root) -> {
                                     for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-                                         i < mButtonChildrenSize;
-                                         i++) {
+                                            i < mButtonChildrenSize;
+                                            i++) {
                                         UITextButtonFrame mButtonChild = mButtonChildren.get(i);
                                         int finalI = i;
                                         root.buildChild(
@@ -356,17 +347,16 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                                             .setPosition(
                                                                     0f,
                                                                     (0.8f
-                                                                            * finalI
-                                                                            / mButtonChildrenSize
-                                                                            * 1.3f)
+                                                                                    * finalI
+                                                                                    / mButtonChildrenSize
+                                                                                    * 1.3f)
                                                                             - mOffsetToTop);
                                                     self.getTransform(TransformUI.class)
                                                             .setMargin(0.075f, 0f, -0.075f, 0f);
 
                                                     UIButton button =
                                                             new UIButton(
-
-                                                                            mButtonChild.getText(),
+                                                                    mButtonChild.getText(),
                                                                     mButtonChild.getOnClick(),
                                                                     mButtonChild.isStartEnabled());
                                                     self.addComponent(button);
@@ -381,6 +371,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         getGameObject()
                 .buildChild(
                         "shop",
+                        false,
                         new TransformUI(),
                         (go) -> go.addComponent(new UIShopSection(mGetPlayer, mGetHexChosen)));
         ArrayList<Reference<UIShopSection>> shops = new ArrayList<>();

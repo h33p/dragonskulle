@@ -4,7 +4,6 @@ package org.dragonskulle.game.building;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -40,90 +39,55 @@ import org.joml.Vector3i;
 @Log
 public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
 
-    /**
-     * A map between {@link StatType}s and their {@link SyncStat} values.
-     */
+    /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
 
-    /**
-     * Stores the attack strength of the building.
-     */
-    @Getter
-    private final SyncStat mAttack = new SyncStat(this);
-    /**
-     * Stores the defence strength of the building.
-     */
-    @Getter
-    private final SyncStat mDefence = new SyncStat(this);
-    /**
-     * Stores how many tokens the building can generate in one go.
-     */
-    @Getter
-    private final SyncStat mTokenGeneration = new SyncStat(this);
-    /**
-     * Stores the view range of the building.
-     */
-    @Getter
-    private final SyncStat mViewDistance = new SyncStat(this);
-    /**
-     * Stores the attack range of the building.
-     */
-    @Getter
-    private final SyncStat mAttackDistance = new SyncStat(this);
+    /** Stores the attack strength of the building. */
+    @Getter private final SyncStat mAttack = new SyncStat(this);
+    /** Stores the defence strength of the building. */
+    @Getter private final SyncStat mDefence = new SyncStat(this);
+    /** Stores how many tokens the building can generate in one go. */
+    @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
+    /** Stores the view range of the building. */
+    @Getter private final SyncStat mViewDistance = new SyncStat(this);
+    /** Stores the attack range of the building. */
+    @Getter private final SyncStat mAttackDistance = new SyncStat(this);
 
-    /**
-     * Whether the building is a capital.
-     */
+    /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
 
-    /**
-     * The tiles the building claims, including the tile the building is currently on.
-     */
-    @Getter
-    private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
+    /** The tiles the building claims, including the tile the building is currently on. */
+    @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
 
-    /**
-     * The tiles the building can currently view (within the current {@link #mViewDistance}).
-     */
-    @Getter
-    private HashSet<HexagonTile> mViewableTiles = new HashSet<HexagonTile>();
+    /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
+    @Getter private HashSet<HexagonTile> mViewableTiles = new HashSet<HexagonTile>();
 
     /**
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
      */
-    @Getter
-    private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+    @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
-    /**
-     * The cost to buy a {@link Building}.
-     */
+    /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
-    /**
-     * The reimbursement from selling a {@link Building}.
-     */
+    /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
      * Should alwyas be at least {@code 1}.
      */
-    @Getter
-    private int mStatBaseCost = 1;
+    @Getter private int mStatBaseCost = 1;
 
-    /**
-     * Store the {@link HexagonMap} that the {@link Building} is on.
-     */
+    /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
-    @Setter
-    @Getter
-    private boolean mDidStatsChange;
+
+    @Setter @Getter private boolean mDidStatsChange;
 
     /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
      */
-    public Building() {
-    }
+    public Building() {}
 
     @Override
     public void onAwake() {
@@ -195,9 +159,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         setDidStatsChange(true);
     }
 
-    /**
-     * Generate the stored lists of {@link HexagonTile}s.
-     */
+    /** Generate the stored lists of {@link HexagonTile}s. */
     private void generateTileLists() {
         generateViewTiles();
         generateAttackableTiles();
@@ -216,9 +178,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
-    /**
-     * Claim the tiles around the building and the tile the building is on.
-     */
+    /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
         // Get the map.
         HexagonMap map = getMap();
@@ -383,7 +343,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * TransformHex}.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code
-     * null}.
+     *     null}.
      */
     private Vector3i getPosition() {
         TransformHex tranform = getGameObject().getTransform(TransformHex.class);
@@ -600,6 +560,5 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 }

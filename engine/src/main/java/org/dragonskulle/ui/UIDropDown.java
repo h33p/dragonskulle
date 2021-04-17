@@ -18,9 +18,25 @@ import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 @Accessors(prefix = "m")
 public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
 
+    /** Ran on dropdown open.. */
+    @Setter IOnOpen mOnOpen;
+
+    /** Ran on dropdown hide. */
+    @Setter IOnHide mOnHide;
+
     /** Interface that is invoked when an event occurs for the drop down */
     public static interface IDropDownEvent {
         void handle(UIDropDown dropDown);
+    }
+
+    /** Interface that is invoked when the dropdown is opened */
+    public static interface IOnOpen {
+        void handle();
+    }
+
+    /** Interface that is invoked when the dropdown is closed */
+    public static interface IOnHide {
+        void handle();
     }
 
     private String[] mOptions;
@@ -117,24 +133,33 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
 
     /** Display options if haven't already */
     private void showOptions() {
+        if (mOnOpen != null) {
+            mOnOpen.handle();
+        }
         if (mOptionObjects.size() != 0 || mOptions == null) {
             return;
         }
-
+        int override = 0;
         for (int i = 0; i < mOptions.length; i++) {
-            final int ii = i;
-            GameObject option =
-                    new GameObject(
-                            "option_" + i,
-                            new TransformUI(true),
-                            (handle) -> {
-                                UIButton button =
-                                        new UIButton(mOptions[ii], (__, ___) -> select(ii));
-                                handle.addComponent(button);
-                                TransformUI transform = handle.getTransform(TransformUI.class);
-                                transform.setParentAnchor(0, ii + 1, 1, ii + 2);
-                            });
-            mOptionObjects.add(option);
+            if (hasSelection() && i == getSelected()) {
+                override = 1; // removes the already selected option from the list.
+            } else {
+                final int ii = i;
+                int finalOverride = override;
+                GameObject option =
+                        new GameObject(
+                                "option_" + i,
+                                new TransformUI(true),
+                                (handle) -> {
+                                    UIButton button =
+                                            new UIButton(mOptions[ii], (__, ___) -> select(ii));
+                                    handle.addComponent(button);
+                                    TransformUI transform = handle.getTransform(TransformUI.class);
+                                    transform.setParentAnchor(
+                                            0, ii + 1 - finalOverride, 1, ii + 2 - finalOverride);
+                                });
+                mOptionObjects.add(option);
+            }
         }
 
         getGameObject().addChildren(mOptionObjects);
@@ -142,6 +167,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
 
     /** Stop showing options, if they are still being shown */
     private void cleanOptions() {
+        if (mOnHide != null) {
+            mOnHide.handle();
+        }
         if (mOptionObjects.size() == 0) {
             return;
         }

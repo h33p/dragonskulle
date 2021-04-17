@@ -11,9 +11,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2fc;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Log
 public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
 
@@ -22,12 +20,9 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
     private TransformUI mCursorTransform;
     private UIRenderable mFancyCursor;
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be

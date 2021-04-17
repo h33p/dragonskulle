@@ -90,6 +90,19 @@ public enum StatType {
                 };
     }
 
+    public static StatType valueFromNiceName(String selectedOption) {
+        switch (selectedOption) {
+            case "Token Rate":
+                return StatType.TOKEN_GENERATION;
+            case "Defence Factor":
+                return StatType.DEFENCE;
+            case "Attack Factor":
+                return StatType.ATTACK;
+            default:
+                return StatType.valueOf(selectedOption);
+        }
+    }
+
     /**
      * Get the ID of the StatType.
      *
@@ -113,5 +126,19 @@ public enum StatType {
         }
 
         return values[id];
+    }
+
+    public String getNiceName() {
+        String name = name();
+        switch (name) {
+            case "TOKEN_GENERATION":
+                return "Token Rate";
+            case "ATTACK":
+                return "Attack Factor";
+            case "DEFENCE":
+                return "Defence Factor";
+            default:
+                return name;
+        }
     }
 }

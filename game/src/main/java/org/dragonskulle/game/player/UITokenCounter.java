@@ -10,9 +10,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Accessors(prefix = "m")
 public class UITokenCounter extends Component implements IOnAwake {
     private Reference<UITextRect> mTextRect;
@@ -31,12 +29,9 @@ public class UITokenCounter extends Component implements IOnAwake {
         }
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     @Override
     public void onAwake() {

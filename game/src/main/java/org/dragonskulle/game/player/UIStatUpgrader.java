@@ -5,12 +5,10 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.game.building.stat.SyncStat;
-import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
-import org.joml.Vector3f;
 
 /** @author Oscar L */
 public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate {
@@ -47,8 +45,7 @@ public class UIStatUpgrader extends Component implements IOnStart, IFixedUpdate 
      */
     @Override
     public void onStart() {
-        UIText name =
-                new UIText( stat.getClass().getSimpleName());
+        UIText name = new UIText(stat.getClass().getSimpleName());
         UIRenderable upgradeGraphic = new UIRenderable(new SampledTexture("ui/upgrade_button.png"));
         UIButton upgradeButton = new UIButton((__, _____) -> mStatIncreaserMethod.call());
     }

@@ -11,28 +11,22 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIMaterial;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart {
-    @Getter
-    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
-    @Setter
-    @Getter
-    private ShopState mLastState = ShopState.CLOSED;
+    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> titleRef;
 
     public UIShopSection(
@@ -48,12 +42,9 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
-    protected void onDestroy() {
-    }
+    protected void onDestroy() {}
 
     protected void setState(ShopState state) {
         if (state != getLastState()) {
@@ -65,27 +56,29 @@ public class UIShopSection extends Component implements IOnStart {
                 return;
             }
             Reference<GameObject> newPanel;
+            String newText = "Shop is Closed";
             log.warning("setting visible state to " + state);
             switch (state) {
                 case ATTACK_SCREEN:
                     newPanel = new Reference<>(null);
                     break;
                 case BUILDING_NEW:
-//                    show(mNewBuildingPanel, true);
-//                    newPanel = mNewBuildingPanel;
+                    //                    show(mNewBuildingPanel, true);
+                    //                    newPanel = mNewBuildingPanel;
                     newPanel = new Reference<>(null);
                     break;
                 case MY_BUILDING_SELECTED:
                     newPanel = mUpgradePanel;
-                    log.warning("my selected case");
+                    newText = "Upgrade Building";
                     break;
                 default:
                     log.warning("Menu hasn't been updated to reflect this screen yet  " + state);
                     setState(ShopState.CLOSED);
                     return;
             }
+
             if (Reference.isValid(titleRef)) {
-                titleRef.get().setText(state.toString());
+                titleRef.get().setText(newText);
             }
             setLastState(state);
             swapPanels(newPanel);
@@ -104,22 +97,23 @@ public class UIShopSection extends Component implements IOnStart {
         // deactivate the panel
         if (Reference.isValid(mCurrentPanel)) {
             if (mCurrentPanel.equals(mUpgradePanel)) {
-                mUpgradePanel.get().getComponent(UIBuildingUpgrade.class).get().setLastBuilding(null);
+                mUpgradePanel
+                        .get()
+                        .getComponent(UIBuildingUpgrade.class)
+                        .get()
+                        .setLastBuilding(null);
             }
             mCurrentPanel.get().setEnabled(false);
-        } else {
-            log.info("mCurrentPanel is invalid");
         }
+
         log.info("maybe showing newPanel");
         if (Reference.isValid(newPanel)) {
-            log.info("showing new panel");
             newPanel.get().setEnabled(true);
-        } else {
-            log.info("newPanel is invalid");
         }
         mCurrentPanel = newPanel;
-//        show(mCurrentPanel, false);
-//        mCurrentPanel = activateNewPanel(newPanel);// activate the new panel and assign the last current variable
+        //        show(mCurrentPanel, false);
+        //        mCurrentPanel = activateNewPanel(newPanel);// activate the new panel and assign
+        // the last current variable
     }
 
     private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
@@ -137,34 +131,38 @@ public class UIShopSection extends Component implements IOnStart {
      */
     @Override
     public void onStart() {
-
         UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(mGetHexChosen, mGetPlayer);
-        mUpgradePanel = getGameObject().buildChild("upgrade_object", new TransformUI(true),
-                (self) -> self.addComponent(uiBuildingUpgrade));
+        mUpgradePanel =
+                getGameObject()
+                        .buildChild(
+                                "upgrade_object",
+                                new TransformUI(true),
+                                (self) -> self.addComponent(uiBuildingUpgrade));
         show(mUpgradePanel, false);
 
         UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(mGetPlayer);
-        mNewBuildingPanel = getGameObject().buildChild("building_object", new TransformUI(true),
-                (self) -> self.addComponent(uiBuildingOptions));
+        mNewBuildingPanel =
+                getGameObject()
+                        .buildChild(
+                                "building_object",
+                                new TransformUI(true),
+                                (self) -> self.addComponent(uiBuildingOptions));
         show(mNewBuildingPanel, false);
 
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
-
-        getGameObject().
-
-                addComponent(new UIRenderable(new SampledTexture("white.bmp")));
+        UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
+        ((UIMaterial) renderable.getMaterial()).colour.set(0.235, 0.219, 0.235, 1);
+        getGameObject().addComponent(renderable);
         Reference<GameObject> textObj =
                 getGameObject()
                         .buildChild(
                                 "main_shop_text",
                                 new TransformUI(true),
                                 (self) -> {
-                                    UIText mWindowText =
-                                            new UIText("PLACEHOLDER SHOP TEXT");
+                                    UIText mWindowText = new UIText("Shop is Closed");
                                     self.addComponent(mWindowText);
-
                                     titleRef = mWindowText.getReference(UIText.class);
                                 });
 
