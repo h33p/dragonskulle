@@ -232,8 +232,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             } else if (i < attempts) {
 
                 // This part of the code checks we are not in an island which we cannot get out of
+                HexagonTile tilePlacedOn = getMap().getTile((int) axial.x, (int) axial.y);
                 ArrayList<HexagonTile> buildableTiles =
-                        new ArrayList<HexagonTile>(buildingToBecomeCapital.getBuildableTiles());
+                        getMap().getTilesInRadius(
+                                        tilePlacedOn,
+                                        1,
+                                        3); // TODO set the distance to correct claimable distance
                 int numberOfSpaces = 0;
 
                 // This is set so there is multiple places to leave in case there is a second
@@ -242,10 +246,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 int j = 0;
                 while (j < buildableTiles.size() && numberOfSpaces < spacesWanted) {
                     HexagonTile tile = buildableTiles.get(j);
-                    if (tile.getTileType() == TileType.LAND && tile.getClaimant() == null) {
+                    log.severe(
+                            "Tile type "
+                                    + tile.getTileType()
+                                    + " tile Claimant"
+                                    + tile.getClaimant());
+                    if (tile.getTileType() == TileType.LAND
+                            && (tile.getClaimant() == null
+                                    || tile.getClaimantId() != getNetworkObject().getOwnerId())) {
                         numberOfSpaces++;
                     }
+                    j++;
                 }
+                log.info("Number of spaces: " + numberOfSpaces);
 
                 if (numberOfSpaces >= spacesWanted) {
                     buildingToBecomeCapital.setCapital(true);
@@ -254,6 +267,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                     log.info(
                             "Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
                 } else {
+                    log.severe(
+                            "Unable to place an initial capital building.  X = "
+                                    + (int) axial.x
+                                    + " Y = "
+                                    + (int) axial.y);
                     buildingToBecomeCapital.remove();
                     i++;
                 }

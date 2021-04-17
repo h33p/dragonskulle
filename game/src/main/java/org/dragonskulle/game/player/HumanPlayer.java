@@ -180,6 +180,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             setEnabled(false);
             return;
         }
+
+        if (mPlayer.get().getNumberOfOwnedBuildings() == 0) {
+            log.warning("You have 0 buildings -- should be sorted in mo");
+            return;
+        }
         // Update token
         if (Reference.isValid(mPlayer)) {
             updateVisibleTokens();
