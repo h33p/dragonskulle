@@ -43,11 +43,13 @@ public class ClientNetworkManager {
     private class Listener implements IClientListener {
         @Override
         public void unknownHost() {
+            log.info("unknown host");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
         @Override
         public void couldNotConnect() {
+            log.info("could not connect");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -58,6 +60,7 @@ public class ClientNetworkManager {
 
         @Override
         public void disconnected() {
+            log.info("disconnected");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -69,6 +72,7 @@ public class ClientNetworkManager {
 
         @Override
         public void error(String s) {
+            log.info("error: " + s);
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -149,7 +153,7 @@ public class ClientNetworkManager {
     /** Client event callback listener */
     private final IClientListener mListener = new Listener();
     /** Current connection state */
-    @Getter private ConnectionState mConnectionState = ConnectionState.NOT_CONNECTED;
+    @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener) */
     private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
     /** Callback for connection result processing */
@@ -245,12 +249,6 @@ public class ClientNetworkManager {
      * <p>This method will disconnect from the server and tell {@link NetworkManager} about it.
      */
     public void disconnect() {
-        Engine engine = Engine.getInstance();
-
-        if (engine.getPresentationScene() == mManager.getGameScene()) {
-            engine.loadPresentationScene(Scene.getActiveScene());
-        }
-
         mConnectionState = ConnectionState.NOT_CONNECTED;
         mClient.dispose();
 
@@ -261,12 +259,32 @@ public class ClientNetworkManager {
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
         mNetworkObjectReferences.clear();
-
-        mManager.onClientDisconnect();
     }
 
     /** Network update method, called by {@link NetworkManager} */
     void networkUpdate() {
+        if (mConnectionState == ConnectionState.JOINED_GAME) {
+            if (mClient.processRequests() <= 0) {
+                mTicksWithoutRequests++;
+                if (mTicksWithoutRequests > 3200) {
+                    disconnect();
+                } else if (mTicksWithoutRequests == 1000) {
+                    log.info("1000 ticks without updates! 2200 more till disconnect!");
+                }
+            } else mTicksWithoutRequests = 0;
+        }
+
+        mNetworkObjectReferences
+                .entrySet()
+                .removeIf(entry -> !Reference.isValid(entry.getValue().mNetworkObject));
+    }
+
+    /**
+     * Late network update method, called by {@link NetworkManager}.
+     *
+     * <p>This stage is used to handle state changes (scene changes, disconnections, etc.)
+     */
+    void lateNetworkUpdate() {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
         if (nextState != null) {
@@ -294,20 +312,15 @@ public class ClientNetworkManager {
             }
         }
 
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
-            if (mClient.processRequests() <= 0) {
-                mTicksWithoutRequests++;
-                if (mTicksWithoutRequests > 3200) {
-                    disconnect();
-                } else if (mTicksWithoutRequests == 1000) {
-                    log.info("1000 ticks without updates! 2200 more till disconnect!");
-                }
-            } else mTicksWithoutRequests = 0;
-        }
+        if (mConnectionState == ConnectionState.NOT_CONNECTED) {
+            Engine engine = Engine.getInstance();
 
-        mNetworkObjectReferences
-                .entrySet()
-                .removeIf(entry -> !Reference.isValid(entry.getValue().mNetworkObject));
+            if (engine.getPresentationScene() == mManager.getGameScene()) {
+                engine.loadPresentationScene(Scene.getActiveScene());
+            }
+
+            mManager.onClientDisconnect();
+        }
     }
 
     // TODO: implement lobby

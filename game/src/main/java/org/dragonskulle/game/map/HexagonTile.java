@@ -79,7 +79,7 @@ public class HexagonTile {
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /** A reference to the building that claims the tile, or {@code null}. */
-    private Reference<Building> mClaimedBy = new Reference<Building>(null);
+    private Reference<Building> mClaimedBy = null;
 
     /**
      * Constructor that creates the HexagonTile
@@ -149,22 +149,26 @@ public class HexagonTile {
     }
 
     /**
-     * Set which {@link Building} claims the tile. Do not claim the tile if another building already
-     * claimed it.
+     * Set which {@link Building} claims the HexagonTile. Cannot claim the tile if another building
+     * already claimed it.
      *
-     * @param building The building which claimed the tile.
-     * @return {@code true} if the claim was successful, otherwise {@code false} if the tile is
-     *     already claimed.
+     * @param building The Building which claimed the tile.
+     * @return {@code true} if the claim was successful; otherwise {@code false}.
      */
     public boolean setClaimedBy(Building building) {
-        if (isClaimed()) return false;
+        if (building == null || isClaimed()) return false;
 
         mClaimedBy = building.getReference(Building.class);
         return true;
     }
 
+    /** Remove any claim over the HexagonTile. */
+    public void removeClaim() {
+        mClaimedBy = null;
+    }
+
     /**
-     * Whether the tile is claimed by a building.
+     * Get whether a valid claim has been made.
      *
      * @return Whether the tile is claimed by a building.
      */
@@ -176,7 +180,7 @@ public class HexagonTile {
      * Get the {@link Player} who has claimed this tile (either because there is a building on it or
      * because it is adjacent to a building).
      *
-     * @return The Player who has claimed this tile, or {@code null} if no Player claims it.
+     * @return The Player who has claimed this tile; otherwise {@code null}.
      */
     public Player getClaimant() {
         if (!isClaimed()) {
@@ -191,8 +195,7 @@ public class HexagonTile {
      * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
      * then this should be used.
      *
-     * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
-     *     claimant.
+     * @return The owner ID of the Player as an {@link Integer}; otherwise {@code null}.
      */
     public Integer getClaimantId() {
         if (!isClaimed()) {

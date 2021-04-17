@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.ILateNetworkUpdate;
 import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
@@ -21,7 +22,7 @@ import org.dragonskulle.network.ServerClient;
  */
 @Accessors(prefix = "m")
 @Log
-public class NetworkManager extends Component implements INetworkUpdate {
+public class NetworkManager extends Component implements INetworkUpdate, ILateNetworkUpdate {
 
     /** Simple client connection result handler */
     public static interface IConnectionResultEvent {
@@ -74,6 +75,12 @@ public class NetworkManager extends Component implements INetworkUpdate {
 
         if (mServerManager != null) mServerManager.networkUpdate();
         else if (mClientManager != null) mClientManager.networkUpdate();
+    }
+
+    @Override
+    public void lateNetworkUpdate() {
+        if (mServerManager != null) mServerManager.lateNetworkUpdate();
+        else if (mClientManager != null) mClientManager.lateNetworkUpdate();
     }
 
     public void createGameScene(boolean isServer) {
