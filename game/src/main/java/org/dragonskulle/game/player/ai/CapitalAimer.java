@@ -87,10 +87,7 @@ public class CapitalAimer extends Aimer {
 
             if (Reference.isValid(tileToAim)) {
                 // Creates a graph
-                Graph graph =
-                        new Graph(
-                                mPlayer.get().getMap(),
-                                tileToAim.get());
+                Graph graph = new Graph(mPlayer.get().getMap(), tileToAim.get());
 
                 mGraph = graph;
                 // Finds the capitals

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
@@ -27,10 +26,10 @@ public class Graph {
     private Reference<HexagonMap> mMap;
     private Reference<HexagonTile> mTileAiming;
 
-    
     /**
      * A constructor to change the whole map to a {@code Graph}
-     * @param map The map 
+     *
+     * @param map The map
      * @param tileAiming The tile being aimed at
      */
     public Graph(HexagonMap map, HexagonTile tileAiming) {
@@ -42,15 +41,16 @@ public class Graph {
         mNodeNum = 0;
         map.getAllTiles().forEach(this::addConnections);
     }
-    
+
     /**
      * A Constructor to change the visible tiles into a map.
+     *
      * @param map The map
      * @param tileAiming The tile being aimed at
      * @param visibleTiles The part of the map which can be seen
      */
     public Graph(HexagonMap map, HexagonTile tileAiming, Stream<HexagonTile> visibleTiles) {
-    	mTileAiming = new Reference<HexagonTile>(tileAiming);
+        mTileAiming = new Reference<HexagonTile>(tileAiming);
         mMap = map.getReference(HexagonMap.class);
         mNodeNum = 0;
         mGraph = new HashMap<Integer, Node>();
@@ -90,7 +90,12 @@ public class Graph {
      */
     private void addConnections(HexagonTile tile) {
         if (tile.getTileType() == TileType.LAND) {
-            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, 3);  //TODO Can we make a way which does not need to use the full map??
+            ArrayList<HexagonTile> neighbourTiles =
+                    mMap.get()
+                            .getTilesInRadius(
+                                    tile, 1,
+                                    3); // TODO Can we make a way which does not need to use the
+            // full map??
 
             for (HexagonTile tileNeighbour : neighbourTiles) {
                 for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {

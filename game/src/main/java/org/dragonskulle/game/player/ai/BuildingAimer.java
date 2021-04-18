@@ -1,10 +1,11 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.stream.Stream;
-
+import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
@@ -13,41 +14,38 @@ import org.dragonskulle.game.player.ai.algorithms.AStar;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
-import lombok.extern.java.Log;
-
 /**
  * This AI character will aim for a Building when it sees one in its visible tiles
- * @author DragonSkulle
  *
+ * @author DragonSkulle
  */
 @Log
 public class BuildingAimer extends Aimer {
 
-	private Node[] findBuilding(Graph graph, Player opponent) {
-		return null;
-	}
-	
-	private Reference<HexagonTile> getTile(Player opponent){
-		return null;
-	}
-	
-	private Stream<HexagonTile> getStream(){
-		LinkedList<HexagonTile> allVisibleTiles = new LinkedList<HexagonTile>();
-		
-		for (int i = 0; i < mPlayer.get().getNumberOfOwnedBuildings(); i++) {
-			Building building = mPlayer.get().getOwnedBuildings().get(i).get();
-			
-			for (HexagonTile tile : building.getViewableTiles()) {
-				allVisibleTiles.add(tile);
-			}
-			
-		}
-		
-		return Arrays.stream(allVisibleTiles.toArray(new HexagonTile[0]));
-	}
-	
-	@Override
-	protected void aStar() {
+    private Node[] findBuilding(Graph graph, Player opponent) {
+        return null;
+    }
+
+    private Reference<HexagonTile> getTile(Player opponent) {
+        return null;
+    }
+
+    private Stream<HexagonTile> getStream() {
+        LinkedList<HexagonTile> allVisibleTiles = new LinkedList<HexagonTile>();
+
+        for (int i = 0; i < mPlayer.get().getNumberOfOwnedBuildings(); i++) {
+            Building building = mPlayer.get().getOwnedBuildings().get(i).get();
+
+            for (HexagonTile tile : building.getViewableTiles()) {
+                allVisibleTiles.add(tile);
+            }
+        }
+
+        return Arrays.stream(allVisibleTiles.toArray(new HexagonTile[0]));
+    }
+
+    @Override
+    protected void aStar() {
         // Will find the opponent to attack
         log.info("Changing opponent");
         Player opponentPlayer = findOpponent();
@@ -61,8 +59,9 @@ public class BuildingAimer extends Aimer {
                 // Creates a graph
                 Graph graph =
                         new Graph(
-                                mPlayer.get().getMap(),		//TODO Change to stream
-                                tileToAim.get(), getStream());
+                                mPlayer.get().getMap(), // TODO Change to stream
+                                tileToAim.get(),
+                                getStream());
 
                 mGraph = graph;
                 // Finds the capitals
@@ -102,7 +101,4 @@ public class BuildingAimer extends Aimer {
             mPath = new ArrayDeque<Integer>();
         }
     }
-
 }
-	
-

@@ -150,7 +150,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      *
      * @return Whether the attempt to pick and add a building was invoked.
      */
-    private boolean addBuilding() {
+    protected boolean addBuilding() {
         log.info("Placing Building");
 
         return attemptRunEvent(this::tryToAddBuilding);

@@ -91,7 +91,7 @@ public class MathUtils {
         return (float) mapOneRangeToAnother(value, minimum, maximum, 0, 1, 9);
     }
     /**
-     *  Generates a random weighted list summing to 1.
+     * Generates a random weighted list summing to 1.
      *
      * @param numberOfDraws the number of draws
      * @param weights the corresponding weights
