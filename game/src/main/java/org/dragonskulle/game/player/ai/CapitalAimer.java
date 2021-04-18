@@ -123,10 +123,11 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             if (mGraph.getNode(nextNode).getHexTile().get().getClaimant() == null) {
                 log.info("Building");
                 // BUILD
-                HexagonTile tileToBuildOn = mGraph.getNode(nextNode).getHexTile().get();
+                HexagonTile bestBuildablePosition = mGraph.getNode(nextNode).getHexTile().get();
                 mPlayer.get()
                         .getClientBuildRequest()
-                        .invoke((d) -> d.setTile(tileToBuildOn)); // TODO Make as close as final as
+                        .invoke((d) -> d.setTile(bestBuildablePosition)); // TODO Make as close as
+                // final as
                 // possible
                 mGone.push(nextNode);
                 return;

@@ -9,6 +9,7 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.utils.MathUtils;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
@@ -17,15 +18,16 @@ import org.dragonskulle.game.player.Player;
  */
 @Log
 public class ProbabilisticAiPlayer extends AiPlayer {
-
+    /** Probability of the Ai taking any action. */
+    protected float mWillActProbability;
     /** Probability of placing a new {@link Building}. */
-    protected float mBuildProbability = 0.65f;
+    protected float mBuildProbability;
     /** Probability of upgrading an owned {@link Building}. */
-    protected float mUpgradeProbability = 0.15f;
+    protected float mUpgradeProbability;
     /** Probability of attacking an opponent {@link Building}. */
-    protected float mAttackProbability = 0.15f;
+    protected float mAttackProbability;
     /** Probability of selling an owned {@link Building}. */
-    protected float mSellProbability = 0.05f;
+    protected float mSellProbability;
 
     /** Used to run events for building and attacking */
     public interface IRunBuildingEvent {
@@ -33,7 +35,18 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /** A Constructor for an AI Player */
-    public ProbabilisticAiPlayer() {}
+    public ProbabilisticAiPlayer() {
+        allocateProbabilities();
+    }
+
+    private void allocateProbabilities() {
+        mWillActProbability = 0.45f;
+        List<Float> probs = MathUtils.n_w_random(4, new int[] {3, 1, 3, 13});
+        mAttackProbability = probs.get(0);
+        mSellProbability = probs.get(1);
+        mUpgradeProbability = probs.get(2);
+        mBuildProbability = probs.get(3);
+    }
 
     @Override
     protected void simulateInput() {
@@ -62,21 +75,23 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             float randomNumber = mRandom.nextFloat();
 
             // Choose an action to take.
-            if (randomNumber <= mBuildProbability) {
-                addBuilding();
-            } else if (randomNumber <= mBuildProbability + mUpgradeProbability) {
-                upgradeBuilding();
-            } else if (randomNumber
-                    <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
-                attack();
-            } else if (randomNumber
-                    <= mBuildProbability
-                            + mUpgradeProbability
-                            + mAttackProbability
-                            + mSellProbability) {
-                sell();
-            } else {
-                log.info("AI probabilites do not sum to one- no action performed.");
+            if (mRandom.nextFloat() <= mWillActProbability) {
+                if (randomNumber <= mBuildProbability) {
+                    addBuilding();
+                } else if (randomNumber <= mBuildProbability + mUpgradeProbability) {
+                    upgradeBuilding();
+                } else if (randomNumber
+                        <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
+                    attack();
+                } else if (randomNumber
+                        <= mBuildProbability
+                                + mUpgradeProbability
+                                + mAttackProbability
+                                + mSellProbability) {
+                    sell();
+                } else {
+                    log.info("AI probabilites do not sum to one- no action performed.");
+                }
             }
         }
     }
