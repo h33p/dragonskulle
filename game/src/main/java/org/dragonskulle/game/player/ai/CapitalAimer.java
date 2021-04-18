@@ -90,7 +90,6 @@ public class CapitalAimer extends Aimer {
                 Graph graph =
                         new Graph(
                                 mPlayer.get().getMap(),
-                                mPlayer.get().getNetworkObject().getOwnerId(),
                                 tileToAim.get());
 
                 mGraph = graph;

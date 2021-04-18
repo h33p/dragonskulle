@@ -90,7 +90,7 @@ public class Graph {
      */
     private void addConnections(HexagonTile tile) {
         if (tile.getTileType() == TileType.LAND) {
-            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);  //TODO Can we make a way which does not need to use the full map??
+            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, 3);  //TODO Can we make a way which does not need to use the full map??
 
             for (HexagonTile tileNeighbour : neighbourTiles) {
                 for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {

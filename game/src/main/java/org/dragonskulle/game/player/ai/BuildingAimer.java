@@ -1,8 +1,12 @@
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.stream.Stream;
 
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ai.algorithms.AStar;
@@ -27,6 +31,21 @@ public class BuildingAimer extends Aimer {
 		return null;
 	}
 	
+	private Stream<HexagonTile> getStream(){
+		LinkedList<HexagonTile> allVisibleTiles = new LinkedList<HexagonTile>();
+		
+		for (int i = 0; i < mPlayer.get().getNumberOfOwnedBuildings(); i++) {
+			Building building = mPlayer.get().getOwnedBuildings().get(i).get();
+			
+			for (HexagonTile tile : building.getViewableTiles()) {
+				allVisibleTiles.add(tile);
+			}
+			
+		}
+		
+		return Arrays.stream(allVisibleTiles.toArray(new HexagonTile[0]));
+	}
+	
 	@Override
 	protected void aStar() {
         // Will find the opponent to attack
@@ -42,9 +61,8 @@ public class BuildingAimer extends Aimer {
                 // Creates a graph
                 Graph graph =
                         new Graph(
-                                mPlayer.get().getMap(),
-                                mPlayer.get().getNetworkObject().getOwnerId(),
-                                tileToAim.get());
+                                mPlayer.get().getMap(),		//TODO Change to stream
+                                tileToAim.get(), getStream());
 
                 mGraph = graph;
                 // Finds the capitals
