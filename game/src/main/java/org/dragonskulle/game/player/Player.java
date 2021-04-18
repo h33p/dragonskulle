@@ -165,37 +165,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private void distributeCoordinates() {
 
         final int attempts = 20;
-        int i = 0;
-        boolean completed = false;
-        while (i <= attempts) {
+
+        for (int i = 0; i <= attempts; i++) {
 
             log.severe("This is attempt number " + i);
-            int x;
-            int y;
-
-            Building buildingToBecomeCapital;
 
             // Add the building
-            if (i < attempts) {
-
-                Vector2f axial = createCoordinates(i, attempts);
-                x = (int) axial.x;
-                y = (int) axial.y;
-                buildingToBecomeCapital = createBuilding(x, y);
-            } else {
-                buildingToBecomeCapital =
-                        getMap().getAllTiles()
-                                .map(tile -> createBuilding(tile.getQ(), tile.getR()))
-                                .filter(building -> building != null)
-                                .findFirst()
-                                .orElse(null);
-                x = buildingToBecomeCapital.getTile().getQ();
-                y = buildingToBecomeCapital.getTile().getR();
-            }
+            Vector2f axial = createCoordinates(i, attempts);
+            int x = (int) axial.x;
+            int y = (int) axial.y;
+            Building buildingToBecomeCapital = createBuilding(x, y);
 
             if (buildingToBecomeCapital == null) {
                 log.severe("Unable to place an initial capital building.  X = " + x + " Y = " + y);
-                i++;
+                continue;
 
             } else if (i <= attempts) {
 
@@ -203,27 +186,42 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 if (ifNotIsland) {
                     buildingToBecomeCapital.setCapital(true);
-                    i = attempts + 1;
-                    completed = true;
+
                     log.info(
                             "Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+                    return;
                 } else {
                     log.severe(
                             "Unable to place an initial capital building.  X = " + x + " Y = " + y);
                     GameObject go = buildingToBecomeCapital.getGameObject();
                     go.destroy();
-                    i++;
+                    continue;
                 }
             }
         }
-        if (!completed) {
 
+        Building buildingToBecomeCapital =
+                getMap().getAllTiles()
+                        .map(tile -> createBuilding(tile.getQ(), tile.getR()))
+                        .filter(building -> building != null)
+                        .findFirst()
+                        .orElse(null);
+        int x = buildingToBecomeCapital.getTile().getQ();
+        int y = buildingToBecomeCapital.getTile().getR();
+
+        // TODO CHECK FOR ISLAND ISSUES.  Do in stream!
+
+        if (buildingToBecomeCapital == null) {
             // Cannot add a capital
             setOwnsCapital(false);
 
             log.severe("Disconnecting");
 
             getGameObject().destroy();
+        } else {
+            buildingToBecomeCapital.setCapital(true);
+
+            log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
         }
     }
 
