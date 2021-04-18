@@ -170,55 +170,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         while (i <= attempts) {
 
             log.severe("This is attempt number " + i);
-            float angleOfCircle = 360f / (MAX_PLAYERS + 1);
-            float angleBetween =
-                    (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
-
-            // The number of players online
-            int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
-            if (playersOnlineNow < 0) {
-                playersOnlineNow += MAX_PLAYERS; // handle AI Players
-            }
-
-            float angleToStart;
-            float angleToEnd;
-
-            // This will expand the search if we cannot place in the first part
-            if (i < attempts / 2) {
-                // This gives us the angle to find our coordinates.  Stored in degrees
-                angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
-                angleToEnd =
-                        ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
-            } else {
-                // This gives us the angle to find our coordinates.  Stored in degrees
-                angleToStart = playersOnlineNow * angleOfCircle;
-                angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
-            }
-
-            Random random = new Random();
-
-            // Creates the vector coordinates to use
-            float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
-            Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
-            Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
-
-            // Make sure the capital is not spawned over outside the circle
-            float radius = (getMap().getSize() / 2);
-            radius = (float) Math.sqrt(radius * radius * 0.75f);
-
-            // Make sure the capital is not spawned near the centre
-            int minDistance = 10;
-            float distance = random.nextFloat() * (radius - minDistance) + minDistance;
-
-            direction.mul(distance).mul(TransformHex.HEX_WIDTH);
-
-            log.info("X: " + direction.x + " Y: " + direction.y);
-
-            // Convert to Axial coordinates
-            Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
-            Vector2f axial = new Vector2f();
-            TransformHex.cartesianToAxial(cartesian, axial);
-
             int x;
             int y;
 
@@ -226,6 +177,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             // Add the building
             if (i < attempts) {
+
+                Vector2f axial = createCoordinates(i, attempts);
                 x = (int) axial.x;
                 y = (int) axial.y;
                 buildingToBecomeCapital = createBuilding(x, y);
@@ -246,36 +199,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             } else if (i <= attempts) {
 
-                // This part of the code checks we are not in an island which we cannot get out of
-                HexagonTile tilePlacedOn = getMap().getTile(x, y);
-                ArrayList<HexagonTile> buildableTiles =
-                        getMap().getTilesInRadius(
-                                        tilePlacedOn,
-                                        1,
-                                        3); // TODO set the distance to correct claimable distance
-                int numberOfSpaces = 0;
+                boolean ifNotIsland = checkIfIsland(x, y);
 
-                // This is set so there is multiple places to leave in case there is a second
-                // capital nearby which gets there first
-                final int spacesWanted = 2;
-                int j = 0;
-                while (j < buildableTiles.size() && numberOfSpaces < spacesWanted) {
-                    HexagonTile tile = buildableTiles.get(j);
-                    log.severe(
-                            "Tile type "
-                                    + tile.getTileType()
-                                    + " tile Claimant"
-                                    + tile.getClaimant());
-                    if (tile.getTileType() == TileType.LAND
-                            && (tile.getClaimant() == null
-                                    || tile.getClaimantId() != getNetworkObject().getOwnerId())) {
-                        numberOfSpaces++;
-                    }
-                    j++;
-                }
-                log.info("Number of spaces: " + numberOfSpaces);
-
-                if (numberOfSpaces >= spacesWanted) {
+                if (ifNotIsland) {
                     buildingToBecomeCapital.setCapital(true);
                     i = attempts + 1;
                     completed = true;
@@ -301,6 +227,99 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
+    /**
+     * Will create the coordinates to test
+     *
+     * @param i The attempt number
+     * @param attempts The number of attempts allowed
+     * @return A {@code Vector2f} with the coordinates to use
+     */
+    private Vector2f createCoordinates(int i, int attempts) {
+        float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+        float angleBetween =
+                (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
+
+        // The number of players online
+        int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
+        if (playersOnlineNow < 0) {
+            playersOnlineNow += MAX_PLAYERS; // handle AI Players
+        }
+
+        float angleToStart;
+        float angleToEnd;
+
+        // This will expand the search if we cannot place in the first part
+        if (i < attempts / 2) {
+            // This gives us the angle to find our coordinates.  Stored in degrees
+            angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
+            angleToEnd = ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
+        } else {
+            // This gives us the angle to find our coordinates.  Stored in degrees
+            angleToStart = playersOnlineNow * angleOfCircle;
+            angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
+        }
+
+        Random random = new Random();
+
+        // Creates the vector coordinates to use
+        float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
+        Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
+        Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
+
+        // Make sure the capital is not spawned over outside the circle
+        float radius = (getMap().getSize() / 2);
+        radius = (float) Math.sqrt(radius * radius * 0.75f);
+
+        // Make sure the capital is not spawned near the centre
+        int minDistance = 10;
+        float distance = random.nextFloat() * (radius - minDistance) + minDistance;
+
+        direction.mul(distance).mul(TransformHex.HEX_WIDTH);
+
+        log.info("X: " + direction.x + " Y: " + direction.y);
+
+        // Convert to Axial coordinates
+        Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
+        Vector2f axial = new Vector2f();
+        TransformHex.cartesianToAxial(cartesian, axial);
+
+        return axial;
+    }
+
+    /**
+     * This will check if the tile at the given coordinates can be built from
+     *
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @return If there is more than 2 ways away from the building
+     */
+    private boolean checkIfIsland(int x, int y) {
+        // This part of the code checks we are not in an island which we cannot get out of
+        HexagonTile tilePlacedOn = getMap().getTile(x, y);
+        ArrayList<HexagonTile> buildableTiles =
+                getMap().getTilesInRadius(
+                                tilePlacedOn,
+                                1,
+                                3); // TODO set the distance to correct claimable distance
+        int numberOfSpaces = 0;
+
+        // This is set so there is multiple places to leave in case there is a second
+        // capital nearby which gets there first
+        final int spacesWanted = 2;
+        int j = 0;
+        while (j < buildableTiles.size() && numberOfSpaces < spacesWanted) {
+            HexagonTile tile = buildableTiles.get(j);
+            log.severe("Tile type " + tile.getTileType() + " tile Claimant" + tile.getClaimant());
+            if (tile.getTileType() == TileType.LAND
+                    && (tile.getClaimant() == null
+                            || tile.getClaimantId() != getNetworkObject().getOwnerId())) {
+                numberOfSpaces++;
+            }
+            j++;
+        }
+        log.info("Number of spaces: " + numberOfSpaces);
+        return numberOfSpaces >= spacesWanted;
+    }
     /**
      * This method will update the amount of tokens the user has per {@link #TOKEN_TIME}. Goes
      * through all owned {@link Building}s to check if need to update tokens. Should only be ran on
