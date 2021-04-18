@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
