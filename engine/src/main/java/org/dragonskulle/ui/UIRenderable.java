@@ -12,7 +12,11 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.components.*;
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4fc;
 
 /**
  * Class describing a renderable UI object

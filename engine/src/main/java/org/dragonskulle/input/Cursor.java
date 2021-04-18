@@ -73,7 +73,7 @@ public class Cursor {
      */
     void setPosition(float x, float y) {
         mRawPosition.set(x, y);
-        mScaledPosition = calculateScaled(mRawPosition);
+        calculateScaled(mRawPosition, mScaledPosition);
     }
 
     /**
@@ -81,25 +81,25 @@ public class Cursor {
      * size.
      *
      * @param rawPosition The raw vector coordinates.
-     * @return A new vector that has been scaled to the correct range.
+     * @param scaledPosition The vector where the result will be written to.
      */
-    private Vector2f calculateScaled(Vector2f rawPosition) {
+    private void calculateScaled(Vector2fc rawPosition, Vector2f scaledPosition) {
         if (rawPosition == null) {
             log.warning("Raw position is null.");
-            return null;
+            return;
         }
 
         GLFWState state = Engine.getInstance().getGLFWState();
         if (state == null) {
             log.warning("GLFWState is null: may cause unintended side-effects.");
-            return null;
+            return;
         }
 
         Vector2ic windowSize = state.getWindowSize();
         float scaledX = rawPosition.x() / (float) windowSize.x() * 2f - 1f;
         float scaledY = rawPosition.y() / (float) windowSize.y() * 2f - 1f;
 
-        return new Vector2f(scaledX, scaledY);
+        scaledPosition.set(scaledX, scaledY);
     }
 
     /**
@@ -123,7 +123,7 @@ public class Cursor {
     /** Start a new drag. */
     void startDrag() {
         mRawDragStart = new Vector2f(mRawPosition);
-        mScaledDragStart = calculateScaled(mRawDragStart);
+        calculateScaled(mRawDragStart, mScaledDragStart);
     }
 
     /** End a drag in progress. */
@@ -147,7 +147,7 @@ public class Cursor {
      * @return The initial position of the cursor, relative to the window size, or {@code null} if
      *     no dragging is taking place.
      */
-    public Vector2f getDragStart() {
+    public Vector2fc getDragStart() {
         if (!inDrag()) {
             return null;
         }
@@ -199,7 +199,7 @@ public class Cursor {
      *
      * @return The raw cursor position.
      */
-    Vector2f getRawPosition() {
+    Vector2fc getRawPosition() {
         return mRawPosition;
     }
 }
