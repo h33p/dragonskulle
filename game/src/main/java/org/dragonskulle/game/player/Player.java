@@ -167,7 +167,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         final int attempts = 20;
         int i = 0;
         boolean completed = false;
-        while (i < attempts) {
+        while (i <= attempts) {
 
             log.severe("This is attempt number " + i);
             float angleOfCircle = 360f / (MAX_PLAYERS + 1);
@@ -219,20 +219,35 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             Vector2f axial = new Vector2f();
             TransformHex.cartesianToAxial(cartesian, axial);
 
+            int x;
+            int y;
+
+            Building buildingToBecomeCapital;
+
             // Add the building
-            Building buildingToBecomeCapital = createBuilding((int) axial.x, (int) axial.y);
+            if (i < attempts) {
+                x = (int) axial.x;
+                y = (int) axial.y;
+                buildingToBecomeCapital = createBuilding(x, y);
+            } else {
+                buildingToBecomeCapital =
+                        getMap().getAllTiles()
+                                .map(tile -> createBuilding(tile.getQ(), tile.getR()))
+                                .filter(building -> building != null)
+                                .findFirst()
+                                .orElse(null);
+                x = buildingToBecomeCapital.getTile().getQ();
+                y = buildingToBecomeCapital.getTile().getR();
+            }
+
             if (buildingToBecomeCapital == null) {
-                log.severe(
-                        "Unable to place an initial capital building.  X = "
-                                + (int) axial.x
-                                + " Y = "
-                                + (int) axial.y);
+                log.severe("Unable to place an initial capital building.  X = " + x + " Y = " + y);
                 i++;
 
-            } else if (i < attempts) {
+            } else if (i <= attempts) {
 
                 // This part of the code checks we are not in an island which we cannot get out of
-                HexagonTile tilePlacedOn = getMap().getTile((int) axial.x, (int) axial.y);
+                HexagonTile tilePlacedOn = getMap().getTile(x, y);
                 ArrayList<HexagonTile> buildableTiles =
                         getMap().getTilesInRadius(
                                         tilePlacedOn,
@@ -262,16 +277,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 if (numberOfSpaces >= spacesWanted) {
                     buildingToBecomeCapital.setCapital(true);
-                    i = attempts;
+                    i = attempts + 1;
                     completed = true;
                     log.info(
                             "Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
                 } else {
                     log.severe(
-                            "Unable to place an initial capital building.  X = "
-                                    + (int) axial.x
-                                    + " Y = "
-                                    + (int) axial.y);
+                            "Unable to place an initial capital building.  X = " + x + " Y = " + y);
                     GameObject go = buildingToBecomeCapital.getGameObject();
                     go.destroy();
                     i++;
@@ -285,10 +297,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             log.severe("Disconnecting");
 
-            if (getNetworkObject().getOwnerId() < 0) {
-                // This is AI so can destroy it
-                getNetworkObject().destroy();
-            }
+            getGameObject().destroy();
         }
     }
 
