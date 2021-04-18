@@ -80,7 +80,9 @@ public class StatData implements INetSerializable {
      * @return The Building whose stat is increasing, or {@code null}.
      */
     public Building getBuilding(HexagonMap map) {
-        if (getTile(map) == null) return null;
+        if (getTile(map) == null) {
+            return null;
+        }
         return getTile(map).getBuilding();
     }
 

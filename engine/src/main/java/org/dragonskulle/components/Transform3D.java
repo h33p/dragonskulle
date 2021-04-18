@@ -12,7 +12,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * 3D Transform class
+ * 3D Transform class.
  *
  * @author Harry Stoltz
  *     <p>Transform3D object the position, rotation and scale of the GameObject (As right, up,
@@ -44,7 +44,7 @@ public class Transform3D extends Transform {
     public Transform3D() {}
 
     /**
-     * Constructor with initial position
+     * Constructor with initial position.
      *
      * @param position Starting position for the object
      */
@@ -53,7 +53,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Constructor with initial position
+     * Constructor with initial position.
      *
      * @param x X position axis
      * @param y Y position axis
@@ -64,7 +64,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Constructor with initial transformation matrix
+     * Constructor with initial transformation matrix.
      *
      * @param matrix Matrix to be used for mLocalMatrix
      */
@@ -75,7 +75,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Set the position of the object relative to the parent
+     * Set the position of the object relative to the parent.
      *
      * @param position Vector3f containing the desired position
      */
@@ -84,7 +84,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Set the position of the object relative to the parent
+     * Set the position of the object relative to the parent.
      *
      * @param x X coordinate of position
      * @param y Y coordinate of position
@@ -96,7 +96,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Set the rotation of the object relative to the parent
+     * Set the rotation of the object relative to the parent.
      *
      * @param rotation {@link Quaternionfc} containing the desired quaternion rotation
      */
@@ -106,7 +106,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Set the rotation of the object relative to the parent
+     * Set the rotation of the object relative to the parent.
      *
      * @param rotation Vector3f containing the desired rotation
      */
@@ -115,19 +115,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Set the rotation of the object relative to the parent
-     *
-     * @param rotation Vector3f containing the desired rotation
-     */
-    public void setRotationDeg(Vector3fc rotation) {
-        setRotation(
-                rotation.x() * MathUtils.DEG_TO_RAD,
-                rotation.y() * MathUtils.DEG_TO_RAD,
-                rotation.z() * MathUtils.DEG_TO_RAD);
-    }
-
-    /**
-     * Set the rotation of the object relative to the parent
+     * Set the rotation of the object relative to the parent.
      *
      * @param x X coordinate of rotation
      * @param y Y coordinate of rotation
@@ -139,7 +127,19 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Set the rotation of the object relative to the parent
+     * Set the rotation of the object relative to the parent.
+     *
+     * @param rotation Vector3f containing the desired rotation
+     */
+    public void setRotationDeg(Vector3fc rotation) {
+        setRotation(
+                rotation.x() * MathUtils.DEG_TO_RAD,
+                rotation.y() * MathUtils.DEG_TO_RAD,
+                rotation.z() * MathUtils.DEG_TO_RAD);
+    }
+
+    /**
+     * Set the rotation of the object relative to the parent.
      *
      * @param x X coordinate of rotation
      * @param y Y coordinate of rotation
@@ -150,7 +150,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Rotate the object with euler angles
+     * Rotate the object with euler angles.
      *
      * @param eulerAngles Vector containing euler angles to rotate object with
      */
@@ -159,7 +159,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Rotate the object with euler angles
+     * Rotate the object with euler angles.
      *
      * @param x Rotation in X-axis in radians
      * @param y Rotation in Y-axis in radians
@@ -171,7 +171,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Rotate the object with euler angles
+     * Rotate the object with euler angles.
      *
      * @param x Rotation in X-axis in degrees
      * @param y Rotation in Y-axis in degrees
@@ -183,7 +183,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Rotate the object with a quaternion
+     * Rotate the object with a quaternion.
      *
      * @param quaternion Quaternion to rotate object with
      */
@@ -193,7 +193,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Translate the object
+     * Translate the object.
      *
      * @param translation Vector translation to perform
      */
@@ -203,7 +203,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Translate the object
+     * Translate the object.
      *
      * @param x Translation in X-axis
      * @param y Translation in Y-axis
@@ -215,7 +215,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Translate the object relative to current orientation
+     * Translate the object relative to current orientation.
      *
      * @param x Translation in X-axis
      * @param y Translation in Y-axis
@@ -228,7 +228,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Retrieve the forward direction vector
+     * Retrieve the forward direction vector.
      *
      * @return current forward direction
      */
@@ -237,7 +237,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Scale the object
+     * Scale the object.
      *
      * @param scale Vector to scale object with
      */
@@ -247,7 +247,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Scale the object
+     * Scale the object.
      *
      * @param x Scale in the X-axis
      * @param y Scale in the Y-axis
@@ -259,7 +259,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the transformation matrix relative to the parent transform
+     * Get the transformation matrix relative to the parent transform.
      *
      * @return A constant reference to the local matrix
      */
@@ -268,7 +268,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the transformation matrix relative to the parent transform
+     * Get the transformation matrix relative to the parent transform.
      *
      * @param dest Matrix to store a copy of the local matrix
      */
@@ -277,7 +277,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the normalised rotation of the transform
+     * Get the normalised rotation of the transform.
      *
      * @return Rotation of the transform as Quaternion
      */
@@ -286,7 +286,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the normalised rotation of the transform, relative to the parent transform
+     * Get the normalised rotation of the transform, relative to the parent transform.
      *
      * @param dest Quaternion to store the rotation
      */
@@ -295,7 +295,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the rotation of the transform per axis, in radians, relative to the parent transform
+     * Get the rotation of the transform per axis, in radians, relative to the parent transform.
      *
      * @return Rotation of the transform as AxisAngle
      */
@@ -304,7 +304,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the rotation of the transform per axis, in radians, relative to the parent transform
+     * Get the rotation of the transform per axis, in radians, relative to the parent transform.
      *
      * @param dest AxisAngle4f to store the rotation
      */
@@ -313,7 +313,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the position of the transform
+     * Get the position of the transform.
      *
      * @return Vector3fc containing the XYZ position of the object
      */
@@ -322,7 +322,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the position of the transform relative to the parent transform
+     * Get the position of the transform relative to the parent transform.
      *
      * @param dest Vector3f to store the position
      */
@@ -331,7 +331,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the scale of the transform
+     * Get the scale of the transform.
      *
      * @return Vector3fc containing the XYZ scale of the object
      */
@@ -340,7 +340,7 @@ public class Transform3D extends Transform {
     }
 
     /**
-     * Get the scale of the transform
+     * Get the scale of the transform.
      *
      * @param dest Vector3f to store the scale
      */
@@ -376,6 +376,66 @@ public class Transform3D extends Transform {
     }
 
     /**
+     * Get the rotation of the transform in the world as a Quaternion.
+     *
+     * @return Quaternionf containing the rotation of the transform
+     */
+    public Quaternionf getRotation() {
+        Quaternionf rotation = new Quaternionf();
+        getWorldMatrix().getNormalizedRotation(rotation);
+        return rotation;
+    }
+
+    /**
+     * Get the rotation of the transform in the world as a Quaternion.
+     *
+     * @param dest Quaternionf to store the rotation of the transform
+     */
+    public void getRotation(Quaternionf dest) {
+        getWorldMatrix().getNormalizedRotation(dest);
+    }
+
+    /**
+     * Get the rotation of the transform in the world as axis angles.
+     *
+     * @return AxisAngle4f containing the rotation of the transform
+     */
+    public AxisAngle4f getRotationAngles() {
+        AxisAngle4f rotation = new AxisAngle4f();
+        getWorldMatrix().getRotation(rotation);
+        return rotation;
+    }
+
+    /**
+     * Get the rotation of the transform in the world as axis angles.
+     *
+     * @param dest AxisAnglef to store the rotation of the transform
+     */
+    public void getRotationAngles(AxisAngle4f dest) {
+        getWorldMatrix().getRotation(dest);
+    }
+
+    /**
+     * Get the scale of the transform in the world.
+     *
+     * @return Vector3f containing the scale of the transform
+     */
+    public Vector3f getScale() {
+        Vector3f scale = new Vector3f();
+        getWorldMatrix().getScale(scale);
+        return scale;
+    }
+
+    /**
+     * Get the scale of the transform in the world.
+     *
+     * @param dest Vector3f to store the scale
+     */
+    public void getScale(Vector3f dest) {
+        getWorldMatrix().getScale(dest);
+    }
+
+    /**
      * Sets the local 3D transformation
      *
      * <p>This method sets the local transformation of the object to match the input data.
@@ -391,66 +451,6 @@ public class Transform3D extends Transform {
         mRotation.set(rotation);
         mScale.set(scale);
         setUpdateFlag();
-    }
-
-    /**
-     * Get the rotation of the transform in the world as a Quaternion
-     *
-     * @return Quaternionf containing the rotation of the transform
-     */
-    public Quaternionf getRotation() {
-        Quaternionf rotation = new Quaternionf();
-        getWorldMatrix().getNormalizedRotation(rotation);
-        return rotation;
-    }
-
-    /**
-     * Get the rotation of the transform in the world as a Quaternion
-     *
-     * @param dest Quaternionf to store the rotation of the transform
-     */
-    public void getRotation(Quaternionf dest) {
-        getWorldMatrix().getNormalizedRotation(dest);
-    }
-
-    /**
-     * Get the rotation of the transform in the world as axis angles
-     *
-     * @return AxisAngle4f containing the rotation of the transform
-     */
-    public AxisAngle4f getRotationAngles() {
-        AxisAngle4f rotation = new AxisAngle4f();
-        getWorldMatrix().getRotation(rotation);
-        return rotation;
-    }
-
-    /**
-     * Get the rotation of the transform in the world as axis angles
-     *
-     * @param dest AxisAnglef to store the rotation of the transform
-     */
-    public void getRotationAngles(AxisAngle4f dest) {
-        getWorldMatrix().getRotation(dest);
-    }
-
-    /**
-     * Get the scale of the transform in the world
-     *
-     * @return Vector3f containing the scale of the transform
-     */
-    public Vector3f getScale() {
-        Vector3f scale = new Vector3f();
-        getWorldMatrix().getScale(scale);
-        return scale;
-    }
-
-    /**
-     * Get the scale of the transform in the world
-     *
-     * @param dest Vector3f to store the scale
-     */
-    public void getScale(Vector3f dest) {
-        getWorldMatrix().getScale(dest);
     }
 
     @Override

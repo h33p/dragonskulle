@@ -2,7 +2,7 @@
 package org.dragonskulle.components;
 
 /**
- * IFixedUpdate interface
+ * IFixedUpdate interface.
  *
  * @author Harry Stoltz
  *     <p>One of the optional interfaces for a component. Contains the single method fixedUpdate.

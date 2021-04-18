@@ -8,7 +8,7 @@ package org.dragonskulle.input;
  */
 public interface ICharEvent {
     /**
-     * Handle the event
+     * Handle the event.
      *
      * @param c the character that was inputed
      */

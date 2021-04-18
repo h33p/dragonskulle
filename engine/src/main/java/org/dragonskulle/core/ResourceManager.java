@@ -2,13 +2,15 @@
 package org.dragonskulle.core;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * Shared resource manager
+ * Shared resource manager.
  *
  * @author Aurimas Blažulionis
  *     <p>This class allows loading and caching of various resources (files, placed under
@@ -40,7 +42,7 @@ public class ResourceManager {
         registerResource(String.class, (a) -> a.getName(), (b, __) -> new String(b));
     }
 
-    /** Reference counts the accesses */
+    /** Reference counts the accesses. */
     @Accessors(prefix = "m")
     static class CountedResource<T> {
         @Getter private ResourceArguments<T, ?> mArgs;
@@ -66,7 +68,9 @@ public class ResourceManager {
                     }
                 }
                 mResource = null;
-                if (mLinked) ResourceManager.unlinkResource(mArgs);
+                if (mLinked) {
+                    ResourceManager.unlinkResource(mArgs);
+                }
             }
 
             if (mRefcount < 0) {
@@ -75,7 +79,7 @@ public class ResourceManager {
         }
 
         /**
-         * Increase reference count, and return a Resource instance
+         * Increase reference count, and return a Resource instance.
          *
          * @param type class of the type. Should really be {@code Class<T>}.
          * @return a resource with reference to underlying resource.
@@ -86,13 +90,15 @@ public class ResourceManager {
             if (type.isInstance(mResource)) {
                 mRefcount += 1;
                 return new Resource<F>((CountedResource<F>) this);
-            } else return null;
+            } else {
+                return null;
+            }
         }
 
         /**
-         * Increases reference count, and returns a clone Resource instance
+         * Increases reference count, and returns a clone Resource instance.
          *
-         * @retrun a resource with reference to underlying resource.
+         * @return a resource with reference to underlying resource.
          */
         public Resource<T> incRefCount() {
             mRefcount += 1;
@@ -100,15 +106,16 @@ public class ResourceManager {
         }
 
         /**
-         * Try reloading the underlying resource object
+         * Try reloading the underlying resource object.
          *
-         * @param loader loader to reload the resource with.
          * @return {@code true} if reload was successful. On false, the underlying object is left
          *     unchanged.
          */
         public boolean reload() {
             T res = ResourceManager.loadResource(mArgs);
-            if (res == null) return false;
+            if (res == null) {
+                return false;
+            }
             if (AutoCloseable.class.isInstance(mResource)) {
                 try {
                     ((AutoCloseable) mResource).close();
@@ -121,7 +128,7 @@ public class ResourceManager {
         }
     }
 
-    /** Simple composed {@link IResourceLoader} */
+    /** Simple composed {@link IResourceLoader}. */
     private static class CompositeResourceLoader<T, F> implements IResourceLoader<T, F> {
         private final IResourcePathResolver<T, F> mPathResolver;
         private final IResourceBufferLoader<T, F> mBufferLoader;
@@ -143,7 +150,7 @@ public class ResourceManager {
     }
 
     /**
-     * Register a resource loader in a composite way
+     * Register a resource loader in a composite way.
      *
      * @param type type of the resource
      * @param pathResolver implementation (lambda) of path resolving
@@ -176,7 +183,7 @@ public class ResourceManager {
     }
 
     /**
-     * Register a resource loader
+     * Register a resource loader.
      *
      * @param type type of the resource
      * @param loader loader for the resource
@@ -198,8 +205,11 @@ public class ResourceManager {
     public static <T, F> Resource<T> getResource(ResourceArguments<T, F> arguments) {
         CountedResource<?> inst = sLoadedResources.get(arguments);
 
-        if (inst == null) return loadAndCacheResource(arguments);
-        else return inst.incRefCount(arguments.getType());
+        if (inst == null) {
+            return loadAndCacheResource(arguments);
+        } else {
+            return inst.incRefCount(arguments.getType());
+        }
     }
 
     /**
@@ -243,7 +253,9 @@ public class ResourceManager {
      */
     public static void unlinkResource(ResourceArguments<?, ?> args) {
         CountedResource<?> res = sLoadedResources.remove(args);
-        if (res != null) res.mLinked = false;
+        if (res != null) {
+            res.mLinked = false;
+        }
     }
 
     /**
@@ -271,7 +283,9 @@ public class ResourceManager {
     public static <T, F> T loadResource(ResourceArguments<T, F> arguments) {
 
         IResourceLoader<?, ?> loader = sLoaders.get(arguments.getType());
-        if (loader == null) return null;
+        if (loader == null) {
+            return null;
+        }
 
         IResourceLoader<T, F> castLoader = (IResourceLoader<T, F>) loader;
 
@@ -286,19 +300,21 @@ public class ResourceManager {
     }
 
     /**
-     * Loads and caches a resource
+     * Loads and caches a resource.
      *
      * <p>This method simply loads a resource, and caches it in the internal map
      */
     private static <T, F> Resource<T> loadAndCacheResource(ResourceArguments<T, F> arguments) {
         T ret = loadResource(arguments);
-        if (ret == null) return null;
+        if (ret == null) {
+            return null;
+        }
         CountedResource<T> inst = new CountedResource<T>(arguments, ret);
         sLoadedResources.put(arguments, inst);
         return inst.incRefCount(arguments.getType());
     }
 
-    /** Essentially Java 9 readAllBytes */
+    /** Essentially Java 9 readAllBytes. */
     private static byte[] readAllBytes(InputStream stream) throws Exception {
         List<byte[]> chunks = new ArrayList<byte[]>();
         int n = 0;
@@ -309,8 +325,11 @@ public class ResourceManager {
             n = stream.read(chunk);
             if (n > 0) {
                 total += n;
-                if (n == CHUNK_SIZE) chunks.add(chunk);
-                else chunks.add(Arrays.copyOfRange(chunk, 0, n));
+                if (n == CHUNK_SIZE) {
+                    chunks.add(chunk);
+                } else {
+                    chunks.add(Arrays.copyOfRange(chunk, 0, n));
+                }
             }
         }
 

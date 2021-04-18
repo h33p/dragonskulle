@@ -27,12 +27,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of selling an owned {@link Building}. */
     protected float mSellProbability = 0.05f;
 
-    /** Used to run events for building and attacking */
+    /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
         public boolean runEvent(Building building);
     }
 
-    /** A Constructor for an AI Player */
+    /** A Constructor for an AI Player. */
     public ProbabilisticAiPlayer() {}
 
     @Override
@@ -82,7 +82,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     }
 
     /**
-     * A function which goes through and checks if you can run code
+     * A function which goes through and checks if you can run code.
      *
      * @param lambdaMethod What to on a building
      * @return If the stuff is invoked on the server
@@ -196,7 +196,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean tryToUpgrade(Building building) {
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
-        if (stats.size() == 0) return false;
+        if (stats.size() == 0) {
+            return false;
+        }
 
         int index = mRandom.nextInt(stats.size());
         final int end = index;
@@ -211,7 +213,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             // Go to the next stat.
             index++;
-            if (index >= stats.size()) index = 0;
+            if (index >= stats.size()) {
+                index = 0;
+            }
         } while (index != end);
 
         return false;
@@ -231,7 +235,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * This will try to attack from a building.
      *
-     * @param building The building to attack from.
+     * @param attacker The building to attack from.
      * @return Whether attacking was invoked.
      */
     private boolean tryToAttack(Building attacker) {

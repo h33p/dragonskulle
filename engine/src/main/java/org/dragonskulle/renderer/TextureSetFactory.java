@@ -7,7 +7,7 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkDevice;
 
 /**
- * Create and manage texture samplers for a device
+ * Create and manage texture samplers for a device.
  *
  * @author Aurimas Blažulionis
  */
@@ -27,7 +27,9 @@ class TextureSetFactory implements NativeResource {
     }
 
     public TextureSet getSet(VulkanSampledTexture[] textures) {
-        if (textures.length == 0) return null;
+        if (textures.length == 0) {
+            return null;
+        }
 
         Integer hash = Arrays.hashCode(textures);
         TextureSet set = mTextureSets.get(hash);

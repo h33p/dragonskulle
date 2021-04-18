@@ -1,10 +1,17 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L The type Sync bool. */
+/**
+ * The type Sync bool.
+ *
+ * @author Oscar L The type Sync bool.
+ */
 public class SyncBool implements ISyncVar, Serializable {
 
     /** The Data. */
@@ -84,8 +91,12 @@ public class SyncBool implements ISyncVar, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (this == o) {
+            return true;
+        }
         SyncBool syncBool = (SyncBool) o;
         return mData == syncBool.mData;
     }
@@ -94,4 +105,4 @@ public class SyncBool implements ISyncVar, Serializable {
     public int hashCode() {
         return Objects.hash(mData);
     }
-};
+}

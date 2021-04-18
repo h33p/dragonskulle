@@ -1,7 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.requests;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -11,7 +14,7 @@ import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * Allows server to send events to the clients
+ * Allows server to send events to the clients.
  *
  * @author Aurimas Blažulionis
  */
@@ -26,7 +29,7 @@ public class ServerEvent<T extends INetSerializable> {
     @Getter private final EventTimeframe mTimeframe;
 
     /**
-     * Describes who should receive the event
+     * Describes who should receive the event.
      *
      * <p>{@code ACTIVE_CLIENTS} is the default that will send the event to all clients that would
      * generally see it {@code OWNER} sends an event only to the owner of the object {@code
@@ -40,6 +43,11 @@ public class ServerEvent<T extends INetSerializable> {
 
         @Getter private final byte mValue;
 
+        /**
+         * Constructor.
+         *
+         * @param value the enum byte value
+         */
         private EventRecipients(byte value) {
             mValue = value;
         }
@@ -62,17 +70,32 @@ public class ServerEvent<T extends INetSerializable> {
 
         @Getter private final byte mValue;
 
+        /**
+         * Constructor.
+         *
+         * @param value the byte value
+         */
         private EventTimeframe(byte value) {
             mValue = value;
         }
     }
 
+    /**
+     * The interface for settings the values in an server invokation.
+     *
+     * @param <T> the type parameter for the Invoke type
+     */
     public static interface IInvokationSetter<T extends INetSerializable> {
+        /**
+         * Runs the invokation setter.
+         *
+         * @param data the data
+         */
         void setValues(T data);
     }
 
     /**
-     * Defines a server event to be executed on the clients
+     * Defines a server event to be executed on the clients.
      *
      * @param defaultValue the template of the event e.g {@code TestAttackData}
      * @param handler the handler for the event
@@ -103,6 +126,12 @@ public class ServerEvent<T extends INetSerializable> {
         this(defaultValue, handler, EventRecipients.ACTIVE_CLIENTS, EventTimeframe.INSTANT);
     }
 
+    /**
+     * Attaches a network object to an event Id.
+     *
+     * @param obj the obj
+     * @param id the id
+     */
     public void attachNetworkObject(NetworkObject obj, int id) {
         mNetworkObject = obj;
         mEventId = id;
@@ -160,6 +189,13 @@ public class ServerEvent<T extends INetSerializable> {
         }
     }
 
+    /**
+     * Handles an event with its corresponding invokation.
+     *
+     * @param inStream the data stream
+     * @throws IOException thrown when an error occurs when reading from the stream {@code
+     *     inStream}.
+     */
     public void handle(DataInputStream inStream) throws IOException {
         mTmpData.deserialize(inStream);
         mHandler.invokeHandler(mTmpData);

@@ -11,10 +11,14 @@ import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UISlider;
 
-/** @author Oscar L */
+/**
+ * A scroll bar that is linked to the mouse scroll position and map zoom.
+ *
+ * @author Oscar L
+ */
 public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnStart {
-    private Reference<ScrollTranslate> scrollRef;
-    private Reference<UISlider> sliderReference;
+    private Reference<ScrollTranslate> mScrollRef;
+    private Reference<UISlider> mSliderReference;
 
     /**
      * Frame Update is called every single render frame, before any fixed updates. There can be
@@ -24,12 +28,12 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
      */
     @Override
     public void frameUpdate(float deltaTime) {
-        if (Reference.isValid(sliderReference)) {
-            sliderReference.get().setValue(scrollRef.get().getTargetLerpTime());
+        if (Reference.isValid(mSliderReference)) {
+            mSliderReference.get().setValue(mScrollRef.get().getTargetLerpTime());
         }
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -39,7 +43,7 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
      */
     @Override
     public void onStart() {
-        scrollRef =
+        mScrollRef =
                 Scene.getActiveScene()
                         .getSingleton(Camera.class)
                         .getGameObject()
@@ -53,12 +57,12 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
         UISlider newSlider =
                 new UISlider(
                         (uiSlider, val) -> {
-                            if (Reference.isValid(scrollRef)) {
-                                scrollRef.get().setTargetLerpTime(val);
+                            if (Reference.isValid(mScrollRef)) {
+                                mScrollRef.get().setTargetLerpTime(val);
                             }
                         });
 
-        sliderReference = newSlider.getReference(UISlider.class);
+        mSliderReference = newSlider.getReference(UISlider.class);
         newSlider.setRoundStep(0.01f);
         newSlider.setMaxValue(1f);
         newSlider.setMinValue(0f);

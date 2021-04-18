@@ -1,8 +1,23 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import static org.dragonskulle.utils.Env.*;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.dragonskulle.utils.Env.envBool;
+import static org.lwjgl.glfw.GLFW.GLFW_CLIENT_API;
+import static org.lwjgl.glfw.GLFW.GLFW_DONT_CARE;
+import static org.lwjgl.glfw.GLFW.GLFW_NO_API;
+import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
+import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
+import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
+import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
+import static org.lwjgl.glfw.GLFW.glfwInit;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowMonitor;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -19,7 +34,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Handles all GLFW state, like input, and window, and stores renderer
+ * Handles all GLFW state, like input, and window, and stores renderer.
  *
  * @author Aurimas Blažulionis
  */
@@ -27,7 +42,7 @@ import org.lwjgl.system.NativeResource;
 @Log
 public class GLFWState implements NativeResource {
     private long mWindow;
-    /** Window size in screen coordinates */
+    /** Window size in screen coordinates. */
     @Getter private final Vector2i mWindowSize = new Vector2i();
 
     @Getter private Renderer mRenderer;
@@ -44,7 +59,7 @@ public class GLFWState implements NativeResource {
     public static final boolean LOAD_RENDERDOC = envBool("LOAD_RENDERDOC", false);
 
     /**
-     * Entrypoint of the app instance
+     * Entrypoint of the app instance.
      *
      * @param width initial window width
      * @param height initial window height
@@ -130,7 +145,7 @@ public class GLFWState implements NativeResource {
         mRenderer.free();
     }
 
-    /** Creates a GLFW window */
+    /** Creates a GLFW window. */
     private void initWindow(int width, int height, String appName) {
         log.info("Initialize GLFW window");
 

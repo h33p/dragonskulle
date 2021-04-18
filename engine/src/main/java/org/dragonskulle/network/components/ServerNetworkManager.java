@@ -25,7 +25,7 @@ import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 
 /**
- * Server network manager
+ * Server network manager.
  *
  * @author Aurimas Blažulionis
  *     <p>This class is composed in NetworkManager, and handles all things server.
@@ -33,7 +33,7 @@ import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 @Accessors(prefix = "m")
 @Log
 public class ServerNetworkManager {
-    /** Server event listener */
+    /** Server event listener. */
     public class Listener implements IServerListener {
         /**
          * Client connected event.
@@ -48,8 +48,9 @@ public class ServerNetworkManager {
 
         @Override
         public void clientActivated(ServerClient client) {
-            if (mConnectedClientHandler != null)
+            if (mConnectedClientHandler != null) {
                 mConnectedClientHandler.handle(mManager.getGameScene(), mManager, client);
+            }
         }
 
         /**
@@ -99,7 +100,7 @@ public class ServerNetworkManager {
                 return;
             }
 
-            if (!obj.handleClientRequest(requestID, stream))
+            if (!obj.handleClientRequest(requestID, stream)) {
                 log.warning(
                         "Client "
                                 + client.getNetworkID()
@@ -107,6 +108,7 @@ public class ServerNetworkManager {
                                 + requestID
                                 + " on object: "
                                 + objectID);
+            }
         }
     }
 
@@ -125,7 +127,9 @@ public class ServerNetworkManager {
 
             NetworkObject obj = mNetworkObject.get();
 
-            if (obj == null) return;
+            if (obj == null) {
+                return;
+            }
 
             boolean forceUpdate = false;
 
@@ -147,13 +151,13 @@ public class ServerNetworkManager {
         }
     }
 
-    /** Server event listener */
+    /** Server event listener. */
     private final Listener mListener = new Listener();
-    /** Underlying server instance */
+    /** Underlying server instance. */
     private final Server mServer;
-    /** Back reference to {@link NetworkManager} */
+    /** Back reference to {@link NetworkManager}. */
     private final NetworkManager mManager;
-    /** Callback for connected clients */
+    /** Callback for connected clients. */
     private final NetworkManager.IConnectedClientEvent mConnectedClientHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
@@ -165,7 +169,7 @@ public class ServerNetworkManager {
     @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
     /**
-     * Constructor for {@link ServerNetworkManager}
+     * Constructor for {@link ServerNetworkManager}.
      *
      * @param manager back reference to {@link NetworkManager}
      * @param port target port to listen on
@@ -182,7 +186,7 @@ public class ServerNetworkManager {
         startGame();
     }
 
-    /** Start the game, load game scene */
+    /** Start the game, load game scene. */
     void startGame() {
         Engine engine = Engine.getInstance();
 
@@ -228,7 +232,7 @@ public class ServerNetworkManager {
     }
 
     /**
-     * Send an event to the clients
+     * Send an event to the clients.
      *
      * @param event event we send
      * @param stream serialized data of the event
@@ -250,10 +254,14 @@ public class ServerNetworkManager {
                 event.handle(dis);
             } else {
                 ServerClient c = mServer.getClient(oid);
-                if (c != null) c.sendBytes(msg);
+                if (c != null) {
+                    c.sendBytes(msg);
+                }
             }
         } else { // Both ACTIVE_CLIENTS and ALL_CLIENTS for now
-            for (ServerClient c : mServer.getClients()) c.sendBytes(msg);
+            for (ServerClient c : mServer.getClients()) {
+                c.sendBytes(msg);
+            }
 
             ByteArrayInputStream bis = new ByteArrayInputStream(msg);
             DataInputStream dis = new DataInputStream(bis);
@@ -264,7 +272,7 @@ public class ServerNetworkManager {
         }
     }
 
-    /** Destroy the server, and tell {@link NetworkManager} about it */
+    /** Destroy the server, and tell {@link NetworkManager} about it. */
     public void destroy() {
         mServer.dispose();
 
@@ -278,9 +286,11 @@ public class ServerNetworkManager {
         mManager.onServerDestroy();
     }
 
-    /** Network update, called by {@link NetworkManager} */
+    /** Network update, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mServer == null) return;
+        if (mServer == null) {
+            return;
+        }
 
         mServer.updateClientList();
         mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
@@ -331,7 +341,7 @@ public class ServerNetworkManager {
         return mNetworkObjectCounter.getAndIncrement();
     }
 
-    /** Sends updated server state to the clients */
+    /** Sends updated server state to the clients. */
     private void clientUpdate() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(bos);

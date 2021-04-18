@@ -1,33 +1,38 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
+
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
- * Describes layout of all attributes on the vertex shader
+ * Describes layout of all attributes on the vertex shader.
  *
  * @author Aurimas Blažulionis
  */
+@Accessors(prefix = "m")
 public class AttributeDescription {
-    /** Which binding on the shader this attribute will have */
-    public int bindingID;
-    /** Which location on the shader this attribute will have */
-    public int location;
-    /** What is the layout of the attribute */
-    public int format;
-    /** What is the offset of the attribute within the bound memory */
-    public int offset;
+    /** Which binding on the shader this attribute will have. */
+    public int mBindingId;
+    /** Which location on the shader this attribute will have. */
+    public int mLocation;
+    /** What is the layout of the attribute. */
+    @Getter public int mFormat;
+    /** What is the offset of the attribute within the bound memory. */
+    @Getter public int mOffset;
 
     public static final int MATRIX_ROW_SIZE = 4 * 4;
     public static final int MATRIX_SIZE = MATRIX_ROW_SIZE * 4;
     public static final int LIGHT_HALF_SIZE = 4 * 3;
 
-    /** Constructor for AttributeDescription */
-    public AttributeDescription(int bindingID, int location, int format, int offset) {
-        this.bindingID = bindingID;
-        this.location = location;
-        this.format = format;
-        this.offset = offset;
+    /** Constructor for AttributeDescription. */
+    public AttributeDescription(int bindingId, int location, int format, int offset) {
+        this.mBindingId = bindingId;
+        this.mLocation = location;
+        this.mFormat = format;
+        this.mOffset = offset;
     }
 
     /**
@@ -42,14 +47,19 @@ public class AttributeDescription {
      */
     public static AttributeDescription[] withMatrix(AttributeDescription... descriptions) {
         AttributeDescription[] ret = new AttributeDescription[4 + descriptions.length];
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++) {
             ret[i] =
                     new AttributeDescription(
                             1, i, VK_FORMAT_R32G32B32A32_SFLOAT, i * MATRIX_ROW_SIZE);
-        for (int i = 0; i < descriptions.length; i++)
+        }
+        for (int i = 0; i < descriptions.length; i++) {
             ret[i + 4] =
                     new AttributeDescription(
-                            1, i + 4, descriptions[i].format, MATRIX_SIZE + descriptions[i].offset);
+                            1,
+                            i + 4,
+                            descriptions[i].mFormat,
+                            MATRIX_SIZE + descriptions[i].mOffset);
+        }
         return ret;
     }
 
@@ -80,8 +90,8 @@ public class AttributeDescription {
                     new AttributeDescription(
                             1,
                             i + lightCount * 2,
-                            descriptions[i].format,
-                            lightSizes + descriptions[i].offset);
+                            descriptions[i].mFormat,
+                            lightSizes + descriptions[i].mOffset);
         }
 
         return ret;

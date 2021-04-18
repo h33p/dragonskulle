@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * Load resources from byte buffers
+ * Load resources from byte buffers.
  *
  * @author Aurimas Blažulionis
  *     <p>This class stores all arguments for a resource - its type, name, and any additional

@@ -32,7 +32,9 @@ public class HighlightControls extends Component implements IOnAwake {
     }
 
     public void setHighlight(float r, float g, float b, float a) {
-        if (mHighlightMaterial == null) return;
+        if (mHighlightMaterial == null) {
+            return;
+        }
         mHighlightMaterial.getOverlayColour().set(r, g, b, a);
     }
 
@@ -58,7 +60,9 @@ public class HighlightControls extends Component implements IOnAwake {
             mHighlightMaterial = mRenderable.get().getMaterial(PBRHighlightMaterial.class);
             if (mHighlightMaterial == null) {
                 PBRMaterial pbrMat = mRenderable.get().getMaterial(PBRMaterial.class);
-                if (pbrMat == null) return;
+                if (pbrMat == null) {
+                    return;
+                }
                 mHighlightMaterial = new PBRHighlightMaterial(pbrMat);
                 mRenderable.get().setMaterial(mHighlightMaterial.incRefCount());
             }

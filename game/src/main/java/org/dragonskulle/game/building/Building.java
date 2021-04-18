@@ -122,7 +122,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Override
     public void onOwnerIdChange(int newId) {
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.removeOwnership(this);
+        if (owningPlayer != null) {
+            owningPlayer.removeOwnership(this);
+        }
         Player newOwningPlayer = getOwner(newId);
         if (newOwningPlayer == null) {
             log.severe("New owner is null!");
@@ -148,7 +150,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.addOwnership(this);
+        if (owningPlayer != null) {
+            owningPlayer.addOwnership(this);
+        }
 
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
@@ -202,7 +206,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     private void generateClaimTiles() {
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return;
+        if (map == null) {
+            return;
+        }
 
         int distance = mClaimDistance.getValue();
         // Claim the tiles around the building.
@@ -223,7 +229,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     private void generateViewTiles() {
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return;
+        if (map == null) {
+            return;
+        }
 
         // Get the current view distance.
         int distance = mViewDistance.getValue();
@@ -239,7 +247,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     private void generateAttackableTiles() {
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return;
+        if (map == null) {
+            return;
+        }
 
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
@@ -284,7 +294,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return Whether the attack was successful or not.
      */
     public boolean attack(Building opponent) {
-        /** The number of sides on the dice */
+        /* The number of sides on the dice */
         final int maxValue = 1000;
 
         // Get the attacker and defender's stats.
@@ -331,14 +341,18 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return buildings;
+        if (map == null) {
+            return buildings;
+        }
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         for (HexagonTile tile : attackTiles) {
             // Get the building on an attackable tile, if it exists.
             Building building = tile.getBuilding();
-            if (building == null) continue;
+            if (building == null) {
+                continue;
+            }
 
             // Ensure the building is not owned by the owner of this building.
             if (getOwnerId() == building.getOwnerId()) {
@@ -363,7 +377,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         HexagonTile targetTile = target.getTile();
         for (HexagonTile tile : attackTiles) {
-            if (tile.equals(targetTile)) return true;
+            if (tile.equals(targetTile)) {
+                return true;
+            }
         }
         return false;
     }
@@ -394,12 +410,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     public HexagonTile getTile() {
         HexagonMap map = getMap();
-        if (map == null) return null;
+        if (map == null) {
+            return null;
+        }
 
         Vector3i position = getPosition();
-        if (position == null) return null;
-
-        return map.getTile(position.x(), position.y());
+        return position == null ? null : map.getTile(position.x(), position.y());
     }
 
     /**
@@ -523,7 +539,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * This will create and return a base cost for attacking
+     * This will create and return a base cost for attacking.
      *
      * @return The cost for attacking
      */

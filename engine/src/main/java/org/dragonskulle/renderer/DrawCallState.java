@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -87,37 +89,43 @@ class DrawCallState implements NativeResource {
 
         @Override
         public boolean equals(Object other) {
-            if (this == other) return true;
-            if (other == null) return false;
-            if (!(other instanceof DrawDataHashKey)) return false;
+            if (this == other) {
+                return true;
+            }
+            if (other == null) {
+                return false;
+            }
+            if (!(other instanceof DrawDataHashKey)) {
+                return false;
+            }
             DrawDataHashKey otherKey = (DrawDataHashKey) other;
             return Arrays.equals(mMatTextures, otherKey.mMatTextures)
                     && mMesh.equals(otherKey.mMesh);
         }
     }
 
-    /** Describes addition data needed for a single instanced draw call */
+    /** Describes addition data needed for a single instanced draw call. */
     @Accessors(prefix = "m")
     @Getter
     public static class DrawData {
-        /** The textures that the fragment shader needs */
+        /** The textures that the fragment shader needs. */
         private TextureSet mTextureSet;
-        /** Mesh to draw */
+        /** Mesh to draw. */
         private Mesh mMesh;
-        /** Descriptor of the mesh within the mesh buffer */
+        /** Descriptor of the mesh within the mesh buffer. */
         private VulkanMeshBuffer.MeshDescriptor mMeshDescriptor;
-        /** The device to draw on */
+        /** The device to draw on. */
         private VkDevice mDevice;
-        /** Descriptor sets that will be bound to the shader */
+        /** Descriptor sets that will be bound to the shader. */
         long[] mDescriptorSets;
-        /** Offset within the instance buffer where the per-instance data of this group begins */
+        /** Offset within the instance buffer where the per-instance data of this group begins. */
         int mInstanceBufferOffset;
 
-        /** Objects in this group */
+        /** Objects in this group. */
         List<Renderable> mObjects = new ArrayList<>();
 
         /**
-         * Update the instance buffer
+         * Update the instance buffer.
          *
          * @param shaderSet the shader set of the parent supergroup
          * @param buffer the instance buffer
@@ -128,12 +136,12 @@ class DrawCallState implements NativeResource {
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
                 object.writeVertexInstanceData(cur_off, buffer, lights);
-                cur_off += shaderSet.getVertexBindingDescription().size;
+                cur_off += shaderSet.getVertexBindingDescription().mSize;
             }
         }
 
         /**
-         * Update the instance buffer
+         * Update the instance buffer.
          *
          * <p>This is a fallback method that is used whenever mapping all instance buffer memory
          * fails
@@ -145,17 +153,18 @@ class DrawCallState implements NativeResource {
          */
         public void slowUpdateInstanceBuffer(
                 ShaderSet shaderSet, PointerBuffer pData, long memory, List<Light> lights) {
-            int shaderSetSize = shaderSet.getVertexBindingDescription().size;
+            int shaderSetSize = shaderSet.getVertexBindingDescription().mSize;
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
                 pData.rewind();
                 int res = vkMapMemory(mDevice, memory, cur_off, shaderSetSize, 0, pData);
 
-                if (res != VK_SUCCESS)
+                if (res != VK_SUCCESS) {
                     throw new RuntimeException(
                             String.format(
                                     "Failed to map memory! Out of resources! off: %x sz: %x",
                                     cur_off, shaderSetSize));
+                }
 
                 ByteBuffer byteBuffer = pData.getByteBuffer(shaderSetSize);
 
@@ -168,7 +177,7 @@ class DrawCallState implements NativeResource {
         }
 
         /**
-         * Set the instance buffer offset and reserve space for itself
+         * Set the instance buffer offset and reserve space for itself.
          *
          * @param shaderSet the shader set of the parent subgroup
          * @param offset the current offset witin the instance buffer
@@ -176,11 +185,11 @@ class DrawCallState implements NativeResource {
          */
         public int setInstanceBufferOffset(ShaderSet shaderSet, int offset) {
             mInstanceBufferOffset = offset;
-            return offset + shaderSet.getVertexBindingDescription().size * mObjects.size();
+            return offset + shaderSet.getVertexBindingDescription().mSize * mObjects.size();
         }
 
         /**
-         * Ends the draw data, sets the right descriptor sets
+         * Ends the draw data, sets the right descriptor sets.
          *
          * @param imageIndex the image context index
          * @param descriptorSet optional descriptor set for uniform data
@@ -199,18 +208,18 @@ class DrawCallState implements NativeResource {
     @Accessors(prefix = "m")
     @Getter
     public static class NonInstancedDraw {
-        /** The super draw call state */
+        /** The super draw call state. */
         private DrawCallState mState;
-        /** The draw data for this object */
+        /** The draw data for this object. */
         private DrawData mData;
-        /** The ID of this object */
-        private int mObjectID;
+        /** The ID of this object. */
+        private int mObjectId;
 
-        /** Retrieves the offset within the instance buffer for this object */
+        /** Retrieves the offset within the instance buffer for this object. */
         public int getInstanceBufferOffset() {
             ShaderSet shaderSet = mState.getShaderSet();
             return mData.getInstanceBufferOffset()
-                    + shaderSet.getVertexBindingDescription().size * mObjectID;
+                    + shaderSet.getVertexBindingDescription().mSize * mObjectId;
         }
     }
 
@@ -223,7 +232,7 @@ class DrawCallState implements NativeResource {
                             TextureMapping.TextureWrapping.REPEAT));
 
     /**
-     * Creates a draw call state
+     * Creates a draw call state.
      *
      * @param renderer reference to the renderer that is performing the draws
      * @param imageCount the number of swapchain images used
@@ -244,7 +253,7 @@ class DrawCallState implements NativeResource {
     }
 
     /**
-     * Creates a draw call state
+     * Creates a draw call state.
      *
      * @param device the device to draw with
      * @param physicalDevice the physical device to draw with
@@ -287,7 +296,7 @@ class DrawCallState implements NativeResource {
     }
 
     /**
-     * Get the list of draw data
+     * Get the list of draw data.
      *
      * @return {@code mDrawData.values()}
      */
@@ -296,29 +305,33 @@ class DrawCallState implements NativeResource {
     }
 
     /**
-     * Start draw data
+     * Start draw data.
      *
      * <p>This method will prepare internal data structures for a new frame.
      */
     public void startDrawData() {
-        for (DrawData d : mDrawData.values()) d.mObjects.clear();
+        for (DrawData d : mDrawData.values()) {
+            d.mObjects.clear();
+        }
 
         mDrawData.entrySet().removeIf(e -> e.getValue().getMesh().getRefCount() <= 0);
     }
 
     /**
-     * Ends draw data
+     * Ends draw data.
      *
      * @param the index of framebuffer image that's used this frame
      */
     public void endDrawData(int imageIndex) {
         Long descriptorSet =
                 mDescriptorPool == null ? null : mDescriptorPool.getDescriptorSet(imageIndex);
-        for (DrawData d : mDrawData.values()) d.endDrawData(imageIndex, descriptorSet);
+        for (DrawData d : mDrawData.values()) {
+            d.endDrawData(imageIndex, descriptorSet);
+        }
     }
 
     /**
-     * Should this class be removed
+     * Should this class be removed.
      *
      * @return whether this class should be removed. If {@code true}, it has automatically freed
      *     it's data.
@@ -334,7 +347,7 @@ class DrawCallState implements NativeResource {
     }
 
     /**
-     * Add a renderable to the draw call state
+     * Add a renderable to the draw call state.
      *
      * @param object object to add
      */
@@ -352,8 +365,12 @@ class DrawCallState implements NativeResource {
                 int matTexturesLength = matTextures.length;
 
                 for (int i = 0; i < textures.length; i++) {
-                    if (i < matTexturesLength) textures[i] = matTextures[i];
-                    if (textures[i] == null) textures[i] = ERROR_TEXTURE;
+                    if (i < matTexturesLength) {
+                        textures[i] = matTextures[i];
+                    }
+                    if (textures[i] == null) {
+                        textures[i] = ERROR_TEXTURE;
+                    }
                 }
 
                 drawData.mTextureSet = mTextureSetFactory.getSet(textures, mTextureFactory);
@@ -367,17 +384,18 @@ class DrawCallState implements NativeResource {
     }
 
     /**
-     * Update the mesh buffer with new data
+     * Update the mesh buffer with new data.
      *
      * @param meshBuffer mesh buffer to update
      */
     public void updateMeshBuffer(VulkanMeshBuffer meshBuffer) {
-        for (DrawData data : mDrawData.values())
+        for (DrawData data : mDrawData.values()) {
             data.mMeshDescriptor = meshBuffer.addMesh(data.mMesh);
+        }
     }
 
     /**
-     * Sets the instance buffer offset
+     * Sets the instance buffer offset.
      *
      * <p>Call this method to set an instance buffer offset. It will reserve enough space for itself
      * and then return the next free offset within the buffer.
@@ -386,23 +404,26 @@ class DrawCallState implements NativeResource {
      * @return offset + any data this state needs
      */
     public int setInstanceBufferOffset(int offset) {
-        for (DrawData d : mDrawData.values())
+        for (DrawData d : mDrawData.values()) {
             offset = d.setInstanceBufferOffset(mShaderSet, offset);
+        }
         return offset;
     }
 
     /**
-     * Update the instance buffer with new data
+     * Update the instance buffer with new data.
      *
      * @param buffer the instance buffer
      * @param lights lights in the world
      */
     public void updateInstanceBuffer(ByteBuffer buffer, List<Light> lights) {
-        for (DrawData d : mDrawData.values()) d.updateInstanceBuffer(mShaderSet, buffer, lights);
+        for (DrawData d : mDrawData.values()) {
+            d.updateInstanceBuffer(mShaderSet, buffer, lights);
+        }
     }
 
     /**
-     * Update the instance buffer with new data (slow method)
+     * Update the instance buffer with new data (slow method).
      *
      * <p>This method is a fallback in case mapping all memory fails
      *
@@ -411,18 +432,21 @@ class DrawCallState implements NativeResource {
      * @param lights lights in the world
      */
     public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory, List<Light> lights) {
-        for (DrawData d : mDrawData.values())
+        for (DrawData d : mDrawData.values()) {
             d.slowUpdateInstanceBuffer(mShaderSet, pData, memory, lights);
+        }
     }
 
     @Override
     public void free() {
-        if (mPipeline != null) mPipeline.free();
+        if (mPipeline != null) {
+            mPipeline.free();
+        }
         mPipeline = null;
     }
 
     /**
-     * Combine the descriptor sets into one long array
+     * Combine the descriptor sets into one long array.
      *
      * @param arr previous array. It will be returned out if its length is the same as the number of
      *     non-null entries
@@ -431,17 +455,25 @@ class DrawCallState implements NativeResource {
      */
     private static long[] combineDescriptorSets(long[] arr, Long... entries) {
         int elemCount = 0;
-        for (Long l : entries) if (l != null) elemCount++;
+        for (Long l : entries) {
+            if (l != null) {
+                elemCount++;
+            }
+        }
         long[] ret = (arr != null && elemCount == arr.length) ? arr : new long[elemCount];
         elemCount = 0;
-        for (Long l : entries) if (l != null) ret[elemCount++] = l;
+        for (Long l : entries) {
+            if (l != null) {
+                ret[elemCount++] = l;
+            }
+        }
         return ret;
     }
 
     /**
-     * Combine the descriptor sets into one long array
+     * Combine the descriptor sets into one long array.
      *
-     * @param entries the entries that will be put into the array
+     * @param layouts the entries that will be put into the array
      * @return all non-null entries as an array
      */
     private static long[] combineDescriptorSetLayouts(Long... layouts) {

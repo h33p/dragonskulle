@@ -25,7 +25,7 @@ import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 
 /**
- * The manager for the engine's audio system
+ * The manager for the engine's audio system.
  *
  * @author Harry Stoltz
  *     <p>This class will handle the loading and buffering of all sound files, and will also manage
@@ -44,8 +44,8 @@ public class AudioManager {
     private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
 
     @Getter private Reference<AudioListener> mAudioListener;
-    private long mALDev = -1;
-    private long mALCtx = -1;
+    private long mAlDev = -1;
+    private long mAlCtx = -1;
 
     @Getter private float mMasterVolume = 1f;
     @Getter private boolean mMasterMuted = false;
@@ -61,7 +61,7 @@ public class AudioManager {
         initAudioManager();
     }
 
-    /** Attempt to create MAX_SOURCES sources */
+    /** Attempt to create MAX_SOURCES sources. */
     private void setupSources() {
         for (int i = 0; i < MAX_SOURCES; i++) {
             int source = AL11.alGenSources();
@@ -76,6 +76,8 @@ public class AudioManager {
                         break;
                     case AL11.AL_INVALID_OPERATION:
                         log.warning("Error whilst creating sources (AL_INVALID_OPERATION)");
+                        break;
+                    default:
                         break;
                 }
                 break;
@@ -105,7 +107,7 @@ public class AudioManager {
     }
 
     /**
-     * Attach an OpenAL source to all AudioSources in the list
+     * Attach an OpenAL source to all AudioSources in the list.
      *
      * @param audioSources List of AudioSources to attach a source to
      */
@@ -125,7 +127,7 @@ public class AudioManager {
     }
 
     /**
-     * Detach the OpenAL source from each AudioSource in the list
+     * Detach the OpenAL source from each AudioSource in the list.
      *
      * @param audioSources List of AudioSources to detach a source from
      */
@@ -136,7 +138,7 @@ public class AudioManager {
     }
 
     public void initAudioManager() {
-        if (mALDev != -1 || mALCtx != -1) {
+        if (mAlDev != -1 || mAlCtx != -1) {
             return;
         }
 
@@ -163,8 +165,8 @@ public class AudioManager {
         // Set the distance model that will be used
         AL11.alDistanceModel(AL11.AL_INVERSE_DISTANCE);
 
-        mALDev = device;
-        mALCtx = ctx;
+        mAlDev = device;
+        mAlCtx = ctx;
 
         setupSources();
         setMasterVolume(0.5f);
@@ -175,7 +177,7 @@ public class AudioManager {
     }
 
     /**
-     * Load a sound and give it an ID
+     * Load a sound and give it an ID.
      *
      * @param file .wav File to be loaded
      * @return The id of the loaded sound, or -1 if there was an error loading
@@ -196,13 +198,13 @@ public class AudioManager {
     }
 
     /**
-     * Load a sound and give it an ID
+     * Load a sound and give it an ID.
      *
      * @param file .wav File to be loaded
      * @return The id of the loaded sound, or -1 if there was an error loading
      */
     public int loadSound(File file) {
-        if (mALDev == -1) {
+        if (mAlDev == -1) {
             return -1;
         }
 
@@ -219,7 +221,7 @@ public class AudioManager {
     }
 
     /**
-     * Attempt to get a loaded sound by id
+     * Attempt to get a loaded sound by id.
      *
      * @param id Integer of id that the sound was loaded with
      * @return A WaveSound object representing the sound, or null if there was no sound with that id
@@ -234,7 +236,7 @@ public class AudioManager {
 
     /**
      * Updates the OpenAL listener position and rotation from the singleton audio listener in the
-     * scene
+     * scene.
      */
     private void updateListenerPosAndRot() {
         Transform t = mAudioListener.get().getGameObject().getTransform();
@@ -253,7 +255,7 @@ public class AudioManager {
     /**
      * Handles the distribution of sources between all of the AudioSources in the scene, assigning
      * sources to those that have the highest priority and removing them from those that no longer
-     * need them
+     * need them.
      */
     public void update() {
         if (!mInitialized || mAudioListener == null) {
@@ -308,7 +310,7 @@ public class AudioManager {
     }
 
     /**
-     * Add an audio source so that it can have a source attached to it when required
+     * Add an audio source so that it can have a source attached to it when required.
      *
      * @param audioSource Reference to the AudioSource that will be added
      */
@@ -318,7 +320,7 @@ public class AudioManager {
 
     /**
      * Get the singleton AudioListener component from the currently active scene and set it as the
-     * active AudioListener
+     * active AudioListener.
      */
     public void updateAudioListener() {
         AudioListener listener = Scene.getActiveScene().getSingleton(AudioListener.class);
@@ -330,7 +332,7 @@ public class AudioManager {
     }
 
     /**
-     * Set the master volume for the game
+     * Set the master volume for the game.
      *
      * @param volume Value between 0f and 1f
      */
@@ -356,9 +358,9 @@ public class AudioManager {
         setMasterMute(!mMasterMuted);
     }
 
-    /** Cleanup all resources still in use */
+    /** Cleanup all resources still in use. */
     public void cleanup() {
-        if (mALDev == -1) {
+        if (mAlDev == -1) {
             return;
         }
 
@@ -368,19 +370,19 @@ public class AudioManager {
         mSources.clear();
 
         for (Sound s : mSounds) {
-            AL11.alDeleteBuffers(s.buffer);
+            AL11.alDeleteBuffers(s.mBuffer);
         }
         mSounds.clear();
 
         ALC11.alcMakeContextCurrent(0L);
-        ALC11.alcDestroyContext(mALCtx);
-        ALC11.alcCloseDevice(mALDev);
-        mALDev = -1;
-        mALCtx = -1;
+        ALC11.alcDestroyContext(mAlCtx);
+        ALC11.alcCloseDevice(mAlDev);
+        mAlDev = -1;
+        mAlCtx = -1;
     }
 
     /**
-     * Get the singleton instance of the audio manager
+     * Get the singleton instance of the audio manager.
      *
      * @return AudioManager instance
      */

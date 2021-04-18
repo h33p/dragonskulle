@@ -29,11 +29,11 @@ public class UIManager {
      * <p>It will always be the top most element.
      */
     @Getter private Reference<UIRenderable> mHoveredObject;
-    /** Global UI appearance */
+    /** Global UI appearance. */
     @Getter @Setter private UIAppearance mAppearance = new UIAppearance();
 
     /**
-     * Update which UI element is currently hovered by the cursor
+     * Update which UI element is currently hovered by the cursor.
      *
      * @param components a list of currently enabled components
      */
@@ -42,7 +42,9 @@ public class UIManager {
 
         Cursor cursor = Actions.getCursor();
 
-        if (cursor == null) return;
+        if (cursor == null) {
+            return;
+        }
 
         int curDepth = 0;
 
@@ -88,7 +90,7 @@ public class UIManager {
      * @param elems list of buildable UI elements. Can be UITextRect elements, lambdas, custom
      *     objects, or a mix of them.
      */
-    public void buildVerticalUI(
+    public void buildVerticalUi(
             GameObject go, float startY, float startX, float endX, IUIBuildHandler... elems) {
         int cnt = 0;
 
@@ -186,7 +188,11 @@ public class UIManager {
         };
     }
 
-    /** Get singleton UIManager instance */
+    /**
+     * Get singleton UIManager instance.
+     *
+     * @return the instance
+     */
     public static UIManager getInstance() {
         return SINGLETON;
     }

@@ -6,12 +6,12 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Component;
 import org.dragonskulle.renderer.AttributeDescription;
 import org.joml.Vector3f;
 
 /**
- * Class describing various forms of light
+ * Class describing various forms of light.
  *
  * @author Aurimas Blažulionis
  */
@@ -27,11 +27,11 @@ public class Light extends Component {
         }
     }
 
-    /** The type of light used */
+    /** The type of light used. */
     @Getter @Setter private LightType mLightType = LightType.DIRECTIONAL;
-    /** Light intensity (Watts per meter squared) */
+    /** Light intensity (Watts per meter squared). */
     @Getter @Setter private float mIntensity = 10;
-    /** Colour of the light (float RGB) */
+    /** Colour of the light (float RGB). */
     @Getter private final Vector3f mColour = new Vector3f(1f);
 
     private final Vector3f mDownVec = new Vector3f();
@@ -44,14 +44,20 @@ public class Light extends Component {
 
         for (int i = 0; i < numLights; i++) {
             Light light = lightsSz > i ? lights.get(i) : null;
-            if (light == null) offset = writeZeroToBuffer(offset, buffer);
-            else offset = light.writeDirToBuffer(offset, buffer);
+            if (light == null) {
+                offset = writeZeroToBuffer(offset, buffer);
+            } else {
+                offset = light.writeDirToBuffer(offset, buffer);
+            }
         }
 
         for (int i = 0; i < numLights; i++) {
             Light light = lightsSz > i ? lights.get(i) : null;
-            if (light == null) offset = writeZeroToBuffer(offset, buffer);
-            else offset = light.writeColToBuffer(offset, buffer);
+            if (light == null) {
+                offset = writeZeroToBuffer(offset, buffer);
+            } else {
+                offset = light.writeColToBuffer(offset, buffer);
+            }
         }
 
         return offset;

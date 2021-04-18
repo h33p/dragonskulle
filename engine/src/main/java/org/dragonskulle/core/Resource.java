@@ -24,42 +24,42 @@ import org.lwjgl.system.NativeResource;
  */
 public class Resource<T> implements NativeResource {
 
-    private ResourceManager.CountedResource<T> instance;
+    private ResourceManager.CountedResource<T> mInstance;
 
     public Resource(ResourceManager.CountedResource<T> i) {
-        instance = i;
+        mInstance = i;
     }
 
     /**
-     * Get the underlying resource object
+     * Get the underlying resource object.
      *
      * @return the underlying {@code T} value. Never {@code null}.
      */
     public T get() {
-        return instance != null ? instance.getResource() : null;
+        return mInstance != null ? mInstance.getResource() : null;
     }
 
     /**
-     * Try reloading the underlying resource object
+     * Try reloading the underlying resource object.
      *
      * @return {@code true} if reload was successful. On false, the underlying object is left
      *     unchanged.
      */
     public boolean reload() {
-        return instance.reload();
+        return mInstance.reload();
     }
 
     @Override
     public final void free() {
-        if (instance != null) {
-            instance.decrRefCount();
-            instance = null;
+        if (mInstance != null) {
+            mInstance.decrRefCount();
+            mInstance = null;
         }
     }
 
     @Override
     public final Resource<T> clone() {
-        return instance != null ? instance.incRefCount() : null;
+        return mInstance != null ? mInstance.incRefCount() : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -77,8 +77,12 @@ public class Resource<T> implements NativeResource {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Resource)) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Resource)) {
+            return false;
+        }
         Resource<?> res = (Resource<?>) o;
         return get().equals(res.get());
     }

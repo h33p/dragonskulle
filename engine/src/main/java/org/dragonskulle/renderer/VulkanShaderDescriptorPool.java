@@ -2,7 +2,24 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_GEOMETRY_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCreateDescriptorPool;
+import static org.lwjgl.vulkan.VK10.vkCreateDescriptorSetLayout;
+import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorPool;
+import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorSetLayout;
+import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
 
 import java.nio.LongBuffer;
 import java.util.stream.IntStream;
@@ -12,7 +29,14 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkDescriptorBufferInfo;
+import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo;
+import org.lwjgl.vulkan.VkDescriptorPoolSize;
+import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo;
+import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
+import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 /**
  * Class abstracting a vulkan descriptor pool and their sets for a single shader set
@@ -27,15 +51,15 @@ class VulkanShaderDescriptorPool implements NativeResource {
 
     @Builder
     private static class DescriptorBinding {
-        public int bindingID;
-        public int size;
+        public int mBindingId;
+        public int mSize;
     }
 
     @Builder
     private static class DescriptorSetInfo {
-        DescriptorBinding bindingDescription;
-        VulkanBuffer uniformBuffer;
-        int stageFlags;
+        DescriptorBinding mBindingDescriptor;
+        VulkanBuffer mUniformBuffer;
+        int mStageFlags;
     }
 
     private VkDevice mDevice;
@@ -54,7 +78,9 @@ class VulkanShaderDescriptorPool implements NativeResource {
         ret.mDevice = device;
         ret.mPool = ret.createDescriptorPool(shaderSet, descriptorCount);
 
-        if (ret.mPool == 0) return null;
+        if (ret.mPool == 0) {
+            return null;
+        }
 
         ret.mSetLayout =
                 ret.createDescriptorSetLayoutAndBuffers(shaderSet, physicalDevice, descriptorCount);
@@ -76,9 +102,10 @@ class VulkanShaderDescriptorPool implements NativeResource {
 
             int res = vkAllocateDescriptorSets(device, allocInfo, pDescriptorSets);
 
-            if (res != VK_SUCCESS)
+            if (res != VK_SUCCESS) {
                 throw new RuntimeException(
                         String.format("Failed to create descriptor sets! Res: %x", -res));
+            }
 
             ret.mDescriptorSets =
                     IntStream.range(0, descriptorCount).mapToLong(pDescriptorSets::get).toArray();
@@ -112,13 +139,13 @@ class VulkanShaderDescriptorPool implements NativeResource {
                 DescriptorSetInfo info = mDescriptorSetInfos[i];
                 VkDescriptorBufferInfo.Buffer bufferInfo =
                         VkDescriptorBufferInfo.callocStack(1, stack);
-                bufferInfo.offset(info.bindingDescription.size * index);
-                bufferInfo.range(info.bindingDescription.size);
-                bufferInfo.buffer(info.uniformBuffer.buffer);
+                bufferInfo.offset(info.mBindingDescriptor.mSize * index);
+                bufferInfo.range(info.mBindingDescriptor.mSize);
+                bufferInfo.buffer(info.mUniformBuffer.mBuffer);
 
                 VkWriteDescriptorSet uboDescriptorWrite = descriptorWrites.get(i);
                 uboDescriptorWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-                uboDescriptorWrite.dstBinding(info.bindingDescription.bindingID);
+                uboDescriptorWrite.dstBinding(info.mBindingDescriptor.mBindingId);
                 uboDescriptorWrite.dstArrayElement(0);
                 uboDescriptorWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
                 uboDescriptorWrite.descriptorCount(1);
@@ -137,7 +164,9 @@ class VulkanShaderDescriptorPool implements NativeResource {
 
             int layoutCount = shaderSet.numUniformBindings();
 
-            if (layoutCount == 0) return 0;
+            if (layoutCount == 0) {
+                return 0;
+            }
 
             VkDescriptorPoolSize.Buffer poolSize = VkDescriptorPoolSize.callocStack(1, stack);
 
@@ -186,7 +215,9 @@ class VulkanShaderDescriptorPool implements NativeResource {
             int infoIndex = 0;
 
             for (int[] dataInfo : uniformDataInfos) {
-                if (dataInfo[0] < 0) continue;
+                if (dataInfo[0] < 0) {
+                    continue;
+                }
 
                 mDescriptorSetInfos[infoIndex++] =
                         new DescriptorSetInfo(
@@ -210,7 +241,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
                 uboLayoutBinding.binding(i);
                 uboLayoutBinding.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
                 uboLayoutBinding.descriptorCount(1);
-                uboLayoutBinding.stageFlags(info.stageFlags);
+                uboLayoutBinding.stageFlags(info.mStageFlags);
             }
 
             VkDescriptorSetLayoutCreateInfo layoutInfo =
@@ -234,8 +265,11 @@ class VulkanShaderDescriptorPool implements NativeResource {
     @Override
     public void free() {
 
-        if (mDescriptorSetInfos != null)
-            for (DescriptorSetInfo info : mDescriptorSetInfos) info.uniformBuffer.free();
+        if (mDescriptorSetInfos != null) {
+            for (DescriptorSetInfo info : mDescriptorSetInfos) {
+                info.mUniformBuffer.free();
+            }
+        }
         mDescriptorSetInfos = null;
 
         vkDestroyDescriptorPool(mDevice, mPool, null);
