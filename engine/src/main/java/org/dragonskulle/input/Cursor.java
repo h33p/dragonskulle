@@ -60,6 +60,7 @@ public class Cursor {
                 };
 
         GLFW.glfwSetCursorPosCallback(window, listener);
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_HIDDEN);
     }
 
     /**

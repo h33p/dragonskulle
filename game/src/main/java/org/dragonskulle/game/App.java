@@ -576,7 +576,7 @@ public class App implements NativeResource {
     }
 
     private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
-        System.out.println("CONNECTED ID " + netID);
+        log.info("CONNECTED ID " + netID);
 
         GameObject humanPlayer =
                 new GameObject(

@@ -16,6 +16,7 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.UIShopSection.ShopState;
+import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
@@ -38,7 +39,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
-    private Reference<GameObject> mStatScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
 
@@ -101,8 +101,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         ArrayList<UITextButtonFrame> mapScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> tileSelectedScreenMenuItems = new ArrayList<>();
 
-        attackScreenMenuItems.add(buildAttackButtonFrame());
-        attackScreenMenuItems.add(buildDeselectButtonFrame());
+        attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
+        attackScreenMenuItems.add(buildCancelAttackButtonFrame());
         mAttackScreenMenu = buildMenu(attackScreenMenuItems);
 
         buildingSelectedScreenMenuItems.add(buildAttackButtonFrame());
@@ -113,9 +113,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         tileSelectedScreenMenuItems.add(buildPlaceButtonFrame());
         tileSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mTileSelectedMenu = buildMenu(tileSelectedScreenMenuItems);
-
-        statScreenMenuItems.add(buildDeselectButtonFrame());
-        mStatScreenMenu = buildMenu(statScreenMenuItems);
 
         mapScreenMenuItems.add(buildPlaceButtonFrame());
         mapScreenMenuItems.add(buildDeselectButtonFrame());
@@ -130,6 +127,49 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         tran.setPivotOffset(0f, 0f);
         tran.setParentAnchor(0f, 0f);
         getGameObject().addComponent(drawer);
+    }
+
+    private UITextButtonFrame buildCancelAttackButtonFrame() {
+        return new UITextButtonFrame(
+                "cancel_attack",
+                "Cancel Attack",
+                (handle, __) -> {
+                    mSetHexChosen.set(null);
+                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                },
+                true);
+    }
+
+    private UITextButtonFrame buildConfirmAttackButtonFrame() {
+        return new UITextButtonFrame(
+                "confirm_attack_button",
+                "Attack Selected",
+                (handle, __) -> {
+                    Reference<Building> attackingBuilding = mGetBuildingChosen.get();
+                    Building defendingBuilding = mGetHexChosen.get().getBuilding();
+
+                    if (Reference.isValid(attackingBuilding) && defendingBuilding != null) {
+                        // Checks the building can be attacked
+                        boolean canAttack =
+                                attackingBuilding.get().isBuildingAttackable(defendingBuilding);
+                        if (canAttack) {
+                            Reference<Player> playerReference = mGetPlayer.get();
+                            if (Reference.isValid(playerReference)) {
+                                playerReference
+                                        .get()
+                                        .getClientAttackRequest()
+                                        .invoke(
+                                                new AttackData(
+                                                        attackingBuilding.get(),
+                                                        defendingBuilding));
+                            }
+
+                            mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                            mSetHexChosen.set(null);
+                        }
+                    }
+                },
+                true);
     }
 
     public void setVisibleScreen(Screen screen) {
@@ -215,7 +255,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
                     if (Reference.isValid(buildingChosen)) {
 
-                        // TODO Change tiles which can be attacked
                         mSetHexChosen.set(null);
                         mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
                     } else {

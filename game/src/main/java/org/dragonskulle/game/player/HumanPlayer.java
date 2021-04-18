@@ -18,7 +18,6 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
-import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.*;
@@ -211,7 +210,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 }
 
                 log.fine("Human:Got the Hexagon to enter");
-
+                if (mScreenOn == Screen.ATTACKING_SCREEN) {
+                    return;
+                }
                 if (mHexChosen != null) {
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
@@ -220,33 +221,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 && mScreenOn != Screen.ATTACKING_SCREEN) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                        } else if (mScreenOn == Screen.ATTACKING_SCREEN && player != null) {
-
-                            // Get the defending building
-                            Building defendingBuilding = building;
-
-                            // Checks the building can be attacked
-                            boolean canAttack =
-                                    mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
-                            if (canAttack) {
-                                player.getClientAttackRequest()
-                                        .invoke(
-                                                new AttackData(
-                                                        mBuildingChosen.get(),
-                                                        defendingBuilding)); // Send Data
-                            }
-
-                            setScreenOn(Screen.MAP_SCREEN);
-                            mBuildingChosen = null;
                         }
                     } else {
                         // Checks if cannot build here
+                        if (mScreenOn == Screen.ATTACKING_SCREEN) {
+                            return;
+                        }
                         if (mHexChosen.isBuildable(player)) { // If you can build
                             // If you can build
-                            System.out.println("Human:Change Screen");
+                            log.info("Human:Change Screen");
                             setScreenOn(Screen.BUILD_TILE_SCREEN);
                         } else {
-                            System.out.println("Human:Cannot build");
+                            log.info("Human:Cannot build");
                             mBuildingChosen = null;
                             setScreenOn(Screen.MAP_SCREEN);
                         }
@@ -313,6 +299,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(null);
                     break;
                 case ATTACKING_SCREEN:
+                    // TODO Change tiles which can be attacked
                     break;
             }
         }
