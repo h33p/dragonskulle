@@ -420,7 +420,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     /**
-     * Sets screen and notifies that an update is needed for the visuals..
+     * Sets screen and notifies that an update is needed for the visuals.
      *
      * @param newScreen the new screen
      */

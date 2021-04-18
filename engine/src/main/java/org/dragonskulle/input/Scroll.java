@@ -5,7 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
 /**
- * Once attached to a window, this allows for scrolling to:.
+ * Once attached to a window, this allows for scrolling to do the following.
  *
  * <ul>
  *   <li>Trigger the {@link Scroll#UP} button (which can be used to trigger {@link Action}s).
@@ -20,7 +20,7 @@ public class Scroll {
     /**
      * Button code for scrolling up.
      *
-     * <p>Allows scrolling to be treaded as a button press- meaning this button code can be used to
+     * <p>Allows scrolling to be treated as a button press- meaning this button code can be used to
      * trigger {@link Action}s.
      *
      * <p>This is an arbitrarily chosen value that is not shared by other GLFW keys.
@@ -30,7 +30,7 @@ public class Scroll {
     /**
      * Button code for scrolling down.
      *
-     * <p>Allows scrolling to be treaded as a button press- meaning this button code can be used to
+     * <p>Allows scrolling to be treated as a button press- meaning this button code can be used to
      * trigger {@link Action}s.
      *
      * <p>This is an arbitrarily chosen value that is not shared by other GLFW keys.

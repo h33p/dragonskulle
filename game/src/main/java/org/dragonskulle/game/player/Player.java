@@ -118,29 +118,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
         mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
 
-        if (getNetworkObject().isMine()) {
-            Scene.getActiveScene().registerSingleton(this);
-        }
+        if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
 
     @Override
     public void onStart() {
 
-        if (getNetworkObject() == null) {
-            log.severe("Player has no NetworkObject.");
-        }
+        if (getNetworkObject() == null) log.severe("Player has no NetworkObject.");
 
-        if (getNetworkManager() == null) {
-            log.severe("Player has no NetworkManager.");
-        }
+        if (getNetworkManager() == null) log.severe("Player has no NetworkManager.");
 
-        if (!assignMap()) {
-            log.severe("Player has no HexagonMap.");
-        }
+        if (!assignMap()) log.severe("Player has no HexagonMap.");
 
-        if (getNetworkObject().isServer()) {
-            distributeCoordinates();
-        }
+        if (getNetworkObject().isServer()) distributeCoordinates();
 
         Vector3fc col = mPlayerColour.get();
         mPlayerHighlightSelection =
@@ -152,10 +142,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (!hasLost()) {
-            // Update the token count.
-            updateTokens(deltaTime);
-        }
+        // Update the token count.
+        if (!hasLost()) updateTokens(deltaTime);
     }
 
     @Override
@@ -174,9 +162,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
-            if (playersOnlineNow < 0) {
-                playersOnlineNow += MAX_PLAYERS; // handle AI Players
-            }
+            if (playersOnlineNow < 0) playersOnlineNow += MAX_PLAYERS; // handle AI Players
 
             // This gives us the angle to find our coordinates.  Stored in degrees
             float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
@@ -215,8 +201,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                 + (int) axial.x
                                 + " Y = "
                                 + (int) axial.y);
-
-            } else if (!completed) {
+            } else if (!completed) { // TODO this wont run
                 buildingToBecomeCapital.setCapital(true);
                 completed = true;
             }
@@ -293,9 +278,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        if (tile.getTileType() != TileType.LAND) {
-            return null;
-        }
+        if (tile.getTileType() != TileType.LAND) return null;
 
         int playerId = getNetworkObject().getOwnerId();
         int template = getNetworkManager().findTemplateByName("building");
@@ -327,9 +310,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
     public void addOwnership(Building building) {
-        if (building == null) {
-            return;
-        }
+        if (building == null) return;
 
         // Get the tile the building is on.
         HexagonTile tile = building.getTile();
@@ -351,14 +332,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} on success, otherwise {@code false}.
      */
     public boolean removeOwnership(Building building) {
-        if (building == null) {
-            return false;
-        }
+        if (building == null) return false;
 
         HexagonTile tile = building.getTile();
-        if (tile == null) {
-            return false;
-        }
+        if (tile == null) return false;
 
         Reference<Building> removed = mOwnedBuildings.remove(tile);
         return (removed != null);
@@ -424,9 +401,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean assignMap() {
         HexagonMap map = Scene.getActiveScene().getSingleton(HexagonMap.class);
-        if (map == null) {
-            return false;
-        }
+        if (map == null) return false;
 
         mMap = map.getReference(HexagonMap.class);
         return Reference.isValid(mMap);
@@ -605,11 +580,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // ATTACK!!! (Sorry...)
         mTokens.subtract(defender.getAttackCost());
         boolean won;
-        if (defender.getOwner().hasLost()) {
-            won = true;
-        } else {
-            won = attacker.attack(defender);
-        }
+        if (defender.getOwner().hasLost()) won = true;
+        else won = attacker.attack(defender);
         log.info("Attack is: " + won);
 
         // If you've won attack
@@ -621,9 +593,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 // Update stats
                 ArrayList<SyncStat> stats = defender.getStats();
-                for (SyncStat stat : stats) {
-                    stat.set(SyncStat.LEVEL_MIN);
-                }
+                for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
 
                 defender.getOwner().setOwnsCapital(false);
                 defender.afterStatChange();
@@ -911,13 +881,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return capital, if one exists
      */
     public Building getCapital() {
-        if (!mOwnsCapital.get()) {
-            return null;
-        }
+        if (!mOwnsCapital.get()) return null;
 
-        if (Reference.isValid(mCapital)) {
-            return mCapital.get();
-        }
+        if (Reference.isValid(mCapital)) return mCapital.get();
 
         mCapital =
                 mOwnedBuildings.values().stream()

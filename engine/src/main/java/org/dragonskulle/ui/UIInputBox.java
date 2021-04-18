@@ -2,7 +2,6 @@
 package org.dragonskulle.ui;
 
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;

@@ -193,7 +193,8 @@ public class ServerEvent<T extends INetSerializable> {
      * Handles an event with its corresponding invokation.
      *
      * @param inStream the data stream
-     * @throws IOException thrown when an error reading from the stream.
+     * @throws IOException thrown when an error occurs when reading from the stream {@code
+     *     inStream}.
      */
     public void handle(DataInputStream inStream) throws IOException {
         mTmpData.deserialize(inStream);

@@ -106,10 +106,10 @@ public class ServerTest {
             while (!closed) {
                 closed = true;
 
-                mEngineLock.lock();
+                sEngineLock.lock();
                 if (CLIENT_NETWORK_MANAGER.getClientManager() != null) closed = false;
                 if (SERVER_NETWORK_MANAGER.getServerManager() != null) closed = false;
-                mEngineLock.unlock();
+                sEngineLock.unlock();
             }
 
             sEngineLock.lock();
@@ -132,7 +132,7 @@ public class ServerTest {
                         assertTrue(netid >= 0);
                     });
 
-            mEngineLock.unlock();
+            sEngineLock.unlock();
         }
 
         public synchronized void run(Runnable runnable) throws Throwable {
@@ -148,7 +148,7 @@ public class ServerTest {
                                     mShouldExit = true;
                                 }
                             });
-            mEngineLock.lock();
+            sEngineLock.lock();
 
             cleanupNetmans();
 
