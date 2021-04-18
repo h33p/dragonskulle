@@ -1,6 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
 /**
  * Basic additional math utilities
  *
@@ -83,5 +89,66 @@ public class MathUtils {
      */
     public static float normalise(float value, float minimum, float maximum) {
         return (float) mapOneRangeToAnother(value, minimum, maximum, 0, 1, 9);
+    }
+    /**
+     *  Generates a random weighted list summing to 1.
+     *
+     * @param numberOfDraws the number of draws
+     * @param weights the corresponding weights
+     * @return the list
+     */
+    public static List<Float> n_w_random(int numberOfDraws, int[] weights) {
+        List<Integer> result = n_w_random(100, numberOfDraws, weights);
+        return result.stream().map(s -> (s / 100f)).collect(Collectors.toList());
+    }
+
+    public static List<Integer> n_w_random(int targetSum, int numberOfDraws, int[] weights) {
+        assert (numberOfDraws == weights.length);
+        Random r = new Random();
+        List<Integer> finalResult = new ArrayList<>();
+        List<Integer> result = n_random(r, targetSum, Arrays.stream(weights).sum());
+        for (int w : weights) {
+            int sum = 0;
+            for (int i = 0; i < w; i++) {
+                sum += result.remove(r.nextInt(result.size()));
+            }
+            finalResult.add(sum);
+        }
+        return finalResult;
+    }
+
+    /**
+     * Generate an array of floats that sum to targetSum. Adapted from
+     * https://stackoverflow.com/a/22381217
+     *
+     * @param r Random Object
+     * @param targetSum the target sum
+     * @param numberOfDraws the number of numbers generated
+     * @return the list
+     */
+    public static List<Integer> n_random(Random r, int targetSum, int numberOfDraws) {
+        List<Integer> load = new ArrayList<>();
+        // random numbers
+        int sum = 0;
+        for (int i = 0; i < numberOfDraws; i++) {
+            int next = r.nextInt(targetSum) + 1;
+            load.add(next);
+            sum += next;
+        }
+
+        // scale to the desired target sum
+        double scale = 1d * targetSum / sum;
+        sum = 0;
+        for (int i = 0; i < numberOfDraws; i++) {
+            load.set(i, (int) (load.get(i) * scale));
+            sum += load.get(i);
+        }
+
+        // take rounding issues into account
+        while (sum++ < targetSum) {
+            int i = r.nextInt(numberOfDraws);
+            load.set(i, load.get(i) + 1);
+        }
+        return load;
     }
 }
