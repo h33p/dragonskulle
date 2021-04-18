@@ -62,7 +62,7 @@ public final class Font extends Texture {
 
         int curX = curpos[0];
         int curY = curpos[1];
-        curY += mNextLineOffset - glyphNode.getHeight();
+        curY += nextLineOffset - glyphNode.getHeight();
 
         float startX = curX + (float) glyphNode.getBox().getXBearing();
         float endX = startX + (float) glyphNode.getWidth();
@@ -87,7 +87,7 @@ public final class Font extends Texture {
     }
 
     private Map<Integer, BoxPacker.BoxNode<Glyph>> mCharToGlyph = new TreeMap<>();
-    private int mNextLineOffset = LINE_HEIGHT;
+    private int nextLineOffset = LINE_HEIGHT;
 
     private static final int[][] GLYPH_RANGES = {
         {' ', '~'},
@@ -122,7 +122,7 @@ public final class Font extends Texture {
                         IntBuffer pLineGap = stack.ints(0);
                         stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
 
-                        ret.mNextLineOffset =
+                        ret.nextLineOffset =
                                 (int) ((pAscent.get(0) - pDescent.get(0)) * scale) + LINE_HEIGHT;
 
                         IntBuffer pOffsetToNext = stack.ints(0);

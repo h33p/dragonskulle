@@ -1,9 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_HIDDEN;
-
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Engine;
@@ -61,8 +58,8 @@ public class Cursor {
                         detectDrag();
                     }
                 };
+
         GLFW.glfwSetCursorPosCallback(window, listener);
-        GLFW.glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 
     /**

@@ -327,7 +327,7 @@ public class TransformUI extends Transform {
     }
 
     public void setMargin(float margin) {
-        mMargin.set(margin, -margin, -margin, margin);
+        mMargin.set(margin, margin, -margin, -margin);
         setUpdateFlag();
     }
 
