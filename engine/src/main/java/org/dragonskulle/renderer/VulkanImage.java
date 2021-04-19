@@ -2,7 +2,65 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_SHADER_READ_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_READ_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COMPONENT_SWIZZLE_IDENTITY;
+import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
+import static org.lwjgl.vulkan.VK10.VK_FILTER_NEAREST;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_D24_UNORM_S8_UINT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_D32_SFLOAT_S8_UINT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_UNORM;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_DEPTH_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_STENCIL_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_TILING_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_TYPE_2D;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_SAMPLED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_VIEW_TYPE_2D;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TRANSFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_QUEUE_FAMILY_IGNORED;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateMemory;
+import static org.lwjgl.vulkan.VK10.vkBindImageMemory;
+import static org.lwjgl.vulkan.VK10.vkCmdBlitImage;
+import static org.lwjgl.vulkan.VK10.vkCmdCopyBufferToImage;
+import static org.lwjgl.vulkan.VK10.vkCmdPipelineBarrier;
+import static org.lwjgl.vulkan.VK10.vkCreateImage;
+import static org.lwjgl.vulkan.VK10.vkCreateImageView;
+import static org.lwjgl.vulkan.VK10.vkDestroyImage;
+import static org.lwjgl.vulkan.VK10.vkFreeMemory;
+import static org.lwjgl.vulkan.VK10.vkGetImageMemoryRequirements;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
@@ -12,17 +70,25 @@ import org.dragonskulle.utils.MathUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkBufferImageCopy;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkImageBlit;
+import org.lwjgl.vulkan.VkImageCreateInfo;
+import org.lwjgl.vulkan.VkImageMemoryBarrier;
+import org.lwjgl.vulkan.VkImageViewCreateInfo;
+import org.lwjgl.vulkan.VkMemoryAllocateInfo;
+import org.lwjgl.vulkan.VkMemoryRequirements;
 
 /**
- * Class abstracting a vulkan image memory
+ * Class abstracting a vulkan image memory.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 class VulkanImage implements NativeResource {
-    public long image;
-    public long memory;
+    public long mImage;
+    public long mMemory;
 
     private int mFormat;
     private int mAspectMask;
@@ -67,7 +133,7 @@ class VulkanImage implements NativeResource {
     public VulkanImage(VkDevice device, int format, long image) {
         this.mDevice = device;
         this.mFormat = format;
-        this.image = image;
+        this.mImage = image;
         this.mAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         this.mNeedsFree = false;
     }
@@ -130,12 +196,12 @@ class VulkanImage implements NativeResource {
                                     | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
             PointerBuffer pData = stack.pointers(0);
-            vkMapMemory(device, mStagingBuffer.memory, 0, texture.size(), 0, pData);
+            vkMapMemory(device, mStagingBuffer.mMemory, 0, texture.size(), 0, pData);
             ByteBuffer byteBuffer = pData.getByteBuffer((int) texture.size());
             byteBuffer.put(texture.getBuffer());
             texture.getBuffer().rewind();
             byteBuffer.rewind();
-            vkUnmapMemory(device, mStagingBuffer.memory);
+            vkUnmapMemory(device, mStagingBuffer.mMemory);
 
             transitionImageLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -159,7 +225,7 @@ class VulkanImage implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.callocStack(1, stack);
             barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
-            barrier.image(image);
+            barrier.image(mImage);
             barrier.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
             barrier.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
             barrier.subresourceRange().aspectMask(mAspectMask);
@@ -205,12 +271,12 @@ class VulkanImage implements NativeResource {
 
                 vkCmdBlitImage(
                         commandBuffer,
-                        image,
+                        mImage,
                         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                        image,
+                        mImage,
                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                         blit,
-                        physDev.getFeatureSupport().optimalLinearTiling
+                        physDev.getFeatureSupport().mOptimalLinearTiling
                                 ? VK_FILTER_LINEAR
                                 : VK_FILTER_NEAREST);
 
@@ -228,8 +294,12 @@ class VulkanImage implements NativeResource {
                         null,
                         barrier);
 
-                if (twidth > 1) twidth /= 2;
-                if (theight > 1) theight /= 2;
+                if (twidth > 1) {
+                    twidth /= 2;
+                }
+                if (theight > 1) {
+                    theight /= 2;
+                }
             }
 
             barrier.subresourceRange().baseMipLevel(mMipLevels - 1);
@@ -288,13 +358,14 @@ class VulkanImage implements NativeResource {
 
             int res = vkCreateImage(mDevice, imageInfo, null, pImage);
 
-            if (res != VK_SUCCESS)
+            if (res != VK_SUCCESS) {
                 throw new RuntimeException(String.format("Failed to create image! Res: %x", -res));
+            }
 
-            this.image = pImage.get(0);
+            this.mImage = pImage.get(0);
 
             VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetImageMemoryRequirements(mDevice, this.image, memoryRequirements);
+            vkGetImageMemoryRequirements(mDevice, this.mImage, memoryRequirements);
 
             VkMemoryAllocateInfo allocateInfo = VkMemoryAllocateInfo.callocStack(stack);
             allocateInfo.sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO);
@@ -311,9 +382,9 @@ class VulkanImage implements NativeResource {
                         String.format("Failed to allocate buffer memory! Ret: %x", -res));
             }
 
-            this.memory = pBufferMemory.get(0);
+            this.mMemory = pBufferMemory.get(0);
 
-            res = vkBindImageMemory(mDevice, this.image, this.memory, 0);
+            res = vkBindImageMemory(mDevice, this.mImage, this.mMemory, 0);
 
             if (res != VK_SUCCESS) {
                 throw new RuntimeException(
@@ -345,7 +416,7 @@ class VulkanImage implements NativeResource {
             createInfo.subresourceRange().baseArrayLayer(0);
             createInfo.subresourceRange().layerCount(1);
 
-            createInfo.image(image);
+            createInfo.image(mImage);
 
             LongBuffer imageView = stack.longs(0);
 
@@ -353,7 +424,7 @@ class VulkanImage implements NativeResource {
             if (result != VK_SUCCESS) {
                 throw new RuntimeException(
                         String.format(
-                                "Failed to create image view for %x! Error: %x", image, -result));
+                                "Failed to create image view for %x! Error: %x", mImage, -result));
             }
 
             return imageView.get(0);
@@ -367,17 +438,17 @@ class VulkanImage implements NativeResource {
         }
     }
 
-    /** Must free the image, if it was created manually */
+    /** Must free the image, if it was created manually. */
     @Override
     public void free() {
         if (mNeedsFree) {
-            if (image != 0) {
-                vkDestroyImage(mDevice, image, null);
-                image = 0;
+            if (mImage != 0) {
+                vkDestroyImage(mDevice, mImage, null);
+                mImage = 0;
             }
-            if (memory != 0) {
-                vkFreeMemory(mDevice, memory, null);
-                memory = 0;
+            if (mMemory != 0) {
+                vkFreeMemory(mDevice, mMemory, null);
+                mMemory = 0;
             }
             freeStagingBuffer();
         }
@@ -395,7 +466,7 @@ class VulkanImage implements NativeResource {
             barrier.newLayout(newLayout);
             barrier.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
             barrier.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-            barrier.image(image);
+            barrier.image(mImage);
             barrier.subresourceRange().baseMipLevel(0);
             barrier.subresourceRange().levelCount(mMipLevels);
             barrier.subresourceRange().baseMipLevel(0);
@@ -404,7 +475,9 @@ class VulkanImage implements NativeResource {
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
                 mAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                if (hasStencilComponent()) mAspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                if (hasStencilComponent()) {
+                    mAspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
             }
 
             barrier.subresourceRange().aspectMask(mAspectMask);
@@ -471,8 +544,8 @@ class VulkanImage implements NativeResource {
 
             vkCmdCopyBufferToImage(
                     commandBuffer,
-                    buffer.buffer,
-                    image,
+                    buffer.mBuffer,
+                    mImage,
                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     region);
         }

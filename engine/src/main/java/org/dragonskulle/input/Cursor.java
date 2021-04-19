@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 
 /**
- * Once attached to a window, this allows access to:
+ * Once attached to a window, this allows access to do the following.
  *
  * <ul>
  *   <li>The cursor's position in the window scaled to the range [-1, 1], [-1, 1].

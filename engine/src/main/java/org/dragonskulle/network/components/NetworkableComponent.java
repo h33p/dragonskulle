@@ -5,7 +5,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -97,7 +98,9 @@ public abstract class NetworkableComponent extends Component {
             e.printStackTrace();
         }
 
-        if (networkObject.isServer()) connectSyncVars();
+        if (networkObject.isServer()) {
+            connectSyncVars();
+        }
 
         onConnectedSyncvars();
     }
@@ -132,7 +135,7 @@ public abstract class NetworkableComponent extends Component {
     protected void onOwnerIdChange(int newId) {}
 
     /**
-     * Reset the changed bitmask
+     * Reset the changed bitmask.
      *
      * <p>Call this after every network update, once all clients had their state updated
      */
@@ -158,7 +161,9 @@ public abstract class NetworkableComponent extends Component {
 
         stream.writeByte(byteMask.length);
 
-        for (byte b : byteMask) stream.writeByte(b);
+        for (byte b : byteMask) {
+            stream.writeByte(b);
+        }
 
         for (int i = 0; i < this.mFields.length; i++) {
             Field f = this.mFields[i];
@@ -263,7 +268,9 @@ public abstract class NetworkableComponent extends Component {
      * @return The NetworkManager, or {@code null}.
      */
     public NetworkManager getNetworkManager() {
-        if (mNetworkObject == null) return null;
+        if (mNetworkObject == null) {
+            return null;
+        }
         return mNetworkObject.getNetworkManager();
     }
 }

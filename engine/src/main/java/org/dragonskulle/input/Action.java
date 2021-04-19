@@ -27,10 +27,10 @@ public class Action {
     /** Whether the action has been <b>de</b>activated this frame. */
     @Getter private boolean mJustDeactivated = false;
 
-    /** Last Engine time when the action was activated */
+    /** Last Engine time when the action was activated. */
     @Getter private float mActivationTime = 0f;
 
-    /** Whether the action gets deactivated when input is being intercepted */
+    /** Whether the action gets deactivated when input is being intercepted. */
     @Getter private boolean mIgnoreOnIntercept = true;
 
     /** Create a new (unnamed) action. */
@@ -58,7 +58,7 @@ public class Action {
     }
 
     /**
-     * Get for how long the action has been activated
+     * Get for how long the action has been activated.
      *
      * @return {@code Engine::getCurTime() - getActivationTime()} if active, {@code 0} otherwise.
      */

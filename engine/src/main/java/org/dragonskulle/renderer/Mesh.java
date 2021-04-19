@@ -2,14 +2,19 @@
 package org.dragonskulle.renderer;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.joml.*;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
 
 /**
- * Class storing meshes in a vertex/index buffer
+ * Class storing meshes in a vertex/index buffer.
  *
  * <p>This stores all meshes and provides a way to query
  *
@@ -17,13 +22,11 @@ import org.joml.*;
  */
 @Accessors(prefix = "m")
 public class Mesh implements Serializable {
-    @Getter
     /** Vertices of the mesh. */
-    private Vertexc[] mVertices;
+    @Getter private Vertexc[] mVertices;
 
-    @Getter
     /** Indices of the mesh. In pairs of 3, forming triangles. */
-    private int[] mIndices;
+    @Getter private int[] mIndices;
 
     /** The minimum coordinate of the bounding box. */
     private final Vector3f mBBMin = new Vector3f();
@@ -37,11 +40,11 @@ public class Mesh implements Serializable {
 
     /**
      * Cached hash code this hashcode is cached so that there is no need to recalculate it every
-     * time the method is called
+     * time the method is called.
      */
     private int mCachedHashCode = 0;
 
-    /** Vertices for a 2D hexagon */
+    /** Vertices for a 2D hexagon. */
     private static final Vertexc[] HEXAGON_VERTICES = {
         new Vertex(new Vector3f(0.86603f, -0.5f, 0.0f), new Vector2f(0.86603f, -0.5f)),
         new Vertex(new Vector3f(0.86603f, 0.5f, 0.0f), new Vector2f(0.86603f, 0.5f)),
@@ -51,10 +54,10 @@ public class Mesh implements Serializable {
         new Vertex(new Vector3f(0.0f, -1.0f, 0.0f), new Vector2f(0.0f, -1.0f)),
     };
 
-    /** Indices for the 2D hexagon */
+    /** Indices for the 2D hexagon. */
     private static final int[] HEXAGON_INDICES = {0, 4, 5, 1, 2, 3, 0, 1, 3, 0, 3, 4};
 
-    /** Vertices for a cube */
+    /** Vertices for a cube. */
     private static final Vertexc[] CUBE_VERTICES = {
         new Vertex(new Vector3f(-0.5f, -0.5f, -0.5f), new Vector2f(0.0f, 0.0f)),
         new Vertex(new Vector3f(0.5f, -0.5f, -0.5f), new Vector2f(1.0f, 0.0f)),
@@ -66,7 +69,7 @@ public class Mesh implements Serializable {
         new Vertex(new Vector3f(-0.5f, 0.5f, 0.5f), new Vector2f(0.0f, 0.0f))
     };
 
-    /** Indices for the cube */
+    /** Indices for the cube. */
     private static final int[] CUBE_INDICES = {
         0, 2, 1,
         0, 3, 2,
@@ -82,7 +85,7 @@ public class Mesh implements Serializable {
         0, 5, 4
     };
 
-    /** Vertices for a 2D quad plane */
+    /** Vertices for a 2D quad plane. */
     private static final Vertexc[] QUAD_VERTICES = {
         new Vertex(new Vector3f(0f, 0f, 0.f), new Vector2f(0.f, 0.f)),
         new Vertex(new Vector3f(0f, 1.f, 0.f), new Vector2f(0f, 1f)),
@@ -90,23 +93,23 @@ public class Mesh implements Serializable {
         new Vertex(new Vector3f(1.f, 1.f, 0.f), new Vector2f(1f, 1f)),
     };
 
-    /** Indices for the 2D quad */
+    /** Indices for the 2D quad. */
     private static final int[] QUAD_INDICES = {
         0, 1, 2,
         1, 3, 2
     };
 
-    /** Standard hexagon mesh */
+    /** Standard hexagon mesh. */
     public static final Mesh HEXAGON = new Mesh(HEXAGON_VERTICES, HEXAGON_INDICES);
 
-    /** Standard cube mesh */
+    /** Standard cube mesh. */
     public static final Mesh CUBE = new Mesh(CUBE_VERTICES, CUBE_INDICES);
 
-    /** Standard quad mesh */
+    /** Standard quad mesh. */
     public static final Mesh QUAD = new Mesh(QUAD_VERTICES, QUAD_INDICES);
 
     /**
-     * Create a mesh with vertices and indices
+     * Create a mesh with vertices and indices.
      *
      * @param vertices vertices of the mesh
      * @param indices indices of the mesh
@@ -133,7 +136,7 @@ public class Mesh implements Serializable {
     }
 
     /**
-     * Builds and appends a quad to a list of vertices and indices
+     * Builds and appends a quad to a list of vertices and indices.
      *
      * @param vertices the vertices to add the quad to
      * @param indices the indices to add the quad to
@@ -192,7 +195,7 @@ public class Mesh implements Serializable {
     }
 
     /**
-     * Build a quad mesh with specified coordinates
+     * Build a quad mesh with specified coordinates.
      *
      * @param startCoords starting coordinates where to place the quad
      * @param endCoords ending coordinates where to place the quad
@@ -219,28 +222,35 @@ public class Mesh implements Serializable {
 
     // TODO: mesh optimization methods, and other utilities
 
-    /** Increase the reference count of the mesh */
+    /** Increase the reference count of the mesh. */
     public void incRefCount() {
         mRefCount++;
     }
 
-    /** Decrease the reference count of the mesh */
+    /** Decrease the reference count of the mesh. */
     public void decRefCount() {
         mRefCount--;
     }
 
     @Override
     public int hashCode() {
-        if (mCachedHashCode == 0)
+        if (mCachedHashCode == 0) {
             mCachedHashCode = Objects.hash(Arrays.hashCode(mVertices), Arrays.hashCode(mIndices));
+        }
         return mCachedHashCode;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Mesh)) return false;
-        if (o.hashCode() != hashCode()) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Mesh)) {
+            return false;
+        }
+        if (o.hashCode() != hashCode()) {
+            return false;
+        }
         Mesh mesh = (Mesh) o;
         // There is a potential chance for collision, yes,
         // but that is extremely unlikely. Billions to one!

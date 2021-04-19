@@ -1,11 +1,15 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -20,7 +24,9 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIManager;
 import org.joml.Vector3f;
 
 /**
@@ -47,7 +53,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<Player> mPlayer;
     private int mLocalTokens = 0;
 
-    private final int mNetID;
+    private final int mNetId;
     private final Reference<NetworkManager> mNetworkManager;
 
     // Visual effects
@@ -69,11 +75,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netID The human player's network ID.
+     * @param netId The human player's network ID.
      */
-    public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
+    public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
         mNetworkManager = networkManager;
-        mNetID = netID;
+        mNetId = netId;
         mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
     }
 
@@ -99,9 +105,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .buildChild(
                                 "zoom_slider",
                                 new TransformUI(true),
-                                (go) -> {
-                                    go.addComponent(new UILinkedScrollBar());
-                                });
+                                (go) -> go.addComponent(new UILinkedScrollBar()));
 
         Reference<GameObject> tmpRef =
                 getGameObject()
@@ -147,7 +151,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mPlayer == null) {
             NetworkManager manager = mNetworkManager.get();
 
-            if (manager != null && manager.getClientManager() != null)
+            if (manager != null && manager.getClientManager() != null) {
                 mPlayer =
                         manager.getClientManager()
                                 .getNetworkObjects()
@@ -156,12 +160,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 .filter(NetworkObject::isMine)
                                 .map(NetworkObject::getGameObject)
                                 .map(go -> go.getComponent(Player.class))
-                                .filter(ref -> ref != null)
+                                .filter(Objects::nonNull)
                                 .findFirst()
                                 .orElse(null);
+            }
         }
 
-        if (!Reference.isValid(mPlayer)) return;
+        if (!Reference.isValid(mPlayer)) {
+            return;
+        }
 
         if (!mMovedCameraToCapital) {
             TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
@@ -198,17 +205,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
-
-        if (Reference.isValid(mMenuDrawer)) {
-            mMenuDrawer.get().setMenu(mScreenOn);
-        }
-
         mapScreen();
 
-        if (mVisualsNeedUpdate) updateVisuals();
+        if (mVisualsNeedUpdate) {
+            updateVisuals();
+        }
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /** This will choose what to do when the user can see the full map. */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -259,7 +263,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             log.info("Human:Cannot build");
                             mHexChosen = null;
                             mBuildingChosen = null;
-                            return;
                         } else {
                             // If you can build
                             log.info("Human:Change Screen");
@@ -270,29 +273,37 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             } else if (GameActions.RIGHT_CLICK.isActivated()) {
                 HexagonTile tile = mPlayer.get().getMap().cursorToTile();
                 Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
-                log.info("[DEBUG] RCL Position From Camera : " + pos.toString());
+                log.info("[DEBUG] RCL Position From Camera : " + pos);
             }
         }
     }
 
-    /** AURI!! This updates what the user can see */
+    /* AURI!! This updates what the user can see */
     private void updateVisuals() {
-        if (mMapEffects == null || mPlayer == null) return;
+        if (mMapEffects == null || mPlayer == null) {
+            return;
+        }
 
         mVisualsNeedUpdate = false;
 
         Player player = mPlayer.get();
 
-        if (player == null) return;
+        if (player == null) {
+            return;
+        }
 
-        if (attack_button == null)
+        if (attack_button == null) {
             attack_button = mMenuDrawer.get().getButtonReferences().get("attack_button");
-        if (sell_button == null)
+        }
+        if (sell_button == null) {
             sell_button = mMenuDrawer.get().getButtonReferences().get("sell_button");
-        if (upgrade_button == null)
+        }
+        if (upgrade_button == null) {
             upgrade_button = mMenuDrawer.get().getButtonReferences().get("upgrade_button");
-        if (place_button == null)
+        }
+        if (place_button == null) {
             place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
+        }
 
         MapEffects effects = mMapEffects.get();
         if (!mPlayer.get().hasLost()) {
@@ -387,6 +398,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(null);
                     break;
+                case ATTACKING_SCREEN:
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + mScreenOn);
             }
         }
     }
@@ -397,30 +412,35 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /** Marks visuals to update whenever a new object is spawned. */
     private void onSpawnObject(NetworkObject obj) {
-        if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
+        if (obj.getGameObject().getComponent(Building.class) != null) {
+            mVisualsNeedUpdate = true;
+        }
     }
 
     /**
-     * AURI!!!
+     * Sets screen and notifies that an update is needed for the visuals.
      *
-     * @param newScreen
+     * @param newScreen the new screen
      */
     private void setScreenOn(Screen newScreen) {
-        if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen))
+        if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;
+        }
         mScreenOn = newScreen;
     }
 
     /**
-     * A Method to check if the player owns that buildingSelectedView or not
+     * A Method to check if the player owns that buildingSelectedView or not.
      *
      * @param buildingToCheck The buildingSelectedView to check
      * @return true if the player owns the buildingSelectedView, false if not
      */
     private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
-        if (!Reference.isValid(buildingToCheck)) return false;
+        if (!Reference.isValid(buildingToCheck)) {
+            return false;
+        }
 
         return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;
     }

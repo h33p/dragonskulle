@@ -44,11 +44,15 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     @Override
     public void lateFrameUpdate(float deltaTime) {
 
-        if (!ensureMapReference()) return;
+        if (!ensureMapReference()) {
+            return;
+        }
 
         Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
 
-        if (activePlayer == null) return;
+        if (activePlayer == null) {
+            return;
+        }
 
         mMapReference
                 .get()
@@ -81,7 +85,9 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) return true;
+        if (mMapReference != null) {
+            return true;
+        }
         mMapReference =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)

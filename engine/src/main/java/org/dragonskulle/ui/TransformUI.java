@@ -19,7 +19,7 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
- * UI Transform class
+ * UI Transform class.
  *
  * @author Aurimas Blažulionis
  *     <p>This transform class overrides several {@link Transform} methods to provide screen aspect
@@ -27,18 +27,18 @@ import org.joml.Vector4fc;
  */
 @Accessors(prefix = "m")
 public class TransformUI extends Transform {
-    /** Maintain aspect ratio of the UI element */
+    /** Maintain aspect ratio of the UI element. */
     @Getter @Setter private boolean mMaintainAspect;
-    /** Target aspect ratio of the element */
+    /** Target aspect ratio of the element. */
     @Getter private float mTargetAspectRatio = 1.f;
 
-    /** Describes how local coordinates are anchored to parent */
+    /** Describes how local coordinates are anchored to parent. */
     private final Vector4f mParentAnchor = new Vector4f(0f, 0f, 1f, 1f);
 
-    /** Additional bounds extending/subtracting from parent anchor */
+    /** Additional bounds extending/subtracting from parent anchor. */
     private final Vector4f mMargin = new Vector4f(0f);
 
-    /** Base position of the transform */
+    /** Base position of the transform. */
     private final Vector2f mPosition = new Vector2f(0f);
     /**
      * Controls which part of the rect is on position. I.e. controls center of rotation
@@ -46,7 +46,7 @@ public class TransformUI extends Transform {
      * <p>These coordinates are in range [[0; 1], [0; 1]]
      */
     private final Vector2f mPivotOffset = new Vector2f(0.5f);
-    /** Scale of the transform, propagated to child transforms */
+    /** Scale of the transform, propagated to child transforms. */
     private final Vector2f mScale = new Vector2f(1f);
 
     private final Vector4f mLocalCorners = new Vector4f(0f);
@@ -56,7 +56,7 @@ public class TransformUI extends Transform {
 
     private float mRotation = 0f;
 
-    /** Whether or not we should clip children that are out of bounds */
+    /** Whether or not we should clip children that are out of bounds. */
     // TODO: Actually somehow implement this
     @Getter @Setter private boolean mClipChildren = false;
 
@@ -83,7 +83,7 @@ public class TransformUI extends Transform {
         Transform parentGen = getGameObject().getParentTransform();
 
         // If we have a proper UI transform get the parent scaled corners
-        if (parentGen != null && parentGen instanceof TransformUI) {
+        if (parentGen instanceof TransformUI) {
             TransformUI parent = (TransformUI) parentGen;
             mParentCorners.set(parent.getScaledLocalCorners());
             mParentPivotPoint.set(parent.mPivotOffset);
@@ -185,7 +185,9 @@ public class TransformUI extends Transform {
         Camera main = Scene.getActiveScene().getSingleton(Camera.class);
         float width = main == null ? 1f : main.getAspectRatio();
 
-        if (mScreenAspectRatio != width) setUpdateFlag();
+        if (mScreenAspectRatio != width) {
+            setUpdateFlag();
+        }
 
         mScreenAspectRatio = width;
     }
@@ -271,12 +273,16 @@ public class TransformUI extends Transform {
     }
 
     public Vector4fc getLocalCorners() {
-        if (mShouldUpdate) updateLocalCorners();
+        if (mShouldUpdate) {
+            updateLocalCorners();
+        }
         return mLocalCorners;
     }
 
     public Vector4fc getScaledLocalCorners() {
-        if (mShouldUpdate) updateLocalCorners();
+        if (mShouldUpdate) {
+            updateLocalCorners();
+        }
         return mScaledLocalCorners;
     }
 
@@ -304,13 +310,13 @@ public class TransformUI extends Transform {
         return mPivotOffset;
     }
 
-    /** Set the pivot offset */
+    /** Set the pivot offset. */
     public void setPivotOffset(float x, float y) {
         mPivotOffset.set(x, y);
         setUpdateFlag();
     }
 
-    /** Set parent anchor position */
+    /** Set parent anchor position. */
     public void setParentAnchor(float offset) {
         mParentAnchor.set(offset, offset, 1f - offset, 1f - offset);
         setUpdateFlag();

@@ -7,26 +7,34 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.Transform3D;
 
 /**
- * Simple spinning objects!
+ * Simple spinning objects!.
  *
  * <p>Oh, they also shift in sine form
  *
  * @author Aurimas Blažulionis
  */
 public class Spinner extends Component implements IOnAwake, IFrameUpdate {
-    public float spinSpeed = 60.f;
-    public float sineSpeed = 50.f;
-    public float sineAmplitude = .5f;
+    public float mSpinSpeed = 60.f;
+    public float mSineSpeed = 50.f;
+    public float mSineAmplitude = .5f;
 
     private Transform3D mTransform;
     private float mTotalTime = 0.f;
 
+    /** Instantiates a new Spinner. */
     public Spinner() {}
 
+    /**
+     * Instantiates a new Spinner.
+     *
+     * @param spinSpeed the spin speed
+     * @param sineSpeed the sine speed
+     * @param sineAmplitude the sine amplitude
+     */
     public Spinner(float spinSpeed, float sineSpeed, float sineAmplitude) {
-        this.spinSpeed = spinSpeed;
-        this.sineSpeed = sineSpeed;
-        this.sineAmplitude = sineAmplitude;
+        this.mSpinSpeed = spinSpeed;
+        this.mSineSpeed = sineSpeed;
+        this.mSineAmplitude = sineAmplitude;
     }
 
     @Override
@@ -36,13 +44,13 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
-        mTransform.rotateDeg(0, 0, spinSpeed * deltaTime);
+        mTransform.rotateDeg(0, 0, mSpinSpeed * deltaTime);
 
         float sineDelta = -(float) Math.sin(mTotalTime);
         mTotalTime += deltaTime;
         sineDelta += (float) Math.sin(mTotalTime);
 
-        mTransform.translate(0, 0, sineDelta * sineAmplitude);
+        mTransform.translate(0, 0, sineDelta * mSineAmplitude);
     }
 
     @Override

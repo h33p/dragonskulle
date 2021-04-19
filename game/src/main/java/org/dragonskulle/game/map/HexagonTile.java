@@ -27,15 +27,15 @@ public class HexagonTile {
 
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
-    /** Describes a template for land hex tile */
+    /** Describes a template for land hex tile. */
     static final GameObject LAND_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
 
-    /** Describes a template for water hex tile */
+    /** Describes a template for water hex tile. */
     static final GameObject WATER_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
 
-    /** Describes a template for water hex tile */
+    /** Describes a template for water hex tile. */
     static final GameObject MOUNTAIN_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
 
@@ -54,7 +54,7 @@ public class HexagonTile {
     private static final float WATER_THRESHOLD = -0.3f;
     private static final float MOUNTAINS_THRESHOLD = 0.8f;
 
-    /** This is the axial storage system for each tile */
+    /** This is the axial storage system for each tile. */
     @Getter private final int mQ;
 
     @Getter private final int mR;
@@ -82,7 +82,7 @@ public class HexagonTile {
     private Reference<Building> mClaimedBy = null;
 
     /**
-     * Constructor that creates the HexagonTile
+     * Constructor that creates the HexagonTile.
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
@@ -92,9 +92,13 @@ public class HexagonTile {
         this.mR = r;
         this.mHeight = height;
 
-        if (height <= WATER_THRESHOLD) mTileType = TileType.WATER;
-        else if (height >= MOUNTAINS_THRESHOLD) mTileType = TileType.MOUNTAIN;
-        else mTileType = TileType.LAND;
+        if (height <= WATER_THRESHOLD) {
+            mTileType = TileType.WATER;
+        } else if (height >= MOUNTAINS_THRESHOLD) {
+            mTileType = TileType.MOUNTAIN;
+        } else {
+            mTileType = TileType.LAND;
+        }
 
         switch (mTileType) {
             case WATER:
@@ -115,8 +119,11 @@ public class HexagonTile {
         }
 
         Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
-        if (controls == null) mHighlightControls = new Reference<>(null);
-        else mHighlightControls = controls;
+        if (controls == null) {
+            mHighlightControls = new Reference<>(null);
+        } else {
+            mHighlightControls = controls;
+        }
     }
 
     /**
@@ -135,7 +142,7 @@ public class HexagonTile {
     }
 
     /**
-     * Retrieve the third (cube) coordinate
+     * Retrieve the third (cube) coordinate.
      *
      * <p>This coordinate will always be equal to -getQ() -getR()
      */
@@ -156,7 +163,9 @@ public class HexagonTile {
      * @return {@code true} if the claim was successful; otherwise {@code false}.
      */
     public boolean setClaimedBy(Building building) {
-        if (building == null || isClaimed()) return false;
+        if (building == null || isClaimed()) {
+            return false;
+        }
 
         mClaimedBy = building.getReference(Building.class);
         return true;
@@ -226,7 +235,9 @@ public class HexagonTile {
      * @return The Building on the HexagonTile, otherwise {@code null}.
      */
     public Building getBuilding() {
-        if (!Reference.isValid(mBuilding)) return null;
+        if (!Reference.isValid(mBuilding)) {
+            return null;
+        }
 
         return mBuilding.get();
     }

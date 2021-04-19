@@ -61,7 +61,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     }
 
     /**
-     * Get a stream of all hexagon tiles
+     * Get a stream of all hexagon tiles.
      *
      * @return stream of all non-null hexagon tiles in the map
      */
@@ -130,11 +130,15 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
 
                 // Ensure tile isn't within the minimum.
                 int distance = getDistance(q, r, s);
-                if (distance < min) continue;
+                if (distance < min) {
+                    continue;
+                }
 
                 // Attempt to get the desired tile, and check if it exists.
                 HexagonTile selectedTile = getTile(tileQ + q, tileR + r);
-                if (selectedTile == null) continue;
+                if (selectedTile == null) {
+                    continue;
+                }
 
                 // Add the tile to the list.
                 tiles.add(selectedTile);
@@ -156,12 +160,16 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     public HexagonTile cursorToTile() {
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 
-        if (mainCam == null) return null;
+        if (mainCam == null) {
+            return null;
+        }
 
         // Retrieve scaled screen coordinates
         Cursor cursor = Actions.getCursor();
 
-        if (cursor == null) return null;
+        if (cursor == null) {
+            return null;
+        }
 
         Vector2fc screenPos = cursor.getPosition();
 
@@ -207,7 +215,9 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
                 closestDistance = dist;
                 closestTile = tile;
 
-                if (dist <= TransformHex.HEX_SIZE) return closestTile;
+                if (dist <= TransformHex.HEX_SIZE) {
+                    return closestTile;
+                }
             }
         }
 
@@ -236,7 +246,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         Scene.getActiveScene().registerSingleton(this);
     }
 
-    /** Spawns each HexagonTile as a GameObject */
+    /** Spawns each HexagonTile as a GameObject. */
     @Override
     public void onStart() {
         mTiles.getAllTiles()

@@ -16,7 +16,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * Represents an objects position in hex coordinates
+ * Represents an objects position in hex coordinates.
  *
  * @author Harry Stoltz
  *     <p>This extends Transform, and provides transformations to be done in hex (axial)
@@ -63,12 +63,12 @@ public class TransformHex extends Transform {
                         });
     }
 
-    /** Default constructor for TransformHex */
+    /** Default constructor for TransformHex. */
     public TransformHex() {}
 
     /**
      * Create a new Transform from Hex coordinates. This can be used for instantiating GameObjects
-     * at a given Hex position
+     * at a given Hex position.
      *
      * @param axial The axial coordinates for the transform
      */
@@ -99,7 +99,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Translate the object locally
+     * Translate the object locally.
      *
      * @param axial axial coordinates to translate the object with on the transformation plane
      */
@@ -108,7 +108,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Translate the object locally
+     * Translate the object locally.
      *
      * @param axial axial coordinates to translate the object with on the transformation plane
      * @param height vertical transformation
@@ -118,7 +118,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Translate the object locally
+     * Translate the object locally.
      *
      * @param q q axial coordinate
      * @param r r axial coordinate
@@ -129,7 +129,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Translate the object locally with hex coordinates
+     * Translate the object locally with hex coordinates.
      *
      * @param x x hex coordinate (+q)
      * @param y y hex coordinate (+q-r)
@@ -140,7 +140,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Translate the object locally
+     * Translate the object locally.
      *
      * @param height vertical height to translate
      */
@@ -150,7 +150,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Set the object's height
+     * Set the object's height.
      *
      * @param height new height
      */
@@ -161,7 +161,7 @@ public class TransformHex extends Transform {
 
     /**
      * Set the position of the transform to the provided hex coordinates. The cartesian position
-     * will be the centre point of the hex
+     * will be the centre point of the hex.
      *
      * @param axial Coordinates of the position in axial coordinate system
      */
@@ -172,7 +172,7 @@ public class TransformHex extends Transform {
 
     /**
      * Set the position of the transform to the provided hex coordinates. The cartesian position
-     * will be the centre point of the hex
+     * will be the centre point of the hex.
      *
      * @param q q coordinate in axial coordinate system
      * @param r r coordinate in axial coordinate system
@@ -183,7 +183,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Get the position of a hex in cube coordinates. The z component of the vector is -x-y
+     * Get the position of a hex in cube coordinates. The z component of the vector is -x-y.
      *
      * @param dest matrix to write the position to
      * @return Vector3f containing the axial coordinates (dest)
@@ -195,7 +195,7 @@ public class TransformHex extends Transform {
 
     /**
      * Get the position of a hex in axial coordinates, rounded to nearest integer coordinate. The z
-     * component of the vector is always 0
+     * component of the vector is always 0.
      *
      * @param dest matrix to write the position to
      * @return Vector3f containing the axial coordinates (dest)
@@ -204,7 +204,7 @@ public class TransformHex extends Transform {
         return TransformHex.roundCube(axialToCube(mPosition.x, mPosition.y, dest));
     }
 
-    /** Gets the world transformation matrix */
+    /** Gets the world transformation matrix. */
     @Override
     public Matrix4fc getWorldMatrix() {
         if (mShouldUpdate) {
@@ -215,8 +215,11 @@ public class TransformHex extends Transform {
             mLocalMatrix.identity().translate(mTmp3DVec).rotateZ(mRotation);
 
             Transform parent = mGameObject.getParentTransform();
-            if (parent != null) mWorldMatrix.set(parent.getMatrixForChildren());
-            else mWorldMatrix.identity();
+            if (parent != null) {
+                mWorldMatrix.set(parent.getMatrixForChildren());
+            } else {
+                mWorldMatrix.identity();
+            }
 
             mWorldMatrix.mul(mLocalMatrix);
         }
@@ -225,7 +228,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Sets the local 3D transformation
+     * Sets the local 3D transformation.
      *
      * <p>This method sets the local transformation of the object to roughly match the input data.
      *
@@ -270,7 +273,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Gets the nearest hex from a fractional axial position
+     * Gets the nearest hex from a fractional axial position.
      *
      * @param axialPoint the fractional axial coordinate
      * @param cubeCoordsOut 3D vector that will store cube coordinates
@@ -316,7 +319,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Convert axial vector to cube coordinates
+     * Convert axial vector to cube coordinates.
      *
      * @param q the q axial coordinate
      * @param r the r axial cooredinate
@@ -328,7 +331,7 @@ public class TransformHex extends Transform {
     }
 
     /**
-     * Convert axial vector to cube coordinates
+     * Convert axial vector to cube coordinates.
      *
      * @param axialPoint a point in axial coordinate space
      * @param dest destination vector
@@ -341,7 +344,7 @@ public class TransformHex extends Transform {
     /**
      * Convert a vector containing cartesian coordinates to their equivalent axial coordinates. The
      * conversion is done in place, so make sure that you no longer need the vector containing the
-     * cartesian coordinates
+     * cartesian coordinates.
      *
      * @param cartesian Vector3f with cartesian coordinates to convert
      * @param axial Vector2f that will contain the converted coordinates

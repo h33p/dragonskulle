@@ -4,7 +4,7 @@ package org.dragonskulle.ui;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
@@ -13,7 +13,7 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
- * Class describing a rectangle with text
+ * Class describing a rectangle with text.
  *
  * @author Aurimas Blažulionis
  */
@@ -110,8 +110,9 @@ public class UITextRect extends UIBuildableComponent implements IOnAwake, IUIBui
         UIRenderable rend = mRenderable.get();
 
         if (rend != null) {
-            if (rend.getMaterial() instanceof UIMaterial)
+            if (rend.getMaterial() instanceof UIMaterial) {
                 mMaterial = (UIMaterial) rend.getMaterial();
+            }
         }
 
         if (mLabelTextComp != null) {

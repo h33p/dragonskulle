@@ -1,7 +1,11 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -11,10 +15,11 @@ import lombok.extern.java.Log;
 import org.dragonskulle.utils.IOUtils;
 
 /**
+ * This is the client usage, you will create an instance, by providing the correct server to connect
+ * to. ClientListener is the handler for commands that the client receives. {@link
+ * org.dragonskulle.network.IClientListener}.
+ *
  * @author Oscar L
- *     <p>This is the client usage, you will create an instance, by providing the correct server to
- *     connect to. ClientListener is the handler for commands that the client receives. {@link
- *     org.dragonskulle.network.IClientListener}**
  */
 @Log
 @Accessors(prefix = "m")
@@ -38,7 +43,7 @@ public class NetworkClient {
     /** The thread that watches @link{dIn} for messages. */
     private Thread mClientThread;
 
-    private AtomicBoolean mDidDispose = new AtomicBoolean(false);
+    private final AtomicBoolean mDidDispose = new AtomicBoolean(false);
 
     /** Stores all requests from the server once scheduled. */
     private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
@@ -83,12 +88,14 @@ public class NetworkClient {
                         mClientListener.disconnected();
                     }
                 }
-                if (mSocket != null) mSocket.close();
+                if (mSocket != null) {
+                    mSocket.close();
+                }
                 if (mClientThread != null) {
                     mClientThread.interrupt();
                     try {
                         mClientThread.join();
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
 
                     }
                 }
@@ -141,7 +148,6 @@ public class NetworkClient {
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
      */
-    @SuppressWarnings("")
     private class ClientRunner implements Runnable {
         private String mIP;
         private int mPort;
@@ -173,7 +179,9 @@ public class NetworkClient {
                 mClientListener.couldNotConnect();
             }
 
-            if (mClientListener != null) mClientListener.disconnected();
+            if (mClientListener != null) {
+                mClientListener.disconnected();
+            }
 
             dispose();
             log.info("cancelled successfully");
@@ -211,7 +219,7 @@ public class NetworkClient {
     }
 
     /**
-     * Process a message
+     * Process a message.
      *
      * @param stream stream to read the message from
      * @return the byteCode of the message processed.
@@ -252,7 +260,7 @@ public class NetworkClient {
 
         try (DataOutputStream dataOut = getDataOut()) {
             dataOut.writeByte(NetworkConfig.Codes.MESSAGE_DISCONNECT);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 
