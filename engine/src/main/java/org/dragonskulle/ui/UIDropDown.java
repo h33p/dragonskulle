@@ -2,6 +2,7 @@
 package org.dragonskulle.ui;
 
 import java.util.ArrayList;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -18,23 +19,35 @@ import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 @Accessors(prefix = "m")
 public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
 
-    /** Ran on dropdown open.. */
-    @Setter IOnOpen mOnOpen;
+    /**
+     * Ran on dropdown open.
+     */
+    @Setter
+    IOnOpen mOnOpen;
 
-    /** Ran on dropdown hide. */
-    @Setter IOnHide mOnHide;
+    /**
+     * Ran on dropdown hide.
+     */
+    @Setter
+    IOnHide mOnHide;
 
-    /** Interface that is invoked when an event occurs for the drop down */
+    /**
+     * Interface that is invoked when an event occurs for the drop down
+     */
     public static interface IDropDownEvent {
         void handle(UIDropDown dropDown);
     }
 
-    /** Interface that is invoked when the dropdown is opened */
+    /**
+     * Interface that is invoked when the dropdown is opened
+     */
     public static interface IOnOpen {
         void handle();
     }
 
-    /** Interface that is invoked when the dropdown is closed */
+    /**
+     * Interface that is invoked when the dropdown is closed
+     */
     public static interface IOnHide {
         void handle();
     }
@@ -45,7 +58,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
      * Currently selected UI element. If outside the range of {@link mOptions}, nothing will be
      * displayed as selected. Thus, value of {@code -1} will never have a selected element
      */
-    @Getter @Setter private int mSelected = -1;
+    @Getter
+    @Setter
+    private int mSelected = -1;
 
     /**
      * Event which gets called whenever an element gets selected by the user.
@@ -53,7 +68,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
      * <p>This event will only be called on user clicks, it will not be invoked by setting {@link
      * mSelected}. Once the event is invoked, {@link mSelected} will already have a new value set.
      */
-    @Getter @Setter private IDropDownEvent mOnSelect;
+    @Getter
+    @Setter
+    private IDropDownEvent mOnSelect;
 
     /**
      * Currently displayed item. By default set to {@code -2} to trigger a menu update in {@link
@@ -64,7 +81,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
     private Reference<UIButton> mButton;
     private final ArrayList<GameObject> mOptionObjects = new ArrayList<>();
 
-    /** Default constructor for {@link UIDropDown} */
+    /**
+     * Default constructor for {@link UIDropDown}
+     */
     public UIDropDown() {}
 
     /**
@@ -80,7 +99,7 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
      * {@link UIDropDown} constructor
      *
      * @param selected which option will initially be selected
-     * @param options list of options to be selectable
+     * @param options  list of options to be selectable
      */
     public UIDropDown(int selected, String... options) {
         this(options);
@@ -92,7 +111,7 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
      *
      * @param selected which option will initially be selected
      * @param onSelect event to be invoked when selection changes
-     * @param options list of options to be selectable
+     * @param options  list of options to be selectable
      */
     public UIDropDown(int selected, IDropDownEvent onSelect, String... options) {
         this(selected, options);
@@ -131,7 +150,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         cleanOptions();
     }
 
-    /** Display options if haven't already */
+    /**
+     * Display options if haven't already
+     */
     private void showOptions() {
         if (mOnOpen != null) {
             mOnOpen.handle();
@@ -139,13 +160,13 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         if (mOptionObjects.size() != 0 || mOptions == null) {
             return;
         }
-        int override = 0;
+        boolean shouldDisable = false;
         for (int i = 0; i < mOptions.length; i++) {
             if (hasSelection() && i == getSelected()) {
-                override = 1; // removes the already selected option from the list.
+                shouldDisable = true; // disables the already selected option from the list.
             } else {
                 final int ii = i;
-                int finalOverride = override;
+                final boolean finalShouldDisable = shouldDisable;
                 GameObject option =
                         new GameObject(
                                 "option_" + i,
@@ -153,10 +174,11 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
                                 (handle) -> {
                                     UIButton button =
                                             new UIButton(mOptions[ii], (__, ___) -> select(ii));
+                                    if (finalShouldDisable) button.disable();
                                     handle.addComponent(button);
                                     TransformUI transform = handle.getTransform(TransformUI.class);
                                     transform.setParentAnchor(
-                                            0, ii + 1 - finalOverride, 1, ii + 2 - finalOverride);
+                                            0, ii + 1, 1, ii + 2);
                                 });
                 mOptionObjects.add(option);
             }
@@ -165,7 +187,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         getGameObject().addChildren(mOptionObjects);
     }
 
-    /** Stop showing options, if they are still being shown */
+    /**
+     * Stop showing options, if they are still being shown
+     */
     private void cleanOptions() {
         if (mOnHide != null) {
             mOnHide.handle();
@@ -181,7 +205,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         mOptionObjects.clear();
     }
 
-    /** Toggle between showing and not showing the option list */
+    /**
+     * Toggle between showing and not showing the option list
+     */
     private void toggleOptions() {
 
         if (Reference.isValid(mButton)) {
@@ -195,7 +221,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         }
     }
 
-    /** Select an element and invoke OnSelect event */
+    /**
+     * Select an element and invoke OnSelect event
+     */
     private void select(int index) {
         setSelected(index);
 

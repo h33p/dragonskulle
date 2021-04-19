@@ -98,7 +98,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
                 currentTokens = mGetPlayer.get().get().getTokens().get();
             }
 
-            mBuildingsCanPlace = PredefinedBuildings.getPlaceable(currentTokens);
+            mBuildingsCanPlace = PredefinedBuildings.getPurchasable(currentTokens);
 
             List<String> buildingTextList = new ArrayList<>();
             for (BuildingDescriptor building : mBuildingsCanPlace) {

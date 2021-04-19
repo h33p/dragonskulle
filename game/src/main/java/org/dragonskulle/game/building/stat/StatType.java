@@ -64,14 +64,27 @@ public enum StatType {
         }
     }
 
-    /** The index of the specific StatType in {@link #values()}. */
+    /**
+     * The nice name for the enum value.
+     */
+    private String mNiceName;
+
+    /**
+     * The index of the specific StatType in {@link #values()}.
+     */
     private int mID;
 
-    /** The method used to turn a level ({@code int}) into a value ({@code int}). */
-    @Getter private IValueCalculator mValueCalculator;
+    /**
+     * The method used to turn a level ({@code int}) into a value ({@code int}).
+     */
+    @Getter
+    private IValueCalculator mValueCalculator;
 
-    /** Whether the stat always returns a fixed value. */
-    @Getter private final boolean mFixedValue;
+    /**
+     * Whether the stat always returns a fixed value.
+     */
+    @Getter
+    private final boolean mFixedValue;
 
     /**
      * Create a new type of stat.
@@ -81,6 +94,17 @@ public enum StatType {
     StatType(IValueCalculator valueCalculator) {
         mFixedValue = false;
         mValueCalculator = valueCalculator;
+    }
+
+    /**
+     * Create a new type of stat.
+     *
+     * @param valueCalculator The method used to turn a level into a value.
+     */
+    StatType(IValueCalculator valueCalculator, String niceName) {
+        mFixedValue = false;
+        mValueCalculator = valueCalculator;
+        mNiceName = niceName;
     }
 
     /**
@@ -96,17 +120,19 @@ public enum StatType {
                 };
     }
 
-    public static StatType valueFromNiceName(String selectedOption) {
-        switch (selectedOption) {
-            case "Token Rate":
-                return StatType.TOKEN_GENERATION;
-            case "Defence Factor":
-                return StatType.DEFENCE;
-            case "Attack Factor":
-                return StatType.ATTACK;
-            default:
-                return StatType.valueOf(selectedOption);
+    /**
+     * Retrieves the StatType from its NiceName, if it exists. Otherwise it will try looking in its default name.
+     *
+     * @param name the nice name to retrieve from
+     * @return the corresponding stat type.
+     */
+    public static StatType fromNiceName(String name) {
+        for (StatType type : StatType.values()) {
+            if (type.mNiceName != null && type.mNiceName.equals(name)) {
+                return type;
+            }
         }
+        return StatType.valueOf(name);
     }
 
     /**
@@ -134,17 +160,12 @@ public enum StatType {
         return values[id];
     }
 
+    /**
+     * Gets the stats nice name or the default if no nice name exists.
+     *
+     * @return the nice name
+     */
     public String getNiceName() {
-        String name = name();
-        switch (name) {
-            case "TOKEN_GENERATION":
-                return "Token Rate";
-            case "ATTACK":
-                return "Attack Factor";
-            case "DEFENCE":
-                return "Defence Factor";
-            default:
-                return name;
-        }
+        return this.mNiceName != null ? this.mNiceName : this.name();
     }
 }

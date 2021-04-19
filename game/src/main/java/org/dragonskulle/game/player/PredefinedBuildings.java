@@ -6,8 +6,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** @author Oscar L */
+/**
+ * A Collection of {@code BuildingDescriptor}'s.
+ *
+ * @author Oscar L
+ */
 public class PredefinedBuildings {
+    /**
+     * The predefined buildings.
+     */
     private static final List<BuildingDescriptor> buildings =
             new ArrayList<>(
                     Arrays.asList(
@@ -15,7 +22,13 @@ public class PredefinedBuildings {
                             new BuildingDescriptor(1, 3, 10, 2, 3, 30, 2),
                             new BuildingDescriptor(1, 1, 100, 1, 1, 25, 2)));
 
-    public static List<BuildingDescriptor> getPlaceable(int currentTokens) {
+    /**
+     * Gets all the buildings which can be placed filtered by the cost of the building.
+     *
+     * @param currentTokens the current tokens the player has
+     * @return a list of purchasable buildings
+     */
+    public static List<BuildingDescriptor> getPurchasable(int currentTokens) {
         return buildings.stream()
                 .filter(b -> b.getCost() <= currentTokens)
                 .collect(Collectors.toList());

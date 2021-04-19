@@ -535,14 +535,6 @@ public class App implements NativeResource {
         System.exit(0);
     }
 
-    private static void setLogLevel(Level level) {
-        Logger root = Logger.getLogger("");
-        root.setLevel(level);
-        for (Handler handler : root.getHandlers()) {
-            handler.setLevel(level);
-        }
-    }
-
     private void run() {
         // Create the main menu
         Scene mainMenu = createMainMenu();

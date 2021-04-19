@@ -240,6 +240,12 @@ public class HexagonTile {
         return getBuilding() != null;
     }
 
+    /**
+     * Determines if for a given player if this tile is buildable upon.
+     *
+     * @param player the player to build
+     * @return true if buildable, false otherwise
+     */
     public boolean isBuildable(Player player) {
         if (player == null) {
             log.warning("player was null so false");

@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -38,9 +39,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter @Setter private HexagonTile mHexChosen;
+    @Getter
+    @Setter
+    private HexagonTile mHexChosen;
 
-    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter
+    @Setter
+    private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -63,7 +68,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netID The human player's network ID.
+     * @param netID          The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netID) {
         mNetworkManager = networkManager;
@@ -131,7 +136,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Try getting the player if haven't already
         if (mPlayer == null) {
             NetworkManager manager = mNetworkManager.get();
-
             if (manager != null && manager.getClientManager() != null)
                 mPlayer =
                         manager.getClientManager()
@@ -193,7 +197,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mVisualsNeedUpdate) updateVisuals();
     }
 
-    /** This will choose what to do when the user can see the full map */
+    /**
+     * This will choose what to do when the user can see the full map
+     */
     private void mapScreen() {
 
         // Checks that its clicking something
@@ -209,24 +215,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
 
-                log.fine("Human:Got the Hexagon to enter");
                 if (mScreenOn == Screen.ATTACKING_SCREEN) {
                     return;
                 }
+                log.fine("Human:Got the Hexagon to enter");
                 if (mHexChosen != null) {
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class))
-                                && mScreenOn != Screen.ATTACKING_SCREEN) {
+                        if (hasPlayerGotBuilding(building.getReference(Building.class))) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
                         }
                     } else {
-                        // Checks if cannot build here
-                        if (mScreenOn == Screen.ATTACKING_SCREEN) {
-                            return;
-                        }
                         if (mHexChosen.isBuildable(player)) { // If you can build
                             // If you can build
                             log.info("Human:Change Screen");
@@ -246,7 +247,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** AURI!! This updates what the user can see */
+    /**
+     * AURI!! This updates what the user can see
+     */
     private void updateVisuals() {
         if (mMapEffects == null || mPlayer == null) return;
 
@@ -311,7 +314,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Marks visuals to update whenever a new object is spawned */
+    /**
+     * Marks visuals to update whenever a new object is spawned
+     */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) mVisualsNeedUpdate = true;
     }

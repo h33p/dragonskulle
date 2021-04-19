@@ -11,16 +11,34 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector2fc;
 
-/** @author Oscar L */
+/**
+ * Attaches a graphical component to wherever the cursor is, the cursor is hidden in {@code Cursor.java}.
+ *
+ * @author Oscar L
+ */
 @Log
 public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
 
+    /**
+     * The x offset to the 'point' of the cursor graphic.
+     */
     private static final float X_SIZE_OFFSET_TO_POINT = 0.015f;
+    /**
+     * The y offset to the 'point' of the cursor graphic.
+     */
     private static final float Y_SIZE_OFFSET_TO_POINT = 0.025f;
+    /**
+     * The cursor transform component.
+     */
     private TransformUI mCursorTransform;
+    /**
+     * The renderable for the cursor.
+     */
     private UIRenderable mFancyCursor;
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
     protected void onDestroy() {}
 
@@ -36,10 +54,6 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
         float x = (position.x() + 1) * 0.5f + X_SIZE_OFFSET_TO_POINT;
         float y = (position.y() + 1) * 0.5f + Y_SIZE_OFFSET_TO_POINT;
         mCursorTransform.setParentAnchor(x, y, x, y);
-        //
-        //        if(GameActions.LEFT_CLICK.isActivated()){
-        //            mFancyCursor.
-        //        }
     }
 
     /**
@@ -52,7 +66,6 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
         mFancyCursor.setDepthShift(Float.NEGATIVE_INFINITY);
         getGameObject().addComponent(mFancyCursor);
         mCursorTransform = getGameObject().getTransform(TransformUI.class);
-        //        mCursorTransform.setParentAnchor(0.01f, 0f, 0.01f, 1f);
         mCursorTransform.setMargin(-0.03f, -0.03f, 0.03f, 0.03f);
     }
 }

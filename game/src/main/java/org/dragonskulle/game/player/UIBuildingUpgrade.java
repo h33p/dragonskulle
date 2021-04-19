@@ -52,8 +52,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
         if (hexagonTile != null) {
             final Building building = hexagonTile.getBuilding();
             if (building != null
-                    && (!building.equals(mLastBuilding) || building.isDidStatsChange())) {
-                building.setDidStatsChange(false);
+                    && (!building.equals(mLastBuilding) || building.statsRequireVisualUpdate())) {
+                building.setStatsRequireVisualUpdate(false);
                 mLastBuilding = building;
                 if (Reference.isValid(mStatChildren)) {
                     mStatChildren.get().destroy();
@@ -82,7 +82,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                                     0,
                                                     (drop) -> {
                                                         selectedStatType =
-                                                                StatType.valueFromNiceName(
+                                                                StatType.fromNiceName(
                                                                         drop.getSelectedOption()
                                                                                 .split(delimiter)[
                                                                                 0]);
