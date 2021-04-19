@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer.materials;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -16,7 +16,8 @@ import org.dragonskulle.renderer.ShaderKind;
 import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
-import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
+import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Light;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -77,11 +78,11 @@ public class UnlitMaterial
     /** The internal reference count */
     private int mRefCount = 0;
 
-    /** Constructor for UnlitMaterial */
+    /** Constructor for UnlitMaterial. */
     public UnlitMaterial() {}
 
     /**
-     * Constructor for UnlitMaterial
+     * Constructor for UnlitMaterial.
      *
      * @param texture initial texture of the object
      */
@@ -90,7 +91,7 @@ public class UnlitMaterial
     }
 
     /**
-     * Constructor for UnlitMaterial
+     * Constructor for UnlitMaterial.
      *
      * @param texture initial texture of the object
      * @param colour colour of the material
@@ -101,7 +102,7 @@ public class UnlitMaterial
     }
 
     /**
-     * Constructor for UnlitMaterial
+     * Constructor for UnlitMaterial.
      *
      * @param colour colour of the material
      */
@@ -117,8 +118,7 @@ public class UnlitMaterial
      * @return {@code OPAQUE_SET}, if the colour alpha is 1, {@code TRANSPARENT_SET} otherwise
      */
     public ShaderSet getShaderSet() {
-        if (mColour.w < 1f) return TRANSPARENT_SET;
-        return OPAQUE_SET;
+        return mColour.w < 1f ? TRANSPARENT_SET : OPAQUE_SET;
     }
 
     /**
@@ -161,6 +161,10 @@ public class UnlitMaterial
      * Free the material. It will release fragment textures if the reference count drops below zero
      */
     public void free() {
-        if (--mRefCount < 0) for (SampledTexture tex : mFragmentTextures) tex.free();
+        if (--mRefCount < 0) {
+            for (SampledTexture tex : mFragmentTextures) {
+                tex.free();
+            }
+        }
     }
 }

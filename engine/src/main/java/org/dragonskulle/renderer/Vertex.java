@@ -1,15 +1,18 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.joml.*;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 /**
- * Describes a single vertex
+ * Describes a single vertex.
  *
  * @author Aurimas Blažulionis
  */
@@ -17,20 +20,20 @@ import org.joml.*;
 @EqualsAndHashCode
 public class Vertex extends Vertexc {
 
-    /** Position of the vertex */
+    /** Position of the vertex. */
     @Getter private Vector3f mPos = new Vector3f();
-    /** Normal vector of the vertex (used for lighting calculations) */
+    /** Normal vector of the vertex (used for lighting calculations). */
     @Getter private Vector3f mNormal = new Vector3f(0f, 0f, 1f);
-    /** Colour of the vertex */
+    /** Colour of the vertex. */
     @Getter private Vector4f mColor = new Vector4f(1f);
-    /** UV coordinate of the vertex */
+    /** UV coordinate of the vertex. */
     @Getter private Vector2f mUv = new Vector2f();
 
-    /** Create a default vertex */
+    /** Create a default vertex. */
     public Vertex() {}
 
     /**
-     * Create a vertex
+     * Create a vertex.
      *
      * @param pos position of the vertex
      * @param color colour of the vertex
@@ -41,7 +44,7 @@ public class Vertex extends Vertexc {
     }
 
     /**
-     * Create a vertex
+     * Create a vertex.
      *
      * @param pos position of the vertex
      * @param normal normal vector of the vertex

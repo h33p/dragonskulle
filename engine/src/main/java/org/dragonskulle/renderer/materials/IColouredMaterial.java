@@ -4,13 +4,13 @@ package org.dragonskulle.renderer.materials;
 import org.joml.Vector4f;
 
 /**
- * Interface for materials with main colour value
+ * Interface for materials with main colour value.
  *
  * @author Aurimas Blažulionis
  */
 public interface IColouredMaterial extends IMaterial {
     /**
-     * Get the main colour of the material
+     * Get the main colour of the material.
      *
      * <p>This is up to the material to decide what is the default colour, but usually it is the
      * diffuse colour
@@ -20,7 +20,7 @@ public interface IColouredMaterial extends IMaterial {
     Vector4f getColour();
 
     /**
-     * Gets the alpha value of the main colour
+     * Gets the alpha value of the main colour.
      *
      * @return the alpha value
      */
@@ -29,7 +29,7 @@ public interface IColouredMaterial extends IMaterial {
     }
 
     /**
-     * Sets the alpha (transparency) value of the main colour
+     * Sets the alpha (transparency) value of the main colour.
      *
      * @param alpha the new alpha value
      */

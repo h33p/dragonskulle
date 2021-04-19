@@ -54,7 +54,8 @@ public class TimeoutInputStream extends FilterInputStream {
     }
 
     private void checkTimeout() throws IOException {
-        if (mTimeoutEnabled && System.currentTimeMillis() - mMillisStart >= mTimeout)
+        if (mTimeoutEnabled && System.currentTimeMillis() - mMillisStart >= mTimeout) {
             throw new IOException("Timeout reached!");
+        }
     }
 }

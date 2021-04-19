@@ -1,14 +1,21 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * The type Generic sync, all syncables can lazily extend this class or their own custom class can
+ * be defined.
+ *
+ * @param <T> the type parameter
  * @author Oscar L The generic sync is a non optimised version of ISyncVar. Either create an
  *     optimised @link{ISyncVar} or extend this class.
- * @param <T> the type parameter
  */
 public abstract class GenericSync<T extends Serializable> implements ISyncVar, Serializable {
 
@@ -99,8 +106,12 @@ public abstract class GenericSync<T extends Serializable> implements ISyncVar, S
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         GenericSync<?> syncVar = (GenericSync<?>) o;
         return Objects.equals(mData, syncVar.mData);
     }

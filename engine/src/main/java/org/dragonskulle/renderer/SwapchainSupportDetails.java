@@ -2,82 +2,91 @@
 package org.dragonskulle.renderer;
 
 import static org.dragonskulle.utils.Env.envInt;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.KHRSurface.*;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
+import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR;
+import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR;
+import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR;
+import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_SRGB;
 
 import java.nio.IntBuffer;
 import lombok.extern.java.Log;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
+import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 /**
- * This provides details about swapchain support for particular physical device
+ * This provides details about swapchain support for particular physical device.
  *
  * @author Aurimas Blažulionis
  */
 @Log
 class SwapchainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    VkSurfaceFormatKHR.Buffer formats;
-    IntBuffer presentModes;
+    VkSurfaceCapabilitiesKHR mCapabilities;
+    VkSurfaceFormatKHR.Buffer mFormats;
+    IntBuffer mPresentNodes;
 
     private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_FIFO_KHR);
 
     /**
-     * Constructor for {@link SwapchainSupportDetails}
+     * Constructor for {@link SwapchainSupportDetails}.
      *
      * @param device physical device handle
      * @param surface surface that we want to display on
      */
     public SwapchainSupportDetails(VkPhysicalDevice device, long surface) {
-        capabilities = VkSurfaceCapabilitiesKHR.create();
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, capabilities);
+        mCapabilities = VkSurfaceCapabilitiesKHR.create();
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, mCapabilities);
 
         try (MemoryStack stack = stackPush()) {
             IntBuffer length = stack.ints(0);
 
             vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, length, null);
             if (length.get(0) != 0) {
-                formats = VkSurfaceFormatKHR.create(length.get(0));
-                vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, length, formats);
+                mFormats = VkSurfaceFormatKHR.create(length.get(0));
+                vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, length, mFormats);
             }
 
             vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, length, null);
             if (length.get(0) != 0) {
-                presentModes = BufferUtils.createIntBuffer(length.get(0));
-                vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, length, presentModes);
+                mPresentNodes = BufferUtils.createIntBuffer(length.get(0));
+                vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, length, mPresentNodes);
             }
         }
     }
 
     /**
-     * Check if the swapchain is supported for this device
+     * Check if the swapchain is supported for this device.
      *
      * @return {@code true} if possible to use this device for presentation, {@code false}
      *     otherwise.
      */
     public boolean isAdequate() {
-        return formats != null && presentModes != null;
+        return mFormats != null && mPresentNodes != null;
     }
 
     /**
-     * Choose a compatible surface format, prioritizing sRGB
+     * Choose a compatible surface format, prioritizing sRGB.
      *
      * @return first compatible surface format.
      */
     public VkSurfaceFormatKHR chooseSurfaceFormat() {
         VkSurfaceFormatKHR format =
-                formats.stream()
+                mFormats.stream()
                         .filter(
                                 f ->
                                         f.format() == VK_FORMAT_B8G8R8A8_SRGB
                                                 && f.colorSpace()
                                                         == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                         .findAny()
-                        .orElseGet(() -> formats.get(0));
+                        .orElseGet(() -> mFormats.get(0));
         log.fine(
                 String.format(
                         "Picked surface format: %d %d", format.format(), format.colorSpace()));
@@ -85,7 +94,7 @@ class SwapchainSupportDetails {
     }
 
     /**
-     * Choose a compatible presentation mode, prioritizing Triple Buffered VSync
+     * Choose a compatible presentation mode, prioritizing Triple Buffered VSync.
      *
      * @return compatible presentation mode
      */
@@ -95,18 +104,20 @@ class SwapchainSupportDetails {
 
         // Prioritized tripple buffered VSync, or use no vsync
         // We need configuration for this.
-        for (int i = 0; presentMode != VBLANK_MODE && i < presentModes.capacity(); i++) {
-            int pm = presentModes.get(i);
+        for (int i = 0; presentMode != VBLANK_MODE && i < mPresentNodes.capacity(); i++) {
+            int pm = mPresentNodes.get(i);
             if (pm == VBLANK_MODE
                     || pm == VK_PRESENT_MODE_MAILBOX_KHR
-                    || pm == VK_PRESENT_MODE_IMMEDIATE_KHR) presentMode = pm;
+                    || pm == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+                presentMode = pm;
+            }
         }
 
         return presentMode;
     }
 
     /**
-     * Choose a compatible resolution, targetting current window resolution
+     * Choose a compatible resolution, targetting current window resolution.
      *
      * @param window handle to the window
      * @return window extent bounds
@@ -121,22 +132,22 @@ class SwapchainSupportDetails {
             log.finer(
                     String.format(
                             "MAX: %dx%d",
-                            capabilities.maxImageExtent().width(),
-                            capabilities.maxImageExtent().height()));
+                            mCapabilities.maxImageExtent().width(),
+                            mCapabilities.maxImageExtent().height()));
             log.finer(
                     String.format(
                             "MIN: %dx%d",
-                            capabilities.minImageExtent().width(),
-                            capabilities.minImageExtent().height()));
+                            mCapabilities.minImageExtent().width(),
+                            mCapabilities.minImageExtent().height()));
 
             VkExtent2D extent = VkExtent2D.create();
             extent.set(
                     Integer.max(
-                            Integer.min(x.get(0), capabilities.maxImageExtent().width()),
-                            capabilities.minImageExtent().width()),
+                            Integer.min(x.get(0), mCapabilities.maxImageExtent().width()),
+                            mCapabilities.minImageExtent().width()),
                     Integer.max(
-                            Integer.min(y.get(0), capabilities.maxImageExtent().height()),
-                            capabilities.minImageExtent().height()));
+                            Integer.min(y.get(0), mCapabilities.maxImageExtent().height()),
+                            mCapabilities.minImageExtent().height()));
 
             log.finer(String.format("Extent: %dx%d", extent.width(), extent.height()));
 
@@ -145,9 +156,11 @@ class SwapchainSupportDetails {
     }
 
     public int chooseImageCount() {
-        int imageCount = capabilities.minImageCount() + 1;
-        if (capabilities.maxImageCount() > 0 && imageCount > capabilities.maxImageCount())
-            return capabilities.maxImageCount();
-        else return imageCount;
+        int imageCount = mCapabilities.minImageCount() + 1;
+        if (mCapabilities.maxImageCount() > 0 && imageCount > mCapabilities.maxImageCount()) {
+            return mCapabilities.maxImageCount();
+        } else {
+            return imageCount;
+        }
     }
 }

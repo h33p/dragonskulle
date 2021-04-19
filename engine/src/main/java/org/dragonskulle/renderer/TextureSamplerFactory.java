@@ -2,37 +2,43 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
+import static org.lwjgl.vulkan.VK10.VK_COMPARE_OP_ALWAYS;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLER_MIPMAP_MODE_LINEAR;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkCreateSampler;
+import static org.lwjgl.vulkan.VK10.vkDestroySampler;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import lombok.EqualsAndHashCode;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
 import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkSamplerCreateInfo;
 
 /**
- * Create and manage texture samplers for a device
+ * Create and manage texture samplers for a device.
  *
  * @author Aurimas Blažulionis
  */
 class TextureSamplerFactory implements NativeResource {
-    /** Underlying vulkan device */
+    /** Underlying vulkan device. */
     private VkDevice mDevice;
-    /** Highest anisotrophic filtering value */
+    /** Highest anisotrophic filtering value. */
     private float mMaxAnisotropy;
-    /** Controls whether anisotrophic filtering is enabled */
+    /** Controls whether anisotrophic filtering is enabled. */
     private boolean mAnisotropyEnable;
-    /** Stored sampler handles */
+    /** Stored sampler handles. */
     private HashMap<SamplerDescriptor, Long> mSamplers;
 
-    /** Describes a sampler */
+    /** Describes a sampler. */
     @EqualsAndHashCode
     private static class SamplerDescriptor {
-        /** Texture mapping used */
+        /** Texture mapping used. */
         TextureMapping mMapping;
-        /** Number of mip map levels used */
+        /** Number of mip map levels used. */
         int mMipLevels;
 
         public SamplerDescriptor(TextureMapping mapping, int mipLevels) {
@@ -42,20 +48,20 @@ class TextureSamplerFactory implements NativeResource {
     }
 
     /**
-     * Constructor for {@link TextureSamplerFactory}
+     * Constructor for {@link TextureSamplerFactory}.
      *
      * @param device vulkan logical device to use
      * @param physicalDevice vulkan physical device to use (must be the same one for {@code device})
      */
     public TextureSamplerFactory(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
-        mAnisotropyEnable = physicalDevice.getFeatureSupport().anisotropyEnable;
-        mMaxAnisotropy = physicalDevice.getFeatureSupport().maxAnisotropy;
+        mAnisotropyEnable = physicalDevice.getFeatureSupport().mAnisotropyEnable;
+        mMaxAnisotropy = physicalDevice.getFeatureSupport().mMaxAnisotropy;
         mSamplers = new HashMap<>();
     }
 
     /**
-     * Get a sampler with specified texture mapping
+     * Get a sampler with specified texture mapping.
      *
      * @param mapping texture mapping properties to get the sampler for
      * @param mipLevels mip map levels to use
@@ -76,7 +82,7 @@ class TextureSamplerFactory implements NativeResource {
     }
 
     /**
-     * Create a sampler
+     * Create a sampler.
      *
      * @param desc sampler description
      * @param anisotropyEnable controls whether anisotrophic filtering is enabled
@@ -86,11 +92,11 @@ class TextureSamplerFactory implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.callocStack(stack);
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-            samplerInfo.magFilter(desc.mMapping.filtering.getValue());
-            samplerInfo.minFilter(desc.mMapping.filtering.getValue());
-            samplerInfo.addressModeU(desc.mMapping.wrapU.getValue());
-            samplerInfo.addressModeV(desc.mMapping.wrapV.getValue());
-            samplerInfo.addressModeW(desc.mMapping.wrapW.getValue());
+            samplerInfo.magFilter(desc.mMapping.mFiltering.getValue());
+            samplerInfo.minFilter(desc.mMapping.mFiltering.getValue());
+            samplerInfo.addressModeU(desc.mMapping.mWrapU.getValue());
+            samplerInfo.addressModeV(desc.mMapping.mWrapV.getValue());
+            samplerInfo.addressModeW(desc.mMapping.mWrapW.getValue());
             samplerInfo.anisotropyEnable(anisotropyEnable);
             samplerInfo.maxAnisotropy(mMaxAnisotropy);
             samplerInfo.borderColor(VK_BORDER_COLOR_INT_TRANSPARENT_BLACK);

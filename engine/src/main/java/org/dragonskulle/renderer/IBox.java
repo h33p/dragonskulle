@@ -9,8 +9,9 @@ package org.dragonskulle.renderer;
  * @author Aurimas Blažulionis
  */
 interface IBox {
-    /** Get the width of underlying box */
+    /** Get the width of underlying box. */
     int getWidth();
-    /** Get the height of underlying box */
+
+    /** Get the height of underlying box. */
     int getHeight();
 }

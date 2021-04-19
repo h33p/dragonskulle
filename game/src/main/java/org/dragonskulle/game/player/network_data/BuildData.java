@@ -10,7 +10,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * The Class which holds the data for building a building
+ * The Class which holds the data for building a building.
  *
  * @author DragonSkulle
  */
@@ -23,7 +23,7 @@ public class BuildData implements INetSerializable {
     public BuildData() {}
 
     /**
-     * The constructor
+     * The constructor.
      *
      * @param hexTileToAdd The {@code HexagonTile} to build on
      */

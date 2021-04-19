@@ -2,7 +2,8 @@
 package org.dragonskulle.ui;
 
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Action;
 import org.dragonskulle.input.Actions;
@@ -10,7 +11,7 @@ import org.dragonskulle.input.ICharEvent;
 import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 
 /**
- * Class describing a interactive UI input box
+ * Class describing a interactive UI input box.
  *
  * @author Aurimas Blažulionis
  */
@@ -57,7 +58,9 @@ public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrame
     }
 
     private boolean clickedSomethingElse() {
-        if (!UIButton.UI_PRESS.isActivated()) return false;
+        if (!UIButton.UI_PRESS.isActivated()) {
+            return false;
+        }
 
         Reference<UIRenderable> hovered = UIManager.getInstance().getHoveredObject();
 
@@ -95,12 +98,16 @@ public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrame
 
         if (CURSOR_LEFT.isJustActivated() || CURSOR_LEFT.getTimeActivated() > REPEAT_TIME) {
             mPosition--;
-            if (mPosition < 0) mPosition = 0;
+            if (mPosition < 0) {
+                mPosition = 0;
+            }
         }
 
         if (CURSOR_RIGHT.isJustActivated() || CURSOR_RIGHT.getTimeActivated() > REPEAT_TIME) {
             mPosition++;
-            if (mPosition >= text.length()) mPosition = text.length();
+            if (mPosition >= text.length()) {
+                mPosition = text.length();
+            }
         }
 
         if (CURSOR_END.isJustActivated()) {

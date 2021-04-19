@@ -10,7 +10,7 @@ import org.joml.Matrix4fc;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Interface for instances of materials
+ * Interface for instances of materials.
  *
  * @author Aurimas Blažulionis
  */
@@ -23,7 +23,7 @@ public interface IMaterial extends NativeResource {
     ShaderSet getShaderSet();
 
     /**
-     * Write instanced material properties to specified offset
+     * Write instanced material properties to specified offset.
      *
      * @param offset where to write within the byte buffer
      * @param buffer buffer to write into

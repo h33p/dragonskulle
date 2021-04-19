@@ -2,7 +2,7 @@
 package org.dragonskulle.utils;
 
 /**
- * Basic additional math utilities
+ * Basic additional math utilities.
  *
  * @author Aurimas Blažulionis
  */
@@ -10,7 +10,7 @@ public class MathUtils {
 
     public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
     /**
-     * Interpolate a float value between start and end with time
+     * Interpolate a float value between start and end with time.
      *
      * @param start starting point that we get when time is 0
      * @param end ending point that we get when time is 1
@@ -27,7 +27,7 @@ public class MathUtils {
     }
 
     /**
-     * Calculate a logarithm in specified base
+     * Calculate a logarithm in specified base.
      *
      * @param val value to get the logarithm of
      * @param base base to calculate the logarithm in

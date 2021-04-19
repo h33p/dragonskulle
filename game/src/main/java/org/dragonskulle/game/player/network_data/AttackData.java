@@ -12,7 +12,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
- * The Class which will contain all the data to be sent for attacking
+ * The Class which will contain all the data to be sent for attacking.
  *
  * @author DragonSkulle
  */
@@ -44,7 +44,7 @@ public class AttackData implements INetSerializable {
     public AttackData() {}
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param attackingFrom The attacker building
      * @param attacking The defending building
@@ -54,7 +54,7 @@ public class AttackData implements INetSerializable {
     }
 
     /**
-     * Sets the request data
+     * Sets the request data.
      *
      * @param attackingFrom The attacker building
      * @param attacking The defending building

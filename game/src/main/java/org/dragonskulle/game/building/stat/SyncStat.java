@@ -89,7 +89,9 @@ public class SyncStat extends SyncInt {
      * @return The cost; otherwise {@value #sErrorCost}.
      */
     public int getCost() {
-        if (!Reference.isValid(mBuilding)) return sErrorCost;
+        if (!Reference.isValid(mBuilding)) {
+            return sErrorCost;
+        }
 
         return (getLevel() / 2) + mBuilding.get().getStatBaseCost();
     }
@@ -165,7 +167,9 @@ public class SyncStat extends SyncInt {
         super.deserialize(in);
 
         // The stats have changed, so call the building's afterStatChange.
-        if (!Reference.isValid(mBuilding)) return;
+        if (!Reference.isValid(mBuilding)) {
+            return;
+        }
         mBuilding.get().afterStatChange();
     }
 

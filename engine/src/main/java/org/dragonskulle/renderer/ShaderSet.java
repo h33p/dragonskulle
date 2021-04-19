@@ -42,11 +42,11 @@ public class ShaderSet implements NativeResource {
         }
     }
 
-    /** Vertex shader used */
+    /** Vertex shader used. */
     protected Resource<ShaderBuf> mVertexShader;
-    /** Geometry shader used */
+    /** Geometry shader used. */
     protected Resource<ShaderBuf> mGeometryShader;
-    /** Fragment shader used */
+    /** Fragment shader used. */
     protected Resource<ShaderBuf> mFragmentShader;
 
     /** Controls the order in which the material is rendered. Lower values mean earlier */
@@ -59,7 +59,7 @@ public class ShaderSet implements NativeResource {
      */
     @Getter protected boolean mDepthTest = true;
 
-    /** Controls whether the material should do alpha blending (transparency) */
+    /** Controls whether the material should do alpha blending (transparency). */
     @Getter protected boolean mAlphaBlend = false;
 
     /**
@@ -84,25 +84,25 @@ public class ShaderSet implements NativeResource {
     /** Shared uniform data size. This is to be passed to all objects using this shader set. */
     @Getter protected int mVertexUniformDataSize = 0;
     // TODO: handle this
-    /** Should we update the uniform buffer? */
+    /** Should we update the uniform buffer?. */
     @Getter protected boolean mVertexUniformDataDirty = false;
 
     /** Shared uniform data size. This is to be passed to all objects using this shader set. */
     @Getter protected int mGeometryUniformDataSize = 0;
     // TODO: handle this
-    /** Should we update the uniform buffer? */
+    /** Should we update the uniform buffer?. */
     @Getter protected boolean mGeometryUniformDataDirty = false;
 
     // TODO: handle push constants
-    /** Sets shared constants to be passed to the fragment shader */
+    /** Sets shared constants to be passed to the fragment shader. */
     @Getter protected int mFragmentPushConstantSize = 0;
 
     /** Shared uniform data size for the fragment shader. */
     @Getter protected int mFragmentUniformDataSize = 0;
-    /** Should we update the fragment uniform buffer? */
+    /** Should we update the fragment uniform buffer?. */
     @Getter protected boolean mFragmentUniformDataDirty = false;
 
-    /** Number of lights used by the shader */
+    /** Number of lights used by the shader. */
     @Getter protected int mLightCount = 0;
 
     /**
@@ -114,7 +114,7 @@ public class ShaderSet implements NativeResource {
     @Getter protected int mNumFragmentTextures = 0;
 
     /**
-     * Retrieve underlying vertex shader
+     * Retrieve underlying vertex shader.
      *
      * @return vertex shader if set, {@code null} otherwise
      */
@@ -123,7 +123,7 @@ public class ShaderSet implements NativeResource {
     }
 
     /**
-     * Retrieve underlying geometry shader
+     * Retrieve underlying geometry shader.
      *
      * @return geometry shader if set, {@code null} otherwise
      */
@@ -132,7 +132,7 @@ public class ShaderSet implements NativeResource {
     }
 
     /**
-     * Retrieve underlying fragment shader
+     * Retrieve underlying fragment shader.
      *
      * @return fragment shader if set, {@code null} otherwise
      */
@@ -141,14 +141,14 @@ public class ShaderSet implements NativeResource {
     }
 
     /**
-     * Write the uniform data used by vertex shader
+     * Write the uniform data used by vertex shader.
      *
      * <p>TODO: actually support this in the renderer
      */
     public void writeVertexUniformData(int offset, ByteBuffer buffer) {}
 
     /**
-     * Write the uniform data used by vertex shader
+     * Write the uniform data used by vertex shader.
      *
      * <p>TODO: actually support this in the renderer
      */
@@ -166,17 +166,17 @@ public class ShaderSet implements NativeResource {
     }
 
     /**
-     * Write the uniform data used by fragment shader
+     * Write the uniform data used by fragment shader.
      *
      * <p>TODO: actually support this in the renderer
      */
     public void writeFragmentUniformData(int offset, ByteBuffer buffer) {}
 
     /**
-     * Retrieve number of uniform bindings used
+     * Retrieve number of uniform bindings used.
      *
      * <p>This essentially checks if vertex/fragment uniform buffers are used and returns according
-     * value
+     * value.
      *
      * @return number of uniform bindings used
      */
@@ -196,7 +196,7 @@ public class ShaderSet implements NativeResource {
     }
 
     /**
-     * Write a matrix to the offset and return the offset after it
+     * Write a matrix to the offset and return the offset after it.
      *
      * @param offset target offset to write into
      * @param buffer byte buffer to write into
@@ -208,16 +208,22 @@ public class ShaderSet implements NativeResource {
         return offset + AttributeDescription.MATRIX_SIZE;
     }
 
-    /** Free the underlying vertex and fragment shaders */
+    /** Free the underlying vertex and fragment shaders. */
     @Override
     public void free() {
-        if (mVertexShader != null) mVertexShader.free();
+        if (mVertexShader != null) {
+            mVertexShader.free();
+        }
         mVertexShader = null;
 
-        if (mGeometryShader != null) mGeometryShader.free();
+        if (mGeometryShader != null) {
+            mGeometryShader.free();
+        }
         mGeometryShader = null;
 
-        if (mFragmentShader != null) mFragmentShader.free();
+        if (mFragmentShader != null) {
+            mFragmentShader.free();
+        }
         mFragmentShader = null;
     }
 }

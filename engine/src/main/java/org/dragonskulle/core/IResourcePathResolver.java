@@ -2,7 +2,7 @@
 package org.dragonskulle.core;
 
 /**
- * Maps resource arguments to file paths
+ * Maps resource arguments to file paths.
  *
  * @author Aurimas Blažulionis
  *     <p>This interface is really trivial. A simple lambda that accepts {@code

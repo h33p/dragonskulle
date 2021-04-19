@@ -10,10 +10,14 @@ import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.network.components.sync.SyncString;
 
-/** @author Oscar L The Capital Component. */
+/**
+ * This is a class for a synced 'Capital' Building. It is only used for testing.
+ *
+ * @author Oscar L The Capital Component.
+ */
 @Accessors(prefix = "m")
 @Log
-public class Capital extends NetworkableComponent {
+public class TestCapitalBuilding extends NetworkableComponent {
 
     /** A syncable field. */
     @Getter private SyncBool mSyncMe = new SyncBool(false);
@@ -24,16 +28,16 @@ public class Capital extends NetworkableComponent {
 
     /**
      * Creates the link between the request type @code{new AttackRequest()} and what to do when
-     * invoked @code{this::handleEvent}
+     * invoked @code{this::handleEvent}.
      */
     public transient ClientRequest<TestAttackData> mPasswordRequest;
 
     public static final int CORRECT_PASSWORD = 4242;
-    /** Used for testing */
+    /* Used for testing */
     public static final int INCORRECT_PASSWORD = CORRECT_PASSWORD + 1;
     // Marked as transient since serializer can not serialize lambdas, which is very sad
 
-    /** We need to initialize requests here, since java does not like to serialize lambdas */
+    /** We need to initialize requests here, since java does not like to serialize lambdas. */
     @Override
     protected void onNetworkInitialize() {
         mPasswordRequest = new ClientRequest<>(new TestAttackData(), this::handleEvent);

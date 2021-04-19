@@ -41,29 +41,29 @@ public abstract class Actions {
     @Getter private static Scroll sScroll;
 
     /** A list of {@link Action}s that have been activated this frame. */
-    private static ArrayList<Action> mJustActivated = new ArrayList<Action>();
+    private static ArrayList<Action> sJustActivated = new ArrayList<Action>();
 
     /** A list of {@link Action}s that have been deactivated this frame. */
-    private static ArrayList<Action> mJustDeactivated = new ArrayList<Action>();
+    private static ArrayList<Action> sJustDeactivated = new ArrayList<Action>();
 
-    /** An event which gets triggered when a key is pressed */
+    /** An event which gets triggered when a key is pressed. */
     @Setter private static Reference<IButtonEvent> sOnPress;
-    /** An event which gets triggered when a key is released */
+    /** An event which gets triggered when a key is released. */
     @Setter private static Reference<IButtonEvent> sOnRelease;
-    /** An event which gets triggered when a character is inputted */
+    /** An event which gets triggered when a character is inputted. */
     @Setter private static Reference<ICharEvent> sOnChar;
 
-    /** @return dereferenced {@link sOnPress} */
+    /** @return dereferenced {@link sOnPress}. */
     public static IButtonEvent getOnPress() {
         return Reference.isValid(sOnPress) ? sOnPress.get() : null;
     }
 
-    /** @return dereferenced {@link sOnRelease} */
+    /** @return dereferenced {@link sOnRelease}. */
     public static IButtonEvent getOnRelease() {
         return Reference.isValid(sOnRelease) ? sOnRelease.get() : null;
     }
 
-    /** @return dereferenced {@link sOnChar} */
+    /** @return dereferenced {@link sOnChar}. */
     public static ICharEvent getOnChar() {
         return Reference.isValid(sOnChar) ? sOnChar.get() : null;
     }
@@ -86,20 +86,20 @@ public abstract class Actions {
      * The frame has been complete, so the stored actions will no longer have just been activated.
      */
     private static void resetJustActivated() {
-        for (Action action : mJustActivated) {
+        for (Action action : sJustActivated) {
             action.setJustActivated(false);
         }
-        mJustActivated.clear();
+        sJustActivated.clear();
     }
 
     /**
      * The frame has been complete, so the stored actions will no longer have just been deactivated.
      */
     private static void resetJustDeactivated() {
-        for (Action action : mJustDeactivated) {
+        for (Action action : sJustDeactivated) {
             action.setJustDeactivated(false);
         }
-        mJustDeactivated.clear();
+        sJustDeactivated.clear();
     }
 
     /**
@@ -108,7 +108,7 @@ public abstract class Actions {
      * @param action The action that has been activated this frame.
      */
     static void addJustActivated(Action action) {
-        mJustActivated.add(action);
+        sJustActivated.add(action);
     }
 
     /**
@@ -117,7 +117,7 @@ public abstract class Actions {
      * @param action The action that has been deactivated this frame.
      */
     static void addJustDeactivated(Action action) {
-        mJustDeactivated.add(action);
+        sJustDeactivated.add(action);
     }
 
     /**
