@@ -177,6 +177,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         Vector3f pos =
                 mainCam.screenToPlane(
                         getGameObject().getTransform(),
+                        0,
                         screenPos.x(),
                         screenPos.y(),
                         new Vector3f());
@@ -228,7 +229,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
             HexagonTile tile, Camera cam, Vector2fc screenPos, Vector3f pos) {
         pos =
                 cam.screenToPlane(
-                        tile.getGameObject().getTransform(), screenPos.x(), screenPos.y(), pos);
+                        tile.getGameObject().getTransform(), 0, screenPos.x(), screenPos.y(), pos);
 
         Vector2f axial = new Vector2f();
 

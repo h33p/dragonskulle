@@ -130,12 +130,14 @@ public class Camera extends Component implements IFrameUpdate {
      * <p>It accounts for any scaling, transformation, and rotation that the transform may have.
      *
      * @param transform target transform to project to
+     * @param height height above target transform to project to
      * @param x x screen coordinate in [-1; 1] range
      * @param y y screen coordinate in [-1; 1] range
      * @param dest destination vector to project to
      * @return dest
      */
-    public Vector3f screenToPlane(Transform transform, float x, float y, Vector3f dest) {
+    public Vector3f screenToPlane(
+            Transform transform, float height, float x, float y, Vector3f dest) {
         screenToWorldDir(x, y, dest);
 
         getGameObject().getTransform().getWorldMatrix().getTranslation(mTmpPos);
@@ -143,6 +145,9 @@ public class Camera extends Component implements IFrameUpdate {
 
         transform.getInvWorldMatrix().transformPosition(dest);
         transform.getInvWorldMatrix().transformPosition(mTmpPos);
+
+        dest.sub(0, 0, height);
+        mTmpPos.sub(0, 0, height);
 
         float heightDiff = mTmpPos.z() - dest.z();
         float moveBy = mTmpPos.z() / heightDiff;
