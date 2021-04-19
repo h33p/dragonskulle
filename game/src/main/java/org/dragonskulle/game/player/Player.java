@@ -182,7 +182,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             } else if (i <= attempts) {
 
-                boolean ifNotIsland = checkIfIsland(x, y);
+            	boolean ifNotIsland = checkIfIsland(x, y);		//TODO Sort this out please
 
                 if (ifNotIsland) {
                     buildingToBecomeCapital.setCapital(true);
