@@ -20,6 +20,8 @@ import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.components.NetworkManager.IObjectOwnerModifiedEvent;
 import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * @author Aurimas Blažulionis
@@ -365,6 +367,8 @@ public class ClientNetworkManager {
      */
     private void spawnNewNetworkObject(int networkObjectId, int ownerID, int templateId) {
         final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);
+        go.getTransform()
+                .setLocal3DTransformation(new Vector3f(), new Quaternionf(), new Vector3f(1));
         final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false, mManager);
         go.addComponent(nob);
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);

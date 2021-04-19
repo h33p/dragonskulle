@@ -1,6 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,8 +16,12 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.map.HexagonTileStore.TileToStoreActions;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
  * @author Leela Muppala
@@ -23,7 +30,7 @@ import org.dragonskulle.game.player.Player;
  */
 @Log
 @Accessors(prefix = "m")
-public class HexagonTile {
+public class HexagonTile implements INetSerializable {
 
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
@@ -46,8 +53,19 @@ public class HexagonTile {
 
         @Getter private final byte mValue;
 
+        private static final TileType[] VALUES = TileType.values();
+
         private TileType(byte value) {
             mValue = value;
+        }
+
+        static TileType getTile(byte value) {
+            for (TileType t : VALUES) {
+                if (t.mValue == value) {
+                    return t;
+                }
+            }
+            return null;
         }
     }
 
@@ -59,9 +77,11 @@ public class HexagonTile {
 
     @Getter private final int mR;
 
-    @Getter private final float mHeight;
+    @Getter private float mHeight;
 
-    @Getter private final TileType mTileType;
+    @Getter private TileType mTileType;
+
+    private final TileToStoreActions mHandler;
 
     /**
      * Associated game object.
@@ -70,10 +90,12 @@ public class HexagonTile {
      * tile objects.
      */
     @Getter(AccessLevel.PACKAGE)
-    private final GameObject mGameObject;
+    private GameObject mGameObject;
+
+    private Transform3D mSecondaryTransform;
 
     @Getter(AccessLevel.PACKAGE)
-    private final Reference<HighlightControls> mHighlightControls;
+    private Reference<HighlightControls> mHighlightControls;
 
     /** Reference to the {@link Building} that is on the tile. */
     private Reference<Building> mBuilding = new Reference<Building>(null);
@@ -86,11 +108,13 @@ public class HexagonTile {
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
+     * @param handler handler passed by {@link HexagonTileStore} to be called on changes
      */
-    HexagonTile(int q, int r, float height) {
+    HexagonTile(int q, int r, float height, TileToStoreActions handler) {
         this.mQ = q;
         this.mR = r;
         this.mHeight = height;
+        this.mHandler = handler;
 
         if (height <= WATER_THRESHOLD) {
             mTileType = TileType.WATER;
@@ -100,30 +124,7 @@ public class HexagonTile {
             mTileType = TileType.LAND;
         }
 
-        switch (mTileType) {
-            case WATER:
-                mGameObject =
-                        GameObject.instantiate(
-                                WATER_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
-                mGameObject
-                        .findChildByName("Water Floor")
-                        .getTransform(Transform3D.class)
-                        .setPosition(0f, 0f, height - WATER_THRESHOLD - 0.1f);
-                break;
-            case MOUNTAIN:
-                mGameObject =
-                        GameObject.instantiate(MOUNTAIN_TILE, new TransformHex(mQ, mR, height));
-                break;
-            default:
-                mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR, height));
-        }
-
-        Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
-        if (controls == null) {
-            mHighlightControls = new Reference<>(null);
-        } else {
-            mHighlightControls = controls;
-        }
+        buildGameObject();
     }
 
     /**
@@ -168,11 +169,16 @@ public class HexagonTile {
         }
 
         mClaimedBy = building.getReference(Building.class);
+        mHandler.update(this);
+
         return true;
     }
 
     /** Remove any claim over the HexagonTile. */
     public void removeClaim() {
+        if (mClaimedBy != null) {
+            mHandler.update(this);
+        }
         mClaimedBy = null;
     }
 
@@ -221,9 +227,10 @@ public class HexagonTile {
      * @param building The Building on the tile, or {@code null} if there is no Building.
      */
     public void setBuilding(Building building) {
+        mHandler.update(this);
         // If null is provided, set a reference to null.
         if (building == null) {
-            mBuilding = new Reference<Building>(null);
+            mBuilding = null;
             return;
         }
         mBuilding = building.getReference(Building.class);
@@ -249,5 +256,115 @@ public class HexagonTile {
      */
     public boolean hasBuilding() {
         return getBuilding() != null;
+    }
+
+    public void serialize(DataOutputStream stream) throws IOException {
+        stream.writeFloat(mHeight);
+        stream.writeByte(mTileType.getValue());
+
+        Building b = getBuilding();
+        final int id;
+
+        if (b != null) {
+            id = b.getNetworkObject().getId();
+        } else {
+            id = -1;
+        }
+
+        stream.writeInt(id);
+
+        final int claimId;
+
+        if (Reference.isValid(mClaimedBy)) {
+            claimId = mClaimedBy.get().getNetworkObject().getId();
+        } else {
+            claimId = -1;
+        }
+
+        stream.writeInt(claimId);
+    }
+
+    public void deserialize(DataInputStream stream) throws IOException {
+        mHeight = stream.readFloat();
+        TileType newType = TileType.getTile(stream.readByte());
+
+        if (newType != mTileType) {
+            mGameObject.destroy();
+            buildGameObject();
+        } else {
+            updateHeight();
+        }
+
+        NetworkManager manager = mHandler.getNetworkManager();
+
+        int buildingId = stream.readInt();
+
+        if (buildingId != -1) {
+            NetworkObject obj = manager.getObjectById(buildingId);
+
+            Reference<Building> b =
+                    obj == null ? null : obj.getGameObject().getComponent(Building.class);
+
+            if (!Reference.isValid(b)) {
+                log.severe("Deserialized a building, but did not find it locally!");
+            } else if (b != mBuilding) {
+                setBuilding(b.get());
+            }
+        }
+
+        int claimId = stream.readInt();
+
+        if (claimId != -1) {
+            NetworkObject obj = manager.getObjectById(claimId);
+
+            Reference<Building> b =
+                    obj == null ? null : obj.getGameObject().getComponent(Building.class);
+
+            if (!Reference.isValid(b)) {
+                log.severe("Deserialized a claimant, but did not find it locally!");
+            } else if (b != mClaimedBy) {
+                removeClaim();
+                setClaimedBy(b.get());
+            }
+        }
+    }
+
+    private void updateHeight() {
+        if (mTileType == TileType.WATER) {
+            mGameObject.getTransform(TransformHex.class).setHeight(WATER_THRESHOLD);
+
+            mSecondaryTransform.setPosition(0f, 0f, mHeight - WATER_THRESHOLD - 0.1f);
+        } else {
+            mGameObject.getTransform(TransformHex.class).setHeight(mHeight);
+        }
+    }
+
+    private void buildGameObject() {
+        mSecondaryTransform = null;
+
+        switch (mTileType) {
+            case WATER:
+                mGameObject =
+                        GameObject.instantiate(
+                                WATER_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
+                mSecondaryTransform =
+                        mGameObject.findChildByName("Water Floor").getTransform(Transform3D.class);
+
+                mSecondaryTransform.setPosition(0f, 0f, mHeight - WATER_THRESHOLD - 0.1f);
+                break;
+            case MOUNTAIN:
+                mGameObject =
+                        GameObject.instantiate(MOUNTAIN_TILE, new TransformHex(mQ, mR, mHeight));
+                break;
+            default:
+                mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR, mHeight));
+        }
+
+        Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
+        if (controls == null) {
+            mHighlightControls = new Reference<>(null);
+        } else {
+            mHighlightControls = controls;
+        }
     }
 }

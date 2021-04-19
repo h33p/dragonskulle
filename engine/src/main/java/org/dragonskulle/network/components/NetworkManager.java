@@ -34,6 +34,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(Scene gameScene, NetworkManager manager, ServerClient client);
     }
 
+    /** Ran on game start. */
+    public static interface IGameStartEvent {
+        void handle(NetworkManager manager);
+    }
+
     /** A registerable listener for when objects are spawned. */
     public static interface IObjectSpawnEvent {
         void handleSpawn(NetworkObject object);
@@ -113,11 +118,14 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
+     * @param startEventHandler callback that gets called when the game starts
      */
-    public void createServer(int port, IConnectedClientEvent connectionHandler) {
+    public void createServer(
+            int port, IConnectedClientEvent connectionHandler, IGameStartEvent startEventHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
-                mServerManager = new ServerNetworkManager(this, port, connectionHandler);
+                mServerManager =
+                        new ServerNetworkManager(this, port, connectionHandler, startEventHandler);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -167,7 +175,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         return -1f;
     }
 
-    public Stream<NetworkObject> getObjectsOwnedBy(int netId) {
+    public Stream<NetworkObject> getNetworkObjects() {
         Stream<Reference<NetworkObject>> obj = null;
 
         if (mServerManager != null) {
@@ -178,11 +186,19 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
             obj = mClientManager.getNetworkObjects();
         }
 
-        return obj == null
-                ? null
-                : obj.filter(Reference::isValid)
-                        .map(Reference::get)
-                        .filter(o -> o.getOwnerId() == netId);
+        return obj == null ? null : obj.filter(Reference::isValid).map(Reference::get);
+    }
+
+    public Stream<NetworkObject> getObjectsOwnedBy(int ownerId) {
+        Stream<NetworkObject> obj = getNetworkObjects();
+
+        return obj == null ? null : obj.filter(o -> o.getOwnerId() == ownerId);
+    }
+
+    public NetworkObject getObjectById(int netId) {
+        Stream<NetworkObject> obj = getNetworkObjects();
+
+        return obj == null ? null : obj.filter(o -> o.getId() == netId).findAny().orElse(null);
     }
 
     /** Called whenever client disconnects. */

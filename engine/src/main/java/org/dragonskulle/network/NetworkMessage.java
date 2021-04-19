@@ -22,6 +22,16 @@ public class NetworkMessage {
     }
 
     /**
+     * Calculates how many bytes input booleans use
+     *
+     * @param boolCount number of booleans that are to be packed together
+     * @return how many bytes this mask would take
+     */
+    public static int maskSizeInBytes(int boolCount) {
+        return boolCount;
+    }
+
+    /**
      * Gets mask from bytes.
      *
      * @param maskBytes mask in byte form

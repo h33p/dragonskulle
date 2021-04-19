@@ -20,7 +20,6 @@ import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.map.FogOfWar;
-import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
@@ -132,16 +131,6 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
 
-        GameObject hexagonMap =
-                new GameObject(
-                        "hexagon map",
-                        new Transform3D(),
-                        (map) -> {
-                            map.addComponent(new HexagonMap(51));
-                        });
-
-        mainScene.addRootObject(hexagonMap);
-
         return mainScene;
     }
 
@@ -197,6 +186,10 @@ public class App implements NativeResource {
         addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();
+
+        for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
+            log.info(obj.getName());
+        }
 
         templates.addAllObjects(
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
@@ -486,7 +479,10 @@ public class App implements NativeResource {
                 new UIButton(
                         "Host (Temporary)",
                         (__, ___) -> {
-                            networkManager.get().createServer(sPort, this::onClientConnected);
+                            networkManager
+                                    .get()
+                                    .createServer(
+                                            sPort, this::onClientConnected, this::onGameStarted);
                         }),
                 new UIButton(
                         "Cancel",
@@ -582,6 +578,12 @@ public class App implements NativeResource {
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+    }
+
+    private void onGameStarted(NetworkManager manager) {
+        log.severe("Game Start");
+        log.warning("Spawning 'Server' Owned objects");
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 
     @Override

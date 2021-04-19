@@ -23,6 +23,8 @@ import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * Server network manager.
@@ -33,6 +35,14 @@ import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 @Accessors(prefix = "m")
 @Log
 public class ServerNetworkManager {
+
+    public enum ServerGameState {
+        IN_PROGRESS,
+        LOBBY,
+        STARTING,
+        NONE;
+    }
+
     /** Server event listener. */
     public class Listener implements IServerListener {
         /**
@@ -156,11 +166,15 @@ public class ServerNetworkManager {
     /** Underlying server instance. */
     private final Server mServer;
     /** Back reference to {@link NetworkManager}. */
-    private final NetworkManager mManager;
+    @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
     private final NetworkManager.IConnectedClientEvent mConnectedClientHandler;
+    /** Callback for game start. */
+    private final NetworkManager.IGameStartEvent mGameStartEventHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
+    /** Describes the current state of the game */
+    private ServerGameState mGameState = ServerGameState.STARTING;
 
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
@@ -174,16 +188,18 @@ public class ServerNetworkManager {
      * @param manager back reference to {@link NetworkManager}
      * @param port target port to listen on
      * @param connectedClientHandler callback for client connections
+     * @param gameStartEventHandler callback for when the game starts
      */
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
-            NetworkManager.IConnectedClientEvent connectedClientHandler)
+            NetworkManager.IConnectedClientEvent connectedClientHandler,
+            NetworkManager.IGameStartEvent gameStartEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
         mConnectedClientHandler = connectedClientHandler;
-        startGame();
+        mGameStartEventHandler = gameStartEventHandler;
     }
 
     /** Start the game, load game scene. */
@@ -196,6 +212,10 @@ public class ServerNetworkManager {
             engine.loadPresentationScene(mManager.getGameScene());
         } else {
             engine.activateScene(mManager.getGameScene());
+        }
+
+        if (mGameStartEventHandler != null) {
+            mGameStartEventHandler.handle(mManager);
         }
     }
 
@@ -222,6 +242,8 @@ public class ServerNetworkManager {
         GameObject object = mManager.getSpawnableTemplates().instantiate(templateId);
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
+        object.getTransform()
+                .setLocal3DTransformation(new Vector3f(), new Quaternionf(), new Vector3f(1));
 
         mManager.getGameScene().addRootObject(object);
 
@@ -291,6 +313,17 @@ public class ServerNetworkManager {
         if (mServer == null) {
             return;
         }
+
+        switch (mGameState) {
+            case STARTING:
+                startGame();
+                mGameState = ServerGameState.IN_PROGRESS;
+                break;
+            default:
+                break;
+        }
+
+        if (mGameState == ServerGameState.STARTING) return;
 
         mServer.updateClientList();
         mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);

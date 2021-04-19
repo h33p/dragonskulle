@@ -3,9 +3,16 @@ package org.dragonskulle.game.map;
 
 import com.flowpowered.noise.Noise;
 import com.flowpowered.noise.NoiseQuality;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
+import org.dragonskulle.network.NetworkMessage;
+import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.sync.ISyncVar;
+import org.dragonskulle.utils.IOUtils;
 import org.dragonskulle.utils.MathUtils;
 
 /**
@@ -14,16 +21,90 @@ import org.dragonskulle.utils.MathUtils;
  *     objects are also created and stored.
  */
 @Log
-class HexagonTileStore {
+class HexagonTileStore implements ISyncVar {
     private HexagonTile[][] mTiles;
     private final int mCoordShift;
     private final int mSeed;
+    private final boolean[][] mTileMask;
+    private final boolean[] mTileRowMask;
+    private final HexagonMap mMap;
+    private ISyncVarUpdateHandler mParentHandler;
+    private final TileToStoreActions mHandler = new TileToStoreActions();
+
+    class TileToStoreActions {
+        void update(HexagonTile tile) {
+            int q = tile.getQ() + mCoordShift;
+            int r = tile.getR() + mCoordShift;
+
+            if (!mTileMask[q][r] && mParentHandler != null) {
+                mParentHandler.call();
+            }
+
+            mTileMask[q][r] = true;
+            mTileRowMask[q] = true;
+        }
+
+        NetworkManager getNetworkManager() {
+            return mMap.getNetworkManager();
+        }
+    }
+
+    public void deserialize(DataInputStream stream) throws IOException {
+        final int maskSize = NetworkMessage.maskSizeInBytes(mTileRowMask.length);
+        boolean[] tileRowMask =
+                NetworkMessage.getMaskFromBytes(IOUtils.readNBytes(stream, maskSize));
+
+        for (int q = 0; q < tileRowMask.length; q++) {
+            if (!tileRowMask[q]) continue;
+
+            boolean[] mask = NetworkMessage.getMaskFromBytes(IOUtils.readNBytes(stream, maskSize));
+
+            for (int r = 0; r < mask.length; r++) {
+                if (!mask[r]) continue;
+
+                HexagonTile tile = mTiles[q][r];
+
+                if (tile == null) continue;
+
+                tile.deserialize(stream);
+            }
+        }
+    }
+
+    public void serialize(DataOutputStream stream) throws IOException {
+        stream.write(NetworkMessage.convertBoolArrayToBytes(mTileRowMask));
+
+        for (int q = 0; q < mTileRowMask.length; q++) {
+            if (!mTileRowMask[q]) continue;
+
+            boolean[] mask = mTileMask[q];
+
+            stream.write(NetworkMessage.convertBoolArrayToBytes(mask));
+
+            for (int r = 0; r < mask.length; r++) {
+                if (!mask[r]) continue;
+
+                HexagonTile tile = mTiles[q][r];
+
+                if (tile == null) continue;
+
+                tile.serialize(stream);
+            }
+        }
+    }
+
+    public void registerListener(ISyncVarUpdateHandler handler) {
+        mParentHandler = handler;
+    }
 
     /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */
-    public HexagonTileStore(int size, int seed) {
+    public HexagonTileStore(int size, int seed, HexagonMap map) {
         mTiles = new HexagonTile[size][size];
+        mTileMask = new boolean[size][size];
+        mTileRowMask = new boolean[size];
         mSeed = seed;
         mCoordShift = size / 2;
+        mMap = map;
 
         int max_empty = getSpaces(size); // The max number of empty spaces in one row of the array
         int loop = size / 2;
@@ -42,7 +123,7 @@ class HexagonTileStore {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
                     float height = getHeight(q1, r1);
-                    setTile(new HexagonTile(q1, r1, height));
+                    setTile(new HexagonTile(q1, r1, height, mHandler));
                 }
             }
             empty--;
@@ -54,7 +135,7 @@ class HexagonTileStore {
             int q1 = q - mCoordShift;
             int r1 = r_m - mCoordShift;
             float height = getHeight(q1, r1);
-            setTile(new HexagonTile(q1, r1, height));
+            setTile(new HexagonTile(q1, r1, height, mHandler));
         }
 
         /* Generates the last part of the map */
@@ -70,7 +151,7 @@ class HexagonTileStore {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
                     float height = getHeight(q1, r1);
-                    setTile(new HexagonTile(q1, r1, height));
+                    setTile(new HexagonTile(q1, r1, height, mHandler));
                     inside_val++;
                 } // otherwise we do not need a tile
             }

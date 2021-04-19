@@ -242,6 +242,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     @Override
     public void lateFrameUpdate(float deltaTime) {
+
+        if (!ensureMapReference()) {
+            return;
+        }
+
         if (mDefaultHighlight) {
             defaultHighlight();
             if (mHighlightOverlay != null) {
@@ -257,7 +262,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public void onStart() {
         Scene.getActiveScene().registerSingleton(this);
         ensureMapReference();
-        log.info(mMapReference.toString());
     }
 
     @Override
@@ -266,13 +270,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) {
+        if (Reference.isValid(mMapReference)) {
             return true;
         }
-        mMapReference =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
-        return mMapReference != null;
+        mMapReference = Scene.getActiveScene().getSingletonRef(HexagonMap.class);
+        return Reference.isValid(mMapReference);
     }
 }

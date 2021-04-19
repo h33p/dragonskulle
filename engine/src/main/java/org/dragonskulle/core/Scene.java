@@ -135,6 +135,19 @@ public class Scene {
     }
 
     /**
+     * Retrieves a singleton reference for type if there is any.
+     *
+     * @param type type to retrieve the reference to
+     * @return reference to the singleton. For invalid entries, it may be null, but may also be a
+     *     non-null invalid reference.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Component> Reference<T> getSingletonRef(Class<T> type) {
+        Reference<Component> current = mSingletons.get(type);
+        return (Reference<T>) current;
+    }
+
+    /**
      * Unregisters a singleton.
      *
      * @param type type to unregister

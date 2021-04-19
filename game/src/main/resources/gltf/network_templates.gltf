@@ -35,7 +35,8 @@
                 1,
                 2,
                 3,
-                4
+                4,
+                5
             ]
         }
     ],
@@ -144,6 +145,31 @@
             "name" : "aiPlayer",
             "translation" : [
                 -8,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HexagonMap",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSize",
+                                    "value" : 51
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "map",
+            "translation" : [
+                -10,
                 0,
                 0
             ]

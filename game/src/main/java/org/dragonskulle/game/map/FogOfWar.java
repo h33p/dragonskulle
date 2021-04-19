@@ -38,7 +38,6 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     public void onStart() {
         Scene.getActiveScene().registerSingleton(this);
         ensureMapReference();
-        log.info(mMapReference.toString());
     }
 
     @Override
@@ -85,14 +84,11 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) {
+        if (Reference.isValid(mMapReference)) {
             return true;
         }
-        mMapReference =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
-        return mMapReference != null;
+        mMapReference = Scene.getActiveScene().getSingletonRef(HexagonMap.class);
+        return Reference.isValid(mMapReference);
     }
 
     private void setFog(HexagonTile tile, boolean enable) {

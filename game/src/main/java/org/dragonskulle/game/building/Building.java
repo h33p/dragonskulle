@@ -204,6 +204,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
+
+        if (!getNetworkObject().isServer()) {
+            return;
+        }
+
         // Get the map.
         HexagonMap map = getMap();
         if (map == null) {
