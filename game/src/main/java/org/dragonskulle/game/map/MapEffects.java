@@ -215,19 +215,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         highlightTiles(
                 (tile) -> {
-
-                    // TODO: do this better, with O(1)
                     if (activePlayer != null) {
-                        Boolean contains =
-                                activePlayer
-                                        .getOwnedBuildingsAsStream()
-                                        .filter(Reference::isValid)
-                                        .map(Reference::get)
-                                        .map(b -> (Boolean) b.getViewableTiles().contains(tile))
-                                        .filter(b -> b == true)
-                                        .findFirst()
-                                        .orElse(null);
-                        if (contains == null) {
+                        if (!activePlayer.isTileViewable(tile)) {
                             return FOG_MATERIAL;
                         }
                     }

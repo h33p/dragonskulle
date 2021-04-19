@@ -17,6 +17,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.Server;
@@ -176,11 +177,15 @@ public class ServerNetworkManager {
     /** Describes the current state of the game */
     private ServerGameState mGameState = ServerGameState.STARTING;
 
+    @Getter private final SingletonStore mSingletons = new SingletonStore();
+
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
     @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
+
+    private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
 
     /**
      * Constructor for {@link ServerNetworkManager}.
@@ -306,6 +311,23 @@ public class ServerNetworkManager {
                 .forEach(GameObject::destroy);
 
         mManager.onServerDestroy();
+    }
+
+    /**
+     * Get singletons for a object owner.
+     *
+     * @param ownerId owner of the singletons
+     * @return singleton store for the given owner ID. If the store does not exist, a new one gets
+     *     created.
+     */
+    public SingletonStore getIdSingletons(int ownerId) {
+        Integer id = ownerId;
+        SingletonStore store = mIdSingletons.get(id);
+        if (store == null) {
+            store = new SingletonStore();
+            mIdSingletons.put(id, store);
+        }
+        return store;
     }
 
     /** Network update, called by {@link NetworkManager}. */

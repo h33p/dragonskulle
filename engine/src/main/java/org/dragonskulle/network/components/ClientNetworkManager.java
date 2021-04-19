@@ -16,6 +16,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
 import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
@@ -167,6 +168,10 @@ public class ClientNetworkManager {
     /** An map of references to objects. */
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
 
+    @Getter private final SingletonStore mSingletons = new SingletonStore();
+
+    private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
+
     /**
      * Constructor for ClientNetworkManager.
      *
@@ -244,6 +249,23 @@ public class ClientNetworkManager {
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
         mNetworkObjectReferences.clear();
+    }
+
+    /**
+     * Get singletons for a object owner.
+     *
+     * @param ownerId owner of the singletons
+     * @return singleton store for the given owner ID. If the store does not exist, a new one gets
+     *     created.
+     */
+    public SingletonStore getIdSingletons(int ownerId) {
+        Integer id = ownerId;
+        SingletonStore store = mIdSingletons.get(id);
+        if (store == null) {
+            store = new SingletonStore();
+            mIdSingletons.put(id, store);
+        }
+        return store;
     }
 
     /** Network update method, called by {@link NetworkManager}. */

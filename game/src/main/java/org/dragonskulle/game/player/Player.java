@@ -3,10 +3,11 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -54,10 +55,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
+    /** A set of viewable tiles for the player */
+    private final Set<HexagonTile> mViewableTiles = new HashSet<>();
+
     /** Link to the current capital. */
     private Reference<Building> mCapital = null;
-
-    private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
     /** The number of tokens the player has, synchronised from server to client. */
     @Getter private SyncInt mTokens = new SyncInt(0);
@@ -118,6 +120,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
         mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
 
+        getNetworkManager().getIdSingletons(getNetworkObject().getOwnerId()).register(this);
+
         if (getNetworkObject().isMine()) Scene.getActiveScene().registerSingleton(this);
     }
 
@@ -138,6 +142,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // TODO Get all Players & add to list
         updateTokens(TOKEN_TIME);
+    }
+
+    /** Adds building's viewable tiles to player's viewable tile list */
+    public void updateViewableTiles(Building building) {
+        mViewableTiles.addAll(building.getViewableTiles());
     }
 
     @Override
@@ -337,8 +346,28 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         HexagonTile tile = building.getTile();
         if (tile == null) return false;
 
+        // We clear viewable tiles in this case, because they can be invalid
+        mViewableTiles.clear();
+
         Reference<Building> removed = mOwnedBuildings.remove(tile);
         return (removed != null);
+    }
+
+    /**
+     * Checks whether a tile is viewable by the player.
+     *
+     * @param tile tile to check for viewability
+     * @return {@code true} if the tile is viewable, {@code false} otherwise.
+     */
+    public boolean isTileViewable(HexagonTile tile) {
+        if (mViewableTiles.isEmpty()) {
+            getOwnedBuildingsAsStream()
+                    .filter(Reference::isValid)
+                    .map(Reference::get)
+                    .forEach(this::updateViewableTiles);
+        }
+
+        return mViewableTiles.contains(tile);
     }
 
     /**

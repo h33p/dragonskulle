@@ -13,6 +13,7 @@ import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.ServerClient;
 
@@ -194,6 +195,33 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         Stream<NetworkObject> obj = getNetworkObjects();
 
         return obj == null ? null : obj.filter(o -> o.getId() == netId).findAny().orElse(null);
+    }
+
+    public SingletonStore getSingletons() {
+        if (mServerManager != null) {
+            return mServerManager.getSingletons();
+        } else if (mClientManager != null) {
+            return mClientManager.getSingletons();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get singletons for a object owner.
+     *
+     * @param ownerId owner of the singletons
+     * @return singleton store for the given owner ID. If the store does not exist, a new one gets
+     *     created. {@code null} if no client or server is running.
+     */
+    public SingletonStore getIdSingletons(int ownerId) {
+        if (mServerManager != null) {
+            return mServerManager.getIdSingletons(ownerId);
+        } else if (mClientManager != null) {
+            return mClientManager.getIdSingletons(ownerId);
+        } else {
+            return null;
+        }
     }
 
     /** Called whenever client disconnects. */

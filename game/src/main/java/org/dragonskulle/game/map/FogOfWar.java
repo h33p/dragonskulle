@@ -56,20 +56,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         mMapReference
                 .get()
                 .getAllTiles()
-                .forEach(
-                        tile -> {
-                            // TODO: do this better, in O(1)
-                            Boolean contains =
-                                    activePlayer
-                                            .getOwnedBuildingsAsStream()
-                                            .filter(Reference::isValid)
-                                            .map(Reference::get)
-                                            .map(b -> (Boolean) b.getViewableTiles().contains(tile))
-                                            .filter(b -> b == true)
-                                            .findFirst()
-                                            .orElse(null);
-                            setFog(tile, contains == null);
-                        });
+                .forEach(tile -> setFog(tile, !activePlayer.isTileViewable(tile)));
     }
 
     @Override

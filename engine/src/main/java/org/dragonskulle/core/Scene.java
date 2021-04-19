@@ -2,7 +2,6 @@
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,7 +23,7 @@ public class Scene {
 
     @Getter private final String mName;
 
-    private final HashMap<Class<?>, Reference<Component>> mSingletons = new HashMap<>();
+    @Getter private final SingletonStore mSingletons = new SingletonStore();
 
     @Accessors(prefix = "s")
     @Getter
@@ -107,16 +106,7 @@ public class Scene {
      *     singleton.
      */
     public boolean registerSingleton(Component comp) {
-        Class<?> type = comp.getClass();
-        Reference<Component> current = mSingletons.get(type);
-
-        if (Reference.isValid(current)) {
-            return false;
-        }
-
-        current = comp.getReference();
-        mSingletons.put(type, current);
-        return true;
+        return mSingletons.register(comp);
     }
 
     /**
@@ -125,13 +115,8 @@ public class Scene {
      * @param type type to retrieve the reference to
      * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed
      */
-    @SuppressWarnings("unchecked")
     public <T extends Component> T getSingleton(Class<T> type) {
-        Reference<Component> current = mSingletons.get(type);
-        if (!Reference.isValid(current)) {
-            return null;
-        }
-        return (T) current.get();
+        return mSingletons.get(type);
     }
 
     /**
@@ -141,10 +126,8 @@ public class Scene {
      * @return reference to the singleton. For invalid entries, it may be null, but may also be a
      *     non-null invalid reference.
      */
-    @SuppressWarnings("unchecked")
     public <T extends Component> Reference<T> getSingletonRef(Class<T> type) {
-        Reference<Component> current = mSingletons.get(type);
-        return (Reference<T>) current;
+        return mSingletons.getRef(type);
     }
 
     /**
@@ -154,7 +137,7 @@ public class Scene {
      * @return component reference if there was a singleton
      */
     public Reference<Component> unregisterSingleton(Class<?> type) {
-        return mSingletons.remove(type);
+        return mSingletons.unregister(type);
     }
 
     /** Iterates through all GameObjects in the scene and collects their components. */

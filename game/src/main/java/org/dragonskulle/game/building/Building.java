@@ -243,6 +243,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Get the tiles within the view distance.
         mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
+
+        Player owningPlayer = getOwner();
+
+        if (owningPlayer != null) {
+            owningPlayer.updateViewableTiles(this);
+        }
     }
 
     /**
@@ -481,15 +487,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The owning player, or {@code null}.
      */
     private Player getOwner(int ownerId) {
-        return getNetworkObject()
-                .getNetworkManager()
-                .getObjectsOwnedBy(ownerId)
-                .map(NetworkObject::getGameObject)
-                .map(go -> go.getComponent(Player.class))
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .findFirst()
-                .orElse(null);
+        return getNetworkObject().getNetworkManager().getIdSingletons(ownerId).get(Player.class);
     }
 
     /**
