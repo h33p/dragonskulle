@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.HashSet;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -410,6 +411,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mHexChosen != null) {
             fx.highlightTile(mHexChosen, highlight.asSelection());
         }
+    }
+
+    private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
+        //HashSet<HexagonTile> mBuildableTiles =
     }
 
     /** Marks visuals to update whenever a new object is spawned. */
