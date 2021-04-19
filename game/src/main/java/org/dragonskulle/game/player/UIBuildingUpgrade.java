@@ -152,9 +152,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
     }
 
     private void purchaseUpgrade(StatType type) {
-        Reference<Player> player = mGetPlayer.get();
+        Reference<Player> player = mGetPlayer.getPlayer();
         if (Reference.isValid(player)) {
-            Building building = mGetHexChosen.get().getBuilding();
+            Building building = mGetHexChosen.getHex().getBuilding();
             if (building != null) {
                 player.get().getClientStatRequest().invoke(new StatData(building, type));
             }
@@ -163,7 +163,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        HexagonTile tile = mGetHexChosen.get();
+        HexagonTile tile = mGetHexChosen.getHex();
         if (tile != null) {
             Building building = tile.getBuilding();
             if (building != null && building.statsRequireVisualUpdate()) {

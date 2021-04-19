@@ -94,8 +94,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
     public void frameUpdate(float deltaTime) {
         if (getGameObject().isEnabled()) {
             int currentTokens = 0;
-            if (Reference.isValid(mGetPlayer.get())) {
-                currentTokens = mGetPlayer.get().get().getTokens().get();
+            if (Reference.isValid(mGetPlayer.getPlayer())) {
+                currentTokens = mGetPlayer.getPlayer().get().getTokens().get();
             }
 
             mBuildingsCanPlace = PredefinedBuildings.getPurchasable(currentTokens);

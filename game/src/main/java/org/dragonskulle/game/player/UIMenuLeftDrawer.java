@@ -49,23 +49,23 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     }
 
     public interface IGetPlayer {
-        Reference<Player> get();
+        Reference<Player> getPlayer();
     }
 
     public interface IGetBuildingChosen {
-        Reference<Building> get();
+        Reference<Building> getBuilding();
     }
 
     public interface IGetHexChosen {
-        HexagonTile get();
+        HexagonTile getHex();
     }
 
     public interface ISetHexChosen {
-        void set(HexagonTile tile);
+        void setHex(HexagonTile tile);
     }
 
     public interface ISetBuildingChosen {
-        void set(Reference<Building> tile);
+        void setBuilding(Reference<Building> tile);
     }
 
     public UIMenuLeftDrawer(
@@ -132,7 +132,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_attack",
                 "Cancel Attack",
                 (handle, __) -> {
-                    mSetHexChosen.set(null);
+                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
                 },
                 true);
@@ -143,15 +143,15 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "confirm_attack_button",
                 "Attack Selected",
                 (handle, __) -> {
-                    Reference<Building> attackingBuilding = mGetBuildingChosen.get();
-                    Building defendingBuilding = mGetHexChosen.get().getBuilding();
+                    Reference<Building> attackingBuilding = mGetBuildingChosen.getBuilding();
+                    Building defendingBuilding = mGetHexChosen.getHex().getBuilding();
 
                     if (Reference.isValid(attackingBuilding) && defendingBuilding != null) {
                         // Checks the building can be attacked
                         boolean canAttack =
                                 attackingBuilding.get().isBuildingAttackable(defendingBuilding);
                         if (canAttack) {
-                            Reference<Player> playerReference = mGetPlayer.get();
+                            Reference<Player> playerReference = mGetPlayer.getPlayer();
                             if (Reference.isValid(playerReference)) {
                                 playerReference
                                         .get()
@@ -163,7 +163,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                             }
 
                             mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                            mSetHexChosen.set(null);
+                            mSetHexChosen.setHex(null);
                         }
                     }
                 },
@@ -246,13 +246,13 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "Attack From Here",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
-                    Reference<Building> buildingChosen = mGetBuildingChosen.get();
+                    Reference<Building> buildingChosen = mGetBuildingChosen.getBuilding();
                     if (Reference.isValid(buildingChosen)) {
-                        mSetHexChosen.set(null);
+                        mSetHexChosen.setHex(null);
                         mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
                     } else {
-                        mSetHexChosen.set(null);
-                        mSetBuildingChosen.set(null);
+                        mSetHexChosen.setHex(null);
+                        mSetBuildingChosen.setBuilding(null);
                         mNotifyScreenChange.call(Screen.MAP_SCREEN);
                     }
                 },
@@ -264,8 +264,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "deselect_button",
                 "Deselect Tile",
                 (handle, __) -> {
-                    mSetHexChosen.set(null);
-                    mSetBuildingChosen.set(null);
+                    mSetHexChosen.setHex(null);
+                    mSetBuildingChosen.setBuilding(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
                 },
                 true);
@@ -277,17 +277,17 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "Place Building",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
-                    if (mGetHexChosen.get() != null) {
+                    if (mGetHexChosen.getHex() != null) {
                         log.info("Running place button lambda");
-                        Reference<Player> player = mGetPlayer.get();
+                        Reference<Player> player = mGetPlayer.getPlayer();
                         if (Reference.isValid(player)) {
                             player.get()
                                     .getClientBuildRequest()
-                                    .invoke(new BuildData(mGetHexChosen.get()));
+                                    .invoke(new BuildData(mGetHexChosen.getHex()));
                         }
 
-                        mSetHexChosen.set(null);
-                        mSetBuildingChosen.set(null);
+                        mSetHexChosen.setHex(null);
+                        mSetBuildingChosen.setBuilding(null);
                         mNotifyScreenChange.call(Screen.MAP_SCREEN);
                     }
                 },
@@ -299,9 +299,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "sell_button",
                 "Sell Building -- Not Done",
                 (handle, __) -> {
-                    Reference<Player> player = mGetPlayer.get();
+                    Reference<Player> player = mGetPlayer.getPlayer();
                     if (Reference.isValid(player)) {
-                        Reference<Building> buildingChosen = mGetBuildingChosen.get();
+                        Reference<Building> buildingChosen = mGetBuildingChosen.getBuilding();
                         if (Reference.isValid(buildingChosen)) {
                             player.get()
                                     .getClientSellRequest()
@@ -309,8 +309,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                         }
                     }
 
-                    mSetHexChosen.set(null);
-                    mSetBuildingChosen.set(null);
+                    mSetHexChosen.setHex(null);
+                    mSetBuildingChosen.setBuilding(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
                 },
                 true);
