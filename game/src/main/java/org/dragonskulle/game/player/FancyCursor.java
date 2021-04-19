@@ -63,6 +63,7 @@ public class FancyCursor extends Component implements IOnStart, IFrameUpdate {
     @Override
     public void onStart() {
         mFancyCursor = new UIRenderable(new SampledTexture("ui/cursor.png"));
+        mFancyCursor.setHoverable(false);
         mFancyCursor.setDepthShift(Float.NEGATIVE_INFINITY);
         getGameObject().addComponent(mFancyCursor);
         mCursorTransform = getGameObject().getTransform(TransformUI.class);

@@ -47,8 +47,7 @@ public class UIManager {
         int curDepth = 0;
 
         for (Component component : components) {
-            if (component instanceof UIRenderable
-                    && !component.getGameObject().getName().equals("fancy_cursor")) {
+            if (component instanceof UIRenderable) {
                 UIRenderable rend = (UIRenderable) component;
                 int depth = rend.getGameObject().getDepth();
                 if (rend.cursorOver() && depth >= curDepth) {

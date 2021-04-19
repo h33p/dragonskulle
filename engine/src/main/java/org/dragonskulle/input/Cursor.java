@@ -1,15 +1,31 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import com.google.common.io.ByteStreams;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.apache.commons.io.IOUtils;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GLFWState;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector2ic;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.system.MemoryUtil;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+
+import static java.nio.channels.Channels.newChannel;
 
 /**
  * Once attached to a window, this allows access to:
@@ -28,17 +44,27 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 @Accessors(prefix = "m")
 public class Cursor {
 
-    /** This cursor's current raw position. */
+    /**
+     * This cursor's current raw position.
+     */
     private Vector2f mRawPosition = new Vector2f(0, 0);
-    /** Scaled mouse cursor position in the range [[-1, 1], [-1, 1]]. */
+    /**
+     * Scaled mouse cursor position in the range [[-1, 1], [-1, 1]].
+     */
     private Vector2f mScaledPosition = new Vector2f(0, 0);
 
-    /** The raw starting position of a drag, or {@code null} if no drag is taking place. */
+    /**
+     * The raw starting position of a drag, or {@code null} if no drag is taking place.
+     */
     private Vector2f mRawDragStart;
-    /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
+    /**
+     * Scaled mouse drag start position in the range [[-1, 1], [-1, 1]].
+     */
     private Vector2f mScaledDragStart = new Vector2f(0, 0);
 
-    /** Create a new cursor manager. */
+    /**
+     * Create a new cursor manager.
+     */
     public Cursor() {}
 
     /**
@@ -60,7 +86,40 @@ public class Cursor {
                 };
 
         GLFW.glfwSetCursorPosCallback(window, listener);
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_HIDDEN);
+
+        try {
+            setCustomCursor(window);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+// Set the cursor on a window
+    }
+
+    private void setCustomCursor(long window) throws IOException {
+        InputStream stream = new FileInputStream("game/src/main/resources/textures/ui/cursor.png");
+        BufferedImage bImage = ImageIO.read(stream);
+        Image scaledImage = bImage.getScaledInstance(bImage.getWidth() / 2, bImage.getHeight() / 2, Image.SCALE_FAST);
+
+        //from https://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage
+        bImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        // Draw the image on to the buffered image
+        Graphics2D bGr = bImage.createGraphics();
+        bGr.drawImage(scaledImage, 0, 0, null);
+        bGr.dispose();
+
+        int width = bImage.getWidth();
+        int height = bImage.getHeight();
+
+        int[] pixels = new int[width * height];
+        bImage.getRGB(0, 0, width, height, pixels, 0, width);
+        ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+        MathUtils.intARGBtoByteRGBA(pixels, height, width, buffer);
+        GLFWImage image = GLFWImage.create();
+        image.set(width, height, buffer);
+        long cursor = GLFW.glfwCreateCursor(image, 10, 10);
+
+        GLFW.glfwSetCursor(window, cursor);
     }
 
     /**
@@ -78,7 +137,7 @@ public class Cursor {
      * Scale the vector so it is in the range [-1, 1] and [-1, 1], relative to the current window
      * size.
      *
-     * @param rawPosition The raw vector coordinates.
+     * @param rawPosition    The raw vector coordinates.
      * @param scaledPosition The vector where the result will be written to.
      */
     private void calculateScaled(Vector2fc rawPosition, Vector2f scaledPosition) {
@@ -118,13 +177,17 @@ public class Cursor {
         }
     }
 
-    /** Start a new drag. */
+    /**
+     * Start a new drag.
+     */
     void startDrag() {
         mRawDragStart = new Vector2f(mRawPosition);
         calculateScaled(mRawDragStart, mScaledDragStart);
     }
 
-    /** End a drag in progress. */
+    /**
+     * End a drag in progress.
+     */
     void endDrag() {
         mRawDragStart = null;
     }
@@ -143,7 +206,7 @@ public class Cursor {
      * null} if there is no drag.
      *
      * @return The initial position of the cursor, relative to the window size, or {@code null} if
-     *     no dragging is taking place.
+     * no dragging is taking place.
      */
     public Vector2fc getDragStart() {
         if (!inDrag()) {
@@ -157,7 +220,7 @@ public class Cursor {
      * position.
      *
      * @return The angle, in radians, between the drag start point and current position, or {@code
-     *     0} if no dragging is taking place.
+     * 0} if no dragging is taking place.
      */
     public float getDragAngle() {
         if (!inDrag()) {
@@ -172,7 +235,7 @@ public class Cursor {
      * in the range [0, 2].
      *
      * @return A {@code double} representing the distance from the starting point of the user's
-     *     drag, or {@code 0} if no dragging is taking place.
+     * drag, or {@code 0} if no dragging is taking place.
      */
     public float getDragDistance() {
         if (!inDrag()) {

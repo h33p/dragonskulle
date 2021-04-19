@@ -23,13 +23,13 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
      * Ran on dropdown open.
      */
     @Setter
-    IOnOpen mOnOpen;
+    IDropDownEvent mOnOpen;
 
     /**
      * Ran on dropdown hide.
      */
     @Setter
-    IOnHide mOnHide;
+    IDropDownEvent mOnHide;
 
     /**
      * Interface that is invoked when an event occurs for the drop down
@@ -38,19 +38,6 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         void handle(UIDropDown dropDown);
     }
 
-    /**
-     * Interface that is invoked when the dropdown is opened
-     */
-    public static interface IOnOpen {
-        void handle();
-    }
-
-    /**
-     * Interface that is invoked when the dropdown is closed
-     */
-    public static interface IOnHide {
-        void handle();
-    }
 
     private String[] mOptions;
 
@@ -154,9 +141,6 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
      * Display options if haven't already
      */
     private void showOptions() {
-        if (mOnOpen != null) {
-            mOnOpen.handle();
-        }
         if (mOptionObjects.size() != 0 || mOptions == null) {
             return;
         }
@@ -183,17 +167,16 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
                 mOptionObjects.add(option);
             }
         }
-
         getGameObject().addChildren(mOptionObjects);
+        if (mOnOpen != null) {
+            mOnOpen.handle(this);
+        }
     }
 
     /**
      * Stop showing options, if they are still being shown
      */
     private void cleanOptions() {
-        if (mOnHide != null) {
-            mOnHide.handle();
-        }
         if (mOptionObjects.size() == 0) {
             return;
         }
@@ -203,6 +186,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         }
 
         mOptionObjects.clear();
+        if (mOnHide != null) {
+            mOnHide.handle(this);
+        }
     }
 
     /**

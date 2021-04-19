@@ -3,6 +3,7 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -22,9 +23,12 @@ import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
@@ -36,14 +40,19 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final IGetPlayer mGetPlayer;
 
     private final float mOffsetToTop = 0.46f;
-    @Getter private Reference<UIShopSection> mShop;
+    @Getter
+    private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
 
-    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
-    @Setter @Getter private Screen mLastScreen = null;
+    @Setter
+    @Getter
+    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter
+    @Getter
+    private Screen mLastScreen = null;
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -85,7 +94,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
     protected void onDestroy() {}
 
@@ -367,43 +378,18 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      * @return reference to the built menu.
      */
     private Reference<GameObject> buildMenu(List<UITextButtonFrame> mButtonChildren) {
-        final Reference<GameObject> built_menu =
-                getGameObject()
-                        .buildChild(
-                                "built_menu",
-                                new TransformUI(),
-                                (root) -> {
-                                    for (int i = 0, mButtonChildrenSize = mButtonChildren.size();
-                                            i < mButtonChildrenSize;
-                                            i++) {
-                                        UITextButtonFrame mButtonChild = mButtonChildren.get(i);
-                                        int finalI = i;
-                                        root.buildChild(
-                                                "drawer_child_" + i,
-                                                new TransformUI(true),
-                                                (self) -> {
-                                                    self.getTransform(TransformUI.class)
-                                                            .setPosition(
-                                                                    0f,
-                                                                    (0.8f
-                                                                                    * finalI
-                                                                                    / mButtonChildrenSize
-                                                                                    * 1.3f)
-                                                                            - mOffsetToTop);
-                                                    self.getTransform(TransformUI.class)
-                                                            .setMargin(0.075f, 0f, -0.075f, 0f);
+        UIManager manager = UIManager.getInstance();
+        UIButton[] buttons = mButtonChildren.stream().map(
+                child -> new UIButton(
+                        child.getText(),
+                        child.getOnClick(),
+                        child.isStartEnabled())
+        ).toArray(UIButton[]::new);
 
-                                                    UIButton button =
-                                                            new UIButton(
-                                                                    mButtonChild.getText(),
-                                                                    mButtonChild.getOnClick(),
-                                                                    mButtonChild.isStartEnabled());
-                                                    self.addComponent(button);
-                                                });
-                                    }
-                                });
-        built_menu.get().setEnabled(false);
-        return built_menu;
+        final GameObject built_menu = new GameObject("build_menu", false, new TransformUI());
+        manager.buildVerticalUI(built_menu, mOffsetToTop, 0.25f, 0.9f, buttons);
+        getGameObject().addChild(built_menu);
+        return built_menu.getReference();
     }
 
     private Reference<UIShopSection> buildShop() {

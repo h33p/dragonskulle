@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.utils;
 
+import java.nio.ByteBuffer;
+
 /**
  * Basic additional math utilities
  *
@@ -9,13 +11,14 @@ package org.dragonskulle.utils;
 public class MathUtils {
 
     public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
+
     /**
      * Interpolate a float value between start and end with time
      *
      * @param start starting point that we get when time is 0
-     * @param end ending point that we get when time is 1
-     * @param time value we use to interpolate between start and end. If outside [0-1] range, the
-     *     value will be extrapolated outside the bounds.
+     * @param end   ending point that we get when time is 1
+     * @param time  value we use to interpolate between start and end. If outside [0-1] range, the
+     *              value will be extrapolated outside the bounds.
      * @return interpolated value
      */
     public static float lerp(float start, float end, float time) {
@@ -29,7 +32,7 @@ public class MathUtils {
     /**
      * Calculate a logarithm in specified base
      *
-     * @param val value to get the logarithm of
+     * @param val  value to get the logarithm of
      * @param base base to calculate the logarithm in
      */
     public static int log(int val, int base) {
@@ -76,12 +79,34 @@ public class MathUtils {
     /**
      * Normalise a value between 0 and 1, by providing the range the value is situated in.
      *
-     * @param value The value to normalise.
+     * @param value   The value to normalise.
      * @param minimum The lowest value the input could be.
      * @param maximum The highest value the input could be.
      * @return The value normalised between 0 and 1.
      */
     public static float normalise(float value, float minimum, float maximum) {
         return (float) mapOneRangeToAnother(value, minimum, maximum, 0, 1, 9);
+    }
+
+    /**
+     * Converts RGB integer Array to a RGBA byte array.
+     * Adapted from https://www.javaer101.com/en/article/46458013.html
+     *
+     * @param argb   the ARGB array
+     * @param height the height of the image
+     * @param width  the width of the image
+     * @param dest   the destination buffer
+     */
+    public static void intARGBtoByteRGBA(int[] argb, int height, int width, ByteBuffer dest) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = argb[y * width + x];
+                dest.put((byte) ((pixel >> 16) & 0xFF));  // red
+                dest.put((byte) ((pixel >> 8) & 0xFF));   // green
+                dest.put((byte) (pixel & 0xFF));          // blue
+                dest.put((byte) ((pixel >> 24) & 0xFF));  // alpha
+            }
+        }
+        dest.flip();
     }
 }

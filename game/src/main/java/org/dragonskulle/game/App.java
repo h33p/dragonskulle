@@ -125,14 +125,14 @@ public class App implements NativeResource {
                                     });
                         });
 
-        GameObject uiCursor =
-                new GameObject(
-                        "fancy_cursor",
-                        new TransformUI(true),
-                        (self) -> {
-                            self.addComponent(new FancyCursor());
-                        });
-        mainScene.addRootObject(uiCursor);
+//        GameObject uiCursor =
+//                new GameObject(
+//                        "fancy_cursor",
+//                        new TransformUI(true),
+//                        (self) -> {
+//                            self.addComponent(new FancyCursor());
+//                        });
+//        mainScene.addRootObject(uiCursor);
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
         GameObject hexagonMap =
                 new GameObject(
@@ -494,11 +494,11 @@ public class App implements NativeResource {
                             mainUI.setEnabled(true);
                         }));
 
-        mainMenu.addRootObject(
-                new GameObject(
-                        "fancy_cursor",
-                        new TransformUI(true),
-                        (self) -> self.addComponent(new FancyCursor())));
+//        mainMenu.addRootObject(
+//                new GameObject(
+//                        "fancy_cursor",
+//                        new TransformUI(true),
+//                        (self) -> self.addComponent(new FancyCursor())));
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(audio);

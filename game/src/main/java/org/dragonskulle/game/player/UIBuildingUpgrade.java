@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -15,15 +16,19 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.ui.*;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpdate, IFixedUpdate {
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
-    @Getter private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
+    @Getter
+    private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private Reference<GameObject> mBuildingUpgradeComponent;
     private Reference<GameObject> mStatChildren;
-    @Setter private Building mLastBuilding;
+    @Setter
+    private Building mLastBuilding;
     private int ctr;
     private StatType selectedStatType = StatType.ATTACK;
     private Reference<UIButton> increaserReference;
@@ -36,7 +41,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy
+     */
     @Override
     protected void onDestroy() {}
 
@@ -94,21 +101,21 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                                                     .setText(
                                                                             "Increase for "
                                                                                     + mLastBuilding
-                                                                                            .getStat(
-                                                                                                    selectedStatType)
-                                                                                            .getCost());
+                                                                                    .getStat(
+                                                                                            selectedStatType)
+                                                                                    .getCost());
                                                         }
                                                     },
                                                     stats);
                                     uiDropDown.setOnOpen(
-                                            () -> {
+                                            (__) -> {
                                                 log.info("running on open");
                                                 if (Reference.isValid(increaserGOReference)) {
                                                     increaserGOReference.get().setEnabled(false);
                                                 }
                                             });
                                     uiDropDown.setOnHide(
-                                            () -> {
+                                            (__) -> {
                                                 if (Reference.isValid(increaserReference)) {
                                                     increaserGOReference.get().setEnabled(true);
                                                 }
@@ -145,8 +152,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                                                         (button, __) -> {
                                                                             Reference<Player>
                                                                                     playerReference =
-                                                                                            getGetPlayer()
-                                                                                                    .get();
+                                                                                    getGetPlayer()
+                                                                                            .get();
                                                                             if (Reference.isValid(
                                                                                     playerReference)) {
                                                                                 playerReference
@@ -173,23 +180,20 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (ctr++ >= 100) {
-            StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
-            HexagonTile tile = mGetHexChosen.get();
-            if (tile != null) {
-                Building building = tile.getBuilding();
-                if (building != null) {
-                    building.getStats()
-                            .forEach(
-                                    s ->
-                                            builder.append(s.getType())
-                                                    .append(" -> ")
-                                                    .append(s.getValue())
-                                                    .append("\n"));
-                }
+        HexagonTile tile = mGetHexChosen.get();
+        if (tile != null) {
+            Building building = tile.getBuilding();
+            if (building != null && building.statsRequireVisualUpdate()) {
+                StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
+                building.getStats()
+                        .forEach(
+                                s ->
+                                        builder.append(s.getType())
+                                                .append(" -> ")
+                                                .append(s.getValue())
+                                                .append("\n"));
+                log.info(builder.toString());
             }
-            log.info(builder.toString());
-            ctr = 0;
         }
     }
 }

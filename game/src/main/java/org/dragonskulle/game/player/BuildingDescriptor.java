@@ -56,21 +56,6 @@ public class BuildingDescriptor {
 
     @Override
     public String toString() {
-        return "BuildingDescriptor{"
-                + "("
-                + mAttack
-                + ":"
-                + mDefence
-                + ":"
-                + mTokenGeneration
-                + ":"
-                + mViewDistance
-                + ":"
-                + mAttackDistance
-                + ":"
-                + mCost
-                + ":"
-                + mSellPrice
-                + ")";
+        return String.format("BuildingDescriptor{(%d:%d:%d:%d:%d:%d:%d)", mAttack, mDefence, mTokenGeneration, mViewDistance, mAttackDistance, mCost, mSellPrice);
     }
 }
