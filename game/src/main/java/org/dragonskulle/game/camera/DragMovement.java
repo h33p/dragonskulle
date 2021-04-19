@@ -85,7 +85,8 @@ public class DragMovement extends Component implements IFrameUpdate, IOnAwake {
                         screenPos.y(),
                         mTmpPos);
 
-        if (Actions.TRIGGER_DRAG.isJustActivated()
+        if (!mDragging
+                && cursor.hadLittleDrag()
                 && !Reference.isValid(UIManager.getInstance().getHoveredObject())) {
             mPlanePos.set(pos);
             mTargetHeight = height;
