@@ -64,27 +64,17 @@ public enum StatType {
         }
     }
 
-    /**
-     * The nice name for the enum value.
-     */
+    /** The nice name for the enum value. */
     private String mNiceName;
 
-    /**
-     * The index of the specific StatType in {@link #values()}.
-     */
+    /** The index of the specific StatType in {@link #values()}. */
     private int mID;
 
-    /**
-     * The method used to turn a level ({@code int}) into a value ({@code int}).
-     */
-    @Getter
-    private IValueCalculator mValueCalculator;
+    /** The method used to turn a level ({@code int}) into a value ({@code int}). */
+    @Getter private IValueCalculator mValueCalculator;
 
-    /**
-     * Whether the stat always returns a fixed value.
-     */
-    @Getter
-    private final boolean mFixedValue;
+    /** Whether the stat always returns a fixed value. */
+    @Getter private final boolean mFixedValue;
 
     /**
      * Create a new type of stat.
@@ -121,7 +111,8 @@ public enum StatType {
     }
 
     /**
-     * Retrieves the StatType from its NiceName, if it exists. Otherwise it will try looking in its default name.
+     * Retrieves the StatType from its NiceName, if it exists. Otherwise it will try looking in its
+     * default name.
      *
      * @param name the nice name to retrieve from
      * @return the corresponding stat type.

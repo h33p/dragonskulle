@@ -5,37 +5,31 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * BuildingDescriptor is used to describe a Building Preset. For example it can define a building using only its values.
+ * BuildingDescriptor is used to describe a Building Preset. For example it can define a building
+ * using only its values.
  *
  * @author Oscar L
  */
 @Accessors(prefix = "m")
 public class BuildingDescriptor {
-    @Getter
-    public final int mAttack;
-    @Getter
-    public final int mDefence;
-    @Getter
-    public final int mTokenGeneration;
-    @Getter
-    public final int mViewDistance;
-    @Getter
-    public final int mAttackDistance;
-    @Getter
-    public final int mCost;
-    @Getter
-    public final int mSellPrice;
+    @Getter public final int mAttack;
+    @Getter public final int mDefence;
+    @Getter public final int mTokenGeneration;
+    @Getter public final int mViewDistance;
+    @Getter public final int mAttackDistance;
+    @Getter public final int mCost;
+    @Getter public final int mSellPrice;
 
     /**
      * Instantiates a new Building descriptor.
      *
-     * @param mAttack          the attack value
-     * @param mDefence         the defence value
+     * @param mAttack the attack value
+     * @param mDefence the defence value
      * @param mTokenGeneration the token generation value
-     * @param mViewDistance    the view distance value
-     * @param mAttackDistance  the attack distance value
-     * @param mCost            the cost value
-     * @param mSellPrice       the sell price value
+     * @param mViewDistance the view distance value
+     * @param mAttackDistance the attack distance value
+     * @param mCost the cost value
+     * @param mSellPrice the sell price value
      */
     public BuildingDescriptor(
             int mAttack,
@@ -56,6 +50,14 @@ public class BuildingDescriptor {
 
     @Override
     public String toString() {
-        return String.format("BuildingDescriptor{(%d:%d:%d:%d:%d:%d:%d)", mAttack, mDefence, mTokenGeneration, mViewDistance, mAttackDistance, mCost, mSellPrice);
+        return String.format(
+                "BuildingDescriptor{(%d:%d:%d:%d:%d:%d:%d)",
+                mAttack,
+                mDefence,
+                mTokenGeneration,
+                mViewDistance,
+                mAttackDistance,
+                mCost,
+                mSellPrice);
     }
 }

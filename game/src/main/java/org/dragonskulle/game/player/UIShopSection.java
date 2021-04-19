@@ -116,15 +116,6 @@ public class UIShopSection extends Component implements IOnStart {
         // the last current variable
     }
 
-    private Reference<GameObject> activateNewPanel(Reference<GameObject> newPanel) {
-        // check if valid reference then reassign
-        if (Reference.isValid(newPanel)) {
-            show(newPanel, true);
-            return newPanel;
-        }
-        return new Reference<>(null);
-    }
-
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
      * frameUpdate. Used for setup of references to necessary Components and GameObjects

@@ -2,9 +2,6 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -124,14 +121,14 @@ public class App implements NativeResource {
                                     });
                         });
 
-//        GameObject uiCursor =
-//                new GameObject(
-//                        "fancy_cursor",
-//                        new TransformUI(true),
-//                        (self) -> {
-//                            self.addComponent(new FancyCursor());
-//                        });
-//        mainScene.addRootObject(uiCursor);
+        //        GameObject uiCursor =
+        //                new GameObject(
+        //                        "fancy_cursor",
+        //                        new TransformUI(true),
+        //                        (self) -> {
+        //                            self.addComponent(new FancyCursor());
+        //                        });
+        //        mainScene.addRootObject(uiCursor);
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
         GameObject hexagonMap =
                 new GameObject(
@@ -493,11 +490,11 @@ public class App implements NativeResource {
                             mainUI.setEnabled(true);
                         }));
 
-//        mainMenu.addRootObject(
-//                new GameObject(
-//                        "fancy_cursor",
-//                        new TransformUI(true),
-//                        (self) -> self.addComponent(new FancyCursor())));
+        //        mainMenu.addRootObject(
+        //                new GameObject(
+        //                        "fancy_cursor",
+        //                        new TransformUI(true),
+        //                        (self) -> self.addComponent(new FancyCursor())));
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(audio);

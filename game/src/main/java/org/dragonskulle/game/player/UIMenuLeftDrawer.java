@@ -3,7 +3,6 @@ package org.dragonskulle.game.player;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -14,21 +13,17 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.UIShopSection.ShopState;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
-import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 
-/**
- * @author Oscar L
- */
+/** @author Oscar L */
 @Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
@@ -39,20 +34,15 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private final INotifyScreenChange mNotifyScreenChange;
     private final IGetPlayer mGetPlayer;
 
-    private final float mOffsetToTop = 0.46f;
-    @Getter
-    private Reference<UIShopSection> mShop;
+    private final float mOffsetToTop = 0.25f;
+    @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
-    @Setter
-    @Getter
-    private Screen mLastScreen = null;
+    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter @Getter private Screen mLastScreen = null;
 
     public interface INotifyScreenChange {
         void call(Screen newScreen);
@@ -94,9 +84,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
     @Override
     protected void onDestroy() {}
 
@@ -108,7 +96,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     public void onStart() {
         ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> buildingSelectedScreenMenuItems = new ArrayList<>();
-        ArrayList<UITextButtonFrame> statScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mapScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> tileSelectedScreenMenuItems = new ArrayList<>();
 
@@ -184,14 +171,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     }
 
     public void setVisibleScreen(Screen screen) {
+        Reference<GameObject> newScreen = new Reference<>(null);
         if (screen != getLastScreen()) {
-            Reference<GameObject> newScreen = new Reference<>(null);
             log.warning("setting visible screen to " + screen.toString());
             switch (screen) {
-                case MAP_SCREEN:
-                    newScreen = mMapScreenMenu;
-                    setShopState(ShopState.CLOSED);
-                    break;
                 case UPGRADE_SCREEN:
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
@@ -265,7 +248,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.get();
                     if (Reference.isValid(buildingChosen)) {
-
                         mSetHexChosen.set(null);
                         mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
                     } else {
@@ -312,48 +294,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 true);
     }
 
-    private UITextButtonFrame buildUpgradeButtonFrame() {
-        return new UITextButtonFrame(
-                "upgrade_button",
-                "Upgrade Button",
-                (handle, __) -> {
-                    // TODO When clicked need to
-                    // show options to upgrade
-                    // buildingSelectedView stats.  Will leave
-                    // until after prototype
-
-                    // TODO Properly implement.
-
-                    StatType statType = StatType.ATTACK;
-
-                    Reference<Player> player = mGetPlayer.get();
-                    if (Reference.isValid(player)) {
-                        Reference<Building> buildingChosen = mGetBuildingChosen.get();
-                        if (Reference.isValid(buildingChosen)) {
-                            player.get()
-                                    .getClientStatRequest()
-                                    .invoke(
-                                            new StatData(
-                                                    buildingChosen.get(), statType)); // Send Data
-                        }
-                    }
-
-                    mSetHexChosen.set(null);
-                    mSetBuildingChosen.set(null);
-
-                    mNotifyScreenChange.call(Screen.UPGRADE_SCREEN);
-                },
-                true);
-    }
-
     private UITextButtonFrame buildSellButtonFrame() {
         return new UITextButtonFrame(
                 "sell_button",
                 "Sell Building -- Not Done",
                 (handle, __) -> {
-                    // TODO When clicked need to
-                    // sell buildingSelectedView
-
                     Reference<Player> player = mGetPlayer.get();
                     if (Reference.isValid(player)) {
                         Reference<Building> buildingChosen = mGetBuildingChosen.get();
@@ -379,16 +324,20 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      */
     private Reference<GameObject> buildMenu(List<UITextButtonFrame> mButtonChildren) {
         UIManager manager = UIManager.getInstance();
-        UIButton[] buttons = mButtonChildren.stream().map(
-                child -> new UIButton(
-                        child.getText(),
-                        child.getOnClick(),
-                        child.isStartEnabled())
-        ).toArray(UIButton[]::new);
+        UIButton[] buttons =
+                mButtonChildren.stream()
+                        .map(
+                                child ->
+                                        new UIButton(
+                                                child.getText(),
+                                                child.getOnClick(),
+                                                child.isStartEnabled()))
+                        .toArray(UIButton[]::new);
 
-        final GameObject built_menu = new GameObject("build_menu", false, new TransformUI());
-        manager.buildVerticalUI(built_menu, mOffsetToTop, 0.25f, 0.9f, buttons);
+        final GameObject built_menu = new GameObject("build_menu", new TransformUI());
+        manager.buildVerticalUI(built_menu, mOffsetToTop, 0f, 1f, buttons);
         getGameObject().addChild(built_menu);
+        built_menu.setEnabled(false);
         return built_menu.getReference();
     }
 

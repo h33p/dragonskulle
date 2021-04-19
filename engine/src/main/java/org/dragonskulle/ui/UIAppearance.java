@@ -45,7 +45,7 @@ public class UIAppearance implements NativeResource {
     /** Height of a UI element in vertical UI */
     private float mVerticalUIElemHeight = 0.07f;
     /** Width of a UI element in Horizontal UI */
-    private float mHorizontalUIElemWidth = 0.245f;
+    private float mHorizontalUIElemWidth = 0.27f;
     /** Gap between UI elements in vertical UI */
     private float mVerticalUIElemGap = 0.03f;
     /** Gap between UI elements in vertical UI */
