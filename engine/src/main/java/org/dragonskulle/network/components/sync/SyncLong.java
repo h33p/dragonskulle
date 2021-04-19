@@ -4,7 +4,6 @@ package org.dragonskulle.network.components.sync;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -12,12 +11,10 @@ import java.util.Objects;
  *
  * @author Oscar L The type Sync Long.
  */
-public class SyncLong implements ISyncVar, Serializable {
+public class SyncLong extends BaseSyncVar {
 
     /** The Data. */
     private long mData;
-    /** The On update. */
-    private transient ISyncVarUpdateHandler mOnUpdate;
 
     /**
      * Instantiates a new SyncBool.
@@ -34,13 +31,7 @@ public class SyncLong implements ISyncVar, Serializable {
      * @param data the data
      */
     public void set(long data) {
-        if (mOnUpdate != null) {
-            if (data != this.mData) {
-                this.mOnUpdate
-                        .call(); // onUpdate callback is to set the mask bit on modification to the
-                // field
-            }
-        }
+        mDirty = true;
         this.mData = data;
     }
 
@@ -57,10 +48,11 @@ public class SyncLong implements ISyncVar, Serializable {
      * Serialize the SyncLong.
      *
      * @param out The output stream
+     * @param clientId client ID which to serialize the changes for
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(DataOutputStream out) throws IOException {
+    public void serialize(DataOutputStream out, int clientId) throws IOException {
         out.writeLong(this.mData);
     }
 
@@ -73,15 +65,6 @@ public class SyncLong implements ISyncVar, Serializable {
     @Override
     public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readLong();
-    }
-
-    /**
-     * Register listener.
-     *
-     * @param handleFieldChange the handle field change
-     */
-    public void registerListener(ISyncVarUpdateHandler handleFieldChange) {
-        this.mOnUpdate = handleFieldChange;
     }
 
     @Override

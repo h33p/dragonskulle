@@ -27,18 +27,14 @@ class HexagonTileStore implements ISyncVar {
     private final int mSeed;
     private final boolean[][] mTileMask;
     private final boolean[] mTileRowMask;
+    private boolean mDirty;
     private final HexagonMap mMap;
-    private ISyncVarUpdateHandler mParentHandler;
     private final TileToStoreActions mHandler = new TileToStoreActions();
 
     class TileToStoreActions {
         void update(HexagonTile tile) {
             int q = tile.getQ() + mCoordShift;
             int r = tile.getR() + mCoordShift;
-
-            if (!mTileMask[q][r] && mParentHandler != null) {
-                mParentHandler.call();
-            }
 
             mTileMask[q][r] = true;
             mTileRowMask[q] = true;
@@ -49,6 +45,17 @@ class HexagonTileStore implements ISyncVar {
         }
     }
 
+    @Override
+    public boolean isDirty(int clientId) {
+        return mDirty;
+    }
+
+    @Override
+    public void resetDirtyFlag() {
+        mDirty = false;
+    }
+
+    @Override
     public void deserialize(DataInputStream stream) throws IOException {
         final int maskSize = NetworkMessage.maskSizeInBytes(mTileRowMask.length);
         boolean[] tileRowMask =
@@ -71,7 +78,8 @@ class HexagonTileStore implements ISyncVar {
         }
     }
 
-    public void serialize(DataOutputStream stream) throws IOException {
+    @Override
+    public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.write(NetworkMessage.convertBoolArrayToBytes(mTileRowMask));
 
         for (int q = 0; q < mTileRowMask.length; q++) {
@@ -88,13 +96,9 @@ class HexagonTileStore implements ISyncVar {
 
                 if (tile == null) continue;
 
-                tile.serialize(stream);
+                tile.serialize(stream, clientId);
             }
         }
-    }
-
-    public void registerListener(ISyncVarUpdateHandler handler) {
-        mParentHandler = handler;
     }
 
     /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */

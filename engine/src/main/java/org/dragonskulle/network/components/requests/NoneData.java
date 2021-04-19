@@ -17,9 +17,10 @@ public class NoneData implements INetSerializable {
      * Serialize Sync Var.
      *
      * @param stream the output stream
+     * @param clientId client network ID
      */
     @Override
-    public void serialize(DataOutputStream stream) {}
+    public void serialize(DataOutputStream stream, int clientId) {}
 
     /**
      * Deserialize sync var.

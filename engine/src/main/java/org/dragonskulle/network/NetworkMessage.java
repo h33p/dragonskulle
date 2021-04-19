@@ -2,6 +2,7 @@
 package org.dragonskulle.network;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /** @author Oscar L */
@@ -53,6 +54,20 @@ public class NetworkMessage {
      * @return the bytes from booleans
      */
     public static byte[] convertBoolArrayToBytes(boolean[] bools) {
+        ArrayList<Byte> out = new ArrayList<>();
+        for (boolean b : bools) {
+            out.add(b ? (byte) 1 : (byte) 0);
+        }
+        return toByteArray(out);
+    }
+
+    /**
+     * Converts a collection mask into bytes.
+     *
+     * @param bools the collection of booleans
+     * @return the bytes from booleans
+     */
+    public static byte[] convertCollectionMaskToBytes(Collection<Boolean> bools) {
         ArrayList<Byte> out = new ArrayList<>();
         for (boolean b : bools) {
             out.add(b ? (byte) 1 : (byte) 0);

@@ -258,7 +258,8 @@ public class HexagonTile implements INetSerializable {
         return getBuilding() != null;
     }
 
-    public void serialize(DataOutputStream stream) throws IOException {
+    @Override
+    public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.writeFloat(mHeight);
         stream.writeByte(mTileType.getValue());
 
@@ -284,6 +285,7 @@ public class HexagonTile implements INetSerializable {
         stream.writeInt(claimId);
     }
 
+    @Override
     public void deserialize(DataInputStream stream) throws IOException {
         mHeight = stream.readFloat();
         TileType newType = TileType.getTile(stream.readByte());

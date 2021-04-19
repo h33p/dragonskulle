@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -19,6 +20,7 @@ import org.dragonskulle.network.components.requests.NoneData;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
+import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.utils.IOUtils;
 
@@ -46,6 +48,9 @@ public class NetworkObject extends Component {
     @Getter private final ArrayList<ServerEvent<?>> mServerEvents = new ArrayList<>();
 
     private boolean mDestroyed = false;
+
+    private final ArrayList<Boolean> mTmpMask = new ArrayList<>();
+    private final ArrayList<ISyncVar> mTmpVar = new ArrayList<>();
 
     private final ServerEvent<NoneData> mDestroyEvent =
             new ServerEvent<>(
@@ -251,36 +256,32 @@ public class NetworkObject extends Component {
      * @return the owner id of the network object
      * @throws IOException thrown if failed to read client streams
      */
-    public int updateFromBytes(DataInputStream stream) throws IOException {
+    public void updateFromBytes(DataInputStream stream) throws IOException {
         int maskLength = stream.readByte();
 
         byte[] mask = IOUtils.readNBytes(stream, maskLength);
 
         boolean[] masks = NetworkMessage.getMaskFromBytes(mask);
 
-        final int mNetworkableComponentsSize = mNetworkableComponents.size();
-        for (int i = 0; i < masks.length; i++) {
-            boolean shouldUpdate = masks[i];
-            if (shouldUpdate) {
-                log.fine(
-                        "Parent id of child to update is :"
-                                + mOwnerId
-                                + "\nComponent id of children bytes to update is : "
-                                + i);
-                if (i < mNetworkableComponentsSize) {
-                    NetworkableComponent noc = mNetworkableComponents.get(i).get();
-                    log.fine("Did i manage to find the component? " + (noc == null));
-                    if (noc == null) {
-                        throw new IOException(String.format("Can't find component %d", i));
-                    } else {
-                        noc.updateFromStream(stream);
-                    }
-                }
-            } else {
-                log.fine("Shouldn't update child");
-            }
+        mTmpVar.clear();
+
+        mNetworkableComponents.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .flatMap(NetworkableComponent::getSyncVars)
+                .collect(Collectors.toCollection(() -> mTmpVar));
+
+        int sz = mTmpVar.size();
+
+        for (int i = 0; i < sz; i++) {
+            if (!masks[i]) continue;
+            mTmpVar.get(i).deserialize(stream);
         }
-        return mOwnerId;
+
+        mNetworkableComponents.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .forEach(NetworkableComponent::afterNetUpdate);
     }
 
     /**
@@ -301,7 +302,8 @@ public class NetworkObject extends Component {
         mNetworkableComponents.stream()
                 .filter(Reference::isValid)
                 .map(Reference::get)
-                .forEach(NetworkableComponent::resetUpdateMask);
+                .flatMap(NetworkableComponent::getSyncVars)
+                .forEach(ISyncVar::resetDirtyFlag);
     }
 
     /**
@@ -312,61 +314,45 @@ public class NetworkObject extends Component {
      * @param forceUpdate whether or not forcefully update all syncvars
      */
     public void sendUpdate(ServerClient client, boolean forceUpdate) {
-        // write 4 byte size of each child, then write child bytes.
-        boolean shouldBroadcast = false;
-        boolean[] didChildUpdateMask = new boolean[mNetworkableComponents.size()];
-        log.fine("Networkable Object has n components : " + mNetworkableComponents.size());
-        for (int i = 0; i < didChildUpdateMask.length; i++) {
-            if (forceUpdate || mNetworkableComponents.get(i).get().hasBeenModified()) {
-                didChildUpdateMask[i] = true;
-                if (!shouldBroadcast) {
-                    shouldBroadcast = true;
-                }
+        int netId = client.getNetworkID();
+
+        mTmpVar.clear();
+
+        mNetworkableComponents.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .flatMap(NetworkableComponent::getSyncVars)
+                .collect(Collectors.toCollection(() -> mTmpVar));
+
+        mTmpMask.clear();
+
+        mTmpVar.stream()
+                .map(s -> forceUpdate || s.isDirty(netId))
+                .collect(Collectors.toCollection(() -> mTmpMask));
+
+        boolean shouldBroadcast = mTmpMask.contains(true);
+
+        if (!shouldBroadcast) {
+            return;
+        }
+
+        byte[] mask = NetworkMessage.convertCollectionMaskToBytes(mTmpMask);
+
+        try (DataOutputStream stream = client.getDataOut()) {
+            stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
+            stream.writeInt(getNetworkObjectId());
+            stream.writeByte((byte) mask.length);
+            stream.write(mask);
+
+            int sz = mTmpVar.size();
+
+            for (int i = 0; i < sz; i++) {
+                if (!mTmpMask.get(i)) continue;
+                mTmpVar.get(i).serialize(stream, netId);
             }
-        }
-        if (shouldBroadcast) {
-            try (DataOutputStream stream = client.getDataOut()) {
-                stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_OBJECT);
-                generateUpdateBytes(stream, didChildUpdateMask, forceUpdate);
-            } catch (IOException e) {
-                log.warning("Failed to serialize data!");
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Generates the updates for all of its children which changed.
-     *
-     * @param stream stream to write to
-     * @param didChildUpdateMask the mask of children which updates
-     * @param forceUpdate whether to force update all components
-     * @return the bytes to be broadcasted
-     */
-    private void generateUpdateBytes(
-            DataOutputStream stream, boolean[] didChildUpdateMask, boolean forceUpdate)
-            throws IOException {
-        //        log.fine("generating broadcast update bytes");
-        boolean[] mask = new boolean[didChildUpdateMask.length];
-
-        for (int i = 0; i < didChildUpdateMask.length; i++) {
-            mask[i] = forceUpdate || didChildUpdateMask[i];
-        }
-
-        stream.writeInt(getNetworkObjectId());
-
-        byte[] byteMask = NetworkMessage.convertBoolArrayToBytes(mask);
-
-        stream.writeByte(byteMask.length);
-
-        for (byte b : byteMask) {
-            stream.writeByte(b);
-        }
-
-        for (int i = 0; i < didChildUpdateMask.length; i++) {
-            if (didChildUpdateMask[i]) {
-                mNetworkableComponents.get(i).get().serialize(stream, forceUpdate);
-            }
+        } catch (IOException e) {
+            log.warning("Failed to serialize data!");
+            e.printStackTrace();
         }
     }
 }

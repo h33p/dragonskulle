@@ -122,7 +122,8 @@ public class ServerTest {
                                 .spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
                         man.getServerManager()
                                 .spawnNetworkObject(id, TEMPLATE_MANAGER.find("capital"));
-                    });
+                    },
+                    null);
 
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
