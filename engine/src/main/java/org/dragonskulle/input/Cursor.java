@@ -107,7 +107,7 @@ public class Cursor {
         Graphics2D bGr = bImage.createGraphics();
         bGr.drawImage(scaledImage, 0, 0, null);
         bGr.dispose();
-
+        //end
         int width = bImage.getWidth();
         int height = bImage.getHeight();
 

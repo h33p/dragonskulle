@@ -144,28 +144,20 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         if (mOptionObjects.size() != 0 || mOptions == null) {
             return;
         }
-        boolean shouldDisable = false;
         for (int i = 0; i < mOptions.length; i++) {
-            if (hasSelection() && i == getSelected()) {
-                shouldDisable = true; // disables the already selected option from the list.
-            } else {
-                final int ii = i;
-                final boolean finalShouldDisable = shouldDisable;
-                GameObject option =
-                        new GameObject(
-                                "option_" + i,
-                                new TransformUI(true),
-                                (handle) -> {
-                                    UIButton button =
-                                            new UIButton(mOptions[ii], (__, ___) -> select(ii));
-                                    if (finalShouldDisable) button.disable();
-                                    handle.addComponent(button);
-                                    TransformUI transform = handle.getTransform(TransformUI.class);
-                                    transform.setParentAnchor(
-                                            0, ii + 1, 1, ii + 2);
-                                });
-                mOptionObjects.add(option);
-            }
+            final int ii = i;
+            GameObject option =
+                    new GameObject(
+                            "option_" + i,
+                            new TransformUI(true),
+                            (handle) -> {
+                                UIButton button =
+                                        new UIButton(mOptions[ii], (__, ___) -> select(ii));
+                                handle.addComponent(button);
+                                TransformUI transform = handle.getTransform(TransformUI.class);
+                                transform.setParentAnchor(0, ii + 1, 1, ii + 2);
+                            });
+            mOptionObjects.add(option);
         }
         getGameObject().addChildren(mOptionObjects);
         if (mOnOpen != null) {

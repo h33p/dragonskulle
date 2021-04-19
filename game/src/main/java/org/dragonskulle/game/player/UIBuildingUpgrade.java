@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import lombok.Getter;
@@ -12,8 +13,9 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.game.player.network_data.StatData;
+import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.*;
 
 /**
@@ -29,11 +31,15 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
     private Reference<GameObject> mStatChildren;
     @Setter
     private Building mLastBuilding;
-    private int ctr;
     private StatType selectedStatType = StatType.ATTACK;
     private Reference<UIButton> increaserReference;
     private Reference<GameObject> increaserGOReference;
     private String delimiter = " -- ";
+    private TransformUI transform;
+    private Reference<UITextRect> defenceLevelTextRef;
+    private Reference<UITextRect> attackLevelTextRef;
+    private Reference<UITextRect> tokenGenerationLevelTextRef;
+    private final ArrayList<Reference<UITextRect>> mTextValueReferences = new ArrayList<>();
 
     public UIBuildingUpgrade(
             UIMenuLeftDrawer.IGetHexChosen mGetHexChosen, UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
@@ -71,57 +77,14 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
     }
 
     private void buildStatUpgradeChildren(Building building) {
+
         String[] stats =
                 building.getUpgradeableStats().stream()
                         .filter(Objects::nonNull)
                         .map(s -> s.getType().getNiceName() + delimiter + s.getValue())
-                        .toArray(String[]::new);
+                        .toArray(String[]::new); //need to link this to upgrade menu
 
-        mStatChildren =
-                mBuildingUpgradeComponent
-                        .get()
-                        .buildChild(
-                                "stats_upgrade_children",
-                                new TransformUI(true),
-                                (self) -> {
-                                    UIDropDown uiDropDown =
-                                            new UIDropDown(
-                                                    0,
-                                                    (drop) -> {
-                                                        selectedStatType =
-                                                                StatType.fromNiceName(
-                                                                        drop.getSelectedOption()
-                                                                                .split(delimiter)[
-                                                                                0]);
-                                                        if (Reference.isValid(increaserReference)) {
-                                                            increaserReference
-                                                                    .get()
-                                                                    .getLabelText()
-                                                                    .get()
-                                                                    .setText(
-                                                                            "Increase for "
-                                                                                    + mLastBuilding
-                                                                                    .getStat(
-                                                                                            selectedStatType)
-                                                                                    .getCost());
-                                                        }
-                                                    },
-                                                    stats);
-                                    uiDropDown.setOnOpen(
-                                            (__) -> {
-                                                log.info("running on open");
-                                                if (Reference.isValid(increaserGOReference)) {
-                                                    increaserGOReference.get().setEnabled(false);
-                                                }
-                                            });
-                                    uiDropDown.setOnHide(
-                                            (__) -> {
-                                                if (Reference.isValid(increaserReference)) {
-                                                    increaserGOReference.get().setEnabled(true);
-                                                }
-                                            });
-                                    self.addComponent(uiDropDown);
-                                });
+
     }
 
     /**
@@ -130,51 +93,47 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
      */
     @Override
     public void onStart() {
-        mBuildingUpgradeComponent =
+        mStatChildren =
                 getGameObject()
                         .buildChild(
-                                "upgrade_options",
-                                new TransformUI(),
+                                "building_upgrade",
+                                new TransformUI(true),
                                 (self) -> {
-                                    TransformUI transform = self.getTransform(TransformUI.class);
-                                    transform.setPosition(0f, -0.1f);
-                                    transform.setParentAnchor(0.02f, 0f);
-                                    transform.setMargin(0f, -0.21f, -0f, 0.21f);
+                                    transform = self.getTransform(TransformUI.class);
+                                    UIManager manager = UIManager.getInstance();
+                                    manager.buildHorizontalUI(self, 0.08f,
+                                            0.25f,
+                                            0.65f,
+                                            new UIFlatImage(new SampledTexture("ui/slider.png")),//"ui/attack_symbol.png")),
+                                            new UIFlatImage(new SampledTexture("ui/slider.png")),//ui/defense_symbol.png")),
+                                            new UIFlatImage(new SampledTexture("ui/slider.png"))//ui/token_generation_symbol.png"))
+                                    );
+                                    //better way to do this dynamiucally
+                                    UITextRect attackLevelText = new UITextRect("0");
+                                    UITextRect defenceLevelText = new UITextRect("0");
+                                    UITextRect tokenGenerationText = new UITextRect("0");
+                                    attackLevelTextRef = attackLevelText.getReference(UITextRect.class);
+//                                    mTextValueReferences.add(attackLevelTextRef);
+                                    defenceLevelTextRef = defenceLevelText.getReference(UITextRect.class);
+//                                    mTextValueReferences.add(defenceLevelTextRef);
+                                    tokenGenerationLevelTextRef = tokenGenerationText.getReference(UITextRect.class);
+//                                    mTextValueReferences.add(tokenGenerationLevelTextRef);
+                                    manager.buildHorizontalUI(self, 0.08f,
+                                            0.65f,
+                                            0.85f,
+                                            attackLevelText,
+                                            defenceLevelText,
+                                            tokenGenerationText
+                                    );
 
-                                    increaserGOReference =
-                                            self.buildChild(
-                                                    " -- ",
-                                                    new TransformUI(),
-                                                    (go) -> {
-                                                        UIButton increaser =
-                                                                new UIButton(
-                                                                        "default increaser",
-                                                                        (button, __) -> {
-                                                                            Reference<Player>
-                                                                                    playerReference =
-                                                                                    getGetPlayer()
-                                                                                            .get();
-                                                                            if (Reference.isValid(
-                                                                                    playerReference)) {
-                                                                                playerReference
-                                                                                        .get()
-                                                                                        .getClientStatRequest()
-                                                                                        .invoke(
-                                                                                                new StatData(
-                                                                                                        mLastBuilding,
-                                                                                                        selectedStatType));
-                                                                            }
-                                                                        });
+                                    manager.buildHorizontalUI(self, 0.08f,
+                                            0.95f,
+                                            1.15f,
+                                            new UIButton("+", (__, ___) -> log.info("will increase attack stat")),
+                                            new UIButton("+", (__, ___) -> log.info("will increase defence stat")),
+                                            new UIButton("+", (__, ___) -> log.info("will increase token generation stat"))
+                                    );
 
-                                                        increaserReference =
-                                                                increaser.getReference(
-                                                                        UIButton.class);
-                                                        TransformUI subtransform =
-                                                                go.getTransform(TransformUI.class);
-                                                        subtransform.setPosition(0f, 0.25f);
-                                                        subtransform.setMargin(0f, 0.4f);
-                                                        go.addComponent(increaser);
-                                                    });
                                 });
     }
 
@@ -185,7 +144,15 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
             Building building = tile.getBuilding();
             if (building != null && building.statsRequireVisualUpdate()) {
                 StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
-                building.getStats()
+                ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();
+//                for (int i = 0; i < upgradeableStats.size(); i++) {
+//                    Reference<UITextRect> textRef = mTextValueReferences.get(i);
+//                    if (Reference.isValid(textRef)) {
+//                        textRef.get().getLabelText().get().setText((Integer.toString(upgradeableStats.get(i).getLevel())));
+//                    }
+//                }
+
+                upgradeableStats
                         .forEach(
                                 s ->
                                         builder.append(s.getType())
