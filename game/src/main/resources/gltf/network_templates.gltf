@@ -36,7 +36,8 @@
                 2,
                 3,
                 4,
-                5
+                5,
+                6
             ]
         }
     ],
@@ -166,6 +167,29 @@
                 }
             },
             "name" : "aStarAi",
+            "translation" : [
+                -8,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.player.Player",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.player.ai.BuildingAimer",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "buildingAimer",
             "translation" : [
                 -8,
                 0,
