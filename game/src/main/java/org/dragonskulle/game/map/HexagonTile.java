@@ -75,6 +75,7 @@ public class HexagonTile implements INetSerializable {
 
     private static final float WATER_THRESHOLD = -0.3f;
     private static final float MOUNTAINS_THRESHOLD = 0.8f;
+    private static final float WATER_OFF = 0.1f;
 
     /** This is the axial storage system for each tile. */
     @Getter private final int mQ;
@@ -123,7 +124,8 @@ public class HexagonTile implements INetSerializable {
     HexagonTile(int q, int r, float height, TileToStoreActions handler) {
         this.mQ = q;
         this.mR = r;
-        this.mHeight = handler.getNetworkManager().isClient() ? WATER_THRESHOLD : height;
+        this.mHeight =
+                handler.getNetworkManager().isClient() ? WATER_THRESHOLD + WATER_OFF : height;
         this.mHandler = handler;
 
         if (handler.getNetworkManager().isClient()) {
@@ -385,7 +387,7 @@ public class HexagonTile implements INetSerializable {
         if (mTileType == TileType.WATER) {
             mGameObject.getTransform(TransformHex.class).setHeight(WATER_THRESHOLD);
 
-            mSecondaryFade.get().setState(fadeIn, mHeight - WATER_THRESHOLD - 0.1f);
+            mSecondaryFade.get().setState(fadeIn, mHeight - WATER_THRESHOLD - WATER_OFF);
         } else {
             mFadeControl.get().setState(fadeIn, mHeight);
         }
