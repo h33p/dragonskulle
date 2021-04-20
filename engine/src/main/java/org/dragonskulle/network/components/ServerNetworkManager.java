@@ -128,6 +128,7 @@ public class ServerNetworkManager {
         @Getter private final Reference<NetworkObject> mNetworkObject;
         @Getter private final int mTemplateId;
         @Getter private final Set<ServerClient> mSpawnedFor;
+        private boolean mAwoken = false;
 
         public ServerObjectEntry(Reference<NetworkObject> networkObject, int templateId) {
             mNetworkObject = networkObject;
@@ -141,6 +142,11 @@ public class ServerNetworkManager {
 
             if (obj == null) {
                 return;
+            }
+
+            if (!mAwoken) {
+                obj.beforeNetSerialize();
+                mAwoken = true;
             }
 
             boolean forceUpdate = false;

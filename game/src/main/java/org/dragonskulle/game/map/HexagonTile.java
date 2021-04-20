@@ -303,6 +303,7 @@ public class HexagonTile implements INetSerializable {
         TileType newType = TileType.getTile(stream.readByte());
 
         if (newType != mTileType) {
+            mHeight = -1f;
             updateHeight(false, true);
             mHeight = height;
             mTileType = newType;

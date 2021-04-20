@@ -51,7 +51,7 @@ class HexagonTileStore implements ISyncVar {
                 Player p = serverManager.getIdSingletons(id).get(Player.class);
 
                 // Spectators (non-players) can view all tiles
-                if (p != null && !p.isTileViewable(mTiles[q][r])) continue;
+                if (p != null && !p.hasLost() && !p.isTileViewable(mTiles[q][r])) continue;
 
                 getTileMask(id)[q][r] = true;
                 getTileRowMask(id)[q] = true;
@@ -137,7 +137,7 @@ class HexagonTileStore implements ISyncVar {
         boolean[] tileRowMask = getTileRowMask(id);
         boolean[] dirty = getDirty(id);
 
-        if (p != null) {
+        if (p != null && !p.hasLost()) {
             p.getViewableTiles()
                     .forEach(
                             tile -> {

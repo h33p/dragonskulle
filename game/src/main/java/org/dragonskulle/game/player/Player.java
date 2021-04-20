@@ -372,6 +372,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param building The building to add to {@link #mOwnedBuildings}.
      */
     public void addOwnership(Building building) {
+
         if (building == null) return;
 
         // Get the tile the building is on.
@@ -385,6 +386,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Add the building at the relevant position.
         mOwnedBuildings.put(tile, building.getReference(Building.class));
+
+        updateViewableTiles(building);
     }
 
     /**

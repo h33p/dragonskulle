@@ -56,7 +56,12 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         mMapReference
                 .get()
                 .getAllTiles()
-                .forEach(tile -> setFog(tile, !activePlayer.isTileViewable(tile)));
+                .forEach(
+                        tile ->
+                                setFog(
+                                        tile,
+                                        !activePlayer.hasLost()
+                                                && !activePlayer.isTileViewable(tile)));
     }
 
     @Override
