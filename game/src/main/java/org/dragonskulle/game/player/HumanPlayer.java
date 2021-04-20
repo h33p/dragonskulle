@@ -414,7 +414,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
-        //HashSet<HexagonTile> mBuildableTiles =
+        HexagonMap mMap = mPlayer.get().getMap();
+       // HashSet<HexagonTile> mBuildableTiles =
     }
 
     /** Marks visuals to update whenever a new object is spawned. */
