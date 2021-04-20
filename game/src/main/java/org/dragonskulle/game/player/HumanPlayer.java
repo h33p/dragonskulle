@@ -420,8 +420,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
-        HexagonMap mMap = mPlayer.get().getMap();
-        Stream<HexagonTile> buildableTiles =  mMap.getAllTiles();
+        HexagonMap map = mPlayer.get().getMap();
+        Stream<HexagonTile> buildableTiles =  map.getAllTiles();
 
         buildableTiles.forEach(
                 (tile) -> {
