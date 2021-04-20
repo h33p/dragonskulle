@@ -73,7 +73,7 @@ class HexagonTileStore implements ISyncVar {
 
         Integer id = clientId;
 
-        dirtyNewlyViewableTiles(id);
+        dirtyViewableTiles(id);
 
         boolean[] dirty = mDirty.get(id);
 
@@ -129,7 +129,7 @@ class HexagonTileStore implements ISyncVar {
         return dirty;
     }
 
-    private void dirtyNewlyViewableTiles(Integer id) {
+    private void dirtyViewableTiles(Integer id) {
         Player p = mMap.getNetworkManager().getIdSingletons(id).get(Player.class);
 
         boolean[][] viewedTileMask = getViewedTileMask(id);
@@ -137,29 +137,19 @@ class HexagonTileStore implements ISyncVar {
         boolean[] tileRowMask = getTileRowMask(id);
         boolean[] dirty = getDirty(id);
 
-        if (p != null && !p.hasLost()) {
-            p.getViewableTiles()
-                    .forEach(
-                            tile -> {
-                                int q = tile.getQ() + mCoordShift;
-                                int r = tile.getR() + mCoordShift;
+        if (p.hasLost()) p = null;
 
-                                if (!viewedTileMask[q][r]) {
-                                    viewedTileMask[q][r] = true;
-                                    tileMask[q][r] = true;
-                                    tileRowMask[q] = true;
-                                    dirty[0] = true;
-                                }
-                            });
-        } else {
-            for (int q = 0; q < viewedTileMask.length; q++) {
-                for (int r = 0; r < viewedTileMask.length; r++) {
-                    if (!viewedTileMask[q][r]) {
-                        viewedTileMask[q][r] = true;
-                        tileMask[q][r] = true;
-                        tileRowMask[q] = true;
-                        dirty[0] = true;
-                    }
+        for (int q = 0; q < viewedTileMask.length; q++) {
+            for (int r = 0; r < viewedTileMask.length; r++) {
+                HexagonTile tile = mTiles[q][r];
+                boolean viewable = p == null || p.isTileViewable(tile);
+                if (!viewedTileMask[q][r] && viewable) {
+                    viewedTileMask[q][r] = true;
+                    tileMask[q][r] = true;
+                    tileRowMask[q] = true;
+                    dirty[0] = true;
+                } else if (viewedTileMask[q][r] && !viewable) {
+                    viewedTileMask[q][r] = false;
                 }
             }
         }
