@@ -292,6 +292,7 @@ public class HexagonTile implements INetSerializable {
         TileType newType = TileType.getTile(stream.readByte());
 
         if (newType != mTileType) {
+            mTileType = newType;
             mGameObject.destroy();
             buildGameObject();
         } else {
@@ -401,5 +402,7 @@ public class HexagonTile implements INetSerializable {
         } else {
             mHighlightControls = controls;
         }
+
+        mHandler.updateGameObject(this);
     }
 }

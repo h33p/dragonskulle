@@ -62,6 +62,10 @@ class HexagonTileStore implements ISyncVar {
         NetworkManager getNetworkManager() {
             return mMap.getNetworkManager();
         }
+
+        void updateGameObject(HexagonTile tile) {
+            mMap.updateTileGameObject(tile);
+        }
     }
 
     @Override

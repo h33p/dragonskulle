@@ -2,13 +2,13 @@
 package org.dragonskulle.game.map;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.input.Actions;
@@ -26,7 +26,7 @@ import org.joml.Vector3f;
  */
 @Accessors(prefix = "m")
 @Log
-public class HexagonMap extends NetworkableComponent implements IOnStart, IOnAwake {
+public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
     /** The size that is used to create the map. */
     @Getter @Setter private int mSize = 51;
@@ -225,7 +225,8 @@ public class HexagonMap extends NetworkableComponent implements IOnStart, IOnAwa
 
     @Override
     protected void onNetworkInitialize() {
-        mTiles = new HexagonTileStore(mSize, 3, this);
+        Random rand = new Random();
+        mTiles = new HexagonTileStore(mSize, rand.nextInt(), this);
     }
 
     @Override
@@ -243,16 +244,7 @@ public class HexagonMap extends NetworkableComponent implements IOnStart, IOnAwa
         Scene.getActiveScene().registerSingleton(this);
     }
 
-    /** Spawns each HexagonTile as a GameObject. */
-    @Override
-    public void onStart() {
-
-        log.info(getGameObject().getTransform().getPosition().toString());
-
-        mTiles.getAllTiles()
-                .forEach(
-                        tile -> {
-                            getGameObject().addChild(tile.getGameObject());
-                        });
+    void updateTileGameObject(HexagonTile tile) {
+        getGameObject().addChild(tile.getGameObject());
     }
 }
