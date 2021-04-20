@@ -197,7 +197,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      *
      * @return Whether the attempt to upgrade a building's stats was invoked.
      */
-    private boolean upgradeBuilding() {
+    protected boolean upgradeBuilding() {
         log.info("AI: Upgrading");
 
         return attemptRunEvent(this::tryToUpgrade);

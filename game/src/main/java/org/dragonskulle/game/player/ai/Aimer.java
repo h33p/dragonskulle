@@ -8,6 +8,7 @@ import java.util.Random;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
@@ -195,8 +196,13 @@ public abstract class Aimer extends ProbabilisticAiPlayer {
                     }
                 }
             } else {
-                // DEFEND by adding building
+                // DEFEND by either upgrading a building or adding another one
+            	if (random.nextFloat() < 0.7) {
+            	super.upgradeBuilding();}
+            	else {
                 super.addBuilding();
+                return;
+            	}
             }
         } else {
             super.simulateInput();
