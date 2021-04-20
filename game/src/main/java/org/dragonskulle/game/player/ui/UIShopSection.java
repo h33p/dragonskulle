@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player;
+package org.dragonskulle.game.player.ui;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,18 +15,27 @@ import org.dragonskulle.ui.UIMaterial;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 
-/** @author Oscar L */
+/**
+ * This is a section of the shop which can contain a sub-screen to its super window. For example the shop can show additional options like in {@code ShopState.MY_BUILDING_SELECTED}.
+ *
+ * @author Oscar L
+ */
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart {
-    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
-    @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
+    @Getter
+    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Setter
+    @Getter
+    private ShopState mLastState = ShopState.CLOSED;
     private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
-    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter
+    @Getter
+    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> mTitleRef;
 
     /**
@@ -41,6 +50,9 @@ public class UIShopSection extends Component implements IOnStart {
         this.mGetHexChosen = mGetHexChosen;
     }
 
+    /**
+     * The Shop state. This controls what can be seen at what time.
+     */
     public enum ShopState {
         CLOSED,
         BUILDING_NEW,
@@ -48,10 +60,17 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy.
+     */
     @Override
     protected void onDestroy() {}
 
+    /**
+     * Sets the shop state.
+     *
+     * @param state the state
+     */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
             if (state.equals(ShopState.CLOSED)) {
@@ -69,8 +88,8 @@ public class UIShopSection extends Component implements IOnStart {
                     newPanel = new Reference<>(null);
                     break;
                 case BUILDING_NEW:
-                    show(mNewBuildingPanel, true);
                     newPanel = mNewBuildingPanel;
+                    newText = "New Building";
                     break;
                 case MY_BUILDING_SELECTED:
                     newPanel = mUpgradePanel;

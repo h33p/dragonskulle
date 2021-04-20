@@ -22,13 +22,15 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
-import org.dragonskulle.game.player.network_data.AttackData;
+import org.dragonskulle.game.player.ui.Screen;
+import org.dragonskulle.game.player.ui.UILinkedScrollBar;
+import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
+import org.dragonskulle.game.player.ui.UITokenCounter;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector3f;
 
@@ -325,6 +327,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(null);
                     break;
                 case ATTACKING_SCREEN:
+                    break;
+                case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
                     break;

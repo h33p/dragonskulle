@@ -12,24 +12,34 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "m")
 public class BuildingDescriptor {
-    @Getter public final int mAttack;
-    @Getter public final int mDefence;
-    @Getter public final int mTokenGeneration;
-    @Getter public final int mViewDistance;
-    @Getter public final int mAttackDistance;
-    @Getter public final int mCost;
-    @Getter public final int mSellPrice;
+    @Getter
+    public final int mAttack;
+    @Getter
+    public final int mDefence;
+    @Getter
+    public final int mTokenGeneration;
+    @Getter
+    public final int mViewDistance;
+    @Getter
+    public final int mAttackDistance;
+    @Getter
+    public final int mCost;
+    @Getter
+    public final int mSellPrice;
+    @Getter
+    public final String mIconPath;
 
     /**
      * Instantiates a new Building descriptor.
      *
-     * @param mAttack the attack value
-     * @param mDefence the defence value
+     * @param mAttack          the attack value
+     * @param mDefence         the defence value
      * @param mTokenGeneration the token generation value
-     * @param mViewDistance the view distance value
-     * @param mAttackDistance the attack distance value
-     * @param mCost the cost value
-     * @param mSellPrice the sell price value
+     * @param mViewDistance    the view distance value
+     * @param mAttackDistance  the attack distance value
+     * @param mCost            the cost value
+     * @param mSellPrice       the sell price value
+     * @param mIconPath        the icon path to be displayed in the menu
      */
     public BuildingDescriptor(
             int mAttack,
@@ -38,7 +48,8 @@ public class BuildingDescriptor {
             int mViewDistance,
             int mAttackDistance,
             int mCost,
-            int mSellPrice) {
+            int mSellPrice,
+            String mIconPath) {
         this.mAttack = mAttack;
         this.mDefence = mDefence;
         this.mTokenGeneration = mTokenGeneration;
@@ -46,6 +57,7 @@ public class BuildingDescriptor {
         this.mAttackDistance = mAttackDistance;
         this.mCost = mCost;
         this.mSellPrice = mSellPrice;
+        this.mIconPath = mIconPath;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player;
+package org.dragonskulle.game.player.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
-import org.dragonskulle.game.player.UIShopSection.ShopState;
+import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.ui.UIShopSection.ShopState;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -473,20 +474,20 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "place_button",
                 "Place Building",
                 (handle, __) -> {
-                    mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING);
-//                    if (mGetHexChosen.getHex() != null) {
-//                        log.info("Running place button lambda");
-////                        Reference<Player> player = mGetPlayer.getPlayer();
-////                        if (Reference.isValid(player)) {
-////                            player.get()
-////                                    .getClientBuildRequest()
-////                                    .invoke(new BuildData(mGetHexChosen.getHex()));
-////                        }
-////
-////                        mSetHexChosen.setHex(null);
-////                        mSetBuildingChosen.setBuilding(null);
-////                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
-//                    }
+//                    mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING);
+                    if (mGetHexChosen.getHex() != null) {
+                        log.info("Running place button lambda");
+                        Reference<Player> player = mGetPlayer.getPlayer();
+                        if (Reference.isValid(player)) {
+                            player.get()
+                                    .getClientBuildRequest()
+                                    .invoke(new BuildData(mGetHexChosen.getHex()));
+                        }
+
+                        mSetHexChosen.setHex(null);
+                        mSetBuildingChosen.setBuilding(null);
+                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                    }
                 },
                 true);
     }
