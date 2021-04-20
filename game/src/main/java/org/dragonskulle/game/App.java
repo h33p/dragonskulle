@@ -73,7 +73,7 @@ public class App implements NativeResource {
         scene.addRootObject(debugUi);
     }
 
-    private static Scene createMainScene() {
+    private static Scene createMainScene(NetworkManager networkManager) {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -145,14 +145,15 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(hexagonMap);
 
-        // Pause menu
+     	// Pause menu
         GameObject pauseMenu =
                 new GameObject(
                         "pause menu",
                         new TransformUI(),
                         (map) -> {
-                            map.addComponent(new PauseMenu());
+                            map.addComponent(new PauseMenu(networkManager));
                         });
+        mainScene.addRootObject(pauseMenu);
         
         /*
          GameObject debugUi =
@@ -167,8 +168,6 @@ public class App implements NativeResource {
                             handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
                         });
          */
-
-        mainScene.addRootObject(pauseMenu);
         
         return mainScene;
     }
@@ -176,7 +175,7 @@ public class App implements NativeResource {
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
         log.warning("We have got here " + asServer);
-        Scene mainScene = createMainScene();
+        Scene mainScene = createMainScene(networkManager);
 
         // asServer = true;
         if (asServer) {

@@ -22,22 +22,58 @@ import lombok.Setter;
 import lombok.extern.java.Log;
 
 @Log
-public class PauseMenu extends NetworkableComponent implements IOnAwake, IFixedUpdate, IFrameUpdate, IOnStart {
+public class PauseMenu extends Component implements IOnAwake, IFixedUpdate, IFrameUpdate, IOnStart {
 
 	@Getter @Setter private boolean mPaused = false;
+	
+	private Reference<NetworkManager> mNetworkManager;
 	
 	private GameObject mContainer;
 	//private UIButton mButton;
 
+	public PauseMenu(NetworkManager networkManager) {
+		mNetworkManager = networkManager.getReference(NetworkManager.class);
+	}
+
 	@Override
 	public void onStart() {
-		NetworkManager t = getNetworkManager();
-		System.out.println("t: " + t);
 	}
 	
 	@Override
 	public void onAwake() {
 		
+		mContainer = new GameObject("pause_container", new TransformUI());
+		getGameObject().addChild(mContainer);
+		
+		UIButton button = new UIButton("test", (pbutton, pdeltatime) -> {
+			System.out.println("pbutton: " + pbutton);
+			System.out.println("pdeltatime: " + pdeltatime);
+			
+			if(Reference.isValid(mNetworkManager)) {
+				NetworkManager networkManager = mNetworkManager.get(); 
+				
+				System.out.println("networkManager " + networkManager);
+				if(networkManager.getClientManager() != null) {
+					System.out.println("DISCONNECT");
+					networkManager.getClientManager().disconnect();
+				} else {
+					System.out.println("no getClientManager");
+				}
+				
+				if(networkManager.getServerManager() != null) {
+					networkManager.getServerManager().destroy();
+				}
+			} else {
+				System.out.println("cant mNetworkManager");
+			}
+			
+			return;
+		});
+		
+		mContainer.addComponent(button);
+		mContainer.setEnabled(false);
+		
+		/*
 		mContainer = new GameObject("pause_conatiner", new TransformUI());
 		getGameObject().addChild(mContainer);
 		
@@ -45,8 +81,8 @@ public class PauseMenu extends NetworkableComponent implements IOnAwake, IFixedU
 		//System.out.println("t: " + t);
 		
 		UIButton button = new UIButton("test", (pbutton, pdeltatime) -> {
-			System.out.println("pbutton" + pbutton);
-			System.out.println("pdeltatime" + pdeltatime);
+			System.out.println("pbutton: " + pbutton);
+			System.out.println("pdeltatime: " + pdeltatime);
 			
 			if(t != null) {
 				System.out.println("getNetworkManager: " + getNetworkManager());
@@ -64,6 +100,7 @@ public class PauseMenu extends NetworkableComponent implements IOnAwake, IFixedU
 		});
 		
 		mContainer.addComponent(button);
+		*/
 		
 		/*
 		mContainer = new GameObject("pause_conatiner", new TransformUI());

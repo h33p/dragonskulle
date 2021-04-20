@@ -33,7 +33,8 @@ import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 @Accessors(prefix = "m")
 @Log
 public class ServerNetworkManager {
-    /** Server event listener. */
+	
+	/** Server event listener. */
     public class Listener implements IServerListener {
         /**
          * Client connected event.
@@ -151,6 +152,9 @@ public class ServerNetworkManager {
         }
     }
 
+    /** Whether the server should return to the main menu.  */
+    private boolean mReturnToMenu = false;
+    
     /** Server event listener. */
     private final Listener mListener = new Listener();
     /** Underlying server instance. */
@@ -282,8 +286,8 @@ public class ServerNetworkManager {
                 .map(Reference::get)
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
-
-        mManager.onServerDestroy();
+        
+        mReturnToMenu = true;
     }
 
     /** Network update, called by {@link NetworkManager}. */
@@ -330,6 +334,16 @@ public class ServerNetworkManager {
                             }
                             return true;
                         });
+        
+        if (mReturnToMenu) {        	
+        	Engine engine = Engine.getInstance();
+
+            if (engine.getPresentationScene() == mManager.getGameScene()) {
+                engine.loadPresentationScene(Scene.getActiveScene());
+            }
+            
+            mManager.onServerDestroy();
+        }
     }
 
     /**
