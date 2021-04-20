@@ -98,9 +98,12 @@ public class HexagonTile implements INetSerializable {
     @Getter(AccessLevel.PACKAGE)
     private GameObject mGameObject;
 
+    /** Controls height and fading of the tile */
     private Reference<FadeTile> mFadeControl;
+    /** Controls height and fading of secondary tile surface */
     private Reference<FadeTile> mSecondaryFade;
 
+    /** Controls highlighting on the tile */
     @Getter(AccessLevel.PACKAGE)
     private Reference<HighlightControls> mHighlightControls;
 
@@ -364,6 +367,12 @@ public class HexagonTile implements INetSerializable {
         return mGameObject.getTransform(TransformHex.class).getHeight();
     }
 
+    /**
+     * Update the height of the tile
+     *
+     * @param fadeIn whether the tile should fade in, or fade out
+     * @param destroyOnFadeOut set to automatically destroy the object if it fades out
+     */
     private void updateHeight(boolean fadeIn, boolean destroyOnFadeOut) {
 
         mFadeControl.get().setDestroyOnFadeOut(destroyOnFadeOut);
@@ -381,6 +390,7 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
+    /** Builds the tile object, and notifies {@link HexagonMap} of this change */
     private void buildGameObject() {
         mSecondaryFade = null;
 

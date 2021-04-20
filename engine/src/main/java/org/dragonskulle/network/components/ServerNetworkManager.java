@@ -178,14 +178,13 @@ public class ServerNetworkManager {
     /** Describes the current state of the game */
     private ServerGameState mGameState = ServerGameState.STARTING;
 
-    @Getter private final SingletonStore mSingletons = new SingletonStore();
-
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
     @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
+    /** Stores per-owner singletons. Can be looked up with getIdSingletons */
     private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
 
     /**

@@ -171,6 +171,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         return -1f;
     }
 
+    /**
+     * Get a stream of {@link NetworkObject}
+     *
+     * @return stream of network objects, or {@code null} if there is no active networked game
+     */
     public Stream<NetworkObject> getNetworkObjects() {
         Stream<Reference<NetworkObject>> obj = null;
 
@@ -185,26 +190,29 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         return obj == null ? null : obj.filter(Reference::isValid).map(Reference::get);
     }
 
+    /**
+     * Get stream of objects owned by a particular owner
+     *
+     * @param ownerId target owner to yield the objects for
+     * @return stream of network objects whose owner is {@code ownerId}. {@code null}, if there is
+     *     no networked game active.
+     */
     public Stream<NetworkObject> getObjectsOwnedBy(int ownerId) {
         Stream<NetworkObject> obj = getNetworkObjects();
 
         return obj == null ? null : obj.filter(o -> o.getOwnerId() == ownerId);
     }
 
+    /**
+     * Get a network object by its ID
+     *
+     * @param netId network ID of an object
+     * @return {@link NetworkObject} corresponding to the netId, {@code null} if not found
+     */
     public NetworkObject getObjectById(int netId) {
         Stream<NetworkObject> obj = getNetworkObjects();
 
         return obj == null ? null : obj.filter(o -> o.getId() == netId).findAny().orElse(null);
-    }
-
-    public SingletonStore getSingletons() {
-        if (mServerManager != null) {
-            return mServerManager.getSingletons();
-        } else if (mClientManager != null) {
-            return mClientManager.getSingletons();
-        } else {
-            return null;
-        }
     }
 
     /**

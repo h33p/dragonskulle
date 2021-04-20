@@ -168,8 +168,7 @@ public class ClientNetworkManager {
     /** An map of references to objects. */
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
 
-    @Getter private final SingletonStore mSingletons = new SingletonStore();
-
+    /** Stores per-owner singletons. Can be looked up with getIdSingletons */
     private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
 
     /**
