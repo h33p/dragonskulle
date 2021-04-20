@@ -69,7 +69,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             log.info(
                     "AI: I have "
                             + getPlayer().getNumberOfOwnedBuildings()
-                            + " buildings. Should be  more than  one");
+                            + " buildings. Should be  more than  one.");
 
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
