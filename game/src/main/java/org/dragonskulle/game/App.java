@@ -145,7 +145,7 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(hexagonMap);
 
-     	// Pause menu
+        // Pause menu
         GameObject pauseMenu =
                 new GameObject(
                         "pause menu",
@@ -154,21 +154,21 @@ public class App implements NativeResource {
                             map.addComponent(new PauseMenu(networkManager));
                         });
         mainScene.addRootObject(pauseMenu);
-        
+
         /*
-         GameObject debugUi =
-                new GameObject(
-                        "debugUi",
-                        new TransformUI(true),
-                        (handle) -> {
-                            handle.getTransform(TransformUI.class)
-                                    .setParentAnchor(0.0f, 1f, 0.5f, 1f);
-                            handle.getTransform(TransformUI.class).setMargin(0f, -0.3f, 0f, 0f);
-                            handle.getTransform(TransformUI.class).setPivotOffset(0f, 1f);
-                            handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
-                        });
-         */
-        
+        GameObject debugUi =
+               new GameObject(
+                       "debugUi",
+                       new TransformUI(true),
+                       (handle) -> {
+                           handle.getTransform(TransformUI.class)
+                                   .setParentAnchor(0.0f, 1f, 0.5f, 1f);
+                           handle.getTransform(TransformUI.class).setMargin(0f, -0.3f, 0f, 0f);
+                           handle.getTransform(TransformUI.class).setPivotOffset(0f, 1f);
+                           handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
+                       });
+        */
+
         return mainScene;
     }
 

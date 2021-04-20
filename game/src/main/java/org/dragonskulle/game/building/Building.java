@@ -4,9 +4,7 @@ package org.dragonskulle.game.building;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.stream.Stream;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -480,13 +478,15 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The owning player, or {@code null}.
      */
     private Player getOwner(int ownerId) {
-        Stream<NetworkObject> networkObjects = getNetworkObject().getNetworkManager().getObjectsOwnedBy(ownerId);
-    	
-        if(networkObjects == null) {
-        	return null;
+        Stream<NetworkObject> networkObjects =
+                getNetworkObject().getNetworkManager().getObjectsOwnedBy(ownerId);
+
+        if (networkObjects == null) {
+            return null;
         }
-        
-    	return networkObjects.map(NetworkObject::getGameObject)
+
+        return networkObjects
+                .map(NetworkObject::getGameObject)
                 .map(go -> go.getComponent(Player.class))
                 .filter(Reference::isValid)
                 .map(Reference::get)
