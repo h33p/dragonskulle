@@ -82,7 +82,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         Reference<FogTile> tileRef = mFogTiles.get(tile);
 
         if (Reference.isValid(tileRef)) {
-            tileRef.get().setFog(enable);
+            tileRef.get().setFog(enable, tile.getHeight());
             return;
         } else if (!enable) {
             return;

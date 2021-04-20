@@ -5,7 +5,6 @@ import java.util.HashSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -21,7 +20,6 @@ import org.joml.Vector4f;
  *     valid, and invalid tiles, and so on.
  */
 @Accessors(prefix = "m")
-@Log
 public class MapEffects extends Component implements IOnStart, ILateFrameUpdate {
 
     /** Describes tile highlight option. */

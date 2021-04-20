@@ -349,6 +349,7 @@ public class NetworkObject extends Component {
             for (int i = 0; i < sz; i++) {
                 if (!mTmpMask.get(i)) continue;
                 mTmpVar.get(i).serialize(stream, netId);
+                mTmpVar.get(i).resetDirtyFlag(netId);
             }
         } catch (IOException e) {
             log.warning("Failed to serialize data!");

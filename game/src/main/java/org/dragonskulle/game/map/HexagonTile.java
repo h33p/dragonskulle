@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
-import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
@@ -92,7 +92,8 @@ public class HexagonTile implements INetSerializable {
     @Getter(AccessLevel.PACKAGE)
     private GameObject mGameObject;
 
-    private Transform3D mSecondaryTransform;
+    private Reference<HeightController> mHeightController;
+    private Reference<HeightController> mSecondaryController;
 
     @Getter(AccessLevel.PACKAGE)
     private Reference<HighlightControls> mHighlightControls;
@@ -113,7 +114,7 @@ public class HexagonTile implements INetSerializable {
     HexagonTile(int q, int r, float height, TileToStoreActions handler) {
         this.mQ = q;
         this.mR = r;
-        this.mHeight = height;
+        this.mHeight = handler.getNetworkManager().isClient() ? WATER_THRESHOLD : height;
         this.mHandler = handler;
 
         if (height <= WATER_THRESHOLD) {
@@ -302,32 +303,49 @@ public class HexagonTile implements INetSerializable {
         int buildingId = stream.readInt();
 
         if (buildingId != -1) {
-            NetworkObject obj = manager.getObjectById(buildingId);
+            // We need to schedule an event here, because the capital may have spawned (will have
+            // spawned) after the data update message
+            Engine.getInstance()
+                    .scheduleEndOfLoopEvent(
+                            () -> {
+                                NetworkObject obj = manager.getObjectById(buildingId);
 
-            Reference<Building> b =
-                    obj == null ? null : obj.getGameObject().getComponent(Building.class);
+                                Reference<Building> b =
+                                        obj == null
+                                                ? null
+                                                : obj.getGameObject().getComponent(Building.class);
 
-            if (!Reference.isValid(b)) {
-                log.severe("Deserialized a building, but did not find it locally!");
-            } else if (b != mBuilding) {
-                setBuilding(b.get());
-            }
+                                if (!Reference.isValid(b)) {
+                                    log.severe(
+                                            "Deserialized a building, but did not find it locally!");
+                                } else if (b != mBuilding) {
+                                    setBuilding(b.get());
+                                }
+                            });
         }
 
         int claimId = stream.readInt();
 
         if (claimId != -1) {
-            NetworkObject obj = manager.getObjectById(claimId);
+            // Same here
+            Engine.getInstance()
+                    .scheduleEndOfLoopEvent(
+                            () -> {
+                                NetworkObject obj = manager.getObjectById(claimId);
 
-            Reference<Building> b =
-                    obj == null ? null : obj.getGameObject().getComponent(Building.class);
+                                Reference<Building> b =
+                                        obj == null
+                                                ? null
+                                                : obj.getGameObject().getComponent(Building.class);
 
-            if (!Reference.isValid(b)) {
-                log.severe("Deserialized a claimant, but did not find it locally!");
-            } else if (b != mClaimedBy) {
-                removeClaim();
-                setClaimedBy(b.get());
-            }
+                                if (!Reference.isValid(b)) {
+                                    log.severe(
+                                            "Deserialized a claimant, but did not find it locally!");
+                                } else if (b != mClaimedBy) {
+                                    removeClaim();
+                                    setClaimedBy(b.get());
+                                }
+                            });
         }
     }
 
@@ -335,31 +353,46 @@ public class HexagonTile implements INetSerializable {
         if (mTileType == TileType.WATER) {
             mGameObject.getTransform(TransformHex.class).setHeight(WATER_THRESHOLD);
 
-            mSecondaryTransform.setPosition(0f, 0f, mHeight - WATER_THRESHOLD - 0.1f);
+            mSecondaryController.get().setTargetHeight(mHeight - WATER_THRESHOLD - 0.1f);
         } else {
-            mGameObject.getTransform(TransformHex.class).setHeight(mHeight);
+            mHeightController.get().setTargetHeight(mHeight);
         }
     }
 
     private void buildGameObject() {
-        mSecondaryTransform = null;
+        mSecondaryController = null;
 
         switch (mTileType) {
             case WATER:
                 mGameObject =
                         GameObject.instantiate(
                                 WATER_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
-                mSecondaryTransform =
-                        mGameObject.findChildByName("Water Floor").getTransform(Transform3D.class);
 
-                mSecondaryTransform.setPosition(0f, 0f, mHeight - WATER_THRESHOLD - 0.1f);
+                GameObject floor = mGameObject.findChildByName("Water Floor");
+
+                mSecondaryController = floor.getComponent(HeightController.class);
                 break;
             case MOUNTAIN:
                 mGameObject =
-                        GameObject.instantiate(MOUNTAIN_TILE, new TransformHex(mQ, mR, mHeight));
+                        GameObject.instantiate(
+                                MOUNTAIN_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
                 break;
             default:
-                mGameObject = GameObject.instantiate(LAND_TILE, new TransformHex(mQ, mR, mHeight));
+                mGameObject =
+                        GameObject.instantiate(
+                                LAND_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
+        }
+
+        mHeightController = mGameObject.getComponent(HeightController.class);
+
+        switch (mTileType) {
+            case WATER:
+                mSecondaryController.get().setTargetHeight(mHeight - WATER_THRESHOLD - 0.1f);
+                mHeightController.get().setTargetHeight(WATER_THRESHOLD);
+                break;
+            default:
+                mHeightController.get().setTargetHeight(mHeight);
+                break;
         }
 
         Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);

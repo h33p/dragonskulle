@@ -7,10 +7,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.NetworkMessage;
+import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.network.components.sync.ISyncVar;
 import org.dragonskulle.utils.IOUtils;
 import org.dragonskulle.utils.MathUtils;
@@ -25,9 +30,10 @@ class HexagonTileStore implements ISyncVar {
     private HexagonTile[][] mTiles;
     private final int mCoordShift;
     private final int mSeed;
-    private final boolean[][] mTileMask;
-    private final boolean[] mTileRowMask;
-    private boolean mDirty;
+    private final Map<Integer, boolean[][]> mViewedTileMask;
+    private final Map<Integer, boolean[][]> mTileMask;
+    private final Map<Integer, boolean[]> mTileRowMask;
+    private final Map<Integer, boolean[]> mDirty;
     private final HexagonMap mMap;
     private final TileToStoreActions mHandler = new TileToStoreActions();
 
@@ -36,8 +42,21 @@ class HexagonTileStore implements ISyncVar {
             int q = tile.getQ() + mCoordShift;
             int r = tile.getR() + mCoordShift;
 
-            mTileMask[q][r] = true;
-            mTileRowMask[q] = true;
+            ServerNetworkManager serverManager = mMap.getNetworkManager().getServerManager();
+
+            if (serverManager == null) return;
+
+            for (ServerClient c : serverManager.getClients()) {
+                Integer id = c.getNetworkID();
+                Player p = serverManager.getIdSingletons(id).get(Player.class);
+
+                // Spectators (non-players) can view all tiles
+                if (p != null && !p.isTileViewable(mTiles[q][r])) continue;
+
+                getTileMask(id)[q][r] = true;
+                getTileRowMask(id)[q] = true;
+                getDirty(id)[0] = true;
+            }
         }
 
         NetworkManager getNetworkManager() {
@@ -47,17 +66,139 @@ class HexagonTileStore implements ISyncVar {
 
     @Override
     public boolean isDirty(int clientId) {
-        return mDirty;
+
+        Integer id = clientId;
+
+        dirtyNewlyViewableTiles(id);
+
+        boolean[] dirty = mDirty.get(id);
+
+        if (dirty == null) {
+            dirty = new boolean[1];
+            mDirty.put(id, dirty);
+        }
+
+        return dirty[0];
+    }
+
+    boolean[][] getViewedTileMask(Integer id) {
+        boolean[][] viewedTileMask = mViewedTileMask.get(id);
+
+        if (viewedTileMask == null) {
+            viewedTileMask = new boolean[mTiles.length][mTiles.length];
+            mViewedTileMask.put(id, viewedTileMask);
+        }
+
+        return viewedTileMask;
+    }
+
+    boolean[][] getTileMask(Integer id) {
+        boolean[][] tileMask = mTileMask.get(id);
+
+        if (tileMask == null) {
+            tileMask = new boolean[mTiles.length][mTiles.length];
+            mTileMask.put(id, tileMask);
+        }
+
+        return tileMask;
+    }
+
+    boolean[] getTileRowMask(Integer id) {
+        boolean[] tileRowMask = mTileRowMask.get(id);
+
+        if (tileRowMask == null) {
+            tileRowMask = new boolean[mTiles.length];
+            mTileRowMask.put(id, tileRowMask);
+        }
+
+        return tileRowMask;
+    }
+
+    boolean[] getDirty(Integer id) {
+        boolean[] dirty = mDirty.get(id);
+
+        if (dirty == null) {
+            dirty = new boolean[1];
+            mDirty.put(id, dirty);
+        }
+
+        return dirty;
+    }
+
+    private void dirtyNewlyViewableTiles(Integer id) {
+        Player p = mMap.getNetworkManager().getIdSingletons(id).get(Player.class);
+
+        boolean[][] viewedTileMask = getViewedTileMask(id);
+        boolean[][] tileMask = getTileMask(id);
+        boolean[] tileRowMask = getTileRowMask(id);
+        boolean[] dirty = getDirty(id);
+
+        if (p != null) {
+            p.getViewableTiles()
+                    .forEach(
+                            tile -> {
+                                int q = tile.getQ() + mCoordShift;
+                                int r = tile.getR() + mCoordShift;
+
+                                if (!viewedTileMask[q][r]) {
+                                    viewedTileMask[q][r] = true;
+                                    tileMask[q][r] = true;
+                                    tileRowMask[q] = true;
+                                    dirty[0] = true;
+                                }
+                            });
+        } else {
+            for (int q = 0; q < viewedTileMask.length; q++) {
+                for (int r = 0; r < viewedTileMask.length; r++) {
+                    if (!viewedTileMask[q][r]) {
+                        viewedTileMask[q][r] = true;
+                        tileMask[q][r] = true;
+                        tileRowMask[q] = true;
+                        dirty[0] = true;
+                    }
+                }
+            }
+        }
     }
 
     @Override
-    public void resetDirtyFlag() {
-        mDirty = false;
+    public void resetDirtyFlag(int clientId) {
+        Integer id = clientId;
+
+        boolean[][] tileMask = mTileMask.get(id);
+
+        if (tileMask == null) {
+            tileMask = new boolean[mTiles.length][mTiles.length];
+            mTileMask.put(id, tileMask);
+        }
+
+        for (boolean[] mask : tileMask) {
+            Arrays.fill(mask, false);
+        }
+
+        boolean[] tileRowMask = mTileRowMask.get(id);
+
+        if (tileRowMask == null) {
+            tileRowMask = new boolean[mTiles.length];
+            mTileRowMask.put(id, tileRowMask);
+        }
+
+        Arrays.fill(tileRowMask, false);
+
+        boolean[] dirty = mDirty.get(id);
+
+        if (dirty == null) {
+            dirty = new boolean[1];
+            mDirty.put(clientId, dirty);
+        }
+
+        dirty[0] = false;
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
-        final int maskSize = NetworkMessage.maskSizeInBytes(mTileRowMask.length);
+
+        final int maskSize = NetworkMessage.maskSizeInBytes(mTiles.length);
         boolean[] tileRowMask =
                 NetworkMessage.getMaskFromBytes(IOUtils.readNBytes(stream, maskSize));
 
@@ -80,12 +221,28 @@ class HexagonTileStore implements ISyncVar {
 
     @Override
     public void serialize(DataOutputStream stream, int clientId) throws IOException {
-        stream.write(NetworkMessage.convertBoolArrayToBytes(mTileRowMask));
+        Integer id = clientId;
 
-        for (int q = 0; q < mTileRowMask.length; q++) {
-            if (!mTileRowMask[q]) continue;
+        boolean[][] tileMask = mTileMask.get(id);
 
-            boolean[] mask = mTileMask[q];
+        if (tileMask == null) {
+            tileMask = new boolean[mTiles.length][mTiles.length];
+            mTileMask.put(id, tileMask);
+        }
+
+        boolean[] tileRowMask = mTileRowMask.get(id);
+
+        if (tileRowMask == null) {
+            tileRowMask = new boolean[mTiles.length];
+            mTileRowMask.put(id, tileRowMask);
+        }
+
+        stream.write(NetworkMessage.convertBoolArrayToBytes(tileRowMask));
+
+        for (int q = 0; q < tileRowMask.length; q++) {
+            if (!tileRowMask[q]) continue;
+
+            boolean[] mask = tileMask[q];
 
             stream.write(NetworkMessage.convertBoolArrayToBytes(mask));
 
@@ -104,8 +261,10 @@ class HexagonTileStore implements ISyncVar {
     /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */
     public HexagonTileStore(int size, int seed, HexagonMap map) {
         mTiles = new HexagonTile[size][size];
-        mTileMask = new boolean[size][size];
-        mTileRowMask = new boolean[size];
+        mViewedTileMask = new HashMap<>();
+        mTileMask = new HashMap<>();
+        mTileRowMask = new HashMap<>();
+        mDirty = new HashMap<>();
         mSeed = seed;
         mCoordShift = size / 2;
         mMap = map;
@@ -144,7 +303,6 @@ class HexagonTileStore implements ISyncVar {
 
         /* Generates the last part of the map */
         loop = (size / 2) + 1;
-        int min_val = size - max_empty;
         int current_val = size;
         for (int r = loop; r < size; r++) {
             current_val--; // The number of cells with actual coordinates, it decreases with every

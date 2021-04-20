@@ -42,8 +42,6 @@ public class HighlightControls extends Component implements IOnAwake {
         setHighlight(col.x(), col.y(), col.z(), col.w());
     }
 
-    private float mCurtime = 0;
-
     @Override
     public void onAwake() {
         final GameObject go;

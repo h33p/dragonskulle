@@ -4,7 +4,6 @@ package org.dragonskulle.game.map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
@@ -19,7 +18,6 @@ import org.dragonskulle.utils.MathUtils;
  *     <p>This component draws a visual fog of war for the players
  */
 @Accessors(prefix = "m")
-@Log
 public class FogTile extends Component implements IOnAwake, IFrameUpdate {
 
     @Getter @Setter private float mFadeTime = 0.4f;
@@ -29,13 +27,17 @@ public class FogTile extends Component implements IOnAwake, IFrameUpdate {
     private Reference<Renderable> mRenderable;
     private float mFadeValue = 1f;
 
-    public void setFog(boolean enabled) {
+    private Reference<HeightController> mHeightController;
+
+    public void setFog(boolean enabled, float height) {
         mTarget = enabled ? 1f : -1f;
+        mHeightController.get().setTargetHeight(height);
     }
 
     @Override
     public void onAwake() {
         mRenderable = getGameObject().getComponent(Renderable.class);
+        mHeightController = getGameObject().getComponent(HeightController.class);
     }
 
     @Override

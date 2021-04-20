@@ -370,6 +370,17 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return mViewableTiles.contains(tile);
     }
 
+    public Stream<HexagonTile> getViewableTiles() {
+        if (mViewableTiles.isEmpty()) {
+            getOwnedBuildingsAsStream()
+                    .filter(Reference::isValid)
+                    .map(Reference::get)
+                    .forEach(this::updateViewableTiles);
+        }
+
+        return mViewableTiles.stream();
+    }
+
     /**
      * Get the {@link Building}, that is on the specified {@link HexagonTile}, from {@link
      * #mOwnedBuildings}.

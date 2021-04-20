@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -311,6 +312,10 @@ public class ServerNetworkManager {
                 .forEach(GameObject::destroy);
 
         mManager.onServerDestroy();
+    }
+
+    public Collection<ServerClient> getClients() {
+        return mServer.getClients();
     }
 
     /**

@@ -14,6 +14,13 @@ public interface ISyncVar extends INetSerializable {
      */
     boolean isDirty(int clientId);
 
-    /** Resets the dirty flag */
-    void resetDirtyFlag();
+    /** Resets the global dirty flag */
+    default void resetDirtyFlag() {}
+
+    /**
+     * Resets the dirty flag for a given client
+     *
+     * @param clientId id of the client to reset the mask for
+     */
+    default void resetDirtyFlag(int clientId) {}
 }

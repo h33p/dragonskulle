@@ -75,6 +75,10 @@
                         {
                             "class_name" : "org.dragonskulle.game.materials.HighlightControls",
                             "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HeightController",
+                            "enabled" : true
                         }
                     ]
                 }
@@ -90,6 +94,10 @@
                         {
                             "class_name" : "org.dragonskulle.game.materials.HighlightControls",
                             "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HeightController",
+                            "enabled" : true
                         }
                     ]
                 }
@@ -104,6 +112,10 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HeightController",
                             "enabled" : true
                         }
                     ]
@@ -124,7 +136,13 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HeightController",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
             "mesh" : 5,
@@ -153,6 +171,10 @@
                                     "value" : "Water Floor"
                                 }
                             ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HeightController",
+                            "enabled" : true
                         }
                     ]
                 }
