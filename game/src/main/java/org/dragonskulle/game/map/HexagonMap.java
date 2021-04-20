@@ -1,7 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -11,6 +13,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.renderer.components.Camera;
@@ -33,6 +36,12 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
     /** The map that is created which is made of a 2d array of HexagonTiles. */
     private HexagonTileStore mTiles;
 
+    /** This will store what the largest landMass is */
+    private int[] mLargestLandMass;
+
+    /** This will store what the next land mass number is */
+    private int mLandMass = 0;
+
     /**
      * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
      * create the map.
@@ -40,6 +49,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      * @param size the size of the map
      */
     public HexagonMap(int size) {
+        log.severe("Created");
         this.mSize = size;
 
         if (size <= 0) {
@@ -47,6 +57,64 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         }
 
         mTiles = new HexagonTileStore(mSize, 3);
+
+        checkIslands();
+    }
+
+    /** This will go through all the tiles and find all islands */
+    private void checkIslands() {
+
+        mLargestLandMass = new int[2];
+        mLargestLandMass[0] = -1;
+        mLargestLandMass[1] = -1;
+        getAllTiles()
+                .forEach(
+                        tile -> {
+                            if (tile.landMassNumber == -1) {
+                                floodFill(tile);
+                            }
+                        });
+    }
+
+    /**
+     * This will use flood fill to find all connected tiles on land from the given {@code
+     * HexagonTile}
+     *
+     * @param tile The tile to start flooding from
+     */
+    private void floodFill(HexagonTile tile) {
+
+        // Checks that we haven't already checked it
+        int size = 0;
+        if (tile.getTileType() != TileType.LAND || tile.landMassNumber != -1) {
+            return;
+        }
+
+        Deque<HexagonTile> tiles = new ArrayDeque<HexagonTile>();
+        tiles.add(tile);
+
+        while (tiles.size() != 0) {
+            HexagonTile tileToUse = tiles.removeFirst();
+            if (tileToUse.getTileType() == TileType.LAND && tileToUse.landMassNumber == -1) {
+                size++;
+                tileToUse.landMassNumber = mLandMass;
+
+                ArrayList<HexagonTile> neighbours = this.getTilesInRadius(tileToUse, 1, false);
+
+                for (HexagonTile neighbour : neighbours) {
+                    if (neighbour.landMassNumber == -1
+                            && neighbour.getTileType() == TileType.LAND) {
+                        tiles.add(neighbour);
+                    }
+                }
+            }
+        }
+
+        if (size > mLargestLandMass[1]) {
+            mLargestLandMass[0] = mLandMass;
+            mLargestLandMass[1] = size;
+        }
+        mLandMass++;
     }
 
     /**
@@ -236,6 +304,21 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         TransformHex.cartesianToAxial(pos, axial);
 
         return (Math.abs(axial.x) + Math.abs(axial.y) + Math.abs(-axial.x - axial.y));
+    }
+
+    /**
+     * This checks if the given {@code HexagonTile} is an island (An island is defined as a land
+     * mass which is disconnected completely from the largest land mass)
+     *
+     * @param tile The {@code HexagonTile} to check if its in an island
+     * @return Returns {@code true} if it is an island, {@code false} if not
+     */
+    public boolean isIsland(HexagonTile tile) {
+        if (mLargestLandMass == null) {
+            log.severe("ERROR");
+        }
+
+        return tile.landMassNumber != mLargestLandMass[0];
     }
 
     @Override
