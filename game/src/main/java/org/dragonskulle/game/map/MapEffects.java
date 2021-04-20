@@ -93,7 +93,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     public static final HighlightSelection VALID_MATERIAL =
-            highlightSelectionFromColour(0f, 1f, 0.2f);
+            highlightSelectionFromColour(0f, 1f, 0f);
     public static final HighlightSelection INVALID_MATERIAL =
             highlightSelectionFromColour(1f, 0.08f, 0f);
     public static final HighlightSelection PLAIN_MATERIAL =
