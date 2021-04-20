@@ -62,7 +62,11 @@ public abstract class Aimer extends ProbabilisticAiPlayer {
             int nextDoor = mPath.pop();
             mGone.push(nextDoor);
             int firstElement = mPath.pop();
-            if (mGraph.getNode(firstElement)
+             
+            if (Reference.isValid(mGraph.getNode(firstElement).getHexTile()) && mGraph.getNode(firstElement).getHexTile()
+                    .get()
+                    .getClaimant() != null
+                    && mGraph.getNode(firstElement)		
                             .getHexTile()
                             .get()
                             .getClaimant()
@@ -78,10 +82,10 @@ public abstract class Aimer extends ProbabilisticAiPlayer {
 
         Random random = new Random();
 
-        if (random.nextFloat() < 0.9) {
+        if (random.nextFloat() < 2) {
             // This will move us onto our own claimed tiles
 
-            if (random.nextFloat() < 0.5) {
+            if (random.nextFloat() < 2) {
                 // ATTACK
                 int previousNode = mGone.pop();
 
