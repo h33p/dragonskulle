@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import lombok.Getter;
 import lombok.Setter;
@@ -88,7 +89,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
-        public HighlightSelection handleTile(HexagonTile tile);
+        public HighlightSelection handleTile(HexagonTile tile, HighlightSelection currentSelection);
     }
 
     public static final HighlightSelection VALID_MATERIAL =
@@ -102,7 +103,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
 
-    private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
+    private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
 
     /** Turn on to enable default highlighting (teritory bounds). */
@@ -154,7 +155,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             controls.get().setHighlight(selection.mOverlay);
         }
 
-        mHighlightedTiles.add(tile);
+        mHighlightedTiles.put(tile, selection);
     }
 
     /**
@@ -166,7 +167,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param selector selector that handles tile selection
      */
     public void highlightTiles(IHighlightSelector selector) {
-        mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t)));
+        mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t, mHighlightedTiles.get(t))));
         mDefaultHighlight = false;
     }
 
@@ -188,7 +189,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * <p>This will clear any selection that currently takes place
      */
     public void unhighlightAllTiles() {
-        for (HexagonTile tile : mHighlightedTiles) {
+        for (HexagonTile tile : mHighlightedTiles.keySet()) {
             highlightTile(tile, HighlightSelection.CLEARED, false);
         }
         mHighlightedTiles.clear();
@@ -201,7 +202,16 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @return {@code true} if the tile is currently selected, {@code false} otherwise.
      */
     public boolean isTileHighlighted(HexagonTile tile) {
-        return mHighlightedTiles.contains(tile);
+        return mHighlightedTiles.containsKey(tile);
+    }
+
+    /** Get the current highlight type for the tile.
+     *
+     * @param tile tile to check the highlight for
+     * @return highlight selection of the tile. It can be one of the {@link StandardHighlightType}, a custom one, or {@code null}.
+     */
+    public HighlightSelection getCurrentHighlight(HexagonTile tile) {
+        return mHighlightedTiles.get(tile);
     }
 
     /**
@@ -214,7 +224,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
 
         highlightTiles(
-                (tile) -> {
+                (tile, __) -> {
 
                     // TODO: do this better, with O(1)
                     if (activePlayer != null) {

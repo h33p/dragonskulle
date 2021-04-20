@@ -367,7 +367,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightBuildableTiles(fx, StandardHighlightType.PLAIN));
+                            (fx) -> {
+                                highlightBuildableTiles(fx, StandardHighlightType.PLAIN);
+                                highlightSelectedTile(fx, StandardHighlightType.PLAIN);
+                            } );
                     break;
                 case ATTACK_SCREEN:
                     if (Reference.isValid(mMenuDrawer)) {
@@ -421,8 +424,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         Stream<HexagonTile> buildableTiles =  mMap.getAllTiles();
 
         buildableTiles.forEach(
-                (tile)-> {
-                    if (!tile.isClaimed() && !tile.hasBuilding()){
+                (tile) -> {
+                    if (!tile.isClaimed() && !tile.hasBuilding() && fx.getCurrentHighlight(tile) != MapEffects.FOG_MATERIAL){
                         fx.highlightTile(tile, highlight.asSelection());
                     }
                 }
