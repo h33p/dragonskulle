@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -28,10 +29,10 @@ public class UIShopSection extends Component implements IOnStart {
     @Setter
     @Getter
     private ShopState mLastState = ShopState.CLOSED;
-    private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
-    private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
+    @Getter(AccessLevel.PROTECTED)
+    private final UIMenuLeftDrawer mParent;
 
     @Setter
     @Getter
@@ -41,13 +42,10 @@ public class UIShopSection extends Component implements IOnStart {
     /**
      * Constructor.
      *
-     * @param mGetPlayer    the callback to get the player from HumanPlayer
-     * @param mGetHexChosen the callback to get the hexagonTile Selected
+     * @param mParent
      */
-    public UIShopSection(
-            UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
-        this.mGetPlayer = mGetPlayer;
-        this.mGetHexChosen = mGetHexChosen;
+    public UIShopSection(UIMenuLeftDrawer mParent) {
+        this.mParent = mParent;
     }
 
     /**
@@ -154,7 +152,7 @@ public class UIShopSection extends Component implements IOnStart {
      */
     @Override
     public void onStart() {
-        UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(mGetHexChosen, mGetPlayer);
+        UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(this);
         mUpgradePanel =
                 getGameObject()
                         .buildChild(
@@ -163,7 +161,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 (self) -> self.addComponent(uiBuildingUpgrade));
         show(mUpgradePanel, false);
 
-        UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(mGetPlayer); //TODO this is what needs improving now
+        UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(this); //TODO this is what needs improving now
         mNewBuildingPanel =
                 getGameObject()
                         .buildChild(

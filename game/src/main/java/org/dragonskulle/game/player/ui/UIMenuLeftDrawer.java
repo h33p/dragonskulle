@@ -18,7 +18,6 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.ui.UIShopSection.ShopState;
 import org.dragonskulle.game.player.network_data.AttackData;
-import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
@@ -33,12 +32,12 @@ import org.dragonskulle.ui.UIRenderable;
 @Log
 @Accessors(prefix = "m")
 public class UIMenuLeftDrawer extends Component implements IOnStart {
-    private final IGetBuildingChosen mGetBuildingChosen;
-    private final ISetBuildingChosen mSetBuildingChosen;
-    private final IGetHexChosen mGetHexChosen;
-    private final ISetHexChosen mSetHexChosen;
-    private final INotifyScreenChange mNotifyScreenChange;
-    private final IGetPlayer mGetPlayer;
+    protected final IGetBuildingChosen mGetBuildingChosen;
+    protected final ISetBuildingChosen mSetBuildingChosen;
+    protected final IGetHexChosen mGetHexChosen;
+    protected final ISetHexChosen mSetHexChosen;
+    protected final INotifyScreenChange mNotifyScreenChange;
+    protected final IGetPlayer mGetPlayer;
 
     private final float mOffsetToTop = 0.25f;
     @Getter
@@ -474,20 +473,20 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "place_button",
                 "Place Building",
                 (handle, __) -> {
-//                    mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING);
-                    if (mGetHexChosen.getHex() != null) {
-                        log.info("Running place button lambda");
-                        Reference<Player> player = mGetPlayer.getPlayer();
-                        if (Reference.isValid(player)) {
-                            player.get()
-                                    .getClientBuildRequest()
-                                    .invoke(new BuildData(mGetHexChosen.getHex()));
-                        }
-
-                        mSetHexChosen.setHex(null);
-                        mSetBuildingChosen.setBuilding(null);
-                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                    }
+                    mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING);
+//                    if (mGetHexChosen.getHex() != null) {
+//                        log.info("Running place button lambda");
+//                        Reference<Player> player = mGetPlayer.getPlayer();
+//                        if (Reference.isValid(player)) {
+//                            player.get()
+//                                    .getClientBuildRequest()
+//                                    .invoke(new BuildData(mGetHexChosen.getHex()));
+//                        }
+//
+//                        mSetHexChosen.setHex(null);
+//                        mSetBuildingChosen.setBuilding(null);
+//                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
+//                    }
                 },
                 true);
     }
@@ -541,7 +540,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                         "shop",
                         false,
                         new TransformUI(),
-                        (go) -> go.addComponent(new UIShopSection(mGetPlayer, mGetHexChosen)));
+                        (go) -> go.addComponent(new UIShopSection(this)));
         ArrayList<Reference<UIShopSection>> shops = new ArrayList<>();
         getGameObject().getComponentsInChildren(UIShopSection.class, shops);
         if (shops.size() != 0) {

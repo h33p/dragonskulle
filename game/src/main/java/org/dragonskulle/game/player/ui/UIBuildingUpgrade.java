@@ -4,6 +4,7 @@ package org.dragonskulle.game.player.ui;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -36,9 +37,8 @@ import org.dragonskulle.ui.UITextRect;
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpdate {
-    private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
-    @Getter
-    private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
+    @Getter(AccessLevel.PROTECTED)
+    private final UIShopSection mParent;
     private Reference<GameObject> mBuildingUpgradeComponent;
     @Setter
     private Building mLastBuilding;
@@ -50,13 +50,10 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     /**
      * Constructor.
      *
-     * @param mGetHexChosen the callback to get the hexagonTile selected
-     * @param mGetPlayer    the callback to get the player from HumanPlayer
+     * @param mParent
      */
-    public UIBuildingUpgrade(
-            UIMenuLeftDrawer.IGetHexChosen mGetHexChosen, UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
-        this.mGetHexChosen = mGetHexChosen;
-        this.mGetPlayer = mGetPlayer;
+    public UIBuildingUpgrade(UIShopSection mParent) {
+        this.mParent = mParent;
     }
 
     /**
@@ -136,9 +133,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param type the type
      */
     private void purchaseUpgrade(StatType type) {
-        Reference<Player> player = mGetPlayer.getPlayer();
+        Reference<Player> player = getParent().getParent().mGetPlayer.getPlayer();
         if (Reference.isValid(player)) {
-            Building building = mGetHexChosen.getHex().getBuilding();
+            Building building = getParent().getParent().mGetHexChosen.getHex().getBuilding();
             if (building != null) {
                 player.get().getClientStatRequest().invoke(new StatData(building, type));
             }
@@ -147,7 +144,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        HexagonTile tile = mGetHexChosen.getHex();
+        HexagonTile tile = getParent().getParent().mGetHexChosen.getHex();
         if (tile != null) {
             Building building = tile.getBuilding();
             if (building != null && building.statsRequireVisualUpdate()) {

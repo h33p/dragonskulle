@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -67,8 +68,22 @@ public class UIManager {
         }
     }
 
-    public List<Reference<GameObject>> buildGridUI(float width, float height, float startX, float startY, float endY, float ySeperation, IUIBuildHandler[] toArray) {
-        return null; //will return all the references
+    public List<Reference<GameObject>> buildGridUI(GameObject go, int width, float startX, float startY, float endY, float ySeperation, List<IUIBuildHandler> elems) {
+        List<Reference<GameObject>> buttonRefs = new ArrayList<>();
+        int offsetY = 0;
+        while (elems.iterator().hasNext()) {
+            IUIBuildHandler[] row = new IUIBuildHandler[width];
+            for (int i = 0; i < width; i++) {
+                if (elems.size() > 0) {
+                    row[i] = elems.remove(0);
+                } else {
+                    row[i] = null;
+                }
+            }
+            offsetY += ySeperation;
+            buttonRefs.addAll(buildHorizontalUI(go, startX, startY + offsetY, endY + offsetY, row));
+        }
+        return buttonRefs;
     }
 
     public static interface IUIBuildHandler {
@@ -141,10 +156,11 @@ public class UIManager {
      * @param elems  list of buildable UI elements. Can be UITextRect elements, lambdas, custom
      *               objects, or a mix of them.
      */
-    public void buildHorizontalUI(
+    public List<Reference<GameObject>> buildHorizontalUI(
             GameObject go, float startX, float startY, float endY, IUIBuildHandler... elems) {
         int cnt = 0;
 
+        List<Reference<GameObject>> buttonRefs = new ArrayList<>();
         for (IUIBuildHandler handler : elems) {
             final float curX =
                     cnt * (mAppearance.getHorizontalUIElemWidth() + mAppearance.getHorizUIElemGap())
@@ -159,11 +175,13 @@ public class UIManager {
                             transform.setParentAnchor(curX, startY, curX, endY);
                             transform.setMargin(0, 0, mAppearance.getHorizontalUIElemWidth(), 0);
                             handler.handleUIBuild(child);
+                            buttonRefs.add(child.getReference());
                         });
             }
 
             cnt++;
         }
+        return buttonRefs;
     }
 
     /**

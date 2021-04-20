@@ -18,9 +18,12 @@ public class PredefinedBuildings {
     private static final List<BuildingDescriptor> buildings =
             new ArrayList<>(
                     Arrays.asList(
-                            new BuildingDescriptor(1, 1, 1, 1, 1, 10, 2, null),
-                            new BuildingDescriptor(1, 3, 10, 2, 3, 30, 2, null),
-                            new BuildingDescriptor(1, 1, 100, 1, 1, 25, 2, null)));
+                            new BuildingDescriptor(1, 1, 1, 1, 1, 10, 2, null, "Titan"),
+                            new BuildingDescriptor(1, 3, 10, 2, 3, 30, 2, null, "Bob"),
+                            new BuildingDescriptor(1, 3, 10, 2, 3, 31, 2, null, "Alice"),
+                            new BuildingDescriptor(1, 3, 10, 2, 3, 32, 2, null, "Auri"),
+                            new BuildingDescriptor(1, 3, 10, 2, 3, 33, 2, null, "Leela"),
+                            new BuildingDescriptor(1, 1, 100, 1, 1, 25, 2, null, "Craig")));
 
     /**
      * Gets all the buildings which can be placed filtered by the cost of the building.
@@ -42,5 +45,13 @@ public class PredefinedBuildings {
      */
     public static List<BuildingDescriptor> getAll() {
         return buildings;
+    }
+
+    public static BuildingDescriptor get(int i) {
+        return buildings.get(i);
+    }
+
+    public static int getIndex(BuildingDescriptor mSelectedBuildingDescriptor) {
+        return buildings.indexOf(mSelectedBuildingDescriptor);
     }
 }
