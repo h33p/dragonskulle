@@ -319,6 +319,11 @@ public class ServerNetworkManager {
         mManager.onServerDestroy();
     }
 
+    /**
+     * Get collection of clients connected to the server.
+     *
+     * @return collection of clients connected to the server.
+     */
     public Collection<ServerClient> getClients() {
         return mServer.getClients();
     }

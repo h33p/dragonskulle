@@ -426,6 +426,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return mViewableTiles.contains(tile);
     }
 
+    /**
+     * Gets the stream of viewable tiles.
+     *
+     * <p>If viewable tile list is empty, this method will regenerate that list.
+     *
+     * @return stream of viewable tiles
+     */
     public Stream<HexagonTile> getViewableTiles() {
         if (mViewableTiles.isEmpty()) {
             getOwnedBuildingsAsStream()

@@ -1,16 +1,15 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.map;
+package org.dragonskulle.game;
 
 import com.flowpowered.noise.Noise;
 import com.flowpowered.noise.NoiseQuality;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 
 /**
- * @author Aurimas Blažulionis This class allows to conveniently generate noise using input octaves
+ * @author Aurimas Blažulionis
+ *     <p>This class allows to conveniently generate noise using input octaves
  */
 @Accessors(prefix = "m")
-@Log
 public class NoiseUtil {
     /**
      * Get noise height

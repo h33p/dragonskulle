@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
+import org.dragonskulle.game.NoiseUtil;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.NetworkMessage;
 import org.dragonskulle.network.ServerClient;
@@ -94,7 +95,7 @@ class HexagonTileStore implements ISyncVar {
         return viewedTileMask;
     }
 
-    boolean[][] getTileMask(Integer id) {
+    private boolean[][] getTileMask(Integer id) {
         boolean[][] tileMask = mTileMask.get(id);
 
         if (tileMask == null) {
@@ -105,7 +106,7 @@ class HexagonTileStore implements ISyncVar {
         return tileMask;
     }
 
-    boolean[] getTileRowMask(Integer id) {
+    private boolean[] getTileRowMask(Integer id) {
         boolean[] tileRowMask = mTileRowMask.get(id);
 
         if (tileRowMask == null) {
@@ -116,7 +117,7 @@ class HexagonTileStore implements ISyncVar {
         return tileRowMask;
     }
 
-    boolean[] getDirty(Integer id) {
+    private boolean[] getDirty(Integer id) {
         boolean[] dirty = mDirty.get(id);
 
         if (dirty == null) {

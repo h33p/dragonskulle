@@ -146,11 +146,12 @@ public class Building extends NetworkableComponent
 
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) {
-            owningPlayer.addOwnership(this);
-        } else {
+
+        if (owningPlayer == null) {
             return;
         }
+
+        owningPlayer.addOwnership(this);
 
         // Generate the lists of tiles that are influenced by the Stats of the Building.
         generateTileLists();
@@ -226,12 +227,6 @@ public class Building extends NetworkableComponent
         log.info("After stats change.");
 
         generateStatBaseCost();
-
-        HexagonTile tile = getTile();
-
-        if (tile == null) {
-            return;
-        }
 
         generateTileLists();
     }
@@ -324,14 +319,16 @@ public class Building extends NetworkableComponent
             return;
         }
 
-        if (getTile() == null) {
+        HexagonTile tile = getTile();
+
+        if (tile == null) {
             return;
         }
 
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = map.getTilesInRadius(getTile(), distance, false);
+        mAttackableTiles = map.getTilesInRadius(tile, distance, false);
     }
 
     /** Store the tiles that are suitable for placing a building on. */
@@ -534,7 +531,7 @@ public class Building extends NetworkableComponent
     /**
      * Get the {@link HexagonMap} being used.
      *
-     * @return The map.
+     * @return The map, if it exists, or {@code null}.
      */
     private HexagonMap getMap() {
         return Reference.isValid(mMap) ? mMap.get() : null;

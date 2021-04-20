@@ -8,10 +8,11 @@ package org.dragonskulle.network.components.sync;
  */
 public abstract class BaseSyncVar implements ISyncVar {
 
+    /** Is set whenever the extending SyncVar's value changes. */
     protected boolean mDirty;
 
     /**
-     * Check if object is dirty for a given player
+     * Check if object is dirty for a given player.
      *
      * @param clientId client to check the dirtiness for
      */

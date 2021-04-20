@@ -15,6 +15,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.NoiseUtil;
 import org.dragonskulle.game.player.Player;
 
 /**
