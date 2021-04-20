@@ -172,7 +172,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             } else if (i <= attempts) {
 
-            	boolean ifIsland = getMap().isIsland(getMap().getTile(x, y));
+                boolean ifIsland = getMap().isIsland(getMap().getTile(x, y));
 
                 if (!ifIsland) {
                     buildingToBecomeCapital.setCapital(true);
@@ -196,7 +196,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .filter(building -> building != null)
                         .findFirst()
                         .orElse(null);
-        
+
         if (buildingToBecomeCapital == null) {
             // Cannot add a capital
             setOwnsCapital(false);
@@ -205,31 +205,29 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             getGameObject().destroy();
         } else {
-        	
-        	// TODO Anyone has any better way than the current solution to get q and r positions before Building can use getTile?
-        	GameObject gameObject = buildingToBecomeCapital.getGameObject();
+
+            // TODO Anyone has any better way than the current solution to get q and r positions
+            // before Building can use getTile?
+            GameObject gameObject = buildingToBecomeCapital.getGameObject();
             TransformHex transform = gameObject.getTransform(TransformHex.class);
             Vector3f coordinatesToUse = new Vector3f();
             transform.getLocalPosition(coordinatesToUse);
-            int x = (int) coordinatesToUse.get(0);		
+            int x = (int) coordinatesToUse.get(0);
             int y = (int) coordinatesToUse.get(1);
-            
-            
-        	if (!getMap().isIsland(getMap().getTile(x, y))) {
-        		buildingToBecomeCapital.setCapital(true);
+
+            if (!getMap().isIsland(getMap().getTile(x, y))) {
+                buildingToBecomeCapital.setCapital(true);
 
                 log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
-            }
-        	else {
-        		GameObject go = buildingToBecomeCapital.getGameObject();
+            } else {
+                GameObject go = buildingToBecomeCapital.getGameObject();
                 go.destroy();
                 setOwnsCapital(false);
 
                 log.severe("Disconnecting");
 
                 getGameObject().destroy();
-        	}
-            
+            }
         }
     }
 
