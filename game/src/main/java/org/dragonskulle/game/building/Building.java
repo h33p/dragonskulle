@@ -135,6 +135,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
+
         // Store the map.
         HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
         if (checkingMapExists == null) {
