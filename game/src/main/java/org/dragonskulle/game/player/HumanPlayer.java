@@ -22,6 +22,9 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
+import org.dragonskulle.game.player.network_data.AttackData;
+import org.dragonskulle.input.Actions;
+import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
@@ -177,6 +180,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             setEnabled(false);
             return;
         }
+
+        if (mPlayer.get().getNumberOfOwnedBuildings() == 0) {
+            log.warning("You have 0 buildings -- should be sorted in mo");
+            return;
+        }
         // Update token
         if (Reference.isValid(mPlayer)) {
             updateVisibleTokens();
@@ -212,8 +220,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      */
     private void mapScreen() {
 
+        Cursor cursor = Actions.getCursor();
+
         // Checks that its clicking something
-        if (GameActions.LEFT_CLICK.isActivated()) {
+        if (GameActions.LEFT_CLICK.isJustDeactivated()
+                && (cursor == null || !cursor.hadLittleDrag())) {
             if (UIManager.getInstance().getHoveredObject() == null) {
                 // And then select the tile
                 Player player = mPlayer.get();
@@ -249,7 +260,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         }
                     }
                 }
-            } else if (GameActions.RIGHT_CLICK.isActivated()) {
+            } else if (GameActions.RIGHT_CLICK.isJustDeactivated()) {
                 HexagonTile tile = mPlayer.get().getMap().cursorToTile();
                 Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
                 log.info("[DEBUG] RCL Position From Camera : " + pos);

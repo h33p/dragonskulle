@@ -39,6 +39,8 @@ import org.lwjgl.glfw.GLFWImage;
 @Accessors(prefix = "m")
 public class Cursor {
 
+    private static final float DRAGGED_THRESHOLD = 0.02f;
+
     /** This cursor's current raw position. */
     private Vector2f mRawPosition = new Vector2f(0, 0);
     /** Scaled mouse cursor position in the range [[-1, 1], [-1, 1]]. */
@@ -48,6 +50,8 @@ public class Cursor {
     private Vector2f mRawDragStart;
     /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledDragStart = new Vector2f(0, 0);
+    /** Maximum amount the cursor was dragged from the starting position */
+    private float mMaxDragDistance = 0f;
 
     /** Create a new cursor manager. */
     public Cursor() {}
@@ -128,6 +132,7 @@ public class Cursor {
     void setPosition(float x, float y) {
         mRawPosition.set(x, y);
         calculateScaled(mRawPosition, mScaledPosition);
+        mMaxDragDistance = Math.max(mMaxDragDistance, getDragDistance());
     }
 
     /**
@@ -178,11 +183,13 @@ public class Cursor {
     void startDrag() {
         mRawDragStart = new Vector2f(mRawPosition);
         calculateScaled(mRawDragStart, mScaledDragStart);
+        mMaxDragDistance = 0;
     }
 
     /** End a drag in progress. */
     void endDrag() {
         mRawDragStart = null;
+        mMaxDragDistance = 0;
     }
 
     /**
@@ -192,6 +199,15 @@ public class Cursor {
      */
     public boolean inDrag() {
         return !(mRawDragStart == null);
+    }
+
+    /**
+     * Whether the cursor was dragged a little amount
+     *
+     * @return {@code true} if the cursor was dragged a little amount
+     */
+    public boolean hadLittleDrag() {
+        return mMaxDragDistance >= DRAGGED_THRESHOLD;
     }
 
     /**
