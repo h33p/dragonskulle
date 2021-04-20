@@ -205,8 +205,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             getGameObject().destroy();
         } else {
-            int x = buildingToBecomeCapital.getTile().getQ();		//TODO Work out how to get x & y as getTile() does not work yet
-            int y = buildingToBecomeCapital.getTile().getR();
+        	
+        	// TODO Anyone has any better way than the current solution to get q and r positions before Building can use getTile?
+        	GameObject gameObject = buildingToBecomeCapital.getGameObject();
+            TransformHex transform = gameObject.getTransform(TransformHex.class);
+            Vector3f coordinatesToUse = new Vector3f();
+            transform.getLocalPosition(coordinatesToUse);
+            int x = (int) coordinatesToUse.get(0);		
+            int y = (int) coordinatesToUse.get(1);
+            
+            
         	if (!getMap().isIsland(getMap().getTile(x, y))) {
         		buildingToBecomeCapital.setCapital(true);
 
