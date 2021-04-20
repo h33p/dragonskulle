@@ -53,5 +53,7 @@ public class GameBindings extends Bindings {
         addBinding(Scroll.DOWN, GameActions.MENU_DOWN, GameActions.ZOOM_OUT);
 
         addBinding(GLFW.GLFW_KEY_F3, RenderDebug.DEBUG_ACTION);
+        
+        addBinding(GLFW.GLFW_KEY_ESCAPE, GameActions.TOGGLE_PAUSE);
     }
 }

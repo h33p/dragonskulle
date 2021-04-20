@@ -32,4 +32,6 @@ public class GameActions extends Actions {
     public static final Action LEFT_CLICK = new Action("LEFT_CLICK");
     public static final Action RIGHT_CLICK = new Action("RIGHT_CLICK");
     public static final Action ACTION_3 = new Action("ACTION_3");
+    
+    public static final Action TOGGLE_PAUSE = new Action("TOGGLE_PAUSE");
 }

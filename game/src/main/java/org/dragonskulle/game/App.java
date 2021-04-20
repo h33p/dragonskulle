@@ -24,6 +24,7 @@ import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.PauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
@@ -144,6 +145,31 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(hexagonMap);
 
+        // Pause menu
+        GameObject pauseMenu =
+                new GameObject(
+                        "pause menu",
+                        new TransformUI(),
+                        (map) -> {
+                            map.addComponent(new PauseMenu());
+                        });
+        
+        /*
+         GameObject debugUi =
+                new GameObject(
+                        "debugUi",
+                        new TransformUI(true),
+                        (handle) -> {
+                            handle.getTransform(TransformUI.class)
+                                    .setParentAnchor(0.0f, 1f, 0.5f, 1f);
+                            handle.getTransform(TransformUI.class).setMargin(0f, -0.3f, 0f, 0f);
+                            handle.getTransform(TransformUI.class).setPivotOffset(0f, 1f);
+                            handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
+                        });
+         */
+
+        mainScene.addRootObject(pauseMenu);
+        
         return mainScene;
     }
 
