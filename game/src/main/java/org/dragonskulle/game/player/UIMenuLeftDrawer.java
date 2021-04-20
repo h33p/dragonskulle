@@ -40,6 +40,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
     private Reference<GameObject> mTileSelectedMenu;
+    private Reference<GameObject> mSellConfirmScreenMenu;
 
     @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
     @Setter @Getter private Screen mLastScreen = null;
@@ -95,6 +96,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     @Override
     public void onStart() {
         ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
+        ArrayList<UITextButtonFrame> mSellConfirmScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> buildingSelectedScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mapScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> tileSelectedScreenMenuItems = new ArrayList<>();
@@ -102,6 +104,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
         attackScreenMenuItems.add(buildCancelAttackButtonFrame());
         mAttackScreenMenu = buildMenu(attackScreenMenuItems);
+
+        mSellConfirmScreenMenuItems.add(buildConfirmSellButtonFrame());
+        mSellConfirmScreenMenuItems.add(buildCancelSellButtonFrame());
+        mSellConfirmScreenMenu = buildMenu(mSellConfirmScreenMenuItems);
 
         buildingSelectedScreenMenuItems.add(buildAttackButtonFrame());
         buildingSelectedScreenMenuItems.add(buildSellButtonFrame());
@@ -131,6 +137,17 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         return new UITextButtonFrame(
                 "cancel_attack",
                 "Cancel Attack",
+                (handle, __) -> {
+                    mSetHexChosen.setHex(null);
+                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                },
+                true);
+    }
+
+    private UITextButtonFrame buildCancelSellButtonFrame() {
+        return new UITextButtonFrame(
+                "cancel_sell",
+                "Cancel Sell",
                 (handle, __) -> {
                     mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.MAP_SCREEN);
@@ -170,6 +187,27 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 true);
     }
 
+    private UITextButtonFrame buildConfirmSellButtonFrame() {
+        return new UITextButtonFrame(
+                "confirm_sell_button",
+                "Sell Selected for " + Building.SELL_PRICE,
+                (handle, __) -> {
+                    Reference<Building> buildingToSell = mGetBuildingChosen.getBuilding();
+                    if (Reference.isValid(buildingToSell)) {
+                        Reference<Player> player = mGetPlayer.getPlayer();
+                        if (Reference.isValid(player)) {
+                            player.get()
+                                    .getClientSellRequest()
+                                    .invoke(new SellData(buildingToSell.get())); // Send Data
+                        }
+                    }
+                    mSetHexChosen.setHex(null);
+                    mSetBuildingChosen.setBuilding(null);
+                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
+                },
+                true);
+    }
+
     public void setVisibleScreen(Screen screen) {
         Reference<GameObject> newScreen = new Reference<>(null);
         if (screen != getLastScreen()) {
@@ -195,6 +233,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     break;
                 case ATTACKING_SCREEN:
                     newScreen = mAttackScreenMenu;
+                    setShopState(ShopState.CLOSED);
+                    break;
+                case SELLING_SCREEN:
+                    newScreen = mSellConfirmScreenMenu;
                     setShopState(ShopState.CLOSED);
                     break;
                 default:
@@ -297,22 +339,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private UITextButtonFrame buildSellButtonFrame() {
         return new UITextButtonFrame(
                 "sell_button",
-                "Sell Building -- Not Done",
-                (handle, __) -> {
-                    Reference<Player> player = mGetPlayer.getPlayer();
-                    if (Reference.isValid(player)) {
-                        Reference<Building> buildingChosen = mGetBuildingChosen.getBuilding();
-                        if (Reference.isValid(buildingChosen)) {
-                            player.get()
-                                    .getClientSellRequest()
-                                    .invoke(new SellData(buildingChosen.get())); // Send Data
-                        }
-                    }
-
-                    mSetHexChosen.setHex(null);
-                    mSetBuildingChosen.setBuilding(null);
-                    mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                },
+                "Sell Building",
+                (handle, __) -> mNotifyScreenChange.call(Screen.SELLING_SCREEN),
                 true);
     }
 

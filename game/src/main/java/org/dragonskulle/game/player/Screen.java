@@ -13,5 +13,7 @@ public enum Screen {
     BUILD_TILE_SCREEN, // The action to build a building on that tile.
     ATTACK_SCREEN, // The Screen to show what to show when user has clicked attack
     UPGRADE_SCREEN, // The screen to show which stat to show
-    ATTACKING_SCREEN // The screen to allow user to choose the building to attack
+    ATTACKING_SCREEN, // The screen to allow user to choose the building to attack
+    SELLING_SCREEN; // The screen to allow the user to confirm their selling of the selected
+    // building
 }
