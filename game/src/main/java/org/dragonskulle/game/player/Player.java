@@ -172,9 +172,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             } else if (i <= attempts) {
 
-            	boolean ifNotIsland = checkIfIsland(x, y);		//TODO Sort this out please
+            	boolean ifIsland = getMap().isIsland(getMap().getTile(x, y));
 
-                if (ifNotIsland) {
+                if (!ifIsland) {
                     buildingToBecomeCapital.setCapital(true);
 
                     log.info(
@@ -196,11 +196,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .filter(building -> building != null)
                         .findFirst()
                         .orElse(null);
-        int x = buildingToBecomeCapital.getTile().getQ();
-        int y = buildingToBecomeCapital.getTile().getR();
-
-        // TODO CHECK FOR ISLAND ISSUES.  Do in stream!
-
+        
         if (buildingToBecomeCapital == null) {
             // Cannot add a capital
             setOwnsCapital(false);
@@ -209,9 +205,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             getGameObject().destroy();
         } else {
-            buildingToBecomeCapital.setCapital(true);
+            int x = buildingToBecomeCapital.getTile().getQ();		//TODO Work out how to get x & y as getTile() does not work yet
+            int y = buildingToBecomeCapital.getTile().getR();
+        	if (!getMap().isIsland(getMap().getTile(x, y))) {
+        		buildingToBecomeCapital.setCapital(true);
 
-            log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+            }
+        	else {
+        		GameObject go = buildingToBecomeCapital.getGameObject();
+                go.destroy();
+                setOwnsCapital(false);
+
+                log.severe("Disconnecting");
+
+                getGameObject().destroy();
+        	}
+            
         }
     }
 
@@ -274,40 +284,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return axial;
     }
 
-    /**
-     * This will check if the tile at the given coordinates can be built from
-     *
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @return If there is more than 2 ways away from the building
-     */
-    private boolean checkIfIsland(int x, int y) {
-        // This part of the code checks we are not in an island which we cannot get out of
-        HexagonTile tilePlacedOn = getMap().getTile(x, y);
-        ArrayList<HexagonTile> buildableTiles =
-                getMap().getTilesInRadius(
-                                tilePlacedOn,
-                                1,
-                                3); // TODO set the distance to correct claimable distance
-        int numberOfSpaces = 0;
-
-        // This is set so there is multiple places to leave in case there is a second
-        // capital nearby which gets there first
-        final int spacesWanted = 2;
-        int j = 0;
-        while (j < buildableTiles.size() && numberOfSpaces < spacesWanted) {
-            HexagonTile tile = buildableTiles.get(j);
-            log.severe("Tile type " + tile.getTileType() + " tile Claimant" + tile.getClaimant());
-            if (tile.getTileType() == TileType.LAND
-                    && (tile.getClaimant() == null
-                            || tile.getClaimantId() != getNetworkObject().getOwnerId())) {
-                numberOfSpaces++;
-            }
-            j++;
-        }
-        log.info("Number of spaces: " + numberOfSpaces);
-        return numberOfSpaces >= spacesWanted;
-    }
     /**
      * This method will update the amount of tokens the user has per {@link #TOKEN_TIME}. Goes
      * through all owned {@link Building}s to check if need to update tokens. Should only be ran on
