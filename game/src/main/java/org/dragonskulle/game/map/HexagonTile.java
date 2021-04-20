@@ -219,6 +219,18 @@ public class HexagonTile implements INetSerializable {
     }
 
     /**
+     * Get the {@link Building} who has claimed this tile.
+     *
+     * @return The Building who has claimed this tile; otherwise {@code null}.
+     */
+    public Building getClaimedBy() {
+        if (!isClaimed()) {
+            return null;
+        }
+        return mClaimedBy.get();
+    }
+
+    /**
      * Get the ID of the Player who claimed the HexagonTile.
      *
      * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
@@ -339,6 +351,8 @@ public class HexagonTile implements INetSerializable {
                                     setBuilding(b.get());
                                 }
                             });
+        } else if (Reference.isValid(mBuilding)) {
+            setBuilding(null);
         }
 
         int claimId = stream.readInt();
@@ -363,6 +377,8 @@ public class HexagonTile implements INetSerializable {
                                     setClaimedBy(b.get());
                                 }
                             });
+        } else if (Reference.isValid(mClaimedBy)) {
+            removeClaim();
         }
     }
 

@@ -258,10 +258,6 @@ public class Building extends NetworkableComponent
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
 
-        if (!getNetworkObject().isServer()) {
-            return;
-        }
-
         // Get the map.
         HexagonMap map = getMap();
         if (map == null) {
@@ -269,14 +265,21 @@ public class Building extends NetworkableComponent
         }
 
         int distance = mClaimDistance.getValue();
-        // Claim the tiles around the building.
-        mClaimedTiles = map.getTilesInRadius(getTile(), distance, false);
-        // Claim the tile the building is on.
-        mClaimedTiles.add(getTile());
 
-        // Allow each hexagon tile to store the claim.
-        for (HexagonTile hexagonTile : mClaimedTiles) {
-            hexagonTile.setClaimedBy(this);
+        ArrayList<HexagonTile> tiles = map.getTilesInRadius(getTile(), distance, true);
+
+        mClaimedTiles.clear();
+
+        if (getNetworkObject().isServer()) {
+            for (HexagonTile hexagonTile : tiles) {
+                hexagonTile.setClaimedBy(this);
+            }
+        }
+
+        for (HexagonTile hexagonTile : tiles) {
+            if (hexagonTile.getClaimedBy() == this) {
+                mClaimedTiles.add(hexagonTile);
+            }
         }
     }
 
@@ -724,7 +727,11 @@ public class Building extends NetworkableComponent
 
             // Remove any claims.
             for (HexagonTile hexagonTile : mClaimedTiles) {
-                hexagonTile.removeClaim();
+                // Make sure it's our tile. It should always be our tile, but better safe than
+                // sorry.
+                if (hexagonTile.getClaimedBy() == this) {
+                    hexagonTile.removeClaim();
+                }
             }
         }
 
