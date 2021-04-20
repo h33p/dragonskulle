@@ -25,7 +25,7 @@ import org.dragonskulle.game.player.Player;
 @Log
 public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
-    private HashMap<HexagonTile, Reference<FogTile>> mFogTiles = new HashMap<>();
+    private HashMap<HexagonTile, Reference<FadeTile>> mFogTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
     @Getter @Setter private Reference<Player> mActivePlayer;
 
@@ -61,7 +61,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
     @Override
     protected void onDestroy() {
-        for (Reference<FogTile> fogTile : mFogTiles.values()) {
+        for (Reference<FadeTile> fogTile : mFogTiles.values()) {
             if (Reference.isValid(fogTile)) {
                 fogTile.get().getGameObject().destroy();
             }
@@ -79,10 +79,10 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     }
 
     private void setFog(HexagonTile tile, boolean enable) {
-        Reference<FogTile> tileRef = mFogTiles.get(tile);
+        Reference<FadeTile> tileRef = mFogTiles.get(tile);
 
         if (Reference.isValid(tileRef)) {
-            tileRef.get().setFog(enable, tile.getHeight());
+            tileRef.get().setState(enable, tile.getHeight());
             return;
         } else if (!enable) {
             return;
@@ -92,12 +92,12 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
                 GameObject.instantiate(
                         FOG_OBJECT, new TransformHex(tile.getQ(), tile.getR(), tile.getHeight()));
 
-        tileRef = go.getComponent(FogTile.class);
+        tileRef = go.getComponent(FadeTile.class);
 
         if (tileRef == null) {
-            FogTile fogTile = new FogTile();
+            FadeTile fogTile = new FadeTile();
             go.addComponent(fogTile);
-            tileRef = fogTile.getReference(FogTile.class);
+            tileRef = fogTile.getReference(FadeTile.class);
         }
 
         mMapReference.get().getGameObject().addChild(go);

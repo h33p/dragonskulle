@@ -2,6 +2,7 @@
 package org.dragonskulle.network.components;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.TransformHex;
@@ -13,6 +14,8 @@ import org.joml.Vector3fc;
 public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate {
     @Getter private SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
     private TransformHex mHexTransform;
+
+    @Getter @Setter private boolean mSyncHeight = true;
 
     public NetworkHexTransform(int q, int r) {
         mAxialCoordinate.set(new Vector3f(q, r, 0));
@@ -50,14 +53,18 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
         if (mHexTransform != null) {
             if (getNetworkObject().isServer()) {
                 Vector3f newPosition = mHexTransform.getLocalPosition(new Vector3f());
-                newPosition.z = mHexTransform.getHeight();
+                if (mSyncHeight) {
+                    newPosition.z = mHexTransform.getHeight();
+                }
                 if (!mAxialCoordinate.get().equals(newPosition)) {
                     mAxialCoordinate.set(newPosition);
                 }
             } else {
                 Vector3fc pos = mAxialCoordinate.get();
                 mHexTransform.setPosition(pos.x(), pos.y());
-                mHexTransform.setHeight(pos.z());
+                if (mSyncHeight) {
+                    mHexTransform.setHeight(pos.z());
+                }
             }
         }
     }

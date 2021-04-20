@@ -7,6 +7,7 @@ import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
@@ -37,7 +38,7 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
+public class Building extends NetworkableComponent implements IOnAwake, IOnStart, IFrameUpdate {
 
     /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -117,6 +118,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
         initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
         initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
+    }
+
+    @Override
+    public void frameUpdate(float deltaTime) {
+        TransformHex hexTransform = getGameObject().getTransform(TransformHex.class);
+        HexagonTile tile = getTile();
+
+        if (hexTransform != null && tile != null) {
+            hexTransform.setHeight(tile.getSurfaceHeight());
+        }
     }
 
     @Override

@@ -90,7 +90,13 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
-                            "enabled" : true
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSyncHeight",
+                                    "value" : false
+                                }
+                            ]
                         },
                         {
                             "class_name" : "org.dragonskulle.game.building.Building",

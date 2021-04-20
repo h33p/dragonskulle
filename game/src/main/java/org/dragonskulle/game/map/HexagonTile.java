@@ -38,6 +38,9 @@ public class HexagonTile implements INetSerializable {
     static final GameObject LAND_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
 
+    /** Describes a template for land hex tile. */
+    static final GameObject FOG_TILE = TEMPLATES.get().getDefaultScene().findRootObject("Fog Hex");
+
     /** Describes a template for water hex tile. */
     static final GameObject WATER_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
@@ -49,7 +52,8 @@ public class HexagonTile implements INetSerializable {
     public static enum TileType {
         LAND((byte) 0),
         WATER((byte) 1),
-        MOUNTAIN((byte) 2);
+        MOUNTAIN((byte) 2),
+        FOG((byte) -1);
 
         @Getter private final byte mValue;
 
@@ -94,8 +98,8 @@ public class HexagonTile implements INetSerializable {
     @Getter(AccessLevel.PACKAGE)
     private GameObject mGameObject;
 
-    private Reference<HeightController> mHeightController;
-    private Reference<HeightController> mSecondaryController;
+    private Reference<FadeTile> mFadeControl;
+    private Reference<FadeTile> mSecondaryFade;
 
     @Getter(AccessLevel.PACKAGE)
     private Reference<HighlightControls> mHighlightControls;
@@ -119,7 +123,9 @@ public class HexagonTile implements INetSerializable {
         this.mHeight = handler.getNetworkManager().isClient() ? WATER_THRESHOLD : height;
         this.mHandler = handler;
 
-        if (height <= WATER_THRESHOLD) {
+        if (handler.getNetworkManager().isClient()) {
+            mTileType = TileType.FOG;
+        } else if (height <= WATER_THRESHOLD) {
             mTileType = TileType.WATER;
         } else if (height >= MOUNTAINS_THRESHOLD) {
             mTileType = TileType.MOUNTAIN;
@@ -290,15 +296,17 @@ public class HexagonTile implements INetSerializable {
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
-        mHeight = stream.readFloat();
+        float height = stream.readFloat();
         TileType newType = TileType.getTile(stream.readByte());
 
         if (newType != mTileType) {
+            updateHeight(false, true);
+            mHeight = height;
             mTileType = newType;
-            mGameObject.destroy();
             buildGameObject();
         } else {
-            updateHeight();
+            mHeight = height;
+            updateHeight(true, true);
         }
 
         NetworkManager manager = mHandler.getNetworkManager();
@@ -352,18 +360,29 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
-    private void updateHeight() {
+    public float getSurfaceHeight() {
+        return mGameObject.getTransform(TransformHex.class).getHeight();
+    }
+
+    private void updateHeight(boolean fadeIn, boolean destroyOnFadeOut) {
+
+        mFadeControl.get().setDestroyOnFadeOut(destroyOnFadeOut);
+
+        if (Reference.isValid(mSecondaryFade)) {
+            mSecondaryFade.get().setDestroyOnFadeOut(destroyOnFadeOut);
+        }
+
         if (mTileType == TileType.WATER) {
             mGameObject.getTransform(TransformHex.class).setHeight(WATER_THRESHOLD);
 
-            mSecondaryController.get().setTargetHeight(mHeight - WATER_THRESHOLD - 0.1f);
+            mSecondaryFade.get().setState(fadeIn, mHeight - WATER_THRESHOLD - 0.1f);
         } else {
-            mHeightController.get().setTargetHeight(mHeight);
+            mFadeControl.get().setState(fadeIn, mHeight);
         }
     }
 
     private void buildGameObject() {
-        mSecondaryController = null;
+        mSecondaryFade = null;
 
         switch (mTileType) {
             case WATER:
@@ -373,12 +392,16 @@ public class HexagonTile implements INetSerializable {
 
                 GameObject floor = mGameObject.findChildByName("Water Floor");
 
-                mSecondaryController = floor.getComponent(HeightController.class);
+                mSecondaryFade = floor.getComponent(FadeTile.class);
                 break;
             case MOUNTAIN:
                 mGameObject =
                         GameObject.instantiate(
                                 MOUNTAIN_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
+                break;
+            case FOG:
+                mGameObject =
+                        GameObject.instantiate(FOG_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
                 break;
             default:
                 mGameObject =
@@ -386,15 +409,20 @@ public class HexagonTile implements INetSerializable {
                                 LAND_TILE, new TransformHex(mQ, mR, WATER_THRESHOLD));
         }
 
-        mHeightController = mGameObject.getComponent(HeightController.class);
+        mFadeControl = mGameObject.getComponent(FadeTile.class);
 
         switch (mTileType) {
             case WATER:
-                mSecondaryController.get().setTargetHeight(mHeight - WATER_THRESHOLD - 0.1f);
-                mHeightController.get().setTargetHeight(WATER_THRESHOLD);
+                mSecondaryFade.get().setState(true, mHeight - WATER_THRESHOLD - 0.1f);
+                mFadeControl.get().setState(true, WATER_THRESHOLD);
+                mFadeControl.get().setFadeValue(0f);
+                break;
+            case FOG:
+                mFadeControl.get().setState(true, mHeight);
                 break;
             default:
-                mHeightController.get().setTargetHeight(mHeight);
+                mFadeControl.get().setState(true, mHeight);
+                mFadeControl.get().setFadeValue(0f);
                 break;
         }
 
