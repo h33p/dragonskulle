@@ -7,10 +7,12 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 
 public class UIFlatImage extends UIBuildableComponent implements IOnAwake, IUIBuildHandler {
-    final SampledTexture mTexture;
+    private final SampledTexture mTexture;
+    private final boolean mHoverable;
 
-    public UIFlatImage(SampledTexture texture) {
+    public UIFlatImage(SampledTexture texture, boolean hoverable) {
         mTexture = texture;
+        mHoverable = hoverable;
     }
 
     @Override
@@ -18,6 +20,8 @@ public class UIFlatImage extends UIBuildableComponent implements IOnAwake, IUIBu
 
     @Override
     public void onAwake() {
-        getGameObject().addComponent(new UIRenderable(mTexture));
+        UIRenderable rend = new UIRenderable(mTexture);
+        rend.setHoverable(mHoverable);
+        getGameObject().addComponent(rend);
     }
 }

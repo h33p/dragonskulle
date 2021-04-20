@@ -337,7 +337,9 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
         mTransitionTime = mAppearance.getTransitionTime();
 
-        mRectTexture = mAppearance.getButtonTexture().clone();
+        if (mRectTexture == null) {
+            mRectTexture = mAppearance.getButtonTexture().clone();
+        }
     }
 
     @Override
