@@ -2,21 +2,36 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateMemory;
+import static org.lwjgl.vulkan.VK10.vkBindBufferMemory;
+import static org.lwjgl.vulkan.VK10.vkCmdCopyBuffer;
+import static org.lwjgl.vulkan.VK10.vkCreateBuffer;
+import static org.lwjgl.vulkan.VK10.vkDestroyBuffer;
+import static org.lwjgl.vulkan.VK10.vkFreeMemory;
+import static org.lwjgl.vulkan.VK10.vkGetBufferMemoryRequirements;
 
 import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkBufferCopy;
+import org.lwjgl.vulkan.VkBufferCreateInfo;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkMemoryAllocateInfo;
+import org.lwjgl.vulkan.VkMemoryRequirements;
 
 /**
- * Class abstracting a vulkan buffer memory
+ * Class abstracting a vulkan buffer memory.
  *
  * @author Aurimas Blažulionis
  */
 class VulkanBuffer implements NativeResource {
-    public long buffer;
-    public long memory;
+    public long mBuffer;
+    public long mMemory;
 
     private VkDevice mDevice;
 
@@ -38,10 +53,10 @@ class VulkanBuffer implements NativeResource {
                 throw new RuntimeException(String.format("Failed to create buffer! Ret: %x", -res));
             }
 
-            this.buffer = pBuffer.get(0);
+            this.mBuffer = pBuffer.get(0);
 
             VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetBufferMemoryRequirements(mDevice, this.buffer, memoryRequirements);
+            vkGetBufferMemoryRequirements(mDevice, this.mBuffer, memoryRequirements);
 
             VkMemoryAllocateInfo allocateInfo = VkMemoryAllocateInfo.callocStack(stack);
             allocateInfo.sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO);
@@ -58,9 +73,9 @@ class VulkanBuffer implements NativeResource {
                         String.format("Failed to allocate buffer memory! Ret: %x", -res));
             }
 
-            this.memory = pBufferMemory.get(0);
+            this.mMemory = pBufferMemory.get(0);
 
-            res = vkBindBufferMemory(mDevice, this.buffer, this.memory, 0);
+            res = vkBindBufferMemory(mDevice, this.mBuffer, this.mMemory, 0);
 
             if (res != VK_SUCCESS) {
                 throw new RuntimeException(
@@ -75,13 +90,13 @@ class VulkanBuffer implements NativeResource {
             copyRegion.srcOffset(0);
             copyRegion.dstOffset(0);
             copyRegion.size(size);
-            vkCmdCopyBuffer(commandBuffer, this.buffer, to.buffer, copyRegion);
+            vkCmdCopyBuffer(commandBuffer, this.mBuffer, to.mBuffer, copyRegion);
         }
     }
 
     @Override
     public void free() {
-        vkDestroyBuffer(mDevice, buffer, null);
-        vkFreeMemory(mDevice, memory, null);
+        vkDestroyBuffer(mDevice, mBuffer, null);
+        vkFreeMemory(mDevice, mMemory, null);
     }
 }

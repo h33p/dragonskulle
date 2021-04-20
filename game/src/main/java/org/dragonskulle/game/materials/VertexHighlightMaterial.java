@@ -1,7 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.materials;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32_SFLOAT;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -17,9 +18,11 @@ import org.dragonskulle.renderer.ShaderKind;
 import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
-import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
+import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Light;
-import org.dragonskulle.renderer.materials.*;
+import org.dragonskulle.renderer.materials.IColouredMaterial;
+import org.dragonskulle.renderer.materials.IMaterial;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
@@ -82,11 +85,11 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
 
     private int mRefCount = 0;
 
-    /** Constructor for VertexHighlightMaterial */
+    /** Constructor for VertexHighlightMaterial. */
     public VertexHighlightMaterial() {}
 
     /**
-     * Constructor for VertexHighlightMaterial
+     * Constructor for VertexHighlightMaterial.
      *
      * @param texture initial texture of the object
      */
@@ -95,7 +98,7 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
     }
 
     /**
-     * Constructor for VertexHighlightMaterial
+     * Constructor for VertexHighlightMaterial.
      *
      * @param texture initial texture of the object
      * @param colour colour of the material
@@ -106,7 +109,7 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
     }
 
     /**
-     * Constructor for VertexHighlightMaterial
+     * Constructor for VertexHighlightMaterial.
      *
      * @param colour colour of the material
      */
@@ -115,7 +118,9 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
     }
 
     public ShaderSet getShaderSet() {
-        if (mTexColour.w < 1f) return TRANSPARENT_SET;
+        if (mTexColour.w < 1f) {
+            return TRANSPARENT_SET;
+        }
         return OPAQUE_SET;
     }
 
@@ -139,6 +144,10 @@ public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Se
     }
 
     public void free() {
-        if (--mRefCount < 0) for (SampledTexture tex : mFragmentTextures) tex.free();
+        if (--mRefCount < 0) {
+            for (SampledTexture tex : mFragmentTextures) {
+                tex.free();
+            }
+        }
     }
 }

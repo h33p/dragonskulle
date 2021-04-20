@@ -4,26 +4,28 @@ package org.dragonskulle.ui;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
-import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
- * Class describing a interactive UI slider
+ * Class describing a interactive UI slider.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UISlider extends Component implements IOnAwake, IFrameUpdate {
-    /** Simple interface describing slider callback events */
+public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
+    /** Simple interface describing slider callback event. */
     public interface ISliderValueEvent {
         /**
-         * Method for handling the event
+         * Method for handling the event.
          *
          * @param slider calling slider
          * @param value the new value of the slider
@@ -32,13 +34,13 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     private ISliderValueEvent mOnValueChange;
-    /** Controls the current value of the slider */
+    /** Controls the current value of the slider. */
     @Getter @Setter private float mValue = 0f;
-    /** Controls the minimum value the slider can have */
+    /** Controls the minimum value the slider can have. */
     @Getter @Setter private float mMinValue = 0f;
-    /** Controls the maximum value the slider can have */
+    /** Controls the maximum value the slider can have. */
     @Getter @Setter private float mMaxValue = 1f;
-    /** Controls the rounding of slider (1f will round to whole numbers) */
+    /** Controls the rounding of slider (1f will round to whole numbers). */
     @Getter @Setter private float mRoundStep = 0f;
 
     private TransformUI mKnobTransform;
@@ -46,11 +48,11 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     Vector3f mTmpCursorPos = new Vector3f();
     Vector3f mTmpCursorPos2 = new Vector3f();
 
-    /** Constructor for {@link UISlider} */
+    /** Constructor for {@link UISlider}. */
     public UISlider() {}
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      */
@@ -59,7 +61,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -72,7 +74,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -85,7 +87,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param onValueChange event that gets called when the slider value changes
      */
@@ -94,7 +96,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param onValueChange event that gets called when the slider value changes
@@ -105,7 +107,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -118,7 +120,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -138,7 +140,11 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void onAwake() {
+
+        UIAppearance appearance = UIManager.getInstance().getAppearance();
+
         getGameObject().getTransform(TransformUI.class).setTargetAspectRatio(4f);
+
         getGameObject()
                 .buildChild(
                         "slider bar",
@@ -148,7 +154,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                                     new UIRenderable(
                                             new Vector4f(0.5f), new SampledTexture("white.bmp")));
                             TransformUI barTransform = bar.getTransform(TransformUI.class);
-                            barTransform.setParentAnchor(0f, 0f, 1f, 0f);
+                            barTransform.setParentAnchor(0f, 0.5f, 1f, 0.5f);
                             barTransform.setMargin(0.05f, -0.01f, -0.05f, 0.01f);
                             bar.buildChild(
                                     "slider knob",
@@ -156,7 +162,7 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                                     (knob) -> {
                                         knob.addComponent(
                                                 new UIRenderable(
-                                                        new SampledTexture("ui/round_knob.png")));
+                                                        appearance.getSliderKnobTexture().clone()));
                                         mKnobTransform = knob.getTransform(TransformUI.class);
                                         mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
                                         mKnobTransform.setMargin(-10f, -10f, 10f, 10f);
@@ -169,11 +175,17 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                         });
     }
 
-    private void buttonPressDown(UIButton button, float __) {
+    /**
+     * Runs on button down.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonPressDown(UIButton button, float ignored) {
         // Extract the starting mouse offset so we "pin" the knob to the mouse
         Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
 
-        Vector2f cursorCoords = Actions.getCursor().getPosition();
+        Vector2fc cursorCoords = Actions.getCursor().getPosition();
 
         mTmpCursorPos.set(cursorCoords.x(), cursorCoords.y(), 0f);
 
@@ -182,7 +194,13 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
         mPressed = true;
     }
 
-    private void buttonRelease(UIButton button, float __) {
+    /**
+     * Runs on button release.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonRelease(UIButton button, float ignored) {
         mPressed = false;
     }
 
@@ -196,15 +214,15 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
             // do accurate retransformation in one step here?
 
             // First, let's figure out the delta from value 0
-            mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
+            mKnobTransform.setParentAnchor(0f, 0.5f, 0f, 0.5f);
             Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
-            Vector2f cursorCoords = Actions.getCursor().getPosition();
+            Vector2fc cursorCoords = Actions.getCursor().getPosition();
             mTmpCursorPos2.set(cursorCoords.x(), cursorCoords.y(), 0f);
             mTmpCursorPos2.mulPosition(invMatrix);
             mTmpCursorPos2.sub(mTmpCursorPos);
             float x1 = mTmpCursorPos2.x();
             // Second, figure out the delta from value 1
-            mKnobTransform.setParentAnchor(1f, 0f, 1f, 0f);
+            mKnobTransform.setParentAnchor(1f, 0.5f, 1f, 0.5f);
             invMatrix = mKnobTransform.getInvWorldMatrix();
             mTmpCursorPos2.set(cursorCoords.x(), cursorCoords.y(), 0f);
             mTmpCursorPos2.mulPosition(invMatrix);
@@ -213,9 +231,13 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
             // Now then, inverse lerp the position into the range
             // if x1 is 0, x2 is 1, value has to be...
             float newValue = 0f;
-            if (x1 <= 0) newValue = 0f;
-            else if (x2 >= 0f) newValue = 1f;
-            else newValue = 1f - x2 / (x2 - x1);
+            if (x1 <= 0) {
+                newValue = 0f;
+            } else if (x2 >= 0f) {
+                newValue = 1f;
+            } else {
+                newValue = 1f - x2 / (x2 - x1);
+            }
 
             newValue = MathUtils.lerp(mMinValue, mMaxValue, newValue);
 
@@ -224,8 +246,9 @@ public class UISlider extends Component implements IOnAwake, IFrameUpdate {
                 newValue = (float) Math.floor(newValue + 0.5f) * mRoundStep;
             }
 
-            if (newValue != mValue && mOnValueChange != null)
+            if (newValue != mValue && mOnValueChange != null) {
                 mOnValueChange.eventHandler(this, newValue);
+            }
 
             mValue = newValue;
         }

@@ -2,7 +2,7 @@
 package org.dragonskulle.utils;
 
 /**
- * Basic additional math utilities
+ * Basic additional math utilities.
  *
  * @author Aurimas Blažulionis
  */
@@ -10,7 +10,7 @@ public class MathUtils {
 
     public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
     /**
-     * Interpolate a float value between start and end with time
+     * Interpolate a float value between start and end with time.
      *
      * @param start starting point that we get when time is 0
      * @param end ending point that we get when time is 1
@@ -27,7 +27,7 @@ public class MathUtils {
     }
 
     /**
-     * Calculate a logarithm in specified base
+     * Calculate a logarithm in specified base.
      *
      * @param val value to get the logarithm of
      * @param base base to calculate the logarithm in
@@ -71,5 +71,17 @@ public class MathUtils {
         double finalNumber = (sourceNumber * scale) + offset;
         int calcScale = (int) Math.pow(10, decimalPrecision);
         return (double) Math.round(finalNumber * calcScale) / calcScale;
+    }
+
+    /**
+     * Normalise a value between 0 and 1, by providing the range the value is situated in.
+     *
+     * @param value The value to normalise.
+     * @param minimum The lowest value the input could be.
+     * @param maximum The highest value the input could be.
+     * @return The value normalised between 0 and 1.
+     */
+    public static float normalise(float value, float minimum, float maximum) {
+        return (float) mapOneRangeToAnother(value, minimum, maximum, 0, 1, 9);
     }
 }

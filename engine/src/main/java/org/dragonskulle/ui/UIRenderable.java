@@ -6,26 +6,27 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
-import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.renderer.components.Renderable;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4fc;
 
 /**
- * Class describing a renderable UI object
+ * Class describing a renderable UI object.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 public class UIRenderable extends Renderable implements IOnAwake {
-    /** Maintain aspect ration of the UI element with its texture */
+    /** Maintain aspect ration of the UI element with its texture. */
     @Getter @Setter private boolean mMaintainAspect = true;
 
     /**
@@ -45,17 +46,26 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Getter @Setter private float mDepthShift = 0f;
 
+    /**
+     * Controls whether the object is hoverable
+     *
+     * <p>If set to {@code true} (default), this renderable will obstruct other UI elements, and
+     * make things like buttons behind it not selectable. If set to {@code false}, it will be
+     * ignored.
+     */
+    @Getter @Setter private boolean mHoverable = true;
+
     private final Matrix4f mTmpMatrix = new Matrix4f();
 
     private final Vector3f mTmpCursorPos = new Vector3f();
 
-    /** Default constructor for UIRenderable */
+    /** Default constructor for UIRenderable. */
     public UIRenderable() {
         super(Mesh.QUAD, new UIMaterial());
     }
 
     /**
-     * Constructor for UIRenderable
+     * Constructor for UIRenderable.
      *
      * @param colour colour of the rendered UI element
      * @param texture texture of the rendered UI element
@@ -65,7 +75,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIRenderable
+     * Constructor for UIRenderable.
      *
      * @param colour colour of the rendered UI element
      */
@@ -74,7 +84,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     /**
-     * Constructor for UIRenderable
+     * Constructor for UIRenderable.
      *
      * @param texture texture of the rendered UI element
      */
@@ -84,6 +94,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
     @Override
     public void onAwake() {
+
+        if (!mMaintainAspect) {
+            return;
+        }
+
         SampledTexture[] texs = mMaterial.getFragmentTextures();
         Texture tex =
                 texs != null && texs.length > 0 && texs[0] != null && texs[0].getTexture() != null
@@ -92,8 +107,9 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
         TransformUI uiTransform = getGameObject().getTransform(TransformUI.class);
 
-        if (tex != null && uiTransform != null)
+        if (tex != null && uiTransform != null) {
             uiTransform.setTargetAspectRatio((float) tex.getWidth() / (float) tex.getHeight());
+        }
     }
 
     @Override
@@ -108,9 +124,14 @@ public class UIRenderable extends Renderable implements IOnAwake {
     }
 
     public boolean cursorOver() {
+
+        if (!mHoverable) {
+            return false;
+        }
+
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2f cursorCoords = Actions.getCursor().getPosition();
+        Vector2fc cursorCoords = Actions.getCursor().getPosition();
 
         mTmpMatrix.invert();
 

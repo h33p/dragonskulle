@@ -8,7 +8,11 @@ import java.io.Serializable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-/** @author Oscar L */
+/**
+ * The type Sync vector 3.
+ *
+ * @author Oscar L
+ */
 public class SyncVector3 implements ISyncVar, Serializable {
     private Vector3f mData = new Vector3f();
 

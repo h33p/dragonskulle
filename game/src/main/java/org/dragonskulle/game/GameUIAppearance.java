@@ -13,7 +13,7 @@ import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 
 /**
- * This class controls how UI looks throughout the game
+ * This class controls how UI looks throughout the game.
  *
  * @author Aurimas Blažulionis
  */
@@ -27,7 +27,7 @@ public class GameUIAppearance {
     public static final int DRAWER = 1;
 
     /**
-     * Get a information box texture
+     * Get a information box texture.
      *
      * @return info box texture. The reference is cloned, so this texture needs to be freed by the
      *     callee
@@ -37,7 +37,7 @@ public class GameUIAppearance {
     }
 
     /**
-     * Get a drawer texture
+     * Get a drawer texture.
      *
      * @return info drawer texture. The reference is cloned, so this texture needs to be freed by
      *     the callee
@@ -47,7 +47,7 @@ public class GameUIAppearance {
     }
 
     /**
-     * Initialise the UI appearance
+     * Initialise the UI appearance.
      *
      * <p>This method will set the game's UI settings to look consistent.
      */
@@ -56,17 +56,20 @@ public class GameUIAppearance {
         appearance.getTextFont().free();
         appearance.setTextFont(Font.getFontResource("fatpixel.ttf"));
         appearance.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));
+        appearance.setTextRectTexture(new SampledTexture("ui/info_box.png"));
+        appearance.setDropDownIconTexture(new SampledTexture("ui/drop_down_icon_new.png"));
+        appearance.setSliderKnobTexture(new SampledTexture("ui/slider_bar.png"));
         appearance.setRectTextures(
                 new SampledTexture[] {
                     new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")
                 });
         appearance.setRectTextVertMargin(0.3f);
-        appearance.setRectTextHorizMargin(0.1f);
+        appearance.setRectTextHorizMargin(0.15f);
         appearance.setOnClick(GameUIAppearance::onClick);
         appearance.setOnPressDown(GameUIAppearance::onPressDown);
     }
 
-    /** Inject a sound to every button click */
+    /** Inject a sound to every button click. */
     private static void onClick(UIButton button, float deltaTime) {
         AudioSource source = getSource();
 
@@ -75,7 +78,7 @@ public class GameUIAppearance {
         }
     }
 
-    /** Inject a sound to every button down press */
+    /** Inject a sound to every button down press. */
     private static void onPressDown(UIButton button, float deltaTime) {
         AudioSource source = getSource();
 

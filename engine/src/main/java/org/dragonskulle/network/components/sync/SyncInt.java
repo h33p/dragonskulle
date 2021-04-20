@@ -1,12 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
+ * The type Sync int.
+ *
  * @author Aurimas B The type Sync int.
- *     <p>This primitve type is implemented manually more space savings
+ *     <p>This primitve type is implemented manually more space savings.
  */
 public class SyncInt implements ISyncVar, Serializable {
     /** The Data. */
@@ -49,6 +53,15 @@ public class SyncInt implements ISyncVar, Serializable {
      */
     public void add(int value) {
         set(get() + value);
+    }
+
+    /**
+     * Subtract a value from the current data.
+     *
+     * @param value The value to subtract.
+     */
+    public void subtract(int value) {
+        set(get() - value);
     }
 
     /**
@@ -96,8 +109,12 @@ public class SyncInt implements ISyncVar, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SyncInt syncVar = (SyncInt) o;
         return mData == syncVar.mData;
     }

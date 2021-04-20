@@ -1,11 +1,14 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.experimental.Accessors;
 
 /**
- * Spawnable template manager
+ * Spawnable template manager.
  *
  * @author Aurimas Blažulionis
  *     <p>This class acts as a collection of spawnable object templates.
@@ -16,7 +19,7 @@ public class TemplateManager {
     private final Map<String, Integer> mNameToIndex = new HashMap<>();
 
     /**
-     * Instantiate a template by ID
+     * Instantiate a template by ID.
      *
      * @param id index of the object in the manager
      * @return a clone of the template
@@ -26,7 +29,7 @@ public class TemplateManager {
     }
 
     /**
-     * Find template index by its name
+     * Find template index by its name.
      *
      * @param name name of the template
      * @return integer ID of the template. {@code null}, if not found.
@@ -36,13 +39,15 @@ public class TemplateManager {
     }
 
     /**
-     * Add object to the template manager
+     * Add object to the template manager.
      *
      * @param object object to add as template
      * @return integer ID of the template. {@code null}, if name is duplicate.
      */
     public Integer addObject(GameObject object) {
-        if (mNameToIndex.containsKey(object.getName())) return null;
+        if (mNameToIndex.containsKey(object.getName())) {
+            return null;
+        }
         int idx = mTemplates.size();
         mNameToIndex.put(object.getName(), idx);
         mTemplates.add(object);
@@ -50,6 +55,8 @@ public class TemplateManager {
     }
 
     public void addAllObjects(GameObject... objects) {
-        for (GameObject go : objects) addObject(go);
+        for (GameObject go : objects) {
+            addObject(go);
+        }
     }
 }

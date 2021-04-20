@@ -15,7 +15,7 @@ import org.joml.Math;
 import org.joml.Vector3f;
 
 /**
- * Allows to control object translation with scroll wheel
+ * Allows to control object translation with scroll wheel.
  *
  * @author Aurimas Blažulionis
  */
@@ -26,38 +26,35 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
         void setZoomLevel(float level);
     }
 
-    @Getter @Setter
-    /** Controls the minimum zoom speed */
-    private float mMinSpeed = 0.01f;
+    /** Controls the minimum zoom speed. */
+    @Getter @Setter private float mMinSpeed = 0.01f;
 
-    @Getter @Setter
-    /** Controls the maximum zoom speed */
-    private float mMaxSpeed = 0.1f;
+    /** Controls the maximum zoom speed. */
+    @Getter @Setter private float mMaxSpeed = 0.1f;
 
-    @Getter @Setter
     /**
      * Controls the curvature of scroll speed.
      *
      * <p>Essentially, with values over 1, the less we are zoomed in, the quicker we can zoom in.
      * The more we are zoomed in, the slower additional zoom is.
      */
-    private float mPowFactor = 1.5f;
+    @Getter @Setter private float mPowFactor = 1.5f;
 
     @Getter private final Vector3f mStartPos = new Vector3f();
     @Getter private final Vector3f mEndPos = new Vector3f();
 
     private Vector3f mTmpTransform = new Vector3f();
-    @Setter private float mTargetLerpTime = 0f;
+    @Getter @Setter private float mTargetLerpTime = 0f;
     private float mZoomLerpTime = 0.1f;
     @Getter private float mZoomLevel = 0f;
     private transient Transform3D mTransform;
     private IZoomNotify[] mNotify;
 
-    /** Constructor for {@link ScrollTranslate} */
+    /** Constructor for {@link ScrollTranslate}. */
     public ScrollTranslate() {}
 
     /**
-     * Constructor for {@link ScrollTranslate}
+     * Constructor for {@link ScrollTranslate}.
      *
      * @param notify list of components that need to be notified of the zoom level changes.
      */

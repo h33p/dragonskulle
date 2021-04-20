@@ -3,50 +3,55 @@ package org.dragonskulle.renderer.components;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Scene;
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 /**
- * Class describing camera projection properties
+ * Class describing camera projection properties.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 public class Camera extends Component implements IFrameUpdate {
-    /** Define which way is up */
+    /* Define which way is up */
     private static final Vector3f UP_DIR = new Vector3f(0f, 0f, 1f);
 
-    /** Option whether camera is in perspective (3D), or orthographic (2D) mode */
+    /* Option whether camera is in perspective (3D), or orthographic (2D) mode */
     public static enum Projection {
         ORTHOGRAPHIC,
         PERSPECTIVE
     }
 
-    /** Controls camera projection mode */
-    public Projection projection = Projection.PERSPECTIVE;
-    /** Controls field of view in perspective mode */
-    public float fov = 70.f;
-    /** Controls how wide the screen is in orthographic mode */
-    public float orthographicSize = 10.f;
+    /* Controls camera projection mode */
+    public Projection mProjection = Projection.PERSPECTIVE;
+    /* Controls field of view in perspective mode */
+    public float mFov = 70.f;
+    /* Controls how wide the screen is in orthographic mode */
+    public float mOrthographicSize = 10.f;
     /**
-     * Controls how close the nearest objects can be to the camera to render
+     * Controls how close the nearest objects can be to the camera to render.
      *
      * <p>Note the too small value for nearPlane may lead to visual artifacting
      */
-    public float nearPlane = 0.1f;
+    public float mNearPlane = 0.1f;
     /**
-     * Controls how far the furthest objects can be from the camera to render
+     * Controls how far the furthest objects can be from the camera to render.
      *
      * <p>Note that too large value for farPlane may lead to visual artifacting
      */
-    public float farPlane = 100.f;
+    public float mFarPlane = 100.f;
 
-    /** Current projection matrix */
+    /* Current projection matrix */
     private Matrix4f mProj = new Matrix4f();
 
     @Getter
-    /** Current screen aspect ratio */
+    /* Current screen aspect ratio */
     private float mAspectRatio = 1.f;
 
     @Getter private final Vector3f mViewDirection = new Vector3f(0f, 1f, 0f);
@@ -56,23 +61,23 @@ public class Camera extends Component implements IFrameUpdate {
     private final Vector3f mTmpDir = new Vector3f();
 
     /**
-     * Get the current projection matrix
+     * Get the current projection matrix.
      *
      * <p>This method will update the camera's projection matrix and return it back
      */
     public Matrix4fc getProj() {
-        switch (projection) {
+        switch (mProjection) {
             case PERSPECTIVE:
-                mProj.setPerspective(fov, mAspectRatio, nearPlane, farPlane, true);
+                mProj.setPerspective(mFov, mAspectRatio, mNearPlane, mFarPlane, true);
                 break;
             case ORTHOGRAPHIC:
                 mProj.setOrtho(
-                        -orthographicSize * 0.5f * mAspectRatio,
-                        orthographicSize * 0.5f * mAspectRatio,
-                        -orthographicSize * 0.5f,
-                        orthographicSize * 0.5f,
-                        nearPlane,
-                        farPlane,
+                        -mOrthographicSize * 0.5f * mAspectRatio,
+                        mOrthographicSize * 0.5f * mAspectRatio,
+                        -mOrthographicSize * 0.5f,
+                        mOrthographicSize * 0.5f,
+                        mNearPlane,
+                        mFarPlane,
                         true);
                 break;
         }
@@ -87,7 +92,7 @@ public class Camera extends Component implements IFrameUpdate {
     Vector4f mFar = new Vector4f(0, 0, 1, 1);
 
     /**
-     * Project normalized screen coordinates to world direction vector
+     * Project normalized screen coordinates to world direction vector.
      *
      * <p>See <a
      * href="https://stackoverflow.com/questions/7692988/opengl-math-projecting-screen-space-to-world-space-coords">here</a>
@@ -125,12 +130,14 @@ public class Camera extends Component implements IFrameUpdate {
      * <p>It accounts for any scaling, transformation, and rotation that the transform may have.
      *
      * @param transform target transform to project to
+     * @param height height above target transform to project to
      * @param x x screen coordinate in [-1; 1] range
      * @param y y screen coordinate in [-1; 1] range
      * @param dest destination vector to project to
      * @return dest
      */
-    public Vector3f screenToPlane(Transform transform, float x, float y, Vector3f dest) {
+    public Vector3f screenToPlane(
+            Transform transform, float height, float x, float y, Vector3f dest) {
         screenToWorldDir(x, y, dest);
 
         getGameObject().getTransform().getWorldMatrix().getTranslation(mTmpPos);
@@ -139,6 +146,9 @@ public class Camera extends Component implements IFrameUpdate {
         transform.getInvWorldMatrix().transformPosition(dest);
         transform.getInvWorldMatrix().transformPosition(mTmpPos);
 
+        dest.sub(0, 0, height);
+        mTmpPos.sub(0, 0, height);
+
         float heightDiff = mTmpPos.z() - dest.z();
         float moveBy = mTmpPos.z() / heightDiff;
 
@@ -146,7 +156,7 @@ public class Camera extends Component implements IFrameUpdate {
     }
 
     /**
-     * Update the screen's aspect ratio
+     * Update the screen's aspect ratio.
      *
      * @param width current screen width
      * @param height current screen height
@@ -156,7 +166,7 @@ public class Camera extends Component implements IFrameUpdate {
     }
 
     /**
-     * Get world to view transformation matrix
+     * Get world to view transformation matrix.
      *
      * @return world to view space transformation matrix
      */

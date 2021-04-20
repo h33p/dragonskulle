@@ -43,7 +43,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * This is the class which contains all the needed data to play a game
+ * This is the class which contains all the needed data to play a game.
  *
  * @author DragonSkulle
  */
@@ -54,7 +54,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
-    /** Link to the current capital */
+    /** Link to the current capital. */
     private Reference<Building> mCapital = null;
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
@@ -70,34 +70,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
-    /** Whether they own the building */
+    /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
-    /** This Is how often a player can attack */
-    private final float ATTACK_COOLDOWN = 2f;
-    /** When the last time a player attacked */
+    /** This Is how often a player can attack. */
+    private static final float ATTACK_COOLDOWN = 2f;
+    /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
-    private static final Vector3f[] COLOURS = {
-        new Vector3f(0.5f, 1f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.86f),
-        new Vector3f(0.89f, 0.05f, 1f),
-        new Vector3f(0.1f, 0.56f, 0.05f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.05f, 1f, 0.34f),
-        new Vector3f(0.1f, 0.05f, 0.56f),
-        new Vector3f(0f, 0f, 0f)
-    };
-
     /** The base rate of tokens which will always be added. */
-    private final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 5;
     /** How frequently the tokens should be added. */
-    private final float TOKEN_TIME = 1f;
+    private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private final int MAX_PLAYERS = 6;
+    private static final int MAX_PLAYERS = 6;
 
     /** Used by the client to request that a building be placed by the server. */
     @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
@@ -108,15 +97,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Used by the client to request that a building be sold. */
     @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
-    /** The base constructor for player */
+    /** The base constructor for player. */
     public Player() {}
 
     @Override
     protected void onConnectedSyncvars() {
         if (getNetworkObject().isServer()) {
-            int id = getNetworkObject().getOwnerId() % COLOURS.length;
-            if (id < 0) id += COLOURS.length;
-            mPlayerColour.set(COLOURS[id]);
+            int id = getNetworkObject().getOwnerId();
+            mPlayerColour.set(PlayerColour.getColour(id));
         }
     }
 
@@ -136,21 +124,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
-        if (getNetworkObject() == null) {
-            log.severe("Player has no NetworkObject.");
-        }
+        if (getNetworkObject() == null) log.severe("Player has no NetworkObject.");
 
-        if (getNetworkManager() == null) {
-            log.severe("Player has no NetworkManager.");
-        }
+        if (getNetworkManager() == null) log.severe("Player has no NetworkManager.");
 
-        if (assignMap() == false) {
-            log.severe("Player has no HexagonMap.");
-        }
+        if (!assignMap()) log.severe("Player has no HexagonMap.");
 
-        if (getNetworkObject().isServer()) {
-            distributeCoordinates();
-        }
+        if (getNetworkObject().isServer()) distributeCoordinates();
 
         Vector3fc col = mPlayerColour.get();
         mPlayerHighlightSelection =
@@ -162,75 +142,113 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (!hasLost()) {
-            // Update the token count.
-            updateTokens(deltaTime);
-        }
+        // Update the token count.
+        if (!hasLost()) updateTokens(deltaTime);
     }
 
     @Override
     protected void onDestroy() {}
 
     /**
-     * This will randomly place a capital using an angle so each person is within their own slice
+     * This will randomly place a capital using an angle so each person is within their own slice.
      */
     private void distributeCoordinates() {
-        boolean completed = false;
-        while (!completed) {
 
-            float angleOfCircle = 360f / (MAX_PLAYERS + 1);
-            float angleBetween =
-                    (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
+        final int attempts = 20;
 
-            // The number of players online
-            int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
-            if (playersOnlineNow < 0) {
-                playersOnlineNow += MAX_PLAYERS; // handle AI Players
-            }
+        for (int i = 0; i <= attempts; i++) {
 
-            // This gives us the angle to find our coordinates.  Stored in degrees
-            float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
-            float angleToEnd =
-                    ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
-
-            Random random = new Random();
-
-            // Creates the vector coordinates to use
-            float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
-            Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
-            Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
-
-            // Make sure the capital is not spawned over outside the circle
-            float radius = (getMap().getSize() / 2);
-            radius = (float) Math.sqrt(radius * radius * 0.75f);
-
-            // Make sure the capital is not spawned near the centre
-            int minDistance = 10;
-            float distance = random.nextFloat() * (radius - minDistance) + minDistance;
-
-            direction.mul(distance).mul(TransformHex.HEX_WIDTH);
-
-            log.info("X: " + direction.x + " Y: " + direction.y);
-
-            // Convert to Axial coordinates
-            Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
-            Vector2f axial = new Vector2f();
-            TransformHex.cartesianToAxial(cartesian, axial);
+            log.severe("This is attempt number " + i);
 
             // Add the building
-            Building buildingToBecomeCapital = createBuilding((int) axial.x, (int) axial.y);
-            if (buildingToBecomeCapital == null) {
-                log.severe(
-                        "Unable to place an initial capital building.  X = "
-                                + (int) axial.x
-                                + " Y = "
-                                + (int) axial.y);
+            float angleBetween;
+            if (i < attempts / 2) {
+                float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+                angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
+            } else {
+                angleBetween = 0;
+            }
+            Vector2f axial = createCoordinates(angleBetween);
+            int x = (int) axial.x;
+            int y = (int) axial.y;
+            Building buildingToBecomeCapital = createBuilding(x, y, true);
 
-            } else if (!completed) {
+            if (buildingToBecomeCapital == null) {
+                log.severe("Unable to place an initial capital building.  X = " + x + " Y = " + y);
+                continue;
+
+            } else {
                 buildingToBecomeCapital.setCapital(true);
-                completed = true;
+                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+                return;
             }
         }
+
+        Building buildingToBecomeCapital =
+                getMap().getAllTiles()
+                        .map(tile -> createBuilding(tile.getQ(), tile.getR(), true))
+                        .filter(building -> building != null)
+                        .findFirst()
+                        .orElse(null);
+
+        if (buildingToBecomeCapital == null) {
+            // Cannot add a capital
+            setOwnsCapital(false);
+            log.severe("Disconnecting");
+            getGameObject().destroy();
+
+        } else {
+
+            buildingToBecomeCapital.setCapital(true);
+            log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+            return;
+        }
+    }
+
+    /**
+     * Will create the coordinates to test
+     *
+     * @param angleBetween The angle to add which states how far away a player should be
+     * @return A {@code Vector2f} with the coordinates to use
+     */
+    private Vector2f createCoordinates(float angleBetween) {
+        float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+
+        // The number of players online
+        int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
+        if (playersOnlineNow < 0) {
+            playersOnlineNow += MAX_PLAYERS; // handle AI Players
+        }
+
+        // This gives us the angle to find our coordinates.  Stored in degrees
+        float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
+        float angleToEnd = ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
+
+        Random random = new Random();
+
+        // Creates the vector coordinates to use
+        float angle = random.nextFloat() * (angleToEnd - angleToStart) + angleToStart;
+        Matrix2f rotation = new Matrix2f().rotate(angle * MathUtils.DEG_TO_RAD);
+        Vector2f direction = new Vector2f(0f, 1f).mul(rotation);
+
+        // Make sure the capital is not spawned over outside the circle
+        float radius = (getMap().getSize() / 2);
+        radius = (float) Math.sqrt(radius * radius * 0.75f);
+
+        // Make sure the capital is not spawned near the centre
+        int minDistance = 10;
+        float distance = random.nextFloat() * (radius - minDistance) + minDistance;
+
+        direction.mul(distance).mul(TransformHex.HEX_WIDTH);
+
+        log.info("X: " + direction.x + " Y: " + direction.y);
+
+        // Convert to Axial coordinates
+        Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
+        Vector2f axial = new Vector2f();
+        TransformHex.cartesianToAxial(cartesian, axial);
+
+        return axial;
     }
 
     /**
@@ -273,7 +291,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param rPos The r position of the building.
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
-    private Building createBuilding(int qPos, int rPos) {
+    private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
 
         if (getNetworkManager().getServerManager() == null) {
             log.warning("Unable to create building: Server manager is null.");
@@ -304,7 +322,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (tile.getTileType() != TileType.LAND) {
+            log.warning("Unable to create Building: Tile placed is not land");
             return null;
+        }
+
+        if (checkIsland) {
+            if (getMap().isIsland(getMap().getTile(qPos, rPos))) {
+                log.warning("This is an island and a capital cannot be placed here");
+                return null;
+            }
         }
 
         int playerId = getNetworkObject().getOwnerId();
@@ -370,7 +396,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Get the {@link Building}, that is on the specified {@link HexagonTile}, from {@link
-     * #mOwnedBuildings}
+     * #mOwnedBuildings}.
      *
      * @param tile The tile to get the building from.
      * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
@@ -420,22 +446,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Check whether a list of {@link HexagonTile}s contains a {@link Building} owned by the player.
-     *
-     * @param tiles The tiles to check.
-     * @return {@code true} if the list of tiles contains at least one building that the player
-     *     owns; otherwise {@code false}.
-     */
-    public boolean containsOwnedBuilding(ArrayList<HexagonTile> tiles) {
-        for (HexagonTile tile : tiles) {
-            if (tile.hasBuilding() && isBuildingOwner(tile.getBuilding())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Assign a reference to the current {@link HexagonMap} to {@link #mMap}.
      *
      * <p>This assumes that the current active scene contains the HexagonMap.
@@ -447,8 +457,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (map == null) return false;
 
         mMap = map.getReference(HexagonMap.class);
-        if (!Reference.isValid(mMap)) return false;
-        return true;
+        return Reference.isValid(mMap);
     }
 
     /**
@@ -499,12 +508,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to build was successful.
      */
     private boolean buildAttempt(HexagonTile tile) {
-        if (buildCheck(tile) == false) {
+        if (!buildCheck(tile)) {
             log.info("Unable to pass build check.");
             return false;
         }
 
-        Building building = createBuilding(tile.getQ(), tile.getR());
+        Building building = createBuilding(tile.getQ(), tile.getR(), false);
 
         if (building == null) {
             log.info("Unable to add building.");
@@ -512,7 +521,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Subtract the cost.
-        mTokens.add(-Building.BUY_PRICE);
+        mTokens.subtract(Building.BUY_PRICE);
 
         log.info("Added building.");
         return true;
@@ -552,13 +561,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // Ensure the building is placed within a set radius of an owned building.
-        // TODO Remove hard coded value.
-        final int radius = 3;
-        ArrayList<HexagonTile> tiles = map.getTilesInRadius(tile, radius);
+        // Ensure that the tile is in the buildable range of at least one owned building.
+        boolean buildable = false;
+        for (Reference<Building> buildingReference : getOwnedBuildings()) {
+            if (Reference.isValid(buildingReference)
+                    && buildingReference.get().getBuildableTiles().contains(tile)) {
+                buildable = true;
+                break;
+            }
+        }
 
-        if (containsOwnedBuilding(tiles) == false) {
-            log.info("Building is placed too far away from preexisting buildings.");
+        if (buildable == false) {
+            log.info("Building not in buildable range/on suitable tile.");
             return false;
         }
 
@@ -609,7 +623,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
-        if (attackCheck(attacker, defender) == false) {
+        if (!attackCheck(attacker, defender)) {
             log.info("Unable to pass attack check.");
             return false;
         }
@@ -617,13 +631,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         log.info("Attacking");
 
         // ATTACK!!! (Sorry...)
-        mTokens.set(mTokens.get() - defender.getAttackCost());
+        mTokens.subtract(defender.getAttackCost());
         boolean won;
-        if (defender.getOwner().hasLost()) {
-            won = true;
-        } else {
-            won = attacker.attack(defender);
-        }
+        if (defender.getOwner().hasLost()) won = true;
+        else won = attacker.attack(defender);
         log.info("Attack is: " + won);
 
         // If you've won attack
@@ -635,9 +646,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 // Update stats
                 ArrayList<SyncStat> stats = defender.getStats();
-                for (SyncStat stat : stats) {
-                    stat.set(SyncStat.LEVEL_MIN);
-                }
+                for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
 
                 defender.getOwner().setOwnsCapital(false);
                 defender.afterStatChange();
@@ -751,7 +760,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to sell the building was successful.
      */
     private boolean sellAttempt(Building building) {
-        if (sellCheck(building) == false) {
+        if (!sellCheck(building)) {
             log.info("Unable to pass sell check.");
             return false;
         }
@@ -780,7 +789,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
-            log.info("You do not own the building");
+            log.info("You do not own the building.");
+            return false;
+        }
+
+        if (building.isCapital()) {
+            log.info("You cannot sell your capital.");
             return false;
         }
 
@@ -841,8 +855,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        SyncStat stat = building.getStat(statType);
+        // Remove the cost.
+        mTokens.subtract(stat.getCost());
         // Increase the stat level.
-        building.getStat(statType).increaseLevel();
+        stat.increaseLevel();
         // Update the building on the server.
         building.afterStatChange();
 
@@ -874,13 +891,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (building.getStat(statType) == null) {
+        SyncStat stat = building.getStat(statType);
+
+        if (stat == null) {
             log.info("Building is missing specified stat.");
             return false;
         }
 
-        if (building.getStat(statType).getLevel() >= SyncStat.LEVEL_MAX) {
-            log.info("Building stat already fully upgraded.");
+        if (stat.isUpgradeable() == false) {
+            log.info("Building stat not upgradeable.");
+            return false;
+        }
+
+        if (mTokens.get() < stat.getCost()) {
+            log.info("Cannot afford building upgrade.");
             return false;
         }
 
@@ -888,7 +912,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This will return whether the player has lost their capital and thus the game
+     * This will return whether the player has lost their capital and thus the game.
      *
      * @return {@code true} if they have they have lost there capital and thus the game {@code
      *     false} if not
@@ -912,9 +936,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public Building getCapital() {
         if (!mOwnsCapital.get()) return null;
 
-        if (Reference.isValid(mCapital)) {
-            return mCapital.get();
-        }
+        if (Reference.isValid(mCapital)) return mCapital.get();
 
         mCapital =
                 mOwnedBuildings.values().stream()

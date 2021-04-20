@@ -30,7 +30,7 @@ public class ReferenceTest {
     }
 
     /**
-     * Test that when a reference is cleared, attempting to get the referenced object returns null
+     * Test that when a reference is cleared, attempting to get the referenced object returns null.
      */
     @Test
     public void referenceIsNullWhenCleared() {

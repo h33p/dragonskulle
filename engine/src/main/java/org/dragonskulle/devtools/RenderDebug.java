@@ -18,11 +18,11 @@ import org.dragonskulle.renderer.Renderer;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.utils.MathUtils;
-import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
- * Render debug text display
+ * Render debug text display.
  *
  * @author Aurimas Blažulionis
  */
@@ -56,11 +56,15 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
         boolean debugPressed = DEBUG_ACTION.isActivated();
 
         if (Reference.isValid(mText)) {
-            if (debugPressed && !mLastPressed) mText.get().setEnabled(!mText.get().isEnabled());
+            if (debugPressed && !mLastPressed) {
+                mText.get().setEnabled(!mText.get().isEnabled());
+            }
 
             mLastPressed = debugPressed;
 
-            if (!mText.get().isEnabled()) return;
+            if (!mText.get().isEnabled()) {
+                return;
+            }
 
             Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
 
@@ -95,8 +99,9 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
             final String cursorText;
 
             if (cursor != null) {
-                Vector2f cursorCoords = cursor.getPosition();
-                cursorText = String.format("Cursor: %.2f %.2f \n", cursorCoords.x, cursorCoords.y);
+                Vector2fc cursorCoords = cursor.getPosition();
+                cursorText =
+                        String.format("Cursor: %.2f %.2f \n", cursorCoords.x(), cursorCoords.y());
             } else {
                 cursorText = "Cursor error";
             }

@@ -4,11 +4,13 @@ package org.dragonskulle.network;
 // https://github.com/TheDudeFromCI/WraithEngine/tree/5397e2cfd75c257e4d96d0fd6414e302ab22a69c/WraithEngine/src/wraith/library/Multiplayer
 // later rewritten
 
-import java.io.*;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.experimental.Accessors;
@@ -115,7 +117,9 @@ public class Server {
     public void updateClientList() {
         // First, cleanup any disconnected clients
         ServerClient c;
-        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
+        while ((c = mPendingDisconnectedClients.poll()) != null) {
+            removeClient(c);
+        }
 
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
@@ -132,19 +136,19 @@ public class Server {
     }
 
     /**
-     * Process requests on the clients
+     * Process requests on the clients.
      *
      * @param clientRequests maximum number of requests to process per client
      * @return total number of requests processed
      */
     public int processClientRequests(int clientRequests) {
-        int cnt = 0;
-
-        for (ServerClient c : mClients.values()) cnt += c.processRequests(clientRequests);
+        int cnt = mClients.values().stream().mapToInt(c -> c.processRequests(clientRequests)).sum();
 
         // Clients may have gracefully shut down, remove them from the list
         ServerClient c;
-        while ((c = mPendingDisconnectedClients.poll()) != null) removeClient(c);
+        while ((c = mPendingDisconnectedClients.poll()) != null) {
+            removeClient(c);
+        }
 
         return cnt;
     }
@@ -167,7 +171,7 @@ public class Server {
     }
 
     /**
-     * Thread safe client disconnect event
+     * Thread safe client disconnect event.
      *
      * @param client client to mark for removal
      */
@@ -192,7 +196,9 @@ public class Server {
 
     /** Dispose. */
     public void dispose() {
-        for (ServerClient c : mClients.values()) c.closeSocket();
+        for (ServerClient c : mClients.values()) {
+            c.closeSocket();
+        }
 
         if (mServerRunner != null) {
             mServerRunner.cancel();
@@ -210,7 +216,7 @@ public class Server {
         if (mServerSocket != null) {
             try {
                 mServerSocket.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
 
             }
         }
@@ -225,7 +231,9 @@ public class Server {
             }
         }
 
-        for (ServerClient c : mClients.values()) c.joinThread();
+        for (ServerClient c : mClients.values()) {
+            c.joinThread();
+        }
 
         mClientCount -= mClients.size();
 
@@ -253,7 +261,7 @@ public class Server {
 
                 try {
                     clientSocket = mServerSocket.accept();
-                } catch (IOException __) {
+                } catch (IOException ignored) {
                 }
 
                 if (clientSocket != null) {

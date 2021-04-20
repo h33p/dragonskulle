@@ -1,24 +1,26 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.input.Action;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
- * Class describing a interactive UI button
+ * Class describing a interactive UI button.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 public class UIButton extends UITextRect implements IFrameUpdate {
 
-    /** Simple interface describing button callback events */
+    /** Simple interface describing button callback events. */
     public interface IButtonEvent {
         /**
-         * Method for handling the event
+         * Method for handling the event.
          *
          * @param button calling button
          * @param deltaTime forwarded deltaTime from frameUpdate
@@ -26,13 +28,15 @@ public class UIButton extends UITextRect implements IFrameUpdate {
         public void eventHandler(UIButton button, float deltaTime);
     }
 
-    /** Input action that needs to be bound for UI button presses to function */
+    /** Input action that needs to be bound for UI button presses to function. */
     public static final Action UI_PRESS = new Action("UI_PRESS", false);
 
     private Vector4fc mRegularColour = new Vector4f(1f);
     private Vector4fc mHoveredColour = new Vector4f(0.8f, 0.8f, 0.8f, 1f);
     private Vector4fc mPressedColour = new Vector4f(0.6f, 0.6f, 0.6f, 1f);
     private Vector4fc mDisabledColour = new Vector4f(0.882f, 0.027f, 0.019f, 1f);
+
+    @Getter @Setter private boolean mLockPressed = false;
 
     private Vector4f mTmpLerp = new Vector4f(1f);
 
@@ -60,7 +64,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      */
@@ -78,7 +82,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param startEnabled true if the button should react to clicks onStart.
      */
@@ -88,7 +92,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param startEnabled true if the button should react to clicks onStart.
@@ -99,7 +103,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -110,7 +114,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -123,7 +127,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param onClick callback to be called when the button is clicked
      */
@@ -133,7 +137,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param onClick callback to be called when the button is clicked
      * @param startEnabled true if the button should react to clicks onStart.
@@ -145,7 +149,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param onClick callback to be called when the button is clicked
      * @param onPressDown callback to be called when the button gets pressed down
@@ -158,7 +162,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param onClick callback to be called when the button is clicked
      * @param onPressDown callback to be called when the button gets pressed down
@@ -177,7 +181,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -192,7 +196,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -213,7 +217,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -235,7 +239,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -260,7 +264,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -283,7 +287,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      * @param onClick callback to be called when the button is clicked
@@ -312,16 +316,16 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     public void enable() {
         mIsEnabled = true;
         if (mMaterial != null) {
-            mMaterial.colour.set(mRegularColour);
+            mMaterial.mColour.set(mRegularColour);
         }
     }
 
-    /** Disables the button from running on clicks - also adds a disabled overlay colour */
+    /** Disables the button from running on clicks - also adds a disabled overlay colour. */
     public void disable() {
         mIsEnabled = false;
         if (mMaterial != null) {
             mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
-            mMaterial.colour.set(mTmpLerp);
+            mMaterial.mColour.set(mTmpLerp);
         }
     }
 
@@ -344,7 +348,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
         if (!mIsEnabled) {
             mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
-            mMaterial.colour.set(mTmpLerp);
+            mMaterial.mColour.set(mTmpLerp);
         }
     }
 
@@ -359,7 +363,9 @@ public class UIButton extends UITextRect implements IFrameUpdate {
             // Call mOnRelease if we finally released the button
             if (!mouseDown && mPressedDown) {
                 mPressedDown = false;
-                if (mOnRelease != null) mOnRelease.eventHandler(this, deltaTime);
+                if (mOnRelease != null) {
+                    mOnRelease.eventHandler(this, deltaTime);
+                }
             }
 
             if (mRenderable != null && UIManager.getInstance().getHoveredObject() == mRenderable) {
@@ -389,46 +395,65 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                 }
 
                 // Handle cases where cursor enters/leaves the button while pressing the button down
-                if (!mouseDown) mHadReleasedHover = true;
-                else if (!mHadReleasedHover) mouseDown = false;
+                if (!mouseDown) {
+                    mHadReleasedHover = true;
+                } else if (!mHadReleasedHover) {
+                    mouseDown = false;
+                }
 
-                if (!mLastHovered && mOnHover != null) mOnHover.eventHandler(this, deltaTime);
+                if (!mLastHovered && mOnHover != null) {
+                    mOnHover.eventHandler(this, deltaTime);
+                }
 
                 mLastHovered = true;
 
-                if (mWhileHover != null) mWhileHover.eventHandler(this, deltaTime);
+                if (mWhileHover != null) {
+                    mWhileHover.eventHandler(this, deltaTime);
+                }
             } else {
-                if (mLastHovered && mOffHover != null) mOffHover.eventHandler(this, deltaTime);
+                if (mLastHovered && mOffHover != null) {
+                    mOffHover.eventHandler(this, deltaTime);
+                }
 
                 mLastHovered = false;
                 mHadReleasedHover = false;
             }
 
             // Transition color interpolation value depending on the state of button press
-            if (mPressedDown) {
+            if (mPressedDown || mLockPressed) {
                 mCurTimer += deltaTime;
-                if (mCurTimer > 2f * mTransitionTime) mCurTimer = 2f * mTransitionTime;
+                if (mCurTimer > 2f * mTransitionTime) {
+                    mCurTimer = 2f * mTransitionTime;
+                }
             } else if (mLastHovered) {
                 if (mCurTimer > mTransitionTime) {
                     mCurTimer -= deltaTime;
-                    if (mCurTimer < mTransitionTime) mCurTimer = mTransitionTime;
+                    if (mCurTimer < mTransitionTime) {
+                        mCurTimer = mTransitionTime;
+                    }
                 } else {
                     mCurTimer += deltaTime;
-                    if (mCurTimer > mTransitionTime) mCurTimer = mTransitionTime;
+                    if (mCurTimer > mTransitionTime) {
+                        mCurTimer = mTransitionTime;
+                    }
                 }
             } else {
                 mCurTimer -= deltaTime;
-                if (mCurTimer < 0.f) mCurTimer = 0.f;
+                if (mCurTimer < 0.f) {
+                    mCurTimer = 0.f;
+                }
             }
 
             mLastMouseDown = mouseDown;
 
             if (mMaterial != null) {
                 // Interpolate material colours to represent button click state
-                if (mCurTimer > mTransitionTime)
+                if (mCurTimer > mTransitionTime) {
                     mHoveredColour.lerp(mPressedColour, mCurTimer / mTransitionTime - 1f, mTmpLerp);
-                else mRegularColour.lerp(mHoveredColour, mCurTimer / mTransitionTime, mTmpLerp);
-                mMaterial.colour.set(mTmpLerp);
+                } else {
+                    mRegularColour.lerp(mHoveredColour, mCurTimer / mTransitionTime, mTmpLerp);
+                }
+                mMaterial.mColour.set(mTmpLerp);
             }
         }
     }

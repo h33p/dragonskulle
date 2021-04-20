@@ -17,6 +17,7 @@ import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -51,6 +52,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Getter private final SyncStat mViewDistance = new SyncStat(this);
     /** Stores the attack range of the building. */
     @Getter private final SyncStat mAttackDistance = new SyncStat(this);
+    /** Stores the build range of the building. */
+    @Getter private final SyncStat mBuildDistance = new SyncStat(this);
+    /** Stores the claim range of the building. */
+    @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
@@ -66,10 +71,32 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
+    /**
+     * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
+     * Building.
+     *
+     * <p>Tiles excluded from this set:
+     *
+     * <ul>
+     *   <li>Non-land tiles.
+     *   <li>Tiles claimed by <b>this</b> building.
+     * </ul>
+     *
+     * <p>To actually get a more refined set that discludes tiles claimed by other buildings, please
+     * use: {@link #getBuildableTiles()}.
+     */
+    private HashSet<HexagonTile> mPlaceableTiles = new HashSet<HexagonTile>();
+
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
+
+    /**
+     * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
+     * Should alwyas be at least {@code 1}.
+     */
+    @Getter private int mStatBaseCost = 1;
 
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
@@ -88,12 +115,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
+        initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
+        initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
     }
 
     @Override
     public void onOwnerIdChange(int newId) {
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.removeOwnership(this);
+        if (owningPlayer != null) {
+            owningPlayer.removeOwnership(this);
+        }
         Player newOwningPlayer = getOwner(newId);
         if (newOwningPlayer == null) {
             log.severe("New owner is null!");
@@ -104,6 +135,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     @Override
     public void onStart() {
+
         // Store the map.
         HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
         if (checkingMapExists == null) {
@@ -119,7 +151,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Add the Building to the owner's mOwnedBuildings.
         Player owningPlayer = getOwner();
-        if (owningPlayer != null) owningPlayer.addOwnership(this);
+        if (owningPlayer != null) {
+            owningPlayer.addOwnership(this);
+        }
 
         // Add the building to the relevant HexagonTile.
         getTile().setBuilding(this);
@@ -129,12 +163,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         generateClaimTiles();
         // Generate the lists of tiles that are influenced by the Stats of the Building.
         generateTileLists();
-    }
 
-    /** Generate the stored lists of {@link HexagonTile}s. */
-    private void generateTileLists() {
-        generateViewTiles();
-        generateAttackableTiles();
+        // Generate the base cost of upgrading stats.
+        generateStatBaseCost();
+        generatePlaceableTiles();
     }
 
     /**
@@ -147,17 +179,41 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     public void afterStatChange() {
         log.info("After stats change.");
+
+        generateStatBaseCost();
         generateTileLists();
+    }
+
+    /** Generate the stored lists of {@link HexagonTile}s. */
+    private void generateTileLists() {
+        generateViewTiles();
+        generateAttackableTiles();
+    }
+
+    /**
+     * Generate the base cost of buying an upgrade. The more upgraded a building is, the higher the
+     * base cost.
+     */
+    private void generateStatBaseCost() {
+        int totalUpgrades = 0;
+        for (SyncStat stat : getStats()) {
+            totalUpgrades += stat.getLevel() - SyncStat.LEVEL_MIN;
+        }
+
+        mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return;
+        if (map == null) {
+            return;
+        }
 
+        int distance = mClaimDistance.getValue();
         // Claim the tiles around the building.
-        mClaimedTiles = map.getTilesInRadius(getTile(), 1);
+        mClaimedTiles = map.getTilesInRadius(getTile(), distance, false);
         // Claim the tile the building is on.
         mClaimedTiles.add(getTile());
 
@@ -174,7 +230,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     private void generateViewTiles() {
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return;
+        if (map == null) {
+            return;
+        }
 
         // Get the current view distance.
         int distance = mViewDistance.getValue();
@@ -190,12 +248,38 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     private void generateAttackableTiles() {
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return;
+        if (map == null) {
+            return;
+        }
 
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = map.getTilesInRadius(getTile(), distance);
+        mAttackableTiles = map.getTilesInRadius(getTile(), distance, false);
+    }
+
+    /** Store the tiles that are suitable for placing a building on. */
+    private void generatePlaceableTiles() {
+        // Get the map.
+        HexagonMap map = getMap();
+        if (map == null) return;
+
+        // Clear the current list of buildable tiles.
+        mPlaceableTiles.clear();
+
+        // Get the currently claimed radius.
+        int claimedRadius = mClaimDistance.getValue() + 1;
+        // Get the current build distance.
+        int distance = mBuildDistance.getValue();
+        // Get the tiles outside of the claimed radius, but within the build distance.
+        map.getTilesInRadius(getTile(), claimedRadius, distance)
+                .forEach(
+                        (tile) -> {
+                            // Add each tile that is a land tile.
+                            if (tile.getTileType() == TileType.LAND) {
+                                mPlaceableTiles.add(tile);
+                            }
+                        });
     }
 
     /**
@@ -211,7 +295,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return Whether the attack was successful or not.
      */
     public boolean attack(Building opponent) {
-        /** The number of sides on the dice */
+        /* The number of sides on the dice */
         final int maxValue = 1000;
 
         // Get the attacker and defender's stats.
@@ -258,14 +342,18 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Get the map.
         HexagonMap map = getMap();
-        if (map == null) return buildings;
+        if (map == null) {
+            return buildings;
+        }
 
         // Get all the tiles in attackable distance.
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         for (HexagonTile tile : attackTiles) {
             // Get the building on an attackable tile, if it exists.
             Building building = tile.getBuilding();
-            if (building == null) continue;
+            if (building == null) {
+                continue;
+            }
 
             // Ensure the building is not owned by the owner of this building.
             if (getOwnerId() == building.getOwnerId()) {
@@ -290,9 +378,30 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         ArrayList<HexagonTile> attackTiles = getAttackableTiles();
         HexagonTile targetTile = target.getTile();
         for (HexagonTile tile : attackTiles) {
-            if (tile.equals(targetTile)) return true;
+            if (tile.equals(targetTile)) {
+                return true;
+            }
         }
         return false;
+    }
+
+    /**
+     * Get a {@link HashSet} of {@link HexagonTile}s surrounding this building that are currently
+     * able to have {@link Building}s placed on them.
+     *
+     * @return Nearby HexagonTiles able to have Buildings placed on them.
+     */
+    public HashSet<HexagonTile> getBuildableTiles() {
+        HashSet<HexagonTile> buildableTiles = new HashSet<HexagonTile>();
+
+        mPlaceableTiles.forEach(
+                (tile) -> {
+                    if (!tile.isClaimed() && !tile.hasBuilding()) {
+                        buildableTiles.add(tile);
+                    }
+                });
+
+        return buildableTiles;
     }
 
     /**
@@ -302,12 +411,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      */
     public HexagonTile getTile() {
         HexagonMap map = getMap();
-        if (map == null) return null;
+        if (map == null) {
+            return null;
+        }
 
         Vector3i position = getPosition();
-        if (position == null) return null;
-
-        return map.getTile(position.x(), position.y());
+        return position == null ? null : map.getTile(position.x(), position.y());
     }
 
     /**
@@ -417,20 +526,21 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         // Remove any claims.
         for (HexagonTile hexagonTile : mClaimedTiles) {
-            hexagonTile.setClaimedBy(null);
+            hexagonTile.removeClaim();
         }
 
         // Reset the list of claimed, viewable and attackable tiles.
         mClaimedTiles.clear();
         mViewableTiles.clear();
         mAttackableTiles.clear();
+        mPlaceableTiles.clear();
 
         // Request that the entire building GameObject should be destroyed.
         getGameObject().destroy();
     }
 
     /**
-     * This will create and return a base cost for attacking
+     * This will create and return a base cost for attacking.
      *
      * @return The cost for attacking
      */
@@ -461,8 +571,8 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @param type The type of stat the SyncStat should be.
      */
     private void initiliseStat(SyncStat stat, StatType type) {
-        // Set the value calculator of the SyncStat.
-        stat.setValueCalculator(type.getValueCalculator());
+        // Initialise the SyncStat.
+        stat.initialise(type);
         // Store the stat.
         storeStat(type, stat);
     }
@@ -496,12 +606,38 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     /**
-     * Get an {@link ArrayList} of {@link SyncStat}s that the Building has.
+     * Get an {@link ArrayList} of non-fixed {@link SyncStat}s. These stats can theoretically be
+     * upgraded.
      *
-     * @return An ArrayList of Stats.
+     * @return An ArrayList of SyncStats which are not fixed at one value.
      */
     public ArrayList<SyncStat> getStats() {
-        ArrayList<SyncStat> stats = new ArrayList<SyncStat>(mStats.values());
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+
+        for (SyncStat stat : mStats.values()) {
+            StatType type = stat.getType();
+            if (type != null && type.isFixedValue() == false) {
+                stats.add(stat);
+            }
+        }
+
+        return stats;
+    }
+
+    /**
+     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded.
+     *
+     * @return An ArrayList of SyncStats that can currently be upgraded.
+     */
+    public ArrayList<SyncStat> getUpgradeableStats() {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+
+        for (SyncStat stat : mStats.values()) {
+            if (stat.isUpgradeable()) {
+                stats.add(stat);
+            }
+        }
+
         return stats;
     }
 

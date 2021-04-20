@@ -27,15 +27,15 @@ public class HexagonTile {
 
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
-    /** Describes a template for land hex tile */
+    /** Describes a template for land hex tile. */
     static final GameObject LAND_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
 
-    /** Describes a template for water hex tile */
+    /** Describes a template for water hex tile. */
     static final GameObject WATER_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
 
-    /** Describes a template for water hex tile */
+    /** Describes a template for water hex tile. */
     static final GameObject MOUNTAIN_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
 
@@ -54,7 +54,7 @@ public class HexagonTile {
     private static final float WATER_THRESHOLD = -0.3f;
     private static final float MOUNTAINS_THRESHOLD = 0.8f;
 
-    /** This is the axial storage system for each tile */
+    /** This is the axial storage system for each tile. */
     @Getter private final int mQ;
 
     @Getter private final int mR;
@@ -63,6 +63,8 @@ public class HexagonTile {
 
     @Getter private final TileType mTileType;
 
+    /** This states which land mass this tile is on. Set at -1 when not set */
+    int landMassNumber = -1;
     /**
      * Associated game object.
      *
@@ -79,10 +81,10 @@ public class HexagonTile {
     private Reference<Building> mBuilding = new Reference<Building>(null);
 
     /** A reference to the building that claims the tile, or {@code null}. */
-    private Reference<Building> mClaimedBy = new Reference<Building>(null);
+    private Reference<Building> mClaimedBy = null;
 
     /**
-     * Constructor that creates the HexagonTile
+     * Constructor that creates the HexagonTile.
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
@@ -92,9 +94,13 @@ public class HexagonTile {
         this.mR = r;
         this.mHeight = height;
 
-        if (height <= WATER_THRESHOLD) mTileType = TileType.WATER;
-        else if (height >= MOUNTAINS_THRESHOLD) mTileType = TileType.MOUNTAIN;
-        else mTileType = TileType.LAND;
+        if (height <= WATER_THRESHOLD) {
+            mTileType = TileType.WATER;
+        } else if (height >= MOUNTAINS_THRESHOLD) {
+            mTileType = TileType.MOUNTAIN;
+        } else {
+            mTileType = TileType.LAND;
+        }
 
         switch (mTileType) {
             case WATER:
@@ -115,8 +121,11 @@ public class HexagonTile {
         }
 
         Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
-        if (controls == null) mHighlightControls = new Reference<>(null);
-        else mHighlightControls = controls;
+        if (controls == null) {
+            mHighlightControls = new Reference<>(null);
+        } else {
+            mHighlightControls = controls;
+        }
     }
 
     /**
@@ -135,7 +144,7 @@ public class HexagonTile {
     }
 
     /**
-     * Retrieve the third (cube) coordinate
+     * Retrieve the third (cube) coordinate.
      *
      * <p>This coordinate will always be equal to -getQ() -getR()
      */
@@ -149,22 +158,28 @@ public class HexagonTile {
     }
 
     /**
-     * Set which {@link Building} claims the tile. Do not claim the tile if another building already
-     * claimed it.
+     * Set which {@link Building} claims the HexagonTile. Cannot claim the tile if another building
+     * already claimed it.
      *
-     * @param building The building which claimed the tile.
-     * @return {@code true} if the claim was successful, otherwise {@code false} if the tile is
-     *     already claimed.
+     * @param building The Building which claimed the tile.
+     * @return {@code true} if the claim was successful; otherwise {@code false}.
      */
     public boolean setClaimedBy(Building building) {
-        if (isClaimed()) return false;
+        if (building == null || isClaimed()) {
+            return false;
+        }
 
         mClaimedBy = building.getReference(Building.class);
         return true;
     }
 
+    /** Remove any claim over the HexagonTile. */
+    public void removeClaim() {
+        mClaimedBy = null;
+    }
+
     /**
-     * Whether the tile is claimed by a building.
+     * Get whether a valid claim has been made.
      *
      * @return Whether the tile is claimed by a building.
      */
@@ -176,7 +191,7 @@ public class HexagonTile {
      * Get the {@link Player} who has claimed this tile (either because there is a building on it or
      * because it is adjacent to a building).
      *
-     * @return The Player who has claimed this tile, or {@code null} if no Player claims it.
+     * @return The Player who has claimed this tile; otherwise {@code null}.
      */
     public Player getClaimant() {
         if (!isClaimed()) {
@@ -191,8 +206,7 @@ public class HexagonTile {
      * <p>If {@link Player} does not need to be accessed, or is only accessed to get the owner ID,
      * then this should be used.
      *
-     * @return The owner ID of the Player as an {@link Integer}, or {@code null} if there is no
-     *     claimant.
+     * @return The owner ID of the Player as an {@link Integer}; otherwise {@code null}.
      */
     public Integer getClaimantId() {
         if (!isClaimed()) {
@@ -223,7 +237,9 @@ public class HexagonTile {
      * @return The Building on the HexagonTile, otherwise {@code null}.
      */
     public Building getBuilding() {
-        if (!Reference.isValid(mBuilding)) return null;
+        if (!Reference.isValid(mBuilding)) {
+            return null;
+        }
 
         return mBuilding.get();
     }

@@ -2,7 +2,15 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -15,10 +23,12 @@ import lombok.extern.java.Log;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkQueue;
 
 /**
- * Class storing meshes in a vertex/index buffer
+ * Class storing meshes in a vertex/index buffer.
  *
  * <p>This stores all meshes and provides a way to query
  *
@@ -40,7 +50,7 @@ class VulkanMeshBuffer implements NativeResource {
 
     private ArrayList<MeshBufferEntry> mEntries = new ArrayList<>();
 
-    /** Description where mesh data resides in */
+    /** Description where mesh data resides in. */
     @Builder
     @Getter
     public static class MeshDescriptor {
@@ -62,11 +72,11 @@ class VulkanMeshBuffer implements NativeResource {
     }
 
     public long getVertexBuffer() {
-        return mVertexBuffer != null ? mVertexBuffer.buffer : 0;
+        return mVertexBuffer != null ? mVertexBuffer.mBuffer : 0;
     }
 
     public long getIndexBuffer() {
-        return mIndexBuffer.buffer;
+        return mIndexBuffer.mBuffer;
     }
 
     public MeshDescriptor getMeshDescriptor(Mesh mesh) {
@@ -174,15 +184,19 @@ class VulkanMeshBuffer implements NativeResource {
 
     @Override
     public void free() {
-        if (mVertexBuffer != null) mVertexBuffer.free();
+        if (mVertexBuffer != null) {
+            mVertexBuffer.free();
+        }
         mVertexBuffer = null;
 
-        if (mIndexBuffer != null) mIndexBuffer.free();
+        if (mIndexBuffer != null) {
+            mIndexBuffer.free();
+        }
         mIndexBuffer = null;
     }
 
     /**
-     * Create a vertex buffer
+     * Create a vertex buffer.
      *
      * <p>As the name implies, this buffer holds vertices
      */
@@ -209,7 +223,7 @@ class VulkanMeshBuffer implements NativeResource {
                                     | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
 
                 PointerBuffer pData = stack.pointers(0);
-                vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
+                vkMapMemory(mDevice, stagingBuffer.mMemory, 0, size, 0, pData);
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
                 for (MeshBufferEntry entry : mEntries) {
                     int voff = entry.mMeshDescriptor.mVertexOffset;
@@ -219,7 +233,7 @@ class VulkanMeshBuffer implements NativeResource {
                     }
                     byteBuffer.rewind();
                 }
-                vkUnmapMemory(mDevice, stagingBuffer.memory);
+                vkUnmapMemory(mDevice, stagingBuffer.mMemory);
 
                 return transitionToLocalMemory(
                         stagingBuffer,
@@ -259,7 +273,7 @@ class VulkanMeshBuffer implements NativeResource {
                                     | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
 
                 PointerBuffer pData = stack.pointers(0);
-                vkMapMemory(mDevice, stagingBuffer.memory, 0, size, 0, pData);
+                vkMapMemory(mDevice, stagingBuffer.mMemory, 0, size, 0, pData);
                 ByteBuffer byteBuffer = pData.getByteBuffer((int) size);
                 for (MeshBufferEntry entry : mEntries) {
                     ByteBuffer buf =
@@ -269,7 +283,7 @@ class VulkanMeshBuffer implements NativeResource {
                     }
                     byteBuffer.rewind();
                 }
-                vkUnmapMemory(mDevice, stagingBuffer.memory);
+                vkUnmapMemory(mDevice, stagingBuffer.mMemory);
 
                 return transitionToLocalMemory(
                         stagingBuffer,
@@ -281,7 +295,7 @@ class VulkanMeshBuffer implements NativeResource {
         }
     }
 
-    /** Transition a staging buffer into device local memory */
+    /** Transition a staging buffer into device local memory. */
     private VulkanBuffer transitionToLocalMemory(
             VulkanBuffer stagingBuffer,
             long size,

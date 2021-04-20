@@ -1,10 +1,17 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Objects;
 
-/** @author Oscar L The type Sync Long. */
+/**
+ * The type Sync long.
+ *
+ * @author Oscar L The type Sync Long.
+ */
 public class SyncLong implements ISyncVar, Serializable {
 
     /** The Data. */
@@ -84,8 +91,12 @@ public class SyncLong implements ISyncVar, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SyncLong syncLong = (SyncLong) o;
         return mData == syncLong.mData;
     }
@@ -94,4 +105,4 @@ public class SyncLong implements ISyncVar, Serializable {
     public int hashCode() {
         return Objects.hash(mData);
     }
-};
+}

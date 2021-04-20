@@ -112,17 +112,17 @@ public class WaveSound extends Sound implements Serializable {
                 return null;
             }
 
-            sound.length = (float) bytesRead / format.getSampleRate();
+            sound.mLength = (float) bytesRead / format.getSampleRate();
 
             if (sound.mBits == 16) {
-                sound.length /= 2;
+                sound.mLength /= 2;
             }
 
             ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
             ByteBuffer buffer = processRawBytes(audioBytes, sound.mBits == 8, order);
 
-            sound.buffer = AL11.alGenBuffers();
-            AL11.alBufferData(sound.buffer, sound.mFormat, buffer, sound.mSampleRate);
+            sound.mBuffer = AL11.alGenBuffers();
+            AL11.alBufferData(sound.mBuffer, sound.mFormat, buffer, sound.mSampleRate);
 
             return sound;
         } catch (UnsupportedAudioFileException e) {

@@ -2,7 +2,19 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.lwjgl.util.shaderc.Shaderc.*;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compilation_status_success;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_into_spv;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_add_macro_definition;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_initialize;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_release;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_options_set_optimization_level;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compiler_initialize;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_compiler_release;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_optimization_level_performance;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_bytes;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_compilation_status;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_error_message;
+import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
 
 import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
@@ -16,21 +28,21 @@ import org.dragonskulle.core.ResourceManager;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Describes a raw SPIR-V shader buffer
+ * Describes a raw SPIR-V shader buffer.
  *
  * @author Aurimas Blažulionis
  */
 @Log
 public class ShaderBuf implements NativeResource {
-    /** Handle to compiled SPIR-V shader */
+    /** Handle to compiled SPIR-V shader. */
     private long mHandle;
 
-    /** Byte view to the shader */
+    /** Byte view to the shader. */
     @Accessors(prefix = "m")
     @Getter
     private ByteBuffer mBuffer;
 
-    /** macro key value pairs */
+    /** macro key value pairs. */
     @Accessors(prefix = "m")
     @Getter
     public static class MacroDefinition {
@@ -43,7 +55,7 @@ public class ShaderBuf implements NativeResource {
         }
     }
 
-    /** Arguments that can be set when loading {@link ShaderBuf}s */
+    /** Arguments that can be set when loading {@link ShaderBuf}s. */
     @EqualsAndHashCode
     private static class ShaderBufLoadArgs {
         private final ShaderKind mKind;
@@ -72,7 +84,7 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
-     * Load a shader resource
+     * Load a shader resource.
      *
      * @param name name of the shader
      * @param kind kind of the shader (vertex, fragment, geometry)
@@ -85,7 +97,7 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
-     * Processes #include directives and produces final output
+     * Processes #include directives and produces final output.
      *
      * @param data text data to process
      * @param depth current depth of the file. A hard limit is imposed (currently 20) of how deep
@@ -93,9 +105,11 @@ public class ShaderBuf implements NativeResource {
      * @return preprocessed text data
      */
     private static String processIncludes(String data, int depth) {
-        if (depth >= 20) return data;
+        if (depth >= 20) {
+            return data;
+        }
 
-        String lines[] = data.split("\\r?\\n");
+        String[] lines = data.split("\\r?\\n");
 
         // https://stackoverflow.com/a/26493311/13240247
         Pattern pat = Pattern.compile("\\s*#include\\s*([<\"])([^>\"]+)([>\"])");
@@ -121,7 +135,7 @@ public class ShaderBuf implements NativeResource {
     }
 
     /**
-     * Compile a shader directly
+     * Compile a shader directly.
      *
      * @param data shader bytecode
      * @param name name of the shader

@@ -7,13 +7,14 @@ import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.game.camera.DragMovement;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
@@ -25,9 +26,18 @@ import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.renderer.components.*;
-import org.dragonskulle.ui.*;
-import org.joml.*;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIDropDown;
+import org.dragonskulle.ui.UIInputBox;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UISlider;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
+import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
 @Log
@@ -41,13 +51,15 @@ public class App implements NativeResource {
     private static int sPort = 7000;
     private static boolean sReload = false;
 
-    private final Resource<GLTF> mMainMenuGLTF = GLTF.getResource("main_menu");
-    private final Resource<GLTF> mNetworkTemplatesGLTF = GLTF.getResource("network_templates");
+    private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
+    private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
 
-    private static void addDebugUI(Scene scene) {
-        GameObject debugUI =
+    public static final float MENU_BASEWIDTH = 0.2f;
+
+    private static void addDebugUi(Scene scene) {
+        GameObject debugUi =
                 new GameObject(
-                        "debugUI",
+                        "debugUi",
                         new TransformUI(true),
                         (handle) -> {
                             handle.getTransform(TransformUI.class)
@@ -57,21 +69,21 @@ public class App implements NativeResource {
                             handle.addComponent(new org.dragonskulle.devtools.RenderDebug());
                         });
 
-        scene.addRootObject(debugUI);
+        scene.addRootObject(debugUi);
     }
 
     private static Scene createMainScene() {
         // Create a scene
         Scene mainScene = new Scene("game");
 
-        addDebugUI(mainScene);
+        addDebugUi(mainScene);
 
         mainScene.addRootObject(
                 new GameObject(
                         "light",
                         (light) -> {
                             light.addComponent(new Light());
-                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, 0f);
+                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, -30f);
                         }));
 
         GameObject cameraRig =
@@ -81,6 +93,7 @@ public class App implements NativeResource {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
                             rig.addComponent(keyboardMovement);
                             rig.addComponent(new TargetMovement());
+                            rig.addComponent(new DragMovement());
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
 
@@ -101,7 +114,7 @@ public class App implements NativeResource {
 
                                                     // Make sure it's an actual camera
                                                     Camera cam = new Camera();
-                                                    cam.farPlane = 200;
+                                                    cam.mFarPlane = 200;
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
@@ -142,9 +155,9 @@ public class App implements NativeResource {
         // asServer = true;
         if (asServer) {
             log.warning("I am the server");
-            GameObject hostGameUI =
+            GameObject hostGameUi =
                     new GameObject(
-                            "hostGameUI",
+                            "hostGameUi",
                             new TransformUI(false),
                             (root) -> {
                                 // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
@@ -175,20 +188,20 @@ public class App implements NativeResource {
                                                             }));
                                         });
                             });
-            mainScene.addRootObject(hostGameUI);
+            mainScene.addRootObject(hostGameUi);
         }
         return mainScene;
     }
 
     private Scene createMainMenu() {
-        Scene mainMenu = mMainMenuGLTF.get().getDefaultScene();
+        Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
 
-        addDebugUI(mainMenu);
+        addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();
 
         templates.addAllObjects(
-                mNetworkTemplatesGLTF.get().getDefaultScene().getGameObjects().stream()
+                mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
 
         Reference<NetworkManager> networkManager =
@@ -209,12 +222,12 @@ public class App implements NativeResource {
                             audioRoot.buildChild(
                                     "muteUI",
                                     new TransformUI(true),
-                                    (muteUI) -> {
-                                        TransformUI t = muteUI.getTransform(TransformUI.class);
+                                    (muteUi) -> {
+                                        TransformUI t = muteUi.getTransform(TransformUI.class);
                                         t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
                                         t.setMargin(0f, 0.1f, 0f, 0.2f);
 
-                                        muteUI.addComponent(
+                                        muteUi.addComponent(
                                                 new UIButton(
                                                         "Toggle Mute",
                                                         (uiButton, __) -> {
@@ -232,8 +245,6 @@ public class App implements NativeResource {
                             audioRoot.addComponent(new AudioListener());
                         });
 
-        mainMenu.addRootObject(audio);
-
         GameObject gameTitle =
                 new GameObject(
                         "title",
@@ -241,7 +252,8 @@ public class App implements NativeResource {
                         (title) -> {
                             TransformUI t = title.getTransform(TransformUI.class);
                             t.setParentAnchor(0.4f, 0.05f, 0.8f, 0.05f);
-                            t.setMargin(0f, 0f, 0f, 0.2f);
+                            t.setMargin(0f, 0f, 0f, 0.15f);
+                            t.setPivotOffset(0.5f, 0.3f);
 
                             UIText txt = new UIText("Hex Wars");
                             txt.setDepthShift(-1f);
@@ -249,305 +261,253 @@ public class App implements NativeResource {
                             title.addComponent(txt);
                         });
 
-        mainMenu.addRootObject(gameTitle);
-
-        GameObject mainUI =
+        GameObject mainUi =
                 new GameObject(
-                        "mainUI",
+                        "mainUi",
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject joinUI =
+        GameObject joinUi =
                 new GameObject(
-                        "joinUI",
+                        "joinUi",
+                        false,
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject hostUI =
+        GameObject hostUi =
                 new GameObject(
-                        "hostUI",
+                        "hostUi",
+                        false,
                         new TransformUI(false),
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        mainUI.buildChild(
-                "bg",
-                new TransformUI(false),
-                (bg) -> {
-                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
+        GameObject settingsUI =
+                new GameObject(
+                        "settingsUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
 
-                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
+        GameObject audioSettingsUI =
+                new GameObject(
+                        "audioSettingsUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
 
-                    bg.buildChild(
-                            "joinButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+        GameObject graphicsSettingsUI =
+                new GameObject(
+                        "graphicsSettingsUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        });
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Join Game",
-                                                (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    joinUI.setEnabled(true);
-                                                    hostUI.setEnabled(false);
-                                                });
-                                button.addComponent(newButton);
-                            });
+        final UIManager uiManager = UIManager.getInstance();
 
-                    bg.buildChild(
-                            "hostButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+        uiManager.buildVerticalUi(
+                mainUi,
+                0.05f,
+                0,
+                MENU_BASEWIDTH,
+                new UIButton(
+                        "Join Game",
+                        (__, ___) -> {
+                            mainUi.setEnabled(false);
+                            joinUi.setEnabled(true);
+                            hostUi.setEnabled(false);
+                        }),
+                new UIButton(
+                        "Host Game",
+                        (__, ___) -> {
+                            mainUi.setEnabled(false);
+                            hostUi.setEnabled(true);
+                        }),
+                new UIButton(
+                        "Settings",
+                        (__, ___) -> {
+                            mainUi.setEnabled(false);
+                            settingsUI.setEnabled(true);
+                        }),
+                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
+                new UIButton(
+                        "Quick Reload",
+                        (__, ___) -> {
+                            sReload = true;
+                            Engine.getInstance().stop();
+                        }));
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Host Game",
-                                                (uiButton, __) -> {
-                                                    mainUI.setEnabled(false);
-                                                    hostUI.setEnabled(true);
-                                                });
-                                button.addComponent(newButton);
-                            });
+        final UITextRect connectingText = new UITextRect("");
+        connectingText.setEnabled(false);
+        connectingText.setOverrideAspectRatio(4f);
+        connectingText.getColour().set(0f);
 
-                    bg.buildChild(
-                            "settingsButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+        UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
 
-                                UIButton newButton = new UIButton("Settings");
-                                button.addComponent(newButton);
-                            });
+        uiManager.buildVerticalUi(
+                joinUi,
+                0.05f,
+                0f,
+                MENU_BASEWIDTH,
+                ibox,
+                new UIButton(
+                        "Join (Temporary)",
+                        (uiButton, __) -> {
+                            int port = sPort;
 
-                    bg.buildChild(
-                            "quitButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                            connectingText.setEnabled(true);
+                            connectingText.getGameObject().setEnabled(true);
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Quit",
-                                                (uiButton, __) -> {
-                                                    Engine.getInstance().stop();
-                                                });
+                            try {
+                                String text = ibox.getInput();
+                                String[] elems = text.split(":");
+                                String ip = elems[0];
+                                String portText = elems.length > 1 ? elems[1] : null;
 
-                                button.addComponent(newButton);
-                            });
+                                if (portText != null) {
+                                    port = Integer.parseInt(portText);
+                                }
 
-                    bg.buildChild(
-                            "reloadButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.45f, 0.5f, 0.45f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+                                connectingText.getLabelText().get().setText("Connecting...");
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Quick Reload",
-                                                (uiButton, __) -> {
-                                                    sReload = true;
-                                                    Engine.getInstance().stop();
-                                                });
-
-                                button.addComponent(newButton);
-                            });
-                });
-        joinUI.buildChild(
-                "bg",
-                new TransformUI(false),
-                (bg) -> {
-                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
-
-                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
-
-                    final Reference<GameObject> connectingRef =
-                            bg.buildChild(
-                                    "connecting",
-                                    false,
-                                    new TransformUI(true),
-                                    (text) -> {
-                                        text.getTransform(TransformUI.class)
-                                                .setParentAnchor(0f, 0.25f, 0.5f, 0.25f);
-                                        text.getTransform(TransformUI.class)
-                                                .setMargin(0f, 0f, 0f, 0.07f);
-                                        text.addComponent(new UIText("Connecting..."));
-                                    });
-                    final Reference<UIText> connectingTextRef =
-                            connectingRef.get().getComponent(UIText.class);
-
-                    connectingTextRef.get().setEnabled(false);
-
-                    UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
-
-                    bg.buildChild(
-                            "ipInput",
-                            new TransformUI(true),
-                            (input) -> {
-                                input.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                                input.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-                                input.addComponent(ibox);
-                            });
-
-                    bg.buildChild(
-                            "joinButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.15f, 0.5f, 0.15f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Join (Temporary)",
-                                                (uiButton, __) -> {
-                                                    int port = sPort;
-
-                                                    try {
-                                                        String text = ibox.getInput();
-                                                        String[] elems = text.split(":");
-                                                        String ip = elems[0];
-                                                        String portText =
-                                                                elems.length > 1 ? elems[1] : null;
-
-                                                        if (portText != null) {
-                                                            port = Integer.parseInt(portText);
-                                                        }
-
-                                                        networkManager
-                                                                .get()
-                                                                .createClient(
-                                                                        ip,
-                                                                        port,
-                                                                        (gameScene,
-                                                                                manager,
-                                                                                netID) -> {
-                                                                            if (netID >= 0) {
-                                                                                onConnectedClient(
-                                                                                        gameScene,
-                                                                                        manager,
-                                                                                        netID);
-                                                                            } else if (Reference
-                                                                                    .isValid(
-                                                                                            connectingTextRef)) {
-                                                                                connectingTextRef
-                                                                                        .get()
-                                                                                        .setEnabled(
-                                                                                                false);
-                                                                            }
-                                                                        });
-                                                    } catch (Exception e) {
-
-                                                        e.printStackTrace();
-
-                                                        if (Reference.isValid(connectingTextRef))
-                                                            connectingTextRef
-                                                                    .get()
-                                                                    .setText("Invalid input!");
+                                networkManager
+                                        .get()
+                                        .createClient(
+                                                ip,
+                                                port,
+                                                (gameScene, manager, netID) -> {
+                                                    if (netID >= 0) {
+                                                        onConnectedClient(
+                                                                gameScene, manager, netID);
+                                                    } else {
+                                                        connectingText.setEnabled(false);
+                                                        connectingText
+                                                                .getGameObject()
+                                                                .setEnabled(false);
                                                     }
-
-                                                    if (Reference.isValid(connectingTextRef))
-                                                        connectingTextRef.get().setEnabled(true);
                                                 });
-                                button.addComponent(newButton);
-                            });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                connectingText.getLabelText().get().setText("Invalid input!");
+                            }
+                        }),
+                connectingText,
+                new UIButton(
+                        "Cancel",
+                        (uiButton, __) -> {
+                            joinUi.setEnabled(false);
+                            mainUi.setEnabled(true);
+                        }));
 
-                    bg.buildChild(
-                            "cancelButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
+        uiManager.buildVerticalUi(
+                settingsUI,
+                0.05f,
+                0f,
+                MENU_BASEWIDTH,
+                new UIButton(
+                        "Sound",
+                        (__, ___) -> {
+                            settingsUI.setEnabled(false);
+                            audioSettingsUI.setEnabled(true);
+                        }),
+                new UIButton(
+                        "Graphics",
+                        (__, ___) -> {
+                            settingsUI.setEnabled(false);
+                            graphicsSettingsUI.setEnabled(true);
+                        }),
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            settingsUI.setEnabled(false);
+                            mainUi.setEnabled(true);
+                        }));
 
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Cancel",
-                                                (uiButton, __) -> {
-                                                    joinUI.setEnabled(false);
-                                                    mainUI.setEnabled(true);
-                                                });
+        uiManager.buildVerticalUi(
+                audioSettingsUI,
+                0.05f,
+                0f,
+                MENU_BASEWIDTH,
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Master volume:"),
+                        new UISlider(
+                                AudioManager.getInstance().getMasterVolume(),
+                                (__, val) -> AudioManager.getInstance().setMasterVolume(val))),
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            audioSettingsUI.setEnabled(false);
+                            settingsUI.setEnabled(true);
+                        }));
 
-                                button.addComponent(newButton);
-                            });
-                });
+        uiManager.buildVerticalUi(
+                graphicsSettingsUI,
+                0.05f,
+                0f,
+                MENU_BASEWIDTH,
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Fullscreen mode:"),
+                        new UIDropDown(
+                                0,
+                                (drop) -> {
+                                    Engine.getInstance()
+                                            .getGLFWState()
+                                            .setFullscreen(drop.getSelected() == 1);
+                                },
+                                "Windowed",
+                                "Fullscreen")),
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            graphicsSettingsUI.setEnabled(false);
+                            settingsUI.setEnabled(true);
+                        }));
 
-        hostUI.buildChild(
-                "bg",
-                new TransformUI(false),
-                (bg) -> {
-                    bg.addComponent(new UIRenderable(new Vector4f(0.1f, 0.1f, 0.1f, 0f)));
-
-                    bg.getTransform(TransformUI.class).setParentAnchor(0f, 0f, 0.5f, 1.f);
-
-                    bg.buildChild(
-                            "joinButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.05f, 0.5f, 0.05f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Host (Temporary)",
-                                                (uiButton, __) -> {
-                                                    networkManager
-                                                            .get()
-                                                            .createServer(
-                                                                    sPort, this::onClientConnected);
-                                                });
-                                button.addComponent(newButton);
-                            });
-
-                    bg.buildChild(
-                            "cancelButton",
-                            new TransformUI(true),
-                            (button) -> {
-                                button.getTransform(TransformUI.class)
-                                        .setParentAnchor(0f, 0.35f, 0.5f, 0.35f);
-                                button.getTransform(TransformUI.class).setMargin(0f, 0f, 0f, 0.07f);
-
-                                UIButton newButton =
-                                        new UIButton(
-                                                "Cancel",
-                                                (uiButton, __) -> {
-                                                    hostUI.setEnabled(false);
-                                                    mainUI.setEnabled(true);
-                                                });
-
-                                button.addComponent(newButton);
-                            });
-                });
-
-        joinUI.setEnabled(false);
-        hostUI.setEnabled(false);
+        uiManager.buildVerticalUi(
+                hostUi,
+                0.05f,
+                0f,
+                MENU_BASEWIDTH,
+                new UIButton(
+                        "Host (Temporary)",
+                        (__, ___) -> {
+                            networkManager.get().createServer(sPort, this::onClientConnected);
+                        }),
+                new UIButton(
+                        "Cancel",
+                        (uiButton, __) -> {
+                            hostUi.setEnabled(false);
+                            mainUi.setEnabled(true);
+                        }));
 
         mainMenu.addRootObject(networkManagerObject);
 
-        mainMenu.addRootObject(hostUI);
-        mainMenu.addRootObject(joinUI);
-        mainMenu.addRootObject(mainUI);
+        mainMenu.addRootObject(audio);
+        mainMenu.addRootObject(gameTitle);
+
+        mainMenu.addRootObject(mainUi);
+        mainMenu.addRootObject(hostUi);
+        mainMenu.addRootObject(joinUi);
+        mainMenu.addRootObject(settingsUI);
+        mainMenu.addRootObject(audioSettingsUI);
+        mainMenu.addRootObject(graphicsSettingsUI);
 
         return mainMenu;
     }
@@ -606,8 +566,8 @@ public class App implements NativeResource {
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netID) {
-        log.info("CONNECTED ID " + netID);
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
+        log.info("CONNECTED ID " + netId);
 
         GameObject humanPlayer =
                 new GameObject(
@@ -615,7 +575,7 @@ public class App implements NativeResource {
                         (handle) -> {
                             handle.addComponent(
                                     new HumanPlayer(
-                                            manager.getReference(NetworkManager.class), netID));
+                                            manager.getReference(NetworkManager.class), netId));
                         });
 
         gameScene.addRootObject(humanPlayer);
@@ -629,7 +589,7 @@ public class App implements NativeResource {
 
     @Override
     public void free() {
-        mMainMenuGLTF.free();
-        mNetworkTemplatesGLTF.free();
+        mMainMenuGltf.free();
+        mNetworkTemplatesGltf.free();
     }
 }

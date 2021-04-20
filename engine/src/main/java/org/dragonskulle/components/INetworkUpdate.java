@@ -2,7 +2,7 @@
 package org.dragonskulle.components;
 
 /**
- * INetworkUpdate interface
+ * INetworkUpdate interface.
  *
  * @author Aurimas Blažulionis
  * @author Harry Stoltz

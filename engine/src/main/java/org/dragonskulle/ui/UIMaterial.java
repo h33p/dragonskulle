@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -14,7 +14,8 @@ import org.dragonskulle.renderer.ShaderKind;
 import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.TextureMapping;
-import org.dragonskulle.renderer.TextureMapping.*;
+import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
+import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.joml.Matrix4fc;
@@ -58,23 +59,23 @@ public class UIMaterial implements IMaterial, Serializable {
     };
 
     /** Colour of the surface. It will multiply the texture's colour */
-    public Vector4f colour = new Vector4f(1.f);
+    public Vector4f mColour = new Vector4f(1.f);
 
     public UIMaterial() {}
 
     /**
-     * Constructor for UIMaterial
+     * Constructor for UIMaterial.
      *
      * @param colour initial colour value of the object
      * @param texture initial texture of the object
      */
     public UIMaterial(Vector4fc colour, SampledTexture texture) {
-        this.colour.set(colour);
+        this.mColour.set(colour);
         mFragmentTextures[0] = texture;
     }
 
     /**
-     * Constructor for UIMaterial
+     * Constructor for UIMaterial.
      *
      * @param colour initial colour value for the object, with full alpha
      * @param texture initial texture of the object
@@ -84,16 +85,16 @@ public class UIMaterial implements IMaterial, Serializable {
     }
 
     /**
-     * Constructor for UIMaterial
+     * Constructor for UIMaterial.
      *
      * @param colour initial colour value of the object
      */
     public UIMaterial(Vector4fc colour) {
-        this.colour.set(colour);
+        this.mColour.set(colour);
     }
 
     /**
-     * Constructor for UIMaterial
+     * Constructor for UIMaterial.
      *
      * @param colour initial colour value for the object, with full alpha
      */
@@ -102,7 +103,7 @@ public class UIMaterial implements IMaterial, Serializable {
     }
 
     /**
-     * Constructor for UIMaterial
+     * Constructor for UIMaterial.
      *
      * @param texture initial texture of the object
      */
@@ -117,7 +118,7 @@ public class UIMaterial implements IMaterial, Serializable {
     public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
-        colour.get(offset, buffer);
+        mColour.get(offset, buffer);
         return offset + 4 * 4;
     }
 
@@ -126,6 +127,10 @@ public class UIMaterial implements IMaterial, Serializable {
     }
 
     public void free() {
-        for (SampledTexture tex : mFragmentTextures) tex.free();
+        for (SampledTexture tex : mFragmentTextures) {
+            if (tex != null) {
+                tex.free();
+            }
+        }
     }
 }
