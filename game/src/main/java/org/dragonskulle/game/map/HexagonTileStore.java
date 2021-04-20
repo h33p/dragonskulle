@@ -20,21 +20,21 @@ class HexagonTileStore {
     private final int mSeed;
 
     /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */
-    public HexagonTileStore(int mSize, int seed) {
-        mTiles = new HexagonTile[mSize][mSize];
+    public HexagonTileStore(int size, int seed) {
+        mTiles = new HexagonTile[size][size];
         mSeed = seed;
-        mCoordShift = mSize / 2;
+        mCoordShift = size / 2;
 
-        int max_empty = getSpaces(mSize); // The max number of empty spaces in one row of the array
-        int loop = mSize / 2;
+        int max_empty = getSpaces(size); // The max number of empty spaces in one row of the array
+        int loop = size / 2;
         int empty = max_empty;
 
-        /** Generates the first part of the map */
+        /* Generates the first part of the map */
         for (int r = 0; r < loop; r++) {
 
             int inside_empty = empty;
 
-            for (int q = 0; q < mSize; q++) {
+            for (int q = 0; q < size; q++) {
                 if (inside_empty > 0) {
                     // No tile in this location
                     inside_empty--;
@@ -48,24 +48,24 @@ class HexagonTileStore {
             empty--;
         }
 
-        /** Generates the middle part of the map */
-        int r_m = (mSize / 2);
-        for (int q = 0; q < mSize; q++) {
+        /* Generates the middle part of the map */
+        int r_m = (size / 2);
+        for (int q = 0; q < size; q++) {
             int q1 = q - mCoordShift;
             int r1 = r_m - mCoordShift;
             float height = getHeight(q1, r1);
             setTile(new HexagonTile(q1, r1, height));
         }
 
-        /** Generates the last part of the map */
-        loop = (mSize / 2) + 1;
-        int min_val = mSize - max_empty;
-        int current_val = mSize;
-        for (int r = loop; r < mSize; r++) {
+        /* Generates the last part of the map */
+        loop = (size / 2) + 1;
+        int min_val = size - max_empty;
+        int current_val = size;
+        for (int r = loop; r < size; r++) {
             current_val--; // The number of cells with actual coordinates, it decreases with every
             // row
             int inside_val = 1;
-            for (int q = 0; q < mSize; q++) {
+            for (int q = 0; q < size; q++) {
                 if (inside_val <= current_val) {
                     int q1 = q - mCoordShift;
                     int r1 = r - mCoordShift;
@@ -78,7 +78,7 @@ class HexagonTileStore {
     }
 
     /**
-     * Get a hexagon tile
+     * Get a hexagon tile.
      *
      * @param q q coordinate of the tile
      * @param r r coordinate of the tile
@@ -87,13 +87,15 @@ class HexagonTileStore {
         q += mCoordShift;
         r += mCoordShift;
 
-        if (q < 0 || r < 0 || q >= mTiles.length || r >= mTiles.length) return null;
+        if (q < 0 || r < 0 || q >= mTiles.length || r >= mTiles.length) {
+            return null;
+        }
 
         return mTiles[q][r];
     }
 
     /**
-     * Get a stream of all hexagon tiles
+     * Get a stream of all hexagon tiles.
      *
      * @return stream of all non-null hexagon tiles in the map
      */

@@ -2,24 +2,137 @@
 package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
-import static org.dragonskulle.utils.Env.*;
+import static org.dragonskulle.utils.Env.envBool;
+import static org.dragonskulle.utils.Env.envInt;
 import static org.dragonskulle.utils.Env.envString;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
+import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
 import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.lwjgl.vulkan.EXTDebugUtils.*;
-import static org.lwjgl.vulkan.KHRSurface.*;
-import static org.lwjgl.vulkan.KHRSwapchain.*;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+import static org.lwjgl.vulkan.EXTDebugUtils.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.vkCreateDebugUtilsMessengerEXT;
+import static org.lwjgl.vulkan.EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT;
+import static org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkAcquireNextImageKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkCreateSwapchainKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkDestroySwapchainKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkGetSwapchainImagesKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkQueuePresentKHR;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_API_VERSION_1_0;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_CLEAR;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_FALSE;
+import static org.lwjgl.vulkan.VK10.VK_FENCE_CREATE_SIGNALED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
+import static org.lwjgl.vulkan.VK10.VK_MAKE_VERSION;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_CONCURRENT;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SUBMIT_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUBPASS_CONTENTS_INLINE;
+import static org.lwjgl.vulkan.VK10.VK_SUBPASS_EXTERNAL;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkBeginCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBeginRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
+import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
+import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
+import static org.lwjgl.vulkan.VK10.vkCmdEndRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCmdPushConstants;
+import static org.lwjgl.vulkan.VK10.vkCreateCommandPool;
+import static org.lwjgl.vulkan.VK10.vkCreateDevice;
+import static org.lwjgl.vulkan.VK10.vkCreateFence;
+import static org.lwjgl.vulkan.VK10.vkCreateFramebuffer;
+import static org.lwjgl.vulkan.VK10.vkCreateInstance;
+import static org.lwjgl.vulkan.VK10.vkCreateRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCreateSemaphore;
+import static org.lwjgl.vulkan.VK10.vkDestroyCommandPool;
+import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
+import static org.lwjgl.vulkan.VK10.vkDestroyFence;
+import static org.lwjgl.vulkan.VK10.vkDestroyFramebuffer;
+import static org.lwjgl.vulkan.VK10.vkDestroyImageView;
+import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
+import static org.lwjgl.vulkan.VK10.vkDestroyRenderPass;
+import static org.lwjgl.vulkan.VK10.vkDestroySemaphore;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkEndCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceLayerProperties;
+import static org.lwjgl.vulkan.VK10.vkFreeCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkGetDeviceQueue;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkQueueSubmit;
+import static org.lwjgl.vulkan.VK10.vkQueueWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkResetFences;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
+import static org.lwjgl.vulkan.VK10.vkWaitForFences;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -37,10 +150,40 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.system.Pointer;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkAttachmentDescription;
+import org.lwjgl.vulkan.VkAttachmentReference;
+import org.lwjgl.vulkan.VkClearDepthStencilValue;
+import org.lwjgl.vulkan.VkClearValue;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
+import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
+import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackDataEXT;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkDeviceCreateInfo;
+import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkFenceCreateInfo;
+import org.lwjgl.vulkan.VkFramebufferCreateInfo;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkLayerProperties;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPresentInfoKHR;
+import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkRenderPassBeginInfo;
+import org.lwjgl.vulkan.VkRenderPassCreateInfo;
+import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
+import org.lwjgl.vulkan.VkSubmitInfo;
+import org.lwjgl.vulkan.VkSubpassDependency;
+import org.lwjgl.vulkan.VkSubpassDescription;
+import org.lwjgl.vulkan.VkSurfaceFormatKHR;
+import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 /**
- * Vulkan renderer
+ * Vulkan renderer.
  *
  * @author Aurimas Blažulionis
  *     <p>This renderer allows to draw {@code Renderable} objects on screen. Application needs to
@@ -54,51 +197,52 @@ import org.lwjgl.vulkan.*;
 @Log
 public class Renderer implements NativeResource {
 
-    /** Reference to the GLFW window */
+    /** Reference to the GLFW window. */
     private long mWindow;
 
-    /** A vulkan context instance */
+    /** A vulkan context instance. */
     private VkInstance mInstance;
-    /** Debug messenger used to log validation errors when {@code DEBUG_RENDERER} is enabled */
+    /** Debug messenger used to log validation errors when {@code DEBUG_RENDERER} is enabled. */
     private long mDebugMessenger;
-    /** Surface of the window */
+    /** Surface of the window. */
     private long mSurface;
 
-    /** Active physical device */
+    /** Active physical device. */
     private PhysicalDevice mPhysicalDevice;
-    /** Number of Multi-Sampled Anti-Aliasing (MSAA) samples used */
+    /** Number of Multi-Sampled Anti-Aliasing (MSAA) samples used. */
     private int mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-    /** Logical device */
+    /** Logical device. */
     private VkDevice mDevice;
-    /** Queue that's used to submit graphics commands to */
+    /** Queue that's used to submit graphics commands to. */
     private VkQueue mGraphicsQueue;
-    /** Queue that's used to present things on screen */
+    /** Queue that's used to present things on screen. */
     private VkQueue mPresentQueue;
 
-    /** Pool for command buffers */
+    /** Pool for command buffers. */
     private long mCommandPool;
 
-    /** Factory for on-GPU texture samplers */
+    /** Factory for on-GPU texture samplers. */
     private TextureSamplerFactory mSamplerFactory;
-    /** Factory for on-GPU sampled textures */
+    /** Factory for on-GPU sampled textures. */
     private VulkanSampledTextureFactory mTextureFactory;
-    /** Factory for descriptor set layouts when using a number of textures */
+    /** Factory for descriptor set layouts when using a number of textures. */
     private TextureSetLayoutFactory mTextureSetLayoutFactory;
-    /** Factory for individual image descriptor sets */
+    /** Factory for individual image descriptor sets. */
     private TextureSetFactory mTextureSetFactory;
     /**
-     * Constants that are passed to vertex shaders (camera view and perspective projection matrices)
+     * Constants that are passed to vertex shaders (camera view and perspective projection
+     * matrices).
      */
     private VertexConstants mVertexConstants = new VertexConstants();
 
-    /** Active surface format */
+    /** Active surface format. */
     private VkSurfaceFormatKHR mSurfaceFormat;
-    /** Dimensions of the window */
+    /** Dimensions of the window. */
     private VkExtent2D mExtent;
-    /** Handle to swapchain */
+    /** Handle to swapchain. */
     private long mSwapchain;
-    /** Handle to the default render pass */
+    /** Handle to the default render pass. */
     private long mRenderPass;
 
     /**
@@ -112,32 +256,32 @@ public class Renderer implements NativeResource {
      */
     private FrameContext[] mFrameContexts;
 
-    /** Size of the instance buffer in bytes */
+    /** Size of the instance buffer in bytes. */
     @Getter(AccessLevel.PUBLIC)
     private int mInstanceBufferSize = 0;
 
-    /** Handle to colour attachment (multisampled off-screen buffer) */
+    /** Handle to colour attachment (multisampled off-screen buffer). */
     private VulkanImage mColorImage;
-    /** View to {@code mColorImage} */
+    /** View to {@code mColorImage}. */
     private long mColorImageView;
 
-    /** Handle to depth attachment (off-screen buffer) */
+    /** Handle to depth attachment (off-screen buffer). */
     private VulkanImage mDepthImage;
-    /** View to {@code mDepthImage} */
+    /** View to {@code mDepthImage}. */
     private long mDepthImageView;
 
-    /** Number of frames elapsed */
+    /** Number of frames elapsed. */
     private int mFrameCounter = 0;
 
-    /** Tells how many instanced draw calls happened last frame */
+    /** Tells how many instanced draw calls happened last frame. */
     @Getter(AccessLevel.PUBLIC)
     private int mInstancedCalls = 0;
 
-    /** Tells how many non-instanced draw calls happened last frame */
+    /** Tells how many non-instanced draw calls happened last frame. */
     @Getter(AccessLevel.PUBLIC)
     private int mSlowCalls = 0;
 
-    /** The current mesh buffer that contains all meshes on the GPU */
+    /** The current mesh buffer that contains all meshes on the GPU. */
     private VulkanMeshBuffer mCurrentMeshBuffer;
     /**
      * Maps image index to any mesh buffers that were discarded on that frame. This is so we free
@@ -162,16 +306,16 @@ public class Renderer implements NativeResource {
 
     /**
      * Maps a render order to a list of unsorted objects that are not supposed to be drawn in
-     * instanced fashion
+     * instanced fashion.
      */
     private TreeMap<Integer, List<DrawCallState>> mToPresort = new TreeMap<>();
-    /** Maps a render order to list of non-instanced draw calls */
+    /** Maps a render order to list of non-instanced draw calls. */
     private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
 
-    /** List of validation layers to activate when debug mode is on */
+    /** List of validation layers to activate when debug mode is on. */
     private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
             Arrays.asList("VK_LAYER_KHRONOS_validation");
-    /** List of device extensions that are required for the renderer to work */
+    /** List of device extensions that are required for the renderer to work. */
     private static final Set<String> DEVICE_EXTENSIONS =
             Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
 
@@ -195,7 +339,7 @@ public class Renderer implements NativeResource {
      */
     private static final int MSAA_SAMPLES = envInt("MSAA_SAMPLES", 4);
 
-    /** Highest value of UINT64, it's 0xffffffffffffffff */
+    /** Highest value of UINT64, it's 0xffffffffffffffff. */
     private static final long UINT64_MAX = -1L;
     /**
      * Maximum number of frames that we can render at the same time. In practice, the minimum of
@@ -204,42 +348,42 @@ public class Renderer implements NativeResource {
      */
     private static final int FRAMES_IN_FLIGHT = 4;
 
-    /** Synchronization objects for when multiple frames are rendered at a time */
+    /** Synchronization objects for when multiple frames are rendered at a time. */
     private class FrameContext {
-        /** Semaphore for when the image is ready to be redrawn */
-        public long imageAvailableSemaphore;
-        /** Semaphore for when the image has finished rendering and is able to be displayed */
-        public long renderFinishedSemaphore;
-        /** Fence that is used to synchronize the frame */
-        public long inFlightFence;
+        /** Semaphore for when the image is ready to be redrawn. */
+        public long mImageAvailableSemaphore;
+        /** Semaphore for when the image has finished rendering and is able to be displayed. */
+        public long mRenderFinishedSemaphore;
+        /** Fence that is used to synchronize the frame. */
+        public long mInFlightFence;
     }
 
-    /** All state for a single frame */
+    /** All state for a single frame. */
     private static class ImageContext {
-        /** Command buffer of the image */
-        public VkCommandBuffer commandBuffer;
+        /** Command buffer of the image. */
+        public VkCommandBuffer mCommandBuffer;
         /**
          * Reference to a FrameContext fence, if there is a frame that's already rendering on the
-         * image
+         * image.
          */
-        public long inFlightFence;
-        /** Handle to the framebuffer */
-        public long framebuffer;
-        /** The index of this image context */
-        public int imageIndex;
+        public long mInFlightFence;
+        /** Handle to the framebuffer. */
+        public long mFramebuffer;
+        /** The index of this image context. */
+        public int mImageIndex;
 
-        /** The current size of the instance buffer for this image */
-        public int instanceBufferSize;
-        /** The actual instance buffer (a buffer for per-instance shader data) */
-        public VulkanBuffer instanceBuffer;
+        /** The current size of the instance buffer for this image. */
+        public int mInstanceBufferSize;
+        /** The actual instance buffer (a buffer for per-instance shader data). */
+        public VulkanBuffer mInstanceBuffer;
 
-        /** A view to this image */
+        /** A view to this image. */
         private long mImageView;
-        /** Reference to {@link Renderer#mDevice} */
+        /** Reference to {@link Renderer#mDevice}. */
         private VkDevice mDevice;
 
         /**
-         * Create a image context
+         * Create a image context.
          *
          * @param renderer handle to the parent renderer. It is needed to store reference to the
          *     underlying device, and creating a framebuffer
@@ -249,18 +393,18 @@ public class Renderer implements NativeResource {
          */
         private ImageContext(
                 Renderer renderer, VulkanImage image, int imageIndex, long commandBuffer) {
-            this.commandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
+            this.mCommandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
             this.mImageView = image.createImageView();
-            this.framebuffer = createFramebuffer(renderer);
-            this.imageIndex = imageIndex;
+            this.mFramebuffer = createFramebuffer(renderer);
+            this.mImageIndex = imageIndex;
 
             this.mDevice = renderer.mDevice;
 
-            instanceBufferSize = 0;
+            mInstanceBufferSize = 0;
         }
 
         /**
-         * Create a framebuffer from image view
+         * Create a framebuffer from image view.
          *
          * @param renderer the parent renderer.
          * @return handle to the framebuffer.
@@ -294,16 +438,18 @@ public class Renderer implements NativeResource {
             }
         }
 
-        /** Free the underlying resources */
+        /** Free the underlying resources. */
         private void free() {
-            if (instanceBuffer != null) instanceBuffer.free();
-            vkDestroyFramebuffer(mDevice, framebuffer, null);
+            if (mInstanceBuffer != null) {
+                mInstanceBuffer.free();
+            }
+            vkDestroyFramebuffer(mDevice, mFramebuffer, null);
             vkDestroyImageView(mDevice, mImageView, null);
         }
     }
 
     /**
-     * Create a renderer
+     * Create a renderer.
      *
      * <p>This constructor will create a Vulkan renderer instance, and set everything up so that
      * {@link Renderer#render} method can be called.
@@ -317,7 +463,9 @@ public class Renderer implements NativeResource {
         mInstanceBufferSize = 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
-        if (DEBUG_MODE) mDebugMessenger = createDebugLogger();
+        if (DEBUG_MODE) {
+            mDebugMessenger = createDebugLogger();
+        }
         mSurface = createSurface();
         mPhysicalDevice = pickPhysicalDevice();
         mMSAASamples = mPhysicalDevice.findSuitableMSAACount(MSAA_SAMPLES);
@@ -336,7 +484,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Render a frame
+     * Render a frame.
      *
      * <p>This method will take a list of renderable objects, alongside lights, and render them from
      * the camera point of view.
@@ -346,9 +494,13 @@ public class Renderer implements NativeResource {
      * @param lights list of lights to light the objects with
      */
     public void render(Camera camera, List<Renderable> objects, List<Light> lights) {
-        if (mImageContexts == null) recreateSwapchain();
+        if (mImageContexts == null) {
+            recreateSwapchain();
+        }
 
-        if (mImageContexts == null) return;
+        if (mImageContexts == null) {
+            return;
+        }
 
         camera.updateAspectRatio(mExtent.width(), mExtent.height());
 
@@ -356,7 +508,7 @@ public class Renderer implements NativeResource {
             FrameContext ctx = mFrameContexts[mFrameCounter];
             mFrameCounter = (mFrameCounter + 1) % FRAMES_IN_FLIGHT;
 
-            vkWaitForFences(mDevice, ctx.inFlightFence, true, UINT64_MAX);
+            vkWaitForFences(mDevice, ctx.mInFlightFence, true, UINT64_MAX);
 
             IntBuffer pImageIndex = stack.ints(0);
             int res =
@@ -364,7 +516,7 @@ public class Renderer implements NativeResource {
                             mDevice,
                             mSwapchain,
                             UINT64_MAX,
-                            ctx.imageAvailableSemaphore,
+                            ctx.mImageAvailableSemaphore,
                             VK_NULL_HANDLE,
                             pImageIndex);
             final int imageIndex = pImageIndex.get(0);
@@ -375,14 +527,17 @@ public class Renderer implements NativeResource {
                 return;
             }
 
-            if (image.inFlightFence != 0)
-                vkWaitForFences(mDevice, image.inFlightFence, true, UINT64_MAX);
+            if (image.mInFlightFence != 0) {
+                vkWaitForFences(mDevice, image.mInFlightFence, true, UINT64_MAX);
+            }
 
-            image.inFlightFence = ctx.inFlightFence;
+            image.mInFlightFence = ctx.mInFlightFence;
 
             VulkanMeshBuffer discardedBuffer = mDiscardedMeshBuffers.remove(imageIndex);
 
-            if (discardedBuffer != null) discardedBuffer.free();
+            if (discardedBuffer != null) {
+                discardedBuffer.free();
+            }
 
             updateInstanceBuffer(image, objects, lights);
             recordCommandBuffer(image, camera);
@@ -390,24 +545,24 @@ public class Renderer implements NativeResource {
             VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
             submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
 
-            LongBuffer waitSemaphores = stack.longs(ctx.imageAvailableSemaphore);
+            LongBuffer waitSemaphores = stack.longs(ctx.mImageAvailableSemaphore);
             IntBuffer waitStages = stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            PointerBuffer commandBuffer = stack.pointers(image.commandBuffer);
+            PointerBuffer commandBuffer = stack.pointers(image.mCommandBuffer);
 
             submitInfo.waitSemaphoreCount(1);
             submitInfo.pWaitSemaphores(waitSemaphores);
             submitInfo.pWaitDstStageMask(waitStages);
             submitInfo.pCommandBuffers(commandBuffer);
 
-            LongBuffer signalSemaphores = stack.longs(ctx.renderFinishedSemaphore);
+            LongBuffer signalSemaphores = stack.longs(ctx.mRenderFinishedSemaphore);
             submitInfo.pSignalSemaphores(signalSemaphores);
 
-            vkResetFences(mDevice, ctx.inFlightFence);
+            vkResetFences(mDevice, ctx.mInFlightFence);
 
-            res = vkQueueSubmit(mGraphicsQueue, submitInfo, ctx.inFlightFence);
+            res = vkQueueSubmit(mGraphicsQueue, submitInfo, ctx.mInFlightFence);
 
             if (res != VK_SUCCESS) {
-                vkResetFences(mDevice, ctx.inFlightFence);
+                vkResetFences(mDevice, ctx.mInFlightFence);
                 throw new RuntimeException(
                         String.format("Failed to submit draw command buffer! Ret: %x", -res));
             }
@@ -432,7 +587,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Inform the renderer about window being resized
+     * Inform the renderer about window being resized.
      *
      * <p>This method needs to be called by the app every time the window gets resized, so that the
      * renderer can change its render resolution.
@@ -442,7 +597,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Retrieve the size of the current vertex buffer
+     * Retrieve the size of the current vertex buffer.
      *
      * @return size of vertex buffer
      */
@@ -451,7 +606,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Retrieve the size of the current index buffer
+     * Retrieve the size of the current index buffer.
      *
      * @return size of index buffer
      */
@@ -460,7 +615,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Free all renderer resources
+     * Free all renderer resources.
      *
      * <p>Call this method to shutdown the renderer and free all its resources.
      */
@@ -468,9 +623,9 @@ public class Renderer implements NativeResource {
     public void free() {
         vkDeviceWaitIdle(mDevice);
         for (FrameContext frame : mFrameContexts) {
-            vkDestroySemaphore(mDevice, frame.renderFinishedSemaphore, null);
-            vkDestroySemaphore(mDevice, frame.imageAvailableSemaphore, null);
-            vkDestroyFence(mDevice, frame.inFlightFence, null);
+            vkDestroySemaphore(mDevice, frame.mRenderFinishedSemaphore, null);
+            vkDestroySemaphore(mDevice, frame.mImageAvailableSemaphore, null);
+            vkDestroyFence(mDevice, frame.mInFlightFence, null);
         }
         cleanupSwapchain();
         mCurrentMeshBuffer.free();
@@ -488,7 +643,7 @@ public class Renderer implements NativeResource {
 
     /// Internal code
 
-    /** Recreate swapchain when it becomes invalid */
+    /** Recreate swapchain when it becomes invalid. */
     private void recreateSwapchain() {
         if (mImageContexts != null) {
             vkQueueWaitIdle(mPresentQueue);
@@ -503,7 +658,9 @@ public class Renderer implements NativeResource {
             IntBuffer y = stack.ints(0);
             glfwGetFramebufferSize(mWindow, x, y);
             log.finer(String.format("%d %d", x.get(0), y.get(0)));
-            if (x.get(0) == 0 || y.get(0) == 0) return;
+            if (x.get(0) == 0 || y.get(0) == 0) {
+                return;
+            }
         }
 
         mPhysicalDevice.onRecreateSwapchain(mSurface);
@@ -511,7 +668,7 @@ public class Renderer implements NativeResource {
         createSwapchainObjects();
     }
 
-    /** Cleanup swapchain resources */
+    /** Cleanup swapchain resources. */
     private void cleanupSwapchain() {
         Arrays.stream(mImageContexts).forEach(ImageContext::free);
 
@@ -521,18 +678,23 @@ public class Renderer implements NativeResource {
                     mCommandPool,
                     toPointerBuffer(
                             Arrays.stream(mImageContexts)
-                                    .map(d -> d.commandBuffer)
+                                    .map(d -> d.mCommandBuffer)
                                     .toArray(VkCommandBuffer[]::new),
                             stack));
         }
 
         mImageContexts = null;
 
-        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values())
-            for (DrawCallState state : stateMap.values()) state.free();
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (DrawCallState state : stateMap.values()) {
+                state.free();
+            }
+        }
         mDrawInstances.clear();
 
-        for (VulkanMeshBuffer meshBuffer : mDiscardedMeshBuffers.values()) meshBuffer.free();
+        for (VulkanMeshBuffer meshBuffer : mDiscardedMeshBuffers.values()) {
+            meshBuffer.free();
+        }
         mDiscardedMeshBuffers.clear();
 
         mTextureSetFactory.free();
@@ -555,7 +717,7 @@ public class Renderer implements NativeResource {
         vkDestroySwapchainKHR(mDevice, mSwapchain, null);
     }
 
-    /// Internal setup code
+    /// Internal setup code.
 
     /**
      * Create swapchain objects
@@ -580,7 +742,7 @@ public class Renderer implements NativeResource {
     /// Instance setup
 
     /**
-     * Create a Vulkan instance
+     * Create a Vulkan instance.
      *
      * <p>Vulkan instance is needed for the duration of the renderer. If debug mode is on, the
      * instance will also enable debug validation layers, which allow to track down issues.
@@ -631,7 +793,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Returns required extensions for the VK context
+     * Returns required extensions for the VK context.
      *
      * @param stack the stack that will be used to put the extensions to (if debug mode is on,
      *     otherwise just glfwExtensions will be returned)
@@ -682,7 +844,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Utility for converting collection to pointer buffer
+     * Utility for converting collection to pointer buffer.
      *
      * @param collection collection to convert the pointer buffer to
      * @param stack stack of the caller for where the data will be stored on
@@ -695,7 +857,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Utility for converting a collection of pointer types to pointer buffer
+     * Utility for converting a collection of pointer types to pointer buffer.
      *
      * @param array the array to convert
      * @param stack stack of the caller for where the data will be stored on
@@ -708,7 +870,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Utility for retrieving instance VkLayerProperties list
+     * Utility for retrieving instance VkLayerProperties list.
      *
      * @param stack stack of the caller for where the data will be stored on
      * @return properties for the instance layers
@@ -723,7 +885,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Creates default debug messenger info for logging
+     * Creates default debug messenger info for logging.
      *
      * @param stack stack of the caller for where the data will be stored on
      * @return create struct for the debug messenger that's used for validation layers
@@ -751,7 +913,7 @@ public class Renderer implements NativeResource {
     /// Setup debug logging
 
     /**
-     * VK logging entrypoint
+     * VK logging entrypoint.
      *
      * @param messageSeverity severity of the message, which will be translated to log level
      * @param messageType type of the message, unused
@@ -780,7 +942,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Initializes debugMessenger to receive VK log messages
+     * Initializes debugMessenger to receive VK log messages.
      *
      * @return handle to the newly created debug messenger
      */
@@ -796,10 +958,10 @@ public class Renderer implements NativeResource {
         }
     }
 
-    /// Setup window surface
+    /// Setup window surface.
 
     /**
-     * Create a window surface
+     * Create a window surface.
      *
      * <p>This method uses window to get its surface that the renderer will draw to
      *
@@ -822,7 +984,7 @@ public class Renderer implements NativeResource {
     /// Physical device setup
 
     /**
-     * Sets up one physical device for use
+     * Sets up one physical device for use.
      *
      * @return the most optimal physical device
      */
@@ -841,7 +1003,7 @@ public class Renderer implements NativeResource {
     /// Logical device setup
 
     /**
-     * Creates a logical device with required features
+     * Creates a logical device with required features.
      *
      * @return the logical device
      */
@@ -867,7 +1029,7 @@ public class Renderer implements NativeResource {
                             });
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
-            deviceFeatures.samplerAnisotropy(mPhysicalDevice.getFeatureSupport().anisotropyEnable);
+            deviceFeatures.samplerAnisotropy(mPhysicalDevice.getFeatureSupport().mAnisotropyEnable);
             deviceFeatures.geometryShader(true);
 
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
@@ -876,9 +1038,10 @@ public class Renderer implements NativeResource {
             createInfo.pEnabledFeatures(deviceFeatures);
             createInfo.ppEnabledExtensionNames(toPointerBuffer(DEVICE_EXTENSIONS, stack));
 
-            if (DEBUG_MODE)
+            if (DEBUG_MODE) {
                 createInfo.ppEnabledLayerNames(
                         toPointerBuffer(WANTED_VALIDATION_LAYERS_LIST, stack));
+            }
 
             PointerBuffer pDevice = stack.callocPointer(1);
 
@@ -898,7 +1061,7 @@ public class Renderer implements NativeResource {
     /// Queue setup
 
     /**
-     * Create a graphics queue
+     * Create a graphics queue.
      *
      * <p>This queue is used to submit graphics commands every frame
      *
@@ -907,13 +1070,13 @@ public class Renderer implements NativeResource {
     private VkQueue createGraphicsQueue() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pQueue = stack.callocPointer(1);
-            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().graphicsFamily, 0, pQueue);
+            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().mGraphicsFamily, 0, pQueue);
             return new VkQueue(pQueue.get(0), mDevice);
         }
     }
 
     /**
-     * Create a presentation queue
+     * Create a presentation queue.
      *
      * <p>This queue is used to display rendered frames on the screen
      *
@@ -922,7 +1085,7 @@ public class Renderer implements NativeResource {
     private VkQueue createPresentQueue() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pQueue = stack.callocPointer(1);
-            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().presentFamily, 0, pQueue);
+            vkGetDeviceQueue(mDevice, mPhysicalDevice.getIndices().mPresentFamily, 0, pQueue);
             return new VkQueue(pQueue.get(0), mDevice);
         }
     }
@@ -942,7 +1105,7 @@ public class Renderer implements NativeResource {
         try (MemoryStack stack = stackPush()) {
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack);
             poolInfo.sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO);
-            poolInfo.queueFamilyIndex(mPhysicalDevice.getIndices().graphicsFamily);
+            poolInfo.queueFamilyIndex(mPhysicalDevice.getIndices().mGraphicsFamily);
             poolInfo.flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
             LongBuffer pCommandPool = stack.longs(0);
@@ -961,7 +1124,7 @@ public class Renderer implements NativeResource {
     /// Swapchain setup
 
     /**
-     * Sets up the swapchain required for rendering
+     * Sets up the swapchain required for rendering.
      *
      * @return the swapchain that's used to present drawn frames on the screen
      */
@@ -989,8 +1152,8 @@ public class Renderer implements NativeResource {
             if (mGraphicsQueue.address() != mPresentQueue.address()) {
                 IntBuffer indices =
                         stack.ints(
-                                mPhysicalDevice.getIndices().graphicsFamily,
-                                mPhysicalDevice.getIndices().presentFamily);
+                                mPhysicalDevice.getIndices().mGraphicsFamily,
+                                mPhysicalDevice.getIndices().mPresentFamily);
                 createInfo.imageSharingMode(VK_SHARING_MODE_CONCURRENT);
                 createInfo.pQueueFamilyIndices(indices);
             } else {
@@ -998,7 +1161,7 @@ public class Renderer implements NativeResource {
             }
 
             createInfo.preTransform(
-                    mPhysicalDevice.getSwapchainSupport().capabilities.currentTransform());
+                    mPhysicalDevice.getSwapchainSupport().mCapabilities.currentTransform());
             createInfo.compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
             createInfo.presentMode(presentMode);
 
@@ -1006,9 +1169,10 @@ public class Renderer implements NativeResource {
 
             int result = vkCreateSwapchainKHR(mDevice, createInfo, null, pSwapchain);
 
-            if (result != VK_SUCCESS)
+            if (result != VK_SUCCESS) {
                 throw new RuntimeException(
                         String.format("Failed to create swapchain! Error: %x", -result));
+            }
 
             return pSwapchain.get(0);
         }
@@ -1017,7 +1181,7 @@ public class Renderer implements NativeResource {
     /// Per swapchain image setup
 
     /**
-     * Get the number of images swapchain was created with
+     * Get the number of images swapchain was created with.
      *
      * @return the image count
      */
@@ -1032,7 +1196,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Create a context for each swapchain image
+     * Create a context for each swapchain image.
      *
      * @param imageCount the number of images that the swapchain has
      * @return imageCount size ImageContext array that represents a context for a single swachain
@@ -1083,7 +1247,7 @@ public class Renderer implements NativeResource {
     /// Render pass setup
 
     /**
-     * Create a render pass
+     * Create a render pass.
      *
      * <p>This method will describe how a single render pass should behave.
      *
@@ -1189,7 +1353,7 @@ public class Renderer implements NativeResource {
     /// Color texture setup
 
     /**
-     * Create a colour attachment image
+     * Create a colour attachment image.
      *
      * @return the colour image
      */
@@ -1236,7 +1400,7 @@ public class Renderer implements NativeResource {
     /// Vertex and index buffers
 
     /**
-     * Create a instance buffer
+     * Create a instance buffer.
      *
      * <p>As the name implies, this buffer holds base per-instance data
      *
@@ -1289,9 +1453,10 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Create a single use command buffer
+     * Create a single use command buffer.
      *
-     * <p>this method is a wrapper around {@link beginSingleUseCommandBuffer(VkDevice, long)}
+     * <p>this method is a wrapper around {@link Renderer#beginSingleUseCommandBuffer(VkDevice,
+     * long)}
      *
      * @return the newly created command buffer
      */
@@ -1300,7 +1465,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Ends and frees the single use command buffer
+     * Ends and frees the single use command buffer.
      *
      * @param commandBuffer the command buffer to end
      * @param device the device that the command buffer is on
@@ -1329,7 +1494,7 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Ends and frees the single use command buffer
+     * Ends and frees the single use command buffer.
      *
      * <p>This method is essentially a wrapper around {@link
      * Renderer#endSingleUseCommandBuffer(VkCommandBuffer, VkDevice, VkQueue, long)}
@@ -1343,7 +1508,7 @@ public class Renderer implements NativeResource {
     /// Frame Context setup
 
     /**
-     * Create the frame context (synchronizatin objects)
+     * Create the frame context (synchronizatin objects).
      *
      * @param framesInFlight the number of frames that can be drawn at the same time
      * @return framesInFlight sized array of FrameContext
@@ -1383,9 +1548,9 @@ public class Renderer implements NativeResource {
                                                     -res1, -res2, -res2));
                                 }
 
-                                ctx.imageAvailableSemaphore = pSem1.get(0);
-                                ctx.renderFinishedSemaphore = pSem2.get(0);
-                                ctx.inFlightFence = pFence.get(0);
+                                ctx.mImageAvailableSemaphore = pSem1.get(0);
+                                ctx.mRenderFinishedSemaphore = pSem2.get(0);
+                                ctx.mInFlightFence = pFence.get(0);
 
                                 frames[i] = ctx;
                             });
@@ -1396,7 +1561,7 @@ public class Renderer implements NativeResource {
     /// Record command buffer to temporary object
 
     /**
-     * Updates the instance buffer
+     * Updates the instance buffer.
      *
      * <p>This method will update the instance buffer, load any unloaded meshes, batch up the list
      * of objects into instantiatable draw calls, and generate a list of non-instanced draws
@@ -1411,11 +1576,16 @@ public class Renderer implements NativeResource {
 
         mCurrentMeshBuffer.cleanupUnusedMeshes();
 
-        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values())
-            for (DrawCallState state : stateMap.values()) state.startDrawData();
+        for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
+            for (DrawCallState state : stateMap.values()) {
+                state.startDrawData();
+            }
+        }
 
         for (Renderable renderable : renderables) {
-            if (renderable.getMesh() == null) continue;
+            if (renderable.getMesh() == null) {
+                continue;
+            }
 
             ShaderSet shaderSet = renderable.getMaterial().getShaderSet();
             Integer renderOrder = shaderSet.mRenderOrder;
@@ -1466,17 +1636,21 @@ public class Renderer implements NativeResource {
             }
         }
 
-        if (instanceBufferSize > ctx.instanceBufferSize) {
+        if (instanceBufferSize > ctx.mInstanceBufferSize) {
             int cursize = mInstanceBufferSize > 0 ? mInstanceBufferSize : 4096;
-            while (instanceBufferSize > cursize) cursize *= 2;
-            if (ctx.instanceBuffer != null) ctx.instanceBuffer.free();
-            ctx.instanceBuffer = createInstanceBuffer(cursize);
-            ctx.instanceBufferSize = cursize;
+            while (instanceBufferSize > cursize) {
+                cursize *= 2;
+            }
+            if (ctx.mInstanceBuffer != null) {
+                ctx.mInstanceBuffer.free();
+            }
+            ctx.mInstanceBuffer = createInstanceBuffer(cursize);
+            ctx.mInstanceBufferSize = cursize;
             mInstanceBufferSize = cursize;
         }
 
         if (mCurrentMeshBuffer.isDirty()) {
-            mDiscardedMeshBuffers.put(ctx.imageIndex, mCurrentMeshBuffer);
+            mDiscardedMeshBuffers.put(ctx.mImageIndex, mCurrentMeshBuffer);
             mCurrentMeshBuffer = mCurrentMeshBuffer.commitChanges(mGraphicsQueue, mCommandPool);
         }
 
@@ -1484,7 +1658,7 @@ public class Renderer implements NativeResource {
             PointerBuffer pData = stack.pointers(0);
             int res =
                     vkMapMemory(
-                            mDevice, ctx.instanceBuffer.memory, 0, instanceBufferSize, 0, pData);
+                            mDevice, ctx.mInstanceBuffer.mMemory, 0, instanceBufferSize, 0, pData);
 
             if (res == VK_SUCCESS) {
                 ByteBuffer byteBuffer = pData.getByteBuffer(instanceBufferSize);
@@ -1492,16 +1666,16 @@ public class Renderer implements NativeResource {
                 for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
                         state.updateInstanceBuffer(byteBuffer, lights);
-                        state.endDrawData(ctx.imageIndex);
+                        state.endDrawData(ctx.mImageIndex);
                     }
                 }
 
-                vkUnmapMemory(mDevice, ctx.instanceBuffer.memory);
+                vkUnmapMemory(mDevice, ctx.mInstanceBuffer.mMemory);
             } else {
                 for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
                     for (DrawCallState state : stateMap.values()) {
-                        state.slowUpdateInstanceBuffer(pData, ctx.instanceBuffer.memory, lights);
-                        state.endDrawData(ctx.imageIndex);
+                        state.slowUpdateInstanceBuffer(pData, ctx.mInstanceBuffer.mMemory, lights);
+                        state.endDrawData(ctx.mImageIndex);
                     }
                 }
             }
@@ -1522,8 +1696,8 @@ public class Renderer implements NativeResource {
         mInstancedCalls = 0;
         mSlowCalls = 0;
 
-        mVertexConstants.proj = camera.getProj();
-        mVertexConstants.view = camera.getView();
+        mVertexConstants.mProj = camera.getProj();
+        mVertexConstants.mView = camera.getView();
 
         mPreSorted.clear();
         Vector3f camPosition = camera.getGameObject().getTransform().getPosition();
@@ -1570,7 +1744,7 @@ public class Renderer implements NativeResource {
 
             renderPassInfo.pClearValues(clearColor);
 
-            int res = vkBeginCommandBuffer(ctx.commandBuffer, beginInfo);
+            int res = vkBeginCommandBuffer(ctx.mCommandBuffer, beginInfo);
 
             if (res != VK_SUCCESS) {
                 String format =
@@ -1578,16 +1752,16 @@ public class Renderer implements NativeResource {
                 throw new RuntimeException(format);
             }
 
-            renderPassInfo.framebuffer(ctx.framebuffer);
+            renderPassInfo.framebuffer(ctx.mFramebuffer);
 
             // This is the beginning :)
-            vkCmdBeginRenderPass(ctx.commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(ctx.mCommandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             ByteBuffer pConstants = stack.calloc(VertexConstants.SIZEOF);
             mVertexConstants.copyTo(pConstants);
 
             LongBuffer vertexBuffers =
-                    stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.instanceBuffer.buffer);
+                    stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.mInstanceBuffer.mBuffer);
 
             // Render regular objects in an instanced manner
             for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
@@ -1595,17 +1769,20 @@ public class Renderer implements NativeResource {
 
                     Collection<DrawData> drawDataCollection = callState.getDrawData();
 
-                    if (drawDataCollection.isEmpty() || callState.getShaderSet().isPreSort())
+                    if (drawDataCollection.isEmpty() || callState.getShaderSet().isPreSort()) {
                         continue;
+                    }
 
                     VulkanPipeline pipeline = callState.getPipeline();
 
                     vkCmdBindPipeline(
-                            ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
+                            ctx.mCommandBuffer,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline.mPipeline);
 
                     vkCmdPushConstants(
-                            ctx.commandBuffer,
-                            pipeline.layout,
+                            ctx.mCommandBuffer,
+                            pipeline.mLayout,
                             VK_SHADER_STAGE_VERTEX_BIT,
                             0,
                             pConstants);
@@ -1619,9 +1796,9 @@ public class Renderer implements NativeResource {
                                     innerStack.longs(
                                             meshDescriptor.getVertexOffset(),
                                             drawData.getInstanceBufferOffset());
-                            vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindVertexBuffers(ctx.mCommandBuffer, 0, vertexBuffers, offsets);
                             vkCmdBindIndexBuffer(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     mCurrentMeshBuffer.getIndexBuffer(),
                                     meshDescriptor.getIndexOffset(),
                                     VK_INDEX_TYPE_UINT32);
@@ -1632,9 +1809,9 @@ public class Renderer implements NativeResource {
                                 LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
 
                                 vkCmdBindDescriptorSets(
-                                        ctx.commandBuffer,
+                                        ctx.mCommandBuffer,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipeline.layout,
+                                        pipeline.mLayout,
                                         0,
                                         pDescriptorSets,
                                         null);
@@ -1642,7 +1819,7 @@ public class Renderer implements NativeResource {
 
                             mInstancedCalls++;
                             vkCmdDrawIndexed(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     meshDescriptor.getIndexCount(),
                                     drawData.getObjects().size(),
                                     0,
@@ -1664,13 +1841,13 @@ public class Renderer implements NativeResource {
                                     object.getData().getMeshDescriptor();
 
                             vkCmdBindPipeline(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    pipeline.pipeline);
+                                    pipeline.mPipeline);
 
                             vkCmdPushConstants(
-                                    ctx.commandBuffer,
-                                    pipeline.layout,
+                                    ctx.mCommandBuffer,
+                                    pipeline.mLayout,
                                     VK_SHADER_STAGE_VERTEX_BIT,
                                     0,
                                     pConstants);
@@ -1679,9 +1856,9 @@ public class Renderer implements NativeResource {
                                     innerStack.longs(
                                             meshDescriptor.getVertexOffset(),
                                             object.getInstanceBufferOffset());
-                            vkCmdBindVertexBuffers(ctx.commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindVertexBuffers(ctx.mCommandBuffer, 0, vertexBuffers, offsets);
                             vkCmdBindIndexBuffer(
-                                    ctx.commandBuffer,
+                                    ctx.mCommandBuffer,
                                     mCurrentMeshBuffer.getIndexBuffer(),
                                     meshDescriptor.getIndexOffset(),
                                     VK_INDEX_TYPE_UINT32);
@@ -1692,9 +1869,9 @@ public class Renderer implements NativeResource {
                                 LongBuffer pDescriptorSets = innerStack.longs(descriptorSets);
 
                                 vkCmdBindDescriptorSets(
-                                        ctx.commandBuffer,
+                                        ctx.mCommandBuffer,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipeline.layout,
+                                        pipeline.mLayout,
                                         0,
                                         pDescriptorSets,
                                         null);
@@ -1702,16 +1879,16 @@ public class Renderer implements NativeResource {
 
                             mSlowCalls++;
                             vkCmdDrawIndexed(
-                                    ctx.commandBuffer, meshDescriptor.getIndexCount(), 1, 0, 0, 0);
+                                    ctx.mCommandBuffer, meshDescriptor.getIndexCount(), 1, 0, 0, 0);
                         }
                     }
                 }
             }
 
-            vkCmdEndRenderPass(ctx.commandBuffer);
+            vkCmdEndRenderPass(ctx.mCommandBuffer);
 
             // And this is the end
-            res = vkEndCommandBuffer(ctx.commandBuffer);
+            res = vkEndCommandBuffer(ctx.mCommandBuffer);
 
             if (res != VK_SUCCESS) {
                 String format =
@@ -1725,9 +1902,11 @@ public class Renderer implements NativeResource {
 
     /// Cleanup code
 
-    /** Destroys debugMessenger if exists */
+    /** Destroys debugMessenger if exists. */
     private void destroyDebugMessanger() {
-        if (mDebugMessenger == 0) return;
+        if (mDebugMessenger == 0) {
+            return;
+        }
         vkDestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, null);
     }
 }

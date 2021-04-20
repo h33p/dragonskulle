@@ -4,7 +4,8 @@ package org.dragonskulle.ui;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.UIManager.UIBuildableComponent;
@@ -15,16 +16,16 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
- * Class describing a interactive UI slider
+ * Class describing a interactive UI slider.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
-    /** Simple interface describing slider callback events */
+    /** Simple interface describing slider callback event. */
     public interface ISliderValueEvent {
         /**
-         * Method for handling the event
+         * Method for handling the event.
          *
          * @param slider calling slider
          * @param value the new value of the slider
@@ -33,13 +34,13 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     private ISliderValueEvent mOnValueChange;
-    /** Controls the current value of the slider */
+    /** Controls the current value of the slider. */
     @Getter @Setter private float mValue = 0f;
-    /** Controls the minimum value the slider can have */
+    /** Controls the minimum value the slider can have. */
     @Getter @Setter private float mMinValue = 0f;
-    /** Controls the maximum value the slider can have */
+    /** Controls the maximum value the slider can have. */
     @Getter @Setter private float mMaxValue = 1f;
-    /** Controls the rounding of slider (1f will round to whole numbers) */
+    /** Controls the rounding of slider (1f will round to whole numbers). */
     @Getter @Setter private float mRoundStep = 0f;
 
     private TransformUI mKnobTransform;
@@ -47,11 +48,11 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     Vector3f mTmpCursorPos = new Vector3f();
     Vector3f mTmpCursorPos2 = new Vector3f();
 
-    /** Constructor for {@link UISlider} */
+    /** Constructor for {@link UISlider}. */
     public UISlider() {}
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      */
@@ -60,7 +61,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -73,7 +74,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -86,7 +87,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param onValueChange event that gets called when the slider value changes
      */
@@ -95,7 +96,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param onValueChange event that gets called when the slider value changes
@@ -106,7 +107,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -119,7 +120,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     }
 
     /**
-     * Constructor for {@link UISlider}
+     * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
      * @param minValue minimum value of the slider
@@ -174,7 +175,13 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
                         });
     }
 
-    private void buttonPressDown(UIButton button, float __) {
+    /**
+     * Runs on button down.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonPressDown(UIButton button, float ignored) {
         // Extract the starting mouse offset so we "pin" the knob to the mouse
         Matrix4fc invMatrix = mKnobTransform.getInvWorldMatrix();
 
@@ -187,7 +194,13 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
         mPressed = true;
     }
 
-    private void buttonRelease(UIButton button, float __) {
+    /**
+     * Runs on button release.
+     *
+     * @param button the button
+     * @param ignored this parameter is so it fits the specification of UIButton.IButtonEvent
+     */
+    private void buttonRelease(UIButton button, float ignored) {
         mPressed = false;
     }
 
@@ -218,9 +231,13 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
             // Now then, inverse lerp the position into the range
             // if x1 is 0, x2 is 1, value has to be...
             float newValue = 0f;
-            if (x1 <= 0) newValue = 0f;
-            else if (x2 >= 0f) newValue = 1f;
-            else newValue = 1f - x2 / (x2 - x1);
+            if (x1 <= 0) {
+                newValue = 0f;
+            } else if (x2 >= 0f) {
+                newValue = 1f;
+            } else {
+                newValue = 1f - x2 / (x2 - x1);
+            }
 
             newValue = MathUtils.lerp(mMinValue, mMaxValue, newValue);
 
@@ -229,8 +246,9 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
                 newValue = (float) Math.floor(newValue + 0.5f) * mRoundStep;
             }
 
-            if (newValue != mValue && mOnValueChange != null)
+            if (newValue != mValue && mOnValueChange != null) {
                 mOnValueChange.eventHandler(this, newValue);
+            }
 
             mValue = newValue;
         }

@@ -10,12 +10,21 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 
-/** @author Oscar L */
+/**
+ * A counter which is displayed in the menu for how many tokens the player currently has.
+ *
+ * @author Oscar L
+ */
 @Accessors(prefix = "m")
 public class UITokenCounter extends Component implements IOnAwake {
     private Reference<UITextRect> mTextRect;
     private Reference<UIText> mTokens;
 
+    /**
+     * Sets the text in the counter to "Tokens: " + newTokens.
+     *
+     * @param newTokens the new tokens
+     */
     public void setLabelReference(int newTokens) {
         if (Reference.isValid(mTokens)) {
             mTokens.get().setText("Tokens: " + newTokens);
@@ -29,7 +38,7 @@ public class UITokenCounter extends Component implements IOnAwake {
         }
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 

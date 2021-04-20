@@ -1,9 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import lombok.experimental.Accessors;
@@ -20,7 +23,7 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWImage;
 
 /**
- * Once attached to a window, this allows access to:
+ * Once attached to a window, this allows access to do the following.
  *
  * <ul>
  *   <li>The cursor's position in the window scaled to the range [-1, 1], [-1, 1].
@@ -78,6 +81,12 @@ public class Cursor {
         // Set the cursor on a window
     }
 
+    /**
+     * Sets a custom hardware cursor.
+     *
+     * @param window the window to attach to
+     * @throws IOException thrown if the cursor file doesn't exist
+     */
     private void setCustomCursor(long window) throws IOException {
         InputStream stream = new FileInputStream("game/src/main/resources/textures/ui/cursor.png");
         BufferedImage bImage = ImageIO.read(stream);

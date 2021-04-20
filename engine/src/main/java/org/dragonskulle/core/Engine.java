@@ -23,7 +23,7 @@ import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.ui.UIManager;
 
 /**
- * Engine core
+ * Engine core.
  *
  * @author Harry Stoltz
  *     <p>The core of the engine, contains the main loop which executes all game logic. Gives all
@@ -58,7 +58,7 @@ public class Engine {
     private final HashSet<Scene> mActiveScenes = new HashSet<>();
     @Getter private Scene mPresentationScene = null;
 
-    /** Engine's GLFW window state */
+    /** Engine's GLFW window state. */
     @Getter private GLFWState mGLFWState = null;
 
     @Getter private float mCurTime = 0f;
@@ -73,7 +73,7 @@ public class Engine {
     private Engine() {}
 
     /**
-     * Loads a new scene and start the engine
+     * Loads a new scene and start the engine.
      *
      * @param gameName Name of the game
      * @param bindings User input bindings
@@ -91,7 +91,7 @@ public class Engine {
     }
 
     /**
-     * Starts only fixed updates of the engine, allows for custom quit condition
+     * Starts only fixed updates of the engine, allows for custom quit condition.
      *
      * <p>Note that this method will not destroy game object references!
      *
@@ -103,7 +103,7 @@ public class Engine {
     }
 
     /**
-     * Load a scene, choosing whether or not it should be active from the next frame or not
+     * Load a scene, choosing whether or not it should be active from the next frame or not.
      *
      * @param scene Scene to load
      * @param active Whether the scene will be active
@@ -127,7 +127,7 @@ public class Engine {
     }
 
     /**
-     * Activate an already loaded scene, with a given name
+     * Activate an already loaded scene, with a given name.
      *
      * @param name Name of the scene to activate
      */
@@ -150,7 +150,7 @@ public class Engine {
     }
 
     /**
-     * Deactivate an already loaded scene, with a given name
+     * Deactivate an already loaded scene, with a given name.
      *
      * @param name Name of the scene to activate
      */
@@ -204,12 +204,12 @@ public class Engine {
         }
     }
 
-    /** Stops the engine when the current frame has finished */
+    /** Stops the engine when the current frame has finished. */
     public void stop() {
         mIsRunning = false;
     }
 
-    /** Main loop of the engine */
+    /** Main loop of the engine. */
     private void mainLoop(IEngineExitCondition exitCondition, boolean present) {
 
         double prevTime = Time.getPreciseTimeInSeconds();
@@ -288,7 +288,7 @@ public class Engine {
         }
     }
 
-    /** Iterate through a list of components that aren't awake and wake them */
+    /** Iterate through a list of components that aren't awake and wake them. */
     private void wakeComponents() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -303,7 +303,8 @@ public class Engine {
     }
 
     /**
-     * Iterate through a list of components that are enabled but haven't been started and start them
+     * Iterate through a list of components that are enabled but haven't been started and start
+     * them.
      */
     private void startEnabledComponents() {
         for (Scene s : mActiveScenes) {
@@ -332,7 +333,7 @@ public class Engine {
         }
     }
 
-    /** Do all Fixed Updates on components that implement it */
+    /** Do all Fixed Updates on components that implement it. */
     private void fixedUpdate() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -372,7 +373,7 @@ public class Engine {
     }
 
     /**
-     * Do all Late Frame Updates on components that implement it
+     * Do all Late Frame Updates on components that implement it.
      *
      * @param deltaTime Time change since last frame
      */
@@ -384,7 +385,7 @@ public class Engine {
         }
     }
 
-    /** Destroy all GameObjects and Components that need to be destroyed */
+    /** Destroy all GameObjects and Components that need to be destroyed.s */
     private void destroyObjectsAndComponents() {
         // Destroy all game objects that need to be destroyed
         for (GameObject object : mDestroyedObjects) {
@@ -422,8 +423,9 @@ public class Engine {
 
         Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
-        if (mainCamera != null)
+        if (mainCamera != null) {
             mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
+        }
     }
 
     /**
@@ -492,7 +494,7 @@ public class Engine {
         }
     }
 
-    /** Update the component lists in every active scene */
+    /** Update the component lists in every active scene. */
     private void updateScenesComponentsList() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -501,7 +503,7 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
-    /** Cleans up all resources used by the engine on shutdown */
+    /** Cleans up all resources used by the engine on shutdown. */
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
 
@@ -510,7 +512,7 @@ public class Engine {
     }
 
     /**
-     * Add a component to the set of all components to be destroyed
+     * Add a component to the set of all components to be destroyed.
      *
      * @param component Component to be destroyed at the end of the current frame
      */
@@ -519,7 +521,7 @@ public class Engine {
     }
 
     /**
-     * Getter for mInactiveScenes
+     * Getter for mInactiveScenes.
      *
      * @return mInactiveScenes
      */
@@ -528,7 +530,7 @@ public class Engine {
     }
 
     /**
-     * Getter for mActiveScenes
+     * Getter for mActiveScenes.
      *
      * @return mActiveScenes
      */
@@ -537,7 +539,7 @@ public class Engine {
     }
 
     /**
-     * Get the single instance of the engine
+     * Get the single instance of the engine.
      *
      * @return The Engine instance
      */

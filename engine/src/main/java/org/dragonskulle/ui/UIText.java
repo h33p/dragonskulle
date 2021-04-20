@@ -8,7 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.renderer.Font;
@@ -16,7 +17,8 @@ import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.Vertex;
-import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
@@ -26,7 +28,7 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
- * Class describing a renderable UI text object
+ * Class describing a renderable UI text object.
  *
  * @author Aurimas Blažulionis
  */
@@ -58,17 +60,22 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
-        if (mCursorPos < 0) return;
+        if (mCursorPos < 0) {
+            return;
+        }
 
         float delta = Engine.getInstance().getCurTime() - mCursorTime;
 
         float mod = (delta % mInterval) / mInterval;
 
-        if (mod > 0.5f) setMesh(mNormalText);
-        else setMesh(mTextWithCursor);
+        if (mod > 0.5f) {
+            setMesh(mNormalText);
+        } else {
+            setMesh(mTextWithCursor);
+        }
     }
 
-    /** Constructor for UIText */
+    /** Constructor for UIText. */
     public UIText() {
         this(UIManager.getInstance().getAppearance());
     }
@@ -83,7 +90,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      * @param font font to use for text
@@ -94,7 +101,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      * @param font font to use for text
@@ -106,7 +113,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGB float colour value
      * @param font font to use for text
@@ -118,7 +125,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      */
@@ -127,7 +134,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGB float colour value
      */
@@ -136,7 +143,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGBA float colour value
      * @param text text to render
@@ -147,7 +154,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
     }
 
     /**
-     * Constructor for UIText
+     * Constructor for UIText.
      *
      * @param colour RGB float colour value
      * @param text text to render
@@ -165,7 +172,9 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
      * @param text new text value
      */
     public void setText(String text) {
-        if (mText.equals(text) && getMesh() != null) return;
+        if (mText.equals(text) && getMesh() != null) {
+            return;
+        }
         mText = text;
 
         buildMesh();
@@ -173,7 +182,9 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
         setMesh(mCursorPos < 0 ? mNormalText : mTextWithCursor);
 
         TransformUI transform = getGameObject().getTransform(TransformUI.class);
-        if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
+        if (transform != null) {
+            transform.setTargetAspectRatio(mTargetAspectRatio);
+        }
     }
 
     /**
@@ -198,19 +209,21 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
         setMesh(mCursorPos < 0 ? mNormalText : mTextWithCursor);
 
         TransformUI transform = getGameObject().getTransform(TransformUI.class);
-        if (transform != null) transform.setTargetAspectRatio(mTargetAspectRatio);
+        if (transform != null) {
+            transform.setTargetAspectRatio(mTargetAspectRatio);
+        }
     }
 
-    /** Builds a new mesh */
+    /** Builds a new mesh. */
     private void buildMesh() {
         Font font = mFont.get();
 
         ArrayList<Vertex> vertices = new ArrayList<>(mText.length() * 4);
         ArrayList<Integer> indices = new ArrayList<>(mText.length() * 6);
 
-        /** All startBox positions go here */
+        /* All startBox positions go here. */
         ArrayList<Vector2f> preCharPositions = new ArrayList<>(mText.length());
-        /** All endBox positions go here */
+        /* All endBox positions go here. */
         ArrayList<Vector2f> postCharPositions = new ArrayList<>(mText.length());
         final int[] pos = {0, 0};
         final float scale = 0.003f;

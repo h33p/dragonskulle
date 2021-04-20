@@ -13,7 +13,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
-import org.dragonskulle.renderer.materials.*;
 import org.joml.Vector4f;
 
 /**
@@ -25,7 +24,7 @@ import org.joml.Vector4f;
 @Log
 public class MapEffects extends Component implements IOnStart, ILateFrameUpdate {
 
-    /** Describes tile highlight option */
+    /** Describes tile highlight option. */
     public static enum StandardHighlightType {
         VALID(0),
         INVALID(1),
@@ -82,12 +81,12 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         }
     }
 
-    /** A simple interface that gets called to overlay */
+    /** A simple interface that gets called to overlay. */
     public static interface IHighlightOverlay {
         public void onOverlay(MapEffects effects);
     }
 
-    /** A simple tile highlight selection interface */
+    /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
         public HighlightSelection handleTile(HexagonTile tile);
     }
@@ -106,9 +105,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
     private Reference<HexagonMap> mMapReference = null;
 
-    /** Turn on to enable default highlighting (teritory bounds) */
+    /** Turn on to enable default highlighting (teritory bounds). */
     @Getter @Setter private boolean mDefaultHighlight = true;
-    /** This interface gets called to allow overlaying any selections on top */
+    /** This interface gets called to allow overlaying any selections on top. */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
 
     @Getter @Setter private Reference<Player> mActivePlayer;
@@ -118,7 +117,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     /**
-     * Select a single tile, overriding previous selection
+     * Select a single tile, overriding previous selection.
      *
      * @param tile tile to select
      * @param selection type of highlight to use
@@ -130,9 +129,13 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     private void highlightTile(HexagonTile tile, HighlightSelection selection, boolean removeOld) {
 
-        if (tile == null || selection == null) return;
+        if (tile == null || selection == null) {
+            return;
+        }
 
-        if (removeOld) mHighlightedTiles.remove(tile);
+        if (removeOld) {
+            mHighlightedTiles.remove(tile);
+        }
         if (selection.mClear) {
             Reference<HighlightControls> controls = tile.getHighlightControls();
 
@@ -141,7 +144,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             }
             return;
         }
-        if (!ensureMapReference()) return;
+        if (!ensureMapReference()) {
+            return;
+        }
 
         Reference<HighlightControls> controls = tile.getHighlightControls();
 
@@ -153,7 +158,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     /**
-     * Select multiple tiles by selector handler
+     * Select multiple tiles by selector handler.
      *
      * <p>This will iterate through all tiles on the map, and call the selector handler to see if
      * any selection should take place
@@ -178,18 +183,19 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     /**
-     * Deselect all tiles
+     * Deselect all tiles.
      *
      * <p>This will clear any selection that currently takes place
      */
     public void unhighlightAllTiles() {
-        for (HexagonTile tile : mHighlightedTiles)
+        for (HexagonTile tile : mHighlightedTiles) {
             highlightTile(tile, HighlightSelection.CLEARED, false);
+        }
         mHighlightedTiles.clear();
     }
 
     /**
-     * Check whether tile is selected
+     * Check whether tile is selected.
      *
      * @param tile tile to check
      * @return {@code true} if the tile is currently selected, {@code false} otherwise.
@@ -199,7 +205,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     /**
-     * Highlight all tiles using default colours
+     * Highlight all tiles using default colours.
      *
      * <p>This option essentially draws map bounds of different player teritories
      */
@@ -238,7 +244,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public void lateFrameUpdate(float deltaTime) {
         if (mDefaultHighlight) {
             defaultHighlight();
-            if (mHighlightOverlay != null) mHighlightOverlay.onOverlay(this);
+            if (mHighlightOverlay != null) {
+                mHighlightOverlay.onOverlay(this);
+            }
             mDefaultHighlight = true;
         } else if (mHighlightOverlay != null) {
             mHighlightOverlay.onOverlay(this);
@@ -258,7 +266,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) return true;
+        if (mMapReference != null) {
+            return true;
+        }
         mMapReference =
                 Scene.getActiveScene()
                         .getSingleton(HexagonMap.class)

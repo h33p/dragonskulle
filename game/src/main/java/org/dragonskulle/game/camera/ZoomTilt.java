@@ -12,7 +12,7 @@ import org.dragonskulle.game.camera.ScrollTranslate.IZoomNotify;
 import org.dragonskulle.utils.MathUtils;
 
 /**
- * Allows to tilt the camera based on current zoom level
+ * Allows to tilt the camera based on current zoom level.
  *
  * @author Aurimas Blažulionis
  */

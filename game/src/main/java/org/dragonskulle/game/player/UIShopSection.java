@@ -27,8 +27,14 @@ public class UIShopSection extends Component implements IOnStart {
     private Reference<GameObject> mUpgradePanel;
 
     @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
-    private Reference<UIText> titleRef;
+    private Reference<UIText> mTitleRef;
 
+    /**
+     * Constructor.
+     *
+     * @param mGetPlayer    the callback to get the player from HumanPlayer
+     * @param mGetHexChosen the callback to get the hexagonTile Selected
+     */
     public UIShopSection(
             UIMenuLeftDrawer.IGetPlayer mGetPlayer, UIMenuLeftDrawer.IGetHexChosen mGetHexChosen) {
         this.mGetPlayer = mGetPlayer;
@@ -42,7 +48,7 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -77,20 +83,31 @@ public class UIShopSection extends Component implements IOnStart {
                     return;
             }
 
-            if (Reference.isValid(titleRef)) {
-                titleRef.get().setText(newText);
+            if (Reference.isValid(mTitleRef)) {
+                mTitleRef.get().setText(newText);
             }
             setLastState(state);
             swapPanels(newPanel);
         }
     }
 
+    /**
+     * Show the component's GO.
+     *
+     * @param component  the component
+     * @param shouldShow true if should show
+     */
     private void show(Reference<GameObject> component, boolean shouldShow) {
         if (Reference.isValid(component)) {
             component.get().setEnabled(shouldShow);
         }
     }
 
+    /**
+     * Swaps the visible panels.
+     *
+     * @param newPanel the new panel
+     */
     private void swapPanels(Reference<GameObject> newPanel) {
         log.info("swapping panels");
         // if there is a screen being shown
@@ -154,7 +171,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 (self) -> {
                                     UIText mWindowText = new UIText("Shop is Closed");
                                     self.addComponent(mWindowText);
-                                    titleRef = mWindowText.getReference(UIText.class);
+                                    mTitleRef = mWindowText.getReference(UIText.class);
                                 });
 
         TransformUI textTransform = textObj.get().getTransform(TransformUI.class);

@@ -7,14 +7,14 @@ import org.lwjgl.openal.ALC11;
 import org.lwjgl.openal.ALUtil;
 
 /**
- * Utility class for enumerating OpenAL devices
+ * Utility class for enumerating OpenAL devices.
  *
  * @author Harry Stoltz
  */
 public class AudioDevices {
 
     /**
-     * Get the name of the default device
+     * Get the name of the default device.
      *
      * @return Name of the default device
      */

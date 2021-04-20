@@ -8,7 +8,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -17,16 +20,24 @@ import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIFlatImage;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 
-/** @author Oscar L */
+/**
+ * The UI Component to display the stats and upgradeable options for the selected building.
+ *
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
-public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpdate, IFixedUpdate {
+public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpdate {
     private final UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     @Getter private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private Reference<GameObject> mBuildingUpgradeComponent;
-    private Reference<GameObject> mStatChildren;
     @Setter private Building mLastBuilding;
     private String delimiter = " -- ";
     private final HashMap<StatType, Reference<UIText>> mTextValueReferences = new HashMap<>();
@@ -34,48 +45,21 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
     private UITextRect mDefenceLevelText;
     private UITextRect mTokenGenerationText;
 
+    /**
+     * Constructor.
+     *
+     * @param mGetHexChosen the callback to get the hexagonTile selected
+     * @param mGetPlayer    the callback to get the player from HumanPlayer
+     */
     public UIBuildingUpgrade(
             UIMenuLeftDrawer.IGetHexChosen mGetHexChosen, UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
         this.mGetHexChosen = mGetHexChosen;
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
-
-    /**
-     * Frame Update is called every single render frame, before any fixed updates. There can be
-     * multiple, or none, fixed updates between calls to frameUpdate.
-     *
-     * @param deltaTime Approximate time since last call to frameUpdate
-     */
-    @Override
-    public void frameUpdate(float deltaTime) {
-        //        final HexagonTile hexagonTile = mGetHexChosen.get();
-        //        if (hexagonTile != null) {
-        //            final Building building = hexagonTile.getBuilding();
-        //            if (building != null
-        //                    && (!building.equals(mLastBuilding) ||
-        // building.statsRequireVisualUpdate())) {
-        //                building.setStatsRequireVisualUpdate(false);
-        //                mLastBuilding = building;
-        //                if (Reference.isValid(mStatChildren)) {
-        //                    mStatChildren.get().destroy();
-        //                }
-        //                buildStatUpgradeChildren(building);
-        //            }
-        //        }
-    }
-
-    private void buildStatUpgradeChildren(Building building) {
-
-        String[] stats =
-                building.getUpgradeableStats().stream()
-                        .filter(Objects::nonNull)
-                        .map(s -> s.getType().getNiceName() + delimiter + s.getValue())
-                        .toArray(String[]::new); // need to link this to upgrade menu
-    }
 
     /**
      * Called when a component is first added to a scene, after onAwake and before the first
@@ -83,7 +67,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
      */
     @Override
     public void onStart() {
-        // better way to do this dynamiucally
+        // better way to do this dynamically
         mAttackLevelText = new UITextRect("0");
         mDefenceLevelText = new UITextRect("0");
         mTokenGenerationText = new UITextRect("0");
@@ -151,6 +135,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFrameUpda
                                 });
     }
 
+    /**
+     * Invoke a purchase for the selected stat.
+     *
+     * @param type the type
+     */
     private void purchaseUpgrade(StatType type) {
         Reference<Player> player = mGetPlayer.getPlayer();
         if (Reference.isValid(player)) {

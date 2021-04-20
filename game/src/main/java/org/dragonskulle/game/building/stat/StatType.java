@@ -21,41 +21,15 @@ import org.dragonskulle.game.building.stat.SyncStat.IValueCalculator;
 @Log
 @Accessors(prefix = "m")
 public enum StatType {
-    ATTACK(
-            // The attack value is identical to the current level number.
-            (level) -> {
-                return level;
-            }),
+    ATTACK((level) -> level), // The attack value is identical to the current level number.
+    ATTACK_DISTANCE(3), // Regardless of the level, the attack distance will always be the same.
+    BUILD_DISTANCE(3), // Regardless of the level, the build distance will always be the same.
+    CLAIM_DISTANCE(1), // Regardless of the level, the claim distance will always be the same.
+    DEFENCE((level) -> level), // The defence value is identical to the current level number.
+    TOKEN_GENERATION((level) -> Math.max(level - 1, 0)), // The number of tokens to generate is identical to the current level number minus
+    VIEW_DISTANCE(3); // Regardless of the level, the view distance will always be the same.
 
-    DEFENCE(
-            // The defence value is identical to the current level number.
-            (level) -> {
-                return level;
-            }),
-
-    TOKEN_GENERATION(
-            // The number of tokens to generate is identical to the current level number minus one.
-            (level) -> {
-                int tokens = level - 1;
-                if (tokens < 0) {
-                    return 0;
-                }
-                return tokens;
-            }),
-
-    // Regardless of the level, the view distance will always be the same.
-    VIEW_DISTANCE(3),
-
-    // Regardless of the level, the attack distance will always be the same.
-    ATTACK_DISTANCE(3),
-
-    // Regardless of the level, the build distance will always be the same.
-    BUILD_DISTANCE(3),
-
-    // Regardless of the level, the claim distance will always be the same.
-    CLAIM_DISTANCE(1);
-
-    /** Set the IDs of the Stats. */
+    /* Set the IDs of the Stats. */
     static {
         int current = 0;
         for (StatType statType : values()) {
@@ -64,17 +38,27 @@ public enum StatType {
         }
     }
 
-    /** The nice name for the enum value. */
+    /**
+     * The nice name for the enum value.
+     */
     private String mNiceName;
 
-    /** The index of the specific StatType in {@link #values()}. */
+    /**
+     * The index of the specific StatType in {@link #values()}.
+     */
     private int mID;
 
-    /** The method used to turn a level ({@code int}) into a value ({@code int}). */
-    @Getter private IValueCalculator mValueCalculator;
+    /**
+     * The method used to turn a level ({@code int}) into a value ({@code int}).
+     */
+    @Getter
+    private final IValueCalculator mValueCalculator;
 
-    /** Whether the stat always returns a fixed value. */
-    @Getter private final boolean mFixedValue;
+    /**
+     * Whether the stat always returns a fixed value.
+     */
+    @Getter
+    private final boolean mFixedValue;
 
     /**
      * Create a new type of stat.

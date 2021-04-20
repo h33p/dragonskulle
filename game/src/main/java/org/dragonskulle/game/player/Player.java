@@ -43,7 +43,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * This is the class which contains all the needed data to play a game
+ * This is the class which contains all the needed data to play a game.
  *
  * @author DragonSkulle
  */
@@ -54,7 +54,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
-    /** Link to the current capital */
+    /** Link to the current capital. */
     private Reference<Building> mCapital = null;
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
@@ -70,23 +70,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
-    /** Whether they own the building */
+    /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
-    /** This Is how often a player can attack */
-    private final float ATTACK_COOLDOWN = 2f;
-    /** When the last time a player attacked */
+    /** This Is how often a player can attack. */
+    private static final float ATTACK_COOLDOWN = 2f;
+    /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
-    private final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 5;
     /** How frequently the tokens should be added. */
-    private final float TOKEN_TIME = 1f;
+    private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private final int MAX_PLAYERS = 6;
+    private static final int MAX_PLAYERS = 6;
 
     /** Used by the client to request that a building be placed by the server. */
     @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
@@ -97,7 +97,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Used by the client to request that a building be sold. */
     @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
-    /** The base constructor for player */
+    /** The base constructor for player. */
     public Player() {}
 
     @Override
@@ -124,21 +124,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
-        if (getNetworkObject() == null) {
-            log.severe("Player has no NetworkObject.");
-        }
+        if (getNetworkObject() == null) log.severe("Player has no NetworkObject.");
 
-        if (getNetworkManager() == null) {
-            log.severe("Player has no NetworkManager.");
-        }
+        if (getNetworkManager() == null) log.severe("Player has no NetworkManager.");
 
-        if (assignMap() == false) {
-            log.severe("Player has no HexagonMap.");
-        }
+        if (!assignMap()) log.severe("Player has no HexagonMap.");
 
-        if (getNetworkObject().isServer()) {
-            distributeCoordinates();
-        }
+        if (getNetworkObject().isServer()) distributeCoordinates();
 
         Vector3fc col = mPlayerColour.get();
         mPlayerHighlightSelection =
@@ -150,17 +142,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (!hasLost()) {
-            // Update the token count.
-            updateTokens(deltaTime);
-        }
+        // Update the token count.
+        if (!hasLost()) updateTokens(deltaTime);
     }
 
     @Override
     protected void onDestroy() {}
 
     /**
-     * This will randomly place a capital using an angle so each person is within their own slice
+     * This will randomly place a capital using an angle so each person is within their own slice.
      */
     private void distributeCoordinates() {
         boolean completed = false;
@@ -172,9 +162,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             // The number of players online
             int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
-            if (playersOnlineNow < 0) {
-                playersOnlineNow += MAX_PLAYERS; // handle AI Players
-            }
+            if (playersOnlineNow < 0) playersOnlineNow += MAX_PLAYERS; // handle AI Players
 
             // This gives us the angle to find our coordinates.  Stored in degrees
             float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
@@ -213,8 +201,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                 + (int) axial.x
                                 + " Y = "
                                 + (int) axial.y);
-
-            } else if (!completed) {
+            } else if (!completed) { // TODO this wont run
                 buildingToBecomeCapital.setCapital(true);
                 completed = true;
             }
@@ -291,9 +278,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
-        if (tile.getTileType() != TileType.LAND) {
-            return null;
-        }
+        if (tile.getTileType() != TileType.LAND) return null;
 
         int playerId = getNetworkObject().getOwnerId();
         int template = getNetworkManager().findTemplateByName("building");
@@ -358,7 +343,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Get the {@link Building}, that is on the specified {@link HexagonTile}, from {@link
-     * #mOwnedBuildings}
+     * #mOwnedBuildings}.
      *
      * @param tile The tile to get the building from.
      * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
@@ -419,8 +404,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (map == null) return false;
 
         mMap = map.getReference(HexagonMap.class);
-        if (!Reference.isValid(mMap)) return false;
-        return true;
+        return Reference.isValid(mMap);
     }
 
     /**
@@ -471,7 +455,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to build was successful.
      */
     private boolean buildAttempt(HexagonTile tile) {
-        if (buildCheck(tile) == false) {
+        if (!buildCheck(tile)) {
             log.info("Unable to pass build check.");
             return false;
         }
@@ -552,7 +536,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
-        if (attackCheck(attacker, defender) == false) {
+        if (!attackCheck(attacker, defender)) {
             log.info("Unable to pass attack check.");
             return false;
         }
@@ -562,11 +546,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // ATTACK!!! (Sorry...)
         mTokens.subtract(defender.getAttackCost());
         boolean won;
-        if (defender.getOwner().hasLost()) {
-            won = true;
-        } else {
-            won = attacker.attack(defender);
-        }
+        if (defender.getOwner().hasLost()) won = true;
+        else won = attacker.attack(defender);
         log.info("Attack is: " + won);
 
         // If you've won attack
@@ -578,9 +559,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 // Update stats
                 ArrayList<SyncStat> stats = defender.getStats();
-                for (SyncStat stat : stats) {
-                    stat.set(SyncStat.LEVEL_MIN);
-                }
+                for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
 
                 defender.getOwner().setOwnsCapital(false);
                 defender.afterStatChange();
@@ -694,7 +673,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to sell the building was successful.
      */
     private boolean sellAttempt(Building building) {
-        if (sellCheck(building) == false) {
+        if (!sellCheck(building)) {
             log.info("Unable to pass sell check.");
             return false;
         }
@@ -846,7 +825,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This will return whether the player has lost their capital and thus the game
+     * This will return whether the player has lost their capital and thus the game.
      *
      * @return {@code true} if they have they have lost there capital and thus the game {@code
      *     false} if not
@@ -870,9 +849,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public Building getCapital() {
         if (!mOwnsCapital.get()) return null;
 
-        if (Reference.isValid(mCapital)) {
-            return mCapital.get();
-        }
+        if (Reference.isValid(mCapital)) return mCapital.get();
 
         mCapital =
                 mOwnedBuildings.values().stream()

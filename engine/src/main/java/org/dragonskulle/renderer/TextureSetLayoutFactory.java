@@ -2,14 +2,20 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkCreateDescriptorSetLayout;
+import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorSetLayout;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
+import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
 import org.lwjgl.vulkan.VkDevice;
 
 /**
@@ -39,7 +45,9 @@ class TextureSetLayoutFactory implements NativeResource {
      *     layout
      */
     public Long getLayout(int textureCount) {
-        if (textureCount < 0) return null;
+        if (textureCount < 0) {
+            return null;
+        }
 
         Long layout = mLayouts.get(textureCount);
 
@@ -90,7 +98,7 @@ class TextureSetLayoutFactory implements NativeResource {
         }
     }
 
-    /** Free the underlying resources */
+    /** Free the underlying resources. */
     @Override
     public void free() {
         for (long layout : mLayouts.values()) {

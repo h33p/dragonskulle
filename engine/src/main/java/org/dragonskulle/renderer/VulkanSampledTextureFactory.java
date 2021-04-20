@@ -1,15 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.vkDestroyImageView;
 
 import java.util.HashMap;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkQueue;
 
 /**
- * Class abstracting a single render instance
+ * Class abstracting a single render instance.
  *
  * <p>This stores all properties that can differ between different object instances
  *

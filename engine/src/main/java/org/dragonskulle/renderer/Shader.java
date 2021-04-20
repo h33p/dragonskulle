@@ -2,7 +2,10 @@
 package org.dragonskulle.renderer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkCreateShaderModule;
+import static org.lwjgl.vulkan.VK10.vkDestroyShaderModule;
 
 import java.nio.LongBuffer;
 import lombok.Getter;
@@ -11,20 +14,21 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Resource;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 
 /**
- * Allows to load shaders for GPU
+ * Allows to load shaders for GPU.
  *
  * @author Aurimas Blažulionis
  *     <p>TODO: Turn this into a factory?
  */
 @Log
 public class Shader implements NativeResource {
-    /** Vulkan device that the shader is loaded on */
+    /** Vulkan device that the shader is loaded on. */
     private VkDevice mDevice;
 
-    /** Handle to the loaded shader module */
+    /** Handle to the loaded shader module. */
     @Accessors(prefix = "m")
     @Getter
     private long mModule;

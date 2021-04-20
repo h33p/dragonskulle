@@ -9,7 +9,7 @@ package org.dragonskulle.input;
  */
 public interface IButtonEvent {
     /**
-     * Handle the event
+     * Handle the event.
      *
      * @param button the GLTF button code
      */

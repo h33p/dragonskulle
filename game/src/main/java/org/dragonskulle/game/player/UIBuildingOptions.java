@@ -16,7 +16,11 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIDropDown;
 
-/** @author Oscar L */
+/**
+ * The UI Component to display the pre-defined placeable buildings.
+ *
+ * @author Oscar L
+ */
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFrameUpdate {
@@ -26,11 +30,16 @@ public class UIBuildingOptions extends Component implements IOnStart, IFrameUpda
     @Setter private Reference<GameObject> mPastOptionsRef;
     private Reference<GameObject> mPossibleBuildingComponent;
 
+    /**
+     * Constructor.
+     *
+     * @param mGetPlayer the callback to get the player from HumanPlayer.
+     */
     public UIBuildingOptions(UIMenuLeftDrawer.IGetPlayer mGetPlayer) {
         this.mGetPlayer = mGetPlayer;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 

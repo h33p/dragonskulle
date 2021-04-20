@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.*;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.Transform;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
@@ -21,7 +23,9 @@ import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.Vertex;
-import org.dragonskulle.renderer.components.*;
+import org.dragonskulle.renderer.components.Camera;
+import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.IRefCountedMaterial;
 import org.dragonskulle.renderer.materials.PBRMaterial;
 import org.joml.Quaternionf;
@@ -31,7 +35,9 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
-import org.json.simple.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.lwjgl.system.NativeResource;
 
@@ -51,7 +57,7 @@ import org.lwjgl.system.NativeResource;
 @Log
 public class GLTF implements NativeResource {
 
-    /** Describes glTF buffer accessor */
+    /** Describes glTF buffer accessor. */
     private static class GLTFAccessor<T> {
         ByteBuffer mBuffer;
         int mPosition;
@@ -70,7 +76,9 @@ public class GLTF implements NativeResource {
         }
 
         public T get(int index) {
-            if (index >= mCount || index < 0) return null;
+            if (index >= mCount || index < 0) {
+                return null;
+            }
             return mGetObj.get(mBuffer, mPosition, index);
         }
 
@@ -268,7 +276,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Load a GLTF resource
+     * Load a GLTF resource.
      *
      * @param name name of the glTF file. gltf subdirectory will be added, alongside the .gltf
      *     extension.
@@ -279,7 +287,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Parses a floating point variable from JSON object
+     * Parses a floating point variable from JSON object.
      *
      * @param obj JSON to parse from
      * @param key JSON key to read
@@ -288,12 +296,14 @@ public class GLTF implements NativeResource {
      */
     private static boolean parseBool(JSONObject obj, String key, boolean defaultValue) {
         Object val = obj.get(key);
-        if (val != null) return Boolean.parseBoolean(val.toString());
+        if (val != null) {
+            return Boolean.parseBoolean(val.toString());
+        }
         return defaultValue;
     }
 
     /**
-     * Parses a floating point variable from JSON object
+     * Parses a floating point variable from JSON object.
      *
      * @param obj JSON to parse from
      * @param key JSON key to read
@@ -302,23 +312,27 @@ public class GLTF implements NativeResource {
      */
     private static float parseFloat(JSONObject obj, String key, float defaultValue) {
         Object val = obj.get(key);
-        if (val != null) return Float.parseFloat(val.toString());
+        if (val != null) {
+            return Float.parseFloat(val.toString());
+        }
         return defaultValue;
     }
 
     /**
-     * Parses a floating point variable from JSON object
+     * Parses a floating point variable from JSON object.
      *
-     * @param obj object to parse from
+     * @param val object to parse from
      * @return parsed float value or {@code null} if failed parsing
      */
     private static Float parseFloat(Object val) {
-        if (val != null) return Float.parseFloat(val.toString());
+        if (val != null) {
+            return Float.parseFloat(val.toString());
+        }
         return null;
     }
 
     /**
-     * Parses a integer variable from JSON object
+     * Parses a integer variable from JSON object.
      *
      * @param obj JSON to parse from
      * @param key JSON key to read
@@ -327,40 +341,51 @@ public class GLTF implements NativeResource {
      */
     private static int parseInt(JSONObject obj, String key, int defaultValue) {
         Object val = obj.get(key);
-        if (val != null) return Integer.parseInt(val.toString());
+        if (val != null) {
+            return Integer.parseInt(val.toString());
+        }
         return defaultValue;
     }
 
     /**
-     * Parses a integer point variable from JSON object
+     * Parses a integer point variable from JSON object.
      *
      * @param obj object to parse from
      * @return parsed int value or {@code null} if failed parsing
      */
     private static Integer parseInt(JSONObject obj, String key) {
         Object val = obj.get(key);
-        if (val != null) return Integer.parseInt(val.toString());
+        if (val != null) {
+            return Integer.parseInt(val.toString());
+        }
         return null;
     }
 
     /**
-     * Parses a integer variable from a scalar
+     * Parses a integer variable from a scalar.
      *
      * @param obj object to parse from
      * @return parsed int value, or {@code 0} if failed parsing
      */
     private static int parseIntFromScalar(Object obj) {
-        if (obj instanceof Integer) return (Integer) obj;
-        else if (obj instanceof Long) return (int) (long) (Long) obj;
-        else if (obj instanceof Short) return (int) (short) (Short) obj;
-        else if (obj instanceof Byte) return (int) (byte) (Byte) obj;
-        else if (obj instanceof Float) return (int) (float) (Float) obj;
-        else if (obj instanceof Double) return (int) (double) (Double) obj;
+        if (obj instanceof Integer) {
+            return (Integer) obj;
+        } else if (obj instanceof Long) {
+            return (int) (long) (Long) obj;
+        } else if (obj instanceof Short) {
+            return (int) (short) (Short) obj;
+        } else if (obj instanceof Byte) {
+            return (int) (byte) (Byte) obj;
+        } else if (obj instanceof Float) {
+            return (int) (float) (Float) obj;
+        } else if (obj instanceof Double) {
+            return (int) (double) (Double) obj;
+        }
         return 0;
     }
 
     /**
-     * Constructor for {@link GLTF}
+     * Constructor for {@link GLTF}.
      *
      * @param data JSON string data to parse
      * @throws ParseException when parsing JSON fails
@@ -374,7 +399,9 @@ public class GLTF implements NativeResource {
         if (images != null) {
             for (Object image : images) {
                 String uri = (String) ((JSONObject) image).get("uri");
-                if (uri.startsWith("../textures/")) uri = uri.replaceFirst("../textures/", "");
+                if (uri.startsWith("../textures/")) {
+                    uri = uri.replaceFirst("../textures/", "");
+                }
                 loadedImages.add(Texture.getResource(uri));
             }
         }
@@ -427,24 +454,29 @@ public class GLTF implements NativeResource {
                 JSONObject rough = (JSONObject) mat.get("pbrMetallicRoughness");
                 if (rough != null) {
                     JSONArray baseFactor = (JSONArray) rough.get("baseColorFactor");
-                    if (baseFactor != null)
+                    if (baseFactor != null) {
                         baseColor.set(
                                 parseFloat(baseFactor.get(0)),
                                 parseFloat(baseFactor.get(1)),
                                 parseFloat(baseFactor.get(2)),
                                 parseFloat(baseFactor.get(3)));
+                    }
                     JSONObject baseTex = (JSONObject) rough.get("baseColorTexture");
 
                     if (baseTex != null) {
                         Integer texIdx = parseInt(baseTex, "index");
-                        if (texIdx != null) baseSampled = texs.get(texIdx);
+                        if (texIdx != null) {
+                            baseSampled = texs.get(texIdx);
+                        }
                     }
 
                     JSONObject metalTex = (JSONObject) rough.get("metallicRoughnessTexture");
 
                     if (metalTex != null) {
                         Integer texIdx = parseInt(metalTex, "index");
-                        if (texIdx != null) metallicSampled = texs.get(texIdx);
+                        if (texIdx != null) {
+                            metallicSampled = texs.get(texIdx);
+                        }
                     }
 
                     metallic = parseFloat(rough, "metallicFactor", 1f);
@@ -456,7 +488,9 @@ public class GLTF implements NativeResource {
                 SampledTexture normalSampled = null;
                 if (normalTex != null) {
                     Integer texIdx = parseInt(normalTex, "index");
-                    if (texIdx != null) normalSampled = texs.get(texIdx);
+                    if (texIdx != null) {
+                        normalSampled = texs.get(texIdx);
+                    }
                     normal = parseFloat(normalTex, "scale", 1.f);
                     // TODO: TEXCOORD
                 }
@@ -473,8 +507,12 @@ public class GLTF implements NativeResource {
                     }
                 }
 
-                if (baseSampled != null) pbrMat.setAlbedoMap(baseSampled);
-                if (normalSampled != null) pbrMat.setNormalMap(normalSampled);
+                if (baseSampled != null) {
+                    pbrMat.setAlbedoMap(baseSampled);
+                }
+                if (normalSampled != null) {
+                    pbrMat.setNormalMap(normalSampled);
+                }
                 if (metallicSampled != null) {
                     pbrMat.setMetalnessRoughnessMap(metallicSampled);
                 }
@@ -607,10 +645,10 @@ public class GLTF implements NativeResource {
                             float fov = parseFloat(persp, "yfov", 45f);
                             float zfar = parseFloat(persp, "zfar", 100f);
                             float znear = parseFloat(persp, "znear", 0.01f);
-                            camera.projection = Camera.Projection.PERSPECTIVE;
-                            camera.fov = fov;
-                            camera.farPlane = zfar;
-                            camera.nearPlane = znear;
+                            camera.mProjection = Camera.Projection.PERSPECTIVE;
+                            camera.mFov = fov;
+                            camera.mFarPlane = zfar;
+                            camera.mNearPlane = znear;
                         }
                         break;
                     case "orthographic":
@@ -619,10 +657,10 @@ public class GLTF implements NativeResource {
                             float size = parseFloat(persp, "ymag", 10f);
                             float zfar = parseFloat(persp, "zfar", 100f);
                             float znear = parseFloat(persp, "znear", 0.01f);
-                            camera.projection = Camera.Projection.ORTHOGRAPHIC;
-                            camera.orthographicSize = size;
-                            camera.farPlane = zfar;
-                            camera.nearPlane = znear;
+                            camera.mProjection = Camera.Projection.ORTHOGRAPHIC;
+                            camera.mOrthographicSize = size;
+                            camera.mFarPlane = zfar;
+                            camera.mNearPlane = znear;
                         }
                         break;
                     default:
@@ -708,7 +746,9 @@ public class GLTF implements NativeResource {
                             parseFloat(translation.get(0)),
                             parseFloat(translation.get(1)),
                             parseFloat(translation.get(2)));
-        } else translationVec = new Vector3f();
+        } else {
+            translationVec = new Vector3f();
+        }
 
         JSONArray rotation = (JSONArray) node.get("rotation");
         Quaternionf rotationQuat;
@@ -720,7 +760,9 @@ public class GLTF implements NativeResource {
                             parseFloat(rotation.get(1)),
                             parseFloat(rotation.get(2)),
                             parseFloat(rotation.get(3)));
-        } else rotationQuat = new Quaternionf();
+        } else {
+            rotationQuat = new Quaternionf();
+        }
 
         JSONArray scale = (JSONArray) node.get("scale");
         Vector3f scaleVec;
@@ -731,7 +773,9 @@ public class GLTF implements NativeResource {
                             parseFloat(scale.get(0)),
                             parseFloat(scale.get(1)),
                             parseFloat(scale.get(2)));
-        } else scaleVec = new Vector3f(1f);
+        } else {
+            scaleVec = new Vector3f(1f);
+        }
 
         JSONObject extensions = (JSONObject) node.get("extensions");
         JSONObject gameObj;
@@ -770,7 +814,9 @@ public class GLTF implements NativeResource {
                             }
 
                             Integer camera = parseInt(node, "camera");
-                            if (camera != null) handle.addComponent(mCameras.get(camera));
+                            if (camera != null) {
+                                handle.addComponent(mCameras.get(camera));
+                            }
 
                             if (lights != null) {
                                 Integer lidx = parseInt(lights, "light");
@@ -800,7 +846,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Parse the object's transformation class and create it
+     * Parse the object's transformation class and create it.
      *
      * @param name Transform class name
      * @param position 3D position
@@ -815,7 +861,7 @@ public class GLTF implements NativeResource {
         if (name != null) {
             try {
                 type = Class.forName(name);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException ignored) {
             }
         }
 
@@ -834,7 +880,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Parse component from JSON and add it on the game object
+     * Parse component from JSON and add it on the game object.
      *
      * @param gameObject game object to add the component on
      * @param component JSON data describing the component
@@ -842,15 +888,18 @@ public class GLTF implements NativeResource {
     private void parseComponent(GameObject gameObject, JSONObject component) {
         String className = (String) component.get("class_name");
 
-        if (className == null) return;
+        if (className == null) {
+            return;
+        }
 
         try {
             Class<?> type = Class.forName(className);
 
             // Make sure we are parsing a component
             // Avoid adding transform as a component
-            if (!Component.class.isAssignableFrom(type) || Transform.class.isAssignableFrom(type))
+            if (!Component.class.isAssignableFrom(type) || Transform.class.isAssignableFrom(type)) {
                 return;
+            }
 
             Component comp = null;
 
@@ -865,12 +914,18 @@ public class GLTF implements NativeResource {
 
             if (properties != null) {
                 for (Object obj : properties) {
-                    if (!(obj instanceof JSONObject)) continue;
+                    if (!(obj instanceof JSONObject)) {
+                        continue;
+                    }
                     JSONObject prop = (JSONObject) obj;
                     String name = (String) prop.get("name");
-                    if (name == null) continue;
+                    if (name == null) {
+                        continue;
+                    }
                     Object value = prop.get("value");
-                    if (value == null) continue;
+                    if (value == null) {
+                        continue;
+                    }
                     assignComponentField(comp, name, value);
                 }
             }
@@ -887,7 +942,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Assign value to variable by name
+     * Assign value to variable by name.
      *
      * @param comp component to assign the variable to
      * @param name name of the variable
@@ -912,7 +967,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Write a field into the object
+     * Write a field into the object.
      *
      * <p>This method will write into primitive fields, or recurse into vectors/syncvars
      *
@@ -952,7 +1007,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Write a primitive field into the object
+     * Write a primitive field into the object.
      *
      * @param obj object containing the primitive field
      * @param f the primitive field
@@ -980,7 +1035,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Gets the default scene in this GLTF resource
+     * Gets the default scene in this GLTF resource.
      *
      * @return the default scene
      */
@@ -989,7 +1044,7 @@ public class GLTF implements NativeResource {
     }
 
     /**
-     * Gets the scene by name
+     * Gets the scene by name.
      *
      * @param name the name of the scene
      * @return found scene, or {@code null}
@@ -1000,10 +1055,14 @@ public class GLTF implements NativeResource {
 
     @Override
     public void free() {
-        for (Scene scene : mScenes)
-            for (GameObject go : scene.getGameObjects().stream().toArray(GameObject[]::new))
+        for (Scene scene : mScenes) {
+            for (GameObject go : scene.getGameObjects().stream().toArray(GameObject[]::new)) {
                 scene.destroyRootObjectImmediate(go);
+            }
+        }
 
-        for (PBRMaterial mat : mMaterials) mat.free();
+        for (PBRMaterial mat : mMaterials) {
+            mat.free();
+        }
     }
 }

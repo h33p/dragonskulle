@@ -14,7 +14,7 @@ import org.dragonskulle.core.Resource;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Class abstracting a single render instance
+ * Class abstracting a single render instance.
  *
  * <p>This stores everything for a single instantiatable draw call
  *
@@ -30,7 +30,7 @@ public class SampledTexture implements NativeResource, Serializable {
     @Getter @Setter private boolean mLinear;
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param texture input texture resource
      * @param mapping input texture mapping
@@ -43,7 +43,7 @@ public class SampledTexture implements NativeResource, Serializable {
     }
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param texture input texture resource
      * @param mapping input texture mapping
@@ -53,7 +53,7 @@ public class SampledTexture implements NativeResource, Serializable {
     }
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param texture input texture resource
      */
@@ -62,7 +62,7 @@ public class SampledTexture implements NativeResource, Serializable {
     }
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param textureName input texture resource name
      * @param mapping input texture mapping
@@ -73,7 +73,7 @@ public class SampledTexture implements NativeResource, Serializable {
     }
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param textureName input texture resource name
      * @param mapping input texture mapping
@@ -83,7 +83,7 @@ public class SampledTexture implements NativeResource, Serializable {
     }
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param textureName input texture resource name
      * @param linear option to interpret colour data linearly, or as sRGB
@@ -93,7 +93,7 @@ public class SampledTexture implements NativeResource, Serializable {
     }
 
     /**
-     * Constructor for SampledTexture
+     * Constructor for SampledTexture.
      *
      * @param textureName input texture resource name
      */
@@ -117,8 +117,12 @@ public class SampledTexture implements NativeResource, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof SampledTexture)) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof SampledTexture)) {
+            return false;
+        }
         SampledTexture other = (SampledTexture) o;
         return mMapping.equals(other.mMapping) && mTexture.equals(other.mTexture);
     }
