@@ -78,6 +78,7 @@ public class NetworkObject extends Component {
      * @param id the id
      * @param ownerId the id of the owner
      * @param isServer true if the object is on the server
+     * @param manager network manager controlling this object
      */
     public NetworkObject(int id, int ownerId, boolean isServer, NetworkManager manager) {
         mNetworkObjectId = id;
@@ -100,12 +101,29 @@ public class NetworkObject extends Component {
         return clientManager != null && clientManager.getNetId() == mOwnerId;
     }
 
+    /**
+     * Sets the owner ID of the object.
+     *
+     * <p>This method only has effect on the server. It sets the owner ID of the object, and
+     * broadcasts this change to the clients.
+     *
+     * @param newOwnerID new owner ID to set
+     */
     public void setOwnerId(int newOwnerID) {
         if (mIsServer) {
             checkedOwnerIdSet(newOwnerID);
         }
     }
 
+    /**
+     * Set new owner ID, and broadcast change events if the ID differs
+     *
+     * <p>This method will dispatch {@link NetworkableComponent#onOwnerIdChange} event on all
+     * networkable components, and invoke owner ID change event on remote clients, if running as
+     * server.
+     *
+     * @param newOwnerId new ID to set
+     */
     private void checkedOwnerIdSet(int newOwnerId) {
         if (newOwnerId != mOwnerId) {
             for (Reference<NetworkableComponent> netComp : mNetworkableComponents) {
@@ -129,7 +147,13 @@ public class NetworkObject extends Component {
         }
     }
 
-    public void networkInitialize() {
+    /**
+     * Initialize the network object.
+     *
+     * <p>This method will initialize all networkable components, attach syncvars, events, and
+     * requests to be ready for updates.
+     */
+    void networkInitialize() {
         getGameObject().getComponents(NetworkableComponent.class, mNetworkableComponents);
 
         mServerEvents.add(mDestroyEvent);
@@ -151,7 +175,13 @@ public class NetworkObject extends Component {
         }
     }
 
-    public void beforeNetSerialize() {
+    /**
+     * Called before the network object is serialized.
+     *
+     * <p>This method will invoke {@link NetworkableComponent#beforeNetSerialize()} method on all
+     * netowkrable components on the object.
+     */
+    void beforeNetSerialize() {
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
             nc.beforeNetSerialize();

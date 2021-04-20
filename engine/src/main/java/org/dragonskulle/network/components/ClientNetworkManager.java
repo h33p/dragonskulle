@@ -4,9 +4,7 @@ package org.dragonskulle.network.components;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -19,13 +17,17 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
-import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
+ * Client side network manager.
+ *
  * @author Aurimas Blažulionis
  * @author Oscar L
+ *     <p>This network manager exists on {@link NetworkManager} if, and only if there is a client
+ *     game instance spawned on it. It contains the current game state, and spawned objects. It
+ *     keeps track of game state, and communicates with the server.
  */
 @Accessors(prefix = "m")
 @Log
@@ -134,10 +136,21 @@ public class ClientNetworkManager {
         }
     }
 
+    /** Internal entry for a client-side networked object. */
     private static class ClientObjectEntry {
+        /**
+         * Whether the object has been synchronized. Until this value is {@code true}, the object
+         * will be disabled.
+         */
         private boolean mSynchronized;
+        /** Reference to the actual network object. */
         private final Reference<NetworkObject> mNetworkObject;
 
+        /**
+         * Constructor for {@link ClientObjectEntry}.
+         *
+         * @param networkObject reference to the network object in question
+         */
         public ClientObjectEntry(Reference<NetworkObject> networkObject) {
             mSynchronized = false;
             mNetworkObject = networkObject;
@@ -158,8 +171,6 @@ public class ClientNetworkManager {
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates. */
     private int mTicksWithoutRequests = 0;
-    /** Listeners for spawn events. */
-    private List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
 
     @Getter private int mNetId = -1;
 
@@ -199,6 +210,15 @@ public class ClientNetworkManager {
         mClient.sendBytes(message);
     }
 
+    /**
+     * Get data output stream.
+     *
+     * <p>This will get a stream for client to server communication.
+     *
+     * @return output stream used to send data to the server. This is a wrapped stream which will
+     *     append message length at the front of the message before sending. The message gets sent
+     *     only when the stream gets closed.
+     */
     public DataOutputStream getDataOut() {
         return mClient.getDataOut();
     }
@@ -212,14 +232,6 @@ public class ClientNetworkManager {
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
         ClientObjectEntry entry = getNetworkObjectEntry(networkObjectId);
         return entry == null ? null : entry.mNetworkObject;
-    }
-
-    public void registerSpawnListener(IObjectSpawnEvent listener) {
-        mSpawnListeners.add(listener);
-    }
-
-    public void unregisterSpawnListener(IObjectSpawnEvent listener) {
-        mSpawnListeners.remove(listener);
     }
 
     /**
@@ -380,6 +392,5 @@ public class ClientNetworkManager {
         mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), new ClientObjectEntry(ref));
         nob.networkInitialize();
-        mSpawnListeners.stream().forEach(l -> l.handleSpawn(nob));
     }
 }

@@ -10,17 +10,22 @@ import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+/**
+ * Networkable hex transform.
+ *
+ * @author Aurimas Blažulionis and Oscar L
+ */
 @Accessors(prefix = "m")
 public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate {
+    /** Synchronized axial coordinate. */
     @Getter private SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
+    /** Internal transform reference. */
     private TransformHex mHexTransform;
 
+    /** Whether height should be synchronized or not. */
     @Getter @Setter private boolean mSyncHeight = true;
 
-    public NetworkHexTransform(int q, int r) {
-        mAxialCoordinate.set(new Vector3f(q, r, 0));
-    }
-
+    /** Constructor for {@link NetworkHexTransform}. */
     public NetworkHexTransform() {
         mAxialCoordinate.set(new Vector3f(0, 0, 0));
     }
@@ -45,6 +50,12 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
         }
     }
 
+    /**
+     * Set the hex position.
+     *
+     * <p>If on server, this will set {@link mAxialCoordinate}, if on client - this will set
+     * transform's coordinates.
+     */
     private void setHexPosition() {
         if (mHexTransform == null) {
             mHexTransform = getGameObject().getTransform(TransformHex.class);

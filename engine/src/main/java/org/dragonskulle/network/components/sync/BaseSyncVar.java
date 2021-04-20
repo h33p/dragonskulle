@@ -2,7 +2,7 @@
 package org.dragonskulle.network.components.sync;
 
 /**
- * Base syncvar with dirty flag
+ * Base syncvar with dirty flag.
  *
  * @author Aurimas Blažulionis
  */
@@ -15,6 +15,7 @@ public abstract class BaseSyncVar implements ISyncVar {
      * Check if object is dirty for a given player.
      *
      * @param clientId client to check the dirtiness for
+     * @return whether this syncvar is dirty and should be synchronized for the player
      */
     @Override
     public boolean isDirty(int clientId) {

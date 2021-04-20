@@ -181,7 +181,7 @@ public class ServerNetworkManager {
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
-    /** Describes the current state of the game */
+    /** Describes the current state of the game. */
     private ServerGameState mGameState = ServerGameState.STARTING;
 
     /**
@@ -235,6 +235,7 @@ public class ServerNetworkManager {
      *
      * @param owner target owner of the object
      * @param templateId ID of spawnable template
+     * @return reference to the newly spawned network object
      */
     public Reference<NetworkObject> spawnNetworkObject(ServerClient owner, int templateId) {
         return spawnNetworkObject(owner.getNetworkID(), templateId);
@@ -245,6 +246,7 @@ public class ServerNetworkManager {
      *
      * @param ownerId target owner of the object. For server (AI) owned objects, use negative IDs
      * @param templateId ID of the spawnable template
+     * @return reference to newly spawned network object
      */
     public Reference<NetworkObject> spawnNetworkObject(int ownerId, int templateId) {
         int netId = this.allocateId();
@@ -380,7 +382,7 @@ public class ServerNetworkManager {
         clientUpdate();
     }
 
-    /** Late network update, called by {@link NetworkManager} */
+    /** Late network update, called by {@link NetworkManager}. */
     void lateNetworkUpdate() {
 
         for (ServerClient c : mServer.getClients()) {

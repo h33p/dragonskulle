@@ -82,7 +82,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
         mNetworkManager = networkManager;
         mNetId = netId;
-        mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
     }
 
     @Override
@@ -419,13 +418,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
         if (mHexChosen != null) {
             fx.highlightTile(mHexChosen, highlight.asSelection());
-        }
-    }
-
-    /** Marks visuals to update whenever a new object is spawned. */
-    private void onSpawnObject(NetworkObject obj) {
-        if (obj.getGameObject().getComponent(Building.class) != null) {
-            mVisualsNeedUpdate = true;
         }
     }
 

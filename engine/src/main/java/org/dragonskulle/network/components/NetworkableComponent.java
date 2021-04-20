@@ -14,7 +14,10 @@ import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.ISyncVar;
 
 /**
- * @author Oscar L Any component that extends this, its syncvars will be updated with the server.
+ * Base component for any networkable game components.
+ *
+ * @author Oscar L
+ *     <p>Any component that extends this, its syncvars will be updated with the server.
  */
 @Accessors(prefix = "m")
 public abstract class NetworkableComponent extends Component {
@@ -34,8 +37,9 @@ public abstract class NetworkableComponent extends Component {
     private Field[] mFields;
 
     /**
-     * Init fields. @param networkObject the network object
+     * Init fields.
      *
+     * @param networkObject the network object.
      * @param outRequests the requests it can deal with
      * @param outEvents the events it can deal with
      */
@@ -90,16 +94,30 @@ public abstract class NetworkableComponent extends Component {
         onConnectedSyncvars();
     }
 
+    /** Event called whenever object is spawned and is being initialized by the network manager. */
     protected void onNetworkInitialize() {}
 
+    /** Event called after {@link onNetworkInitialize}, when all syncvars have been initialized. */
     protected void onConnectedSyncvars() {}
 
-    void beforeNetSerialize() {}
+    /** Event called before serialization takes place. */
+    protected void beforeNetSerialize() {}
 
+    /** Event called after the object has been updated on the client. */
     protected void afterNetUpdate() {}
 
+    /**
+     * Event called whenever the object's owner ID has changed.
+     *
+     * @param newId new owner ID of the object
+     */
     protected void onOwnerIdChange(int newId) {}
 
+    /**
+     * Get stream of syncvars.
+     *
+     * @return stream of syncvars on this component
+     */
     Stream<ISyncVar> getSyncVars() {
         return Arrays.stream(mFields)
                 .map(
