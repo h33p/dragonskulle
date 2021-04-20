@@ -24,7 +24,7 @@ import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.game.player.PauseMenu;
+import org.dragonskulle.game.player.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
@@ -151,7 +151,7 @@ public class App implements NativeResource {
                         "pause menu",
                         new TransformUI(),
                         (map) -> {
-                            map.addComponent(new PauseMenu(networkManager));
+                            map.addComponent(new UIPauseMenu(networkManager));
                         });
         mainScene.addRootObject(pauseMenu);
 
