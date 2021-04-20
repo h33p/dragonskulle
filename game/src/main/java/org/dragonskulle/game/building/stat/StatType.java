@@ -26,7 +26,12 @@ public enum StatType {
     BUILD_DISTANCE(3), // Regardless of the level, the build distance will always be the same.
     CLAIM_DISTANCE(1), // Regardless of the level, the claim distance will always be the same.
     DEFENCE((level) -> level), // The defence value is identical to the current level number.
-    TOKEN_GENERATION((level) -> Math.max(level - 1, 0)), // The number of tokens to generate is identical to the current level number minus
+    TOKEN_GENERATION(
+            (level) ->
+                    Math.max(
+                            level - 1,
+                            0)), // The number of tokens to generate is identical to the current
+    // level number minus
     VIEW_DISTANCE(3); // Regardless of the level, the view distance will always be the same.
 
     /* Set the IDs of the Stats. */
@@ -38,27 +43,17 @@ public enum StatType {
         }
     }
 
-    /**
-     * The nice name for the enum value.
-     */
+    /** The nice name for the enum value. */
     private String mNiceName;
 
-    /**
-     * The index of the specific StatType in {@link #values()}.
-     */
+    /** The index of the specific StatType in {@link #values()}. */
     private int mID;
 
-    /**
-     * The method used to turn a level ({@code int}) into a value ({@code int}).
-     */
-    @Getter
-    private final IValueCalculator mValueCalculator;
+    /** The method used to turn a level ({@code int}) into a value ({@code int}). */
+    @Getter private final IValueCalculator mValueCalculator;
 
-    /**
-     * Whether the stat always returns a fixed value.
-     */
-    @Getter
-    private final boolean mFixedValue;
+    /** Whether the stat always returns a fixed value. */
+    @Getter private final boolean mFixedValue;
 
     /**
      * Create a new type of stat.

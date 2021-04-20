@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.stream.Stream;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -52,92 +51,53 @@ import org.joml.Vector3fc;
 @Log
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
-    /**
-     * A list of {@link Building}s owned by the player.
-     */
+    /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
-    /**
-     * Link to the current capital.
-     */
+    /** Link to the current capital. */
     private Reference<Building> mCapital = null;
 
     private final Map<Integer, Reference<Player>> mPlayersOnline = new TreeMap<>();
 
-    /**
-     * The number of tokens the player has, synchronised from server to client.
-     */
-    @Getter
-    private SyncInt mTokens = new SyncInt(0);
+    /** The number of tokens the player has, synchronised from server to client. */
+    @Getter private SyncInt mTokens = new SyncInt(0);
 
-    /**
-     * The colour of the player.
-     */
-    @Getter
-    private final SyncVector3 mPlayerColour = new SyncVector3();
+    /** The colour of the player. */
+    @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
 
-    @Getter
-    private HighlightSelection mPlayerHighlightSelection;
+    @Getter private HighlightSelection mPlayerHighlightSelection;
 
-    /**
-     * Reference to the HexagonMap being used by the Player.
-     */
+    /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
-    /**
-     * Whether they own the building.
-     */
+    /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
-    /**
-     * This Is how often a player can attack.
-     */
+    /** This Is how often a player can attack. */
     private static final float ATTACK_COOLDOWN = 2f;
-    /**
-     * When the last time a player attacked.
-     */
+    /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
-    /**
-     * The base rate of tokens which will always be added.
-     */
+    /** The base rate of tokens which will always be added. */
     private static final int TOKEN_RATE = 5;
-    /**
-     * How frequently the tokens should be added.
-     */
+    /** How frequently the tokens should be added. */
     private static final float TOKEN_TIME = 1f;
-    /**
-     * The total amount of time passed since the last time tokens where added.
-     */
+    /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
     private static final int MAX_PLAYERS = 6;
 
-    /**
-     * Used by the client to request that a building be placed by the server.
-     */
-    @Getter
-    private transient ClientRequest<BuildData> mClientBuildRequest;
-    /**
-     * Used by the client to request that a building attack another building.
-     */
-    @Getter
-    private transient ClientRequest<AttackData> mClientAttackRequest;
-    /**
-     * Used by the client to request that a building's stats be increased.
-     */
-    @Getter
-    private transient ClientRequest<StatData> mClientStatRequest;
-    /**
-     * Used by the client to request that a building be sold.
-     */
-    @Getter
-    private transient ClientRequest<SellData> mClientSellRequest;
+    /** Used by the client to request that a building be placed by the server. */
+    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
+    /** Used by the client to request that a building attack another building. */
+    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
+    /** Used by the client to request that a building's stats be increased. */
+    @Getter private transient ClientRequest<StatData> mClientStatRequest;
+    /** Used by the client to request that a building be sold. */
+    @Getter private transient ClientRequest<SellData> mClientSellRequest;
 
-    /**
-     * The base constructor for player.
-     */
+    /** The base constructor for player. */
     public Player() {}
 
     @Override
@@ -440,7 +400,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param tile The tile to get the building from.
      * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
-     * {@code null}.
+     *     {@code null}.
      */
     public Reference<Building> getOwnedBuilding(HexagonTile tile) {
         return mOwnedBuildings.get(tile);
@@ -559,12 +519,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        // TODO set to late update as this wont work fun times yay
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGeneration());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
-        log.info("Stats on building to be added: " + building.getStats());
+        log.info("Stats on building to be added: " + building.getAttack()); // NOT DOING THA THING
         log.info("Added building.");
         return true;
     }
@@ -923,7 +884,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will return whether the player has lost their capital and thus the game.
      *
      * @return {@code true} if they have they have lost there capital and thus the game {@code
-     * false} if not
+     *     false} if not
      */
     public boolean hasLost() {
         return !mOwnsCapital.get();

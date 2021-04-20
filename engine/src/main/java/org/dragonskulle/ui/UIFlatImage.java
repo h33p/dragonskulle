@@ -7,7 +7,8 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 
 /**
- * Essentially a {@code UIRenderable} that extends UIBuildableComponent so it can be used in builders.
+ * Essentially a {@code UIRenderable} that extends UIBuildableComponent so it can be used in
+ * builders.
  */
 public class UIFlatImage extends UIBuildableComponent implements IOnAwake, IUIBuildHandler {
     private final SampledTexture mTexture;

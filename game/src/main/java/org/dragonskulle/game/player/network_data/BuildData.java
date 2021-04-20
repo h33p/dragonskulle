@@ -4,7 +4,6 @@ package org.dragonskulle.game.player.network_data;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.map.HexagonMap;
@@ -23,8 +22,7 @@ public class BuildData implements INetSerializable {
 
     private int mQ;
     private int mR;
-    @Setter
-    private int mDescriptorIndex;
+    @Setter private int mDescriptorIndex;
 
     public BuildData() {}
 

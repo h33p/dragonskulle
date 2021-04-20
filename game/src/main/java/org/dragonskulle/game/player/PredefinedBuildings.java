@@ -12,9 +12,7 @@ import java.util.stream.Collectors;
  * @author Oscar L
  */
 public class PredefinedBuildings {
-    /**
-     * The predefined buildings.
-     */
+    /** The predefined buildings. */
     private static final List<BuildingDescriptor> buildings =
             new ArrayList<>(
                     Arrays.asList(
@@ -36,7 +34,6 @@ public class PredefinedBuildings {
                 .filter(b -> b.getCost() <= currentTokens)
                 .collect(Collectors.toList());
     }
-
 
     /**
      * Get all predefined buildings.

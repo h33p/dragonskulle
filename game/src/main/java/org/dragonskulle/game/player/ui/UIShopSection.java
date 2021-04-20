@@ -17,26 +17,23 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 
 /**
- * This is a section of the shop which can contain a sub-screen to its super window. For example the shop can show additional options like in {@code ShopState.MY_BUILDING_SELECTED}.
+ * This is a section of the shop which can contain a sub-screen to its super window. For example the
+ * shop can show additional options like in {@code ShopState.MY_BUILDING_SELECTED}.
  *
  * @author Oscar L
  */
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart {
-    @Getter
-    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
-    @Setter
-    @Getter
-    private ShopState mLastState = ShopState.CLOSED;
+    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
+
     @Getter(AccessLevel.PROTECTED)
     private final UIMenuLeftDrawer mParent;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> mTitleRef;
 
     /**
@@ -48,9 +45,7 @@ public class UIShopSection extends Component implements IOnStart {
         this.mParent = mParent;
     }
 
-    /**
-     * The Shop state. This controls what can be seen at what time.
-     */
+    /** The Shop state. This controls what can be seen at what time. */
     public enum ShopState {
         CLOSED,
         BUILDING_NEW,
@@ -58,9 +53,7 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -110,7 +103,7 @@ public class UIShopSection extends Component implements IOnStart {
     /**
      * Show the component's GO.
      *
-     * @param component  the component
+     * @param component the component
      * @param shouldShow true if should show
      */
     private void show(Reference<GameObject> component, boolean shouldShow) {
@@ -161,7 +154,8 @@ public class UIShopSection extends Component implements IOnStart {
                                 (self) -> self.addComponent(uiBuildingUpgrade));
         show(mUpgradePanel, false);
 
-        UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(this); //TODO this is what needs improving now
+        UIBuildingOptions uiBuildingOptions =
+                new UIBuildingOptions(this); // TODO this is what needs improving now
         mNewBuildingPanel =
                 getGameObject()
                         .buildChild(

@@ -12,35 +12,27 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "m")
 public class BuildingDescriptor {
-    @Getter
-    public final int mAttack;
-    @Getter
-    public final int mDefence;
-    @Getter
-    public final int mTokenGeneration;
-    @Getter
-    public final int mViewDistance;
-    @Getter
-    public final int mAttackDistance;
-    @Getter
-    public final int mCost;
-    @Getter
-    public final int mSellPrice;
-    @Getter
-    public final String mIconPath;
-    @Getter
-    public final String mName;
+    @Getter public final int mAttack;
+    @Getter public final int mDefence;
+    @Getter public final int mTokenGeneration;
+    @Getter public final int mViewDistance;
+    @Getter public final int mAttackDistance;
+    @Getter public final int mCost;
+    @Getter public final int mSellPrice;
+    @Getter public final String mIconPath;
+    @Getter public final String mName;
 
     /**
      * Instantiates a new Building descriptor.
-     *  @param mAttack          the attack value
-     * @param mDefence         the defence value
+     *
+     * @param mAttack the attack value
+     * @param mDefence the defence value
      * @param mTokenGeneration the token generation value
-     * @param mViewDistance    the view distance value
-     * @param mAttackDistance  the attack distance value
-     * @param mCost            the cost value
-     * @param mSellPrice       the sell price value
-     * @param mIconPath        the icon path to be displayed in the menu
+     * @param mViewDistance the view distance value
+     * @param mAttackDistance the attack distance value
+     * @param mCost the cost value
+     * @param mSellPrice the sell price value
+     * @param mIconPath the icon path to be displayed in the menu
      * @param mName the buildings name
      */
     public BuildingDescriptor(
@@ -51,7 +43,8 @@ public class BuildingDescriptor {
             int mAttackDistance,
             int mCost,
             int mSellPrice,
-            String mIconPath, String mName) {
+            String mIconPath,
+            String mName) {
         this.mAttack = mAttack;
         this.mDefence = mDefence;
         this.mTokenGeneration = mTokenGeneration;

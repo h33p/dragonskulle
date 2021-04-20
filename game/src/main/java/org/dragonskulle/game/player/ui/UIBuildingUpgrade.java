@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,9 +38,9 @@ import org.dragonskulle.ui.UITextRect;
 public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpdate {
     @Getter(AccessLevel.PROTECTED)
     private final UIShopSection mParent;
+
     private Reference<GameObject> mBuildingUpgradeComponent;
-    @Setter
-    private Building mLastBuilding;
+    @Setter private Building mLastBuilding;
     private final HashMap<StatType, Reference<UIText>> mTextValueReferences = new HashMap<>();
     private UITextRect mAttackLevelText;
     private UITextRect mDefenceLevelText;
@@ -56,9 +55,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -98,16 +95,20 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                             0.05f,
                                             0.45f,
                                             0.95f,
-                                            buildStatUpgrade(StatType.ATTACK, "ui/attack_symbol.png"),
-                                            buildStatUpgrade(StatType.DEFENCE, "ui/defence_symbol.png"),
-                                            buildStatUpgrade(StatType.TOKEN_GENERATION, "ui/token_generation_symbol.png"));
+                                            buildStatUpgrade(
+                                                    StatType.ATTACK, "ui/attack_symbol.png"),
+                                            buildStatUpgrade(
+                                                    StatType.DEFENCE, "ui/defence_symbol.png"),
+                                            buildStatUpgrade(
+                                                    StatType.TOKEN_GENERATION,
+                                                    "ui/token_generation_symbol.png"));
                                 });
     }
 
     /**
      * Build a stat upgrader with a custom texture.
      *
-     * @param type        the stat type
+     * @param type the stat type
      * @param textureName the texture file path
      * @return the builder
      */
@@ -122,7 +123,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                     new TransformUI(true),
                     (handle) -> {
                         handle.getTransform(TransformUI.class).setParentAnchor(0.25f);
-                        handle.addComponent(new UIFlatImage(new SampledTexture(textureName), false));
+                        handle.addComponent(
+                                new UIFlatImage(new SampledTexture(textureName), false));
                     });
         };
     }
