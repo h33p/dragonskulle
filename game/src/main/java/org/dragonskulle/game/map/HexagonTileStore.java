@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import com.flowpowered.noise.Noise;
-import com.flowpowered.noise.NoiseQuality;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -363,27 +361,12 @@ class HexagonTileStore implements ISyncVar {
     private static final float NOISE_STEP = 0.2f;
 
     private static final float[][] OCTAVES = {
-        {0.1f, 0.9f},
-        {0.3f, 0.2f},
-        {0.6f, 0.1f}
+        {0.1f, 0.9f, 0f},
+        {0.3f, 0.2f, 0f},
+        {0.6f, 0.1f, 0f}
     };
 
     private float getHeight(int q, int r) {
-
-        float sum = 0f;
-
-        for (float[] vals : OCTAVES) {
-            sum +=
-                    (float)
-                                    Noise.valueCoherentNoise3D(
-                                            q * vals[0],
-                                            r * vals[0],
-                                            (-q - r) * vals[0],
-                                            mSeed,
-                                            NoiseQuality.BEST)
-                            * vals[1];
-        }
-
-        return MathUtils.roundStep(sum, NOISE_STEP);
+        return MathUtils.roundStep(NoiseUtil.getHeight(q, r, mSeed, OCTAVES), NOISE_STEP);
     }
 }

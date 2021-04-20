@@ -25,7 +25,7 @@ public class HeightController extends Component implements IOnAwake, IFrameUpdat
 
     @Getter @Setter private float mTargetHeight = 0f;
 
-    @Getter @Setter private float mSpeed = 5f;
+    @Getter @Setter private float mSpeed = 3f;
 
     @Override
     public void onAwake() {

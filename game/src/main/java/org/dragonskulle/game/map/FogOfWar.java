@@ -34,6 +34,13 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
     private static final GameObject FOG_OBJECT =
             TEMPLATES.get().getDefaultScene().findRootObject("Cloud Hex");
 
+    private static final float[][] OCTAVES = {
+        {0.07f, 1f, 0.5f},
+        {0.15f, 0.4f, 0.4f},
+        {0.3f, 0.6f, 0f},
+        {0.6f, 0.4f, 0f}
+    };
+
     @Override
     public void onStart() {
         Scene.getActiveScene().registerSingleton(this);
@@ -61,7 +68,8 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
                                 setFog(
                                         tile,
                                         !activePlayer.hasLost()
-                                                && !activePlayer.isTileViewable(tile)));
+                                                && !activePlayer.isTileViewable(tile)
+                                                && perlinCheck(tile)));
     }
 
     @Override
@@ -81,6 +89,10 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         }
         mMapReference = Scene.getActiveScene().getSingletonRef(HexagonMap.class);
         return Reference.isValid(mMapReference);
+    }
+
+    private boolean perlinCheck(HexagonTile tile) {
+        return NoiseUtil.getHeight(tile.getQ(), tile.getR(), 0, OCTAVES) > 0.8f;
     }
 
     private void setFog(HexagonTile tile, boolean enable) {
