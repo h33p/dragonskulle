@@ -43,13 +43,16 @@ public class FadeTile extends Component implements IOnAwake, IFrameUpdate {
 
     @Override
     public void onAwake() {
-        GameObject rendObj = getGameObject();
+        if (!Reference.isValid(mRenderable)) {
+            GameObject rendObj = getGameObject();
 
-        if (!mChildName.equals("")) {
-            rendObj = rendObj.findChildByName(mChildName);
+            if (!mChildName.equals("")) {
+                rendObj = rendObj.findChildByName(mChildName);
+            }
+
+            mRenderable = rendObj.getComponent(Renderable.class);
         }
 
-        mRenderable = rendObj.getComponent(Renderable.class);
         mHeightController = getGameObject().getComponent(HeightController.class);
         IColouredMaterial colMat = mRenderable.get().getMaterial(IColouredMaterial.class);
 

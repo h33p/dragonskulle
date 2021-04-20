@@ -101,6 +101,10 @@
                         {
                             "class_name" : "org.dragonskulle.game.building.Building",
                             "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
+                            "enabled" : true
                         }
                     ]
                 }
