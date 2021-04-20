@@ -253,7 +253,6 @@ public class NetworkObject extends Component {
      * Updates itself from stream authored by server.
      *
      * @param stream the stream containing the payload
-     * @return the owner id of the network object
      * @throws IOException thrown if failed to read client streams
      */
     public void updateFromBytes(DataInputStream stream) throws IOException {
