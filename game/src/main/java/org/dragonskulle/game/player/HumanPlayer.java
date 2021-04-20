@@ -3,6 +3,8 @@ package org.dragonskulle.game.player;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.stream.Stream;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -29,6 +31,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector3f;
+import org.dragonskulle.game.building.Building;
 
 /**
  * This class will allow a user to interact with game.
@@ -415,7 +418,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
         HexagonMap mMap = mPlayer.get().getMap();
-       // HashSet<HexagonTile> mBuildableTiles =
+        Stream<HexagonTile> buildableTiles =  mMap.getAllTiles();
+
+        buildableTiles.forEach(
+                (tile)-> {
+                    if (!tile.isClaimed() && !tile.hasBuilding()){
+                        fx.highlightTile(tile, highlight.asSelection());
+                    }
+                }
+        );
+
     }
 
     /** Marks visuals to update whenever a new object is spawned. */
