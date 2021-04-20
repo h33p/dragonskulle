@@ -10,15 +10,17 @@ import org.dragonskulle.ui.UIManager.UIBuildableComponent;
  * Essentially a {@code UIRenderable} that extends UIBuildableComponent so it can be used in builders.
  */
 public class UIFlatImage extends UIBuildableComponent implements IOnAwake, IUIBuildHandler {
-    final SampledTexture mTexture;
+    private final SampledTexture mTexture;
+    private final boolean mHoverable;
 
     /**
      * Constructor.
      *
      * @param texture the texture
      */
-    public UIFlatImage(SampledTexture texture) {
+    public UIFlatImage(SampledTexture texture, boolean hoverable) {
         mTexture = texture;
+        mHoverable = hoverable;
     }
 
     @Override
@@ -26,6 +28,8 @@ public class UIFlatImage extends UIBuildableComponent implements IOnAwake, IUIBu
 
     @Override
     public void onAwake() {
-        getGameObject().addComponent(new UIRenderable(mTexture));
+        UIRenderable rend = new UIRenderable(mTexture);
+        rend.setHoverable(mHoverable);
+        getGameObject().addComponent(rend);
     }
 }

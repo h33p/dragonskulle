@@ -69,9 +69,8 @@ public class UIShopSection extends Component implements IOnStart {
                     newPanel = new Reference<>(null);
                     break;
                 case BUILDING_NEW:
-                    //                    show(mNewBuildingPanel, true);
-                    //                    newPanel = mNewBuildingPanel;
-                    newPanel = new Reference<>(null);
+                    show(mNewBuildingPanel, true);
+                    newPanel = mNewBuildingPanel;
                     break;
                 case MY_BUILDING_SELECTED:
                     newPanel = mUpgradePanel;
@@ -128,9 +127,6 @@ public class UIShopSection extends Component implements IOnStart {
             newPanel.get().setEnabled(true);
         }
         mCurrentPanel = newPanel;
-        //        show(mCurrentPanel, false);
-        //        mCurrentPanel = activateNewPanel(newPanel);// activate the new panel and assign
-        // the last current variable
     }
 
     /**
@@ -148,7 +144,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 (self) -> self.addComponent(uiBuildingUpgrade));
         show(mUpgradePanel, false);
 
-        UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(mGetPlayer);
+        UIBuildingOptions uiBuildingOptions = new UIBuildingOptions(mGetPlayer); //TODO this is what needs improving now
         mNewBuildingPanel =
                 getGameObject()
                         .buildChild(
@@ -161,7 +157,7 @@ public class UIShopSection extends Component implements IOnStart {
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
         UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
-        ((UIMaterial) renderable.getMaterial()).colour.set(0.235, 0.219, 0.235, 1);
+        ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
         getGameObject().addComponent(renderable);
         Reference<GameObject> textObj =
                 getGameObject()

@@ -14,6 +14,7 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
@@ -39,7 +40,6 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     @Getter private final UIMenuLeftDrawer.IGetPlayer mGetPlayer;
     private Reference<GameObject> mBuildingUpgradeComponent;
     @Setter private Building mLastBuilding;
-    private String delimiter = " -- ";
     private final HashMap<StatType, Reference<UIText>> mTextValueReferences = new HashMap<>();
     private UITextRect mAttackLevelText;
     private UITextRect mDefenceLevelText;
@@ -69,8 +69,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     public void onStart() {
         // better way to do this dynamically
         mAttackLevelText = new UITextRect("0");
+        mAttackLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
         mDefenceLevelText = new UITextRect("0");
+        mDefenceLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
         mTokenGenerationText = new UITextRect("0");
+        mTokenGenerationText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
 
         mBuildingUpgradeComponent =
                 getGameObject()
@@ -79,59 +82,94 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                 new TransformUI(true),
                                 (self) -> {
                                     UIManager manager = UIManager.getInstance();
-                                    manager.buildHorizontalUI(
-                                            self,
-                                            0.05f,
-                                            0.15f,
-                                            0.65f,
-                                            new UIFlatImage(
-                                                    new SampledTexture("ui/attack_symbol.png")),
-                                            new UIFlatImage(
-                                                    new SampledTexture("ui/defence_symbol.png")),
-                                            new UIFlatImage(
-                                                    new SampledTexture(
-                                                            "ui/token_generation_symbol.png")));
 
                                     manager.buildHorizontalUI(
                                             self,
                                             0.05f,
-                                            0.55f,
-                                            0.85f,
+                                            0.25f,
+                                            0.45f,
                                             mAttackLevelText,
                                             mDefenceLevelText,
                                             mTokenGenerationText);
 
-                                    UIButton attackUpgrade =
-                                            new UIButton(
-                                                    "",
-                                                    (__, ___) -> purchaseUpgrade(StatType.ATTACK));
-                                    attackUpgrade.setRectTexture(
-                                            new SampledTexture("ui/upgrade_button.png"));
-
-                                    UIButton defenceUpgrade =
-                                            new UIButton(
-                                                    "",
-                                                    (__, ___) -> purchaseUpgrade(StatType.DEFENCE));
-                                    defenceUpgrade.setRectTexture(
-                                            new SampledTexture("ui/upgrade_button.png"));
-
-                                    UIButton tokenGenerationUpgrade =
-                                            new UIButton(
-                                                    "",
-                                                    (__, ___) ->
-                                                            purchaseUpgrade(
-                                                                    StatType.TOKEN_GENERATION));
-                                    tokenGenerationUpgrade.setRectTexture(
-                                            new SampledTexture("ui/upgrade_button.png"));
-
                                     manager.buildHorizontalUI(
                                             self,
                                             0.05f,
-                                            0.56f,
-                                            1.05f,
-                                            attackUpgrade,
-                                            defenceUpgrade,
-                                            tokenGenerationUpgrade);
+                                            0.45f,
+                                            0.95f,
+                                            (go) -> {
+                                                go.getTransform(TransformUI.class)
+                                                        .setPivotOffset(0.5f, 0f);
+                                                UIButton but =
+                                                        new UIButton(
+                                                                (__, ___) ->
+                                                                        purchaseUpgrade(
+                                                                                StatType.ATTACK));
+                                                but.setRectTexture(
+                                                        GameUIAppearance.getSquareButtonTexture());
+                                                go.addComponent(but);
+                                                go.buildChild(
+                                                        "sym",
+                                                        new TransformUI(true),
+                                                        (handle) -> {
+                                                            handle.getTransform(TransformUI.class)
+                                                                    .setParentAnchor(0.25f);
+                                                            handle.addComponent(
+                                                                    new UIFlatImage(
+                                                                            new SampledTexture(
+                                                                                    "ui/attack_symbol.png"),
+                                                                            false));
+                                                        });
+                                            },
+                                            (go) -> {
+                                                go.getTransform(TransformUI.class)
+                                                        .setPivotOffset(0.5f, 0f);
+                                                UIButton but =
+                                                        new UIButton(
+                                                                (__, ___) ->
+                                                                        purchaseUpgrade(
+                                                                                StatType.DEFENCE));
+                                                but.setRectTexture(
+                                                        GameUIAppearance.getSquareButtonTexture());
+                                                go.addComponent(but);
+                                                go.buildChild(
+                                                        "sym",
+                                                        new TransformUI(true),
+                                                        (handle) -> {
+                                                            handle.getTransform(TransformUI.class)
+                                                                    .setParentAnchor(0.25f);
+                                                            handle.addComponent(
+                                                                    new UIFlatImage(
+                                                                            new SampledTexture(
+                                                                                    "ui/defence_symbol.png"),
+                                                                            false));
+                                                        });
+                                            },
+                                            (go) -> {
+                                                go.getTransform(TransformUI.class)
+                                                        .setPivotOffset(0.5f, 0f);
+                                                UIButton but =
+                                                        new UIButton(
+                                                                (__, ___) ->
+                                                                        purchaseUpgrade(
+                                                                                StatType
+                                                                                        .TOKEN_GENERATION));
+                                                but.setRectTexture(
+                                                        GameUIAppearance.getSquareButtonTexture());
+                                                go.addComponent(but);
+                                                go.buildChild(
+                                                        "sym",
+                                                        new TransformUI(true),
+                                                        (handle) -> {
+                                                            handle.getTransform(TransformUI.class)
+                                                                    .setParentAnchor(0.25f);
+                                                            handle.addComponent(
+                                                                    new UIFlatImage(
+                                                                            new SampledTexture(
+                                                                                    "ui/token_generation_symbol.png"),
+                                                                            false));
+                                                        });
+                                            });
                                 });
     }
 

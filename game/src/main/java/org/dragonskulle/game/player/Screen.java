@@ -14,6 +14,6 @@ public enum Screen {
     ATTACK_SCREEN, // The Screen to show what to show when user has clicked attack
     UPGRADE_SCREEN, // The screen to show which stat to show
     ATTACKING_SCREEN, // The screen to allow user to choose the building to attack
-    SELLING_SCREEN; // The screen to allow the user to confirm their selling of the selected
-    // building
+    SELLING_SCREEN, // The Screen to allow the user to confirm their sell.
+    PLACING_NEW_BUILDING; // The screen to allow the user to place a pre-defined building
 }
