@@ -9,6 +9,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
+import org.dragonskulle.game.player.ai.CapitalAimer;
 
 /**
  * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure.
@@ -23,18 +24,39 @@ public class Graph {
     protected Map<Integer, Node> mGraph; // The hash map which will have the integer to the Node
     private int mNodeNum;
     private Reference<HexagonMap> mMap;
-    private final int mOwnerId;
     private Reference<HexagonTile> mTileAiming;
 
-    public Graph(HexagonMap map, int ownerId, HexagonTile tileAiming) {
+    /**
+     * Constructor to create the whole map
+     *
+     * @param map The {@code HexagonMap} to convert to a {@code Graph}
+     * @param tileAiming The {@code HexagonTile} to aim for
+     */
+    public Graph(HexagonMap map, HexagonTile tileAiming) {
         mTileAiming = new Reference<HexagonTile>(tileAiming);
         mMap = map.getReference(HexagonMap.class);
-        mOwnerId = ownerId;
         mNodeNum = 0;
         mGraph = new HashMap<Integer, Node>();
         map.getAllTiles().forEach(this::convertToNode);
         mNodeNum = 0;
         map.getAllTiles().forEach(this::addConnections);
+    }
+
+    /**
+     * Constructor to create only part of the map
+     *
+     * @param map The {@code HexagonMap} to convert to a {@code Graph}
+     * @param tileAiming The {@code HexagonTile} to aim for
+     * @param aimer The {@code CapitalAimer} to use to create the map
+     */
+    public Graph(HexagonMap map, HexagonTile tileAiming, CapitalAimer aimer) {
+        mTileAiming = new Reference<HexagonTile>(tileAiming);
+        mMap = map.getReference(HexagonMap.class);
+        mNodeNum = 0;
+        mGraph = new HashMap<Integer, Node>();
+        aimer.getStream().forEach(this::convertToNode);
+        mNodeNum = 0;
+        aimer.getStream().forEach(this::addConnections);
     }
 
     /**
@@ -68,7 +90,7 @@ public class Graph {
      */
     private void addConnections(HexagonTile tile) {
         if (tile.getTileType() == TileType.LAND) {
-            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1);
+            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, false);
 
             for (HexagonTile tileNeighbour : neighbourTiles) {
                 for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {
