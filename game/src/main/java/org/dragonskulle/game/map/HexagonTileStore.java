@@ -59,7 +59,6 @@ class HexagonTileStore {
 
         /* Generates the last part of the map */
         loop = (size / 2) + 1;
-        int min_val = size - max_empty; // TODO is this needed?  Doesn't seem to be used
         int current_val = size;
         for (int r = loop; r < size; r++) {
             current_val--; // The number of cells with actual coordinates, it decreases with every

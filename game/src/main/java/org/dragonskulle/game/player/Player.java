@@ -161,38 +161,32 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.severe("This is attempt number " + i);
 
             // Add the building
-            Vector2f axial = createCoordinates(i, attempts);
+            float angleBetween;
+            if (i < attempts / 2) {
+                float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+                angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
+            } else {
+                angleBetween = 0;
+            }
+            Vector2f axial = createCoordinates(angleBetween);
             int x = (int) axial.x;
             int y = (int) axial.y;
-            Building buildingToBecomeCapital = createBuilding(x, y);
+            Building buildingToBecomeCapital = createBuilding(x, y, true);
 
             if (buildingToBecomeCapital == null) {
                 log.severe("Unable to place an initial capital building.  X = " + x + " Y = " + y);
                 continue;
 
-            } else if (i <= attempts) {
-
-                boolean ifIsland = getMap().isIsland(getMap().getTile(x, y));
-
-                if (!ifIsland) {
-                    buildingToBecomeCapital.setCapital(true);
-
-                    log.info(
-                            "Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
-                    return;
-                } else {
-                    log.severe(
-                            "Unable to place an initial capital building.  X = " + x + " Y = " + y);
-                    GameObject go = buildingToBecomeCapital.getGameObject();
-                    go.destroy();
-                    continue;
-                }
+            } else {
+                buildingToBecomeCapital.setCapital(true);
+                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+                return;
             }
         }
 
         Building buildingToBecomeCapital =
                 getMap().getAllTiles()
-                        .map(tile -> createBuilding(tile.getQ(), tile.getR()))
+                        .map(tile -> createBuilding(tile.getQ(), tile.getR(), true))
                         .filter(building -> building != null)
                         .findFirst()
                         .orElse(null);
@@ -200,48 +194,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (buildingToBecomeCapital == null) {
             // Cannot add a capital
             setOwnsCapital(false);
-
             log.severe("Disconnecting");
-
             getGameObject().destroy();
+
         } else {
 
-            // TODO Anyone has any better way than the current solution to get q and r positions
-            // before Building can use getTile?
-            GameObject gameObject = buildingToBecomeCapital.getGameObject();
-            TransformHex transform = gameObject.getTransform(TransformHex.class);
-            Vector3f coordinatesToUse = new Vector3f();
-            transform.getLocalPosition(coordinatesToUse);
-            int x = (int) coordinatesToUse.get(0);
-            int y = (int) coordinatesToUse.get(1);
-
-            if (!getMap().isIsland(getMap().getTile(x, y))) {
-                buildingToBecomeCapital.setCapital(true);
-
-                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
-            } else {
-                GameObject go = buildingToBecomeCapital.getGameObject();
-                go.destroy();
-                setOwnsCapital(false);
-
-                log.severe("Disconnecting");
-
-                getGameObject().destroy();
-            }
+            buildingToBecomeCapital.setCapital(true);
+            log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
+            return;
         }
     }
 
     /**
      * Will create the coordinates to test
      *
-     * @param i The attempt number
-     * @param attempts The number of attempts allowed
+     * @param angleBetween The angle to add which states how far away a player should be
      * @return A {@code Vector2f} with the coordinates to use
      */
-    private Vector2f createCoordinates(int i, int attempts) {
+    private Vector2f createCoordinates(float angleBetween) {
         float angleOfCircle = 360f / (MAX_PLAYERS + 1);
-        float angleBetween =
-                (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS; // TODO Make more efficient
 
         // The number of players online
         int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
@@ -249,19 +220,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             playersOnlineNow += MAX_PLAYERS; // handle AI Players
         }
 
-        float angleToStart;
-        float angleToEnd;
-
-        // This will expand the search if we cannot place in the first part
-        if (i < attempts / 2) {
-            // This gives us the angle to find our coordinates.  Stored in degrees
-            angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
-            angleToEnd = ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
-        } else {
-            // This gives us the angle to find our coordinates.  Stored in degrees
-            angleToStart = playersOnlineNow * angleOfCircle;
-            angleToEnd = (playersOnlineNow + 1) * angleOfCircle;
-        }
+        // This gives us the angle to find our coordinates.  Stored in degrees
+        float angleToStart = playersOnlineNow * (angleOfCircle + angleBetween);
+        float angleToEnd = ((playersOnlineNow + 1) * (angleOfCircle + angleBetween)) - angleBetween;
 
         Random random = new Random();
 
@@ -330,7 +291,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param rPos The r position of the building.
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
-    private Building createBuilding(int qPos, int rPos) {
+    private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
 
         if (getNetworkManager().getServerManager() == null) {
             log.warning("Unable to create building: Server manager is null.");
@@ -363,6 +324,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (tile.getTileType() != TileType.LAND) {
             log.warning("Unable to create Building: Tile placed is not land");
             return null;
+        }
+
+        if (checkIsland) {
+            if (getMap().isIsland(getMap().getTile(qPos, rPos))) {
+                log.warning("This is an island and a capital cannot be placed here");
+                return null;
+            }
         }
 
         int playerId = getNetworkObject().getOwnerId();
@@ -545,7 +513,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        Building building = createBuilding(tile.getQ(), tile.getR());
+        Building building = createBuilding(tile.getQ(), tile.getR(), false);
 
         if (building == null) {
             log.info("Unable to add building.");
