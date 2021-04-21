@@ -381,6 +381,12 @@ public class ClientNetworkManager {
      */
     private void spawnNewNetworkObject(int networkObjectId, int ownerID, int templateId) {
         final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);
+
+        if (go == null) {
+            log.warning("Failed to instantiate template ID " + templateId);
+            return;
+        }
+
         go.getTransform()
                 .setLocal3DTransformation(new Vector3f(), new Quaternionf(), new Vector3f(1));
         final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false, mManager);
