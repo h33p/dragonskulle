@@ -9,6 +9,7 @@ import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.core.Engine;
+import org.dragonskulle.core.GLFWState;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
@@ -440,10 +441,11 @@ public class App implements NativeResource {
                                 return;
                             }
 
-                            Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+                            GLFWState glfw = Engine.getInstance().getGLFWState();
+                            Renderer rend = glfw.getRenderer();
                             RendererSettings newSettings = new RendererSettings(rend.getSettings());
                             newSettings.setTargetGPU(selected);
-                            rend.setSettings(newSettings);
+                            glfw.setRendererSettings(newSettings);
                             updateGPUDropDown(drop);
                             updateMSAADropDown(msaaCountDropDown);
                         });

@@ -8,6 +8,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_NO_API;
 import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
 import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
+import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
 import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowPos;
@@ -49,6 +50,9 @@ public class GLFWState implements NativeResource {
     @Getter private Renderer mRenderer;
     private boolean mFramebufferResized = false;
 
+    private final String mAppName;
+    private final Bindings mBindings;
+
     private boolean mFullscreen = false;
     private int mOldX = 0;
     private int mOldY = 0;
@@ -76,11 +80,57 @@ public class GLFWState implements NativeResource {
             System.loadLibrary("renderdoc");
         }
 
-        initWindow(width, height, appName);
-        mRenderer = new Renderer(appName, mWindow, new RendererSettings());
+        mAppName = appName;
+        mBindings = bindings;
+
+        initialise(width, height, new RendererSettings());
+    }
+
+    /** Initialise the GLFW state. */
+    private void initialise(int width, int height, RendererSettings settings) {
+        initWindow(width, height, mAppName);
+        mRenderer = new Renderer(mAppName, mWindow, settings);
 
         // Start detecting user input from the specified window, based on the bindings.
-        Input.initialise(mWindow, bindings);
+        Input.initialise(mWindow, mBindings);
+    }
+
+    /**
+     * Set renderer graphics settings.
+     *
+     * <p>Depending on the settings changed, there may be a longer, or shorter time rendering
+     * freeze.
+     *
+     * <p>If target GPU is being changed, make sure you call this method, not the one on the {@link
+     * Renderer}, because it should be more stable!
+     *
+     * @param newSettings new graphics settings to choose
+     */
+    public void setRendererSettings(RendererSettings newSettings) {
+        RendererSettings oldSettings = mRenderer.getSettings();
+
+        if (newSettings.equals(oldSettings)) {
+            return;
+        }
+
+        boolean changeGPU =
+                newSettings.getTargetGPU() != null
+                        && !mRenderer.getPhysicalDeviceName().equals(newSettings.getTargetGPU());
+
+        if (changeGPU) {
+            free();
+            try {
+                initialise(mOldWidth, mOldHeight, newSettings);
+            } catch (Exception e) {
+                log.warning("Failed to change settings, attempting to revert!");
+                e.printStackTrace();
+                free();
+                initialise(mOldWidth, mOldHeight, oldSettings);
+            }
+            setFullscreen(mFullscreen);
+        } else {
+            mRenderer.setSettings(newSettings);
+        }
     }
 
     /**
@@ -144,6 +194,7 @@ public class GLFWState implements NativeResource {
     @Override
     public void free() {
         mRenderer.free();
+        glfwDestroyWindow(mWindow);
     }
 
     /** Creates a GLFW window. */
