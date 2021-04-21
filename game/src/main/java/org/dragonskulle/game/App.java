@@ -495,6 +495,11 @@ public class App implements NativeResource {
                         (uiButton, __) -> {
                             hostUi.setEnabled(false);
                             mainUi.setEnabled(true);
+                        }),
+                new UIButton(
+                        "Start Game",
+                        (__, ___) -> {
+                            networkManager.get().getServerManager().startGame();
                         }));
 
         mainMenu.addRootObject(networkManagerObject);
@@ -531,6 +536,10 @@ public class App implements NativeResource {
 
         AudioManager.getInstance().cleanup();
         System.exit(0);
+    }
+
+    void test(String response) {
+        System.out.println(response);
     }
 
     private void run() {
@@ -580,10 +589,11 @@ public class App implements NativeResource {
         gameScene.addRootObject(humanPlayer);
     }
 
+    // TODO: Don't need this anymore?
     private void onClientConnected(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+        log.info("New player connected to lobby with id " + id);
     }
 
     @Override

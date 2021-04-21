@@ -1,10 +1,10 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.lobby;
-
-import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFixedUpdate;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
 
 public class Lobby extends Component implements IFixedUpdate {
 
@@ -16,9 +16,8 @@ public class Lobby extends Component implements IFixedUpdate {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy() {}
 
-    }
     // TODO: If mHostsUpdated, re-create the UI to add those new hosts as buttons
     // TODO: Also need to handle the creation of new lobbies
     // TODO: Need to start the game after host starts the game
@@ -30,12 +29,6 @@ public class Lobby extends Component implements IFixedUpdate {
 
      */
 
-
-
     @Override
-    public void fixedUpdate(float deltaTime) {
-
-
-
-    }
+    public void fixedUpdate(float deltaTime) {}
 }

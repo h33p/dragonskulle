@@ -36,11 +36,11 @@ public class ServerClient {
     private int mNetworkID = -1;
 
     /** Underlying {@link Socket}. */
-    private Socket mSocket;
+    private final Socket mSocket;
     /** Is the client loop running, and supposed to be running. */
     @Getter private boolean mRunning;
     /** Reference to the server event listener. */
-    private IServerListener mServerListener;
+    private final IServerListener mServerListener;
     /** Thread of the input loop. */
     private Thread mThread;
     /** Output stream for the socket. */
@@ -205,6 +205,9 @@ public class ServerClient {
                 break;
             case NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST:
                 handleClientRequest(stream);
+                break;
+            case NetworkConfig.Codes.MESSAGE_CLIENT_LOADED:
+                mServerListener.clientLoaded(this);
                 break;
             default:
                 log.info("The server received invalid request: " + messageType);

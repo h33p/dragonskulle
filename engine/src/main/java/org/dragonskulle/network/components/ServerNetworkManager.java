@@ -53,6 +53,12 @@ public class ServerNetworkManager {
             }
         }
 
+        @Override
+        public void clientLoaded(ServerClient client) {
+            log.info("Client with id " + client.getNetworkID() + " has fully loaded");
+            spawnNetworkObject(client.getNetworkID(), mManager.findTemplateByName("player"));
+        }
+
         /**
          * Client disconnected event.
          *
@@ -183,14 +189,19 @@ public class ServerNetworkManager {
         mManager = manager;
         mServer = new Server(port, mListener);
         mConnectedClientHandler = connectedClientHandler;
-        startGame();
+        // TODO: startLobby();
+        //      Create lobby UI (List connected players/ show connected count
+        //      Once host clicks start game, reject new connections and createGameScene
+        log.info("Lobby started");
     }
 
     /** Start the game, load game scene. */
-    void startGame() {
+    public void startGame() {
         Engine engine = Engine.getInstance();
 
         mManager.createGameScene(true);
+
+        clientStart();
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
@@ -367,6 +378,20 @@ public class ServerNetworkManager {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /** Sends start event to all clients. */
+    private void clientStart() {
+        final byte[] msg = {NetworkConfig.Codes.MESSAGE_SERVER_START};
+
+        for (ServerClient c : mServer.getClients()) {
+            try {
+                c.sendBytes(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+                c.closeSocket();
+            }
         }
     }
 }

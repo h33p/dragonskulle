@@ -31,6 +31,16 @@ public interface IServerListener {
     void clientActivated(ServerClient client);
 
     /**
+     * Client loaded event.
+     *
+     * <p>This will be called from the client socket thread when the server has started and the
+     * client has fully loaded the game scene.
+     *
+     * @param client the client
+     */
+    void clientLoaded(ServerClient client);
+
+    /**
      * Client disconnected event.
      *
      * <p>This will be called from the client socket thread.

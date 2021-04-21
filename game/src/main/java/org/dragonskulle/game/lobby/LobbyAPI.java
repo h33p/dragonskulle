@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.lobby;
 
 import java.io.BufferedReader;
@@ -7,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import lombok.extern.java.Log;
 
 /**
@@ -38,7 +38,7 @@ public class LobbyAPI {
      * Class that runs a request to the API in a thread before calling the AsyncCallback supplied.
      *
      * @author Harry Stoltz
-     * <p>If the request fails for any reason, the callback is never called.
+     *     <p>If the request fails for any reason, the callback is never called.
      */
     private static class AsyncRequest extends Thread {
         private final URL mUrl;
@@ -53,7 +53,11 @@ public class LobbyAPI {
             mCallback = callback;
         }
 
-        public AsyncRequest(URL url, String method, AsyncCallback callback, String contentType,
+        public AsyncRequest(
+                URL url,
+                String method,
+                AsyncCallback callback,
+                String contentType,
                 String content) {
             this(url, method, callback);
             mContentType = contentType;
@@ -63,7 +67,7 @@ public class LobbyAPI {
         @Override
         public void run() {
             try {
-                HttpURLConnection con = (HttpURLConnection)mUrl.openConnection();
+                HttpURLConnection con = (HttpURLConnection) mUrl.openConnection();
                 con.setRequestMethod(mMethod);
 
                 if (mMethod.equals("POST")) {
@@ -75,8 +79,8 @@ public class LobbyAPI {
                     writer.close();
                 }
 
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String line;
                 StringBuilder builder = new StringBuilder();
                 while ((line = reader.readLine()) != null) {
@@ -115,7 +119,4 @@ public class LobbyAPI {
         AsyncRequest request = new AsyncRequest(url, "POST", callback, contentType, content);
         request.start();
     }
-
-
-
 }

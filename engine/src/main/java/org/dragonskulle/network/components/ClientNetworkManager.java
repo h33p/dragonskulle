@@ -18,6 +18,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.components.NetworkManager.IObjectOwnerModifiedEvent;
 import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 
@@ -30,10 +31,12 @@ import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
 public class ClientNetworkManager {
 
     /** Describes client connection state. */
-    private static enum ConnectionState {
+    private enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,
+        IN_LOBBY,
+        JOINING_GAME,
         JOINED_GAME,
         CONNECTION_ERROR,
         CLEAN_DISCONNECTED
@@ -138,6 +141,12 @@ public class ClientNetworkManager {
                 nob.handleServerEvent(eventId, stream);
             }
         }
+
+        @Override
+        public void startEvent() {
+            log.info("Server starting game");
+            mNextConnectionState.set(ConnectionState.JOINING_GAME);
+        }
     }
 
     private static class ClientObjectEntry {
@@ -157,17 +166,17 @@ public class ClientNetworkManager {
     /** Current connection state. */
     @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener). */
-    private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
+    private final AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
     /** Callback for connection result processing. */
-    private NetworkManager.IConnectionResultEvent mConnectionHandler;
+    private final NetworkManager.IConnectionResultEvent mConnectionHandler;
     /** Back reference to the network manager. */
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates. */
     private int mTicksWithoutRequests = 0;
     /** Listeners for spawn events. */
-    private List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
+    private final List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
     /** Listeners for owner modification events. */
-    private List<IObjectOwnerModifiedEvent> mModifiedOwnerListeners = new ArrayList<>();
+    private final List<IObjectOwnerModifiedEvent> mModifiedOwnerListeners = new ArrayList<>();
 
     @Getter private int mNetId = -1;
 
@@ -265,7 +274,8 @@ public class ClientNetworkManager {
 
     /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
+        if (mConnectionState == ConnectionState.JOINED_GAME
+                || mConnectionState == ConnectionState.IN_LOBBY) {
             if (mClient.processRequests() <= 0) {
                 mTicksWithoutRequests++;
                 if (mTicksWithoutRequests > 3200) {
@@ -293,9 +303,13 @@ public class ClientNetworkManager {
             log.info(nextState.toString());
             log.info(mConnectionState.toString());
 
-            if (mConnectionState == ConnectionState.CONNECTING) {
+            if (mConnectionState == ConnectionState.CONNECTING
+                    || mConnectionState == ConnectionState.IN_LOBBY) {
                 switch (nextState) {
                     case CONNECTED:
+                        joinLobby();
+                        break;
+                    case JOINING_GAME:
                         joinGame();
                         if (mConnectionHandler != null) {
                             mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetId);
@@ -328,7 +342,9 @@ public class ClientNetworkManager {
     }
 
     // TODO: implement lobby
-    // private void joinLobby() {}
+    private void joinLobby() {
+        mConnectionState = ConnectionState.IN_LOBBY;
+    }
 
     /** Join the game map. */
     private void joinGame() {
@@ -341,6 +357,8 @@ public class ClientNetworkManager {
         } else {
             engine.activateScene(mManager.getGameScene());
         }
+
+        sendToServer(new byte[] {NetworkConfig.Codes.MESSAGE_CLIENT_LOADED});
 
         mConnectionState = ConnectionState.JOINED_GAME;
     }

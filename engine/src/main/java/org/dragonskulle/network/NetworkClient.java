@@ -249,6 +249,10 @@ public class NetworkClient {
                 log.fine("A server object event");
                 mClientListener.objectEvent(stream);
                 break;
+            case NetworkConfig.Codes.MESSAGE_SERVER_START:
+                log.fine("Server is starting game");
+                mClientListener.startEvent();
+                break;
             default:
                 log.info("unsure of what to do with message as unknown type byte " + messageType);
                 break;
