@@ -4,7 +4,6 @@ package org.dragonskulle.network.components.sync;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * The type Sync int.
@@ -12,11 +11,9 @@ import java.io.Serializable;
  * @author Aurimas B The type Sync int.
  *     <p>This primitve type is implemented manually more space savings.
  */
-public class SyncInt implements ISyncVar, Serializable {
+public class SyncInt extends BaseSyncVar {
     /** The Data. */
     private int mData;
-    /** The On update. */
-    private transient ISyncVarUpdateHandler mOnUpdate;
 
     /**
      * Instantiates a new Sync int.
@@ -36,13 +33,7 @@ public class SyncInt implements ISyncVar, Serializable {
      * @param data the data
      */
     public void set(int data) {
-        if (mOnUpdate != null) {
-            if (data != this.mData) {
-                this.mOnUpdate
-                        .call(); // onUpdate callback is to set the mask bit on modification to the
-                // field
-            }
-        }
+        mDirty = true;
         this.mData = data;
     }
 
@@ -77,9 +68,10 @@ public class SyncInt implements ISyncVar, Serializable {
      * Serialize bytes.
      *
      * @param out The output stream
+     * @param clientId client ID which to serialize the changes for
      * @throws IOException the io exception
      */
-    public void serialize(DataOutputStream out) throws IOException {
+    public void serialize(DataOutputStream out, int clientId) throws IOException {
         out.writeInt(this.mData);
     }
 
@@ -91,15 +83,6 @@ public class SyncInt implements ISyncVar, Serializable {
      */
     public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readInt();
-    }
-
-    /**
-     * Register listener.
-     *
-     * @param handleFieldChange the handle field change
-     */
-    public void registerListener(ISyncVarUpdateHandler handleFieldChange) {
-        this.mOnUpdate = handleFieldChange;
     }
 
     @Override

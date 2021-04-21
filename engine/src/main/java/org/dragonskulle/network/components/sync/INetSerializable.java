@@ -15,9 +15,10 @@ public interface INetSerializable {
      * Serialize Sync Var.
      *
      * @param stream the output stream
+     * @param clientId client ID which to serialize the changes for
      * @throws IOException the io exception
      */
-    void serialize(DataOutputStream stream) throws IOException;
+    void serialize(DataOutputStream stream, int clientId) throws IOException;
 
     /**
      * Deserialize sync var.

@@ -80,7 +80,7 @@ public class ServerRequest<T extends INetSerializable> {
                     oos.writeByte(NetworkConfig.Codes.MESSAGE_CLIENT_REQUEST);
                     oos.writeInt(mNetworkObject.getId());
                     oos.writeInt(mRequestId);
-                    data.serialize(oos);
+                    data.serialize(oos, -1);
                     oos.flush();
                 }
                 bos.close();

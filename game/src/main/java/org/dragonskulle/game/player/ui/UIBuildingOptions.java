@@ -268,7 +268,9 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     }
 
     private void updateTokens() {
-        setTokens(mPlayerReference.get().getTokens().get());
+        if(Reference.isValid(mPlayerReference)) {
+            setTokens(mPlayerReference.get().getTokens().get());
+        }
     }
 
     private void ensurePlayerReference() {

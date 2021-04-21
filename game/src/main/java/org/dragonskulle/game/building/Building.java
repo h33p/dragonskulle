@@ -7,12 +7,15 @@ import java.util.HashSet;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -37,7 +40,8 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnAwake, IOnStart {
+public class Building extends NetworkableComponent
+        implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
 
     /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -70,6 +74,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
      */
     @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+
+    private Vector3i mPosition = null;
+
+    private boolean mInitialised = false;
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -138,6 +146,52 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     @Override
+    public void fixedUpdate(float deltaTime) {
+        checkInitialise();
+    }
+
+    /** Initialise the building only when it is properly on the map and the tile is synced */
+    void checkInitialise() {
+        if (mInitialised) {
+            return;
+        }
+
+        HexagonTile tile = getTile();
+
+        if (tile == null) {
+            return;
+        }
+
+        // Add the Building to the owner's mOwnedBuildings.
+        Player owningPlayer = getOwner();
+
+        if (owningPlayer == null) {
+            return;
+        }
+
+        owningPlayer.addOwnership(this);
+
+        // Generate the lists of tiles that are influenced by the Stats of the Building.
+        generateTileLists();
+
+        // Generate the base cost of upgrading stats.
+        generateStatBaseCost();
+        generatePlaceableTiles();
+
+        mInitialised = true;
+    }
+
+    @Override
+    public void frameUpdate(float deltaTime) {
+        TransformHex hexTransform = getGameObject().getTransform(TransformHex.class);
+        HexagonTile tile = getTile();
+
+        if (hexTransform != null && tile != null) {
+            hexTransform.setHeight(tile.getSurfaceHeight());
+        }
+    }
+
+    @Override
     public void onOwnerIdChange(int newId) {
         Player owningPlayer = getOwner();
         if (owningPlayer != null) {
@@ -167,24 +221,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             }
         }
 
-        // Add the Building to the owner's mOwnedBuildings.
-        Player owningPlayer = getOwner();
-        if (owningPlayer != null) {
-            owningPlayer.addOwnership(this);
+        if (getNetworkManager().isServer()) {
+            // Add the building to the relevant HexagonTile.
+            getTile().setBuilding(this);
         }
-
-        // Add the building to the relevant HexagonTile.
-        getTile().setBuilding(this);
 
         // Generate the list of tiles that have been claimed by the Building. This is always a set
         // radius so only needs to be generated once.
         generateClaimTiles();
-        // Generate the lists of tiles that are influenced by the Stats of the Building.
-        generateTileLists();
 
-        // Generate the base cost of upgrading stats.
-        generateStatBaseCost();
-        generatePlaceableTiles();
+        checkInitialise();
     }
 
     /**
@@ -199,6 +245,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         log.info("After stats change.");
 
         generateStatBaseCost();
+
         generateTileLists();
         setStatsRequireVisualUpdate(true);
     }
@@ -224,6 +271,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
+
         // Get the map.
         HexagonMap map = getMap();
         if (map == null) {
@@ -231,14 +279,21 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         int distance = mClaimDistance.getValue();
-        // Claim the tiles around the building.
-        mClaimedTiles = map.getTilesInRadius(getTile(), distance, false);
-        // Claim the tile the building is on.
-        mClaimedTiles.add(getTile());
 
-        // Allow each hexagon tile to store the claim.
-        for (HexagonTile hexagonTile : mClaimedTiles) {
-            hexagonTile.setClaimedBy(this);
+        ArrayList<HexagonTile> tiles = map.getTilesInRadius(getTile(), distance, true);
+
+        mClaimedTiles.clear();
+
+        if (getNetworkObject().isServer()) {
+            for (HexagonTile hexagonTile : tiles) {
+                hexagonTile.setClaimedBy(this);
+            }
+        }
+
+        for (HexagonTile hexagonTile : tiles) {
+            if (hexagonTile.getClaimedBy() == this) {
+                mClaimedTiles.add(hexagonTile);
+            }
         }
     }
 
@@ -253,11 +308,23 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             return;
         }
 
+        HexagonTile tile = getTile();
+
+        if (tile == null) {
+            return;
+        }
+
         // Get the current view distance.
         int distance = mViewDistance.getValue();
 
         // Get the tiles within the view distance.
         mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
+
+        Player owningPlayer = getOwner();
+
+        if (owningPlayer != null) {
+            owningPlayer.updateViewableTiles(this);
+        }
     }
 
     /**
@@ -271,10 +338,16 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             return;
         }
 
+        HexagonTile tile = getTile();
+
+        if (tile == null) {
+            return;
+        }
+
         // Get the current attack distance.
         int distance = mAttackDistance.getValue();
         // Get the tiles within the attack distance.
-        mAttackableTiles = map.getTilesInRadius(getTile(), distance, false);
+        mAttackableTiles = map.getTilesInRadius(tile, distance, false);
     }
 
     /** Store the tiles that are suitable for placing a building on. */
@@ -435,7 +508,14 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
 
         Vector3i position = getPosition();
-        return position == null ? null : map.getTile(position.x(), position.y());
+
+        if (position != null) {
+            HexagonTile tile = map.getTile(position.x(), position.y());
+            mPosition = position;
+            return tile;
+        }
+
+        return null;
     }
 
     /**
@@ -446,6 +526,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      *     null}.
      */
     private Vector3i getPosition() {
+
+        if (mPosition != null) {
+            return mPosition;
+        }
+
         TransformHex tranform = getGameObject().getTransform(TransformHex.class);
 
         if (tranform == null) {
@@ -465,10 +550,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     /**
      * Get the {@link HexagonMap} being used.
      *
-     * @return The map.
+     * @return The map, if it exists, or {@code null}.
      */
     private HexagonMap getMap() {
-        return mMap.get();
+        return Reference.isValid(mMap) ? mMap.get() : null;
     }
 
     /**
@@ -496,15 +581,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return The owning player, or {@code null}.
      */
     private Player getOwner(int ownerId) {
-        return getNetworkObject()
-                .getNetworkManager()
-                .getObjectsOwnedBy(ownerId)
-                .map(NetworkObject::getGameObject)
-                .map(go -> go.getComponent(Player.class))
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .findFirst()
-                .orElse(null);
+        SingletonStore singletons = getNetworkObject().getNetworkManager().getIdSingletons(ownerId);
+
+        if (singletons == null) {
+            return null;
+        }
+
+        return singletons.get(Player.class);
     }
 
     /**
@@ -537,23 +620,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * </ul>
      */
     public void remove() {
-        // Remove the ownership of the building from the owner.
-        getOwner().removeOwnership(this);
-
-        // Remove the building from the tile.
-        getTile().setBuilding(null);
-
-        // Remove any claims.
-        for (HexagonTile hexagonTile : mClaimedTiles) {
-            hexagonTile.removeClaim();
-        }
-
-        // Reset the list of claimed, viewable and attackable tiles.
-        mClaimedTiles.clear();
-        mViewableTiles.clear();
-        mAttackableTiles.clear();
-        mPlaceableTiles.clear();
-
         // Request that the entire building GameObject should be destroyed.
         getGameObject().destroy();
     }
@@ -661,5 +727,34 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+        Player owner = getOwner();
+
+        if (owner != null) {
+            // Remove the ownership of the building from the owner.
+            getOwner().removeOwnership(this);
+        }
+
+        HexagonTile tile = getTile();
+
+        if (tile != null && getNetworkObject().isServer()) {
+            // Remove the building from the tile.
+            getTile().setBuilding(null);
+
+            // Remove any claims.
+            for (HexagonTile hexagonTile : mClaimedTiles) {
+                // Make sure it's our tile. It should always be our tile, but better safe than
+                // sorry.
+                if (hexagonTile.getClaimedBy() == this) {
+                    hexagonTile.removeClaim();
+                }
+            }
+        }
+
+        // Reset the list of claimed, viewable and attackable tiles.
+        mClaimedTiles.clear();
+        mViewableTiles.clear();
+        mAttackableTiles.clear();
+        mPlaceableTiles.clear();
+    }
 }

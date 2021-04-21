@@ -16,7 +16,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
-import org.dragonskulle.game.map.FogOfWar;
+import org.dragonskulle.game.map.Cloudscape;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
@@ -61,7 +61,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
-    private Reference<FogOfWar> mFogOfWar;
+    private Reference<Cloudscape> mFogOfWar;
     private boolean mVisualsNeedUpdate;
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
@@ -78,7 +78,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
         mNetworkManager = networkManager;
         mNetId = netId;
-        mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
     }
 
     @Override
@@ -90,7 +89,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getReference(MapEffects.class);
 
         mFogOfWar =
-                Scene.getActiveScene().getSingleton(FogOfWar.class).getReference(FogOfWar.class);
+                Scene.getActiveScene()
+                        .getSingleton(Cloudscape.class)
+                        .getReference(Cloudscape.class);
 
         getGameObject()
                 .buildChild(
@@ -334,13 +335,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
         if (mHexChosen != null) {
             fx.highlightTile(mHexChosen, highlight.asSelection());
-        }
-    }
-
-    /** Marks visuals to update whenever a new object is spawned. */
-    private void onSpawnObject(NetworkObject obj) {
-        if (obj.getGameObject().getComponent(Building.class) != null) {
-            mVisualsNeedUpdate = true;
         }
     }
 

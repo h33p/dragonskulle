@@ -42,7 +42,7 @@ public class BuildData implements INetSerializable {
     }
 
     @Override
-    public void serialize(DataOutputStream stream) throws IOException {
+    public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.writeInt(mQ);
         stream.writeInt(mR);
         stream.writeInt(mDescriptorIndex);
