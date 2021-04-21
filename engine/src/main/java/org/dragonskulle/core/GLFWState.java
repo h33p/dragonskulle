@@ -28,6 +28,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
+import org.dragonskulle.renderer.RendererSettings;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
@@ -76,7 +77,7 @@ public class GLFWState implements NativeResource {
         }
 
         initWindow(width, height, appName);
-        mRenderer = new Renderer(appName, mWindow);
+        mRenderer = new Renderer(appName, mWindow, new RendererSettings());
 
         // Start detecting user input from the specified window, based on the bindings.
         Input.initialise(mWindow, bindings);
