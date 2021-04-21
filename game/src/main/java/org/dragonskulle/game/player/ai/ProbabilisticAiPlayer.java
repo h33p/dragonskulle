@@ -109,7 +109,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             Reference<Building> building = buildings.get(index);
 
             // Checks the building is valid
-            if (Reference.isValid(building) && building.get().getViewableTiles().size() != 0) {
+            if (Reference.isValid(building)) {
                 // Check
                 boolean completed = lambdaMethod.runEvent(building.get());
                 if (completed) {
