@@ -13,6 +13,7 @@ import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
@@ -121,6 +122,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
     @Override
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
         return (float) -getGameObject().getDepth() + mDepthShift;
+    }
+
+    @Override
+    public boolean frustumCull(FrustumIntersection intersection) {
+        return true;
     }
 
     public boolean cursorOver() {

@@ -173,7 +173,7 @@ public class ServerEvent<T extends INetSerializable> {
                 oos.writeByte(NetworkConfig.Codes.MESSAGE_SERVER_EVENT);
                 oos.writeInt(mNetworkObject.getId());
                 oos.writeInt(mEventId);
-                data.serialize(oos);
+                data.serialize(oos, -1);
                 oos.flush();
             }
             bos.flush();

@@ -6,46 +6,71 @@ import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateNetworkUpdate;
 import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.ServerClient;
 
 /**
+ * Root network manager.
+ *
  * @author Aurimas Blažulionis
  * @author Oscar L
+ *     <p>Network manager stores internal link to either server or client network managers, which
+ *     actually manage internal game state. This manager provides common interface between the two.
  */
 @Accessors(prefix = "m")
-@Log
 public class NetworkManager extends Component implements INetworkUpdate, ILateNetworkUpdate {
 
     /** Simple client connection result handler. */
     public static interface IConnectionResultEvent {
+        /**
+         * Handle the connection result event.
+         *
+         * @param gameScene scene in which the game will be
+         * @param manager network manager which the event is called from
+         * @param netID allocated network ID. If it's negative, connection failed
+         */
         void handle(Scene gameScene, NetworkManager manager, int netID);
     }
 
     /** Simple server client connection handler interface. */
     public static interface IConnectedClientEvent {
+        /**
+         * Handle client connection on the server.
+         *
+         * @param gameScene scene in which the game will be run
+         * @param manager network manager which the event is called from
+         * @param client newly connected network client
+         */
         void handle(Scene gameScene, NetworkManager manager, ServerClient client);
     }
 
-    /** A registerable listener for when objects are spawned. */
-    public static interface IObjectSpawnEvent {
-        void handleSpawn(NetworkObject object);
+    /** Ran on game start. */
+    public static interface IGameStartEvent {
+        /**
+         * Handle game start event.
+         *
+         * @param manager network manager which the event is called from
+         */
+        void handle(NetworkManager manager);
     }
 
+    /** Builder interface, used for networked scene building. */
     public static interface ISceneBuilder {
+        /**
+         * Build a scene.
+         *
+         * @param manager network manager which the event is called from
+         * @param isServer if we are building as the server, or the client
+         * @return built scene to be used as networked scene
+         */
         Scene buildScene(NetworkManager manager, boolean isServer);
-    }
-
-    /** A registerable listener for when objects change owner. */
-    public static interface IObjectOwnerModifiedEvent {
-        void handleModifyOwner(Reference<NetworkObject> object);
     }
 
     /** Registered spawnable templates. */
@@ -62,6 +87,13 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /** Server manager. Exists when there is a server instance */
     @Getter private transient ServerNetworkManager mServerManager;
 
+    /**
+     * Constructor for network manager.
+     *
+     * @param templates spawnable templates for objects in the game. Each object has a unique ID,
+     *     and it can be looked up by name using {@link findTemplateByName} method
+     * @param builder builder which will be used to build the game scene.
+     */
     public NetworkManager(TemplateManager templates, ISceneBuilder builder) {
         mSpawnableTemplates = templates;
         mGameSceneBuilder = builder;
@@ -88,7 +120,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         else if (mClientManager != null) mClientManager.lateNetworkUpdate();
     }
 
-    public void createGameScene(boolean isServer) {
+    /**
+     * Create the game scene.
+     *
+     * @param isServer {@code true} if called by {@link ServerNetworkManager}
+     */
+    void createGameScene(boolean isServer) {
         if (mGameScene != null) {
             Engine.getInstance().unloadScene(mGameScene);
         }
@@ -113,11 +150,14 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
+     * @param startEventHandler callback that gets called when the game starts
      */
-    public void createServer(int port, IConnectedClientEvent connectionHandler) {
+    public void createServer(
+            int port, IConnectedClientEvent connectionHandler, IGameStartEvent startEventHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
-                mServerManager = new ServerNetworkManager(this, port, connectionHandler);
+                mServerManager =
+                        new ServerNetworkManager(this, port, connectionHandler, startEventHandler);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -167,7 +207,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         return -1f;
     }
 
-    public Stream<NetworkObject> getObjectsOwnedBy(int netId) {
+    /**
+     * Get a stream of {@link NetworkObject}.
+     *
+     * @return stream of network objects, or {@code null} if there is no active networked game
+     */
+    public Stream<NetworkObject> getNetworkObjects() {
         Stream<Reference<NetworkObject>> obj = null;
 
         if (mServerManager != null) {
@@ -178,11 +223,49 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
             obj = mClientManager.getNetworkObjects();
         }
 
-        return obj == null
-                ? null
-                : obj.filter(Reference::isValid)
-                        .map(Reference::get)
-                        .filter(o -> o.getOwnerId() == netId);
+        return obj == null ? null : obj.filter(Reference::isValid).map(Reference::get);
+    }
+
+    /**
+     * Get stream of objects owned by a particular owner.
+     *
+     * @param ownerId target owner to yield the objects for
+     * @return stream of network objects whose owner is {@code ownerId}. {@code null}, if there is
+     *     no networked game active.
+     */
+    public Stream<NetworkObject> getObjectsOwnedBy(int ownerId) {
+        Stream<NetworkObject> obj = getNetworkObjects();
+
+        return obj == null ? null : obj.filter(o -> o.getOwnerId() == ownerId);
+    }
+
+    /**
+     * Get a network object by its ID.
+     *
+     * @param netId network ID of an object
+     * @return {@link NetworkObject} corresponding to the netId, {@code null} if not found
+     */
+    public NetworkObject getObjectById(int netId) {
+        Stream<NetworkObject> obj = getNetworkObjects();
+
+        return obj == null ? null : obj.filter(o -> o.getId() == netId).findAny().orElse(null);
+    }
+
+    /**
+     * Get singletons for a object owner.
+     *
+     * @param ownerId owner of the singletons
+     * @return singleton store for the given owner ID. If the store does not exist, a new one gets
+     *     created. {@code null} if no client or server is running.
+     */
+    public SingletonStore getIdSingletons(int ownerId) {
+        if (mServerManager != null) {
+            return mServerManager.getIdSingletons(ownerId);
+        } else if (mClientManager != null) {
+            return mClientManager.getIdSingletons(ownerId);
+        } else {
+            return null;
+        }
     }
 
     /** Called whenever client disconnects. */
