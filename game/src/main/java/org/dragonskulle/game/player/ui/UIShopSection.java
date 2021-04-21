@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -24,17 +25,29 @@ import org.dragonskulle.ui.UIText;
  */
 @Accessors(prefix = "m")
 @Log
-public class UIShopSection extends Component implements IOnStart {
-    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
-    @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
+public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
+    @Getter
+    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Setter
+    @Getter
+    private ShopState mLastState = ShopState.CLOSED;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
     @Getter(AccessLevel.PROTECTED)
     private final UIMenuLeftDrawer mParent;
 
-    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter
+    @Getter
+    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> mTitleRef;
+    private Reference<TransformUI> mTransform;
+    private boolean mShopIsTranslated = true;
+    @Setter
+    private boolean mShouldTranslateShop = false;
+    private float mStep = 0.02f;
+    private float mLastY = 0.68f;
+    private TransformUI textTransform;
 
     /**
      * Constructor.
@@ -45,7 +58,14 @@ public class UIShopSection extends Component implements IOnStart {
         this.mParent = mParent;
     }
 
-    /** The Shop state. This controls what can be seen at what time. */
+    @Override
+    public void frameUpdate(float deltaTime) {
+        translateShop();
+    }
+
+    /**
+     * The Shop state. This controls what can be seen at what time.
+     */
     public enum ShopState {
         CLOSED,
         BUILDING_NEW,
@@ -53,7 +73,9 @@ public class UIShopSection extends Component implements IOnStart {
         MY_BUILDING_SELECTED
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy.
+     */
     @Override
     protected void onDestroy() {}
 
@@ -64,15 +86,20 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
+            shouldTranslateShopIfNotVisible();
+            String newText = "Shop is Closed";
             if (state.equals(ShopState.CLOSED)) {
                 show(mNewBuildingPanel, false);
                 show(mCurrentPanel, false);
                 setLastState(state);
+                if (Reference.isValid(mTitleRef)) {
+                    mTitleRef.get().setText(newText);
+                }
+                setShouldTranslateShop(true);
                 swapPanels(new Reference<>(null));
                 return;
             }
             Reference<GameObject> newPanel;
-            String newText = "Shop is Closed";
             log.warning("setting visible state to " + state);
             switch (state) {
                 case ATTACK_SCREEN:
@@ -88,6 +115,9 @@ public class UIShopSection extends Component implements IOnStart {
                     break;
                 default:
                     log.warning("Menu hasn't been updated to reflect this screen yet  " + state);
+                    if (Reference.isValid(mTitleRef)) {
+                        mTitleRef.get().setText(newText);
+                    }
                     setState(ShopState.CLOSED);
                     return;
             }
@@ -100,10 +130,42 @@ public class UIShopSection extends Component implements IOnStart {
         }
     }
 
+    private void translateShopOff() {
+    }
+
+    private void shouldTranslateShopIfNotVisible() {
+        if (mShopIsTranslated) {
+            setShouldTranslateShop(true);
+        }
+    }
+
+    private void translateShop() {
+        if (mShouldTranslateShop) {
+            if (Reference.isValid(mTransform)) {
+                //0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f
+                TransformUI t = mTransform.get();
+                mLastY = mLastY + (mShopIsTranslated ? -(mStep) : mStep);
+                t.setParentAnchor(0.08f, mLastY, 1 - 0.08f, 1 - 0.03f);
+                float y = textTransform.getPosition().y();
+                log.info("y: " + y);
+                if (0.4f < y && y < 0.86f) {
+                    textTransform.translate(0, (mShopIsTranslated ? -0.02f : 0.02f));
+                }
+                if (mLastY >= 0.88f) {
+                    setShouldTranslateShop(false);
+                    mShopIsTranslated = true;
+                } else if (mLastY <= 0.68f) {
+                    setShouldTranslateShop(false);
+                    mShopIsTranslated = false;
+                }
+            }
+        }
+    }
+
     /**
      * Show the component's GO.
      *
-     * @param component the component
+     * @param component  the component
      * @param shouldShow true if should show
      */
     private void show(Reference<GameObject> component, boolean shouldShow) {
@@ -166,7 +228,8 @@ public class UIShopSection extends Component implements IOnStart {
 
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
+        tran.setParentAnchor(0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f);
+        mTransform = tran.getReference(TransformUI.class);
         UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
         ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
         getGameObject().addComponent(renderable);
@@ -181,8 +244,8 @@ public class UIShopSection extends Component implements IOnStart {
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });
 
-        TransformUI textTransform = textObj.get().getTransform(TransformUI.class);
+        textTransform = textObj.get().getTransform(TransformUI.class);
         textTransform.setParentAnchor(0.05f, 0f);
-        textTransform.translate(0, -0.22f);
+//        textTransform.translate(0, -0.22f);
     }
 }

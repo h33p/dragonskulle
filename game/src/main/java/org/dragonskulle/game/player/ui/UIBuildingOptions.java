@@ -146,7 +146,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                                                                 .mNotifyScreenChange
                                                                                 .call(
                                                                                         Screen
-                                                                                                .MAP_SCREEN);
+                                                                                                .BUILDING_SELECTED_SCREEN);
                                                                     }
                                                                 });
                                                 me.addComponent(button);
@@ -268,7 +268,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     }
 
     private void updateTokens() {
-        if(Reference.isValid(mPlayerReference)) {
+        if (Reference.isValid(mPlayerReference)) {
             setTokens(mPlayerReference.get().getTokens().get());
         }
     }
