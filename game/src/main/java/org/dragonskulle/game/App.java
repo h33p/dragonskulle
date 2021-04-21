@@ -26,6 +26,8 @@ import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.renderer.Renderer;
+import org.dragonskulle.renderer.RendererSettings;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.ui.TransformUI;
@@ -37,6 +39,7 @@ import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UISlider;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
@@ -416,6 +419,35 @@ public class App implements NativeResource {
                             mainUi.setEnabled(true);
                         }));
 
+        UIDropDown msaaCountDropDown =
+                new UIDropDown(
+                        0,
+                        (drop) -> {
+                            int value = 1 << drop.getSelected();
+                            Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+                            RendererSettings newSettings = new RendererSettings(rend.getSettings());
+                            newSettings.setMSAACount(value);
+                            rend.setSettings(newSettings);
+                            updateMSAADropDown(drop);
+                        });
+        UIDropDown targetGPUDropDown =
+                new UIDropDown(
+                        0,
+                        (drop) -> {
+                            String selected = drop.getSelectedOption();
+
+                            if (selected == null) {
+                                return;
+                            }
+
+                            Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+                            RendererSettings newSettings = new RendererSettings(rend.getSettings());
+                            newSettings.setTargetGPU(selected);
+                            rend.setSettings(newSettings);
+                            updateGPUDropDown(drop);
+                            updateMSAADropDown(msaaCountDropDown);
+                        });
+
         uiManager.buildVerticalUi(
                 settingsUI,
                 0.05f,
@@ -432,6 +464,8 @@ public class App implements NativeResource {
                         (__, ___) -> {
                             settingsUI.setEnabled(false);
                             graphicsSettingsUI.setEnabled(true);
+                            updateGPUDropDown(targetGPUDropDown);
+                            updateMSAADropDown(msaaCountDropDown);
                         }),
                 new UIButton(
                         "Back",
@@ -473,6 +507,10 @@ public class App implements NativeResource {
                                 },
                                 "Windowed",
                                 "Fullscreen")),
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Target GPU:"), targetGPUDropDown),
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("MSAA Count:"), msaaCountDropDown),
                 new UIButton(
                         "Back",
                         (__, ___) -> {
@@ -531,6 +569,44 @@ public class App implements NativeResource {
 
         AudioManager.getInstance().cleanup();
         System.exit(0);
+    }
+
+    private void updateGPUDropDown(UIDropDown drop) {
+        Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+
+        String selected = rend.getPhysicalDeviceName();
+
+        String[] devs = rend.getPhysicalDeviceNames().toArray(String[]::new);
+
+        drop.setOptions(devs);
+
+        int selection = 0;
+
+        for (String dev : devs) {
+            if (dev.equals(selected)) {
+                break;
+            }
+            selection++;
+        }
+
+        drop.setSelected(selection);
+    }
+
+    private void updateMSAADropDown(UIDropDown drop) {
+        Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+
+        int maxMSAA = rend.getMaxMSAASamples();
+
+        int msaaCount = MathUtils.log(maxMSAA, 2) + 1;
+
+        String[] samps = new String[msaaCount];
+
+        for (int i = 0; i < msaaCount; i++) {
+            samps[i] = String.format("%dx", (1 << i));
+        }
+
+        drop.setOptions(samps);
+        drop.setSelected(MathUtils.log(rend.getMSAASamples(), 2));
     }
 
     private void run() {

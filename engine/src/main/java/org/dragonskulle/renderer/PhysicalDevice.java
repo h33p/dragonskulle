@@ -84,12 +84,14 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     }
 
     /** Describes physical graphics feature support. */
+    @Getter
     static class FeatureSupportDetails {
         boolean mAnisotropyEnable;
         float mMaxAnisotropy;
         boolean mGeometryShaders;
         boolean mOptimalLinearTiling;
         int mMsaaSamples;
+        int mMaxMsaaSamples;
 
         static final int[] REQUIRED_TILED_FORMATS = {VK_FORMAT_R8G8B8A8_SRGB};
 
@@ -124,6 +126,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
             this.mFeatureSupport.mMsaaSamples =
                     properties.limits().framebufferColorSampleCounts()
                             & properties.limits().framebufferDepthSampleCounts();
+            this.mFeatureSupport.mMaxMsaaSamples = findSuitableMSAACount(128);
 
             this.mScore = 0;
 
@@ -255,34 +258,8 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Picks a physical device with required features. */
-    public static PhysicalDevice pickPhysicalDevice(
-            VkInstance instance, long surface, String targetDevice, Set<String> neededExtensions) {
-        PhysicalDevice[] devices = enumeratePhysicalDevices(instance, surface, neededExtensions);
-
-        if (devices.length == 0) {
-            return null;
-        } else if (targetDevice == null) {
-            return devices[0];
-        }
-
-        for (PhysicalDevice d : devices) {
-            if (d.mDeviceName.contains(targetDevice)) {
-                return d;
-            }
-        }
-
-        log.severe("Failed to find suitable physical device!");
-        log.info("Valid devices:");
-        for (PhysicalDevice d : devices) {
-            log.info(d.mDeviceName);
-        }
-
-        return null;
-    }
-
     /** Collect all compatible physical GPUs into an array, sorted by decreasing score. */
-    private static PhysicalDevice[] enumeratePhysicalDevices(
+    public static PhysicalDevice[] enumeratePhysicalDevices(
             VkInstance instance, long surface, Set<String> extensions) {
         try (MemoryStack stack = stackPush()) {
             IntBuffer physDevCount = stack.ints(0);

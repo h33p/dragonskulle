@@ -172,9 +172,18 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
      * @param text new text value
      */
     public void setText(String text) {
+        if (text == null) {
+            text = "";
+        }
+
+        if (mText == null) {
+            mText = "";
+        }
+
         if (mText.equals(text) && getMesh() != null) {
             return;
         }
+
         mText = text;
 
         buildMesh();

@@ -3,8 +3,6 @@ package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
 import static org.dragonskulle.utils.Env.envBool;
-import static org.dragonskulle.utils.Env.envInt;
-import static org.dragonskulle.utils.Env.envString;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
@@ -200,6 +198,13 @@ public class Renderer implements NativeResource {
     /** Reference to the GLFW window. */
     private long mWindow;
 
+    /** Settings used by the renderer. */
+    @Getter(AccessLevel.PUBLIC)
+    private RendererSettings mSettings;
+
+    /** Physical devices found by the renderer. */
+    private PhysicalDevice[] mPhysicalDevices;
+
     /** A vulkan context instance. */
     private VkInstance mInstance;
     /** Debug messenger used to log validation errors when {@code DEBUG_RENDERER} is enabled. */
@@ -210,6 +215,7 @@ public class Renderer implements NativeResource {
     /** Active physical device. */
     private PhysicalDevice mPhysicalDevice;
     /** Number of Multi-Sampled Anti-Aliasing (MSAA) samples used. */
+    @Getter(AccessLevel.PUBLIC)
     private int mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
     /** Logical device. */
@@ -312,13 +318,6 @@ public class Renderer implements NativeResource {
     /** Maps a render order to list of non-instanced draw calls. */
     private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
 
-    /** List of validation layers to activate when debug mode is on. */
-    private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
-            Arrays.asList("VK_LAYER_KHRONOS_validation");
-    /** List of device extensions that are required for the renderer to work. */
-    private static final Set<String> DEVICE_EXTENSIONS =
-            Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
-
     /**
      * Controls whether debug mode is on or off. Set an environment variable {@code DEBUG_RENDERER}
      * to enable debug mode. This mode enables Vulkan validation layers which are extremely useful
@@ -326,18 +325,13 @@ public class Renderer implements NativeResource {
      * (Khronos Vulkan SDK if on windows)
      */
     static final boolean DEBUG_MODE = envBool("DEBUG_RENDERER", false);
-    /**
-     * Target GPU to use. When {@code TARGET_GPU} environment variale is set, the renderer will only
-     * pick GPUs that contain the substring of the provided value in their name. If no such GPU
-     * exists, the renderer will refuse to initialise.
-     */
-    private static final String TARGET_GPU = envString("TARGET_GPU", null);
 
-    /**
-     * Target number of MSAA samples. If the picked physical device does not support this number of
-     * samples, the highest number (that is not higher than the one provided) will be picked
-     */
-    private static final int MSAA_SAMPLES = envInt("MSAA_SAMPLES", 4);
+    /** List of validation layers to activate when debug mode is on. */
+    private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
+            Arrays.asList("VK_LAYER_KHRONOS_validation");
+    /** List of device extensions that are required for the renderer to work. */
+    private static final Set<String> DEVICE_EXTENSIONS =
+            Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME).collect(toSet());
 
     /** Highest value of UINT64, it's 0xffffffffffffffff. */
     private static final long UINT64_MAX = -1L;
@@ -458,29 +452,69 @@ public class Renderer implements NativeResource {
      * @param window handle to GLFW window.
      * @throws RuntimeException when initialization fails.
      */
-    public Renderer(String appName, long window) throws RuntimeException {
+    public Renderer(String appName, long window, RendererSettings settings)
+            throws RuntimeException {
         log.info("Initialize renderer");
         mInstanceBufferSize = 4096;
-        this.mWindow = window;
+        mSettings = settings;
+        mWindow = window;
         mInstance = createInstance(appName);
         if (DEBUG_MODE) {
             mDebugMessenger = createDebugLogger();
         }
         mSurface = createSurface();
-        mPhysicalDevice = pickPhysicalDevice();
-        mMSAASamples = mPhysicalDevice.findSuitableMSAACount(MSAA_SAMPLES);
-        mDevice = createLogicalDevice();
-        mGraphicsQueue = createGraphicsQueue();
-        mPresentQueue = createPresentQueue();
-        mCommandPool = createCommandPool();
-        mSamplerFactory = new TextureSamplerFactory(mDevice, mPhysicalDevice);
-        mTextureFactory =
-                new VulkanSampledTextureFactory(
-                        mDevice, mPhysicalDevice, mCommandPool, mGraphicsQueue, mSamplerFactory);
-        mTextureSetLayoutFactory = new TextureSetLayoutFactory(mDevice);
-        mCurrentMeshBuffer = new VulkanMeshBuffer(mDevice, mPhysicalDevice);
-        createSwapchainObjects();
-        mFrameContexts = createFrameContexts(FRAMES_IN_FLIGHT);
+        createFromPhysicalDevice();
+    }
+
+    public Stream<String> getPhysicalDeviceNames() {
+        return Arrays.stream(mPhysicalDevices).map(PhysicalDevice::getDeviceName);
+    }
+
+    public int getMaxMSAASamples() {
+        return mPhysicalDevice.getFeatureSupport().getMaxMsaaSamples();
+    }
+
+    public String getPhysicalDeviceName() {
+        return mPhysicalDevice.getDeviceName();
+    }
+
+    /**
+     * Set renderer graphics settings.
+     *
+     * <p>Depending on the settings changed, there may be a longer, or shorter time rendering
+     * freeze.
+     *
+     * @param newSettings new graphics settings to choose
+     */
+    public void setSettings(RendererSettings newSettings) {
+        RendererSettings oldSettings = mSettings;
+
+        if (newSettings.equals(oldSettings)) {
+            return;
+        }
+
+        boolean changeGPU =
+                newSettings.getTargetGPU() != null
+                        && !mPhysicalDevice.getDeviceName().equals(newSettings.getTargetGPU());
+
+        if (changeGPU) {
+            destroyPhysicalDevice();
+
+            mSettings = newSettings;
+
+            try {
+                createFromPhysicalDevice();
+            } catch (Exception e) {
+                destroyPhysicalDevice();
+                e.printStackTrace();
+                mSettings = oldSettings;
+            }
+
+            createFromPhysicalDevice();
+        } else {
+            mSettings = newSettings;
+            recreateSwapchain();
+        }
     }
 
     /**
@@ -494,6 +528,11 @@ public class Renderer implements NativeResource {
      * @param lights list of lights to light the objects with
      */
     public void render(Camera camera, List<Renderable> objects, List<Light> lights) {
+
+        if (mPhysicalDevice == null) {
+            createFromPhysicalDevice();
+        }
+
         if (mImageContexts == null) {
             recreateSwapchain();
         }
@@ -621,6 +660,17 @@ public class Renderer implements NativeResource {
      */
     @Override
     public void free() {
+        destroyPhysicalDevice();
+        destroyDebugMessanger();
+        vkDestroySurfaceKHR(mInstance, mSurface, null);
+        vkDestroyInstance(mInstance, null);
+        glfwDestroyWindow(mWindow);
+        glfwTerminate();
+    }
+
+    /// Internal code
+
+    private void destroyPhysicalDevice() {
         vkDeviceWaitIdle(mDevice);
         for (FrameContext frame : mFrameContexts) {
             vkDestroySemaphore(mDevice, frame.mRenderFinishedSemaphore, null);
@@ -634,14 +684,9 @@ public class Renderer implements NativeResource {
         mSamplerFactory.free();
         vkDestroyCommandPool(mDevice, mCommandPool, null);
         vkDestroyDevice(mDevice, null);
-        destroyDebugMessanger();
-        vkDestroySurfaceKHR(mInstance, mSurface, null);
-        vkDestroyInstance(mInstance, null);
-        glfwDestroyWindow(mWindow);
-        glfwTerminate();
+        mPhysicalDevice = null;
+        mPhysicalDevices = null;
     }
-
-    /// Internal code
 
     /** Recreate swapchain when it becomes invalid. */
     private void recreateSwapchain() {
@@ -720,6 +765,30 @@ public class Renderer implements NativeResource {
     /// Internal setup code.
 
     /**
+     * Setup state from physical device selection
+     *
+     * <p>Setup vulkan state from physical device selection. Allows to completely change graphics
+     * card used without restarting the app.
+     */
+    private void createFromPhysicalDevice() {
+        mPhysicalDevices =
+                PhysicalDevice.enumeratePhysicalDevices(mInstance, mSurface, DEVICE_EXTENSIONS);
+        mPhysicalDevice = pickPhysicalDevice();
+        mDevice = createLogicalDevice();
+        mGraphicsQueue = createGraphicsQueue();
+        mPresentQueue = createPresentQueue();
+        mCommandPool = createCommandPool();
+        mSamplerFactory = new TextureSamplerFactory(mDevice, mPhysicalDevice);
+        mTextureFactory =
+                new VulkanSampledTextureFactory(
+                        mDevice, mPhysicalDevice, mCommandPool, mGraphicsQueue, mSamplerFactory);
+        mTextureSetLayoutFactory = new TextureSetLayoutFactory(mDevice);
+        mCurrentMeshBuffer = new VulkanMeshBuffer(mDevice, mPhysicalDevice);
+        createSwapchainObjects();
+        mFrameContexts = createFrameContexts(FRAMES_IN_FLIGHT);
+    }
+
+    /**
      * Create swapchain objects
      *
      * <p>Create all objects that depend on the swapchain. Unlike initial setup, this method will be
@@ -729,6 +798,7 @@ public class Renderer implements NativeResource {
         mSurfaceFormat = mPhysicalDevice.getSwapchainSupport().chooseSurfaceFormat();
         mExtent = mPhysicalDevice.getSwapchainSupport().chooseExtent(mWindow);
         mSwapchain = createSwapchain();
+        mMSAASamples = mPhysicalDevice.findSuitableMSAACount(mSettings.getMSAACount());
         mRenderPass = createRenderPass();
         mColorImage = createColorImage();
         mColorImageView = mColorImage.createImageView();
@@ -990,14 +1060,28 @@ public class Renderer implements NativeResource {
      */
     private PhysicalDevice pickPhysicalDevice() {
         log.fine("Pick physical device");
-        PhysicalDevice physicalDevice =
-                PhysicalDevice.pickPhysicalDevice(
-                        mInstance, mSurface, TARGET_GPU, DEVICE_EXTENSIONS);
-        if (physicalDevice == null) {
-            throw new RuntimeException("Failed to find compatible GPU!");
+
+        String target = mSettings.getTargetGPU();
+
+        if (mPhysicalDevices.length == 0) {
+            throw new RuntimeException("No suitable physical GPUs!");
+        } else if (target == null) {
+            return mPhysicalDevices[0];
         }
-        log.fine(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
-        return physicalDevice;
+
+        for (PhysicalDevice d : mPhysicalDevices) {
+            if (d.getDeviceName().contains(target)) {
+                return d;
+            }
+        }
+
+        log.severe("Failed to find suitable physical device!");
+        log.info("Valid devices:");
+        for (PhysicalDevice d : mPhysicalDevices) {
+            log.info(d.getDeviceName());
+        }
+
+        throw new RuntimeException("Failed to find target GPU!");
     }
 
     /// Logical device setup
