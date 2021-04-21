@@ -90,20 +90,10 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
-                            "enabled" : true,
-                            "properties" : [
-                                {
-                                    "name" : "mSyncHeight",
-                                    "value" : false
-                                }
-                            ]
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.building.Building",
                             "enabled" : true
                         },
                         {
-                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
+                            "class_name" : "org.dragonskulle.game.building.Building",
                             "enabled" : true
                         }
                     ]
@@ -162,7 +152,6 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-<<<<<<< HEAD
                     "transform" : "org.dragonskulle.components.TransformHex",
                     "components" : [
                         {
@@ -172,32 +161,13 @@
                         {
                             "class_name" : "org.dragonskulle.game.player.ai.CapitalAimer",
                             "enabled" : true
-=======
-                    "transform" : "org.dragonskulle.components.Transform3D",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.map.HexagonMap",
-                            "enabled" : true,
-                            "properties" : [
-                                {
-                                    "name" : "mSize",
-                                    "value" : 51
-                                }
-                            ]
->>>>>>> main
                         }
                     ]
                 }
             },
-<<<<<<< HEAD
             "name" : "aStarAi",
             "translation" : [
                 -8,
-=======
-            "name" : "map",
-            "translation" : [
-                -10,
->>>>>>> main
                 0,
                 0
             ]
