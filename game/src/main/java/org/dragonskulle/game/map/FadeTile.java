@@ -4,10 +4,10 @@ package org.dragonskulle.game.map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
@@ -19,43 +19,77 @@ import org.dragonskulle.utils.MathUtils;
  *     <p>This component draws a visual fog of war for the players
  */
 @Accessors(prefix = "m")
-@Log
-public class FogTile extends Component implements IOnAwake, IFrameUpdate {
+public class FadeTile extends Component implements IOnAwake, IFrameUpdate {
 
+    @Getter @Setter private String mChildName = "";
     @Getter @Setter private float mFadeTime = 0.4f;
+    @Getter @Setter private boolean mDestroyOnFadeOut = false;
+
+    private float mAlphaMul = 1f;
 
     private float mTarget = 1f;
 
     private Reference<Renderable> mRenderable;
-    private float mFadeValue = 1f;
+    @Getter @Setter private float mFadeValue = 1f;
 
-    public void setFog(boolean enabled) {
+    @Getter private float mTargetHeight = 0f;
+
+    private Reference<HeightController> mHeightController;
+
+    public void setState(boolean enabled, float height) {
         mTarget = enabled ? 1f : -1f;
+        mTargetHeight = height;
     }
 
     @Override
     public void onAwake() {
-        mRenderable = getGameObject().getComponent(Renderable.class);
+        if (!Reference.isValid(mRenderable)) {
+            GameObject rendObj = getGameObject();
+
+            if (!mChildName.equals("")) {
+                rendObj = rendObj.findChildByName(mChildName);
+            }
+
+            mRenderable = rendObj.getComponent(Renderable.class);
+        }
+
+        mHeightController = getGameObject().getComponent(HeightController.class);
+        IColouredMaterial colMat = mRenderable.get().getMaterial(IColouredMaterial.class);
+
+        if (colMat != null) {
+            mAlphaMul = colMat.getAlpha();
+        }
     }
 
     @Override
     public void frameUpdate(float deltaTime) {
+
+        if (Reference.isValid(mHeightController)) {
+            mHeightController.get().setTargetHeight(mTargetHeight);
+        }
+
         if (!Reference.isValid(mRenderable)) {
             return;
         }
 
         mFadeValue = MathUtils.clamp(mFadeValue + mTarget * deltaTime / mFadeTime, 0f, 1);
 
+        float alphaValue = mFadeValue * mAlphaMul;
+
         IColouredMaterial colMat = mRenderable.get().getMaterial(IColouredMaterial.class);
 
         if (colMat != null) {
-            colMat.setAlpha(mFadeValue);
+            colMat.setAlpha(alphaValue);
         }
 
         if (colMat instanceof PBRMaterial) {
             PBRMaterial pbrMat = (PBRMaterial) colMat;
-            pbrMat.setAlphaBlend(mFadeValue < 1f && mFadeValue > 0f);
+            pbrMat.setAlphaBlend(alphaValue < 1f && alphaValue > 0f);
             pbrMat.setAlphaCutoff(0.01f);
+        }
+
+        if (mDestroyOnFadeOut && mFadeValue <= 0f) {
+            getGameObject().destroy();
         }
     }
 

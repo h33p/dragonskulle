@@ -4,7 +4,6 @@ package org.dragonskulle.network.components.sync;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * The type Sync short.
@@ -13,11 +12,9 @@ import java.io.Serializable;
  *     <p>The type Sync short.
  *     <p>This primitve type is implemented manually more space savings.
  */
-public class SyncShort implements ISyncVar, Serializable {
+public class SyncShort extends BaseSyncVar {
     /** The Data. */
     private short mData;
-    /** The On update. */
-    private transient ISyncVarUpdateHandler mOnUpdate;
 
     /**
      * Instantiates a new Sync short.
@@ -37,13 +34,7 @@ public class SyncShort implements ISyncVar, Serializable {
      * @param data the data
      */
     public void set(short data) {
-        if (mOnUpdate != null) {
-            if (data != this.mData) {
-                this.mOnUpdate
-                        .call(); // onUpdate callback is to set the mask bit on modification to the
-                // field
-            }
-        }
+        mDirty = true;
         this.mData = data;
     }
 
@@ -60,10 +51,11 @@ public class SyncShort implements ISyncVar, Serializable {
      * Serialize the SyncShort.
      *
      * @param out The output stream
+     * @param clientId client ID which to serialize the changes for
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(DataOutputStream out) throws IOException {
+    public void serialize(DataOutputStream out, int clientId) throws IOException {
         out.writeShort(this.mData);
     }
 
@@ -76,15 +68,6 @@ public class SyncShort implements ISyncVar, Serializable {
     @Override
     public void deserialize(DataInputStream in) throws IOException {
         this.mData = in.readShort();
-    }
-
-    /**
-     * Register listener.
-     *
-     * @param handleFieldChange the handle field change
-     */
-    public void registerListener(ISyncVarUpdateHandler handleFieldChange) {
-        this.mOnUpdate = handleFieldChange;
     }
 
     @Override

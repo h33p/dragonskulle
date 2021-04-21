@@ -2,6 +2,7 @@
 package org.dragonskulle.network.components;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.TransformHex;
@@ -9,15 +10,22 @@ import org.dragonskulle.network.components.sync.SyncVector3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+/**
+ * Networkable hex transform.
+ *
+ * @author Aurimas Blažulionis and Oscar L
+ */
 @Accessors(prefix = "m")
 public class NetworkHexTransform extends NetworkableComponent implements IFixedUpdate {
+    /** Synchronized axial coordinate. */
     @Getter private SyncVector3 mAxialCoordinate = new SyncVector3(new Vector3f(0, 0, 0));
+    /** Internal transform reference. */
     private TransformHex mHexTransform;
 
-    public NetworkHexTransform(int q, int r) {
-        mAxialCoordinate.set(new Vector3f(q, r, 0));
-    }
+    /** Whether height should be synchronized or not. */
+    @Getter @Setter private boolean mSyncHeight = true;
 
+    /** Constructor for {@link NetworkHexTransform}. */
     public NetworkHexTransform() {
         mAxialCoordinate.set(new Vector3f(0, 0, 0));
     }
@@ -42,6 +50,12 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
         }
     }
 
+    /**
+     * Set the hex position.
+     *
+     * <p>If on server, this will set {@link mAxialCoordinate}, if on client - this will set
+     * transform's coordinates.
+     */
     private void setHexPosition() {
         if (mHexTransform == null) {
             mHexTransform = getGameObject().getTransform(TransformHex.class);
@@ -50,14 +64,18 @@ public class NetworkHexTransform extends NetworkableComponent implements IFixedU
         if (mHexTransform != null) {
             if (getNetworkObject().isServer()) {
                 Vector3f newPosition = mHexTransform.getLocalPosition(new Vector3f());
-                newPosition.z = mHexTransform.getHeight();
+                if (mSyncHeight) {
+                    newPosition.z = mHexTransform.getHeight();
+                }
                 if (!mAxialCoordinate.get().equals(newPosition)) {
                     mAxialCoordinate.set(newPosition);
                 }
             } else {
                 Vector3fc pos = mAxialCoordinate.get();
                 mHexTransform.setPosition(pos.x(), pos.y());
-                mHexTransform.setHeight(pos.z());
+                if (mSyncHeight) {
+                    mHexTransform.setHeight(pos.z());
+                }
             }
         }
     }
