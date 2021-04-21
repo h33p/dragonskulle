@@ -299,9 +299,6 @@ public class AudioManager {
             }
         }
 
-        // TODO: Sort audio sources by priority
-        // List is not sorted by priority for now but will be in the future so
-        // detach all sources from index mSources.size() onwards
         if (audioSources.size() > mSources.size()) {
             detachSources(audioSources.subList(mSources.size(), mAudioSources.size()));
             attachSources(audioSources.subList(0, mSources.size()));
