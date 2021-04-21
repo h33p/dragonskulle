@@ -1,10 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.ui;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -31,14 +29,9 @@ public class UIManager {
      *
      * <p>It will always be the top most element.
      */
-    @Getter
-    private Reference<UIRenderable> mHoveredObject;
-    /**
-     * Global UI appearance.
-     */
-    @Getter
-    @Setter
-    private UIAppearance mAppearance = new UIAppearance();
+    @Getter private Reference<UIRenderable> mHoveredObject;
+    /** Global UI appearance. */
+    @Getter @Setter private UIAppearance mAppearance = new UIAppearance();
 
     /**
      * Update which UI element is currently hovered by the cursor.
@@ -114,12 +107,12 @@ public class UIManager {
      * <p>This method will build UI elements vertically in accordance to {@link UIAppearance}
      * settings.
      *
-     * @param go     object to build the children on.
+     * @param go object to build the children on.
      * @param startY starting Y parent anchor, this will act as an offset.
      * @param startX starting X parent anchor, this will be consistent for all elements.
-     * @param endX   ending X parent anchor, this will be consistent for all elements.
-     * @param elems  list of buildable UI elements. Can be UITextRect elements, lambdas, custom
-     *               objects, or a mix of them.
+     * @param endX ending X parent anchor, this will be consistent for all elements.
+     * @param elems list of buildable UI elements. Can be UITextRect elements, lambdas, custom
+     *     objects, or a mix of them.
      */
     public void buildVerticalUi(
             GameObject go, float startY, float startX, float endX, IUIBuildHandler... elems) {
@@ -128,8 +121,8 @@ public class UIManager {
         for (IUIBuildHandler handler : elems) {
             final float curY =
                     cnt
-                            * (mAppearance.getVerticalUIElemHeight()
-                            + mAppearance.getVerticalUIElemGap())
+                                    * (mAppearance.getVerticalUIElemHeight()
+                                            + mAppearance.getVerticalUIElemGap())
                             + startY;
 
             if (handler != null) {
@@ -154,12 +147,12 @@ public class UIManager {
      * <p>This method will build UI elements horizontally in accordance to {@link UIAppearance}
      * settings.
      *
-     * @param go     object to build the children on.
+     * @param go object to build the children on.
      * @param startX starting X parent anchor, this will act as an offset.
      * @param startY starting Y parent anchor, this will be consistent for all elements.
-     * @param endY   ending Y parent anchor, this will be consistent for all elements.
-     * @param elems  list of buildable UI elements. Can be UITextRect elements, lambdas, custom
-     *               objects, or a mix of them.
+     * @param endY ending Y parent anchor, this will be consistent for all elements.
+     * @param elems list of buildable UI elements. Can be UITextRect elements, lambdas, custom
+     *     objects, or a mix of them.
      */
     public void buildHorizontalUI(
             GameObject go, float startX, float startY, float endY, IUIBuildHandler... elems) {
@@ -189,13 +182,13 @@ public class UIManager {
     /**
      * Build child UI elements at specified anchor offsets.
      *
-     * @param go       game object to build the children on.
+     * @param go game object to build the children on.
      * @param initialX initial X starting anchor.
      * @param initialY initial Y starting anchor.
-     * @param width    consistent anchor based width to keep.
-     * @param height   consistent anchor based height to keep.
-     * @param offsetX  how much each element will be offset from one another on X axis.
-     * @param offsetY  how much each element will be offset from one another on Y axis.
+     * @param width consistent anchor based width to keep.
+     * @param height consistent anchor based height to keep.
+     * @param offsetX how much each element will be offset from one another on X axis.
+     * @param offsetY how much each element will be offset from one another on Y axis.
      */
     public void buildWithAnchorOffset(
             GameObject go,
@@ -235,7 +228,7 @@ public class UIManager {
      * <p>This method will use anchors to place {@code elems} almost immediately after this object
      * on the right.
      *
-     * @param go    object to build children on.
+     * @param go object to build children on.
      * @param elems objects to build.
      */
     public void buildRightOf(GameObject go, IUIBuildHandler... elems) {

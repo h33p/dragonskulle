@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -40,8 +39,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     protected final IGetPlayer mGetPlayer;
 
     private final float mOffsetToTop = 0.25f;
-    @Getter
-    private Reference<UIShopSection> mShop;
+    @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
@@ -49,16 +47,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private Reference<GameObject> mSellConfirmScreenMenu;
     private Reference<GameObject> mPlaceNewBuildingScreenMenu;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
-    @Setter
-    @Getter
-    private Screen mLastScreen = null;
+    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter @Getter private Screen mLastScreen = null;
 
-    /**
-     * Notify the parent of the screen change and set it.
-     */
+    /** Notify the parent of the screen change and set it. */
     public interface INotifyScreenChange {
         /**
          * Call the function.
@@ -68,9 +60,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void call(Screen newScreen);
     }
 
-    /**
-     * Get the player reference from the parent.
-     */
+    /** Get the player reference from the parent. */
     public interface IGetPlayer {
         /**
          * Get the player reference.
@@ -80,9 +70,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         Reference<Player> getPlayer();
     }
 
-    /**
-     * Get the building chosen from the parent.
-     */
+    /** Get the building chosen from the parent. */
     public interface IGetBuildingChosen {
         /**
          * Get the building.
@@ -92,9 +80,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         Reference<Building> getBuilding();
     }
 
-    /**
-     * Get the hex chosen from the parent.
-     */
+    /** Get the hex chosen from the parent. */
     public interface IGetHexChosen {
         /**
          * Get the hexagon tile.
@@ -104,9 +90,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         HexagonTile getHex();
     }
 
-    /**
-     * Set the parent hex tile.
-     */
+    /** Set the parent hex tile. */
     public interface ISetHexChosen {
         /**
          * Set.
@@ -116,9 +100,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void setHex(HexagonTile tile);
     }
 
-    /**
-     * Set the building on the parent.
-     */
+    /** Set the building on the parent. */
     public interface ISetBuildingChosen {
         /**
          * Set the building.
@@ -131,12 +113,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     /**
      * Constructor.
      *
-     * @param getBuildingChosen  the get building chosen callback
-     * @param setBuildingChosen  the set building chosen callback
-     * @param getHexChosen       the get hex chosen callback
-     * @param setHexChosen       the set hex chosen callback
+     * @param getBuildingChosen the get building chosen callback
+     * @param setBuildingChosen the set building chosen callback
+     * @param getHexChosen the get hex chosen callback
+     * @param setHexChosen the set hex chosen callback
      * @param notifyScreenChange the notify screen change callback
-     * @param getPlayer          the get player callback
+     * @param getPlayer the get player callback
      */
     public UIMenuLeftDrawer(
             IGetBuildingChosen getBuildingChosen,
@@ -154,9 +136,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mGetPlayer = getPlayer;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -338,15 +318,18 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     newScreen = mBuildScreenMenu;
                     setShopState(ShopState.MY_BUILDING_SELECTED);
                     break;
-//                case BUILD_TILE_SCREEN:
-//                    newScreen = mTileSelectedMenu;
-//                    setShopState(ShopState.CLOSED);
-//                    //                    final HexagonTile tile = mGetHexChosen.get();
-//                    //                    if (tile != null &&
-//                    // tile.isBuildable(mGetPlayer.get().get())) {
-//                    //                        setShopState(ShopState.BUILDING_NEW);
-//                    //                    } TODO we can add this functionality if needed
-//                    break;
+                    //                case BUILD_TILE_SCREEN:
+                    //                    newScreen = mTileSelectedMenu;
+                    //                    setShopState(ShopState.CLOSED);
+                    //                    //                    final HexagonTile tile =
+                    // mGetHexChosen.get();
+                    //                    //                    if (tile != null &&
+                    //                    // tile.isBuildable(mGetPlayer.get().get())) {
+                    //                    //
+                    // setShopState(ShopState.BUILDING_NEW);
+                    //                    //                    } TODO we can add this functionality
+                    // if needed
+                    //                    break;
                 case ATTACK_SCREEN:
                     newScreen = mAttackScreenMenu;
                     setShopState(ShopState.CLOSED);
@@ -392,7 +375,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      * Show the game object from reference.
      *
      * @param gameObject the game object
-     * @param show       true to show, false to hide
+     * @param show true to show, false to hide
      */
     private void show(Reference<GameObject> gameObject, boolean show) {
         gameObject.get().setEnabled(show);

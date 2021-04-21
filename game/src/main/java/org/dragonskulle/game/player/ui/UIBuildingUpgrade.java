@@ -5,13 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
@@ -39,8 +37,6 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     @Getter(AccessLevel.PROTECTED)
     private final UIShopSection mParent;
 
-    private Reference<GameObject> mBuildingUpgradeComponent;
-    @Setter private Building mLastBuilding;
     private final HashMap<StatType, Reference<UIText>> mTextValueReferences = new HashMap<>();
     private UITextRect mAttackLevelText;
     private UITextRect mDefenceLevelText;
@@ -73,36 +69,33 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         mTokenGenerationText = new UITextRect("0");
         mTokenGenerationText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
 
-        mBuildingUpgradeComponent =
-                getGameObject()
-                        .buildChild(
-                                "building_stats_upgrade",
-                                new TransformUI(true),
-                                (self) -> {
-                                    UIManager manager = UIManager.getInstance();
+        getGameObject()
+                .buildChild(
+                        "building_stats_upgrade",
+                        new TransformUI(true),
+                        (self) -> {
+                            UIManager manager = UIManager.getInstance();
 
-                                    manager.buildHorizontalUI(
-                                            self,
-                                            0.05f,
-                                            0.25f,
-                                            0.45f,
-                                            mAttackLevelText,
-                                            mDefenceLevelText,
-                                            mTokenGenerationText);
+                            manager.buildHorizontalUI(
+                                    self,
+                                    0.05f,
+                                    0.25f,
+                                    0.45f,
+                                    mAttackLevelText,
+                                    mDefenceLevelText,
+                                    mTokenGenerationText);
 
-                                    manager.buildHorizontalUI(
-                                            self,
-                                            0.05f,
-                                            0.45f,
-                                            0.95f,
-                                            buildStatUpgrade(
-                                                    StatType.ATTACK, "ui/attack_symbol.png"),
-                                            buildStatUpgrade(
-                                                    StatType.DEFENCE, "ui/defence_symbol.png"),
-                                            buildStatUpgrade(
-                                                    StatType.TOKEN_GENERATION,
-                                                    "ui/token_generation_symbol.png"));
-                                });
+                            manager.buildHorizontalUI(
+                                    self,
+                                    0.05f,
+                                    0.45f,
+                                    0.95f,
+                                    buildStatUpgrade(StatType.ATTACK, "ui/attack_symbol.png"),
+                                    buildStatUpgrade(StatType.DEFENCE, "ui/defence_symbol.png"),
+                                    buildStatUpgrade(
+                                            StatType.TOKEN_GENERATION,
+                                            "ui/token_generation_symbol.png"));
+                        });
     }
 
     /**

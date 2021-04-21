@@ -26,25 +26,19 @@ import org.dragonskulle.ui.UIText;
 @Accessors(prefix = "m")
 @Log
 public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
-    @Getter
-    private ShopState mState = ShopState.MY_BUILDING_SELECTED;
-    @Setter
-    @Getter
-    private ShopState mLastState = ShopState.CLOSED;
+    @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
+    @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
     @Getter(AccessLevel.PROTECTED)
     private final UIMenuLeftDrawer mParent;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> mTitleRef;
     private Reference<TransformUI> mTransform;
     private boolean mShopIsTranslated = true;
-    @Setter
-    private boolean mShouldTranslateShop = false;
+    @Setter private boolean mShouldTranslateShop = false;
     private float mStep = 0.02f;
     private float mLastY = 0.68f;
     private TransformUI textTransform;
@@ -63,9 +57,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
         translateShop();
     }
 
-    /**
-     * The Shop state. This controls what can be seen at what time.
-     */
+    /** The Shop state. This controls what can be seen at what time. */
     public enum ShopState {
         CLOSED,
         BUILDING_NEW,
@@ -73,9 +65,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
         MY_BUILDING_SELECTED
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -130,8 +120,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
         }
     }
 
-    private void translateShopOff() {
-    }
+    private void translateShopOff() {}
 
     private void shouldTranslateShopIfNotVisible() {
         if (mShopIsTranslated) {
@@ -142,7 +131,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
     private void translateShop() {
         if (mShouldTranslateShop) {
             if (Reference.isValid(mTransform)) {
-                //0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f
+                // 0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f
                 TransformUI t = mTransform.get();
                 mLastY = mLastY + (mShopIsTranslated ? -(mStep) : mStep);
                 t.setParentAnchor(0.08f, mLastY, 1 - 0.08f, 1 - 0.03f);
@@ -165,7 +154,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
     /**
      * Show the component's GO.
      *
-     * @param component  the component
+     * @param component the component
      * @param shouldShow true if should show
      */
     private void show(Reference<GameObject> component, boolean shouldShow) {
@@ -184,13 +173,6 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
         // if there is a screen being shown
         // deactivate the panel
         if (Reference.isValid(mCurrentPanel)) {
-            if (mCurrentPanel.equals(mUpgradePanel)) {
-                mUpgradePanel
-                        .get()
-                        .getComponent(UIBuildingUpgrade.class)
-                        .get()
-                        .setLastBuilding(null);
-            }
             mCurrentPanel.get().setEnabled(false);
         }
 
@@ -246,6 +228,6 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
 
         textTransform = textObj.get().getTransform(TransformUI.class);
         textTransform.setParentAnchor(0.05f, 0f);
-//        textTransform.translate(0, -0.22f);
+        //        textTransform.translate(0, -0.22f);
     }
 }

@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -33,27 +32,18 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Getter
-    private Building mSelectedBuilding;
-    @Setter
-    private BuildingDescriptor mSelectedBuildingDescriptor;
-    @Setter
-    private Reference<GameObject> mPastOptionsRef;
+    @Getter private Building mSelectedBuilding;
+    @Setter private BuildingDescriptor mSelectedBuildingDescriptor;
+    @Setter private Reference<GameObject> mPastOptionsRef;
     private Reference<GameObject> mPossibleBuildingComponent;
-    @Setter
-    private Reference<UIButton> mPreviousLock = new Reference<>(null);
+    @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
-    @Setter
-    private Reference<GameObject> mVisibleDescriptorHint = new Reference<>(null);
+    @Setter private Reference<GameObject> mVisibleDescriptorHint = new Reference<>(null);
     private List<Reference<UIButton>> mBuildingsCanPlaceButtonsReferences;
-    @Getter
-    private final UIShopSection mParent;
-    @Setter
-    private boolean mStickyHint = false;
+    @Getter private final UIShopSection mParent;
+    @Setter private boolean mStickyHint = false;
     private Reference<Player> mPlayerReference;
-    @Getter
-    @Setter
-    private int mTokens = 0;
+    @Getter @Setter private int mTokens = 0;
 
     /**
      * Constructor.
@@ -64,9 +54,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -89,7 +77,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                                     .map(this::buildPredefinedBuildingBox)
                                                     .collect(Collectors.toList());
 
-
                                     manager.buildGridUI(
                                             self,
                                             4,
@@ -109,9 +96,9 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                                                 "Build Selected",
                                                                 (__, ___) -> {
                                                                     if (getParent()
-                                                                            .getParent()
-                                                                            .mGetHexChosen
-                                                                            .getHex()
+                                                                                    .getParent()
+                                                                                    .mGetHexChosen
+                                                                                    .getHex()
                                                                             != null) {
                                                                         Reference<Player> player =
                                                                                 getParent()
