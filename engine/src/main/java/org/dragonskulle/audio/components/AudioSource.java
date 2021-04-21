@@ -27,7 +27,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     @Getter private Source mSource = null;
     @Getter private float mVolume = 1f;
     @Getter private float mPitch = 1f;
-    @Getter private float mRadius = 500f;
+    @Getter private float mRadius = 50000f;
     @Getter private float mTimeLeft = -1f;
     @Getter private int mLooping = AL11.AL_FALSE;
 
