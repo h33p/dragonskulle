@@ -270,7 +270,6 @@ public class Engine {
             if (present) {
                 Scene.setActiveScene(mPresentationScene);
                 UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
-                AudioManager.getInstance().updateAudioListener();
 
                 // Call FrameUpdate on the presentation scene
                 frameUpdate((float) deltaTime);
@@ -294,6 +293,7 @@ public class Engine {
 
             if (present) {
                 Scene.setActiveScene(mPresentationScene);
+                AudioManager.getInstance().updateAudioListener();
 
                 // Call LateFrameUpdate on the presentation scene
                 lateFrameUpdate((float) deltaTime);
