@@ -256,7 +256,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                             // Checks the building can be attacked
                             boolean canAttack =
-                                    mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
+                                    Reference.isValid(mBuildingChosen)
+                                            && mBuildingChosen
+                                                    .get()
+                                                    .isBuildingAttackable(defendingBuilding);
                             if (canAttack) {
                                 player.getClientAttackRequest()
                                         .invoke(
