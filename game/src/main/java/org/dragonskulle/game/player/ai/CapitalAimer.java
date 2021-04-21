@@ -83,11 +83,15 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             return;
         }
 
+        // This will choose whether to play as an A* player or as a Probablistic Player
         if (mRandom.nextFloat() < 0.9) {
-            // This will move us onto our own claimed tiles
+
+            // This will choose whether to go attacking and get closer to the building/capital or to
+            // upgrade
             if (mRandom.nextFloat() < 0.6) {
                 int previousNode = mGone.pop();
 
+                // This will get you to the first node which you claimed
                 boolean onYourNode = false;
                 while (!onYourNode) {
                     if (Reference.isValid(mGraph.getNode(previousNode).getHexTile())
@@ -161,6 +165,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
                         } else {
                             Building building = nextTile.getBuilding();
+
                             // Will attack instead and remove
                             while (building == null) {
                                 mPath.push(nextNode);
@@ -180,6 +185,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                         }
                     }
 
+                    // Checks for attackable buildings
                     for (Building attacker : toAttackCheck.getAttackableBuildings()) {
 
                         if (attacker.getOwnerId()
