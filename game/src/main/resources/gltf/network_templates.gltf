@@ -36,7 +36,8 @@
                 2,
                 3,
                 4,
-                5
+                5,
+                6
             ]
         }
     ],
@@ -90,10 +91,20 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
-                            "enabled" : true
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSyncHeight",
+                                    "value" : false
+                                }
+                            ]
                         },
                         {
                             "class_name" : "org.dragonskulle.game.building.Building",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
                             "enabled" : true
                         }
                     ]
@@ -152,6 +163,31 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HexagonMap",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSize",
+                                    "value" : 51
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "map",
+            "translation" : [
+                -10,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.TransformHex",
                     "components" : [
                         {
@@ -165,9 +201,10 @@
                     ]
                 }
             },
+            "mesh" : 1,
             "name" : "aStarAi",
             "translation" : [
-                -8,
+                -4,
                 0,
                 0
             ]
@@ -212,6 +249,33 @@
                 ],
                 "roughnessFactor" : 0.13970589637756348
             }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "Material.004",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.8006559014320374,
+                    0.0015056653646752238,
+                    0,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.22058823704719543
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "Material.003",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.08714032173156738,
+                    0.03364383056759834,
+                    0.015137717127799988,
+                    1
+                ],
+                "roughnessFactor" : 0.13970589637756348
+            }
         }
     ],
     "meshes" : [
@@ -235,6 +299,29 @@
                     },
                     "indices" : 7,
                     "material" : 1
+                }
+            ]
+        },
+        {
+            "name" : "Cube.001",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 8,
+                        "NORMAL" : 9,
+                        "TEXCOORD_0" : 10
+                    },
+                    "indices" : 3,
+                    "material" : 2
+                },
+                {
+                    "attributes" : {
+                        "POSITION" : 11,
+                        "NORMAL" : 12,
+                        "TEXCOORD_0" : 13
+                    },
+                    "indices" : 7,
+                    "material" : 3
                 }
             ]
         }
@@ -307,6 +394,62 @@
             "componentType" : 5123,
             "count" : 3090,
             "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 8,
+            "componentType" : 5126,
+            "count" : 241,
+            "max" : [
+                0.35526949167251587,
+                0.36093583703041077,
+                0.5924168825149536
+            ],
+            "min" : [
+                -0.35526949167251587,
+                -0.36093583703041077,
+                0
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 9,
+            "componentType" : 5126,
+            "count" : 241,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 10,
+            "componentType" : 5126,
+            "count" : 241,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 11,
+            "componentType" : 5126,
+            "count" : 816,
+            "max" : [
+                0.40454524755477905,
+                0.40454527735710144,
+                0.901775598526001
+            ],
+            "min" : [
+                -0.40454524755477905,
+                -0.40454527735710144,
+                0.5847399830818176
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 12,
+            "componentType" : 5126,
+            "count" : 816,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 13,
+            "componentType" : 5126,
+            "count" : 816,
+            "type" : "VEC2"
         }
     ],
     "bufferViews" : [
@@ -349,11 +492,41 @@
             "buffer" : 0,
             "byteLength" : 6180,
             "byteOffset" : 35420
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 2892,
+            "byteOffset" : 41600
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 2892,
+            "byteOffset" : 44492
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1928,
+            "byteOffset" : 47384
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 9792,
+            "byteOffset" : 49312
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 9792,
+            "byteOffset" : 59104
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 6528,
+            "byteOffset" : 68896
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 41600,
+            "byteLength" : 75424,
             "uri" : "network_templates.bin"
         }
     ]
