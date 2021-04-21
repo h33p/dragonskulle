@@ -16,7 +16,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
-import org.dragonskulle.game.map.FogOfWar;
+import org.dragonskulle.game.map.Cloudscape;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
@@ -60,7 +60,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
-    private Reference<FogOfWar> mFogOfWar;
+    private Reference<Cloudscape> mFogOfWar;
     private boolean mVisualsNeedUpdate;
     private Reference<GameObject> mZoomSlider;
     private Reference<UITokenCounter> mTokenCounter;
@@ -93,7 +93,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getReference(MapEffects.class);
 
         mFogOfWar =
-                Scene.getActiveScene().getSingleton(FogOfWar.class).getReference(FogOfWar.class);
+                Scene.getActiveScene()
+                        .getSingleton(Cloudscape.class)
+                        .getReference(Cloudscape.class);
 
         // Get the screen for map
         mMapScreen =

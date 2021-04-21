@@ -5,7 +5,6 @@ import java.util.HashMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
@@ -21,13 +20,12 @@ import org.dragonskulle.game.player.Player;
 
 /**
  * @author Aurimas Blažulionis
- *     <p>This component draws a visual fog of war for the players
+ *     <p>This component draws a visual clouds for the players in undiscovered map areas.
  */
 @Accessors(prefix = "m")
-@Log
-public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
+public class Cloudscape extends Component implements IOnStart, ILateFrameUpdate {
 
-    private HashMap<HexagonTile, Reference<FadeTile>> mFogTiles = new HashMap<>();
+    private HashMap<HexagonTile, Reference<FadeTile>> mCloudTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
     @Getter @Setter private Reference<Player> mActivePlayer;
 
@@ -67,7 +65,7 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
                 .getAllTiles()
                 .forEach(
                         tile ->
-                                setFog(
+                                setClouds(
                                         tile,
                                         !activePlayer.hasLost()
                                                 && tile.getTileType() == TileType.FOG
@@ -77,13 +75,13 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
 
     @Override
     protected void onDestroy() {
-        for (Reference<FadeTile> fogTile : mFogTiles.values()) {
-            if (Reference.isValid(fogTile)) {
-                fogTile.get().getGameObject().destroy();
+        for (Reference<FadeTile> cloudTile : mCloudTiles.values()) {
+            if (Reference.isValid(cloudTile)) {
+                cloudTile.get().getGameObject().destroy();
             }
         }
 
-        mFogTiles.clear();
+        mCloudTiles.clear();
     }
 
     private boolean ensureMapReference() {
@@ -98,8 +96,8 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         return NoiseUtil.getHeight(tile.getQ(), tile.getR(), 0, OCTAVES) > 0.8f;
     }
 
-    private void setFog(HexagonTile tile, boolean enable) {
-        Reference<FadeTile> tileRef = mFogTiles.get(tile);
+    private void setClouds(HexagonTile tile, boolean enable) {
+        Reference<FadeTile> tileRef = mCloudTiles.get(tile);
 
         if (Reference.isValid(tileRef)) {
             tileRef.get().setState(enable, tile.getHeight());
@@ -115,13 +113,13 @@ public class FogOfWar extends Component implements IOnStart, ILateFrameUpdate {
         tileRef = go.getComponent(FadeTile.class);
 
         if (tileRef == null) {
-            FadeTile fogTile = new FadeTile();
-            go.addComponent(fogTile);
-            tileRef = fogTile.getReference(FadeTile.class);
+            FadeTile cloudTile = new FadeTile();
+            go.addComponent(cloudTile);
+            tileRef = cloudTile.getReference(FadeTile.class);
         }
 
         mMapReference.get().getGameObject().addChild(go);
 
-        mFogTiles.put(tile, tileRef);
+        mCloudTiles.put(tile, tileRef);
     }
 }
