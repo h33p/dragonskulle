@@ -145,6 +145,8 @@ import org.dragonskulle.renderer.DrawCallState.NonInstancedDraw;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
+import org.joml.FrustumIntersection;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -539,7 +541,12 @@ public class Renderer implements NativeResource {
                 discardedBuffer.free();
             }
 
-            updateInstanceBuffer(image, objects, lights);
+            Matrix4f combined = new Matrix4f();
+
+            combined.set(camera.getProj());
+            combined.mul(camera.getView());
+
+            updateInstanceBuffer(image, new FrustumIntersection(combined), objects, lights);
             recordCommandBuffer(image, camera);
 
             VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
@@ -1567,10 +1574,15 @@ public class Renderer implements NativeResource {
      * of objects into instantiatable draw calls, and generate a list of non-instanced draws
      *
      * @param ctx the image context to update the instance buffer for
+     * @param intersector frustum intersector for the objects
      * @param renderables the list of objects that need to be rendered
      * @param lights the list of lights that exist in the world
      */
-    void updateInstanceBuffer(ImageContext ctx, List<Renderable> renderables, List<Light> lights) {
+    void updateInstanceBuffer(
+            ImageContext ctx,
+            FrustumIntersection intersector,
+            List<Renderable> renderables,
+            List<Light> lights) {
 
         mToPresort.clear();
 
@@ -1584,6 +1596,10 @@ public class Renderer implements NativeResource {
 
         for (Renderable renderable : renderables) {
             if (renderable.getMesh() == null) {
+                continue;
+            }
+
+            if (!renderable.frustumCull(intersector)) {
                 continue;
             }
 
@@ -1652,6 +1668,10 @@ public class Renderer implements NativeResource {
         if (mCurrentMeshBuffer.isDirty()) {
             mDiscardedMeshBuffers.put(ctx.mImageIndex, mCurrentMeshBuffer);
             mCurrentMeshBuffer = mCurrentMeshBuffer.commitChanges(mGraphicsQueue, mCommandPool);
+        }
+
+        if (instanceBufferSize <= 0) {
+            return;
         }
 
         try (MemoryStack stack = stackPush()) {
@@ -1761,7 +1781,11 @@ public class Renderer implements NativeResource {
             mVertexConstants.copyTo(pConstants);
 
             LongBuffer vertexBuffers =
-                    stack.longs(mCurrentMeshBuffer.getVertexBuffer(), ctx.mInstanceBuffer.mBuffer);
+                    mDrawInstances.size() == 0
+                            ? null
+                            : stack.longs(
+                                    mCurrentMeshBuffer.getVertexBuffer(),
+                                    ctx.mInstanceBuffer.mBuffer);
 
             // Render regular objects in an instanced manner
             for (Map<ShaderSet, DrawCallState> stateMap : mDrawInstances.values()) {
