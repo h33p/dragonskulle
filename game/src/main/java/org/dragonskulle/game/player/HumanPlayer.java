@@ -433,6 +433,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     }
 
+    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
+        //TODO
+    }
+
     /** Marks visuals to update whenever a new object is spawned. */
     private void onSpawnObject(NetworkObject obj) {
         if (obj.getGameObject().getComponent(Building.class) != null) {
