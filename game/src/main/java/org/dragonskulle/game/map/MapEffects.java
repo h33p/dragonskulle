@@ -30,7 +30,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         VALID(0),
         INVALID(1),
         PLAIN(2),
-        ATTACK(3);
+        ATTACK(3),
+        ATTACKTILES(4);
 
         @Accessors(prefix = "m")
         @Getter
@@ -50,6 +51,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
+                case ATTACKTILES:
+                    return ATTACKTILES_MATERIAL;
                 default:
                     return null;
             }
@@ -93,7 +96,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     public static final HighlightSelection VALID_MATERIAL =
-            highlightSelectionFromColour(0.4f, 1f, 0f);
+            highlightSelectionFromColour(0.9f, 0.1f, 0.3f);
     public static final HighlightSelection INVALID_MATERIAL =
             highlightSelectionFromColour(1f, 0.08f, 0f);
     public static final HighlightSelection PLAIN_MATERIAL =
@@ -102,11 +105,13 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
+    public static final HighlightSelection ATTACKTILES_MATERIAL =
+            highlightSelectionFromColour(0,0,0);
 
     private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
 
-    /** Turn on to enable default highlighting (teritory bounds). */
+    /** Turn on to enable default highlighting (territory bounds). */
     @Getter @Setter private boolean mDefaultHighlight = true;
     /** This interface gets called to allow overlaying any selections on top. */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
