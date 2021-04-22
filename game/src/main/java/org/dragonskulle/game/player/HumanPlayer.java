@@ -395,7 +395,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                            (fx) -> highlightAttackableTiles(fx, StandardHighlightType.VALID));
                     for (Building attackableBuilding :
                             mHexChosen.getBuilding().getAttackableBuildings()) {
                         effects.highlightTile(
