@@ -475,27 +475,26 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         HexagonMap map = mMap.get();
 
-        while (!mFillTiles.isEmpty()) {
-            HexagonTile t = mFillTiles.poll();
-            Integer val = mTilesAround.get(t);
+        map.floodFill(
+                mFillTiles,
+                (__, t, neighbours, out) -> {
+                    Integer val = mTilesAround.get(t);
 
-            if (val == null || val <= VIEWABILITY_LOWER_BOUND) {
-                continue;
-            }
+                    if (val == null || val <= VIEWABILITY_LOWER_BOUND) {
+                        return;
+                    }
 
-            List<HexagonTile> neighbors = map.getTilesInRadius(t, 1, false);
+                    Integer newVal = val - 1;
 
-            Integer newVal = val - 1;
+                    for (HexagonTile n : neighbours) {
+                        Integer nval = mTilesAround.get(n);
 
-            for (HexagonTile n : neighbors) {
-                Integer nval = mTilesAround.get(n);
-
-                if (nval == null || nval < newVal) {
-                    mTilesAround.put(n, newVal);
-                    mFillTiles.push(n);
-                }
-            }
-        }
+                        if (nval == null || nval < newVal) {
+                            mTilesAround.put(n, newVal);
+                            mFillTiles.push(n);
+                        }
+                    }
+                });
     }
 
     /**
@@ -511,11 +510,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Get the {@link #mOwnedBuildings} as an {@link ArrayList}.
+     * Get the {@link #mOwnedBuildings} as a {@link List}.
      *
-     * @return The Buildings the player owns, as an ArrayList.
+     * @return The Buildings the player owns, as a List.
      */
-    public ArrayList<Reference<Building>> getOwnedBuildings() {
+    public List<Reference<Building>> getOwnedBuildings() {
         return new ArrayList<Reference<Building>>(mOwnedBuildings.values());
     }
 

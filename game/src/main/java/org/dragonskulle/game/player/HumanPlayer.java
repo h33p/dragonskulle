@@ -236,6 +236,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (component != null) {
                         mLastHexChosen = mHexChosen;
                         mHexChosen = component.cursorToTile();
+                        if (mHexChosen != null) {
+                            log.info("Click hex: " + mHexChosen.getQ() + " " + mHexChosen.getR());
+                        }
                     }
                 }
 
