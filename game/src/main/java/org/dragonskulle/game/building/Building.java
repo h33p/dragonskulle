@@ -331,11 +331,6 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
                         }
                     }
                 });
-
-        mNeighboringTiles.forEach(
-                (h, v) -> {
-                    log.info("H " + h.getQ() + " " + h.getR() + " = " + v);
-                });
     }
 
     /** Store the tiles that are suitable for attacking. */
@@ -472,17 +467,40 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
      */
     public Set<HexagonTile> getBuildableTiles() {
 
+        HashSet<HexagonTile> buildableTiles = new HashSet<>();
+
+        HexagonMap map = getMap();
+        if (map == null) {
+            return buildableTiles;
+        }
+
         if (mPlaceableTiles.isEmpty()) {
             generateTileLists();
         }
 
-        HashSet<HexagonTile> buildableTiles = new HashSet<>();
+        ArrayList<HexagonTile> tilesAround = new ArrayList<>();
 
         mPlaceableTiles.forEach(
                 (tile) -> {
-                    if (!tile.isClaimed() && !tile.hasBuilding()) {
-                        buildableTiles.add(tile);
+                    if (tile.isClaimed() || tile.hasBuilding()) {
+                        return;
                     }
+
+                    map.getTilesInRadius(tile, 1, false, tilesAround);
+
+                    int claimedCount = 0;
+
+                    for (HexagonTile tileAround : tilesAround) {
+                        if (tileAround.isClaimed() || tileAround.hasBuilding()) {
+                            claimedCount++;
+
+                            if (claimedCount > 1) {
+                                return;
+                            }
+                        }
+                    }
+
+                    buildableTiles.add(tile);
                 });
 
         return buildableTiles;

@@ -674,7 +674,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        if (buildable == false) {
+        if (!buildable) {
             log.info("Building not in buildable range/on suitable tile.");
             return false;
         }
