@@ -41,6 +41,13 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UITextRect mAttackLevelText;
     private UITextRect mDefenceLevelText;
     private UITextRect mTokenGenerationText;
+    private UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
+    private UITextRect mAttackCostText;
+    private UITextRect mDefenceCostText;
+    private UITextRect mTokenGenerationCostText;
+    private TransformUI tran;
+    private final HashMap<StatType, Reference<UIText>> mTextCostReferences = new HashMap<>();
+    private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
 
     /**
      * Constructor.
@@ -61,13 +68,43 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      */
     @Override
     public void onStart() {
+        mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
+        String attackVal = "-";
+        String defenceVal = "-";
+        String tokenGenVal = "-";
+        String attackCost = "-";
+        String defenceCost = "-";
+        String tokenGenCost = "-";
+        Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
+        if (Reference.isValid(buildingRef)) {
+            Building building = buildingRef.get();
+            attackVal = String.valueOf(building.getStat(StatType.ATTACK).getValue());
+            defenceVal = String.valueOf(building.getStat(StatType.DEFENCE).getValue());
+            tokenGenVal = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getValue());
+
+            attackCost = String.valueOf(building.getStat(StatType.ATTACK).getCost());
+            defenceCost = String.valueOf(building.getStat(StatType.DEFENCE).getCost());
+            tokenGenCost = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getCost());
+        }
         // better way to do this dynamically
-        mAttackLevelText = new UITextRect("0");
+        mAttackLevelText = new UITextRect(attackVal);
         mAttackLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        mDefenceLevelText = new UITextRect("0");
+        mDefenceLevelText = new UITextRect(defenceVal);
         mDefenceLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        mTokenGenerationText = new UITextRect("0");
+        mTokenGenerationText = new UITextRect(tokenGenVal);
         mTokenGenerationText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
+
+        mTextValueReferences.put(StatType.ATTACK, mAttackLevelText.getLabelText());
+        mTextValueReferences.put(StatType.DEFENCE, mDefenceLevelText.getLabelText());
+        mTextValueReferences.put(StatType.TOKEN_GENERATION, mTokenGenerationText.getLabelText());
+
+        mAttackCostText = new UITextRect(attackCost);
+        mDefenceCostText = new UITextRect(defenceCost);
+        mTokenGenerationCostText = new UITextRect(tokenGenCost);
+
+        mTextCostReferences.put(StatType.ATTACK, mAttackCostText.getLabelText());
+        mTextCostReferences.put(StatType.DEFENCE, mDefenceCostText.getLabelText());
+        mTextCostReferences.put(StatType.TOKEN_GENERATION, mTokenGenerationCostText.getLabelText());
 
         getGameObject()
                 .buildChild(
@@ -79,8 +116,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             manager.buildHorizontalUI(
                                     self,
                                     0.05f,
-                                    0.25f,
-                                    0.45f,
+                                    0.2f,
+                                    0.4f,
                                     mAttackLevelText,
                                     mDefenceLevelText,
                                     mTokenGenerationText);
@@ -88,13 +125,31 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             manager.buildHorizontalUI(
                                     self,
                                     0.05f,
-                                    0.45f,
-                                    0.95f,
+                                    0.4f,
+                                    0.9f,
                                     buildStatUpgrade(StatType.ATTACK, "ui/attack_symbol.png"),
                                     buildStatUpgrade(StatType.DEFENCE, "ui/defence_symbol.png"),
                                     buildStatUpgrade(
                                             StatType.TOKEN_GENERATION,
                                             "ui/token_generation_symbol.png"));
+
+                            self.buildChild(
+                                    "cost_label",
+                                    new TransformUI(true),
+                                    g -> {
+                                        tran = g.getTransform(TransformUI.class);
+                                        tran.setParentAnchor(0.28f, 0.4f);
+                                        tran.setPosition(0f, 0.14f);
+                                        g.addComponent(new UIText("COST"));
+                                    });
+                            manager.buildHorizontalUI(
+                                    self,
+                                    0.05f,
+                                    0.65f,
+                                    1.15f,
+                                    mAttackCostText,
+                                    mDefenceCostText,
+                                    mTokenGenerationCostText);
                         });
     }
 
@@ -130,60 +185,112 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private void purchaseUpgrade(StatType type) {
         Reference<Player> player = getParent().getParent().mGetPlayer.getPlayer();
         if (Reference.isValid(player)) {
-            Building building = getParent().getParent().mGetHexChosen.getHex().getBuilding();
-            if (building != null) {
-                player.get().getClientStatRequest().invoke(new StatData(building, type));
+            HexagonTile hex = getParent().getParent().mGetHexChosen.getHex();
+            if (hex != null) {
+                Building building = hex.getBuilding();
+                if (building != null) {
+                    player.get().getClientStatRequest().invoke(new StatData(building, type));
+                }
             }
         }
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        HexagonTile tile = getParent().getParent().mGetHexChosen.getHex();
-        if (tile != null) {
-            Building building = tile.getBuilding();
-            if (building != null && building.statsRequireVisualUpdate()) {
-                StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
-                ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();
-                for (SyncStat upgradeableStat : upgradeableStats) {
-                    Reference<UIText> labelText =
-                            mTextValueReferences.get(upgradeableStat.getType());
-                    if (Reference.isValid(labelText)) {
-                        labelText.get().setText((Integer.toString(upgradeableStat.getLevel())));
-                    } else {
-                        switch (upgradeableStat.getType()) {
-                            case ATTACK:
-                                if (mAttackLevelText != null) {
-                                    mTextValueReferences.put(
-                                            StatType.ATTACK, mAttackLevelText.getLabelText());
-                                }
-                                break;
-                            case DEFENCE:
-                                if (mDefenceLevelText != null) {
-                                    mTextValueReferences.put(
-                                            StatType.DEFENCE, mDefenceLevelText.getLabelText());
-                                }
-                                break;
-                            case TOKEN_GENERATION:
-                                if (mTokenGenerationText != null) {
-                                    mTextValueReferences.put(
-                                            StatType.TOKEN_GENERATION,
-                                            mTokenGenerationText.getLabelText());
-                                }
-                                break;
-                        }
+        if (mGetBuildingChosen != null) {
+            Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
+            if (Reference.isValid(buildingRef)) {
+                Building building = buildingRef.get();
+                if (building != null && building.statsRequireVisualUpdate()) {
+                    StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
+                    ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();
+                    for (SyncStat upgradeableStat : upgradeableStats) {
+                        updateStatVisibleTexts(upgradeableStat);
                     }
-                }
 
-                upgradeableStats.forEach(
-                        s ->
-                                builder.append(s.getType())
-                                        .append(" -> ")
-                                        .append(s.getValue())
-                                        .append("\n"));
-                building.setStatsRequireVisualUpdate(false);
-                log.info(builder.toString());
+                    upgradeableStats.forEach(
+                            s ->
+                                    builder.append(s.getType())
+                                            .append(" -> ")
+                                            .append(s.getValue())
+                                            .append("\n"));
+                    building.setStatsRequireVisualUpdate(false);
+                    log.info(builder.toString());
+                }
             }
         }
+    }
+
+    private void updateStatVisibleTexts(SyncStat upgradeableStat) {
+        Reference<UIText> statTextValueRef = mTextValueReferences.get(upgradeableStat.getType());
+        setTextRef(upgradeableStat, statTextValueRef, false);
+        Reference<UIText> statTextCostRef = mTextCostReferences.get(upgradeableStat.getType());
+        setTextRef(upgradeableStat, statTextCostRef, true);
+    }
+
+    private void setTextRef(
+            SyncStat upgradeableStat, Reference<UIText> textRef, boolean isCostRef) {
+        if (Reference.isValid(textRef)) {
+            textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
+        } else {
+            if (isCostRef) {
+                textRef = reassignTextCostReferencesForStatButton(upgradeableStat);
+            } else {
+                textRef = reassignTextValueReferencesForStatButton(upgradeableStat);
+            }
+            if (Reference.isValid(textRef)) {
+                textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
+            }
+        }
+    }
+
+    private Reference<UIText> reassignTextCostReferencesForStatButton(SyncStat upgradeableStat) {
+        Reference<UIText> textReference = new Reference<UIText>(null);
+        switch (upgradeableStat.getType()) {
+            case ATTACK:
+                textReference = mAttackCostText.getLabelText();
+                if (mAttackLevelText != null) {
+                    mTextCostReferences.put(StatType.ATTACK, textReference);
+                }
+                break;
+            case DEFENCE:
+                if (mDefenceLevelText != null) {
+                    textReference = mDefenceCostText.getLabelText();
+                    mTextCostReferences.put(StatType.DEFENCE, textReference);
+                }
+                break;
+            case TOKEN_GENERATION:
+                if (mTokenGenerationText != null) {
+                    textReference = mTokenGenerationCostText.getLabelText();
+                    mTextCostReferences.put(StatType.TOKEN_GENERATION, textReference);
+                }
+                break;
+        }
+        return textReference;
+    }
+
+    private Reference<UIText> reassignTextValueReferencesForStatButton(SyncStat upgradeableStat) {
+        Reference<UIText> textReference = new Reference<UIText>(null);
+        switch (upgradeableStat.getType()) {
+            case ATTACK:
+                textReference = mAttackLevelText.getLabelText();
+                if (mAttackLevelText != null) {
+                    mTextValueReferences.put(StatType.ATTACK, textReference);
+                }
+                break;
+            case DEFENCE:
+                if (mDefenceLevelText != null) {
+                    textReference = mDefenceLevelText.getLabelText();
+                    mTextValueReferences.put(StatType.DEFENCE, textReference);
+                }
+                break;
+            case TOKEN_GENERATION:
+                if (mTokenGenerationText != null) {
+                    textReference = mTokenGenerationText.getLabelText();
+                    mTextValueReferences.put(StatType.TOKEN_GENERATION, textReference);
+                }
+                break;
+        }
+        return textReference;
     }
 }

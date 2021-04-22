@@ -37,6 +37,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     protected final ISetHexChosen mSetHexChosen;
     protected final INotifyScreenChange mNotifyScreenChange;
     protected final IGetPlayer mGetPlayer;
+    protected final IUpdateBuildingChosen mUpdateBuildingSelected;
 
     private final float mOffsetToTop = 0.25f;
     @Getter private Reference<UIShopSection> mShop;
@@ -58,6 +59,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
          * @param newScreen the new screen
          */
         void call(Screen newScreen);
+    }
+
+    /** Update the parents building field. */
+    public interface IUpdateBuildingChosen {
+        /** Call the function. */
+        void update();
     }
 
     /** Get the player reference from the parent. */
@@ -134,6 +141,21 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         this.mSetHexChosen = setHexChosen;
         this.mNotifyScreenChange = notifyScreenChange;
         this.mGetPlayer = getPlayer;
+
+        this.mUpdateBuildingSelected =
+                () -> {
+                    log.info("updating building");
+                    if (mGetHexChosen != null && mSetBuildingChosen != null) {
+                        HexagonTile hex = mGetHexChosen.getHex();
+                        if (hex != null) {
+                            Building building = hex.getBuilding();
+                            if (building != null) {
+                                mSetBuildingChosen.setBuilding(
+                                        building.getReference(Building.class));
+                            }
+                        }
+                    }
+                };
     }
 
     /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
@@ -316,7 +338,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 case UPGRADE_SCREEN:
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
-                    setShopState(ShopState.MY_BUILDING_SELECTED);
+                    setShopState(
+                            ShopState.MY_BUILDING_SELECTED, mGetHexChosen.getHex().getBuilding());
                     break;
                     //                case BUILD_TILE_SCREEN:
                     //                    newScreen = mTileSelectedMenu;
@@ -405,6 +428,15 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         if (Reference.isValid(mShop)) {
             getShop().get().setState(shopState);
         }
+    }
+
+    /**
+     * Sets the shop state.
+     *
+     * @param shopState the new state
+     */
+    private void setShopState(ShopState shopState, Building building) {
+        setShopState(shopState);
     }
 
     /**

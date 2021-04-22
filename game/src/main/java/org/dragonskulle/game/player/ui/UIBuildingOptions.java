@@ -93,7 +93,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                             (me) -> {
                                                 UIButton button =
                                                         new UIButton(
-                                                                "Build Selected",
+                                                                "Build",
                                                                 (__, ___) -> {
                                                                     if (getParent()
                                                                                     .getParent()
@@ -122,12 +122,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
 
                                                                         getParent()
                                                                                 .getParent()
-                                                                                .mSetHexChosen
-                                                                                .setHex(null);
-                                                                        getParent()
-                                                                                .getParent()
-                                                                                .mSetBuildingChosen
-                                                                                .setBuilding(null);
+                                                                                .mUpdateBuildingSelected
+                                                                                .update();
                                                                         getParent()
                                                                                 .getParent()
                                                                                 .mNotifyScreenChange

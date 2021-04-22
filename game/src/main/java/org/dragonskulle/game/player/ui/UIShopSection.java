@@ -42,6 +42,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
     private float mStep = 0.02f;
     private float mLastY = 0.68f;
     private TransformUI textTransform;
+    private Reference<UIBuildingUpgrade> mUpgradePanelComponent;
 
     /**
      * Constructor.
@@ -54,7 +55,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
-        translateShop();
+        //        translateShop();
     }
 
     /** The Shop state. This controls what can be seen at what time. */
@@ -75,6 +76,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
      * @param state the state
      */
     protected void setState(ShopState state) {
+        getParent().mUpdateBuildingSelected.update();
         if (state != getLastState()) {
             shouldTranslateShopIfNotVisible();
             String newText = "Shop is Closed";
@@ -119,8 +121,6 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
             swapPanels(newPanel);
         }
     }
-
-    private void translateShopOff() {}
 
     private void shouldTranslateShopIfNotVisible() {
         if (mShopIsTranslated) {
@@ -196,6 +196,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
                                 "upgrade_object",
                                 new TransformUI(true),
                                 (self) -> self.addComponent(uiBuildingUpgrade));
+        mUpgradePanelComponent = uiBuildingUpgrade.getReference(UIBuildingUpgrade.class);
         show(mUpgradePanel, false);
 
         UIBuildingOptions uiBuildingOptions =
@@ -210,7 +211,8 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
 
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        tran.setParentAnchor(0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f);
+        //        0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f when using transform
+        tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
         mTransform = tran.getReference(TransformUI.class);
         UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
         ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
@@ -228,6 +230,6 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
 
         textTransform = textObj.get().getTransform(TransformUI.class);
         textTransform.setParentAnchor(0.05f, 0f);
-        //        textTransform.translate(0, -0.22f);
+        textTransform.translate(0, -0.22f); // remove if using transforms
     }
 }
