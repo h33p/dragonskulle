@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -434,7 +436,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
-        //TODO
+        HexagonMap map = mPlayer.get().getMap();
+        Stream<HexagonTile> allTiles = map.getAllTiles();
+        Building attackingBuilding = mHexChosen.getBuilding();
+        ArrayList<Building> attackableBuildings = attackingBuilding.getAttackableBuildings();
+
+        attackableBuildings.forEach(
+                (building) -> {
+                    HexagonTile tile = building.getTile();
+                    fx.highlightTile(tile, highlight.asSelection());
+                }
+        );
     }
 
     /** Marks visuals to update whenever a new object is spawned. */
