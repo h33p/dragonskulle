@@ -16,7 +16,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
-import org.dragonskulle.game.map.Cloudscape;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
@@ -60,7 +59,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
-    private Reference<Cloudscape> mFogOfWar;
     private boolean mVisualsNeedUpdate;
     private Reference<GameObject> mZoomSlider;
     private Reference<UITokenCounter> mTokenCounter;
@@ -91,11 +89,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 Scene.getActiveScene()
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
-
-        mFogOfWar =
-                Scene.getActiveScene()
-                        .getSingleton(Cloudscape.class)
-                        .getReference(Cloudscape.class);
 
         // Get the screen for map
         mMapScreen =
@@ -179,7 +172,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             Building capital = mPlayer.get().getCapital();
 
             if (targetRig != null && capital != null) {
-                log.info("MOVE TO CAPITAL BRUDDY!");
                 targetRig.setTarget(capital.getGameObject().getTransform());
                 mMovedCameraToCapital = true;
             }
@@ -321,10 +313,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         MapEffects effects = mMapEffects.get();
         if (!mPlayer.get().hasLost()) {
-
-            if (Reference.isValid(mFogOfWar)) {
-                mFogOfWar.get().setActivePlayer(mPlayer);
-            }
 
             effects.setActivePlayer(mPlayer);
 

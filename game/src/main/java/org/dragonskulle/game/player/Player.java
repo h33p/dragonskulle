@@ -1,13 +1,13 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -55,8 +55,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
-    /** A set of viewable tiles for the player */
-    private final Set<HexagonTile> mViewableTiles = new HashSet<>();
+    /**
+     * A set tiles around the player.
+     *
+     * <p>Positive values indicate the tile is viewable, 0, or lower mean tile is not viewable by
+     * the player.
+     */
+    private final Map<HexagonTile, Integer> mTilesAround = new HashMap<>();
 
     /** Link to the current capital. */
     private Reference<Building> mCapital = null;
@@ -89,6 +94,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     // TODO this needs to be set dynamically -- specifies how many players will play this game
     private static final int MAX_PLAYERS = 6;
+
+    /** Controls how deep into unviewable tiles we go for mTilesAround. */
+    private static final int VIEWABILITY_LOWER_BOUND = -5;
 
     /** Used by the client to request that a building be placed by the server. */
     @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
@@ -144,9 +152,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         updateTokens(TOKEN_TIME);
     }
 
+    /** Used as a queue for tiles to be flood filled */
+    private final Deque<HexagonTile> mFillTiles = new ArrayDeque<>();
+
     /** Adds building's viewable tiles to player's viewable tile list */
     public void updateViewableTiles(Building building) {
-        mViewableTiles.addAll(building.getViewableTiles());
+        for (HexagonTile tile : building.getClaimedTiles()) {
+            mFillTiles.push(tile);
+            mTilesAround.put(tile, building.getViewDistance().getValue());
+        }
     }
 
     @Override
@@ -403,7 +417,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (tile == null) return false;
 
         // We clear viewable tiles in this case, because they can be invalid
-        mViewableTiles.clear();
+        mTilesAround.clear();
 
         Reference<Building> removed = mOwnedBuildings.remove(tile);
         return (removed != null);
@@ -416,14 +430,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the tile is viewable, {@code false} otherwise.
      */
     public boolean isTileViewable(HexagonTile tile) {
-        if (mViewableTiles.isEmpty()) {
-            getOwnedBuildingsAsStream()
-                    .filter(Reference::isValid)
-                    .map(Reference::get)
-                    .forEach(this::updateViewableTiles);
-        }
+        ensureViewableTilesAreValid();
 
-        return mViewableTiles.contains(tile);
+        Integer val = mTilesAround.get(tile);
+
+        return val != null && val > 0;
+    }
+
+    public int getTileViewability(HexagonTile tile) {
+        ensureViewableTilesAreValid();
+        return mTilesAround.getOrDefault(tile, VIEWABILITY_LOWER_BOUND);
     }
 
     /**
@@ -434,14 +450,51 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return stream of viewable tiles
      */
     public Stream<HexagonTile> getViewableTiles() {
-        if (mViewableTiles.isEmpty()) {
+        ensureViewableTilesAreValid();
+        return mTilesAround.entrySet().stream().filter(e -> e.getValue() > 0).map(e -> e.getKey());
+    }
+
+    public void onClaimTile(HexagonTile tile, Building building) {
+        mTilesAround.put(tile, building.getViewDistance().getValue());
+        mFillTiles.push(tile);
+    }
+
+    private void ensureViewableTilesAreValid() {
+        if (mTilesAround.isEmpty()) {
+            mTilesAround.clear();
+            mFillTiles.clear();
             getOwnedBuildingsAsStream()
                     .filter(Reference::isValid)
                     .map(Reference::get)
                     .forEach(this::updateViewableTiles);
         }
 
-        return mViewableTiles.stream();
+        if (!Reference.isValid(mMap)) {
+            return;
+        }
+
+        HexagonMap map = mMap.get();
+
+        map.floodFill(
+                mFillTiles,
+                (__, t, neighbours, out) -> {
+                    Integer val = mTilesAround.get(t);
+
+                    if (val == null || val <= VIEWABILITY_LOWER_BOUND) {
+                        return;
+                    }
+
+                    Integer newVal = val - 1;
+
+                    for (HexagonTile n : neighbours) {
+                        Integer nval = mTilesAround.get(n);
+
+                        if (nval == null || nval < newVal) {
+                            mTilesAround.put(n, newVal);
+                            mFillTiles.push(n);
+                        }
+                    }
+                });
     }
 
     /**
@@ -457,11 +510,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Get the {@link #mOwnedBuildings} as an {@link ArrayList}.
+     * Get the {@link #mOwnedBuildings} as a {@link List}.
      *
-     * @return The Buildings the player owns, as an ArrayList.
+     * @return The Buildings the player owns, as a List.
      */
-    public ArrayList<Reference<Building>> getOwnedBuildings() {
+    public List<Reference<Building>> getOwnedBuildings() {
         return new ArrayList<Reference<Building>>(mOwnedBuildings.values());
     }
 
@@ -621,7 +674,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        if (buildable == false) {
+        if (!buildable) {
             log.info("Building not in buildable range/on suitable tile.");
             return false;
         }

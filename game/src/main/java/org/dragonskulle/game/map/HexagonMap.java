@@ -4,6 +4,7 @@ package org.dragonskulle.game.map;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -31,6 +32,14 @@ import org.joml.Vector3f;
 @Log
 public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
+    public static interface IFloodFillVisitor {
+        void onVisit(
+                HexagonMap map,
+                HexagonTile tile,
+                List<HexagonTile> neighbours,
+                Deque<HexagonTile> tilesToFill);
+    }
+
     /** The size that is used to create the map. */
     @Getter @Setter private int mSize = 51;
 
@@ -53,7 +62,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
                 .forEach(
                         tile -> {
                             if (tile.landMassNumber == -1) {
-                                floodFill(tile);
+                                floodFillLand(tile);
                             }
                         });
     }
@@ -64,10 +73,9 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      *
      * @param tile The tile to start flooding from
      */
-    private void floodFill(HexagonTile tile) {
-
+    private void floodFillLand(HexagonTile tile) {
         // Checks that we haven't already checked it
-        int size = 0;
+        int size[] = {0};
         if (tile.getTileType() != TileType.LAND || tile.landMassNumber != -1) {
             return;
         }
@@ -75,28 +83,39 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         Deque<HexagonTile> tiles = new ArrayDeque<HexagonTile>();
         tiles.add(tile);
 
+        floodFill(
+                tiles,
+                (__, tileToUse, neighbours, tilesOut) -> {
+                    if (tileToUse.getTileType() == TileType.LAND
+                            && tileToUse.landMassNumber == -1) {
+                        size[0]++;
+                        tileToUse.landMassNumber = mLandMass;
+
+                        for (HexagonTile neighbour : neighbours) {
+                            if (neighbour.landMassNumber == -1
+                                    && neighbour.getTileType() == TileType.LAND) {
+                                tilesOut.add(neighbour);
+                            }
+                        }
+                    }
+                });
+
+        if (size[0] > mLargestLandMass[1]) {
+            mLargestLandMass[0] = mLandMass;
+            mLargestLandMass[1] = size[0];
+        }
+
+        mLandMass++;
+    }
+
+    public void floodFill(Deque<HexagonTile> tiles, IFloodFillVisitor visitor) {
+        ArrayList<HexagonTile> neighbours = new ArrayList<>();
+
         while (tiles.size() != 0) {
             HexagonTile tileToUse = tiles.removeFirst();
-            if (tileToUse.getTileType() == TileType.LAND && tileToUse.landMassNumber == -1) {
-                size++;
-                tileToUse.landMassNumber = mLandMass;
-
-                ArrayList<HexagonTile> neighbours = this.getTilesInRadius(tileToUse, 1, false);
-
-                for (HexagonTile neighbour : neighbours) {
-                    if (neighbour.landMassNumber == -1
-                            && neighbour.getTileType() == TileType.LAND) {
-                        tiles.add(neighbour);
-                    }
-                }
-            }
+            getTilesInRadius(tileToUse, 1, false, neighbours);
+            visitor.onVisit(this, tileToUse, neighbours, tiles);
         }
-
-        if (size > mLargestLandMass[1]) {
-            mLargestLandMass[0] = mLandMass;
-            mLargestLandMass[1] = size;
-        }
-        mLandMass++;
     }
 
     /**
@@ -129,10 +148,10 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      *     ArrayList}.
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(
-            HexagonTile tile, int radius, boolean includeTile) {
+    public List<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int radius, boolean includeTile, ArrayList<HexagonTile> tilesOut) {
         int minimum = includeTile ? 0 : 1;
-        return getTilesInRadius(tile, minimum, radius);
+        return getTilesInRadius(tile, minimum, radius, tilesOut);
     }
 
     /**
@@ -144,13 +163,14 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      * @param tile The target tile.
      * @param min The minimum radius of tiles to include.
      * @param max The maximum radius of tiles to include.
-     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius,
-     *     inclusive.
+     * @param tilesOut A {@link List} where {@link HexagonTile}s in radius will be filled into.
+     * @return A {@link List} of {@link HexagonTile}s within the min and max radius. inclusive.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int min, int max) {
+    public List<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int min, int max, List<HexagonTile> tilesOut) {
         if (tile == null) return new ArrayList<HexagonTile>();
 
-        return getTilesInRadius(tile.getQ(), tile.getR(), min, max);
+        return getTilesInRadius(tile.getQ(), tile.getR(), min, max, tilesOut);
     }
 
     /**
@@ -165,12 +185,12 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      * @param tileR The target tile R position.
      * @param min The minimum radius of tiles to include.
      * @param max The maximum radius of tiles to include.
-     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius,
-     *     inclusive.
+     * @param tilesOut A {@link List} where {@link HexagonTile}s in radius will be filled into.
+     * @return An {@link List} of {@link HexagonTile}s within the min and max radius, inclusive.
      */
-    private ArrayList<HexagonTile> getTilesInRadius(int tileQ, int tileR, int min, int max) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
+    private List<HexagonTile> getTilesInRadius(
+            int tileQ, int tileR, int min, int max, List<HexagonTile> tilesOut) {
+        tilesOut.clear();
         for (int q = -max; q <= max; q++) {
             // Only generate valid tile coordinates.
             int lower = Math.max(-max, -q - max);
@@ -191,11 +211,11 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
                 }
 
                 // Add the tile to the list.
-                tiles.add(selectedTile);
+                tilesOut.add(selectedTile);
             }
         }
 
-        return tiles;
+        return tilesOut;
     }
 
     /**
@@ -242,7 +262,8 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         HexagonTile closestTile = null;
         float closestDistance = 1e30f;
 
-        ArrayList<HexagonTile> tiles = getTilesInRadius((int) axial.x, (int) axial.y, 0, 4);
+        List<HexagonTile> tiles =
+                getTilesInRadius((int) axial.x, (int) axial.y, 0, 4, new ArrayList<>());
 
         Vector3f va = new Vector3f();
         Vector3f vb = new Vector3f();
