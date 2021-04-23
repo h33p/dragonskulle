@@ -83,6 +83,7 @@ public class Graph {
         if (tile.getTileType() != TileType.LAND) {
             return;
         }
+        log.info("Node num: " + mCurrentNodeId);
 
         addNode(mCurrentNodeId, tile);
         int heuristic = tile.distTo(mTarget.get().getQ(), mTarget.get().getR());
@@ -99,6 +100,7 @@ public class Graph {
         if (tile.getTileType() != TileType.LAND) {
             return;
         }
+        log.info("Node num: " + mCurrentNodeId);
         ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, false);
 
         for (HexagonTile tileNeighbour : neighbourTiles) {

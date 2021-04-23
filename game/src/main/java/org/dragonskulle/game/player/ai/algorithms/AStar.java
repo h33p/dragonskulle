@@ -150,6 +150,7 @@ public class AStar {
             }
         }
 
+        log.severe("Size: " + connectionsFinal.size());
         if (currentNode == endNode) { // If we have reached the end
             mPath.push(endNode); // Push the end Node
 
@@ -160,8 +161,8 @@ public class AStar {
                 if (connectionsFinal.get(i).mChildNode
                         == currentNode) { // If the node on this connection is the right one
 
-                    mPath.push(connectionsFinal.get(i).mChildNode);
-                    currentNode = connectionsFinal.get(i).mChildNode;
+                    mPath.push(connectionsFinal.get(i).mCurrentNode);
+                    currentNode = connectionsFinal.get(i).mCurrentNode;
                 }
             }
         }
@@ -180,7 +181,7 @@ public class AStar {
         for (Frontier node : mFrontier.values()) {
             if (node.mFNode < smallest) {
                 smallest = node.mFNode;
-                index = i;
+                index = node.mChild;
             }
             i++;
         }
