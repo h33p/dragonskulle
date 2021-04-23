@@ -14,7 +14,6 @@ import org.dragonskulle.components.lambda.LambdaFixedUpdate;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
-import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
@@ -32,14 +31,11 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Getter private Building mSelectedBuilding;
     @Setter private BuildingDescriptor mSelectedBuildingDescriptor;
-    @Setter private Reference<GameObject> mPastOptionsRef;
     private Reference<GameObject> mPossibleBuildingComponent;
     @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
     @Setter private Reference<GameObject> mVisibleDescriptorHint = new Reference<>(null);
-    private List<Reference<UIButton>> mBuildingsCanPlaceButtonsReferences;
     @Getter private final UIShopSection mParent;
     @Setter private boolean mStickyHint = false;
     private Reference<Player> mPlayerReference;
@@ -68,8 +64,9 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                 getGameObject()
                         .buildChild(
                                 "possible_buildings",
-                                new TransformUI(true),
+                                new TransformUI(),
                                 (self) -> {
+                                    TransformUI t = self.getTransform(TransformUI.class);
                                     UIManager manager = UIManager.getInstance();
                                     mBuildingsCanPlace = PredefinedBuildings.getAll();
                                     mBuildingsCanPlaceButtons =
@@ -80,12 +77,11 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                     manager.buildGridUI(
                                             self,
                                             4,
-                                            0f,
-                                            0.3f,
-                                            0.55f,
-                                            0.15f,
+                                            -0.08f,
+                                            0.2f,
+                                            0.41f,
+                                            0.23f,
                                             mBuildingsCanPlaceButtons);
-                                    // will filter the references by disabled on frame update
 
                                     self.buildChild(
                                             "build_selected_tile",
@@ -120,10 +116,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                                                                                                     mSelectedBuildingDescriptor)));
                                                                         }
 
-                                                                        getParent()
-                                                                                .getParent()
-                                                                                .mUpdateBuildingSelected
-                                                                                .update();
                                                                         getParent()
                                                                                 .getParent()
                                                                                 .mNotifyScreenChange
@@ -236,18 +228,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     public void fixedUpdate(float deltaTime) {
         ensurePlayerReference();
         updateTokens();
-        //        for (int i = 0; i < PredefinedBuildings.getAll().size(); i++) {
-        //            BuildingDescriptor buildingDescriptor = PredefinedBuildings.get(i);
-        //            Reference<UIButton> buttonReference =
-        // mBuildingsCanPlaceButtonsReferences.get(i);
-        //            if (Reference.isValid(buttonReference)) {
-        //                if (buildingDescriptor.getCost() < getTokens()) {
-        //                    buttonReference.get().enable();
-        //                } else {
-        //                    buttonReference.get().disable();
-        //                }
-        //            }
-        //        }
     }
 
     private void updateTokens() {

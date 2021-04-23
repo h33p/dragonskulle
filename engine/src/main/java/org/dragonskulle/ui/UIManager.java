@@ -69,7 +69,7 @@ public class UIManager {
             float endY,
             float ySeperation,
             List<IUIBuildHandler> elems) {
-        int offsetY = 0;
+        float offsetY = 0f;
         while (elems.iterator().hasNext()) {
             IUIBuildHandler[] row = new IUIBuildHandler[width];
             for (int i = 0; i < width; i++) {
@@ -79,8 +79,9 @@ public class UIManager {
                     row[i] = null;
                 }
             }
-            offsetY += ySeperation;
+
             buildHorizontalUI(go, startX, startY + offsetY, endY + offsetY, row);
+            offsetY += ySeperation;
         }
     }
 

@@ -41,13 +41,13 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UITextRect mAttackLevelText;
     private UITextRect mDefenceLevelText;
     private UITextRect mTokenGenerationText;
-    private UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private UITextRect mAttackCostText;
     private UITextRect mDefenceCostText;
     private UITextRect mTokenGenerationCostText;
     private TransformUI tran;
     private final HashMap<StatType, Reference<UIText>> mTextCostReferences = new HashMap<>();
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
+    private Building lastBuilding = null;
 
     /**
      * Constructor.
@@ -201,7 +201,10 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
             Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
             if (Reference.isValid(buildingRef)) {
                 Building building = buildingRef.get();
-                if (building != null && building.statsRequireVisualUpdate()) {
+                if (building != null
+                        && (building.statsRequireVisualUpdate()
+                                || !building.equals(lastBuilding))) {
+                    lastBuilding = building;
                     StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
                     ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();
                     for (SyncStat upgradeableStat : upgradeableStats) {

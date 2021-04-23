@@ -76,7 +76,6 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
      * @param state the state
      */
     protected void setState(ShopState state) {
-        getParent().mUpdateBuildingSelected.update();
         if (state != getLastState()) {
             shouldTranslateShopIfNotVisible();
             String newText = "Shop is Closed";

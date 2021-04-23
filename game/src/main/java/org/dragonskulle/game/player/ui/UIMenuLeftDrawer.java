@@ -193,7 +193,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mBuildScreenMenu = buildMenu(buildingSelectedScreenMenuItems);
 
-        tileSelectedScreenMenuItems.add(buildPlaceButtonFrame());
+        //        tileSelectedScreenMenuItems.add(buildPlaceButtonFrame());
         tileSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mTileSelectedMenu = buildMenu(tileSelectedScreenMenuItems);
 
@@ -338,8 +338,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 case UPGRADE_SCREEN:
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
-                    setShopState(
-                            ShopState.MY_BUILDING_SELECTED, mGetHexChosen.getHex().getBuilding());
+                    setShopState(ShopState.MY_BUILDING_SELECTED, true);
                     break;
                     //                case BUILD_TILE_SCREEN:
                     //                    newScreen = mTileSelectedMenu;
@@ -435,7 +434,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      *
      * @param shopState the new state
      */
-    private void setShopState(ShopState shopState, Building building) {
+    private void setShopState(ShopState shopState, boolean updateBuilding) {
+        mUpdateBuildingSelected.update();
         setShopState(shopState);
     }
 
