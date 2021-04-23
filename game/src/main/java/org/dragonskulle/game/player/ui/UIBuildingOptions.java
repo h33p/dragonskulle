@@ -19,8 +19,13 @@ import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIFlatImage;
+import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 
 /**
  * The UI Component to display the pre-defined placeable buildings.
@@ -125,6 +130,12 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                         });
     }
 
+    /**
+     * Build a graphic from a building descriptor.
+     *
+     * @param descriptor the descriptor
+     * @return build handler
+     */
     private IUIBuildHandler buildPredefinedBuildingBox(BuildingDescriptor descriptor) {
         return (go) -> {
             go.getTransform(TransformUI.class).setPivotOffset(0.5f, 0f);
@@ -132,10 +143,12 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                     new UIButton(
                             "",
                             (me, ___) -> {
-                                if (Reference.isValid((mPreviousLock)))
+                                if (Reference.isValid((mPreviousLock))) {
                                     mPreviousLock.get().setLockPressed(false);
-                                if (!mSelectedBuildingDescriptor.equals(descriptor))
+                                }
+                                if (!mSelectedBuildingDescriptor.equals(descriptor)) {
                                     showDescriptorHint(descriptor);
+                                }
                                 setPreviousLock(me.getReference(UIButton.class));
                                 setSelectedBuildingDescriptor(descriptor);
                                 me.setLockPressed(true);
@@ -177,15 +190,12 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         };
     }
 
-    private void hideDescriptorHint() {
-        if (Reference.isValid(mVisibleDescriptorHint)) {
-            mVisibleDescriptorHint.get().destroy();
-            setVisibleDescriptorHint(new Reference<>(null));
-        }
-    }
-
+    /**
+     * Sets the visible descriptor in the 'hint'ish box.
+     *
+     * @param descriptor the descriptor
+     */
     private void showDescriptorHint(BuildingDescriptor descriptor) {
-        //        hideDescriptorHint();
         log.info("showing hint");
         Reference<UITextRect> descriptorTextRef = getDescriptorTextRef();
         if (Reference.isValid(descriptorTextRef)) {
@@ -211,18 +221,26 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         updateTokens();
     }
 
+    /** Update the local tokens. */
     private void updateTokens() {
         if (Reference.isValid(mPlayerReference)) {
             setTokens(mPlayerReference.get().getTokens().get());
         }
     }
 
+    /** Ensure that the player reference isValid, otherwise fetch. */
     private void ensurePlayerReference() {
         if (Reference.isInvalid(mPlayerReference)) {
             mPlayerReference = getParent().getParent().mGetPlayer.getPlayer();
         }
     }
 
+    /**
+     * The onClick handler for the build button.
+     *
+     * @param __ ignored
+     * @param ___ ignored
+     */
     private void buildOnClick(UIButton __, float ___) {
         if (getParent().getParent().mGetHexChosen.getHex() != null) {
             Reference<Player> player = getParent().getParent().mGetPlayer.getPlayer();

@@ -433,6 +433,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      * Sets the shop state.
      *
      * @param shopState the new state
+     * @param updateBuilding this will force the parents mSelectedBuilding variable to update
      */
     private void setShopState(ShopState shopState, boolean updateBuilding) {
         mUpdateBuildingSelected.update();

@@ -44,16 +44,15 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UITextRect mAttackCostText;
     private UITextRect mDefenceCostText;
     private UITextRect mTokenGenerationCostText;
-    private TransformUI tran;
     private final HashMap<StatType, Reference<UIText>> mTextCostReferences = new HashMap<>();
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
-    private Building lastBuilding = null;
+    private Building mLastBuilding = null;
 
     /**
      * Constructor.
      *
-     * @param mParent
+     * @param mParent its parent to be lazy and use its IParams
      */
     public UIBuildingUpgrade(UIShopSection mParent) {
         this.mParent = mParent;
@@ -142,7 +141,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                     "cost_label",
                                     new TransformUI(true),
                                     g -> {
-                                        tran = g.getTransform(TransformUI.class);
+                                        TransformUI tran = g.getTransform(TransformUI.class);
                                         tran.setParentAnchor(0.3f, 0.38f);
                                         tran.setPosition(0f, 0.145f);
                                         g.addComponent(new UIText("COST"));
@@ -202,17 +201,18 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (getParent().didBuild() && mUpdateBuildingSelected != null)
+        if (getParent().didBuild() && mUpdateBuildingSelected != null) {
             mUpdateBuildingSelected.update();
+        }
         if (mGetBuildingChosen != null) {
             Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
             if (Reference.isValid(buildingRef)) {
                 Building building = buildingRef.get();
                 if (building != null
                         && (building.statsRequireVisualUpdate()
-                                || !building.equals(lastBuilding))) {
+                                || !building.equals(mLastBuilding))) {
                     getParent().markDidBuild(false);
-                    lastBuilding = building;
+                    mLastBuilding = building;
                     StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
                     ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();
                     for (SyncStat upgradeableStat : upgradeableStats) {
@@ -232,6 +232,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         }
     }
 
+    /**
+     * Updates the SyncStat values and costs shown in the shop.
+     *
+     * @param upgradeableStat the upgradeable stat
+     */
     private void updateStatVisibleTexts(SyncStat upgradeableStat) {
         Reference<UIText> statTextValueRef = mTextValueReferences.get(upgradeableStat.getType());
         setTextRef(upgradeableStat, statTextValueRef, false);
@@ -239,6 +244,13 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         setTextRef(upgradeableStat, statTextCostRef, true);
     }
 
+    /**
+     * Sets a value or cost text ref for a buildings stats.
+     *
+     * @param upgradeableStat the upgradeable stat whos values we are using
+     * @param textRef the ref to set text on
+     * @param isCostRef true if setting the cost text
+     */
     private void setTextRef(
             SyncStat upgradeableStat, Reference<UIText> textRef, boolean isCostRef) {
         if (Reference.isValid(textRef)) {
@@ -259,6 +271,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         }
     }
 
+    /**
+     * Ensures the References For the cost text's exist.
+     *
+     * @param upgradeableStat the stat who's cost reference we are looking for
+     * @return the reference assigned
+     */
     private Reference<UIText> reassignTextCostReferencesForStatButton(SyncStat upgradeableStat) {
         Reference<UIText> textReference = new Reference<UIText>(null);
         switch (upgradeableStat.getType()) {
@@ -284,6 +302,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         return textReference;
     }
 
+    /**
+     * Ensures the References For the value text's exist.
+     *
+     * @param upgradeableStat the stat who's value reference we are looking for
+     * @return the reference assigned
+     */
     private Reference<UIText> reassignTextValueReferencesForStatButton(SyncStat upgradeableStat) {
         Reference<UIText> textReference = new Reference<UIText>(null);
         switch (upgradeableStat.getType()) {

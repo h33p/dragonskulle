@@ -14,6 +14,11 @@ import org.dragonskulle.components.IOnStart;
 public class LambdaOnStart extends Component implements IOnStart {
     private final IOnStart mHandler;
 
+    /**
+     * Constructor.
+     *
+     * @param handler the handler
+     */
     public LambdaOnStart(IOnStart handler) {
         mHandler = handler;
     }

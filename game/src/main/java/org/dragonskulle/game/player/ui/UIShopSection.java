@@ -39,28 +39,22 @@ public class UIShopSection extends Component implements IOnStart {
 
     @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
     private Reference<UIText> mTitleRef;
-    private Reference<TransformUI> mTransform;
-    private boolean mShopIsTranslated = true;
-    @Setter private boolean mShouldTranslateShop = false;
-    private float mStep = 0.02f;
-    private float mLastY = 0.68f;
-    private TransformUI textTransform;
-    private Reference<UIBuildingUpgrade> mUpgradePanelComponent;
 
     /**
      * Constructor.
      *
-     * @param mParent
+     * @param mParent the parent who's IParams we are reusing
      */
     public UIShopSection(UIMenuLeftDrawer mParent) {
         this.mParent = mParent;
     }
-    //
-    //    @Override
-    //    public void frameUpdate(float deltaTime) {
-    //        //        translateShop();
-    //    }
 
+    /**
+     * Sets the flag if a new building was placed. This will allow us to update the building until
+     * updated via network.
+     *
+     * @param state the state
+     */
     public void markDidBuild(boolean state) {
         mDidBuild = state;
     }
@@ -84,7 +78,6 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
-            shouldTranslateShopIfNotVisible();
             String newText = "Shop is Closed";
             if (state.equals(ShopState.CLOSED)) {
                 show(mNewBuildingPanel, false);
@@ -93,7 +86,6 @@ public class UIShopSection extends Component implements IOnStart {
                 if (Reference.isValid(mTitleRef)) {
                     mTitleRef.get().setText(newText);
                 }
-                setShouldTranslateShop(true);
                 swapPanels(new Reference<>(null));
                 return;
             }
@@ -127,36 +119,6 @@ public class UIShopSection extends Component implements IOnStart {
             swapPanels(newPanel);
         }
     }
-
-    private void shouldTranslateShopIfNotVisible() {
-        if (mShopIsTranslated) {
-            setShouldTranslateShop(true);
-        }
-    }
-
-    private void translateShop() {
-        if (mShouldTranslateShop) {
-            if (Reference.isValid(mTransform)) {
-                // 0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f
-                TransformUI t = mTransform.get();
-                mLastY = mLastY + (mShopIsTranslated ? -(mStep) : mStep);
-                t.setParentAnchor(0.08f, mLastY, 1 - 0.08f, 1 - 0.03f);
-                float y = textTransform.getPosition().y();
-                log.info("y: " + y);
-                if (0.4f < y && y < 0.86f) {
-                    textTransform.translate(0, (mShopIsTranslated ? -0.02f : 0.02f));
-                }
-                if (mLastY >= 0.88f) {
-                    setShouldTranslateShop(false);
-                    mShopIsTranslated = true;
-                } else if (mLastY <= 0.68f) {
-                    setShouldTranslateShop(false);
-                    mShopIsTranslated = false;
-                }
-            }
-        }
-    }
-
     /**
      * Show the component's GO.
      *
@@ -202,7 +164,6 @@ public class UIShopSection extends Component implements IOnStart {
                                 "upgrade_object",
                                 new TransformUI(true),
                                 (self) -> self.addComponent(uiBuildingUpgrade));
-        mUpgradePanelComponent = uiBuildingUpgrade.getReference(UIBuildingUpgrade.class);
         show(mUpgradePanel, false);
 
         UIBuildingOptions uiBuildingOptions =
@@ -219,7 +180,6 @@ public class UIShopSection extends Component implements IOnStart {
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         //        0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f when using transform
         tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
-        mTransform = tran.getReference(TransformUI.class);
         UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
         ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
         getGameObject().addComponent(renderable);
@@ -234,8 +194,8 @@ public class UIShopSection extends Component implements IOnStart {
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });
 
-        textTransform = textObj.get().getTransform(TransformUI.class);
-        textTransform.setParentAnchor(0.05f, 0f);
-        textTransform.translate(0, -0.22f); // remove if using transforms
+        TransformUI mTextTransform = textObj.get().getTransform(TransformUI.class);
+        mTextTransform.setParentAnchor(0.05f, 0f);
+        mTextTransform.translate(0, -0.22f); // remove if using transforms
     }
 }

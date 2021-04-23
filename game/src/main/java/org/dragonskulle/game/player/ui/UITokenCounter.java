@@ -65,11 +65,21 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
         setTokens(incrToken);
     }
 
+    /**
+     * Sets tokens to aim incrementer for.
+     *
+     * @param incrToken the incr token
+     */
     private void setTokens(float incrToken) {
         setCurTokens(incrToken);
         setVisibleTokens(incrToken);
     }
 
+    /**
+     * Sets visible tokens.
+     *
+     * @param incrToken the incr token
+     */
     private void setVisibleTokens(float incrToken) {
         if (Reference.isValid(mTokens)) {
             mTokens.get().setText(String.format("Tokens: %5d", Math.round(incrToken)));
