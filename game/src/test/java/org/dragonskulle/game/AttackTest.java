@@ -151,6 +151,7 @@ public class AttackTest {
 
         statDefender.increaseLevel();
         statDefender.increaseLevel();
+        statDefender.increaseLevel();
 
         defender.afterStatChange();
 
