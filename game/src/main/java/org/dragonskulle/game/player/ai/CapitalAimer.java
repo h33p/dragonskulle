@@ -124,6 +124,9 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                         && nextTilePlayer.getNetworkObject().getOwnerId()
                                 == mPlayer.get().getNetworkObject().getOwnerId()) {
                     mGone.push(nextNode);
+                    if (mPath.size() == 0) {
+                        return;
+                    }
                     nextNode = mPath.pop();
                     nextTile = mGraph.getNode(nextNode).getHexTile().get();
                     nextTilePlayer = nextTile.getClaimant();
@@ -169,6 +172,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                             // Will attack instead and remove
                             while (building == null) {
                                 mPath.push(nextNode);
+                                if (mGone.size() == 0) {
+                                    mPath = new ArrayDeque<Integer>();
+                                    return;
+                                }
                                 nextNode = mGone.pop();
                                 nextTile = mGraph.getNode(nextNode).getHexTile().get();
                                 nextTilePlayer = nextTile.getClaimant();
