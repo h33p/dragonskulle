@@ -488,15 +488,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
 
                     map.getTilesInRadius(tile, 1, false, tilesAround);
 
-                    int claimedCount = 0;
-
                     for (HexagonTile tileAround : tilesAround) {
-                        if (tileAround.isClaimed() || tileAround.hasBuilding()) {
-                            claimedCount++;
-
-                            if (claimedCount > 1) {
-                                return;
-                            }
+                        if (tileAround.hasBuilding()) {
+                            return;
                         }
                     }
 
