@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
@@ -73,16 +74,18 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
-    private static final float WATER_THRESHOLD = -0.3f;
-    private static final float MOUNTAINS_THRESHOLD = 0.8f;
-    private static final float WATER_OFF = 0.1f;
+    static final float WATER_THRESHOLD = -0.3f;
+    static final float MOUNTAINS_THRESHOLD = 0.8f;
+    static final float WATER_OFF = 0.1f;
 
     /** This is the axial storage system for each tile. */
     @Getter private final int mQ;
 
     @Getter private final int mR;
 
-    @Getter private float mHeight;
+    @Setter(AccessLevel.PACKAGE)
+    @Getter
+    private float mHeight;
 
     @Getter private TileType mTileType;
 
@@ -182,6 +185,7 @@ public class HexagonTile implements INetSerializable {
             return false;
         }
 
+        building.onClaimTile(this);
         mClaimedBy = building.getReference(Building.class);
         mHandler.update(this);
 
@@ -327,6 +331,7 @@ public class HexagonTile implements INetSerializable {
             return false;
         }
 
+
         return true;
     }
 
@@ -438,7 +443,7 @@ public class HexagonTile implements INetSerializable {
      * @param fadeIn whether the tile should fade in, or fade out
      * @param destroyOnFadeOut set to automatically destroy the object if it fades out
      */
-    private void updateHeight(boolean fadeIn, boolean destroyOnFadeOut) {
+    void updateHeight(boolean fadeIn, boolean destroyOnFadeOut) {
 
         mFadeControl.get().setDestroyOnFadeOut(destroyOnFadeOut);
 

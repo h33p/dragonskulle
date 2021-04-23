@@ -5,6 +5,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -41,7 +42,7 @@ public class AudioManager {
 
     private final ArrayList<Sound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
-    private final ArrayList<Reference<AudioSource>> mAudioSources = new ArrayList<>();
+    private final HashSet<Reference<AudioSource>> mAudioSources = new HashSet<>();
 
     @Getter private Reference<AudioListener> mAudioListener;
     private long mAlDev = -1;
@@ -262,14 +263,16 @@ public class AudioManager {
             return;
         }
 
+        ArrayList<Reference<AudioSource>> audioSources = new ArrayList<>(mAudioSources);
+
         updateListenerPosAndRot();
 
         // remove any references to AudioSources that are no longer valid
-        mAudioSources.removeIf(Reference::isInvalid);
+        audioSources.removeIf(Reference::isInvalid);
 
         // All references will be valid because they any invalid ones are removed at the start
-        for (int i = 0; i < mAudioSources.size(); i++) {
-            AudioSource audioSource = mAudioSources.get(i).get();
+        for (int i = 0; i < audioSources.size(); i++) {
+            AudioSource audioSource = audioSources.get(i).get();
 
             // Get the distance of the source from the listener
             float distance = 100000f;
@@ -290,20 +293,17 @@ public class AudioManager {
             if (audioSource.getSound() == null
                     || audioSource.getTimeLeft() < 0f
                     || distance > audioSource.getRadius()) {
-                mAudioSources.remove(i);
+                audioSources.remove(i);
                 audioSource.detachSource();
                 i--;
             }
         }
 
-        // TODO: Sort audio sources by priority
-        // List is not sorted by priority for now but will be in the future so
-        // detach all sources from index mSources.size() onwards
-        if (mAudioSources.size() > mSources.size()) {
-            detachSources(mAudioSources.subList(mSources.size(), mAudioSources.size()));
-            attachSources(mAudioSources.subList(0, mSources.size()));
+        if (audioSources.size() > mSources.size()) {
+            detachSources(audioSources.subList(mSources.size(), mAudioSources.size()));
+            attachSources(audioSources.subList(0, mSources.size()));
         } else {
-            attachSources(mAudioSources);
+            attachSources(audioSources);
         }
 
         mAudioSources.clear();

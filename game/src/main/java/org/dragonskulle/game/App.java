@@ -20,7 +20,6 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
-import org.dragonskulle.game.map.Cloudscape;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
@@ -117,7 +116,6 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
-                                                    camera.addComponent(new Cloudscape());
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);

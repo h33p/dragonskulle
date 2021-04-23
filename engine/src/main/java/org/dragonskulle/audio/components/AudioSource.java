@@ -27,7 +27,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     @Getter private Source mSource = null;
     @Getter private float mVolume = 1f;
     @Getter private float mPitch = 1f;
-    @Getter private float mRadius = 500f;
+    @Getter private float mRadius = 50000f;
     @Getter private float mTimeLeft = -1f;
     @Getter private int mLooping = AL11.AL_FALSE;
 
@@ -69,7 +69,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         updatePosition();
 
         AL11.alSourcePlay(s);
-        log.info("Attached source " + mSource.getSource());
+        log.finer("Attached source " + mSource.getSource());
     }
 
     /** Detach the Source from this AudioSource if there is one. */
@@ -84,7 +84,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
         AL11.alSourceStop(source);
         AL11.alSourcei(source, AL11.AL_BUFFER, 0);
 
-        log.info("Detached source " + mSource.getSource());
+        log.finer("Detached source " + mSource.getSource());
         mSource.setInUse(false);
         mSource = null;
     }

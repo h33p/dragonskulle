@@ -107,6 +107,10 @@
                         {
                             "class_name" : "org.dragonskulle.game.map.FadeTile",
                             "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.map.ClientFogTileHeight",
+                            "enabled" : true
                         }
                     ]
                 }
