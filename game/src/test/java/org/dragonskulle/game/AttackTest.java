@@ -65,9 +65,7 @@ public class AttackTest {
 
         SyncStat stat = attacker.getStat(StatType.ATTACK);
 
-        for (int i = 0; i < 5; i++) {
-            stat.increaseLevel();
-        }
+        stat.set(SyncStat.LEVEL_MAX);
         // Update the building on the server.
         attacker.afterStatChange();
 
@@ -89,9 +87,7 @@ public class AttackTest {
 
         SyncStat stat = defender.getStat(StatType.DEFENCE);
 
-        for (int i = 0; i < 5; i++) {
-            stat.increaseLevel();
-        }
+        stat.set(SyncStat.LEVEL_MAX);
         // Update the building on the server.
         defender.afterStatChange();
 
@@ -116,9 +112,9 @@ public class AttackTest {
 
         assertEquals(0.5f, percentageOfWins, 0.1f);
 
+        SyncStat statAttacker = attacker.getStat(StatType.ATTACK);
+        SyncStat statDefender = defender.getStat(StatType.DEFENCE);
         for (int i = 0; i < 6; i++) {
-            SyncStat statAttacker = attacker.getStat(StatType.ATTACK);
-            SyncStat statDefender = defender.getStat(StatType.DEFENCE);
 
             statAttacker.increaseLevel();
             statDefender.increaseLevel();
