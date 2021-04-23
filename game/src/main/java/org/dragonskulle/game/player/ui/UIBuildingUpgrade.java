@@ -47,6 +47,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private TransformUI tran;
     private final HashMap<StatType, Reference<UIText>> mTextCostReferences = new HashMap<>();
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
+    private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building lastBuilding = null;
 
     /**
@@ -69,6 +70,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
         mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
+        mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
         String attackVal = "-";
         String defenceVal = "-";
         String tokenGenVal = "-";
@@ -138,14 +140,14 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                     new TransformUI(true),
                                     g -> {
                                         tran = g.getTransform(TransformUI.class);
-                                        tran.setParentAnchor(0.28f, 0.4f);
-                                        tran.setPosition(0f, 0.14f);
+                                        tran.setParentAnchor(0.3f, 0.38f);
+                                        tran.setPosition(0f, 0.145f);
                                         g.addComponent(new UIText("COST"));
                                     });
                             manager.buildHorizontalUI(
                                     self,
                                     0.05f,
-                                    0.65f,
+                                    0.55f,
                                     1.15f,
                                     mAttackCostText,
                                     mDefenceCostText,
@@ -197,6 +199,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
 
     @Override
     public void fixedUpdate(float deltaTime) {
+        if (getParent().didBuild() && mUpdateBuildingSelected != null)
+            mUpdateBuildingSelected.update();
         if (mGetBuildingChosen != null) {
             Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
             if (Reference.isValid(buildingRef)) {
@@ -204,6 +208,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                 if (building != null
                         && (building.statsRequireVisualUpdate()
                                 || !building.equals(lastBuilding))) {
+                    getParent().markDidBuild(false);
                     lastBuilding = building;
                     StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
                     ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();

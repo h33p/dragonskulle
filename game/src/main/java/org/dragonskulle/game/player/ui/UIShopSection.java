@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -25,11 +24,15 @@ import org.dragonskulle.ui.UIText;
  */
 @Accessors(prefix = "m")
 @Log
-public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
+public class UIShopSection extends Component implements IOnStart {
     @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
     @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
+
+    @Getter
+    @Accessors(fluent = true, prefix = "m")
+    private boolean mDidBuild = false;
 
     @Getter(AccessLevel.PROTECTED)
     private final UIMenuLeftDrawer mParent;
@@ -52,10 +55,14 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
     public UIShopSection(UIMenuLeftDrawer mParent) {
         this.mParent = mParent;
     }
+    //
+    //    @Override
+    //    public void frameUpdate(float deltaTime) {
+    //        //        translateShop();
+    //    }
 
-    @Override
-    public void frameUpdate(float deltaTime) {
-        //        translateShop();
+    public void markDidBuild(boolean state) {
+        mDidBuild = state;
     }
 
     /** The Shop state. This controls what can be seen at what time. */
@@ -98,7 +105,7 @@ public class UIShopSection extends Component implements IOnStart, IFrameUpdate {
                     break;
                 case BUILDING_NEW:
                     newPanel = mNewBuildingPanel;
-                    newText = "New Building";
+                    newText = "Create Building";
                     break;
                 case MY_BUILDING_SELECTED:
                     newPanel = mUpgradePanel;

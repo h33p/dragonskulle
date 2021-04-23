@@ -80,7 +80,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                             -0.08f,
                                             0.2f,
                                             0.41f,
-                                            0.23f,
+                                            0.25f,
                                             mBuildingsCanPlaceButtons);
 
                                     self.buildChild(
@@ -88,42 +88,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                             new TransformUI(true),
                                             (me) -> {
                                                 UIButton button =
-                                                        new UIButton(
-                                                                "Build",
-                                                                (__, ___) -> {
-                                                                    if (getParent()
-                                                                                    .getParent()
-                                                                                    .mGetHexChosen
-                                                                                    .getHex()
-                                                                            != null) {
-                                                                        Reference<Player> player =
-                                                                                getParent()
-                                                                                        .getParent()
-                                                                                        .mGetPlayer
-                                                                                        .getPlayer();
-                                                                        if (Reference.isValid(
-                                                                                player)) {
-                                                                            player.get()
-                                                                                    .getClientBuildRequest()
-                                                                                    .invoke(
-                                                                                            new BuildData(
-                                                                                                    getParent()
-                                                                                                            .getParent()
-                                                                                                            .mGetHexChosen
-                                                                                                            .getHex(),
-                                                                                                    PredefinedBuildings
-                                                                                                            .getIndex(
-                                                                                                                    mSelectedBuildingDescriptor)));
-                                                                        }
-
-                                                                        getParent()
-                                                                                .getParent()
-                                                                                .mNotifyScreenChange
-                                                                                .call(
-                                                                                        Screen
-                                                                                                .BUILDING_SELECTED_SCREEN);
-                                                                    }
-                                                                });
+                                                        new UIButton("Build", this::buildOnClick);
                                                 me.addComponent(button);
                                                 TransformUI transformUI =
                                                         me.getTransform(TransformUI.class);
@@ -156,6 +121,12 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                 if (!mStickyHint) hideDescriptorHint();
                             });
 
+            if (descriptor.equals(PredefinedBuildings.BASE)) {
+                setStickyHint(true);
+                setPreviousLock(but.getReference(UIButton.class));
+                setSelectedBuildingDescriptor(descriptor);
+                but.setLockPressed(true);
+            }
             go.addComponent(
                     new LambdaFixedUpdate(
                             (dt) -> {
@@ -239,6 +210,24 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     private void ensurePlayerReference() {
         if (Reference.isInvalid(mPlayerReference)) {
             mPlayerReference = getParent().getParent().mGetPlayer.getPlayer();
+        }
+    }
+
+    private void buildOnClick(UIButton __, float ___) {
+        if (getParent().getParent().mGetHexChosen.getHex() != null) {
+            Reference<Player> player = getParent().getParent().mGetPlayer.getPlayer();
+            if (Reference.isValid(player)) {
+                player.get()
+                        .getClientBuildRequest()
+                        .invoke(
+                                new BuildData(
+                                        getParent().getParent().mGetHexChosen.getHex(),
+                                        PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
+
+                getParent().markDidBuild(true);
+            }
+
+            getParent().getParent().mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
         }
     }
 }

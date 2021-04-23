@@ -12,10 +12,14 @@ import java.util.stream.Collectors;
  * @author Oscar L
  */
 public class PredefinedBuildings {
+    /** The Base building. */
+    public static final BuildingDescriptor BASE =
+            new BuildingDescriptor(1, 1, 1, 1, 1, 1, 1, "ui/0_stars.png", "Stock");
     /** The predefined buildings. */
     private static final List<BuildingDescriptor> buildings =
             new ArrayList<>(
                     Arrays.asList(
+                            BASE,
                             new BuildingDescriptor(1, 1, 1, 1, 1, 10, 2, "ui/1_stars.png", "Oscar"),
                             new BuildingDescriptor(1, 3, 10, 2, 3, 30, 2, "ui/2_stars.png", "Auri"),
                             new BuildingDescriptor(
@@ -25,9 +29,6 @@ public class PredefinedBuildings {
                                     1, 3, 10, 2, 3, 33, 2, "ui/5_stars.png", "Leela"),
                             new BuildingDescriptor(
                                     1, 1, 100, 1, 1, 25, 2, "ui/6_stars.png", "Craig")));
-
-    private static final BuildingDescriptor BASE =
-            new BuildingDescriptor(1, 1, 1, 1, 1, 1, 1, "ui/7_stars.png", "Base");
 
     /**
      * Gets all the buildings which can be placed filtered by the cost of the building.
