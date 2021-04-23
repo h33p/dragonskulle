@@ -340,18 +340,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     newScreen = mBuildScreenMenu;
                     setShopState(ShopState.MY_BUILDING_SELECTED, true);
                     break;
-                    //                case BUILD_TILE_SCREEN:
-                    //                    newScreen = mTileSelectedMenu;
-                    //                    setShopState(ShopState.CLOSED);
-                    //                    //                    final HexagonTile tile =
-                    // mGetHexChosen.get();
-                    //                    //                    if (tile != null &&
-                    //                    // tile.isBuildable(mGetPlayer.get().get())) {
-                    //                    //
-                    // setShopState(ShopState.BUILDING_NEW);
-                    //                    //                    } TODO we can add this functionality
-                    // if needed
-                    //                    break;
                 case ATTACK_SCREEN:
                     newScreen = mAttackScreenMenu;
                     setShopState(ShopState.CLOSED);
@@ -490,23 +478,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         return new UITextButtonFrame(
                 "place_button",
                 "Place Building",
-                (handle, __) -> {
-                    mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING);
-                    //                    if (mGetHexChosen.getHex() != null) {
-                    //                        log.info("Running place button lambda");
-                    //                        Reference<Player> player = mGetPlayer.getPlayer();
-                    //                        if (Reference.isValid(player)) {
-                    //                            player.get()
-                    //                                    .getClientBuildRequest()
-                    //                                    .invoke(new
-                    // BuildData(mGetHexChosen.getHex()));
-                    //                        }
-                    //
-                    //                        mSetHexChosen.setHex(null);
-                    //                        mSetBuildingChosen.setBuilding(null);
-                    //                        mNotifyScreenChange.call(Screen.MAP_SCREEN);
-                    //                    }
-                },
+                (handle, __) -> mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING),
                 true);
     }
 

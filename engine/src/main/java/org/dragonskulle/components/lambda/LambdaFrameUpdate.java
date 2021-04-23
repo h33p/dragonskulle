@@ -5,7 +5,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 
 /**
- * Runs FrameUpdate within a Component;
+ * Runs things on FrameUpdate as a lambda.
  *
  * @author Oscar L
  */

@@ -59,6 +59,11 @@ public class BuildData implements INetSerializable {
         return map.getTile(mQ, mR);
     }
 
+    /**
+     * Gets the {@code BuildingDescriptor} from it's index.
+     *
+     * @return the descriptor
+     */
     public BuildingDescriptor getDescriptor() {
         return PredefinedBuildings.get(mDescriptorIndex);
     }
