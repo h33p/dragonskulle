@@ -425,11 +425,13 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
      */
     private Reference<HexagonTile> getTileBuilding(Player opponentPlayer) {
 
+        // This checks if any of the buildings are the capital
         boolean foundTile =
                 getStream()
                         .anyMatch(
                                 tile -> {
                                     if (tile.getBuilding() != null
+                                            && tile.getBuilding().isCapital()
                                             && tile.getClaimantId()
                                                     == opponentPlayer
                                                             .getNetworkObject()
@@ -441,6 +443,24 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                                     }
                                 });
 
+        // If no capitals are found just select a random building to attack
+        if (!foundTile) {
+            foundTile =
+                    getStream()
+                            .anyMatch(
+                                    tile -> {
+                                        if (tile.getBuilding() != null
+                                                && tile.getClaimantId()
+                                                        == opponentPlayer
+                                                                .getNetworkObject()
+                                                                .getOwnerId()) {
+                                            mTileToAim = new Reference<HexagonTile>(tile);
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    });
+        }
         if (!foundTile) {
             log.severe("We have a serious problem");
             return null;
