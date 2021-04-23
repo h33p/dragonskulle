@@ -101,8 +101,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         mTextValueReferences.put(StatType.TOKEN_GENERATION, mTokenGenerationText.getLabelText());
 
         mAttackCostText = new UITextRect(attackCost);
+        mAttackCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
         mDefenceCostText = new UITextRect(defenceCost);
+        mDefenceCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
         mTokenGenerationCostText = new UITextRect(tokenGenCost);
+        mTokenGenerationCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
 
         mTextCostReferences.put(StatType.ATTACK, mAttackCostText.getLabelText());
         mTextCostReferences.put(StatType.DEFENCE, mDefenceCostText.getLabelText());
@@ -147,7 +150,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             manager.buildHorizontalUI(
                                     self,
                                     0.05f,
-                                    0.55f,
+                                    0.65f,
                                     1.15f,
                                     mAttackCostText,
                                     mDefenceCostText,
@@ -247,7 +250,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                 textRef = reassignTextValueReferencesForStatButton(upgradeableStat);
             }
             if (Reference.isValid(textRef)) {
-                textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
+                if (isCostRef) {
+                    textRef.get().setText((String.valueOf(upgradeableStat.getCost())));
+                } else {
+                    textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
+                }
             }
         }
     }

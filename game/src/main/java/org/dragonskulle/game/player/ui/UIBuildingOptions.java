@@ -32,12 +32,12 @@ import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
     @Setter private BuildingDescriptor mSelectedBuildingDescriptor;
+    @Setter @Getter private Reference<UITextRect> mDescriptorTextRef = new Reference<>(null);
     private Reference<GameObject> mPossibleBuildingComponent;
     @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
     @Setter private Reference<GameObject> mVisibleDescriptorHint = new Reference<>(null);
     @Getter private final UIShopSection mParent;
-    @Setter private boolean mStickyHint = false;
     private Reference<Player> mPlayerReference;
     @Getter @Setter private int mTokens = 0;
 
@@ -96,6 +96,33 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                                         0.16f, 0.6f, 0.86f, 1.1f);
                                             });
                                 });
+
+        getGameObject()
+                .buildChild(
+                        "descriptor_hint",
+                        new TransformUI(),
+                        (self) -> {
+                            TransformUI hintTransform = self.getTransform(TransformUI.class);
+                            hintTransform.setParentAnchor(-0.05f, -0.7f, 1.05f, -0.05f);
+
+                            BuildingDescriptor descriptor = PredefinedBuildings.BASE;
+                            UITextRect component =
+                                    new UITextRect(
+                                            String.format(
+                                                    "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Value: %d\nCost: %d",
+                                                    descriptor.getName().toUpperCase(),
+                                                    descriptor.getAttack(),
+                                                    descriptor.getDefence(),
+                                                    descriptor.getTokenGeneration(),
+                                                    descriptor.getCost()));
+                            component.setRectTexture(
+                                    UIManager.getInstance()
+                                            .getAppearance()
+                                            .getHintTexture()
+                                            .clone());
+                            self.addComponent(component);
+                            setDescriptorTextRef(component.getReference(UITextRect.class));
+                        });
     }
 
     private IUIBuildHandler buildPredefinedBuildingBox(BuildingDescriptor descriptor) {
@@ -105,24 +132,18 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                     new UIButton(
                             "",
                             (me, ___) -> {
-                                if (Reference.isValid((mPreviousLock))) {
+                                if (Reference.isValid((mPreviousLock)))
                                     mPreviousLock.get().setLockPressed(false);
-                                }
-                                setStickyHint(true);
+                                if (!mSelectedBuildingDescriptor.equals(descriptor))
+                                    showDescriptorHint(descriptor);
                                 setPreviousLock(me.getReference(UIButton.class));
                                 setSelectedBuildingDescriptor(descriptor);
                                 me.setLockPressed(true);
                             },
                             null,
-                            null,
-                            (me, ___) ->
-                                    showDescriptorHint(descriptor), // will add parent information
-                            (__, ___) -> {
-                                if (!mStickyHint) hideDescriptorHint();
-                            });
+                            null);
 
             if (descriptor.equals(PredefinedBuildings.BASE)) {
-                setStickyHint(true);
                 setPreviousLock(but.getReference(UIButton.class));
                 setSelectedBuildingDescriptor(descriptor);
                 but.setLockPressed(true);
@@ -164,35 +185,24 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     }
 
     private void showDescriptorHint(BuildingDescriptor descriptor) {
-        hideDescriptorHint();
+        //        hideDescriptorHint();
         log.info("showing hint");
-        Reference<GameObject> go =
-                getGameObject()
-                        .buildChild(
-                                "descriptor_hint",
-                                new TransformUI(),
-                                (self) -> {
-                                    TransformUI hintTransform =
-                                            self.getTransform(TransformUI.class);
-                                    hintTransform.setParentAnchor(-0.05f, -0.7f, 1.05f, -0.05f);
+        Reference<UITextRect> descriptorTextRef = getDescriptorTextRef();
+        if (Reference.isValid(descriptorTextRef)) {
+            Reference<UIText> labelText = descriptorTextRef.get().getLabelText();
+            if (Reference.isValid(labelText)) {
+                String txt =
+                        String.format(
+                                "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Value: %d\nCost: %d",
+                                descriptor.getName().toUpperCase(),
+                                descriptor.getAttack(),
+                                descriptor.getDefence(),
+                                descriptor.getTokenGeneration(),
+                                descriptor.getCost());
 
-                                    UITextRect component =
-                                            new UITextRect(
-                                                    String.format(
-                                                            "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Value: %d\nCost: %d",
-                                                            descriptor.getName().toUpperCase(),
-                                                            descriptor.getAttack(),
-                                                            descriptor.getDefence(),
-                                                            descriptor.getTokenGeneration(),
-                                                            descriptor.getCost()));
-                                    component.setRectTexture(
-                                            UIManager.getInstance()
-                                                    .getAppearance()
-                                                    .getHintTexture()
-                                                    .clone());
-                                    self.addComponent(component);
-                                });
-        setVisibleDescriptorHint(go);
+                labelText.get().setText(txt);
+            }
+        }
     }
 
     @Override
