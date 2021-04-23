@@ -32,7 +32,7 @@ public class AStar {
     private Graph mGraph;
 
     /** This hold the solution of which nodes to visit */
-    @Getter private Deque<Integer> mAnswerOfNodes = new ArrayDeque<Integer>();
+    @Getter private Deque<Integer> mPath = new ArrayDeque<Integer>();
 
     /**
      * The constructor which allows you to make the object.
@@ -114,7 +114,7 @@ public class AStar {
         }
 
         if (currentNode == endNode) { // If we have reached the end
-            mAnswerOfNodes.push(endNode); // Push the end Node
+            mPath.push(endNode); // Push the end Node
 
             for (int i = connectionsFinal.size() - 1;
                     i >= 0;
@@ -123,7 +123,7 @@ public class AStar {
                 if (connectionsFinal.get(i)[1]
                         == currentNode) { // If the node on this connection is the right one
 
-                    mAnswerOfNodes.push(connectionsFinal.get(i)[0]);
+                    mPath.push(connectionsFinal.get(i)[0]);
                     currentNode = connectionsFinal.get(i)[0];
                 }
             }

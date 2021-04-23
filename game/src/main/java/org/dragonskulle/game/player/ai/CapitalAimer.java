@@ -54,9 +54,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             // Will perform all necessary checks for A*
             aStar();
             log.severe("A* Ran");
-            // Checks if path size is 0
+            
+            // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
-                // Will build randomly
+                
                 super.simulateInput();
                 return;
             }
@@ -65,151 +66,41 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
         // Checks if we are at our capital.  If so will build one on
         if (mGone.size() == 0) {
-            log.info("mGone == 0");
-            int nextDoor = mPath.pop();
-            mGone.push(nextDoor);
-            int firstElement = mPath.pop();
-            if (mGraph.getNode(firstElement)
-                            .getHexTile()
-                            .get()
-                            .getClaimant()
-                            .getNetworkObject()
-                            .getOwnerId()
-                    == mPlayer.get().getNetworkObject().getOwnerId()) {
-                mGone.push(firstElement);
-            } else {
-                log.severe("You might be dead");
-            }
+        	atCapital();
             return;
         }
+        
+        float PLAY_A_STAR = 0.9f;
 
         // This will choose whether to play as an A* player or as a Probablistic Player
-        if (mRandom.nextFloat() < 0.9) {
+        if (mRandom.nextFloat() < PLAY_A_STAR) {
 
+        	float GO_DOWN_PATH = 0.6f;
             // This will choose whether to go attacking and get closer to the building/capital or to
             // upgrade
-            if (mRandom.nextFloat() < 0.6) {
-                int previousNode = mGone.pop();
+            if (mRandom.nextFloat() < GO_DOWN_PATH) {
 
-                // This will get you to the first node which you claimed
-                boolean onYourNode = false;
-                while (!onYourNode) {
-                    if (Reference.isValid(mGraph.getNode(previousNode).getHexTile())
-                            && mGraph.getNode(previousNode).getHexTile().get().getClaimant()
-                                    == null) {
-                        mPath.push(previousNode);
-                        previousNode = mGone.pop();
-                    } else if (mGraph.getNode(previousNode)
-                                    .getHexTile()
-                                    .get()
-                                    .getClaimant()
-                                    .getNetworkObject()
-                                    .getOwnerId()
-                            != mPlayer.get().getNetworkObject().getOwnerId()) {
-                        mPath.push(previousNode);
-                        previousNode = mGone.pop();
-                    } else {
-                        onYourNode = true;
-                    }
+                
+                moveBackwards();
+                
+                int nextNode = moveForwards();
+                
+                if (nextNode == -1) {
+                	return;
                 }
-
-                mGone.push(previousNode);
-
-                // This will point us to the next tile to use
-                int nextNode = mPath.pop();
+                
                 HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
                 Player nextTilePlayer = nextTile.getClaimant();
-                while (nextTile != null
-                        && nextTilePlayer != null
-                        && nextTilePlayer.getNetworkObject().getOwnerId()
-                                == mPlayer.get().getNetworkObject().getOwnerId()) {
-                    mGone.push(nextNode);
-                    if (mPath.size() == 0) {
-                        return;
-                    }
-                    nextNode = mPath.pop();
-                    nextTile = mGraph.getNode(nextNode).getHexTile().get();
-                    nextTilePlayer = nextTile.getClaimant();
-                }
+                
 
                 // Checks whether to build or to attack
                 if (nextTilePlayer == null) {
-                    log.info("Building");
-                    HexagonTile tileToBuildOn = nextTile;
-                    // BUILD
-                    mPlayer.get().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
-                    mGone.push(nextNode);
+                    building(nextTile, nextTilePlayer, nextNode);
                     return;
                 } else if (nextTilePlayer != null) {
 
-                    log.info("Attacking");
-                    // ATTACK
-                    if (!nextTile.hasBuilding()) {
-                        // Assuming that the building is on the next node
-
-                        mGone.push(nextNode);
-                        nextNode = mPath.pop();
-                        nextTile = mGraph.getNode(nextNode).getHexTile().get();
-                        nextTilePlayer = nextTile.getClaimant();
-                    }
-
-                    // Checks if building exists
-                    Building toAttackCheck = nextTile.getBuilding();
-                    if (toAttackCheck == null) {
-                        // Checks if we have to build
-                        if (nextTilePlayer == null) {
-
-                            HexagonTile tileToBuildOn = nextTile;
-                            mPlayer.get()
-                                    .getClientBuildRequest()
-                                    .invoke((d) -> d.setTile(tileToBuildOn));
-                            mGone.push(nextNode);
-                            return;
-
-                        } else {
-                            Building building = nextTile.getBuilding();
-
-                            // Will attack instead and remove
-                            while (building == null) {
-                                mPath.push(nextNode);
-                                if (mGone.size() == 0) {
-                                    mPath = new ArrayDeque<Integer>();
-                                    return;
-                                }
-                                nextNode = mGone.pop();
-                                nextTile = mGraph.getNode(nextNode).getHexTile().get();
-                                nextTilePlayer = nextTile.getClaimant();
-                                building = nextTile.getBuilding();
-                            }
-                            super.tryToAttack(building);
-
-                            // Assumption is that the code at the start of the method will move back
-                            // to
-                            // correct postion
-                            mPath.push(nextNode);
-
-                            return;
-                        }
-                    }
-
-                    // Checks for attackable buildings
-                    for (Building attacker : toAttackCheck.getAttackableBuildings()) {
-
-                        if (attacker.getOwnerId()
-                                == mPlayer.get().getNetworkObject().getOwnerId()) {
-
-                            Building toAttack = nextTile.getBuilding();
-                            mPlayer.get()
-                                    .getClientAttackRequest()
-                                    .invoke(d -> d.setData(attacker, toAttack));
-                            if (nextTilePlayer != null
-                                    && nextTilePlayer.getNetworkObject().getOwnerId()
-                                            == mPlayer.get().getNetworkObject().getOwnerId()) {
-                                mGone.push(nextNode);
-                            }
-                            return;
-                        }
-                    }
+                    attack(nextTile, nextTilePlayer, nextNode);
+                    return;
                 }
             } else {
                 super.upgradeBuilding();
@@ -218,24 +109,185 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             super.simulateInput();
         }
     }
+    
+    private void attack(HexagonTile nextTile, Player nextTilePlayer, int nextNode) {
+    	log.info("Attacking");
+        // ATTACK
+        if (!nextTile.hasBuilding()) {
+            // Assuming that the building is on the next node
 
-    /** This will find the capital node for both you and the opponent */
+            mGone.push(nextNode);
+            nextNode = mPath.pop();
+            nextTile = mGraph.getNode(nextNode).getHexTile().get();
+            nextTilePlayer = nextTile.getClaimant();
+        }
+
+        // Checks if building exists
+        Building toAttackCheck = nextTile.getBuilding();
+        if (toAttackCheck == null) {
+            // Checks if we have to build
+            if (nextTilePlayer == null) {
+
+                HexagonTile tileToBuildOn = nextTile;
+                getPlayer()
+                        .getClientBuildRequest()
+                        .invoke((d) -> d.setTile(tileToBuildOn));
+                mGone.push(nextNode);
+                return;
+
+            } else {
+                Building building = nextTile.getBuilding();
+
+                // Will attack instead and remove
+                while (building == null) {
+                    mPath.push(nextNode);
+                    if (mGone.size() == 0) {
+                        mPath = new ArrayDeque<Integer>();
+                        return;
+                    }
+                    nextNode = mGone.pop();
+                    nextTile = mGraph.getNode(nextNode).getHexTile().get();
+                    nextTilePlayer = nextTile.getClaimant();
+                    building = nextTile.getBuilding();
+                }
+                super.tryToAttack(building);
+
+                // Assumption is that the code at the start of the method will move back
+                // to
+                // correct postion
+                mPath.push(nextNode);
+
+                return;
+            }
+        }
+
+        // Checks for attackable buildings
+        for (Building attacker : toAttackCheck.getAttackableBuildings()) {
+
+            if (getPlayer().isBuildingOwner(attacker)) {
+
+                Building toAttack = nextTile.getBuilding();
+                getPlayer()
+                        .getClientAttackRequest()
+                        .invoke(d -> d.setData(attacker, toAttack));
+                if (nextTilePlayer != null
+                        && nextTilePlayer.getNetworkObject().getOwnerId()
+                                == getPlayer().getNetworkObject().getOwnerId()) {
+                    mGone.push(nextNode);
+                }
+                return;
+            }
+        }
+    }
+    
+    private void building(HexagonTile nextTile, Player nextTilePlayer, int nextNode) {
+    	log.info("Building");
+        HexagonTile tileToBuildOn = nextTile;
+        // BUILD
+        getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
+        mGone.push(nextNode);
+        return;
+		
+	}
+
+	private int moveForwards() {
+        // This will point us to the next tile to use
+        int nextNode = mPath.pop();
+        HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
+        Player nextTilePlayer = nextTile.getClaimant();
+        while (nextTile != null
+                && nextTilePlayer != null
+                && nextTilePlayer.getNetworkObject().getOwnerId()
+                        == getPlayer().getNetworkObject().getOwnerId()) {
+            mGone.push(nextNode);
+            if (mPath.size() == 0) {
+                return -1;
+            }
+            nextNode = mPath.pop();
+            nextTile = mGraph.getNode(nextNode).getHexTile().get();
+            nextTilePlayer = nextTile.getClaimant();
+        }
+        
+        return nextNode;
+    }
+    
+    /**
+     * This will move the player back to the first node which exists
+     */
+    private void moveBackwards() {
+		
+        int previousNode = mGone.pop();
+
+        // This will get you to the first node which you claimed
+        boolean onYourNode = false;
+        while (!onYourNode) {
+            if (Reference.isValid(mGraph.getNode(previousNode).getHexTile())
+                    && mGraph.getNode(previousNode).getHexTile().get().getClaimant()
+                            == null) {
+                mPath.push(previousNode);
+                previousNode = mGone.pop();
+            } else if (!getPlayer().isClaimingTile(mGraph.getNode(previousNode)
+                    .getHexTile()
+                    .get())
+                            ) {
+                mPath.push(previousNode);
+                previousNode = mGone.pop();
+            } else {
+                onYourNode = true;
+            }
+        }
+
+        mGone.push(previousNode);
+		
+	}
+
+	/**
+     * This is what happens when we start the search
+     */
+    private void atCapital() {
+        log.info("mGone == 0");
+        int nextDoor = mPath.pop();
+        mGone.push(nextDoor);
+        int firstElement = mPath.pop();
+        if (getPlayer().isClaimingTile(mGraph.getNode(firstElement)
+                        .getHexTile()
+                        .get()
+                        )
+                        
+                ) {
+            mGone.push(firstElement);
+        } else {
+            log.severe("You might be dead");
+        }
+        return;
+    }
+
+    /**
+     * This will find the capital node for both you and the opponent 
+     * @param graph The {@code Graph} to check through
+     * @param opponentPlayer The opponent {@code Player} which you are attacking 
+     * @return An Array of {@code Node}'s which you start from and end at
+     */
     private Node[] findCapital(Graph graph, Player opponentPlayer) {
         Integer[] nodesInGraph = graph.getNodes();
-
+        
         Node[] capitals = new Node[2];
         // Go through all nodes to find the capital
         for (int nodeNumber : nodesInGraph) {
             Node node = graph.getNode(nodeNumber);
-
-            if (node.getHexTile().get().getClaimant() != null
+            HexagonTile nodesHexagonTile = node.getHexTile().get();
+            
+            // Checks if hexagontile has a capital
+            if (!nodesHexagonTile.isClaimed()
                     && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
-                if (node.getHexTile().get().getClaimantId()
-                        == opponentPlayer.getNetworkObject().getOwnerId()) {
+            	
+            	// Checks if the hexagonTiles capital is the opponent players
+                if (opponentPlayer.isClaimingTile(node.getHexTile().get())) {
                     capitals[0] = node;
-                } else if (node.getHexTile().get().getClaimantId()
-                        == mPlayer.get().getNetworkObject().getOwnerId()) {
+                    
+                // Checks if hexagonTiles capital is ours
+                } else if (getPlayer().isClaimingTile(node.getHexTile().get())) {
                     capitals[1] = node;
                 }
             }
@@ -243,51 +295,63 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         return capitals;
     }
 
-    /** This will get the tile which needs to be aimed for */
+    /**
+     * This will get the tile which needs to be aimed for
+     * @param opponentPlayer The Opponent {@code Player} to aim for
+     * @return A {@code Reference} to a {@code HexagonTile}
+     */
     private Reference<HexagonTile> getTileCapital(Player opponentPlayer) {
-
-        boolean foundTile =
-                mPlayer.get()
-                        .getMap()
-                        .getAllTiles()
-                        .anyMatch(
-                                tile -> {
-                                    if (tile.getBuilding() != null
-                                            && tile.getBuilding().isCapital()
-                                            && tile.getClaimantId()
-                                                    == opponentPlayer
-                                                            .getNetworkObject()
-                                                            .getOwnerId()) {
-                                        mTileToAim = new Reference<HexagonTile>(tile);
-                                        return true;
-                                    } else {
-                                        return false;
-                                    }
-                                });
-
-        if (!foundTile) {
-            log.severe("We have a serious problem");
-            return null;
-        } else {
-            return mTileToAim;
-        }
+    	
+    	Building capitalBuilding = opponentPlayer.getCapital();
+    	
+    	if (capitalBuilding == null) {
+    		log.severe("No Capital on this player");
+    		return null;
+    	}
+    	
+    	mTileToAim = new Reference<HexagonTile>(capitalBuilding.getTile());
+    	
+    	
+        return mTileToAim;
+        
     }
 
-    /** This will set the opponent to aim for */
+    /**
+     * This will set the opponent to aim for
+     * @return The {@code Player} to attack
+     */
     private Player findOpponent() {
 
-        ArrayList<Reference<Building>> ownedBuildings = mPlayer.get().getOwnedBuildings();
-        for (Reference<Building> building : ownedBuildings) {
-            if (Reference.isValid(building)) {
-                ArrayList<Building> visibleTiles = building.get().getAttackableBuildings();
+    	
+    	ArrayList<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
+    	 int index = mRandom.nextInt(ownedBuildings.size());
+         final int end = index;
 
-                if (visibleTiles.size() != 0) {
-                    Building buildingToAim = visibleTiles.get(0);
-                    return buildingToAim.getOwner();
-                }
-            }
-        }
-        return null;
+         // Goes through the ownedBuildings
+         while (true) {
+             Reference<Building> building = ownedBuildings.get(index);
+
+             // Checks the building is valid
+             if (Reference.isValid(building) && building.get().getAttackableBuildings().size() != 0) {
+                 // Check
+            	 
+            	 ArrayList<Building> attackableBuildings = building.get().getAttackableBuildings();
+                 Building buildingToAim = attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
+                 return buildingToAim.getOwner();
+
+             }
+             index++;
+
+             // If gone over start at 0
+             if (index >= ownedBuildings.size()) {
+                 index = 0;
+             }
+
+             // Checks if we've gone through the whole list
+             if (index == end) {
+                 return null;
+             }
+         }
     }
 
     /** This will perform the A* Search and all related operations to it */
@@ -299,7 +363,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
         if (opponentPlayer != null) {
 
-            if (mRandom.nextFloat() < 0.01) {
+            if (mRandom.nextFloat() < 4) {
                 aimCapital(opponentPlayer);
             } else {
                 aimBuilding(opponentPlayer);
@@ -321,11 +385,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
         if (Reference.isValid(tileToAim)) {
             // Creates a graph
-            Graph graph = new Graph(mPlayer.get().getMap(), tileToAim.get());
-
-            mGraph = graph;
+            mGraph = new Graph(getPlayer().getMap(), tileToAim.get());
+            
             // Finds the capitals
-            Node[] capitals = findCapital(graph, opponentPlayer);
+            Node[] capitals = findCapital(mGraph, opponentPlayer);
 
             Node capNode = capitals[1];
             Node oppCapNode = capitals[0];
@@ -337,11 +400,11 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                 return;
             }
             // Performs A* Search
-            AStar aStar = new AStar(graph);
+            AStar aStar = new AStar(mGraph);
             aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
             log.severe("Completed");
 
-            mPath = aStar.getAnswerOfNodes();
+            mPath = aStar.getPath();
 
             // TODO Testing - remove before PR
             String answer = "";
@@ -374,7 +437,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                 // Creates a graph
                 Graph graph =
                         new Graph(
-                                mPlayer.get().getMap(), // TODO Change to stream
+                                getPlayer().getMap(), // TODO Change to stream
                                 tileToAim.get(),
                                 this);
 
@@ -396,7 +459,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                 aStar.aStarAlgorithm(capNode.getNode(), oppNode.getNode());
                 log.severe("Completed");
 
-                mPath = aStar.getAnswerOfNodes();
+                mPath = aStar.getPath();
 
                 // TODO Testing - remove before PR
                 String answer = "";
@@ -430,12 +493,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                 getStream()
                         .anyMatch(
                                 tile -> {
-                                    if (tile.getBuilding() != null
+                                    if (tile.hasBuilding()
                                             && tile.getBuilding().isCapital()
-                                            && tile.getClaimantId()
-                                                    == opponentPlayer
-                                                            .getNetworkObject()
-                                                            .getOwnerId()) {
+                                            && opponentPlayer.isClaimingTile(tile
+                                                    )) {
                                         mTileToAim = new Reference<HexagonTile>(tile);
                                         return true;
                                     } else {
@@ -450,10 +511,8 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                             .anyMatch(
                                     tile -> {
                                         if (tile.getBuilding() != null
-                                                && tile.getClaimantId()
-                                                        == opponentPlayer
-                                                                .getNetworkObject()
-                                                                .getOwnerId()) {
+                                                && opponentPlayer.isClaimingTile(tile)
+                                                       ) {
                                             mTileToAim = new Reference<HexagonTile>(tile);
                                             return true;
                                         } else {
@@ -462,7 +521,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                                     });
         }
         if (!foundTile) {
-            log.severe("We have a serious problem");
+            log.severe("Cannot find a tile to aim for");
             return null;
         } else {
             return mTileToAim;
@@ -475,17 +534,9 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
      * @return The visible {@code HexagonTile}'s as a {@code Stream}
      */
     public Stream<HexagonTile> getStream() {
-        LinkedList<HexagonTile> allVisibleTiles = new LinkedList<HexagonTile>();
-
-        for (int i = 0; i < mPlayer.get().getNumberOfOwnedBuildings(); i++) {
-            Building building = mPlayer.get().getOwnedBuildings().get(i).get();
-
-            for (HexagonTile tile : building.getViewableTiles()) {
-                allVisibleTiles.add(tile);
-            }
-        }
-
-        return Arrays.stream(allVisibleTiles.toArray(new HexagonTile[0]));
+    	
+    	return getPlayer().getViewableTiles();
+        
     }
 
     /** This will find the Building node for both your opponent and the capital for you */
@@ -496,21 +547,25 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         // Go through all nodes to find the capital
         for (int nodeNumber : nodesInGraph) {
             Node node = graph.getNode(nodeNumber);
+            
+            HexagonTile nodesHexagonTile = node.getHexTile().get();
 
-            if (node.getHexTile().get().getClaimant() != null
-                    && node.getHexTile().get().getBuilding() != null) {
-                if (node.getHexTile().get().getQ() == mTileToAim.get().getQ()
-                        && node.getHexTile().get().getQ() == mTileToAim.get().getQ()
-                        && node.getHexTile().get().getClaimantId()
-                                == opponentPlayer.getNetworkObject().getOwnerId()) {
+            if (!nodesHexagonTile.isClaimed()
+                    && nodesHexagonTile.getBuilding() != null) {
+                if (nodesHexagonTile.getQ() == mTileToAim.get().getQ()
+                        && nodesHexagonTile.getQ() == mTileToAim.get().getQ()
+                        && opponentPlayer.isClaimingTile(nodesHexagonTile)) {
                     buildings[0] = node;
-                } else if (node.getHexTile().get().getBuilding().isCapital()
-                        && node.getHexTile().get().getClaimantId()
-                                == mPlayer.get().getNetworkObject().getOwnerId()) {
+                } else if (nodesHexagonTile.getBuilding().isCapital()
+                        && getPlayer().isClaimingTile(nodesHexagonTile)) {
                     buildings[1] = node;
                 }
             }
         }
         return buildings;
+    }
+    
+    private Player getPlayer() {
+    	return mPlayer.get();
     }
 }
