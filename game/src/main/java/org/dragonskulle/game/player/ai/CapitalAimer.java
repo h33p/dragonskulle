@@ -3,9 +3,7 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Random;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
@@ -54,10 +52,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             // Will perform all necessary checks for A*
             aStar();
             log.severe("A* Ran");
-            
+
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
-                
+
                 super.simulateInput();
                 return;
             }
@@ -66,32 +64,33 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
         // Checks if we are at our capital.  If so will build one on
         if (mGone.size() == 0) {
-        	atCapital();
+            atCapital();
             return;
         }
-        
+
         float PLAY_A_STAR = 0.9f;
 
         // This will choose whether to play as an A* player or as a Probablistic Player
         if (mRandom.nextFloat() < PLAY_A_STAR) {
 
-        	float GO_DOWN_PATH = 0.6f;
+            float GO_DOWN_PATH = .6f;
             // This will choose whether to go attacking and get closer to the building/capital or to
             // upgrade
             if (mRandom.nextFloat() < GO_DOWN_PATH) {
 
-                
+                log.info("Using A*");
+
                 moveBackwards();
-                
+
                 int nextNode = moveForwards();
-                
+
                 if (nextNode == -1) {
-                	return;
+                    return;
                 }
-                
+
                 HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
                 Player nextTilePlayer = nextTile.getClaimant();
-                
+                log.info("Lets Go");
 
                 // Checks whether to build or to attack
                 if (nextTilePlayer == null) {
@@ -109,9 +108,9 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             super.simulateInput();
         }
     }
-    
+
     private void attack(HexagonTile nextTile, Player nextTilePlayer, int nextNode) {
-    	log.info("Attacking");
+        log.info("Attacking");
         // ATTACK
         if (!nextTile.hasBuilding()) {
             // Assuming that the building is on the next node
@@ -129,9 +128,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             if (nextTilePlayer == null) {
 
                 HexagonTile tileToBuildOn = nextTile;
-                getPlayer()
-                        .getClientBuildRequest()
-                        .invoke((d) -> d.setTile(tileToBuildOn));
+                getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
                 mGone.push(nextNode);
                 return;
 
@@ -167,9 +164,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             if (getPlayer().isBuildingOwner(attacker)) {
 
                 Building toAttack = nextTile.getBuilding();
-                getPlayer()
-                        .getClientAttackRequest()
-                        .invoke(d -> d.setData(attacker, toAttack));
+                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, toAttack));
                 if (nextTilePlayer != null
                         && nextTilePlayer.getNetworkObject().getOwnerId()
                                 == getPlayer().getNetworkObject().getOwnerId()) {
@@ -179,18 +174,17 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             }
         }
     }
-    
+
     private void building(HexagonTile nextTile, Player nextTilePlayer, int nextNode) {
-    	log.info("Building");
+        log.info("Building");
         HexagonTile tileToBuildOn = nextTile;
         // BUILD
         getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
         mGone.push(nextNode);
         return;
-		
-	}
+    }
 
-	private int moveForwards() {
+    private int moveForwards() {
         // This will point us to the next tile to use
         int nextNode = mPath.pop();
         HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
@@ -207,29 +201,24 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
             nextTile = mGraph.getNode(nextNode).getHexTile().get();
             nextTilePlayer = nextTile.getClaimant();
         }
-        
+
         return nextNode;
     }
-    
-    /**
-     * This will move the player back to the first node which exists
-     */
+
+    /** This will move the player back to the first node which exists */
     private void moveBackwards() {
-		
+
         int previousNode = mGone.pop();
 
         // This will get you to the first node which you claimed
         boolean onYourNode = false;
         while (!onYourNode) {
             if (Reference.isValid(mGraph.getNode(previousNode).getHexTile())
-                    && mGraph.getNode(previousNode).getHexTile().get().getClaimant()
-                            == null) {
+                    && mGraph.getNode(previousNode).getHexTile().get().getClaimant() == null) {
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
-            } else if (!getPlayer().isClaimingTile(mGraph.getNode(previousNode)
-                    .getHexTile()
-                    .get())
-                            ) {
+            } else if (!getPlayer()
+                    .isClaimingTile(mGraph.getNode(previousNode).getHexTile().get())) {
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
             } else {
@@ -238,23 +227,16 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         }
 
         mGone.push(previousNode);
-		
-	}
+    }
 
-	/**
-     * This is what happens when we start the search
-     */
+    /** This is what happens when we start the search */
     private void atCapital() {
         log.info("mGone == 0");
         int nextDoor = mPath.pop();
         mGone.push(nextDoor);
         int firstElement = mPath.pop();
-        if (getPlayer().isClaimingTile(mGraph.getNode(firstElement)
-                        .getHexTile()
-                        .get()
-                        )
-                        
-                ) {
+        if (getPlayer().isClaimingTile(mGraph.getNode(firstElement).getHexTile().get())) {
+
             mGone.push(firstElement);
         } else {
             log.severe("You might be dead");
@@ -263,30 +245,31 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will find the capital node for both you and the opponent 
+     * This will find the capital node for both you and the opponent
+     *
      * @param graph The {@code Graph} to check through
-     * @param opponentPlayer The opponent {@code Player} which you are attacking 
+     * @param opponentPlayer The opponent {@code Player} which you are attacking
      * @return An Array of {@code Node}'s which you start from and end at
      */
     private Node[] findCapital(Graph graph, Player opponentPlayer) {
         Integer[] nodesInGraph = graph.getNodes();
-        
+
         Node[] capitals = new Node[2];
         // Go through all nodes to find the capital
         for (int nodeNumber : nodesInGraph) {
             Node node = graph.getNode(nodeNumber);
             HexagonTile nodesHexagonTile = node.getHexTile().get();
-            
+
             // Checks if hexagontile has a capital
-            if (!nodesHexagonTile.isClaimed()
+            if (nodesHexagonTile.isClaimed()
                     && node.getHexTile().get().getBuilding() != null
                     && node.getHexTile().get().getBuilding().isCapital()) {
-            	
-            	// Checks if the hexagonTiles capital is the opponent players
+
+                // Checks if the hexagonTiles capital is the opponent players
                 if (opponentPlayer.isClaimingTile(node.getHexTile().get())) {
                     capitals[0] = node;
-                    
-                // Checks if hexagonTiles capital is ours
+
+                    // Checks if hexagonTiles capital is ours
                 } else if (getPlayer().isClaimingTile(node.getHexTile().get())) {
                     capitals[1] = node;
                 }
@@ -297,61 +280,61 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
     /**
      * This will get the tile which needs to be aimed for
+     *
      * @param opponentPlayer The Opponent {@code Player} to aim for
      * @return A {@code Reference} to a {@code HexagonTile}
      */
     private Reference<HexagonTile> getTileCapital(Player opponentPlayer) {
-    	
-    	Building capitalBuilding = opponentPlayer.getCapital();
-    	
-    	if (capitalBuilding == null) {
-    		log.severe("No Capital on this player");
-    		return null;
-    	}
-    	
-    	mTileToAim = new Reference<HexagonTile>(capitalBuilding.getTile());
-    	
-    	
+
+        Building capitalBuilding = opponentPlayer.getCapital();
+
+        if (capitalBuilding == null) {
+            log.severe("No Capital on this player");
+            return null;
+        }
+
+        mTileToAim = new Reference<HexagonTile>(capitalBuilding.getTile());
+
         return mTileToAim;
-        
     }
 
     /**
      * This will set the opponent to aim for
+     *
      * @return The {@code Player} to attack
      */
     private Player findOpponent() {
 
-    	
-    	ArrayList<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
-    	 int index = mRandom.nextInt(ownedBuildings.size());
-         final int end = index;
+        ArrayList<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
+        int index = mRandom.nextInt(ownedBuildings.size());
+        final int end = index;
 
-         // Goes through the ownedBuildings
-         while (true) {
-             Reference<Building> building = ownedBuildings.get(index);
+        // Goes through the ownedBuildings
+        while (true) {
+            Reference<Building> building = ownedBuildings.get(index);
 
-             // Checks the building is valid
-             if (Reference.isValid(building) && building.get().getAttackableBuildings().size() != 0) {
-                 // Check
-            	 
-            	 ArrayList<Building> attackableBuildings = building.get().getAttackableBuildings();
-                 Building buildingToAim = attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
-                 return buildingToAim.getOwner();
+            // Checks the building is valid
+            if (Reference.isValid(building)
+                    && building.get().getAttackableBuildings().size() != 0) {
+                // Check
 
-             }
-             index++;
+                ArrayList<Building> attackableBuildings = building.get().getAttackableBuildings();
+                Building buildingToAim =
+                        attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
+                return buildingToAim.getOwner();
+            }
+            index++;
 
-             // If gone over start at 0
-             if (index >= ownedBuildings.size()) {
-                 index = 0;
-             }
+            // If gone over start at 0
+            if (index >= ownedBuildings.size()) {
+                index = 0;
+            }
 
-             // Checks if we've gone through the whole list
-             if (index == end) {
-                 return null;
-             }
-         }
+            // Checks if we've gone through the whole list
+            if (index == end) {
+                return null;
+            }
+        }
     }
 
     /** This will perform the A* Search and all related operations to it */
@@ -363,7 +346,8 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
 
         if (opponentPlayer != null) {
 
-            if (mRandom.nextFloat() < 4) {
+            float AIM_AT_CAPITAL = 0.01f;
+            if (mRandom.nextFloat() < AIM_AT_CAPITAL) {
                 aimCapital(opponentPlayer);
             } else {
                 aimBuilding(opponentPlayer);
@@ -386,7 +370,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         if (Reference.isValid(tileToAim)) {
             // Creates a graph
             mGraph = new Graph(getPlayer().getMap(), tileToAim.get());
-            
+
             // Finds the capitals
             Node[] capitals = findCapital(mGraph, opponentPlayer);
 
@@ -495,8 +479,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                                 tile -> {
                                     if (tile.hasBuilding()
                                             && tile.getBuilding().isCapital()
-                                            && opponentPlayer.isClaimingTile(tile
-                                                    )) {
+                                            && opponentPlayer.isClaimingTile(tile)) {
                                         mTileToAim = new Reference<HexagonTile>(tile);
                                         return true;
                                     } else {
@@ -511,8 +494,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                             .anyMatch(
                                     tile -> {
                                         if (tile.getBuilding() != null
-                                                && opponentPlayer.isClaimingTile(tile)
-                                                       ) {
+                                                && opponentPlayer.isClaimingTile(tile)) {
                                             mTileToAim = new Reference<HexagonTile>(tile);
                                             return true;
                                         } else {
@@ -534,9 +516,8 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
      * @return The visible {@code HexagonTile}'s as a {@code Stream}
      */
     public Stream<HexagonTile> getStream() {
-    	
-    	return getPlayer().getViewableTiles();
-        
+
+        return getPlayer().getViewableTiles();
     }
 
     /** This will find the Building node for both your opponent and the capital for you */
@@ -547,11 +528,10 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         // Go through all nodes to find the capital
         for (int nodeNumber : nodesInGraph) {
             Node node = graph.getNode(nodeNumber);
-            
+
             HexagonTile nodesHexagonTile = node.getHexTile().get();
 
-            if (!nodesHexagonTile.isClaimed()
-                    && nodesHexagonTile.getBuilding() != null) {
+            if (nodesHexagonTile.isClaimed() && nodesHexagonTile.getBuilding() != null) {
                 if (nodesHexagonTile.getQ() == mTileToAim.get().getQ()
                         && nodesHexagonTile.getQ() == mTileToAim.get().getQ()
                         && opponentPlayer.isClaimingTile(nodesHexagonTile)) {
@@ -564,8 +544,8 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         }
         return buildings;
     }
-    
+
     private Player getPlayer() {
-    	return mPlayer.get();
+        return mPlayer.get();
     }
 }

@@ -166,13 +166,13 @@ public class App implements NativeResource {
                                                             (a, b) -> {
                                                                 log.info("should fill with ai");
                                                                 networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -1,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aStarAi"));
-                                                                
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -1,
+                                                                                networkManager
+                                                                                        .findTemplateByName(
+                                                                                                "aStarAi"));
+
                                                                 log.warning("Created ai");
                                                             }));
                                         });

@@ -494,9 +494,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean isBuildingOwner(Building building) {
         return building.getOwnerId() == getNetworkObject().getOwnerId();
     }
-    
+
     public boolean isClaimingTile(HexagonTile tile) {
-    	return tile.getClaimantId() == getNetworkObject().getOwnerId();
+        return tile.getClaimantId() == getNetworkObject().getOwnerId();
     }
 
     /**
