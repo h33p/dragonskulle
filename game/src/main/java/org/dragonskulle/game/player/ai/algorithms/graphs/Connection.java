@@ -14,20 +14,25 @@ import lombok.experimental.Accessors;
 @Accessors(prefix = "m")
 public class Connection {
 
-    @Getter private int mOriginNode; // This is the origin node
-    @Getter private int mDestinationNode; // This is the destination node
-    @Getter private int mWeight; // This is the mWeight of the edge
+    /** This is the origin node */
+    @Getter private int mOriginNode;
+
+    /** This is the destination node */
+    @Getter private int mDestinationNode;
+
+    /** This is the mWeight of the edge */
+    @Getter private int mWeight;
 
     /**
      * The constructor for the class.
      *
-     * @param node1 - The mOriginNode for the connection
-     * @param node2 - The mDestinationNode for the connection
-     * @param mWeight - The mWeight of the node
+     * @param originNode The mOriginNode for the connection
+     * @param destinationNode The mDestinationNode for the connection
+     * @param weight The mWeight of the node
      */
-    public Connection(int node1, int node2, int mWeight) {
-        this.mOriginNode = node1;
-        this.mDestinationNode = node2;
-        this.mWeight = mWeight;
+    public Connection(int originNode, int destinationNode, int weight) {
+        this.mOriginNode = originNode;
+        this.mDestinationNode = destinationNode;
+        this.mWeight = weight;
     }
 }

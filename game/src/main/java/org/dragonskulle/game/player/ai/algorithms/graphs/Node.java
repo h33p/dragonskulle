@@ -18,37 +18,17 @@ import org.dragonskulle.game.map.HexagonTile;
 @Accessors(prefix = "m")
 public class Node {
 
-    @Getter private int mNode; // The node number
-    @Getter @Setter private int mExtraInfo; // The extra info for that node
-    @Getter private ArrayList<Connection> mConnections; // The Connections from that node
+    @Getter private int mNodeId; // The node number
+    @Getter @Setter private int mHeuristic; // The extra info for that node
+
+    @Getter
+    private ArrayList<Connection> mConnections =
+            new ArrayList<Connection>(); // The Connections from that node
+
     @Getter private Reference<HexagonTile> mHexTile;
 
-    /**
-     * This constructor assumes you know the extra info you want to be set
-     *
-     * @param num the number for the node
-     * @param info the extra info for that node
-     */
-    public Node(int num, int info) {
-
-        mExtraInfo = info;
-    }
-
-    /**
-     * The constructor if you do not have any special info
-     *
-     * @param num The number for that node
-     */
-    public Node(int num) {
-
-        mNode = num;
-        mExtraInfo = 0;
-        mConnections = new ArrayList<Connection>();
-    }
-
     public Node(int nodeToAdd, HexagonTile tile) {
-        mConnections = new ArrayList<Connection>();
-        mNode = nodeToAdd;
+        mNodeId = nodeToAdd;
         mHexTile = new Reference<HexagonTile>(tile);
     }
 
@@ -60,6 +40,6 @@ public class Node {
      */
     public void addConnection(int destinationNode, int weight) {
 
-        mConnections.add(new Connection(mNode, destinationNode, weight));
+        mConnections.add(new Connection(mNodeId, destinationNode, weight));
     }
 }

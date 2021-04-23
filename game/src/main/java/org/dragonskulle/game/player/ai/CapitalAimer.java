@@ -384,8 +384,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                 return;
             }
             // Performs A* Search
-            AStar aStar = new AStar(mGraph);
-            aStar.aStarAlgorithm(capNode.getNode(), oppCapNode.getNode());
+            AStar aStar = new AStar(mGraph, capNode.getNodeId(), oppCapNode.getNodeId());
             log.severe("Completed");
 
             mPath = aStar.getPath();
@@ -439,8 +438,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                     return;
                 }
                 // Performs A* Search
-                AStar aStar = new AStar(graph);
-                aStar.aStarAlgorithm(capNode.getNode(), oppNode.getNode());
+                AStar aStar = new AStar(graph, capNode.getNodeId(), oppNode.getNodeId());
                 log.severe("Completed");
 
                 mPath = aStar.getPath();

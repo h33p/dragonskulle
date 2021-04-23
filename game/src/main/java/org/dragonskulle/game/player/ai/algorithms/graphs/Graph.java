@@ -12,19 +12,25 @@ import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.player.ai.CapitalAimer;
 
 /**
- * Graph which implements {@code GraphInterface}. Will implement a directed Graph data structure.
- * This has been adapted from Nathaniel Lowis's (one of our group members) repository:
- * https://github.com/low101043/aiProjectComputer
+ * Will implement a directed Graph data structure. This has been adapted from Nathaniel Lowis's (one
+ * of our group members) repository: https://github.com/low101043/aiProjectComputer
  *
  * @author Dragonskulle
  */
 @Log
 public class Graph {
 
-    protected Map<Integer, Node> mGraph; // The hash map which will have the integer to the Node
-    private int mNodeNum;
+    /** The hash map which will have the integer to the Node */
+    protected HashMap<Integer, Node> mGraph;
+
+    /** The next node number to be used */
+    private int mCurrentNodeId;
+
+    /** The {@code HexagonMap} which is used */
     private Reference<HexagonMap> mMap;
-    private Reference<HexagonTile> mTileAiming;
+
+    /** The {@code HexgaonTile} to aim at */
+    private Reference<HexagonTile> mTarget;
 
     /**
      * Constructor to create the whole map
@@ -33,12 +39,13 @@ public class Graph {
      * @param tileAiming The {@code HexagonTile} to aim for
      */
     public Graph(HexagonMap map, HexagonTile tileAiming) {
-        mTileAiming = new Reference<HexagonTile>(tileAiming);
-        mMap = map.getReference(HexagonMap.class);
-        mNodeNum = 0;
+
+        graphConstructorBoth(map, tileAiming);
+
+        mCurrentNodeId = 0;
         mGraph = new HashMap<Integer, Node>();
         map.getAllTiles().forEach(this::convertToNode);
-        mNodeNum = 0;
+        mCurrentNodeId = 0;
         map.getAllTiles().forEach(this::addConnections);
     }
 
@@ -50,13 +57,19 @@ public class Graph {
      * @param aimer The {@code CapitalAimer} to use to create the map
      */
     public Graph(HexagonMap map, HexagonTile tileAiming, CapitalAimer aimer) {
-        mTileAiming = new Reference<HexagonTile>(tileAiming);
-        mMap = map.getReference(HexagonMap.class);
-        mNodeNum = 0;
-        mGraph = new HashMap<Integer, Node>();
+
+        graphConstructorBoth(map, tileAiming);
+
+        mCurrentNodeId = 0;
         aimer.getStream().forEach(this::convertToNode);
-        mNodeNum = 0;
+        mCurrentNodeId = 0;
         aimer.getStream().forEach(this::addConnections);
+    }
+
+    public void graphConstructorBoth(HexagonMap map, HexagonTile tileAiming) {
+        mTarget = new Reference<HexagonTile>(tileAiming);
+        mMap = map.getReference(HexagonMap.class);
+        mGraph = new HashMap<Integer, Node>();
     }
 
     /**
@@ -67,20 +80,14 @@ public class Graph {
      */
     private void convertToNode(HexagonTile tile) {
 
-        if (tile.getTileType() == TileType.LAND) {
-
-            addNode(mNodeNum, tile);
-
-            int heuristic = tile.distTo(mTileAiming.get().getQ(), mTileAiming.get().getR());
-
-            setNodeSpecial(mNodeNum, heuristic);
-
-            mNodeNum++;
-        } else {
-
-            // log.warning("Tried to add somehting which isn't land");
-            ;
+        if (tile.getTileType() != TileType.LAND) {
+            return;
         }
+
+        addNode(mCurrentNodeId, tile);
+        int heuristic = tile.distTo(mTarget.get().getQ(), mTarget.get().getR());
+        setNodeHeuristic(mCurrentNodeId, heuristic);
+        mCurrentNodeId++;
     }
 
     /**
@@ -89,23 +96,21 @@ public class Graph {
      * @param tile The {@code HexagonTile} to add connections for in the graph
      */
     private void addConnections(HexagonTile tile) {
-        if (tile.getTileType() == TileType.LAND) {
-            ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, false);
+        if (tile.getTileType() != TileType.LAND) {
+            return;
+        }
+        ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, false);
 
-            for (HexagonTile tileNeighbour : neighbourTiles) {
-                for (Map.Entry<Integer, Node> mapEntry : mGraph.entrySet()) {
-                    if (tileNeighbour.getQ() == mapEntry.getValue().getHexTile().get().getQ()
-                            && tileNeighbour.getR()
-                                    == mapEntry.getValue().getHexTile().get().getR()) {
+        for (HexagonTile tileNeighbour : neighbourTiles) {
+            for (Node node : mGraph.values()) {
+                if (tileNeighbour.getQ() == node.getHexTile().get().getQ()
+                        && tileNeighbour.getR() == node.getHexTile().get().getR()) {
 
-                        addConnection(
-                                mNodeNum, mapEntry.getValue().getNode(), 1); // Weight set to 1
-                    }
+                    addConnection(mCurrentNodeId, node.getNodeId(), 1); // Weight set to 1
                 }
             }
-            mNodeNum++;
-        } else {;
         }
+        mCurrentNodeId++;
     }
 
     /**
@@ -114,10 +119,10 @@ public class Graph {
      * @param nodeToAdd The node number
      * @param tile The {@code HexagonTile} it corresponds to
      */
-    public void addNode(int nodeToAdd, HexagonTile tile) {
+    public void addNode(int nodeId, HexagonTile tile) {
 
-        Node newNode = new Node(nodeToAdd, tile); // Makes a new node
-        mGraph.put(nodeToAdd, newNode); // Adds to mGraph
+        Node newNode = new Node(nodeId, tile); // Makes a new node
+        mGraph.put(nodeId, newNode); // Adds to mGraph
     }
 
     /**
@@ -157,9 +162,9 @@ public class Graph {
      * @param nodeToGet The node which has the special info to get
      * @return the extra info for that node
      */
-    public int getNodeSpecial(int nodeToGet) {
+    public int getNodeHeuristic(int nodeToGet) {
 
-        return mGraph.get(nodeToGet).getExtraInfo();
+        return mGraph.get(nodeToGet).getHeuristic();
     }
 
     /**
@@ -168,17 +173,16 @@ public class Graph {
      * @param nodeToChange The node to change
      * @param newInfo The extra info to change
      */
-    public void setNodeSpecial(int nodeToChange, int newInfo) {
+    public void setNodeHeuristic(int nodeToChange, int newInfo) {
 
         Node node = mGraph.get(nodeToChange);
 
-        node.setExtraInfo(newInfo);
+        node.setHeuristic(newInfo);
         mGraph.replace(nodeToChange, node);
     }
 
     /**
-     * Will return all the node numbers in the mGraph -- Used for testing
-     *
+     * @deprecated Will return all the node numbers in the mGraph -- Used for testing
      * @return An integer array which has all the Nodes used
      */
     public Integer[] getNodes() {
