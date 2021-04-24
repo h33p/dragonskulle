@@ -3,6 +3,7 @@ package org.dragonskulle.game.player.ai.algorithms.graphs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
@@ -101,7 +102,9 @@ public class Graph {
             return;
         }
         log.info("Node num: " + mCurrentNodeId);
-        ArrayList<HexagonTile> neighbourTiles = mMap.get().getTilesInRadius(tile, 1, false);
+        ArrayList<HexagonTile> neighbourTilesList = new ArrayList<HexagonTile>();
+        List<HexagonTile> neighbourTiles =
+                mMap.get().getTilesInRadius(tile, 1, false, neighbourTilesList);
 
         for (HexagonTile tileNeighbour : neighbourTiles) {
             for (Node node : mGraph.values()) {

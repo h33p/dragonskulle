@@ -4,6 +4,7 @@ package org.dragonskulle.game.player.ai;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
@@ -305,7 +306,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
      */
     private Player findOpponent() {
 
-        ArrayList<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
+        List<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
         int index = mRandom.nextInt(ownedBuildings.size());
         final int end = index;
 
@@ -318,7 +319,8 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
                     && building.get().getAttackableBuildings().size() != 0) {
                 // Check
 
-                ArrayList<Building> attackableBuildings = building.get().getAttackableBuildings();
+                ArrayList<Building> attackableBuildings =
+                        new ArrayList<Building>(building.get().getAttackableBuildings());
                 Building buildingToAim =
                         attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
                 return buildingToAim.getOwner();

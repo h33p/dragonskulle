@@ -1,15 +1,20 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
-import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
@@ -40,8 +45,7 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent
-        implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
+public class Building extends NetworkableComponent implements IOnStart, IFrameUpdate, IFixedUpdate {
 
     /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -54,8 +58,6 @@ public class Building extends NetworkableComponent
     @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
     /** Stores the view range of the building. */
     @Getter private final SyncStat mViewDistance = new SyncStat(this);
-    /** Stores the attack range of the building. */
-    @Getter private final SyncStat mAttackDistance = new SyncStat(this);
     /** Stores the build range of the building. */
     @Getter private final SyncStat mBuildDistance = new SyncStat(this);
     /** Stores the claim range of the building. */
@@ -65,19 +67,13 @@ public class Building extends NetworkableComponent
     private final SyncBool mIsCapital = new SyncBool(false);
 
     /** The tiles the building claims, including the tile the building is currently on. */
-    @Getter private ArrayList<HexagonTile> mClaimedTiles = new ArrayList<HexagonTile>();
+    @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
-    /** The tiles the building can currently view (within the current {@link #mViewDistance}). */
-    @Getter private HashSet<HexagonTile> mViewableTiles = new HashSet<HexagonTile>();
+    /** Tiles that are around {@link mClaimedTiles}. */
+    private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
-    /**
-     * The tiles the building can currently attack (within the current {@link #mAttackDistance}).
-     */
-    @Getter private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
-
-    private Vector3i mPosition = null;
-
-    private boolean mInitialised = false;
+    /** The tiles the building can currently attack (those with claims neighboring our claims). */
+    private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -90,10 +86,17 @@ public class Building extends NetworkableComponent
      *   <li>Tiles claimed by <b>this</b> building.
      * </ul>
      *
-     * <p>To actually get a more refined set that discludes tiles claimed by other buildings, please
+     * <p>To actually get a more refined set that excludes tiles claimed by other buildings, please
      * use: {@link #getBuildableTiles()}.
      */
-    private HashSet<HexagonTile> mPlaceableTiles = new HashSet<HexagonTile>();
+    private ArrayList<HexagonTile> mPlaceableTiles = new ArrayList<HexagonTile>();
+
+    private Vector3i mPosition = null;
+
+    private boolean mInitialised = false;
+
+    /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
+    private static final int NEIGHBOUR_BOUND = 5;
 
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
@@ -110,19 +113,32 @@ public class Building extends NetworkableComponent
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /**
+     * This is used as a flag to determine when any of the stats have changed, thus requiring a
+     * visible update to UI. It is enabled in {@code afterStatChange} and has to be manually
+     * disabled once the needed update is finished.
+     */
+    @Getter
+    @Accessors(prefix = "m")
+    private int mStatUpdateCount = 0;
+
+    /** Increments {@code mStatUpdateCount} to signify an update is needed. */
+    public void setStatsRequireVisualUpdate() {
+        mStatUpdateCount++;
+    }
+
+    /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
      */
     public Building() {}
 
     @Override
-    public void onAwake() {
+    public void onConnectedSyncvars() {
         // Initialise each SyncStat with the relevant StatType.
         initiliseStat(mAttack, StatType.ATTACK);
         initiliseStat(mDefence, StatType.DEFENCE);
         initiliseStat(mTokenGeneration, StatType.TOKEN_GENERATION);
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
-        initiliseStat(mAttackDistance, StatType.ATTACK_DISTANCE);
         initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
         initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
     }
@@ -153,12 +169,11 @@ public class Building extends NetworkableComponent
 
         owningPlayer.addOwnership(this);
 
-        // Generate the lists of tiles that are influenced by the Stats of the Building.
-        generateTileLists();
-
         // Generate the base cost of upgrading stats.
         generateStatBaseCost();
-        generatePlaceableTiles();
+
+        // Generate the lists of tiles that are influenced by the Stats of the Building.
+        generateTileLists();
 
         mInitialised = true;
     }
@@ -229,12 +244,22 @@ public class Building extends NetworkableComponent
         generateStatBaseCost();
 
         generateTileLists();
+        setStatsRequireVisualUpdate();
     }
 
     /** Generate the stored lists of {@link HexagonTile}s. */
     private void generateTileLists() {
-        generateViewTiles();
+        generateNeighboringTiles();
         generateAttackableTiles();
+        generatePlaceableTiles();
+    }
+
+    /** Cleanup generated tile lists. */
+    private void cleanupTileLists() {
+        // Reset the list of claimed, viewable and attackable tiles.
+        mAttackableTiles.clear();
+        mPlaceableTiles.clear();
+        mNeighboringTiles.clear();
     }
 
     /**
@@ -252,59 +277,35 @@ public class Building extends NetworkableComponent
 
     /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
-
-        // Get the map.
-        HexagonMap map = getMap();
-        if (map == null) {
-            return;
-        }
-
-        int distance = mClaimDistance.getValue();
-
-        ArrayList<HexagonTile> tiles = map.getTilesInRadius(getTile(), distance, true);
-
-        mClaimedTiles.clear();
-
         if (getNetworkObject().isServer()) {
+            // Get the map.
+            HexagonMap map = getMap();
+            if (map == null) {
+                return;
+            }
+
+            int distance = mClaimDistance.getValue();
+
+            List<HexagonTile> tiles =
+                    map.getTilesInRadius(getTile(), distance, true, new ArrayList<>());
+
+            mClaimedTiles.clear();
+
             for (HexagonTile hexagonTile : tiles) {
                 hexagonTile.setClaimedBy(this);
             }
         }
-
-        for (HexagonTile hexagonTile : tiles) {
-            if (hexagonTile.getClaimedBy() == this) {
-                mClaimedTiles.add(hexagonTile);
-            }
-        }
     }
 
-    /**
-     * Store the tiles that can be viewed around the building, including the tile the building is
-     * on.
-     */
-    private void generateViewTiles() {
-        // Get the map.
-        HexagonMap map = getMap();
-        if (map == null) {
-            return;
-        }
+    public void onClaimTile(HexagonTile tile) {
+        if (mClaimedTiles.add(tile)) {
+            Player owner = getOwner();
 
-        HexagonTile tile = getTile();
+            if (owner != null) {
+                owner.onClaimTile(tile, this);
+            }
 
-        if (tile == null) {
-            return;
-        }
-
-        // Get the current view distance.
-        int distance = mViewDistance.getValue();
-
-        // Get the tiles within the view distance.
-        mViewableTiles.addAll(map.getTilesInRadius(getTile(), distance, true));
-
-        Player owningPlayer = getOwner();
-
-        if (owningPlayer != null) {
-            owningPlayer.updateViewableTiles(this);
+            cleanupTileLists();
         }
     }
 
@@ -312,47 +313,68 @@ public class Building extends NetworkableComponent
      * Store the tiles that can be attacked around the building, excluding the tile the building is
      * on.
      */
-    private void generateAttackableTiles() {
+    private void generateNeighboringTiles() {
         // Get the map.
         HexagonMap map = getMap();
         if (map == null) {
             return;
         }
 
-        HexagonTile tile = getTile();
+        mNeighboringTiles.clear();
 
-        if (tile == null) {
-            return;
-        }
+        Deque<HexagonTile> tilesToFill = new ArrayDeque<>();
 
-        // Get the current attack distance.
-        int distance = mAttackDistance.getValue();
-        // Get the tiles within the attack distance.
-        mAttackableTiles = map.getTilesInRadius(tile, distance, false);
+        tilesToFill.addAll(mClaimedTiles);
+
+        map.floodFill(
+                tilesToFill,
+                (__, t, neighbours, out) -> {
+                    Integer val = mNeighboringTiles.getOrDefault(t, 0);
+
+                    if (val >= NEIGHBOUR_BOUND) {
+                        return;
+                    }
+
+                    Integer newVal = val + 1;
+
+                    for (HexagonTile n : neighbours) {
+                        Integer nval = mNeighboringTiles.get(n);
+
+                        if ((nval == null || nval > newVal) && n.getClaimedBy() != this) {
+                            mNeighboringTiles.put(n, newVal);
+                            out.push(n);
+                        }
+                    }
+                });
+    }
+
+    /** Store the tiles that are suitable for attacking. */
+    private void generateAttackableTiles() {
+        // Clear the current list of attackable tiles.
+        mAttackableTiles.clear();
+
+        mNeighboringTiles.forEach(
+                (tile, val) -> {
+                    if (val == 1) {
+                        mAttackableTiles.add(tile);
+                    }
+                });
     }
 
     /** Store the tiles that are suitable for placing a building on. */
     private void generatePlaceableTiles() {
-        // Get the map.
-        HexagonMap map = getMap();
-        if (map == null) return;
-
         // Clear the current list of buildable tiles.
         mPlaceableTiles.clear();
 
-        // Get the currently claimed radius.
-        int claimedRadius = mClaimDistance.getValue() + 1;
         // Get the current build distance.
         int distance = mBuildDistance.getValue();
-        // Get the tiles outside of the claimed radius, but within the build distance.
-        map.getTilesInRadius(getTile(), claimedRadius, distance)
-                .forEach(
-                        (tile) -> {
-                            // Add each tile that is a land tile.
-                            if (tile.getTileType() == TileType.LAND) {
-                                mPlaceableTiles.add(tile);
-                            }
-                        });
+
+        mNeighboringTiles.forEach(
+                (tile, val) -> {
+                    if (tile.getTileType() == TileType.LAND && val <= distance) {
+                        mPlaceableTiles.add(tile);
+                    }
+                });
     }
 
     /**
@@ -405,40 +427,41 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get an ArrayList of opponent {@link Building}s within the range defined by {@link
-     * #mAttackDistance}.
+     * Get a {@link HashSet} of opponent {@link Building}s that neighbour our tiles.
      *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
-    public ArrayList<Building> getAttackableBuildings() {
-        ArrayList<Building> buildings = new ArrayList<Building>();
-
-        // Get the map.
-        HexagonMap map = getMap();
-        if (map == null) {
-            return buildings;
+    public Set<Building> getAttackableBuildings() {
+        if (mAttackableTiles.isEmpty()) {
+            generateTileLists();
         }
 
-        // Get all the tiles in attackable distance.
-        ArrayList<HexagonTile> attackTiles = getAttackableTiles();
-        for (HexagonTile tile : attackTiles) {
-            // Get the building on an attackable tile, if it exists.
-            Building building = tile.getBuilding();
-            if (building == null) {
-                continue;
-            }
+        HashSet<Building> attackableBuildings = new HashSet<>();
 
-            // Ensure the building is not owned by the owner of this building.
-            if (getOwnerId() == building.getOwnerId()) {
-                log.fine("Building owned by same player.");
-                continue;
-            }
+        Player owner = getOwner();
 
-            // Add the opponent building to the list of attackable buildings.
-            buildings.add(building);
+        mAttackableTiles.forEach(
+                (tile) -> {
+                    Building b = tile.getClaimedBy();
+                    if (b != null && b.getOwner() != owner) {
+                        attackableBuildings.add(b);
+                    }
+                });
+
+        return attackableBuildings;
+    }
+
+    /**
+     * Get a {@link List} of tiles that we can attack.
+     *
+     * @return a {@link List} of tiles that can be attacked.
+     */
+    public List<HexagonTile> getAttackableTiles() {
+        if (mAttackableTiles.isEmpty()) {
+            generateTileLists();
         }
 
-        return buildings;
+        return mAttackableTiles;
     }
 
     /**
@@ -448,14 +471,7 @@ public class Building extends NetworkableComponent
      * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
      */
     public boolean isBuildingAttackable(Building target) {
-        ArrayList<HexagonTile> attackTiles = getAttackableTiles();
-        HexagonTile targetTile = target.getTile();
-        for (HexagonTile tile : attackTiles) {
-            if (tile.equals(targetTile)) {
-                return true;
-            }
-        }
-        return false;
+        return getAttackableBuildings().contains(target);
     }
 
     /**
@@ -464,14 +480,36 @@ public class Building extends NetworkableComponent
      *
      * @return Nearby HexagonTiles able to have Buildings placed on them.
      */
-    public HashSet<HexagonTile> getBuildableTiles() {
-        HashSet<HexagonTile> buildableTiles = new HashSet<HexagonTile>();
+    public Set<HexagonTile> getBuildableTiles() {
+
+        HashSet<HexagonTile> buildableTiles = new HashSet<>();
+
+        HexagonMap map = getMap();
+        if (map == null) {
+            return buildableTiles;
+        }
+
+        if (mPlaceableTiles.isEmpty()) {
+            generateTileLists();
+        }
+
+        ArrayList<HexagonTile> tilesAround = new ArrayList<>();
 
         mPlaceableTiles.forEach(
                 (tile) -> {
-                    if (!tile.isClaimed() && !tile.hasBuilding()) {
-                        buildableTiles.add(tile);
+                    if (tile.isClaimed() || tile.hasBuilding()) {
+                        return;
                     }
+
+                    map.getTilesInRadius(tile, 1, false, tilesAround);
+
+                    for (HexagonTile tileAround : tilesAround) {
+                        if (tileAround.hasBuilding()) {
+                            return;
+                        }
+                    }
+
+                    buildableTiles.add(tile);
                 });
 
         return buildableTiles;
@@ -620,7 +658,6 @@ public class Building extends NetworkableComponent
         cost += (mAttack.getLevel() * 2);
         cost += (mTokenGeneration.getLevel());
         cost += (mViewDistance.getLevel());
-        cost += (mAttackDistance.getLevel());
 
         if (isCapital()) {
             cost += 10;
@@ -732,10 +769,7 @@ public class Building extends NetworkableComponent
             }
         }
 
-        // Reset the list of claimed, viewable and attackable tiles.
         mClaimedTiles.clear();
-        mViewableTiles.clear();
-        mAttackableTiles.clear();
-        mPlaceableTiles.clear();
+        cleanupTileLists();
     }
 }

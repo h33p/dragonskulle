@@ -246,13 +246,20 @@ public class ServerNetworkManager {
      *
      * @param ownerId target owner of the object. For server (AI) owned objects, use negative IDs
      * @param templateId ID of the spawnable template
-     * @return reference to newly spawned network object
+     * @return reference to newly spawned network object. {@code null} if invalid template was
+     *     passed.
      */
     public Reference<NetworkObject> spawnNetworkObject(int ownerId, int templateId) {
         int netId = this.allocateId();
 
         NetworkObject networkObject = new NetworkObject(netId, ownerId, true, mManager);
         GameObject object = mManager.getSpawnableTemplates().instantiate(templateId);
+
+        if (object == null) {
+            log.warning("Failed to instantiate template ID " + templateId);
+            return null;
+        }
+
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
         object.getTransform()

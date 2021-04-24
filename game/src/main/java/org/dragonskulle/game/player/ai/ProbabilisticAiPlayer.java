@@ -3,6 +3,7 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -102,14 +103,14 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         int index = mRandom.nextInt(player.getNumberOfOwnedBuildings());
         final int end = index;
 
-        ArrayList<Reference<Building>> buildings = player.getOwnedBuildings();
+        List<Reference<Building>> buildings = player.getOwnedBuildings();
 
         // Goes through the ownedBuildings
         while (true) {
             Reference<Building> building = buildings.get(index);
 
             // Checks the building is valid
-            if (Reference.isValid(building) && building.get().getViewableTiles().size() != 0) {
+            if (Reference.isValid(building)) {
                 // Check
                 boolean completed = lambdaMethod.runEvent(building.get());
                 if (completed) {
@@ -239,11 +240,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether attacking was invoked.
      */
     protected boolean tryToAttack(Building attacker) {
+        Set<Building> builds = attacker.getAttackableBuildings();
 
-        if (attacker.getAttackableBuildings().size() != 0) {
+        if (builds.size() != 0) {
             // Gets the defending and attacking buildings
-            int buildingChoice = mRandom.nextInt(attacker.getAttackableBuildings().size());
-            Building defender = attacker.getAttackableBuildings().get(buildingChoice);
+            int buildingChoice = mRandom.nextInt(builds.size());
+            Building defender = builds.stream().skip(buildingChoice).findFirst().orElse(null);
             getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
 
             return true;
