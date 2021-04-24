@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
@@ -48,6 +49,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
+    @Getter @Setter private int mBuildingStatUpdateCount;
 
     /**
      * Constructor.
@@ -208,7 +210,10 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
             Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
             if (Reference.isValid(buildingRef)) {
                 Building building = buildingRef.get();
-                if (building.statsNeedUpdate() || !building.equals(mLastBuilding)) {
+                int statUpdateCount = building.getStatUpdateCount();
+                if (statUpdateCount > getBuildingStatUpdateCount()
+                        || !building.equals(mLastBuilding)) {
+                    setBuildingStatUpdateCount(statUpdateCount);
                     getParent().markDidBuild(false);
                     mLastBuilding = building;
                     StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
@@ -223,7 +228,6 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                             .append(" -> ")
                                             .append(s.getValue())
                                             .append("\n"));
-                    building.decrementStatsNeedUpdate();
                     log.info(builder.toString());
                 }
             }

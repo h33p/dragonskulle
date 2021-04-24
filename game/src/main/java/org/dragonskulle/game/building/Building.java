@@ -118,17 +118,12 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
      * disabled once the needed update is finished.
      */
     @Getter
-    @Accessors(fluent = true, prefix = "m")
+    @Accessors(prefix = "m")
     private int mStatUpdateCount = 0;
 
     /** Increments {@code mStatUpdateCount} to signify an update is needed. */
     public void setStatsRequireVisualUpdate() {
         mStatUpdateCount++;
-    }
-
-    /** Decrements {@code mStatUpdateCount} to signify an update has been processed. */
-    public void decrementStatsNeedUpdate() {
-        mStatUpdateCount--;
     }
 
     /**
