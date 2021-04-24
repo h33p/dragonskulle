@@ -1,18 +1,23 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
+import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.renderer.components.Camera;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -25,28 +30,92 @@ import org.joml.Vector3f;
  */
 @Accessors(prefix = "m")
 @Log
-public class HexagonMap extends Component implements IOnStart, IOnAwake {
+public class HexagonMap extends NetworkableComponent implements IOnAwake {
+
+    public static interface IFloodFillVisitor {
+        void onVisit(
+                HexagonMap map,
+                HexagonTile tile,
+                List<HexagonTile> neighbours,
+                Deque<HexagonTile> tilesToFill);
+    }
 
     /** The size that is used to create the map. */
-    @Getter private final int mSize;
+    @Getter @Setter private int mSize = 51;
 
     /** The map that is created which is made of a 2d array of HexagonTiles. */
     private HexagonTileStore mTiles;
 
-    /**
-     * HexagonMap constructor that gets the size for the map and calls the createHexMap function to
-     * create the map.
-     *
-     * @param size the size of the map
-     */
-    public HexagonMap(int size) {
-        this.mSize = size;
+    /** This will store what the largest landMass is */
+    private int[] mLargestLandMass;
 
-        if (size <= 0) {
-            throw new RuntimeException("The size must be greater than 0");
+    /** This will store what the next land mass number is */
+    private int mLandMass = 0;
+
+    /** This will go through all the tiles and find all islands */
+    private void checkIslands() {
+
+        mLargestLandMass = new int[2];
+        mLargestLandMass[0] = -1;
+        mLargestLandMass[1] = -1;
+        getAllTiles()
+                .forEach(
+                        tile -> {
+                            if (tile.landMassNumber == -1) {
+                                floodFillLand(tile);
+                            }
+                        });
+    }
+
+    /**
+     * This will use flood fill to find all connected tiles on land from the given {@code
+     * HexagonTile}
+     *
+     * @param tile The tile to start flooding from
+     */
+    private void floodFillLand(HexagonTile tile) {
+        // Checks that we haven't already checked it
+        int size[] = {0};
+        if (tile.getTileType() != TileType.LAND || tile.landMassNumber != -1) {
+            return;
         }
 
-        mTiles = new HexagonTileStore(mSize, 3);
+        Deque<HexagonTile> tiles = new ArrayDeque<HexagonTile>();
+        tiles.add(tile);
+
+        floodFill(
+                tiles,
+                (__, tileToUse, neighbours, tilesOut) -> {
+                    if (tileToUse.getTileType() == TileType.LAND
+                            && tileToUse.landMassNumber == -1) {
+                        size[0]++;
+                        tileToUse.landMassNumber = mLandMass;
+
+                        for (HexagonTile neighbour : neighbours) {
+                            if (neighbour.landMassNumber == -1
+                                    && neighbour.getTileType() == TileType.LAND) {
+                                tilesOut.add(neighbour);
+                            }
+                        }
+                    }
+                });
+
+        if (size[0] > mLargestLandMass[1]) {
+            mLargestLandMass[0] = mLandMass;
+            mLargestLandMass[1] = size[0];
+        }
+
+        mLandMass++;
+    }
+
+    public void floodFill(Deque<HexagonTile> tiles, IFloodFillVisitor visitor) {
+        ArrayList<HexagonTile> neighbours = new ArrayList<>();
+
+        while (tiles.size() != 0) {
+            HexagonTile tileToUse = tiles.removeFirst();
+            getTilesInRadius(tileToUse, 1, false, neighbours);
+            visitor.onVisit(this, tileToUse, neighbours, tiles);
+        }
     }
 
     /**
@@ -79,10 +148,10 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      *     ArrayList}.
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(
-            HexagonTile tile, int radius, boolean includeTile) {
+    public List<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int radius, boolean includeTile, ArrayList<HexagonTile> tilesOut) {
         int minimum = includeTile ? 0 : 1;
-        return getTilesInRadius(tile, minimum, radius);
+        return getTilesInRadius(tile, minimum, radius, tilesOut);
     }
 
     /**
@@ -94,13 +163,14 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      * @param tile The target tile.
      * @param min The minimum radius of tiles to include.
      * @param max The maximum radius of tiles to include.
-     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius,
-     *     inclusive.
+     * @param tilesOut A {@link List} where {@link HexagonTile}s in radius will be filled into.
+     * @return A {@link List} of {@link HexagonTile}s within the min and max radius. inclusive.
      */
-    public ArrayList<HexagonTile> getTilesInRadius(HexagonTile tile, int min, int max) {
+    public List<HexagonTile> getTilesInRadius(
+            HexagonTile tile, int min, int max, List<HexagonTile> tilesOut) {
         if (tile == null) return new ArrayList<HexagonTile>();
 
-        return getTilesInRadius(tile.getQ(), tile.getR(), min, max);
+        return getTilesInRadius(tile.getQ(), tile.getR(), min, max, tilesOut);
     }
 
     /**
@@ -115,12 +185,12 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
      * @param tileR The target tile R position.
      * @param min The minimum radius of tiles to include.
      * @param max The maximum radius of tiles to include.
-     * @return An {@link ArrayList} of {@link HexagonTile}s within the min and max radius,
-     *     inclusive.
+     * @param tilesOut A {@link List} where {@link HexagonTile}s in radius will be filled into.
+     * @return An {@link List} of {@link HexagonTile}s within the min and max radius, inclusive.
      */
-    private ArrayList<HexagonTile> getTilesInRadius(int tileQ, int tileR, int min, int max) {
-        ArrayList<HexagonTile> tiles = new ArrayList<HexagonTile>();
-
+    private List<HexagonTile> getTilesInRadius(
+            int tileQ, int tileR, int min, int max, List<HexagonTile> tilesOut) {
+        tilesOut.clear();
         for (int q = -max; q <= max; q++) {
             // Only generate valid tile coordinates.
             int lower = Math.max(-max, -q - max);
@@ -141,17 +211,20 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
                 }
 
                 // Add the tile to the list.
-                tiles.add(selectedTile);
+                tilesOut.add(selectedTile);
             }
         }
 
-        return tiles;
+        return tilesOut;
     }
 
     /**
      * Calculate the distance from the centre (0, 0, 0).
      *
-     * @return
+     * @param q the q coordinate
+     * @param r the r coordinate
+     * @param s the s coordinate
+     * @return distance
      */
     private int getDistance(int q, int r, int s) {
         return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
@@ -177,6 +250,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         Vector3f pos =
                 mainCam.screenToPlane(
                         getGameObject().getTransform(),
+                        0,
                         screenPos.x(),
                         screenPos.y(),
                         new Vector3f());
@@ -191,7 +265,8 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         HexagonTile closestTile = null;
         float closestDistance = 1e30f;
 
-        ArrayList<HexagonTile> tiles = getTilesInRadius((int) axial.x, (int) axial.y, 0, 4);
+        List<HexagonTile> tiles =
+                getTilesInRadius((int) axial.x, (int) axial.y, 0, 4, new ArrayList<>());
 
         Vector3f va = new Vector3f();
         Vector3f vb = new Vector3f();
@@ -228,7 +303,7 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
             HexagonTile tile, Camera cam, Vector2fc screenPos, Vector3f pos) {
         pos =
                 cam.screenToPlane(
-                        tile.getGameObject().getTransform(), screenPos.x(), screenPos.y(), pos);
+                        tile.getGameObject().getTransform(), 0, screenPos.x(), screenPos.y(), pos);
 
         Vector2f axial = new Vector2f();
 
@@ -238,21 +313,44 @@ public class HexagonMap extends Component implements IOnStart, IOnAwake {
         return (Math.abs(axial.x) + Math.abs(axial.y) + Math.abs(-axial.x - axial.y));
     }
 
+    /**
+     * This checks if the given {@code HexagonTile} is an island (An island is defined as a land
+     * mass which is disconnected completely from the largest land mass)
+     *
+     * @param tile The {@code HexagonTile} to check if its in an island
+     * @return Returns {@code true} if it is an island, {@code false} if not
+     */
+    public boolean isIsland(HexagonTile tile) {
+        if (mLargestLandMass == null) {
+            log.severe("ERROR");
+        }
+
+        return tile.landMassNumber != mLargestLandMass[0];
+    }
+
+    @Override
+    protected void onNetworkInitialize() {
+        Random rand = new Random();
+        mTiles = new HexagonTileStore(mSize, rand.nextInt(), this);
+        checkIslands();
+    }
+
     @Override
     public void onDestroy() {}
 
     @Override
     public void onAwake() {
+
+        if (mSize <= 0) {
+            log.severe("Map size must be greater than 0!");
+            getGameObject().destroy();
+            return;
+        }
+
         Scene.getActiveScene().registerSingleton(this);
     }
 
-    /** Spawns each HexagonTile as a GameObject. */
-    @Override
-    public void onStart() {
-        mTiles.getAllTiles()
-                .forEach(
-                        tile -> {
-                            getGameObject().addChild(tile.getGameObject());
-                        });
+    void updateTileGameObject(HexagonTile tile) {
+        getGameObject().addChild(tile.getGameObject());
     }
 }

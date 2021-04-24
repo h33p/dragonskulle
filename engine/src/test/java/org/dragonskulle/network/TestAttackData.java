@@ -17,7 +17,7 @@ public final class TestAttackData implements INetSerializable {
         mToBuilding = toBuilding;
     }
 
-    public void serialize(DataOutputStream stream) throws IOException {
+    public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.writeInt(mPassword);
         stream.writeInt(mToBuilding);
     }

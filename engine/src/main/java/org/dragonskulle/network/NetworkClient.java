@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -33,7 +34,7 @@ public class NetworkClient {
     private BufferedInputStream mBIn;
 
     /** The Client listener to notify of important events. */
-    private IClientListener mClientListener;
+    private final IClientListener mClientListener;
     /** True if the socket is open. */
     private boolean mOpen = true;
 
@@ -155,7 +156,8 @@ public class NetworkClient {
         @Override
         public void run() {
             try {
-                mSocket = new Socket(mIP, mPort);
+                mSocket = new Socket();
+                mSocket.connect(new InetSocketAddress(mIP, mPort), 1000);
                 mDataOut = new DataOutputStream(mSocket.getOutputStream());
                 mBIn = new BufferedInputStream(mSocket.getInputStream());
                 DataInputStream input = new DataInputStream(mBIn);

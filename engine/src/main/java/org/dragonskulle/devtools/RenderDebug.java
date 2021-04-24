@@ -8,6 +8,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.Transform;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -18,6 +19,7 @@ import org.dragonskulle.renderer.Renderer;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.utils.MathUtils;
+import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
@@ -81,12 +83,15 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
                 Transform tr = cam.getGameObject().getTransform();
                 Vector3f pos = tr.getPosition();
                 Vector3f rot = tr.getWorldMatrix().getEulerAnglesZYX(new Vector3f());
+                Vector2f axialPos = TransformHex.cartesianToAxial(pos, new Vector2f());
                 cameraText =
                         String.format(
-                                "X: %.2f Y: %.2f Z: %.2f\nP: %.2f R: %.2f Y: %.2f\n",
+                                "X: %.2f Y: %.2f Z: %.2f\nQ: %.2f R: %.2f\nP: %.2f R: %.2f Y: %.2f\n",
                                 pos.x,
                                 pos.y,
                                 pos.z,
+                                axialPos.x,
+                                axialPos.y,
                                 rot.x / MathUtils.DEG_TO_RAD,
                                 rot.y / MathUtils.DEG_TO_RAD,
                                 rot.z / MathUtils.DEG_TO_RAD);

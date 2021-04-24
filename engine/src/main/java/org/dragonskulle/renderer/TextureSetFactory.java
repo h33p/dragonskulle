@@ -32,12 +32,12 @@ class TextureSetFactory implements NativeResource {
         }
 
         Integer hash = Arrays.hashCode(textures);
-        TextureSet set = mTextureSets.get(hash);
-
-        if (set == null) {
-            set = new TextureSet(mDevice, mLayoutFactory, textures, mDescriptorSetCount);
-            mTextureSets.put(hash, set);
-        }
+        TextureSet set =
+                mTextureSets.computeIfAbsent(
+                        hash,
+                        k ->
+                                new TextureSet(
+                                        mDevice, mLayoutFactory, textures, mDescriptorSetCount));
 
         return set;
     }

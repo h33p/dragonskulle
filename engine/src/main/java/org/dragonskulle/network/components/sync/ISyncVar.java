@@ -7,16 +7,21 @@ package org.dragonskulle.network.components.sync;
  * @author Oscar L The type Sync var.
  */
 public interface ISyncVar extends INetSerializable {
-    /** The interface Sync var update handler. */
-    interface ISyncVarUpdateHandler {
-        /** Call. */
-        void call();
-    }
+    /**
+     * Check if object is dirty for a given player.
+     *
+     * @param clientId client to check the dirtiness for
+     * @return whether this syncvar is dirty and should be synchronized for the player
+     */
+    boolean isDirty(int clientId);
+
+    /** Resets the global dirty flag. */
+    default void resetDirtyFlag() {}
 
     /**
-     * Register listener.
+     * Resets the dirty flag for a given client.
      *
-     * @param handleFieldChange the handle field change
+     * @param clientId id of the client to reset the mask for
      */
-    void registerListener(ISyncVarUpdateHandler handleFieldChange);
+    default void resetDirtyFlag(int clientId) {}
 }

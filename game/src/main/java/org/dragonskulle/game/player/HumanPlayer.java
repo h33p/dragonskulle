@@ -4,6 +4,7 @@ package org.dragonskulle.game.player;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import lombok.Getter;
@@ -21,16 +22,19 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
-import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
-import org.dragonskulle.game.player.network_data.AttackData;
+import org.dragonskulle.game.player.ui.Screen;
+import org.dragonskulle.game.player.ui.UILinkedScrollBar;
+import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
+import org.dragonskulle.game.player.ui.UITokenCounter;
+import org.dragonskulle.input.Actions;
+import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector3f;
 import org.dragonskulle.game.building.Building;
@@ -45,8 +49,7 @@ import org.dragonskulle.game.building.Building;
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     // All screens to be used
-    private Screen mScreenOn = Screen.MAP_SCREEN;
-    private Reference<GameObject> mMapScreen;
+    private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
@@ -64,16 +67,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
-    private Reference<FogOfWar> mFogOfWar;
     private boolean mVisualsNeedUpdate;
-    private Reference<GameObject> mZoomSlider;
     private Reference<UITokenCounter> mTokenCounter;
     private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
-    private Reference<GameObject> attack_button;
-    private Reference<GameObject> sell_button;
-    private Reference<GameObject> upgrade_button;
-    private Reference<GameObject> place_button;
 
     private boolean mMovedCameraToCapital = false;
 
@@ -86,7 +83,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
         mNetworkManager = networkManager;
         mNetId = netId;
-        mNetworkManager.get().getClientManager().registerSpawnListener(this::onSpawnObject);
     }
 
     @Override
@@ -97,21 +93,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
 
-        mFogOfWar =
-                Scene.getActiveScene().getSingleton(FogOfWar.class).getReference(FogOfWar.class);
-
-        // Get the screen for map
-        mMapScreen =
-                // Creates a blank screen
-                getGameObject().buildChild("map screen", new TransformUI(), (go) -> {});
-
-        mZoomSlider =
-                // Creates a blank screen
-                getGameObject()
-                        .buildChild(
-                                "zoom_slider",
-                                new TransformUI(true),
-                                (go) -> go.addComponent(new UILinkedScrollBar()));
+        getGameObject()
+                .buildChild(
+                        "zoom_slider",
+                        new TransformUI(true),
+                        (go) -> go.addComponent(new UILinkedScrollBar()));
 
         Reference<GameObject> tmpRef =
                 getGameObject()
@@ -156,7 +142,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Try getting the player if haven't already
         if (mPlayer == null) {
             NetworkManager manager = mNetworkManager.get();
-
             if (manager != null && manager.getClientManager() != null) {
                 mPlayer =
                         manager.getClientManager()
@@ -182,7 +167,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             Building capital = mPlayer.get().getCapital();
 
             if (targetRig != null && capital != null) {
-                log.info("MOVE TO CAPITAL BRUDDY!");
                 targetRig.setTarget(capital.getGameObject().getTransform());
                 mMovedCameraToCapital = true;
             }
@@ -191,6 +175,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (mPlayer.get().hasLost()) {
             log.warning("You've lost your capital");
             setEnabled(false);
+            return;
+        }
+
+        if (mPlayer.get().getNumberOfOwnedBuildings() == 0) {
+            log.warning("You have 0 buildings -- should be sorted in mo");
             return;
         }
         // Update token
@@ -211,6 +200,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         // Choose which screen to show
+
+        if (Reference.isValid(mMenuDrawer)) {
+            mMenuDrawer.get().setVisibleScreen(mScreenOn);
+        }
+
         mapScreen();
 
         if (mVisualsNeedUpdate) {
@@ -221,8 +215,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** This will choose what to do when the user can see the full map. */
     private void mapScreen() {
 
+        Cursor cursor = Actions.getCursor();
+
         // Checks that its clicking something
-        if (GameActions.LEFT_CLICK.isActivated()) {
+        if (GameActions.LEFT_CLICK.isJustDeactivated()
+                && (cursor == null || !cursor.hadLittleDrag())) {
             if (UIManager.getInstance().getHoveredObject() == null) {
                 // And then select the tile
                 Player player = mPlayer.get();
@@ -231,52 +228,39 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (component != null) {
                         mLastHexChosen = mHexChosen;
                         mHexChosen = component.cursorToTile();
+                        if (mHexChosen != null) {
+                            Building building = mHexChosen.getBuilding();
+                            if (building != null)
+                                setBuildingChosen(building.getReference(Building.class));
+                        }
                     }
                 }
 
-                log.info("Human:Got the Hexagon to enter");
-
+                if (mScreenOn == Screen.ATTACKING_SCREEN) {
+                    return;
+                }
+                log.fine("Human:Got the Hexagon to enter");
                 if (mHexChosen != null) {
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class))
-                                && mScreenOn != Screen.ATTACKING_SCREEN) {
+                        if (hasPlayerGotBuilding(building.getReference(Building.class))) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                        } else if (mScreenOn == Screen.ATTACKING_SCREEN) {
-
-                            // Get the defending building
-                            Building defendingBuilding = building;
-
-                            // Checks the building can be attacked
-                            boolean canAttack =
-                                    mBuildingChosen.get().isBuildingAttackable(defendingBuilding);
-                            if (canAttack) {
-                                player.getClientAttackRequest()
-                                        .invoke(
-                                                new AttackData(
-                                                        mBuildingChosen.get(),
-                                                        defendingBuilding)); // Send Data
-                            }
-
-                            setScreenOn(Screen.MAP_SCREEN);
-                            mBuildingChosen = null;
                         }
                     } else {
-                        // Checks if cannot build here
-                        if (mHexChosen.isClaimed()) {
-                            log.info("Human:Cannot build");
-                            mHexChosen = null;
-                            mBuildingChosen = null;
-                        } else {
+                        if (mHexChosen.isBuildable(player)) { // If you can build
                             // If you can build
                             log.info("Human:Change Screen");
-                            setScreenOn(Screen.TILE_SCREEN);
+                            setScreenOn(Screen.PLACING_NEW_BUILDING);
+                        } else {
+                            log.info("Human:Cannot build");
+                            mBuildingChosen = null;
+                            setScreenOn(Screen.DEFAULT_SCREEN);
                         }
                     }
                 }
-            } else if (GameActions.RIGHT_CLICK.isActivated()) {
+            } else if (GameActions.RIGHT_CLICK.isJustDeactivated()) {
                 HexagonTile tile = mPlayer.get().getMap().cursorToTile();
                 Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
                 log.info("[DEBUG] RCL Position From Camera : " + pos);
@@ -298,101 +282,25 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             return;
         }
 
-        if (attack_button == null) {
-            attack_button = mMenuDrawer.get().getButtonReferences().get("attack_button");
-        }
-        if (sell_button == null) {
-            sell_button = mMenuDrawer.get().getButtonReferences().get("sell_button");
-        }
-        if (upgrade_button == null) {
-            upgrade_button = mMenuDrawer.get().getButtonReferences().get("upgrade_button");
-        }
-        if (place_button == null) {
-            place_button = mMenuDrawer.get().getButtonReferences().get("place_button");
-        }
-
         MapEffects effects = mMapEffects.get();
         if (!mPlayer.get().hasLost()) {
-
-            if (Reference.isValid(mFogOfWar)) {
-                mFogOfWar.get().setActivePlayer(mPlayer);
+            if (Reference.isValid(mMenuDrawer)) {
+                mMenuDrawer.get().setVisibleScreen(mScreenOn);
             }
 
             effects.setActivePlayer(mPlayer);
 
             switch (mScreenOn) {
-                case MAP_SCREEN:
+                case DEFAULT_SCREEN:
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(null);
                     break;
                 case BUILDING_SELECTED_SCREEN:
-                    if (Reference.isValid(mMenuDrawer)) {
-                        if (Reference.isValid(attack_button)) {
-                            attack_button.get().setEnabled(true);
-                            attack_button.get().getComponent(UIButton.class).get().enable();
-                        }
-                        if (Reference.isValid(sell_button)) {
-                            sell_button.get().setEnabled(true);
-                            sell_button.get().getComponent(UIButton.class).get().enable();
-                        }
-                        if (Reference.isValid(place_button)) {
-                            place_button.get().setEnabled(false);
-                            place_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                        if (Reference.isValid(upgrade_button)) {
-                            upgrade_button.get().setEnabled(true);
-                            upgrade_button.get().getComponent(UIButton.class).get().enable();
-                        }
-                    }
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
-                case TILE_SCREEN:
-                    if (Reference.isValid(mMenuDrawer)) {
-                        if (Reference.isValid(attack_button)) {
-                            attack_button.get().setEnabled(false);
-                            attack_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                        if (Reference.isValid(sell_button)) {
-                            sell_button.get().setEnabled(false);
-                            sell_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                        if (Reference.isValid(place_button)) {
-                            place_button.get().setEnabled(true);
-                            place_button.get().getComponent(UIButton.class).get().enable();
-                        }
-                        if (Reference.isValid(upgrade_button)) {
-                            upgrade_button.get().setEnabled(false);
-                            upgrade_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                    }
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(
-                            (fx) -> {
-                                highlightBuildableTiles(fx, StandardHighlightType.VALID);
-                                highlightSelectedTile(fx, StandardHighlightType.PLAIN);
-                            } );
-                    break;
                 case ATTACK_SCREEN:
-                    if (Reference.isValid(mMenuDrawer)) {
-                        if (Reference.isValid(attack_button)) {
-                            attack_button.get().setEnabled(true);
-                            attack_button.get().getComponent(UIButton.class).get().enable();
-                        }
-                        if (Reference.isValid(sell_button)) {
-                            sell_button.get().setEnabled(false);
-                            sell_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                        if (Reference.isValid(place_button)) {
-                            place_button.get().setEnabled(false);
-                            place_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                        if (Reference.isValid(upgrade_button)) {
-                            upgrade_button.get().setEnabled(false);
-                            upgrade_button.get().getComponent(UIButton.class).get().disable();
-                        }
-                    }
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> {
@@ -406,11 +314,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 StandardHighlightType.ATTACK.asSelection());
                     }
                     break;
-                case STAT_SCREEN:
+                case UPGRADE_SCREEN:
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(null);
                     break;
                 case ATTACKING_SCREEN:
+                    break;
+                case SELLING_SCREEN:
+                    break;
+                case PLACING_NEW_BUILDING:
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
@@ -442,7 +354,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         HexagonMap map = mPlayer.get().getMap();
         Stream<HexagonTile> allTiles = map.getAllTiles();
         Building attackingBuilding = mHexChosen.getBuilding();
-        ArrayList<Building> attackableBuildings = attackingBuilding.getAttackableBuildings();
+        Set<Building> attackableBuildings = attackingBuilding.getAttackableBuildings();
 
         attackableBuildings.forEach(
                 (building) -> {

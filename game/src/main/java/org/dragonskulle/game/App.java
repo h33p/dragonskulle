@@ -14,13 +14,12 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.game.camera.DragMovement;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
-import org.dragonskulle.game.map.FogOfWar;
-import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
@@ -82,7 +81,7 @@ public class App implements NativeResource {
                         "light",
                         (light) -> {
                             light.addComponent(new Light());
-                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, 0f);
+                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, -30f);
                         }));
 
         GameObject cameraRig =
@@ -92,6 +91,7 @@ public class App implements NativeResource {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
                             rig.addComponent(keyboardMovement);
                             rig.addComponent(new TargetMovement());
+                            rig.addComponent(new DragMovement());
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
 
@@ -116,7 +116,6 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
-                                                    camera.addComponent(new FogOfWar());
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);
@@ -132,27 +131,15 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
 
-        GameObject hexagonMap =
-                new GameObject(
-                        "hexagon map",
-                        new Transform3D(),
-                        (map) -> {
-                            map.addComponent(new HexagonMap(51));
-                        });
-
-        mainScene.addRootObject(hexagonMap);
-
         return mainScene;
     }
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
-        log.warning("We have got here " + asServer);
         Scene mainScene = createMainScene();
-
         // asServer = true;
         if (asServer) {
-            log.warning("I am the server");
+            log.info("I am the server");
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
@@ -193,10 +180,13 @@ public class App implements NativeResource {
 
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
-
         addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();
+
+        for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
+            log.info(obj.getName());
+        }
 
         templates.addAllObjects(
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
@@ -486,7 +476,10 @@ public class App implements NativeResource {
                 new UIButton(
                         "Host (Temporary)",
                         (__, ___) -> {
-                            networkManager.get().createServer(sPort, this::onClientConnected);
+                            networkManager
+                                    .get()
+                                    .createServer(
+                                            sPort, this::onClientConnected, this::onGameStarted);
                         }),
                 new UIButton(
                         "Cancel",
@@ -582,6 +575,12 @@ public class App implements NativeResource {
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+    }
+
+    private void onGameStarted(NetworkManager manager) {
+        log.severe("Game Start");
+        log.warning("Spawning 'Server' Owned objects");
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 
     @Override

@@ -6,7 +6,6 @@ import java.util.HashSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -22,7 +21,6 @@ import org.joml.Vector4f;
  *     valid, and invalid tiles, and so on.
  */
 @Accessors(prefix = "m")
-@Log
 public class MapEffects extends Component implements IOnStart, ILateFrameUpdate {
 
     /** Describes tile highlight option. */
@@ -230,19 +228,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         highlightTiles(
                 (tile, __) -> {
-
-                    // TODO: do this better, with O(1)
-                    if (activePlayer != null) {
-                        Boolean contains =
-                                activePlayer
-                                        .getOwnedBuildingsAsStream()
-                                        .filter(Reference::isValid)
-                                        .map(Reference::get)
-                                        .map(b -> (Boolean) b.getViewableTiles().contains(tile))
-                                        .filter(b -> b == true)
-                                        .findFirst()
-                                        .orElse(null);
-                        if (contains == null) {
+                    if (activePlayer != null && !activePlayer.hasLost()) {
+                        if (!activePlayer.isTileViewable(tile)) {
                             return FOG_MATERIAL;
                         }
                     }
@@ -257,6 +244,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     @Override
     public void lateFrameUpdate(float deltaTime) {
+
+        if (!ensureMapReference()) {
+            return;
+        }
+
         if (mDefaultHighlight) {
             defaultHighlight();
             if (mHighlightOverlay != null) {
@@ -272,7 +264,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public void onStart() {
         Scene.getActiveScene().registerSingleton(this);
         ensureMapReference();
-        log.info(mMapReference.toString());
     }
 
     @Override
@@ -281,13 +272,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     private boolean ensureMapReference() {
-        if (mMapReference != null) {
+        if (Reference.isValid(mMapReference)) {
             return true;
         }
-        mMapReference =
-                Scene.getActiveScene()
-                        .getSingleton(HexagonMap.class)
-                        .getReference(HexagonMap.class);
-        return mMapReference != null;
+        mMapReference = Scene.getActiveScene().getSingletonRef(HexagonMap.class);
+        return Reference.isValid(mMapReference);
     }
 }

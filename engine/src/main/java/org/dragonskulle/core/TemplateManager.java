@@ -22,9 +22,14 @@ public class TemplateManager {
      * Instantiate a template by ID.
      *
      * @param id index of the object in the manager
-     * @return a clone of the template
+     * @return a clone of the template. {@code null} if invalid ID was passed.
      */
     public GameObject instantiate(int id) {
+
+        if (id < 0 || id >= mTemplates.size()) {
+            return null;
+        }
+
         return GameObject.instantiate(mTemplates.get(id));
     }
 
