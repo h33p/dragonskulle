@@ -154,7 +154,6 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         getGameObject().addChild(mMenuContainer);
         
         mAudioContainer = new GameObject("audio_container", new TransformUI());
-        
         mGraphicsContainer = new GameObject("audio_container", new TransformUI());
         
         generateMenu();
@@ -176,25 +175,5 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 	@Override
 	protected void onDestroy() {
 	}
-	
-	/*
-	 * 
-	 * uiManager.buildVerticalUi(
-                audioSettingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Master volume:"),
-                        new UISlider(
-                                AudioManager.getInstance().getMasterVolume(),
-                                (__, val) -> AudioManager.getInstance().setMasterVolume(val))),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            audioSettingsUI.setEnabled(false);
-                            settingsUI.setEnabled(true);
-                        }));
-	 */
 	
 }

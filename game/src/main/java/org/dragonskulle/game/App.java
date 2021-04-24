@@ -25,6 +25,7 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.UIPauseMenu;
+import org.dragonskulle.game.player.UISettingsMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
@@ -319,30 +320,14 @@ public class App implements NativeResource {
                 new GameObject(
                         "settingsUI",
                         false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                        });
-
-        GameObject audioSettingsUI =
-                new GameObject(
-                        "audioSettingsUI",
-                        false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                        });
-
-        GameObject graphicsSettingsUI =
-                new GameObject(
-                        "graphicsSettingsUI",
-                        false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        new TransformUI(),
+                        (settings) -> {
+                        	settings.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                        	//settings.getTransform(TransformUI.class).setParentAnchor(0f);
+                        	settings.addComponent(new UISettingsMenu(() -> {
+                        		mainUi.setEnabled(true);
+                        		settings.setEnabled(false);
+                        	}));
                         });
 
         final UIManager uiManager = UIManager.getInstance();
@@ -442,70 +427,6 @@ public class App implements NativeResource {
                         }));
 
         uiManager.buildVerticalUi(
-                settingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                new UIButton(
-                        "Sound",
-                        (__, ___) -> {
-                            settingsUI.setEnabled(false);
-                            audioSettingsUI.setEnabled(true);
-                        }),
-                new UIButton(
-                        "Graphics",
-                        (__, ___) -> {
-                            settingsUI.setEnabled(false);
-                            graphicsSettingsUI.setEnabled(true);
-                        }),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            settingsUI.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }));
-
-        uiManager.buildVerticalUi(
-                audioSettingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Master volume:"),
-                        new UISlider(
-                                AudioManager.getInstance().getMasterVolume(),
-                                (__, val) -> AudioManager.getInstance().setMasterVolume(val))),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            audioSettingsUI.setEnabled(false);
-                            settingsUI.setEnabled(true);
-                        }));
-
-        uiManager.buildVerticalUi(
-                graphicsSettingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Fullscreen mode:"),
-                        new UIDropDown(
-                                0,
-                                (drop) -> {
-                                    Engine.getInstance()
-                                            .getGLFWState()
-                                            .setFullscreen(drop.getSelected() == 1);
-                                },
-                                "Windowed",
-                                "Fullscreen")),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            graphicsSettingsUI.setEnabled(false);
-                            settingsUI.setEnabled(true);
-                        }));
-
-        uiManager.buildVerticalUi(
                 hostUi,
                 0.05f,
                 0f,
@@ -531,8 +452,6 @@ public class App implements NativeResource {
         mainMenu.addRootObject(hostUi);
         mainMenu.addRootObject(joinUi);
         mainMenu.addRootObject(settingsUI);
-        mainMenu.addRootObject(audioSettingsUI);
-        mainMenu.addRootObject(graphicsSettingsUI);
 
         return mainMenu;
     }
