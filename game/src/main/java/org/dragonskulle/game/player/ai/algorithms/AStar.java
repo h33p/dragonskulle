@@ -23,18 +23,36 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 @Log
 public class AStar {
 
-    /** This will hold the nodes to be visited */
+    /** This will hold the nodes to be visited with the nodeId being the key */
     private HashMap<Integer, Frontier> mFrontier = new HashMap<Integer, Frontier>();
 
+    /**
+     * A class which holds the variables for a node in the frontier
+     *
+     * @author DragonSkulle
+     */
     private class Frontier {
+
+        /** The child node */
         @Getter private int mChild;
 
+        /** The cost of getting to the child node */
         @Getter private int mFNode;
 
+        /** The weight of the connection */
         @Getter private int mWeight;
 
+        /** The parent node */
         @Getter private int mCurrentNode;
 
+        /**
+         * Simple constructor
+         *
+         * @param child The child node
+         * @param fNode The cost of getting to the child node
+         * @param weight The weight from parent to child
+         * @param currentNode The parent node
+         */
         public Frontier(int child, int fNode, int weight, int currentNode) {
             mChild = child;
             mFNode = fNode;
@@ -43,21 +61,35 @@ public class AStar {
         }
     }
 
+    /**
+     * Holds the details of the connections
+     *
+     * @author DragonSkulle
+     */
     private class ConnectionInteger {
+
+        /** The parent node */
         private int mCurrentNode;
 
+        /** The child node */
         private int mChildNode;
 
+        /**
+         * Simple constructor
+         *
+         * @param currentNode The parent node
+         * @param childNode the child node
+         */
         private ConnectionInteger(int currentNode, int childNode) {
             mCurrentNode = currentNode;
             mChildNode = childNode;
         }
     }
 
-    /** This will hold the nodes which has been visited */
+    /** This will hold the node ids which has been visited */
     private Set<Integer> mVisited = new HashSet<Integer>();
 
-    /** This will hold the mGraph being processed */
+    /** This will hold the Graph being processed */
     private Graph mGraph;
 
     /** This hold the solution of which nodes to visit */
@@ -98,13 +130,13 @@ public class AStar {
 
                 Connection connection = connections.get(i);
                 int child = connection.getDestinationNode(); // Gets the destination node
-                int destinationInfo = mGraph.getNodeHeuristic(child); // Gets the heuristic info
+                int heurusticInfo = mGraph.getNodeHeuristic(child); // Gets the heuristic info
                 int weight =
                         connection.getWeight()
                                 + oldFNode; // Gets the weight of the node and add the old
                 // weights known
 
-                int fNode = destinationInfo + weight; // This is the fnode known
+                int fNode = heurusticInfo + weight; // This is the fnode known
 
                 if (!mVisited.contains(child)) { // If the child is not already mVisited
                     if (!mFrontier.containsKey(child)) { // If it is not in the mFrontier
@@ -152,7 +184,6 @@ public class AStar {
             }
         }
 
-        log.severe("Size: " + connectionsFinal.size());
         if (currentNode == endNode) { // If we have reached the end
             mPath.push(endNode); // Push the end Node
 

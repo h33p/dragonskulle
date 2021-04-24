@@ -10,7 +10,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
-import org.dragonskulle.game.player.ai.CapitalAimer;
+import org.dragonskulle.game.player.ai.AimerAi;
 
 /**
  * Will implement a directed Graph data structure. This has been adapted from Nathaniel Lowis's (one
@@ -21,7 +21,7 @@ import org.dragonskulle.game.player.ai.CapitalAimer;
 @Log
 public class Graph {
 
-    /** The hash map which will have the integer to the Node */
+    /** The hash map which will hold the node id to the Node */
     protected HashMap<Integer, Node> mGraph;
 
     /** The next node number to be used */
@@ -37,11 +37,11 @@ public class Graph {
      * Constructor to create the whole map
      *
      * @param map The {@code HexagonMap} to convert to a {@code Graph}
-     * @param tileAiming The {@code HexagonTile} to aim for
+     * @param target The {@code HexagonTile} to aim for
      */
-    public Graph(HexagonMap map, HexagonTile tileAiming) {
+    public Graph(HexagonMap map, HexagonTile target) {
 
-        graphConstructorBoth(map, tileAiming);
+        graphConstructorBoth(map, target);
 
         mCurrentNodeId = 0;
         mGraph = new HashMap<Integer, Node>();
@@ -54,17 +54,17 @@ public class Graph {
      * Constructor to create only part of the map
      *
      * @param map The {@code HexagonMap} to convert to a {@code Graph}
-     * @param tileAiming The {@code HexagonTile} to aim for
+     * @param target The {@code HexagonTile} to aim for
      * @param aimer The {@code CapitalAimer} to use to create the map
      */
-    public Graph(HexagonMap map, HexagonTile tileAiming, CapitalAimer aimer) {
+    public Graph(HexagonMap map, HexagonTile target, AimerAi aimer) {
 
-        graphConstructorBoth(map, tileAiming);
+        graphConstructorBoth(map, target);
 
         mCurrentNodeId = 0;
-        aimer.getStream().forEach(this::convertToNode);
+        aimer.getViewableTiles().forEach(this::convertToNode);
         mCurrentNodeId = 0;
-        aimer.getStream().forEach(this::addConnections);
+        aimer.getViewableTiles().forEach(this::addConnections);
     }
 
     /**

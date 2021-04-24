@@ -195,7 +195,7 @@
                             "enabled" : true
                         },
                         {
-                            "class_name" : "org.dragonskulle.game.player.ai.CapitalAimer",
+                            "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
                             "enabled" : true
                         }
                     ]
