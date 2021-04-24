@@ -136,12 +136,10 @@ public class App implements NativeResource {
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
-        log.warning("We have got here " + asServer);
         Scene mainScene = createMainScene();
-
         // asServer = true;
         if (asServer) {
-            log.warning("I am the server");
+            log.info("I am the server");
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
@@ -182,7 +180,6 @@ public class App implements NativeResource {
 
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
-
         addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();

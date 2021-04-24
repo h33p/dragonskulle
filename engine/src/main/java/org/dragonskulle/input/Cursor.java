@@ -1,15 +1,26 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.input;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.ByteBuffer;
+import javax.imageio.ImageIO;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GLFWState;
+import org.dragonskulle.core.Resource;
+import org.dragonskulle.core.ResourceManager;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector2ic;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWImage;
 
 /**
  * Once attached to a window, this allows access to do the following.
@@ -27,6 +38,12 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 @Log
 @Accessors(prefix = "m")
 public class Cursor {
+    static {
+        ResourceManager.registerResource(
+                BufferedImage.class,
+                (args) -> String.format("textures/%s", args.getName()),
+                (buffer, __) -> ImageIO.read(new ByteArrayInputStream(buffer)));
+    }
 
     private static final float DRAGGED_THRESHOLD = 0.02f;
 
@@ -64,6 +81,53 @@ public class Cursor {
                 };
 
         GLFW.glfwSetCursorPosCallback(window, listener);
+
+        try {
+            setCustomCursor(window);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Set the cursor on a window
+    }
+
+    /**
+     * Sets a custom hardware cursor.
+     *
+     * @param window the window to attach to
+     * @throws IOException thrown if the cursor file doesn't exist
+     */
+    private void setCustomCursor(long window) throws IOException {
+        Resource<BufferedImage> fcursor =
+                ResourceManager.getResource(BufferedImage.class, "ui/cursor.png");
+        BufferedImage bImage = fcursor.get();
+        Image scaledImage =
+                bImage.getScaledInstance(
+                        bImage.getWidth() / 2, bImage.getHeight() / 2, Image.SCALE_FAST);
+
+        // from https://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage
+        bImage =
+                new BufferedImage(
+                        scaledImage.getWidth(null),
+                        scaledImage.getHeight(null),
+                        BufferedImage.TYPE_INT_ARGB);
+        // Draw the image on to the buffered image
+        Graphics2D bGr = bImage.createGraphics();
+        bGr.drawImage(scaledImage, 0, 0, null);
+        bGr.dispose();
+        // end
+        int width = bImage.getWidth();
+        int height = bImage.getHeight();
+
+        int[] pixels = new int[width * height];
+        bImage.getRGB(0, 0, width, height, pixels, 0, width);
+        ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+        MathUtils.intARGBtoByteRGBA(pixels, height, width, buffer);
+        GLFWImage image = GLFWImage.create();
+        image.set(width, height, buffer);
+        long cursor = GLFW.glfwCreateCursor(image, 10, 10);
+
+        GLFW.glfwSetCursor(window, cursor);
     }
 
     /**
@@ -112,11 +176,11 @@ public class Cursor {
      */
     private void detectDrag() {
         if (Actions.TRIGGER_DRAG.isActivated()) {
-            if (inDrag() == false) {
+            if (!inDrag()) {
                 startDrag();
             }
         } else {
-            if (inDrag() == true) {
+            if (inDrag()) {
                 endDrag();
             }
         }

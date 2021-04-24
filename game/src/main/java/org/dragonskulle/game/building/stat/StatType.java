@@ -26,9 +26,11 @@ public enum StatType {
     CLAIM_DISTANCE(1), // Regardless of the level, the claim distance will always be the same.
     DEFENCE((level) -> level), // The defence value is identical to the current level number.
     TOKEN_GENERATION(
-            (level) -> {
-                return Math.max(level - 1, 0);
-            }), // The number of tokens to generate is identical to the current level number minus
+            (level) ->
+                    Math.max(
+                            level - 1,
+                            0)), // The number of tokens to generate is identical to the current
+    // level number minus
     VIEW_DISTANCE(3); // Regardless of the level, the view distance will always be the same.
 
     /* Set the IDs of the Stats. */
@@ -39,6 +41,9 @@ public enum StatType {
             current++;
         }
     }
+
+    /** The nice name for the enum value. */
+    private String mNiceName;
 
     /** The index of the specific StatType in {@link #values()}. */
     private int mID;
@@ -60,6 +65,17 @@ public enum StatType {
     }
 
     /**
+     * Create a new type of stat.
+     *
+     * @param valueCalculator The method used to turn a level into a value.
+     */
+    StatType(IValueCalculator valueCalculator, String niceName) {
+        mFixedValue = false;
+        mValueCalculator = valueCalculator;
+        mNiceName = niceName;
+    }
+
+    /**
      * Create a new type of stat that is permanently one value.
      *
      * @param value The value of the stat, regardless of level.
@@ -70,6 +86,22 @@ public enum StatType {
                 (__) -> {
                     return value;
                 };
+    }
+
+    /**
+     * Retrieves the StatType from its NiceName, if it exists. Otherwise it will try looking in its
+     * default name.
+     *
+     * @param name the nice name to retrieve from
+     * @return the corresponding stat type.
+     */
+    public static StatType fromNiceName(String name) {
+        for (StatType type : StatType.values()) {
+            if (type.mNiceName != null && type.mNiceName.equals(name)) {
+                return type;
+            }
+        }
+        return StatType.valueOf(name);
     }
 
     /**
@@ -95,5 +127,14 @@ public enum StatType {
         }
 
         return values[id];
+    }
+
+    /**
+     * Gets the stats nice name or the default if no nice name exists.
+     *
+     * @return the nice name
+     */
+    public String getNiceName() {
+        return this.mNiceName != null ? this.mNiceName : this.name();
     }
 }

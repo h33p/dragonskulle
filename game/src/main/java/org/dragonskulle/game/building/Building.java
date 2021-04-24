@@ -113,6 +113,20 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /**
+     * This is used as a flag to determine when any of the stats have changed, thus requiring a
+     * visible update to UI. It is enabled in {@code afterStatChange} and has to be manually
+     * disabled once the needed update is finished.
+     */
+    @Getter
+    @Accessors(prefix = "m")
+    private int mStatUpdateCount = 0;
+
+    /** Increments {@code mStatUpdateCount} to signify an update is needed. */
+    public void setStatsRequireVisualUpdate() {
+        mStatUpdateCount++;
+    }
+
+    /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
      */
@@ -230,6 +244,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         generateStatBaseCost();
 
         generateTileLists();
+        setStatsRequireVisualUpdate();
     }
 
     /** Generate the stored lists of {@link HexagonTile}s. */

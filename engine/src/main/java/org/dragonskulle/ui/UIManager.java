@@ -2,6 +2,7 @@
 package org.dragonskulle.ui;
 
 import java.util.Collection;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -60,6 +61,42 @@ public class UIManager {
         }
     }
 
+    /**
+     * Builds elements in a x width grid.
+     *
+     * @param go object to build the children on.
+     * @param width the number of elements to be displayed in one row
+     * @param startX starting X parent anchor, this will be consistent for all elements.
+     * @param startY starting Y parent anchor, this will act as an offset.
+     * @param endY ending Y parent anchor, this will be consistent for all elements.
+     * @param ySeperation the offset between rows
+     * @param elems list of buildable UI elements. Can be UITextRect elements, lambdas, custom
+     *     objects, or a mix of them.
+     */
+    public void buildGridUI(
+            GameObject go,
+            int width,
+            float startX,
+            float startY,
+            float endY,
+            float ySeperation,
+            List<IUIBuildHandler> elems) {
+        float offsetY = 0f;
+        while (elems.iterator().hasNext()) {
+            IUIBuildHandler[] row = new IUIBuildHandler[width];
+            for (int i = 0; i < width; i++) {
+                if (elems.size() > 0) {
+                    row[i] = elems.remove(0);
+                } else {
+                    row[i] = null;
+                }
+            }
+
+            buildHorizontalUI(go, startX, startY + offsetY, endY + offsetY, row);
+            offsetY += ySeperation;
+        }
+    }
+
     public static interface IUIBuildHandler {
         /**
          * Handle building of UI object
@@ -109,6 +146,44 @@ public class UIManager {
                             TransformUI transform = child.getTransform(TransformUI.class);
                             transform.setParentAnchor(startX, curY, endX, curY);
                             transform.setMargin(0, 0, 0, mAppearance.getVerticalUIElemHeight());
+                            handler.handleUIBuild(child);
+                        });
+            }
+
+            cnt++;
+        }
+    }
+
+    /**
+     * Build a horizontal UI on the object
+     *
+     * <p>This method will build UI elements horizontally in accordance to {@link UIAppearance}
+     * settings.
+     *
+     * @param go object to build the children on.
+     * @param startX starting X parent anchor, this will act as an offset.
+     * @param startY starting Y parent anchor, this will be consistent for all elements.
+     * @param endY ending Y parent anchor, this will be consistent for all elements.
+     * @param elems list of buildable UI elements. Can be UITextRect elements, lambdas, custom
+     *     objects, or a mix of them.
+     */
+    public void buildHorizontalUI(
+            GameObject go, float startX, float startY, float endY, IUIBuildHandler... elems) {
+        int cnt = 0;
+
+        for (IUIBuildHandler handler : elems) {
+            final float curX =
+                    cnt * (mAppearance.getHorizontalUIElemWidth() + mAppearance.getHorizUIElemGap())
+                            + startX;
+
+            if (handler != null) {
+                go.buildChild(
+                        "ui_child",
+                        new TransformUI(true),
+                        (child) -> {
+                            TransformUI transform = child.getTransform(TransformUI.class);
+                            transform.setParentAnchor(curX, startY, curX, endY);
+                            transform.setMargin(0, 0, mAppearance.getHorizontalUIElemWidth(), 0);
                             handler.handleUIBuild(child);
                         });
             }

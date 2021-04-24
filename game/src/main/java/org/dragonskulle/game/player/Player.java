@@ -599,7 +599,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Try to place the building on the tile.
-        buildAttempt(tile);
+        buildAttempt(tile, data.getDescriptor());
     }
 
     /**
@@ -610,22 +610,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The tile to place a building on.
      * @return Whether the attempt to build was successful.
      */
-    private boolean buildAttempt(HexagonTile tile) {
-        if (!buildCheck(tile)) {
+    private boolean buildAttempt(HexagonTile tile, BuildingDescriptor descriptor) {
+        if (!buildCheck(tile, descriptor.getCost())) {
             log.info("Unable to pass build check.");
             return false;
         }
 
         Building building = createBuilding(tile.getQ(), tile.getR(), false);
-
         if (building == null) {
             log.info("Unable to add building.");
             return false;
         }
 
+        // TODO set to late update as this wont work fun times yay
+        building.getAttack().setLevel(descriptor.getAttack());
+        building.getDefence().setLevel(descriptor.getDefence());
+        building.getTokenGeneration().setLevel(descriptor.getTokenGeneration());
         // Subtract the cost.
-        mTokens.subtract(Building.BUY_PRICE);
-
+        mTokens.subtract(descriptor.getCost());
+        log.info("Stats on building to be added: " + building.getAttack()); // NOT DOING THA THING
         log.info("Added building.");
         return true;
     }
@@ -636,50 +639,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The tile to put a building on.
      * @return {@code true} if the tile is eligible, otherwise {@code false}.
      */
-    public boolean buildCheck(HexagonTile tile) {
-
+    public boolean buildCheck(HexagonTile tile, int buyPrice) {
         if (tile == null) {
             log.warning("Tile is null.");
             return false;
         }
-
-        if (mTokens.get() < Building.BUY_PRICE) {
+        if (getTokens().get() < buyPrice) {
             log.info("Not enough tokens to buy building.");
             return false;
         }
-
-        HexagonMap map = getMap();
-        if (map == null) {
-            log.warning("Map is null.");
-            return false;
-        }
-
-        if (tile.isClaimed()) {
-            log.info("Tile already claimed.");
-            return false;
-        }
-
-        if (tile.hasBuilding()) {
-            log.info("Building already on tile.");
-            return false;
-        }
-
-        // Ensure that the tile is in the buildable range of at least one owned building.
-        boolean buildable = false;
-        for (Reference<Building> buildingReference : getOwnedBuildings()) {
-            if (Reference.isValid(buildingReference)
-                    && buildingReference.get().getBuildableTiles().contains(tile)) {
-                buildable = true;
-                break;
-            }
-        }
-
-        if (!buildable) {
-            log.info("Building not in buildable range/on suitable tile.");
-            return false;
-        }
-
-        return true;
+        return tile.isBuildable(this);
     }
 
     /**

@@ -6,6 +6,8 @@ import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.List;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.AttributeDescription;
 import org.dragonskulle.renderer.BindingDescription;
 import org.dragonskulle.renderer.SampledTexture;
@@ -17,6 +19,7 @@ import org.dragonskulle.renderer.TextureMapping;
 import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.renderer.materials.IColouredMaterial;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
@@ -31,7 +34,8 @@ import org.joml.Vector4fc;
  *
  * @author Aurimas Blažulionis
  */
-public class UIMaterial implements IMaterial, Serializable {
+@Accessors(prefix = "m")
+public class UIMaterial implements IMaterial, Serializable, IColouredMaterial {
     public static class UIShaderSet extends ShaderSet {
         public UIShaderSet() {
             mVertexShader = ShaderBuf.getResource("ui", ShaderKind.VERTEX_SHADER);
@@ -59,7 +63,7 @@ public class UIMaterial implements IMaterial, Serializable {
     };
 
     /** Colour of the surface. It will multiply the texture's colour */
-    public Vector4f mColour = new Vector4f(1.f);
+    @Getter public Vector4f mColour = new Vector4f(1.f);
 
     public UIMaterial() {}
 

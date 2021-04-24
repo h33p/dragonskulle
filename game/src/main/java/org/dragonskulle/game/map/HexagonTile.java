@@ -288,6 +288,52 @@ public class HexagonTile implements INetSerializable {
         return getBuilding() != null;
     }
 
+    /**
+     * Determines if for a given player if this tile is buildable upon.
+     *
+     * @param player the player to build
+     * @return true if buildable, false otherwise
+     */
+    public boolean isBuildable(Player player) {
+        if (player == null) {
+            log.warning("player was null so false");
+            return false;
+        }
+
+        HexagonMap map = player.getMap();
+        if (map == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        // Ensure that the tile is in the buildable range of at least one owned building.
+        boolean buildable = false;
+        for (Reference<Building> buildingReference : player.getOwnedBuildings()) {
+            if (Reference.isValid(buildingReference)
+                    && buildingReference.get().getBuildableTiles().contains(this)) {
+                buildable = true;
+                break;
+            }
+        }
+
+        if (!buildable) {
+            log.info("Building not in buildable range/on suitable tile.");
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.writeFloat(mHeight);

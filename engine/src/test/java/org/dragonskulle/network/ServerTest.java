@@ -10,8 +10,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.lambda.LambdaOnStart;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -66,22 +65,6 @@ public class ServerTest {
             SERVER_NETWORK_MANAGER.getServerManager().destroy();
         }
         log.info("CLEANED UP");
-    }
-
-    private static class LambdaOnStart extends Component implements IOnStart {
-        IOnStart mHandler;
-
-        public LambdaOnStart(IOnStart handler) {
-            mHandler = handler;
-        }
-
-        @Override
-        public void onStart() {
-            mHandler.onStart();
-        }
-
-        @Override
-        protected void onDestroy() {}
     }
 
     private static class TestContext implements NativeResource {

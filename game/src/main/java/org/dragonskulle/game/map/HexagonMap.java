@@ -221,7 +221,10 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     /**
      * Calculate the distance from the centre (0, 0, 0).
      *
-     * @return
+     * @param q the q coordinate
+     * @param r the r coordinate
+     * @param s the s coordinate
+     * @return distance
      */
     private int getDistance(int q, int r, int s) {
         return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
