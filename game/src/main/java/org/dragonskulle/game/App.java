@@ -150,8 +150,8 @@ public class App implements NativeResource {
                 new GameObject(
                         "pause menu",
                         new TransformUI(),
-                        (map) -> {
-                            map.addComponent(new UIPauseMenu(networkManager));
+                        (menu) -> {
+                        	menu.addComponent(new UIPauseMenu(networkManager));
                         });
         mainScene.addRootObject(pauseMenu);
 

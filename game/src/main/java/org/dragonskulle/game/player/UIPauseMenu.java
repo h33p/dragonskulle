@@ -17,73 +17,22 @@ import org.dragonskulle.ui.UIManager;
 
 @Log
 public class UIPauseMenu extends Component
-        implements IOnAwake, IFixedUpdate, IFrameUpdate, IOnStart {
-
-    private boolean mUnpause = false;
+        implements IOnAwake, IFrameUpdate {
 
     private Reference<NetworkManager> mNetworkManager;
 
-    private GameObject mContainer;
-    // private UIButton mButton;
+    private GameObject mMenuContainer;
 
     public UIPauseMenu(NetworkManager networkManager) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
     }
 
-    @Override
-    public void onStart() {}
-
-    /*
-    * final UIManager uiManager = UIManager.getInstance();
-
-          uiManager.buildVerticalUi(
-                  mainUi,
-                  0.05f,
-                  0,
-                  MENU_BASEWIDTH,
-                  new UIButton(
-                          "Join Game",
-                          (__, ___) -> {
-                              mainUi.setEnabled(false);
-                              joinUi.setEnabled(true);
-                              hostUi.setEnabled(false);
-                          }),
-                  new UIButton(
-                          "Host Game",
-                          (__, ___) -> {
-                              mainUi.setEnabled(false);
-                              hostUi.setEnabled(true);
-                          }),
-                  new UIButton(
-                          "Settings",
-                          (__, ___) -> {
-                              mainUi.setEnabled(false);
-                              settingsUI.setEnabled(true);
-                          }),
-                  new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
-                  new UIButton(
-                          "Quick Reload",
-                          (__, ___) -> {
-                              sReload = true;
-                              Engine.getInstance().stop();
-                          }));
-    */
-
-    @Override
-    public void onAwake() {
-
-        final UIManager uiManager = UIManager.getInstance();
-
-        mContainer = new GameObject("pause_container", new TransformUI());
-        getGameObject().addChild(mContainer);
-
-        // Make button activate TOGGLE_PAUSE
-
-        UIButton resume =
+    private void generateMenu() {
+    	UIButton resume =
                 new UIButton(
                         "Resume",
                         (__, ___) -> {
-                            mUnpause = true;
+                        	mMenuContainer.setEnabled(false);
                         });
 
         UIButton settings =
@@ -110,31 +59,26 @@ public class UIPauseMenu extends Component
                             }
                         });
 
-        uiManager.buildVerticalUi(mContainer, 0.3f, 0, 1f, resume, settings, exit);
+        final UIManager uiManager = UIManager.getInstance();
+        uiManager.buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, resume, settings, exit);
     }
 
     @Override
-    protected void onDestroy() {}
+    public void onAwake() {
+        mMenuContainer = new GameObject("pause_container", new TransformUI());
+        getGameObject().addChild(mMenuContainer);
+        mMenuContainer.setEnabled(false);
 
-    @Override
-    public void fixedUpdate(float deltaTime) {
-        /*
-        if(GameActions.TOGGLE_PAUSE.isJustActivated()) {
-        	mPaused = !mPaused;
-        	mContainer.setEnabled(mPaused);
-
-        	System.out.println("Is now: " + mPaused);
-        }
-        */
+        generateMenu();
     }
 
     @Override
     public void frameUpdate(float deltaTime) {
-        if (mUnpause) {
-            mContainer.setEnabled(false);
-            mUnpause = false;
-        } else if (GameActions.TOGGLE_PAUSE.isJustActivated()) {
-            mContainer.setEnabled(!mContainer.isEnabled());
+        if (GameActions.TOGGLE_PAUSE.isJustActivated()) {
+        	mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
         }
     }
+    
+    @Override
+    protected void onDestroy() {}
 }
