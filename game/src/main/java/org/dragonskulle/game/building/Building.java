@@ -127,15 +127,6 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     }
 
     /**
-     * Indicator that the stats have changed and the UI needs to update.
-     *
-     * @return true if an update is required
-     */
-    public boolean statsNeedUpdate() {
-        return mStatUpdateCount > 0;
-    }
-
-    /**
      * Create a new {@link Building}. This should be added to a {@link HexagonTile}. {@link
      * HexagonTile}.
      */
