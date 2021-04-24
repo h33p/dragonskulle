@@ -6,7 +6,6 @@ import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.renderer.AttributeDescription;
@@ -58,23 +57,20 @@ public class UIMaterial implements IMaterial, Serializable, IColouredMaterial {
     private static UIShaderSet sShaderSet = new UIShaderSet();
 
     private SampledTexture[] mFragmentTextures = {
-            new SampledTexture(
-                    Texture.getResource("white.bmp"),
-                    new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT))
+        new SampledTexture(
+                Texture.getResource("white.bmp"),
+                new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT))
     };
 
-    /**
-     * Colour of the surface. It will multiply the texture's colour
-     */
-    @Getter
-    public Vector4f mColour = new Vector4f(1.f);
+    /** Colour of the surface. It will multiply the texture's colour */
+    @Getter public Vector4f mColour = new Vector4f(1.f);
 
     public UIMaterial() {}
 
     /**
      * Constructor for UIMaterial.
      *
-     * @param colour  initial colour value of the object
+     * @param colour initial colour value of the object
      * @param texture initial texture of the object
      */
     public UIMaterial(Vector4fc colour, SampledTexture texture) {
@@ -85,7 +81,7 @@ public class UIMaterial implements IMaterial, Serializable, IColouredMaterial {
     /**
      * Constructor for UIMaterial.
      *
-     * @param colour  initial colour value for the object, with full alpha
+     * @param colour initial colour value for the object, with full alpha
      * @param texture initial texture of the object
      */
     public UIMaterial(Vector3fc colour, SampledTexture texture) {

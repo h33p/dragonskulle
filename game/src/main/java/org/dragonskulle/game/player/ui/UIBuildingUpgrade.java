@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -59,9 +58,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -163,7 +160,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     /**
      * Build a stat upgrader with a custom texture.
      *
-     * @param type        the stat type
+     * @param type the stat type
      * @param textureName the texture file path
      * @return the builder
      */
@@ -249,8 +246,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * Sets a value or cost text ref for a buildings stats.
      *
      * @param upgradeableStat the upgradeable stat whos values we are using
-     * @param textRef         the ref to set text on
-     * @param isCostRef       true if setting the cost text
+     * @param textRef the ref to set text on
+     * @param isCostRef true if setting the cost text
      */
     private void setTextRef(
             SyncStat upgradeableStat, Reference<UIText> textRef, boolean isCostRef) {

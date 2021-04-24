@@ -331,7 +331,6 @@ public class HexagonTile implements INetSerializable {
             return false;
         }
 
-
         return true;
     }
 

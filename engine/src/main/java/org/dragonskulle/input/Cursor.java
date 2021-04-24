@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
-
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Engine;
@@ -42,37 +41,25 @@ public class Cursor {
     static {
         ResourceManager.registerResource(
                 BufferedImage.class,
-                (args) -> String.format("textures/ui/%s.png", args.getName()),
+                (args) -> String.format("textures/%s", args.getName()),
                 (buffer, __) -> ImageIO.read(new ByteArrayInputStream(buffer)));
     }
 
     private static final float DRAGGED_THRESHOLD = 0.02f;
 
-    /**
-     * This cursor's current raw position.
-     */
+    /** This cursor's current raw position. */
     private Vector2f mRawPosition = new Vector2f(0, 0);
-    /**
-     * Scaled mouse cursor position in the range [[-1, 1], [-1, 1]].
-     */
+    /** Scaled mouse cursor position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledPosition = new Vector2f(0, 0);
 
-    /**
-     * The raw starting position of a drag, or {@code null} if no drag is taking place.
-     */
+    /** The raw starting position of a drag, or {@code null} if no drag is taking place. */
     private Vector2f mRawDragStart;
-    /**
-     * Scaled mouse drag start position in the range [[-1, 1], [-1, 1]].
-     */
+    /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledDragStart = new Vector2f(0, 0);
-    /**
-     * Maximum amount the cursor was dragged from the starting position
-     */
+    /** Maximum amount the cursor was dragged from the starting position */
     private float mMaxDragDistance = 0f;
 
-    /**
-     * Create a new cursor manager.
-     */
+    /** Create a new cursor manager. */
     public Cursor() {}
 
     /**
@@ -111,7 +98,8 @@ public class Cursor {
      * @throws IOException thrown if the cursor file doesn't exist
      */
     private void setCustomCursor(long window) throws IOException {
-        Resource<BufferedImage> fcursor = ResourceManager.getResource(BufferedImage.class, "cursor");
+        Resource<BufferedImage> fcursor =
+                ResourceManager.getResource(BufferedImage.class, "ui/cursor.png");
         BufferedImage bImage = fcursor.get();
         Image scaledImage =
                 bImage.getScaledInstance(
@@ -158,7 +146,7 @@ public class Cursor {
      * Scale the vector so it is in the range [-1, 1] and [-1, 1], relative to the current window
      * size.
      *
-     * @param rawPosition    The raw vector coordinates.
+     * @param rawPosition The raw vector coordinates.
      * @param scaledPosition The vector where the result will be written to.
      */
     private void calculateScaled(Vector2fc rawPosition, Vector2f scaledPosition) {
@@ -188,28 +176,24 @@ public class Cursor {
      */
     private void detectDrag() {
         if (Actions.TRIGGER_DRAG.isActivated()) {
-            if (inDrag() == false) {
+            if (!inDrag()) {
                 startDrag();
             }
         } else {
-            if (inDrag() == true) {
+            if (inDrag()) {
                 endDrag();
             }
         }
     }
 
-    /**
-     * Start a new drag.
-     */
+    /** Start a new drag. */
     void startDrag() {
         mRawDragStart = new Vector2f(mRawPosition);
         calculateScaled(mRawDragStart, mScaledDragStart);
         mMaxDragDistance = 0;
     }
 
-    /**
-     * End a drag in progress.
-     */
+    /** End a drag in progress. */
     void endDrag() {
         mRawDragStart = null;
         mMaxDragDistance = 0;
@@ -238,7 +222,7 @@ public class Cursor {
      * null} if there is no drag.
      *
      * @return The initial position of the cursor, relative to the window size, or {@code null} if
-     * no dragging is taking place.
+     *     no dragging is taking place.
      */
     public Vector2fc getDragStart() {
         if (!inDrag()) {
@@ -252,7 +236,7 @@ public class Cursor {
      * position.
      *
      * @return The angle, in radians, between the drag start point and current position, or {@code
-     * 0} if no dragging is taking place.
+     *     0} if no dragging is taking place.
      */
     public float getDragAngle() {
         if (!inDrag()) {
@@ -267,7 +251,7 @@ public class Cursor {
      * in the range [0, 2].
      *
      * @return A {@code double} representing the distance from the starting point of the user's
-     * drag, or {@code 0} if no dragging is taking place.
+     *     drag, or {@code 0} if no dragging is taking place.
      */
     public float getDragDistance() {
         if (!inDrag()) {

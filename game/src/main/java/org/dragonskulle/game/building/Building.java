@@ -7,7 +7,6 @@ import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,9 +47,7 @@ import org.joml.Vector3i;
 @Log
 public class Building extends NetworkableComponent implements IOnStart, IFrameUpdate, IFixedUpdate {
 
-    /**
-     * A map between {@link StatType}s and their {@link SyncStat} values.
-     */
+    /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
 
     /** Stores the attack strength of the building. */
@@ -66,16 +63,13 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     /** Stores the claim range of the building. */
     @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
-    /**
-     * Whether the building is a capital.
-     */
+    /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
     /** Tiles that are around {@link mClaimedTiles}. */
-
     private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
     /** The tiles the building can currently attack (those with claims neighboring our claims). */
@@ -104,25 +98,18 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
     private static final int NEIGHBOUR_BOUND = 5;
 
-    /**
-     * The cost to buy a {@link Building}.
-     */
+    /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
-    /**
-     * The reimbursement from selling a {@link Building}.
-     */
+    /** The reimbursement from selling a {@link Building}. */
     public static final int SELL_PRICE = 2;
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
      * Should alwyas be at least {@code 1}.
      */
-    @Getter
-    private int mStatBaseCost = 1;
+    @Getter private int mStatBaseCost = 1;
 
-    /**
-     * Store the {@link HexagonMap} that the {@link Building} is on.
-     */
+    /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /**
@@ -132,13 +119,25 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
      */
     @Getter
     @Accessors(fluent = true, prefix = "m")
-    private final AtomicInteger mStatUpdateCount = new AtomicInteger(0);
+    private int mStatUpdateCount = 0;
+
+    /** Increments {@code mStatUpdateCount} to signify an update is needed. */
+    public void setStatsRequireVisualUpdate() {
+        mStatUpdateCount++;
+    }
+
+    /** Decrements {@code mStatUpdateCount} to signify an update has been processed. */
+    public void decrementStatsNeedUpdate() {
+        mStatUpdateCount--;
+    }
 
     /**
-     * Increments {@code mStatUpdateCount} to signify an update is needed.
+     * Indicator that the stats have changed and the UI needs to update.
+     *
+     * @return true if an update is required
      */
-    public void setStatsRequireVisualUpdate() {
-        this.mStatUpdateCount.incrementAndGet();
+    public boolean statsNeedUpdate() {
+        return mStatUpdateCount > 0;
     }
 
     /**
@@ -163,9 +162,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         checkInitialise();
     }
 
-    /**
-     * Initialise the building only when it is properly on the map and the tile is synced
-     */
+    /** Initialise the building only when it is properly on the map and the tile is synced */
     void checkInitialise() {
         if (mInitialised) {
             return;
@@ -264,9 +261,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         setStatsRequireVisualUpdate();
     }
 
-    /**
-     * Generate the stored lists of {@link HexagonTile}s.
-     */
+    /** Generate the stored lists of {@link HexagonTile}s. */
     private void generateTileLists() {
         generateNeighboringTiles();
         generateAttackableTiles();
@@ -294,9 +289,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
-    /**
-     * Claim the tiles around the building and the tile the building is on.
-     */
+    /** Claim the tiles around the building and the tile the building is on. */
     private void generateClaimTiles() {
         if (getNetworkObject().isServer()) {
             // Get the map.
@@ -382,9 +375,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
                 });
     }
 
-    /**
-     * Store the tiles that are suitable for placing a building on.
-     */
+    /** Store the tiles that are suitable for placing a building on. */
     private void generatePlaceableTiles() {
         // Clear the current list of buildable tiles.
         mPlaceableTiles.clear();
@@ -565,7 +556,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
      * TransformHex}.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code
-     * null}.
+     *     null}.
      */
     private Vector3i getPosition() {
 
@@ -794,13 +785,5 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
 
         mClaimedTiles.clear();
         cleanupTileLists();
-    }
-
-    public void decrementStatsNeedUpdate() {
-        this.mStatUpdateCount.decrementAndGet();
-    }
-
-    public boolean statsNeedUpdate() {
-        return mStatUpdateCount.get() > 0;
     }
 }

@@ -15,6 +15,7 @@ public class LambdaFixedUpdate extends Component implements IFixedUpdate {
     public LambdaFixedUpdate(IFixedUpdate handler) {
         mHandler = handler;
     }
+
     @Override
     protected void onDestroy() {}
 
@@ -22,5 +23,4 @@ public class LambdaFixedUpdate extends Component implements IFixedUpdate {
     public void fixedUpdate(float deltaTime) {
         mHandler.fixedUpdate(deltaTime);
     }
-
 }

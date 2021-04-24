@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -48,13 +47,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter
-    @Setter
-    private HexagonTile mHexChosen;
+    @Getter @Setter private HexagonTile mHexChosen;
 
-    @Getter
-    @Setter
-    private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -76,7 +71,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netId          The human player's network ID.
+     * @param netId The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
         mNetworkManager = networkManager;
@@ -210,9 +205,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * This will choose what to do when the user can see the full map.
-     */
+    /** This will choose what to do when the user can see the full map. */
     private void mapScreen() {
 
         Cursor cursor = Actions.getCursor();
@@ -300,12 +293,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(
                             (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
-                //                case BUILD_TILE_SCREEN:
-                //                    effects.setDefaultHighlight(true);
-                //                    effects.setHighlightOverlay(
-                //                            (fx) -> highlightSelectedTile(fx,
-                // StandardHighlightType.PLAIN));
-                //                    break;
+                    //                case BUILD_TILE_SCREEN:
+                    //                    effects.setDefaultHighlight(true);
+                    //                    effects.setHighlightOverlay(
+                    //                            (fx) -> highlightSelectedTile(fx,
+                    // StandardHighlightType.PLAIN));
+                    //                    break;
                 case ATTACK_SCREEN:
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
