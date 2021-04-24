@@ -49,12 +49,9 @@ class TextureSetLayoutFactory implements NativeResource {
             return null;
         }
 
-        Long layout = mLayouts.get(textureCount);
-
-        if (layout == null) {
-            layout = createDescriptorSetLayout(textureCount);
-            mLayouts.put(textureCount, layout);
-        }
+        Long layout =
+                mLayouts.computeIfAbsent(
+                        textureCount, k -> createDescriptorSetLayout(textureCount));
 
         return layout;
     }

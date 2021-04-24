@@ -333,17 +333,18 @@ class DrawCallState implements NativeResource {
     /**
      * Should this class be removed.
      *
-     * @return whether this class should be removed. If {@code true}, it has automatically freed
-     *     it's data.
+     * @return whether this class should be removed. If {@code true}, it will place itself into
+     *     {@code cleanupOutput} to be cleaned up at appropriate time it's data.
      */
-    public boolean shouldCleanup() {
+    public boolean shouldCleanup(List<DrawCallState> cleanupOutput) {
         mDrawData.entrySet().removeIf(e -> e.getValue().mObjects.isEmpty());
 
         if (mDrawData.isEmpty()) {
-            free();
+            cleanupOutput.add(this);
+            return true;
+        } else {
+            return false;
         }
-
-        return mDrawData.isEmpty();
     }
 
     /**
