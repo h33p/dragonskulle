@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -27,7 +27,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         VALID(0),
         INVALID(1),
         PLAIN(2),
-        ATTACK(3);
+        ATTACK(3),
+        BUILD(4),
+        ATTACK_DARKER(5);
 
         @Accessors(prefix = "m")
         @Getter
@@ -47,6 +49,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
+                case BUILD:
+                    return BUILD_MATERIAL;
+                case ATTACK_DARKER:
+                    return ATTACK_DARKER_MATERIAL;
+
                 default:
                     return null;
             }
@@ -97,10 +104,14 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final HighlightSelection ATTACK_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
+    public static final HighlightSelection ATTACK_DARKER_MATERIAL =
+            highlightSelectionFromColour(0.443f, 0.039f, 0.039f);
+    public static final HighlightSelection BUILD_MATERIAL =
+            highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
 
-    private HashSet<HexagonTile> mHighlightedTiles = new HashSet<>();
+    private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
 
     /** Turn on to enable default highlighting (teritory bounds). */
@@ -152,7 +163,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             controls.get().setHighlight(selection.mOverlay);
         }
 
-        mHighlightedTiles.add(tile);
+        mHighlightedTiles.put(tile, selection);
     }
 
     /**
@@ -186,20 +197,31 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * <p>This will clear any selection that currently takes place
      */
     public void unhighlightAllTiles() {
-        for (HexagonTile tile : mHighlightedTiles) {
+        for (HexagonTile tile : mHighlightedTiles.keySet()) {
             highlightTile(tile, HighlightSelection.CLEARED, false);
         }
         mHighlightedTiles.clear();
     }
 
     /**
-     * Check whether tile is selected.
+     * Check whether tile is highlighted.
      *
      * @param tile tile to check
      * @return {@code true} if the tile is currently selected, {@code false} otherwise.
      */
     public boolean isTileHighlighted(HexagonTile tile) {
-        return mHighlightedTiles.contains(tile);
+        return mHighlightedTiles.containsKey(tile);
+    }
+
+    /**
+     * Check whether tile is highlighted.
+     *
+     * @param tile tile to check
+     * @return The {@link HighlightSelection} if the tile is currently highlighted, {@code false}
+     *     otherwise.
+     */
+    public HighlightSelection getTileHighlight(HexagonTile tile) {
+        return isTileHighlighted(tile) ? mHighlightedTiles.get(tile) : null;
     }
 
     /**
