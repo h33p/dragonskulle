@@ -127,7 +127,7 @@ public class Graph {
     /**
      * This will add a node to a mGraph with no connections
      *
-     * @param nodeToAdd The node number
+     * @param nodeId The node number
      * @param tile The {@code HexagonTile} it corresponds to
      */
     public void addNode(int nodeId, HexagonTile tile) {
