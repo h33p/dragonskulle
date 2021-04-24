@@ -67,6 +67,8 @@ public class AStar {
      * The constructor which allows you to make the object.
      *
      * @param graph The {@code Graph} to use A* on
+     * @param currentNode The start {@code Node}
+     * @param endNode The end {@code Node}
      */
     public AStar(Graph graph, int currentNode, int endNode) {
         this.mGraph = graph;
@@ -177,13 +179,11 @@ public class AStar {
     private int nextNode() {
         int smallest = Integer.MAX_VALUE;
         int index = -1;
-        int i = 0;
         for (Frontier node : mFrontier.values()) {
             if (node.mFNode < smallest) {
                 smallest = node.mFNode;
                 index = node.mChild;
             }
-            i++;
         }
 
         return index;

@@ -67,7 +67,13 @@ public class Graph {
         aimer.getStream().forEach(this::addConnections);
     }
 
-    public void graphConstructorBoth(HexagonMap map, HexagonTile tileAiming) {
+    /**
+     * This is the variables set up in both constructors
+     *
+     * @param map The {@code HexagonMap} to be used
+     * @param tileAiming The {@code HexagonTile} being aimed at
+     */
+    private void graphConstructorBoth(HexagonMap map, HexagonTile tileAiming) {
         mTarget = new Reference<HexagonTile>(tileAiming);
         mMap = map.getReference(HexagonMap.class);
         mGraph = new HashMap<Integer, Node>();
@@ -187,7 +193,8 @@ public class Graph {
     }
 
     /**
-     * @deprecated Will return all the node numbers in the mGraph -- Used for testing
+     * Will return all the node numbers in the mGraph
+     *
      * @return An integer array which has all the Nodes used
      */
     public Integer[] getNodes() {

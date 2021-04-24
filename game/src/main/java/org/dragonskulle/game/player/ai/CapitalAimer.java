@@ -42,6 +42,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
     /** Random Creator */
     private Random mRandom = new Random();
 
+    /** Basic Constructor */
     public CapitalAimer() {}
 
     @Override
@@ -110,6 +111,13 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         }
     }
 
+    /**
+     * This will attack the next building
+     *
+     * @param nextTile The next {@code HexagonTile} to aim for
+     * @param nextTilePlayer The {@code Player} which owns the next tile
+     * @param nextNode The {@code Node} number for the next {@code HexagonTile}
+     */
     private void attack(HexagonTile nextTile, Player nextTilePlayer, int nextNode) {
         log.info("Attacking");
         // ATTACK
@@ -176,6 +184,13 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         }
     }
 
+    /**
+     * This will build the next building
+     *
+     * @param nextTile The next {@code HexagonTile} to aim for
+     * @param nextTilePlayer The {@code Player} which owns the next tile
+     * @param nextNode The {@code Node} number for the next {@code HexagonTile}
+     */
     private void building(HexagonTile nextTile, Player nextTilePlayer, int nextNode) {
         log.info("Building");
         HexagonTile tileToBuildOn = nextTile;
@@ -230,7 +245,7 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         mGone.push(previousNode);
     }
 
-    /** This is what happens when we start the search */
+    /** This is what happens when we start the search and moves from the capital */
     private void atCapital() {
         log.info("mGone == 0");
         int nextDoor = mPath.pop();
@@ -520,7 +535,13 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         return getPlayer().getViewableTiles();
     }
 
-    /** This will find the Building node for both your opponent and the capital for you */
+    /**
+     * This will find the Building node for both your opponent and the capital for you
+     *
+     * @param graph The {@code Graph} to use
+     * @param opponentPlayer The {@code Player} to aim for
+     * @return An array of {@code Node}s which have the {@code Node} to start from and go to
+     */
     private Node[] findBuilding(Graph graph, Player opponentPlayer) {
         Integer[] nodesInGraph = graph.getNodes();
 
@@ -545,6 +566,11 @@ public class CapitalAimer extends ProbabilisticAiPlayer {
         return buildings;
     }
 
+    /**
+     * Returns the AI {@code Player}
+     *
+     * @return The {@code Player} in the {@code Reference}
+     */
     private Player getPlayer() {
         return mPlayer.get();
     }

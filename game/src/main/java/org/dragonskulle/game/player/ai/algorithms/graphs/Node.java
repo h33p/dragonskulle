@@ -18,15 +18,24 @@ import org.dragonskulle.game.map.HexagonTile;
 @Accessors(prefix = "m")
 public class Node {
 
-    @Getter private int mNodeId; // The node number
-    @Getter @Setter private int mHeuristic; // The extra info for that node
+    /** The node number */
+    @Getter private int mNodeId;
 
-    @Getter
-    private ArrayList<Connection> mConnections =
-            new ArrayList<Connection>(); // The Connections from that node
+    /** The heuristic for that node */
+    @Getter @Setter private int mHeuristic;
 
+    /** The Connections from this node */
+    @Getter private ArrayList<Connection> mConnections = new ArrayList<Connection>();
+
+    /** The {@code HexagonTile} this refers to */
     @Getter private Reference<HexagonTile> mHexTile;
 
+    /**
+     * The constructor
+     *
+     * @param nodeToAdd The node number
+     * @param tile The {@code HexagonTile} this refers to
+     */
     public Node(int nodeToAdd, HexagonTile tile) {
         mNodeId = nodeToAdd;
         mHexTile = new Reference<HexagonTile>(tile);
