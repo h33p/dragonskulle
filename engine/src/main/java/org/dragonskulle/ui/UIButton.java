@@ -314,18 +314,22 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
     /** Enables the button - allows it to be clicked and removes the disabled colour. */
     public void enable() {
-        mIsEnabled = true;
-        if (mMaterial != null) {
-            mMaterial.mColour.set(mRegularColour);
+        if (!mIsEnabled) {
+            mIsEnabled = true;
+            if (mMaterial != null) {
+                mMaterial.mColour.set(mRegularColour);
+            }
         }
     }
 
     /** Disables the button from running on clicks - also adds a disabled overlay colour. */
     public void disable() {
-        mIsEnabled = false;
-        if (mMaterial != null) {
-            mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
-            mMaterial.mColour.set(mTmpLerp);
+        if (mIsEnabled) {
+            mIsEnabled = false;
+            if (mMaterial != null) {
+                mRegularColour.lerp(mDisabledColour, 0.8f, mTmpLerp);
+                mMaterial.mColour.set(mTmpLerp);
+            }
         }
     }
 
@@ -337,7 +341,9 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
         mTransitionTime = mAppearance.getTransitionTime();
 
-        mRectTexture = mAppearance.getButtonTexture().clone();
+        if (mRectTexture == null) {
+            mRectTexture = mAppearance.getButtonTexture().clone();
+        }
     }
 
     @Override

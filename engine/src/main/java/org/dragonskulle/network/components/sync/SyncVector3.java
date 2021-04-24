@@ -4,7 +4,6 @@ package org.dragonskulle.network.components.sync;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -13,22 +12,22 @@ import org.joml.Vector3fc;
  *
  * @author Oscar L
  */
-public class SyncVector3 implements ISyncVar, Serializable {
+public class SyncVector3 extends BaseSyncVar {
     private Vector3f mData = new Vector3f();
-
-    /** The On update. */
-    private transient ISyncVarUpdateHandler mOnUpdate;
 
     /**
      * Serialize the SyncVector3.
      *
+     * @param out The output stream
+     * @param clientId client ID which to serialize the changes for
      * @throws IOException thrown if couldn't write to stream
      */
     @Override
-    public void serialize(DataOutputStream out) throws IOException {
+    public void serialize(DataOutputStream out, int clientId) throws IOException {
         out.writeFloat(mData.x);
         out.writeFloat(mData.y);
         out.writeFloat(mData.z);
+        mDirty = false;
     }
 
     /**
@@ -39,15 +38,6 @@ public class SyncVector3 implements ISyncVar, Serializable {
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
         mData.set(stream.readFloat(), stream.readFloat(), stream.readFloat());
-    }
-
-    /**
-     * Register listener.
-     *
-     * @param handleFieldChange the handle field change
-     */
-    public void registerListener(ISyncVarUpdateHandler handleFieldChange) {
-        this.mOnUpdate = handleFieldChange;
     }
 
     /**
@@ -68,13 +58,7 @@ public class SyncVector3 implements ISyncVar, Serializable {
      * @param data the data
      */
     public void set(Vector3fc data) {
-        if (mOnUpdate != null) {
-            if (!data.equals(this.mData)) {
-                this.mOnUpdate
-                        .call(); // onUpdate callback is to set the mask bit on modification to the
-                // field
-            }
-        }
+        mDirty = true;
         this.mData.set(data);
     }
 

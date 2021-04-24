@@ -11,6 +11,8 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.materials.IMaterial;
 import org.dragonskulle.renderer.materials.UnlitMaterial;
+import org.joml.FrustumIntersection;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -25,6 +27,13 @@ public class Renderable extends Component {
     @Getter private Mesh mMesh = Mesh.HEXAGON;
     /** Material of the object. */
     @Getter @Setter protected IMaterial mMaterial = new UnlitMaterial();
+
+    /** Cached axis-aligned bounding box minimum coordinates. */
+    protected final Vector3f mAABBMin = new Vector3f();
+    /** Cached axis-aligned bounding box maximum coordinates. */
+    protected final Vector3f mAABBMax = new Vector3f();
+    /** Temporary bounding box cooredinates. */
+    protected final Vector3f mTmpBB = new Vector3f();
 
     static {
         Engine.getCloner()
@@ -109,6 +118,32 @@ public class Renderable extends Component {
         if (mMesh != null) {
             mMesh.incRefCount();
         }
+    }
+
+    /**
+     * Perform frustum cull check on the object.
+     *
+     * @param intersection cached frustum planes used for intersection
+     * @return {@code true} if the object is within the frustum plane, {@code false} otherwise
+     */
+    public boolean frustumCull(FrustumIntersection intersection) {
+        if (mMesh == null) {
+            return false;
+        }
+
+        Matrix4fc worldMatrix = getGameObject().getTransform().getWorldMatrix();
+
+        mAABBMin.set(Float.POSITIVE_INFINITY);
+        mAABBMax.set(Float.NEGATIVE_INFINITY);
+
+        worldMatrix.transformPosition(mMesh.getBBMin(), mTmpBB);
+        mAABBMin.min(mTmpBB);
+        mAABBMax.max(mTmpBB);
+        worldMatrix.transformPosition(mMesh.getBBMax(), mTmpBB);
+        mAABBMin.min(mTmpBB);
+        mAABBMax.max(mTmpBB);
+
+        return intersection.testAab(mAABBMin, mAABBMax);
     }
 
     /** Free the underlying resources. */

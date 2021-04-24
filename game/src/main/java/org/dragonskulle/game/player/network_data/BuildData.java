@@ -4,9 +4,12 @@ package org.dragonskulle.game.player.network_data;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
+import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
@@ -19,6 +22,7 @@ public class BuildData implements INetSerializable {
 
     private int mQ;
     private int mR;
+    @Setter private int mDescriptorIndex;
 
     public BuildData() {}
 
@@ -27,7 +31,8 @@ public class BuildData implements INetSerializable {
      *
      * @param hexTileToAdd The {@code HexagonTile} to build on
      */
-    public BuildData(HexagonTile hexTileToAdd) {
+    public BuildData(HexagonTile hexTileToAdd, int descriptorIndex) {
+        this.mDescriptorIndex = descriptorIndex;
         setTile(hexTileToAdd);
     }
 
@@ -37,18 +42,29 @@ public class BuildData implements INetSerializable {
     }
 
     @Override
-    public void serialize(DataOutputStream stream) throws IOException {
+    public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.writeInt(mQ);
         stream.writeInt(mR);
+        stream.writeInt(mDescriptorIndex);
     }
 
     @Override
     public void deserialize(DataInputStream stream) throws IOException {
         mQ = stream.readInt();
         mR = stream.readInt();
+        mDescriptorIndex = stream.readInt();
     }
 
     public HexagonTile getTile(HexagonMap map) {
         return map.getTile(mQ, mR);
+    }
+
+    /**
+     * Gets the {@code BuildingDescriptor} from it's index.
+     *
+     * @return the descriptor
+     */
+    public BuildingDescriptor getDescriptor() {
+        return PredefinedBuildings.get(mDescriptorIndex);
     }
 }
