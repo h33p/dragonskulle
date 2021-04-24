@@ -173,7 +173,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             if (getPlayer().isBuildingOwner(attacker)) {
 
-                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, building));
+                // Used so lambdas work
+                Building defender = nextTile.getBuilding();
+                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
 
                 // Checks if the attack was successful
                 if (nextTilePlayer != null
@@ -440,7 +442,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
                                 tileToAim.get(),
                                 this);
                 // Finds the buildings
-                Node[] buildings = findBuilding(graph, opponentPlayer);
+                Node[] buildings = findBuilding(mGraph, opponentPlayer);
 
                 Node capNode = buildings[1];
                 Node oppNode = buildings[0];
@@ -452,7 +454,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
                     return;
                 }
                 // Performs A* Search
-                AStar aStar = new AStar(graph, capNode.getNodeId(), oppNode.getNodeId());
+                AStar aStar = new AStar(mGraph, capNode.getNodeId(), oppNode.getNodeId());
                 log.severe("Completed");
 
                 mPath = aStar.getPath();

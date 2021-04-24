@@ -41,7 +41,7 @@ public class Graph {
      */
     public Graph(HexagonMap map, HexagonTile target) {
 
-        graphConstructorBoth(map, target);
+        initialise(map, target);
 
         mCurrentNodeId = 0;
         mGraph = new HashMap<Integer, Node>();
@@ -59,7 +59,7 @@ public class Graph {
      */
     public Graph(HexagonMap map, HexagonTile target, AimerAi aimer) {
 
-        graphConstructorBoth(map, target);
+        initialise(map, target);
 
         mCurrentNodeId = 0;
         aimer.getViewableTiles().forEach(this::convertToNode);
@@ -73,7 +73,7 @@ public class Graph {
      * @param map The {@code HexagonMap} to be used
      * @param tileAiming The {@code HexagonTile} being aimed at
      */
-    private void graphConstructorBoth(HexagonMap map, HexagonTile tileAiming) {
+    private void initialise(HexagonMap map, HexagonTile tileAiming) {
         mTarget = new Reference<HexagonTile>(tileAiming);
         mMap = map.getReference(HexagonMap.class);
         mGraph = new HashMap<Integer, Node>();
@@ -168,10 +168,10 @@ public class Graph {
     }
 
     /**
-     * Returns the special info for that node
+     * Returns the heuristic for that node
      *
      * @param nodeToGet The node which has the special info to get
-     * @return the extra info for that node
+     * @return the heuristic for that node
      */
     public int getNodeHeuristic(int nodeToGet) {
 
