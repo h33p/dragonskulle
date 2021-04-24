@@ -62,11 +62,7 @@ class VulkanSampledTextureFactory implements NativeResource {
     }
 
     public VulkanSampledTexture getTexture(SampledTexture texture) {
-        Entry entry = mTextures.get(texture);
-        if (entry == null) {
-            entry = new Entry(this, texture);
-            mTextures.put(texture, entry);
-        }
+        Entry entry = mTextures.computeIfAbsent(texture, k -> new Entry(this, texture));
         return entry.mSampledTexture;
     }
 

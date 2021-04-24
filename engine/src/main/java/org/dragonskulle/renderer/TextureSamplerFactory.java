@@ -68,11 +68,7 @@ class TextureSamplerFactory implements NativeResource {
      */
     public long getSampler(TextureMapping mapping, int mipLevels) {
         SamplerDescriptor desc = new SamplerDescriptor(mapping, mipLevels);
-        Long sampler = mSamplers.get(desc);
-        if (sampler == null) {
-            sampler = createSampler(desc, mAnisotropyEnable);
-            mSamplers.put(desc, sampler);
-        }
+        Long sampler = mSamplers.computeIfAbsent(desc, k -> createSampler(desc, mAnisotropyEnable));
         return sampler;
     }
 

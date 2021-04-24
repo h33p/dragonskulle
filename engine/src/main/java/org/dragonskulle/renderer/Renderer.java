@@ -1653,14 +1653,8 @@ public class Renderer implements NativeResource {
             state.addObject(renderable);
         }
 
-        List<DrawCallState> discardedDrawCallStates = mDiscardedDrawCallStates.get(ctx.mImageIndex);
-
-        if (discardedDrawCallStates == null) {
-            discardedDrawCallStates = new ArrayList<>();
-            mDiscardedDrawCallStates.put(ctx.mImageIndex, discardedDrawCallStates);
-        }
-
-        List<DrawCallState> discardState = discardedDrawCallStates;
+        List<DrawCallState> discardedDrawCallStates =
+                mDiscardedDrawCallStates.computeIfAbsent(ctx.mImageIndex, k -> new ArrayList<>());
 
         mDrawInstances
                 .entrySet()
@@ -1668,7 +1662,11 @@ public class Renderer implements NativeResource {
                         e -> {
                             e.getValue()
                                     .entrySet()
-                                    .removeIf(e2 -> e2.getValue().shouldCleanup(discardState));
+                                    .removeIf(
+                                            e2 ->
+                                                    e2.getValue()
+                                                            .shouldCleanup(
+                                                                    discardedDrawCallStates));
                             return e.getValue().isEmpty();
                         });
 
