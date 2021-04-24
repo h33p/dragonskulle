@@ -22,6 +22,7 @@ public class UIPauseMenu extends Component
     private Reference<NetworkManager> mNetworkManager;
 
     private GameObject mMenuContainer;
+    private GameObject mSettingsContainer;
 
     public UIPauseMenu(NetworkManager networkManager) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
@@ -40,6 +41,8 @@ public class UIPauseMenu extends Component
                         "Settings",
                         (__, ___) -> {
                             System.out.println("Settings.");
+                            mSettingsContainer.setEnabled(true);
+                            mMenuContainer.setEnabled(false);
                         });
 
         UIButton exit =
@@ -65,10 +68,21 @@ public class UIPauseMenu extends Component
 
     @Override
     public void onAwake() {
-        mMenuContainer = new GameObject("pause_container", new TransformUI());
+        mMenuContainer = new GameObject("pause_container", false, new TransformUI());
         getGameObject().addChild(mMenuContainer);
         mMenuContainer.setEnabled(false);
 
+        mSettingsContainer = new GameObject("settings_container", false, new TransformUI(),
+        		(settings) -> {
+        			settings.addComponent(new UISettingsMenu(() -> {
+        				mMenuContainer.setEnabled(true);
+        				mSettingsContainer.setEnabled(false);
+        			}));
+        		}
+        		);
+        getGameObject().addChild(mSettingsContainer);
+        mSettingsContainer.setEnabled(false);
+        
         generateMenu();
     }
 
