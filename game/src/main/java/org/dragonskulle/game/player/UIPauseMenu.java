@@ -14,6 +14,8 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.joml.Vector4f;
 
 @Log
 public class UIPauseMenu extends Component
@@ -28,6 +30,7 @@ public class UIPauseMenu extends Component
 	
     private Reference<NetworkManager> mNetworkManager;
 
+    private UIRenderable mBackground;
     private GameObject mMenuContainer;
     private GameObject mSettingsContainer;
 
@@ -59,6 +62,7 @@ public class UIPauseMenu extends Component
                         "Resume",
                         (__, ___) -> {
                         	mMenuContainer.setEnabled(false);
+                        	mBackground.setEnabled(false);
                         });
 
         UIButton settings =
@@ -70,7 +74,7 @@ public class UIPauseMenu extends Component
 
         UIButton exit =
                 new UIButton(
-                        "Exit",
+                        "Quit",
                         (__, ___) -> {
                             if (Reference.isValid(mNetworkManager)) {
                                 NetworkManager networkManager = mNetworkManager.get();
@@ -105,6 +109,10 @@ public class UIPauseMenu extends Component
         getGameObject().addChild(mSettingsContainer);
         mSettingsContainer.setEnabled(false);
         
+        mBackground = new UIRenderable(new Vector4f(1f, 1f, 1f, 0.25f));
+        mBackground.setEnabled(false);
+        getGameObject().addComponent(mBackground);
+        
         generateMenu();
     }
 
@@ -112,6 +120,8 @@ public class UIPauseMenu extends Component
     public void frameUpdate(float deltaTime) {
         if (GameActions.TOGGLE_PAUSE.isJustActivated() && mCurrentState == State.MENU) {
         	mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
+        	
+        	mBackground.setEnabled(mMenuContainer.isEnabled());
         }
     }
     
