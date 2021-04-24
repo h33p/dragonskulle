@@ -19,6 +19,13 @@ import org.dragonskulle.ui.UIManager;
 public class UIPauseMenu extends Component
         implements IOnAwake, IFrameUpdate {
 
+	private static enum State {
+		MENU,
+		SETTINGS
+	}
+	
+	private State mCurrentState = State.MENU;
+	
     private Reference<NetworkManager> mNetworkManager;
 
     private GameObject mMenuContainer;
@@ -28,6 +35,24 @@ public class UIPauseMenu extends Component
         mNetworkManager = networkManager.getReference(NetworkManager.class);
     }
 
+    private void switchToState(State state) {
+		if(mCurrentState == state) return;
+		
+		switch (state) {
+			case SETTINGS:
+				mSettingsContainer.setEnabled(true);
+                mMenuContainer.setEnabled(false);
+                break;
+			case MENU:
+			default:
+				mSettingsContainer.setEnabled(false);
+                mMenuContainer.setEnabled(true);
+				break;
+		}
+		
+		mCurrentState = state;
+	}
+    
     private void generateMenu() {
     	UIButton resume =
                 new UIButton(
@@ -40,9 +65,7 @@ public class UIPauseMenu extends Component
                 new UIButton(
                         "Settings",
                         (__, ___) -> {
-                            System.out.println("Settings.");
-                            mSettingsContainer.setEnabled(true);
-                            mMenuContainer.setEnabled(false);
+                        	switchToState(State.SETTINGS);
                         });
 
         UIButton exit =
@@ -75,8 +98,7 @@ public class UIPauseMenu extends Component
         mSettingsContainer = new GameObject("settings_container", false, new TransformUI(),
         		(settings) -> {
         			settings.addComponent(new UISettingsMenu(() -> {
-        				mMenuContainer.setEnabled(true);
-        				mSettingsContainer.setEnabled(false);
+        				switchToState(State.MENU);
         			}));
         		}
         		);
@@ -88,7 +110,7 @@ public class UIPauseMenu extends Component
 
     @Override
     public void frameUpdate(float deltaTime) {
-        if (GameActions.TOGGLE_PAUSE.isJustActivated()) {
+        if (GameActions.TOGGLE_PAUSE.isJustActivated() && mCurrentState == State.MENU) {
         	mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
         }
     }
