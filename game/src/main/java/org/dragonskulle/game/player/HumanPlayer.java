@@ -38,6 +38,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector3f;
 import org.dragonskulle.game.building.Building;
+import org.lwjgl.system.CallbackI;
 
 /**
  * This class will allow a user to interact with game.
@@ -298,14 +299,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 case BUILDING_SELECTED_SCREEN:
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                                highlightBuildableTiles(fx, StandardHighlightType.PLACE);
+                            });
                     break;
                 case ATTACK_SCREEN:
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> {
                                 highlightSelectedTile(fx, StandardHighlightType.VALID);
-                                highlightAttackableTiles(fx, StandardHighlightType.ATTACKTILES);
+                                highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
                             });
                     for (Building attackableBuilding :
                             mHexChosen.getBuilding().getAttackableBuildings()) {

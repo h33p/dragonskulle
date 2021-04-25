@@ -2,7 +2,7 @@
 package org.dragonskulle.game.map;
 
 import java.util.HashMap;
-import java.util.HashSet;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -29,7 +29,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         INVALID(1),
         PLAIN(2),
         ATTACK(3),
-        ATTACKTILES(4);
+        PLACE(4);
 
         @Accessors(prefix = "m")
         @Getter
@@ -49,8 +49,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
-                case ATTACKTILES:
-                    return ATTACKTILES_MATERIAL;
+                case PLACE:
+                    return PLACE_MATERIAL;
                 default:
                     return null;
             }
@@ -94,7 +94,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     public static final HighlightSelection VALID_MATERIAL =
-            highlightSelectionFromColour(0.9f, 0.1f, 0.3f);
+            highlightSelectionFromColour(0.2f, 0.8f, 0.2f);
     public static final HighlightSelection INVALID_MATERIAL =
             highlightSelectionFromColour(1f, 0.08f, 0f);
     public static final HighlightSelection PLAIN_MATERIAL =
@@ -103,8 +103,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
-    public static final HighlightSelection ATTACKTILES_MATERIAL =
-            highlightSelectionFromColour(0,0,0);
+    public static final HighlightSelection PLACE_MATERIAL =
+            highlightSelectionFromColour(0.3f,1.0f,0.7f);
 
     private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
