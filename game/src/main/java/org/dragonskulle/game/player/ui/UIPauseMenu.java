@@ -5,10 +5,14 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
@@ -88,6 +92,19 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mBackground.setEnabled(mMenuContainer.isEnabled());
         // If the menu pause menu is enabled, disable the camera.
         mCamera.setEnabled(!mMenuContainer.isEnabled());
+        
+        for (Scene scene : Engine.getInstance().getActiveScenes()) {
+    		HumanPlayer humanPlayer = scene.getSingleton(HumanPlayer.class);
+        	if(humanPlayer == null) continue;
+        	humanPlayer.setScreenOn(Screen.DEFAULT_SCREEN);
+        	
+        	//Reference<UIMenuLeftDrawer> menuDraw = humanPlayer.getMenuDrawer();
+        	//if(!Reference.isValid(menuDraw)) continue;
+        	//menuDraw.get().setEnabled(!mMenuContainer.isEnabled());
+        	
+        	//humanPlayer.setEnabled(!mMenuContainer.isEnabled());
+        	System.out.println("Success.");
+		}  
     }
     
     /** Generate the contents of {@link #mMenuContainer}. */

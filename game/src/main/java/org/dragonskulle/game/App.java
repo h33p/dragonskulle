@@ -504,16 +504,25 @@ public class App implements NativeResource {
     private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
         log.info("CONNECTED ID " + netId);
 
+        HumanPlayer hp = new HumanPlayer(manager.getReference(NetworkManager.class), netId);
+        
         GameObject humanPlayer =
                 new GameObject(
                         "human player",
                         (handle) -> {
-                            handle.addComponent(
-                                    new HumanPlayer(
-                                            manager.getReference(NetworkManager.class), netId));
+                            handle.addComponent(hp);
                         });
 
         gameScene.addRootObject(humanPlayer);
+        
+        for (Scene scene : Engine.getInstance().getActiveScenes()) {
+        	System.out.println(scene);			
+		}
+        
+        
+        
+        Scene.getActiveScene().registerSingleton(hp);
+        System.out.println("registered as singleton");
     }
 
     private void onClientConnected(

@@ -44,7 +44,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // All screens to be used
     private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
-    private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
     @Getter @Setter private HexagonTile mHexChosen;
@@ -337,7 +337,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      *
      * @param newScreen the new screen
      */
-    private void setScreenOn(Screen newScreen) {
+    public void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;
         }
