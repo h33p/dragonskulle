@@ -590,8 +590,8 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
      * @return The owning player, or {@code null}.
      */
     public Player getOwner() {
-        if(getNetworkObject() == null) return null;
-    	return getOwner(getNetworkObject().getOwnerId());
+        if (getNetworkObject() == null) return null;
+        return getOwner(getNetworkObject().getOwnerId());
     }
 
     /**

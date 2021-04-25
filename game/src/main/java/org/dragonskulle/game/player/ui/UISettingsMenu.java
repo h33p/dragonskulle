@@ -8,15 +8,10 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
-import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.input.GameActions;
-import org.dragonskulle.renderer.Font;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIDropDown;
-import org.dragonskulle.ui.UIFlatImage;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.ui.UISlider;
@@ -131,35 +126,38 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
     private void generateAudio() {
         final UIManager uiManager = UIManager.getInstance();
 
+        // Title:
         UITextRect title = new UITextRect("Audio");
 
-        UITextRect sliderTitle = new UITextRect("Master volume:");
+        // Mute:
+        UITextRect muteTitle = new UITextRect("Toggle mute:");
+        UIButton muteButton =
+                new UIButton(
+                        "Mute",
+                        (button, __) -> {
+                            AudioManager audioManager = AudioManager.getInstance();
+                            audioManager.toggleMasterMute();
 
+                            Reference<UIText> text = button.getLabelText();
+                            if (Reference.isValid(text)) {
+                                if (audioManager.isMasterMuted()) {
+                                    text.get().setText("Unmute");
+                                } else {
+                                    text.get().setText("Mute");
+                                }
+                            }
+                        });
+        IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
+
+        // Volume:
+        UITextRect sliderTitle = new UITextRect("Volume:");
         UISlider slider =
                 new UISlider(
                         AudioManager.getInstance().getMasterVolume(),
                         (__, value) -> AudioManager.getInstance().setMasterVolume(value));
-        
         IUIBuildHandler volume = uiManager.buildWithChildrenRightOf(sliderTitle, slider);
-        
-        UITextRect muteTitle = new UITextRect("Toggle mute:");
-        
-        UIButton muteButton = new UIButton("Mute", (button, __) -> {
-        	AudioManager audioManager = AudioManager.getInstance();
-        	audioManager.toggleMasterMute();
-        	
-        	Reference<UIText> text = button.getLabelText();
-        	if(Reference.isValid(text)) {
-        		if(audioManager.isMasterMuted()) {
-        			text.get().setText("Unmute");        			
-        		} else {
-        			text.get().setText("Mute");
-        		}
-        	}
-        });
-        
-        IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
-        
+
+        // Back:
         UIButton back =
                 new UIButton(
                         "Back",
@@ -167,7 +165,8 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             switchToState(State.MENU);
                         });
 
-        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, volume, mute, back);
+        // Combined:
+        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, mute, volume, back);
     }
 
     /** Generate the contents of {@link #mGraphicsContainer}. */
