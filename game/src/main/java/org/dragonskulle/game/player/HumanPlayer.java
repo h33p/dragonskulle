@@ -81,11 +81,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void onStart() {
 
-        mMapEffects =
-                Scene.getActiveScene()
-                        .getSingleton(MapEffects.class)
-                        .getReference(MapEffects.class);
-
         getGameObject()
                 .buildChild(
                         "zoom_slider",
@@ -239,11 +234,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void updateVisuals() {
         
     	Player player = getPlayer();
-        if (player == null || mMapEffects == null) return;
+    	MapEffects effects = getMapEffects();
+        if (player == null || effects == null) return;
 
         mVisualsNeedUpdate = false;
-
-        MapEffects effects = mMapEffects.get();
+        
         if (!player.hasLost()) {
             if (Reference.isValid(mMenuDrawer)) {
                 mMenuDrawer.get().setVisibleScreen(mScreenOn);
@@ -345,6 +340,25 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     	return mPlayer.get();
     }
 
+    /**
+     *  Get the {@link MapEffects}.
+     * <p>
+     * If {@link #mMapEffects} is not valid, it will attempt to get a valid MapEffects.
+     * 
+     * @return The {@link MapEffects}; otherwise {@code null}.
+     */
+    private MapEffects getMapEffects() {
+		if(!Reference.isValid(mMapEffects)) {
+			MapEffects mapEffects = Scene.getActiveScene()
+                    .getSingleton(MapEffects.class);
+			
+			if(mapEffects == null) return null;
+			mMapEffects = mapEffects.getReference(MapEffects.class);
+		}
+    	
+    	return mMapEffects.get();
+    }
+    
     @Override
     protected void onDestroy() {}
 }
