@@ -89,11 +89,10 @@ public class DragMovement extends Component implements IFrameUpdate, IOnAwake {
         if (!Actions.TRIGGER_DRAG.isActivated()) {
             mDragging = false;
             mDragInvalid = false;
-        } else if (!mDragging) {
-            if (Actions.TRIGGER_DRAG.isJustActivated()
-                    && Reference.isValid(UIManager.getInstance().getHoveredObject())) {
+        } else if (!mDragging && !mDragInvalid) {
+            if (Reference.isValid(UIManager.getInstance().getHoveredObject())) {
                 mDragInvalid = true;
-            } else if (!mDragInvalid && cursor.hadLittleDrag()) {
+            } else if (cursor.hadLittleDrag()) {
                 mPlanePos.set(pos);
                 mTargetHeight = height;
                 mDragging = true;
