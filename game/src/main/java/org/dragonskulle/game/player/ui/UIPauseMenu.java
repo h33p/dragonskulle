@@ -3,10 +3,8 @@ package org.dragonskulle.game.player.ui;
 
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
@@ -17,59 +15,82 @@ import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.joml.Vector4f;
 
+/**
+ * A component that displays a pause menu- allowing access to a {@link UISettingsMenu} and gives an
+ * option to leave the current game.
+ *
+ * @author Craig Wilbourne
+ */
 @Log
-public class UIPauseMenu extends Component
-        implements IOnAwake, IFrameUpdate {
+public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
-	private static enum State {
-		MENU,
-		SETTINGS
-	}
-	
-	private State mCurrentState = State.MENU;
-	
+    /** The possible states the settings menu can be in. */
+    private static enum State {
+        MENU,
+        SETTINGS
+    }
+
+    /** The current state the pause menu is in. */
+    private State mCurrentState = State.MENU;
+
+    /** The {@link NetworkManager} being used. */
     private Reference<NetworkManager> mNetworkManager;
 
-    private UIRenderable mBackground;
+    /** Contains the pause menu. */
     private GameObject mMenuContainer;
+    /** Contains the settings menu. */
     private GameObject mSettingsContainer;
+    /** Used to grey out the background. */
+    private UIRenderable mBackground;
 
+    /**
+     * Create a pause menu.
+     *
+     * @param networkManager The {@link NetworkManager} being used.
+     */
     public UIPauseMenu(NetworkManager networkManager) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
     }
 
+    /**
+     * Change to the desired {@link State}. This will enable and disable the relevant containers,
+     * and update {@link #mCurrentState}.
+     *
+     * @param state The desired state.
+     */
     private void switchToState(State state) {
-		if(mCurrentState == state) return;
-		
-		switch (state) {
-			case SETTINGS:
-				mSettingsContainer.setEnabled(true);
+        if (mCurrentState == state) return;
+
+        switch (state) {
+            case SETTINGS:
+                mSettingsContainer.setEnabled(true);
                 mMenuContainer.setEnabled(false);
                 break;
-			case MENU:
-			default:
-				mSettingsContainer.setEnabled(false);
+            case MENU:
+            default:
+                mSettingsContainer.setEnabled(false);
                 mMenuContainer.setEnabled(true);
-				break;
-		}
-		
-		mCurrentState = state;
-	}
-    
+                break;
+        }
+
+        mCurrentState = state;
+    }
+
+    /** Generate the contents of {@link #mMenuContainer}. */
     private void generateMenu() {
-    	UIButton resume =
+        UIButton resume =
                 new UIButton(
                         "Resume",
                         (__, ___) -> {
-                        	mMenuContainer.setEnabled(false);
-                        	mBackground.setEnabled(false);
+                            mMenuContainer.setEnabled(false);
+                            mBackground.setEnabled(false);
                         });
 
         UIButton settings =
                 new UIButton(
                         "Settings",
                         (__, ___) -> {
-                        	switchToState(State.SETTINGS);
+                            switchToState(State.SETTINGS);
                         });
 
         UIButton exit =
@@ -89,42 +110,55 @@ public class UIPauseMenu extends Component
                             }
                         });
 
-        final UIManager uiManager = UIManager.getInstance();
-        uiManager.buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, resume, settings, exit);
+        UIManager.getInstance()
+                .buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, resume, settings, exit);
     }
 
     @Override
     public void onAwake() {
+        // Create the GameObject that will hold all of the menu contents.
         mMenuContainer = new GameObject("pause_container", false, new TransformUI());
         getGameObject().addChild(mMenuContainer);
-        mMenuContainer.setEnabled(false);
 
-        mSettingsContainer = new GameObject("settings_container", false, new TransformUI(),
-        		(settings) -> {
-        			settings.addComponent(new UISettingsMenu(() -> {
-        				switchToState(State.MENU);
-        			}));
-        		}
-        		);
+        // Create a settings menu.
+        mSettingsContainer =
+                new GameObject(
+                        "settings_container",
+                        false,
+                        new TransformUI(),
+                        (settings) -> {
+                            settings.addComponent(
+                                    new UISettingsMenu(
+                                            () -> {
+                                                switchToState(State.MENU);
+                                            }));
+                        });
         getGameObject().addChild(mSettingsContainer);
-        mSettingsContainer.setEnabled(false);
-        
+
+        // Used to grey out the background.
         mBackground = new UIRenderable(new Vector4f(1f, 1f, 1f, 0.25f));
-        mBackground.setEnabled(false);
         getGameObject().addComponent(mBackground);
-        
+
+        // Ensure all aspects of the menu are hidden.
+        mMenuContainer.setEnabled(false);
+        mSettingsContainer.setEnabled(false);
+        mBackground.setEnabled(false);
+
+        // Generate the menu contents.
         generateMenu();
     }
 
     @Override
     public void frameUpdate(float deltaTime) {
+        // If the pause screen is in the main menu and the pause key is pressed.
         if (GameActions.TOGGLE_PAUSE.isJustActivated() && mCurrentState == State.MENU) {
-        	mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
-        	
-        	mBackground.setEnabled(mMenuContainer.isEnabled());
+            // Either leave or enter the pause menu.
+            mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
+            // Grey out the background if entering, or disable it if leaving.
+            mBackground.setEnabled(mMenuContainer.isEnabled());
         }
     }
-    
+
     @Override
     protected void onDestroy() {}
 }

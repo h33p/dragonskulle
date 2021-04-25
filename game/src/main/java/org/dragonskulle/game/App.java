@@ -30,11 +30,9 @@ import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIDropDown;
 import org.dragonskulle.ui.UIInputBox;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UISlider;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
@@ -139,7 +137,7 @@ public class App implements NativeResource {
                         "pause menu",
                         new TransformUI(),
                         (menu) -> {
-                        	menu.addComponent(new UIPauseMenu(networkManager));
+                            menu.addComponent(new UIPauseMenu(networkManager));
                         });
         mainScene.addRootObject(pauseMenu);
 
@@ -310,12 +308,14 @@ public class App implements NativeResource {
                         false,
                         new TransformUI(),
                         (settings) -> {
-                        	settings.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                        	//settings.getTransform(TransformUI.class).setParentAnchor(0f);
-                        	settings.addComponent(new UISettingsMenu(() -> {
-                        		mainUi.setEnabled(true);
-                        		settings.setEnabled(false);
-                        	}));
+                            settings.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            // settings.getTransform(TransformUI.class).setParentAnchor(0f);
+                            settings.addComponent(
+                                    new UISettingsMenu(
+                                            () -> {
+                                                mainUi.setEnabled(true);
+                                                settings.setEnabled(false);
+                                            }));
                         });
 
         final UIManager uiManager = UIManager.getInstance();

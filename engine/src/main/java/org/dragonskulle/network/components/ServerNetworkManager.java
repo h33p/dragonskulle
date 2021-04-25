@@ -38,7 +38,6 @@ import org.joml.Vector3f;
 @Log
 public class ServerNetworkManager {
 
-
     public enum ServerGameState {
         IN_PROGRESS,
         LOBBY,
