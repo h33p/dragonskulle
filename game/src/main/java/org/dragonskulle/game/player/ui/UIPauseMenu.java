@@ -43,13 +43,18 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /** Used to grey out the background. */
     private UIRenderable mBackground;
 
+    private GameObject mCamera;
+    
     /**
      * Create a pause menu.
      *
      * @param networkManager The {@link NetworkManager} being used.
+     * @param cameraRig 
      */
-    public UIPauseMenu(NetworkManager networkManager) {
+    public UIPauseMenu(NetworkManager networkManager, GameObject camera) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
+        
+        mCamera = camera;
     }
 
     /**
@@ -76,14 +81,22 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mCurrentState = state;
     }
 
+    private void togglePause() {
+    	// Either leave or enter the pause menu.
+        mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
+        // Grey out the background if entering, or disable it if leaving.
+        mBackground.setEnabled(mMenuContainer.isEnabled());
+        // If the menu pause menu is enabled, disable the camera.
+        mCamera.setEnabled(!mMenuContainer.isEnabled());
+    }
+    
     /** Generate the contents of {@link #mMenuContainer}. */
     private void generateMenu() {
         UIButton resume =
                 new UIButton(
                         "Resume",
                         (__, ___) -> {
-                            mMenuContainer.setEnabled(false);
-                            mBackground.setEnabled(false);
+                            togglePause();
                         });
 
         UIButton settings =
@@ -152,10 +165,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     public void frameUpdate(float deltaTime) {
         // If the pause screen is in the main menu and the pause key is pressed.
         if (GameActions.TOGGLE_PAUSE.isJustActivated() && mCurrentState == State.MENU) {
-            // Either leave or enter the pause menu.
-            mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
-            // Grey out the background if entering, or disable it if leaving.
-            mBackground.setEnabled(mMenuContainer.isEnabled());
+        	togglePause();
         }
     }
 

@@ -129,15 +129,16 @@ public class App implements NativeResource {
                                     });
                         });
 
-        mainScene.addRootObject(GameObject.instantiate(cameraRig));
-
+        GameObject camera = GameObject.instantiate(cameraRig);
+        mainScene.addRootObject(camera);
+        
         // Pause menu
         GameObject pauseMenu =
                 new GameObject(
                         "pause menu",
                         new TransformUI(),
                         (menu) -> {
-                            menu.addComponent(new UIPauseMenu(networkManager));
+                            menu.addComponent(new UIPauseMenu(networkManager, camera));
                         });
         mainScene.addRootObject(pauseMenu);
 
