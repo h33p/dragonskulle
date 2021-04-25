@@ -63,6 +63,7 @@ public class ServerTest {
         }
         if (SERVER_NETWORK_MANAGER.getServerManager() != null) {
             SERVER_NETWORK_MANAGER.getServerManager().destroy();
+            SERVER_NETWORK_MANAGER.lateNetworkUpdate();
         }
         log.info("CLEANED UP");
     }
