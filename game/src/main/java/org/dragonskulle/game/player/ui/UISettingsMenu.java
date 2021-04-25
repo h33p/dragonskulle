@@ -26,13 +26,13 @@ import org.dragonskulle.ui.UITextRect;
 public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate {
 
     /** Contains the action to execute when the user requests to leave the settings menu. */
-    public static interface Back {
+    public static interface IOnBack {
         /** Contains the code to execute on a back action. */
         public void run();
     }
 
     /** The action to execute when the user requests to leave the settings menu. */
-    private Back mReturnAction;
+    private IOnBack mReturnAction;
 
     /** The possible states the settings menu can be in. */
     private static enum State {
@@ -57,7 +57,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
      * @param returnAction The action to be executed when the user requests to leave the settings
      *     menu.
      */
-    public UISettingsMenu(Back returnAction) {
+    public UISettingsMenu(IOnBack returnAction) {
         mReturnAction = returnAction;
     }
 

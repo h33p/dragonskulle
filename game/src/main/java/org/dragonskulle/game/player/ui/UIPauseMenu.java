@@ -47,7 +47,10 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     private GameObject mSettingsContainer;
     /** Used to grey out the background. */
     private UIRenderable mBackground;
-
+    
+    /** Stores the {@link Screen} the {@link HumanPlayer} was previously on. */
+    private Screen mPreviousScreen;
+    
     /**
      * Create a pause menu.
      *
@@ -101,11 +104,18 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         // If the menu pause menu is enabled, disable the camera.
         mCamera.setEnabled(!pause);
 
+        // Make the HumanPlayer go to the desired screen.
+        Screen newScreen = Screen.DEFAULT_SCREEN;
+        if(!pause) {
+        	newScreen = mPreviousScreen;
+        }
+        
         // Get the human player, if they exist, and make them go to the default screen.
         for (Scene scene : Engine.getInstance().getActiveScenes()) {
             HumanPlayer humanPlayer = scene.getSingleton(HumanPlayer.class);
             if (humanPlayer == null) continue;
-            humanPlayer.setScreenOn(Screen.DEFAULT_SCREEN);
+            mPreviousScreen = humanPlayer.getScreenOn();
+            humanPlayer.setScreenOn(newScreen);
             break;
         }
     }

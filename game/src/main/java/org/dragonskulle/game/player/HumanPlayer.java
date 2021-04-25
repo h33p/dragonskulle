@@ -42,7 +42,7 @@ import org.joml.Vector3f;
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     // All screens to be used
-    private Screen mScreenOn = Screen.DEFAULT_SCREEN;
+    @Getter private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
