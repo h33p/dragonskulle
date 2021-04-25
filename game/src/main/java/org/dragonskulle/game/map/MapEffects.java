@@ -133,7 +133,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      */
     public void highlightTile(HexagonTile tile, HighlightSelection selection) {
         highlightTile(tile, selection, true);
-        mDefaultHighlight = false;
     }
 
     private void highlightTile(HexagonTile tile, HighlightSelection selection, boolean removeOld) {
@@ -176,7 +175,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      */
     public void highlightTiles(IHighlightSelector selector) {
         mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t)));
-        mDefaultHighlight = false;
     }
 
     /**
@@ -188,7 +186,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      */
     public void unhighlightTile(HexagonTile tile) {
         highlightTile(tile, HighlightSelection.CLEARED);
-        mDefaultHighlight = false;
     }
 
     /**
