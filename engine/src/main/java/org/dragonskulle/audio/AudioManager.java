@@ -342,6 +342,9 @@ public class AudioManager {
 
         mMasterVolume = volume;
         AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
+        
+        // Ensure the volume stays either muted or unmuted.
+        setMasterMute(mMasterMuted);
     }
 
     public void setMasterMute(boolean muted) {

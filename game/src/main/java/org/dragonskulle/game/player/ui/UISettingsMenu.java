@@ -7,13 +7,20 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.renderer.Font;
+import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIDropDown;
+import org.dragonskulle.ui.UIFlatImage;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.ui.UISlider;
+import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 
 /**
@@ -132,9 +139,27 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                 new UISlider(
                         AudioManager.getInstance().getMasterVolume(),
                         (__, value) -> AudioManager.getInstance().setMasterVolume(value));
-
+        
         IUIBuildHandler volume = uiManager.buildWithChildrenRightOf(sliderTitle, slider);
-
+        
+        UITextRect muteTitle = new UITextRect("Toggle mute:");
+        
+        UIButton muteButton = new UIButton("Mute", (button, __) -> {
+        	AudioManager audioManager = AudioManager.getInstance();
+        	audioManager.toggleMasterMute();
+        	
+        	Reference<UIText> text = button.getLabelText();
+        	if(Reference.isValid(text)) {
+        		if(audioManager.isMasterMuted()) {
+        			text.get().setText("Unmute");        			
+        		} else {
+        			text.get().setText("Mute");
+        		}
+        	}
+        });
+        
+        IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
+        
         UIButton back =
                 new UIButton(
                         "Back",
@@ -142,7 +167,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             switchToState(State.MENU);
                         });
 
-        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, volume, back);
+        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, volume, mute, back);
     }
 
     /** Generate the contents of {@link #mGraphicsContainer}. */
