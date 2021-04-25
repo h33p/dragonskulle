@@ -17,6 +17,7 @@ import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
@@ -90,6 +91,8 @@ public class Engine {
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
+        UPnP.initialise();
+        log.info(UPnP.getExternalIPAddress());
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
