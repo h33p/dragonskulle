@@ -20,11 +20,10 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.game.lobby.Lobby;
 import org.dragonskulle.game.map.FogOfWar;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
@@ -270,24 +269,15 @@ public class App implements NativeResource {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject joinUi =
-                new GameObject(
-                        "joinUi",
-                        false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                        });
+        Reference<Lobby> lobby =
+                new Lobby(mainUi.getReference(), networkManager).getReference(Lobby.class);
 
-        GameObject hostUi =
+        GameObject lobbyObject =
                 new GameObject(
-                        "hostUi",
-                        false,
-                        new TransformUI(false),
+                        "lobby",
+                        true,
                         (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                            root.addComponent(lobby.get());
                         });
 
         GameObject settingsUI =
@@ -328,17 +318,10 @@ public class App implements NativeResource {
                 0,
                 MENU_BASEWIDTH,
                 new UIButton(
-                        "Join Game",
+                        "Play Game",
                         (__, ___) -> {
                             mainUi.setEnabled(false);
-                            joinUi.setEnabled(true);
-                            hostUi.setEnabled(false);
-                        }),
-                new UIButton(
-                        "Host Game",
-                        (__, ___) -> {
-                            mainUi.setEnabled(false);
-                            hostUi.setEnabled(true);
+                            lobby.get().getMLobbyUi().setEnabled(true);
                         }),
                 new UIButton(
                         "Settings",
@@ -360,61 +343,6 @@ public class App implements NativeResource {
         connectingText.getColour().set(0f);
 
         UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
-
-        uiManager.buildVerticalUi(
-                joinUi,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                ibox,
-                new UIButton(
-                        "Join (Temporary)",
-                        (uiButton, __) -> {
-                            int port = sPort;
-
-                            connectingText.setEnabled(true);
-                            connectingText.getGameObject().setEnabled(true);
-
-                            try {
-                                String text = ibox.getInput();
-                                String[] elems = text.split(":");
-                                String ip = elems[0];
-                                String portText = elems.length > 1 ? elems[1] : null;
-
-                                if (portText != null) {
-                                    port = Integer.parseInt(portText);
-                                }
-
-                                connectingText.getLabelText().get().setText("Connecting...");
-
-                                networkManager
-                                        .get()
-                                        .createClient(
-                                                ip,
-                                                port,
-                                                (gameScene, manager, netID) -> {
-                                                    if (netID >= 0) {
-                                                        onConnectedClient(
-                                                                gameScene, manager, netID);
-                                                    } else {
-                                                        connectingText.setEnabled(false);
-                                                        connectingText
-                                                                .getGameObject()
-                                                                .setEnabled(false);
-                                                    }
-                                                });
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                connectingText.getLabelText().get().setText("Invalid input!");
-                            }
-                        }),
-                connectingText,
-                new UIButton(
-                        "Cancel",
-                        (uiButton, __) -> {
-                            joinUi.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }));
 
         uiManager.buildVerticalUi(
                 settingsUI,
@@ -480,36 +408,14 @@ public class App implements NativeResource {
                             settingsUI.setEnabled(true);
                         }));
 
-        uiManager.buildVerticalUi(
-                hostUi,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                new UIButton(
-                        "Host (Temporary)",
-                        (__, ___) -> {
-                            networkManager.get().createServer(sPort, this::onClientConnected);
-                        }),
-                new UIButton(
-                        "Cancel",
-                        (uiButton, __) -> {
-                            hostUi.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }),
-                new UIButton(
-                        "Start Game",
-                        (__, ___) -> {
-                            networkManager.get().getServerManager().startGame();
-                        }));
-
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(audio);
         mainMenu.addRootObject(gameTitle);
+        mainMenu.addRootObject(lobbyObject);
 
         mainMenu.addRootObject(mainUi);
-        mainMenu.addRootObject(hostUi);
-        mainMenu.addRootObject(joinUi);
+        lobby.get().addUiToScene(mainMenu);
         mainMenu.addRootObject(settingsUI);
         mainMenu.addRootObject(audioSettingsUI);
         mainMenu.addRootObject(graphicsSettingsUI);
@@ -572,28 +478,6 @@ public class App implements NativeResource {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
-    }
-
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
-        log.info("CONNECTED ID " + netId);
-
-        GameObject humanPlayer =
-                new GameObject(
-                        "human player",
-                        (handle) -> {
-                            handle.addComponent(
-                                    new HumanPlayer(
-                                            manager.getReference(NetworkManager.class), netId));
-                        });
-
-        gameScene.addRootObject(humanPlayer);
-    }
-
-    // TODO: Don't need this anymore?
-    private void onClientConnected(
-            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
-        int id = networkClient.getNetworkID();
-        log.info("New player connected to lobby with id " + id);
     }
 
     @Override
