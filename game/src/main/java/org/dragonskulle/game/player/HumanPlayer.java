@@ -345,7 +345,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (Reference.isValid(mBuildingChosen)) {
             for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
                 HexagonTile tile = attackableBuilding.getTile();
-                if (tile.equals(mHexChosen)) return;ww
+                if (tile.equals(mHexChosen)) return;
                 effects.highlightTile(tile, StandardHighlightType.ATTACK.asSelection());
             }
         }
