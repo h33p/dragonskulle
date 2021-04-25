@@ -67,14 +67,14 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void update();
     }
 
-    /** Get the player reference from the parent. */
+    /** Get the {@link Player} from the parent. */
     public interface IGetPlayer {
         /**
-         * Get the player reference.
+         * Get the player.
          *
          * @return the reference
          */
-        Reference<Player> getPlayer();
+        Player getPlayer();
     }
 
     /** Get the building chosen from the parent. */
@@ -276,11 +276,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                         boolean canAttack =
                                 attackingBuilding.get().isBuildingAttackable(defendingBuilding);
                         if (canAttack) {
-                            Reference<Player> playerReference = mGetPlayer.getPlayer();
-                            if (Reference.isValid(playerReference)) {
-                                playerReference
-                                        .get()
-                                        .getClientAttackRequest()
+                            Player player = mGetPlayer.getPlayer();
+                            if (player != null) {
+                            	player.getClientAttackRequest()
                                         .invoke(
                                                 new AttackData(
                                                         attackingBuilding.get(),
@@ -307,10 +305,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 (handle, __) -> {
                     Reference<Building> buildingToSell = mGetBuildingChosen.getBuilding();
                     if (Reference.isValid(buildingToSell)) {
-                        Reference<Player> player = mGetPlayer.getPlayer();
-                        if (Reference.isValid(player)) {
-                            player.get()
-                                    .getClientSellRequest()
+                        Player player = mGetPlayer.getPlayer();
+                        if (player != null) {
+                            player.getClientSellRequest()
                                     .invoke(new SellData(buildingToSell.get())); // Send Data
                         }
                     }

@@ -123,41 +123,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mVisualsNeedUpdate = true;
     }
 
-    private Reference<Player> getPlayer() {
-        return this.mPlayer;
-    }
-
-    @Override
-    protected void onDestroy() {}
-
     @Override
     public void fixedUpdate(float deltaTime) {
-        // Try getting the player if haven't already
-        if (mPlayer == null) {
-            NetworkManager manager = mNetworkManager.get();
-            if (manager != null && manager.getClientManager() != null) {
-                mPlayer =
-                        manager.getClientManager()
-                                .getNetworkObjects()
-                                .filter(Reference::isValid)
-                                .map(Reference::get)
-                                .filter(NetworkObject::isMine)
-                                .map(NetworkObject::getGameObject)
-                                .map(go -> go.getComponent(Player.class))
-                                .filter(Objects::nonNull)
-                                .findFirst()
-                                .orElse(null);
-            }
-        }
-
-        if (!Reference.isValid(mPlayer)) {
-            return;
-        }
+    	
+    	Player player = getPlayer();
+    	if(player == null) return;
 
         if (!mMovedCameraToCapital) {
             TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
 
-            Building capital = mPlayer.get().getCapital();
+            Building capital = player.getCapital();
 
             if (targetRig != null && capital != null) {
                 targetRig.setTarget(capital.getGameObject().getTransform());
@@ -165,24 +140,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             }
         }
 
-        if (mPlayer.get().hasLost()) {
+        if (player.hasLost()) {
             log.warning("You've lost your capital");
             setEnabled(false);
             return;
         }
 
-        if (mPlayer.get().getNumberOfOwnedBuildings() == 0) {
+        if (player.getNumberOfOwnedBuildings() == 0) {
             log.warning("You have 0 buildings -- should be sorted in mo");
             return;
         }
+        
         // Update token
-        if (Reference.isValid(mPlayer)) {
-            updateVisibleTokens();
-        }
+        updateVisibleTokens();
     }
 
     private void updateVisibleTokens() {
-        mLocalTokens = mPlayer.get().getTokens().get();
+        mLocalTokens = getPlayer().getTokens().get();
         if (Reference.isValid(mTokenCounter)) {
             mTokenCounter.get().setLabelReference(mLocalTokens);
         } else {
@@ -208,6 +182,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** This will choose what to do when the user can see the full map. */
     private void mapScreen() {
 
+    	Player player = getPlayer();
+    	if(player == null) return;
+    	
         Cursor cursor = Actions.getCursor();
 
         // Checks that its clicking something
@@ -215,17 +192,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 && (cursor == null || !cursor.hadLittleDrag())) {
             if (UIManager.getInstance().getHoveredObject() == null) {
                 // And then select the tile
-                Player player = mPlayer.get();
-                if (player != null) {
-                    HexagonMap component = player.getMap();
-                    if (component != null) {
-                        mLastHexChosen = mHexChosen;
-                        mHexChosen = component.cursorToTile();
-                        if (mHexChosen != null) {
-                            Building building = mHexChosen.getBuilding();
-                            if (building != null)
-                                setBuildingChosen(building.getReference(Building.class));
-                        }
+                HexagonMap component = player.getMap();
+                if (component != null) {
+                    mLastHexChosen = mHexChosen;
+                    mHexChosen = component.cursorToTile();
+                    if (mHexChosen != null) {
+                        Building building = mHexChosen.getBuilding();
+                        if (building != null)
+                            setBuildingChosen(building.getReference(Building.class));
                     }
                 }
 
@@ -237,7 +211,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     if (mHexChosen.hasBuilding()) {
                         Building building = mHexChosen.getBuilding();
 
-                        if (hasPlayerGotBuilding(building.getReference(Building.class))) {
+                        if (player.isBuildingOwner(building)) {
                             mBuildingChosen = building.getReference(Building.class);
                             setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
                         }
@@ -254,7 +228,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
             } else if (GameActions.RIGHT_CLICK.isJustDeactivated()) {
-                HexagonTile tile = mPlayer.get().getMap().cursorToTile();
+                HexagonTile tile = player.getMap().cursorToTile();
                 Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
                 log.info("[DEBUG] RCL Position From Camera : " + pos);
             }
@@ -263,20 +237,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /* AURI!! This updates what the user can see */
     private void updateVisuals() {
-        if (mMapEffects == null || mPlayer == null) {
-            return;
-        }
+        
+    	Player player = getPlayer();
+        if (player == null || mMapEffects == null) return;
 
         mVisualsNeedUpdate = false;
 
-        Player player = mPlayer.get();
-
-        if (player == null) {
-            return;
-        }
-
         MapEffects effects = mMapEffects.get();
-        if (!mPlayer.get().hasLost()) {
+        if (!player.hasLost()) {
             if (Reference.isValid(mMenuDrawer)) {
                 mMenuDrawer.get().setVisibleScreen(mScreenOn);
             }
@@ -343,18 +311,40 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
         mScreenOn = newScreen;
     }
-
+    
     /**
-     * A Method to check if the player owns that buildingSelectedView or not.
-     *
-     * @param buildingToCheck The buildingSelectedView to check
-     * @return true if the player owns the buildingSelectedView, false if not
+     * Get the {@link Player} associated with this HumanPlayer.
+     * <p>
+     * If {@link #mPlayer} is not valid, it will attempt to get a valid Player.
+     * 
+     * @return The {@link Player}, or {@code null} if there is no associated Player.
      */
-    private boolean hasPlayerGotBuilding(Reference<Building> buildingToCheck) {
-        if (!Reference.isValid(buildingToCheck)) {
-            return false;
+    private Player getPlayer() {
+    	// Try getting the player if haven't already
+        if (!Reference.isValid(mPlayer)) {
+            if(!Reference.isValid(mNetworkManager)) return null;
+        	NetworkManager manager = mNetworkManager.get();
+        	
+            if(manager == null || manager.getClientManager() == null) return null;
+            Reference<Player> player =  manager.getClientManager()
+                                .getNetworkObjects()
+                                .filter(Reference::isValid)
+                                .map(Reference::get)
+                                .filter(NetworkObject::isMine)
+                                .map(NetworkObject::getGameObject)
+                                .map(go -> go.getComponent(Player.class))
+                                .filter(Objects::nonNull)
+                                .findFirst()
+                                .orElse(null);
+            
+            // Ensure player is not null (a valid Reference).
+            if(!Reference.isValid(player)) return null;
+            mPlayer = player;
         }
-
-        return mPlayer.get().getOwnedBuilding(buildingToCheck.get().getTile()) != null;
+    	
+    	return mPlayer.get();
     }
+
+    @Override
+    protected void onDestroy() {}
 }
