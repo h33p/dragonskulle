@@ -287,7 +287,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             switch (mScreenOn) {
                 case DEFAULT_SCREEN:
                     effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(null);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     effects.setDefaultHighlight(true);
@@ -302,28 +303,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         }
                     }
                     break;
-                    //                case BUILD_TILE_SCREEN:
-                    //                    effects.setDefaultHighlight(true);
-                    //                    effects.setHighlightOverlay(
-                    //                            (fx) -> highlightSelectedTile(fx,
-                    // StandardHighlightType.PLAIN));
-                    //                    break;
-                    //                case ATTACK_SCREEN:
-                    //                    effects.setDefaultHighlight(true);
-                    //                    effects.setHighlightOverlay(
-                    //                            (fx) -> highlightSelectedTile(fx,
-                    // StandardHighlightType.VALID));
-                    //                    for (Building attackableBuilding :
-                    //                            mHexChosen.getBuilding().getAttackableBuildings())
-                    // {
-                    //                        effects.highlightTile(
-                    //                                attackableBuilding.getTile(),
-                    //                                StandardHighlightType.ATTACK.asSelection());
-                    //                    }
-                    //                    break;
                 case UPGRADE_SCREEN:
                     effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(null);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case ATTACKING_SCREEN:
                     effects.setDefaultHighlight(true);
@@ -340,6 +323,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                 fx, StandardHighlightType.ATTACK_DARKER);
                                     }
                                     // TODO we need to remove the highlight of the previous selected
+                                    // this will be completed in the highlight branch
                                     // tile to its proper highlight
                                     //                            if (mLastHexChosen != null) {
                                     //                                MapEffects.HighlightSelection
