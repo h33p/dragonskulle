@@ -38,6 +38,7 @@ public class DragMovement extends Component implements IFrameUpdate, IOnAwake {
     private final Vector3f mTmpPosY = new Vector3f();
 
     private boolean mDragging;
+    private boolean mDragInvalid;
 
     @Override
     public void onAwake() {
@@ -85,14 +86,18 @@ public class DragMovement extends Component implements IFrameUpdate, IOnAwake {
                         screenPos.y(),
                         mTmpPos);
 
-        if (!mDragging
-                && cursor.hadLittleDrag()
-                && !Reference.isValid(UIManager.getInstance().getHoveredObject())) {
-            mPlanePos.set(pos);
-            mTargetHeight = height;
-            mDragging = true;
-        } else if (!Actions.TRIGGER_DRAG.isActivated()) {
+        if (!Actions.TRIGGER_DRAG.isActivated()) {
             mDragging = false;
+            mDragInvalid = false;
+        } else if (!mDragging) {
+            if (Actions.TRIGGER_DRAG.isJustActivated()
+                    && Reference.isValid(UIManager.getInstance().getHoveredObject())) {
+                mDragInvalid = true;
+            } else if (!mDragInvalid && cursor.hadLittleDrag()) {
+                mPlanePos.set(pos);
+                mTargetHeight = height;
+                mDragging = true;
+            }
         }
 
         if (!mDragging) return;
