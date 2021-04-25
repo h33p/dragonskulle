@@ -12,7 +12,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
@@ -39,6 +38,8 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
     /** The {@link NetworkManager} being used. */
     private Reference<NetworkManager> mNetworkManager;
+    /** The camera being used. */
+    private GameObject mCamera;
 
     /** Contains the pause menu. */
     private GameObject mMenuContainer;
@@ -47,17 +48,14 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /** Used to grey out the background. */
     private UIRenderable mBackground;
 
-    private GameObject mCamera;
-    
     /**
      * Create a pause menu.
      *
      * @param networkManager The {@link NetworkManager} being used.
-     * @param cameraRig 
+     * @param camera The camera {@link GameObject} being used.
      */
     public UIPauseMenu(NetworkManager networkManager, GameObject camera) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
-        
         mCamera = camera;
     }
 
@@ -85,22 +83,24 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mCurrentState = state;
     }
 
+    /** Toggle the main pause menu visibility. */
     private void togglePause() {
-    	// Either leave or enter the pause menu.
+        // Either leave or enter the pause menu.
         mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
         // Grey out the background if entering, or disable it if leaving.
         mBackground.setEnabled(mMenuContainer.isEnabled());
         // If the menu pause menu is enabled, disable the camera.
         mCamera.setEnabled(!mMenuContainer.isEnabled());
-        
+
+        // Get the human player, if they exist, and make them go to the default screen.
         for (Scene scene : Engine.getInstance().getActiveScenes()) {
-    		HumanPlayer humanPlayer = scene.getSingleton(HumanPlayer.class);
-        	if(humanPlayer == null) continue;
-        	humanPlayer.setScreenOn(Screen.DEFAULT_SCREEN);
-        	break;
-		}  
+            HumanPlayer humanPlayer = scene.getSingleton(HumanPlayer.class);
+            if (humanPlayer == null) continue;
+            humanPlayer.setScreenOn(Screen.DEFAULT_SCREEN);
+            break;
+        }
     }
-    
+
     /** Generate the contents of {@link #mMenuContainer}. */
     private void generateMenu() {
         UIButton resume =
@@ -115,8 +115,8 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                         "Settings",
                         (__, ___) -> {
                             switchToState(State.SETTINGS);
-                        });        
-        
+                        });
+
         UIButton exit =
                 new UIButton(
                         "Quit",
@@ -124,17 +124,19 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                             if (Reference.isValid(mNetworkManager)) {
                                 NetworkManager networkManager = mNetworkManager.get();
 
-                                if(networkManager.isServer()) {
-                                	if(networkManager.getServerManager() == null) return;
-                                	networkManager.getServerManager().destroy();
+                                if (networkManager.isServer()) {
+                                    // The button should close the server.
+                                    if (networkManager.getServerManager() == null) return;
+                                    networkManager.getServerManager().destroy();
                                 } else {
-                                	if(networkManager.getClientManager() == null) return;
-                                	networkManager.getClientManager().disconnect();
-                                	
-                                	// Remove the HumanPlayer singleton.
+                                    // The button should disconnect the client.
+                                    if (networkManager.getClientManager() == null) return;
+                                    networkManager.getClientManager().disconnect();
+
+                                    // Remove the HumanPlayer singleton.
                                     for (Scene scene : Engine.getInstance().getActiveScenes()) {
-                                		scene.unregisterSingleton(HumanPlayer.class);
-                            		}
+                                        scene.unregisterSingleton(HumanPlayer.class);
+                                    }
                                     log.info("Removed HumanPlayer singleton.");
                                 }
                             } else {
@@ -184,7 +186,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     public void frameUpdate(float deltaTime) {
         // If the pause screen is in the main menu and the pause key is pressed.
         if (GameActions.TOGGLE_PAUSE.isJustActivated() && mCurrentState == State.MENU) {
-        	togglePause();
+            togglePause();
         }
     }
 

@@ -45,7 +45,7 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
 
     /** The colour of the bar. */
     @Setter private Vector4f mColour = new Vector4f(0.9f);
-    
+
     private TransformUI mKnobTransform;
     private boolean mPressed = false;
     Vector3f mTmpCursorPos = new Vector3f();

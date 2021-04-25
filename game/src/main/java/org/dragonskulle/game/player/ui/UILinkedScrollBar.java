@@ -54,19 +54,17 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
         tran.setPivotOffset(0f, 1f);
         tran.setMargin(0f, -0.2f, 0.2f, 0f);
         tran.setRotationDeg(90f);
-        
+
         UISlider newSlider =
                 new UISlider(
                         (uiSlider, val) -> {
                             if (Reference.isValid(mScrollRef)) {
                                 mScrollRef.get().setTargetLerpTime(val);
                             }
-                            
-                            System.out.println("running");
                         });
         // Use a darker slider bar colour.
         newSlider.setColour(new Vector4f(0.4f));
-        
+
         mSliderReference = newSlider.getReference(UISlider.class);
         newSlider.setRoundStep(0.01f);
         newSlider.setMaxValue(1f);

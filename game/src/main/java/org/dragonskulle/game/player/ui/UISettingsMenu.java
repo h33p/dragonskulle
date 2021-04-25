@@ -25,6 +25,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
     /** Contains the action to execute when the user requests to leave the settings menu. */
     public static interface Back {
+        /** Contains the code to execute on a back action. */
         public void run();
     }
 
