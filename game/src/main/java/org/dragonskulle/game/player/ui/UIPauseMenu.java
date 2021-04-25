@@ -1,5 +1,5 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game.player;
+package org.dragonskulle.game.player.ui;
 
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;

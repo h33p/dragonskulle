@@ -1,4 +1,4 @@
-package org.dragonskulle.game.player;
+package org.dragonskulle.game.player.ui;
 
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
