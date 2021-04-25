@@ -210,7 +210,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_attack",
                 "Cancel Attack",
                 (handle, __) -> {
-                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -226,7 +225,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_sell",
                 "Cancel Sell",
                 (handle, __) -> {
-                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -242,7 +240,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_build",
                 "Cancel Build",
                 (handle, __) -> {
-                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
                 },
                 true);
@@ -259,7 +256,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "Attack Selected",
                 (handle, __) -> {
                     if (mGetHexChosen != null) {
-
                         Building defendingBuilding = mGetHexChosen.getHex().getBuilding();
 
                         if (Reference.isValid(mAttackingBuilding) && defendingBuilding != null) {

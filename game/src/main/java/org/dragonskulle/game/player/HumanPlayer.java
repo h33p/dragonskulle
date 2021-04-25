@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -292,59 +291,33 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     if (Reference.isValid(mBuildingChosen)) {
+
                         for (Building attackableBuilding :
                                 mBuildingChosen.get().getAttackableBuildings()) {
                             effects.highlightTile(
                                     attackableBuilding.getTile(),
                                     StandardHighlightType.ATTACK.asSelection());
                         }
+                        effects.setHighlightOverlay(
+                                (fx) -> {
+                                    effects.setDefaultHighlight(true);
+                                    for (Building attackableBuilding :
+                                            mBuildingChosen.get().getAttackableBuildings()) {
+                                        effects.highlightTile(
+                                                attackableBuilding.getTile(),
+                                                StandardHighlightType.ATTACK.asSelection());
+                                        highlightSelectedTile(fx, StandardHighlightType.VALID);
+                                    }
+                                });
                     }
                     break;
                 case UPGRADE_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case ATTACKING_SCREEN:
                     effects.setDefaultHighlight(true);
-                    if (Reference.isValid(mBuildingChosen)) {
-                        effects.highlightTile(
-                                mBuildingChosen.get().getTile(),
-                                StandardHighlightType.VALID.asSelection());
-                        Set<Building> attackableBuildings =
-                                mBuildingChosen.get().getAttackableBuildings();
-                        effects.setHighlightOverlay(
-                                (fx) -> {
-                                    if (attackableBuildings.contains(mBuildingChosen.get())) {
-                                        highlightSelectedTile(
-                                                fx, StandardHighlightType.ATTACK_DARKER);
-                                    }
-                                    // TODO we need to remove the highlight of the previous selected
-                                    // this will be completed in the highlight branch
-                                    // tile to its proper highlight
-                                    //                            if (mLastHexChosen != null) {
-                                    //                                MapEffects.HighlightSelection
-                                    // oldHighlight = fx.getTileHighlight(mLastHexChosen);
-                                    //                                if (oldHighlight != null) {
-                                    //
-                                    // fx.highlightTile(mBuildingChosen.get().getTile(),
-                                    // oldHighlight);
-                                    //                                } else {
-                                    //
-                                    // fx.highlightTile(mBuildingChosen.get().getTile(),
-                                    // StandardHighlightType.PLAIN.asSelection());
-                                    //                                }
-                                    //                            }
-                                });
-                        for (Building attackableBuilding : attackableBuildings) {
-                            effects.highlightTile(
-                                    attackableBuilding.getTile(),
-                                    StandardHighlightType.ATTACK.asSelection());
-                        }
-                    }
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
                     break;
                 case SELLING_SCREEN:
                     break;
@@ -352,11 +325,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    if (Reference.isValid(mBuildingChosen)) {
-                        for (HexagonTile tile : mBuildingChosen.get().getBuildableTiles()) {
-                            effects.highlightTile(tile, StandardHighlightType.BUILD.asSelection());
-                        }
-                    }
+                    mPlayer.get()
+                            .getOwnedBuildingsAsStream()
+                            .filter(Reference::isValid)
+                            .map(Reference::get)
+                            .forEach(
+                                    b -> {
+                                        for (HexagonTile buildableTile : b.getBuildableTiles()) {
+                                            effects.highlightTile(
+                                                    buildableTile,
+                                                    StandardHighlightType.BUILD.asSelection());
+                                        }
+                                    });
+
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
