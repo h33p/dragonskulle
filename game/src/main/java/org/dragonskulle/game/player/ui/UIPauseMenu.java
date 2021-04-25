@@ -85,12 +85,21 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
     /** Toggle the main pause menu visibility. */
     private void togglePause() {
+    	setPaused(!mMenuContainer.isEnabled());
+    }
+
+    /**
+     * Set whether the game is paused.
+     * 
+     * @param pause Whether to enter the pause menu ({@code true}) or leave it ({@code false}).
+     */
+    private void setPaused(boolean pause) {
         // Either leave or enter the pause menu.
-        mMenuContainer.setEnabled(!mMenuContainer.isEnabled());
+        mMenuContainer.setEnabled(pause);
         // Grey out the background if entering, or disable it if leaving.
-        mBackground.setEnabled(mMenuContainer.isEnabled());
+        mBackground.setEnabled(pause);
         // If the menu pause menu is enabled, disable the camera.
-        mCamera.setEnabled(!mMenuContainer.isEnabled());
+        mCamera.setEnabled(!pause);
 
         // Get the human player, if they exist, and make them go to the default screen.
         for (Scene scene : Engine.getInstance().getActiveScenes()) {
@@ -107,7 +116,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                 new UIButton(
                         "Resume",
                         (__, ___) -> {
-                            togglePause();
+                        	setPaused(false);
                         });
 
         UIButton settings =
@@ -151,14 +160,13 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     @Override
     public void onAwake() {
         // Create the GameObject that will hold all of the menu contents.
-        mMenuContainer = new GameObject("pause_container", false, new TransformUI());
+        mMenuContainer = new GameObject("pause_container", new TransformUI());
         getGameObject().addChild(mMenuContainer);
 
         // Create a settings menu.
         mSettingsContainer =
                 new GameObject(
                         "settings_container",
-                        false,
                         new TransformUI(),
                         (settings) -> {
                             settings.addComponent(
