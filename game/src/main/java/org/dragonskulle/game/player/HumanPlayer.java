@@ -44,7 +44,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // All screens to be used
     private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
-    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
     @Getter @Setter private HexagonTile mHexChosen;

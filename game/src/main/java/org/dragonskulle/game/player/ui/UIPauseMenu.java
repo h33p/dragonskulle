@@ -97,13 +97,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     		HumanPlayer humanPlayer = scene.getSingleton(HumanPlayer.class);
         	if(humanPlayer == null) continue;
         	humanPlayer.setScreenOn(Screen.DEFAULT_SCREEN);
-        	
-        	//Reference<UIMenuLeftDrawer> menuDraw = humanPlayer.getMenuDrawer();
-        	//if(!Reference.isValid(menuDraw)) continue;
-        	//menuDraw.get().setEnabled(!mMenuContainer.isEnabled());
-        	
-        	//humanPlayer.setEnabled(!mMenuContainer.isEnabled());
-        	System.out.println("Success.");
+        	break;
 		}  
     }
     
@@ -121,8 +115,8 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                         "Settings",
                         (__, ___) -> {
                             switchToState(State.SETTINGS);
-                        });
-
+                        });        
+        
         UIButton exit =
                 new UIButton(
                         "Quit",
@@ -130,10 +124,18 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                             if (Reference.isValid(mNetworkManager)) {
                                 NetworkManager networkManager = mNetworkManager.get();
 
-                                if (networkManager.getClientManager() != null) {
-                                    networkManager.getClientManager().disconnect();
-                                } else if (networkManager.getServerManager() != null) {
-                                    networkManager.getServerManager().destroy();
+                                if(networkManager.isServer()) {
+                                	if(networkManager.getServerManager() == null) return;
+                                	networkManager.getServerManager().destroy();
+                                } else {
+                                	if(networkManager.getClientManager() == null) return;
+                                	networkManager.getClientManager().disconnect();
+                                	
+                                	// Remove the HumanPlayer singleton.
+                                    for (Scene scene : Engine.getInstance().getActiveScenes()) {
+                                		scene.unregisterSingleton(HumanPlayer.class);
+                            		}
+                                    log.info("Removed HumanPlayer singleton.");
                                 }
                             } else {
                                 log.severe("Unable to get network manager.");

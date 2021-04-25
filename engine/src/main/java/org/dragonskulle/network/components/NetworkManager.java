@@ -279,8 +279,8 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     @Override
-    protected void onDestroy() {
-        if (mServerManager != null) {
+    protected void onDestroy() {    	
+    	if (mServerManager != null) {
             mServerManager.destroy();
         }
         if (mClientManager != null) {
