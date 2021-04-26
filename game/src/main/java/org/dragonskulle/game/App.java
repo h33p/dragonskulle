@@ -51,6 +51,7 @@ public class App implements NativeResource {
 
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
+    private final Resource<GLTF> mBuildingTemplates = GLTF.getResource("building_templates");
 
     public static final float MENU_BASEWIDTH = 0.2f;
 
@@ -191,6 +192,15 @@ public class App implements NativeResource {
         templates.addAllObjects(
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
+
+        for (GameObject obj : mBuildingTemplates.get().getDefaultScene().getGameObjects()) {
+            log.warning(obj.getName());
+        }
+
+        templates.addAllObjects(
+                mBuildingTemplates.get().getDefaultScene().getGameObjects().stream()
+                        .toArray(GameObject[]::new));
+
 
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, App::createMainScene)
