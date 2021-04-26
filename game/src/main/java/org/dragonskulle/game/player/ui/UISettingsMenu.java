@@ -8,9 +8,9 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.game.Settings;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.input.Cursor;
+import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIDropDown;
@@ -264,7 +264,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                                 },
                                 "Windowed",
                                 "Fullscreen"));
-        List<String> cursorScales = Arrays.asList("0.1f", "0.2f", "0.3f", "0.4f","1f");
+        List<String> cursorScales = Arrays.asList("0.1f", "0.2f", "0.3f", "0.4f", "1f");
         String[] cursorScalesArray = cursorScales.toArray(new String[cursorScales.size()]);
         IUIBuildHandler cursorScale =
                 uiManager.buildWithChildrenRightOf(
@@ -275,7 +275,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                                     Settings instance = Settings.getInstance();
                                     try {
                                         instance.saveValue("cursorScale", drop.getSelectedOption());
-                                        Cursor.setCustomCursor(Engine.getInstance().getGLFWState().getWindow(),Integer.parseInt(drop.getSelectedOption()));
+                                        Cursor.setCustomCursor(Engine.getInstance().getGLFWState().getWindow(), Float.parseFloat(drop.getSelectedOption()));
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }

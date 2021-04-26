@@ -28,6 +28,7 @@ import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIInputBox;
@@ -458,7 +459,6 @@ public class App implements NativeResource {
 
         do {
             sReload = false;
-            Settings.getInstance().loadSettings();
             try (App app = new App()) {
                 app.run();
             }
