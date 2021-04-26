@@ -301,7 +301,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(
                             (fx) -> {
                                 highlightSelectedTile(fx, StandardHighlightType.VALID);
-                                highlightAttackableTiles(fx, StandardHighlightType.PLACE);
+                               // highlightAttackableTiles(fx, StandardHighlightType.PLACE);
                             });
                     break;
                 case ATTACK_SCREEN:
@@ -330,8 +330,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> {
-                                highlightSelectedTile(fx, StandardHighlightType.VALID);
                                 highlightBuildableTiles(fx, StandardHighlightType.PLACE );
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
                             }
                     );
                     break;
@@ -370,6 +370,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         attackableBuildings.forEach(
                 (building) -> {
                     HexagonTile tile = building.getTile();
+                    if(tile.equals(mHexChosen)) return;
                     fx.highlightTile(tile, highlight.asSelection());
                 }
         );
