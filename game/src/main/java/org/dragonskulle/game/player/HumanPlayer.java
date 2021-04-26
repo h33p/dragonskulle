@@ -329,12 +329,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                 highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
                                 highlightSelectedTile(fx, StandardHighlightType.VALID);
                             });
-                    for (Building attackableBuilding :
-                            mHexChosen.getBuilding().getAttackableBuildings()) {
-                        effects.highlightTile(
-                                attackableBuilding.getTile(),
-                                StandardHighlightType.ATTACK.asSelection());
-                    }
                     break;
                 case SELLING_SCREEN:
                     break;
@@ -373,17 +367,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
-//        Building attackingBuilding = mHexChosen.getBuilding();
-//        Set<Building> attackableBuildings = attackingBuilding.getAttackableBuildings();
-//
-//        attackableBuildings.forEach(
-//                (building) -> {
-//                    HexagonTile tile = building.getTile();
-//                    fx.highlightTile(tile, highlight.asSelection());
-//                }
-//        );
-        for (Building attackableBuilding : mHexChosen.getBuilding().getAttackableBuildings()) {
-            fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+        if (Reference.isValid(mBuildingChosen)){
+            for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
+                fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+            }
         }
     }
 
