@@ -285,40 +285,25 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             switch (mScreenOn) {
                 case DEFAULT_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(null);
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case BUILDING_SELECTED_SCREEN:
-                    effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    break;
-                    //                case BUILD_TILE_SCREEN:
-                    //                    effects.setDefaultHighlight(true);
-                    //                    effects.setHighlightOverlay(
-                    //                            (fx) -> highlightSelectedTile(fx,
-                    // StandardHighlightType.PLAIN));
-                    //                    break;
-                case ATTACK_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    for (Building attackableBuilding :
-                            mHexChosen.getBuilding().getAttackableBuildings()) {
-                        effects.highlightTile(
-                                attackableBuilding.getTile(),
-                                StandardHighlightType.ATTACK.asSelection());
-                    }
                     break;
                 case UPGRADE_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(null);
                     break;
                 case ATTACKING_SCREEN:
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
                     break;
                 case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);

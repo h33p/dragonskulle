@@ -17,6 +17,7 @@ import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
@@ -92,6 +93,11 @@ public class Engine {
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
         Settings.getInstance().loadSettings();
+
+        UPnP.initialise();
+        log.info(UPnP.getExternalIPAddress());
+        UPnP.addPortMapping(17569, "TCP");
+
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
@@ -551,6 +557,7 @@ public class Engine {
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
 
+        UPnP.deleteAllMappings();
         destroyAllObjects();
         mGLFWState.free();
     }
