@@ -493,25 +493,14 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @return An array of {@code Node}s which have the {@code Node} to start from and go to
      */
     private ImportantNodes findBuilding(Graph graph, Player opponentPlayer, HexagonTile target) {
-        Integer[] nodesInGraph = graph.getNodes();
 
         ImportantNodes buildings = new ImportantNodes();
         // Go through all nodes to find the capital
-        for (int nodeNumber : nodesInGraph) {
-            Node node = graph.getNode(nodeNumber);
 
-            HexagonTile tile = node.getHexTile().get();
+        buildings.goalNode = mGraph.getNode(target);
 
-            if (tile.hasBuilding()) {
-                if (tile.getQ() == target.getQ()
-                        && tile.getQ() == target.getQ()
-                        && opponentPlayer.isClaimingTile(tile)) {
-                    buildings.goalNode = node;
-                } else if (tile.getBuilding().isCapital() && getPlayer().isClaimingTile(tile)) {
-                    buildings.startNode = node;
-                }
-            }
-        }
+        buildings.startNode = mGraph.getNode(getPlayer().getCapital().getTile());
+
         return buildings;
     }
 

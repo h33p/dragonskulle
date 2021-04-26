@@ -4,7 +4,6 @@ package org.dragonskulle.game.player.ai.algorithms.graphs;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
@@ -24,9 +23,6 @@ public class Graph {
     /** The hash map which will hold the node id to the Node */
     protected HashMap<Integer, Node> mGraph;
 
-    /** The next node number to be used */
-    private int mCurrentNodeId;
-
     /** The {@code HexagonMap} which is used */
     private Reference<HexagonMap> mMap;
 
@@ -40,10 +36,8 @@ public class Graph {
 
         initialise(map, target);
 
-        mCurrentNodeId = 0;
         mGraph = new HashMap<Integer, Node>();
         map.getAllTiles().forEach((tile) -> convertToNode(tile, target));
-        mCurrentNodeId = 0;
         map.getAllTiles().forEach(this::addConnections);
     }
 
@@ -58,9 +52,7 @@ public class Graph {
 
         initialise(map, target);
 
-        mCurrentNodeId = 0;
         aimer.getViewableTiles().forEach((tile) -> convertToNode(tile, target));
-        mCurrentNodeId = 0;
         aimer.getViewableTiles().forEach(this::addConnections);
     }
 
@@ -87,12 +79,14 @@ public class Graph {
         if (tile.getTileType() != TileType.LAND) {
             return;
         }
-        log.info("Node num: " + mCurrentNodeId);
 
-        addNode(mCurrentNodeId, tile);
+        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
+        // log.info("Node num: " + nodeNum);
+        log.severe("Node number: " + nodeNum + " Q: " + tile.getQ() + " R: " + tile.getR());
+
+        addNode(nodeNum, tile);
         int heuristic = tile.distTo(target.getQ(), target.getR());
-        setNodeHeuristic(mCurrentNodeId, heuristic);
-        mCurrentNodeId++;
+        setNodeHeuristic(nodeNum, heuristic);
     }
 
     /**
@@ -104,7 +98,9 @@ public class Graph {
         if (tile.getTileType() != TileType.LAND) {
             return;
         }
-        log.info("Node num: " + mCurrentNodeId);
+
+        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
+        log.info("Node num: " + nodeNum);
         ArrayList<HexagonTile> neighbourTilesList = new ArrayList<HexagonTile>();
         if (Reference.isInvalid(mMap)) {
             return;
@@ -113,15 +109,22 @@ public class Graph {
                 mMap.get().getTilesInRadius(tile, 1, false, neighbourTilesList);
 
         for (HexagonTile tileNeighbour : neighbourTiles) {
-            for (Node node : mGraph.values()) {
-                if (tileNeighbour.getQ() == node.getHexTile().get().getQ()
-                        && tileNeighbour.getR() == node.getHexTile().get().getR()) {
 
-                    addConnection(mCurrentNodeId, node.getNodeId(), 1); // Weight set to 1
-                }
+            // TODO Check if in viewable tiles!
+            if (tileNeighbour.getTileType() != TileType.LAND) {
+                continue;
+            }
+            Node node = getNode(tileNeighbour);
+            if (node == null) {
+                // Assuming I cannot see the tile
+                continue;
+            }
+            if (tileNeighbour.getQ() == node.getHexTile().get().getQ()
+                    && tileNeighbour.getR() == node.getHexTile().get().getR()) {
+
+                addConnection(nodeNum, node.getNodeId(), 1); // Weight set to 1
             }
         }
-        mCurrentNodeId++;
     }
 
     /**
@@ -196,23 +199,6 @@ public class Graph {
     }
 
     /**
-     * Will return all the node numbers in the mGraph
-     *
-     * @return An integer array which has all the Nodes used
-     */
-    public Integer[] getNodes() {
-
-        ArrayList<Integer> nodes = new ArrayList<Integer>();
-
-        for (Map.Entry<Integer, Node> entry : mGraph.entrySet()) {
-            Integer node = entry.getKey();
-            nodes.add(node);
-        }
-
-        return nodes.toArray(new Integer[0]);
-    }
-
-    /**
      * Returns a node
      *
      * @param node The node to find
@@ -220,5 +206,10 @@ public class Graph {
      */
     public Node getNode(Integer node) {
         return mGraph.get(node);
+    }
+
+    public Node getNode(HexagonTile tile) {
+        int targetNodeHash = (tile.getQ() * mMap.get().getSize()) + tile.getR();
+        return getNode(targetNodeHash);
     }
 }
