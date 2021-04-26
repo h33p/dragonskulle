@@ -12,11 +12,12 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
-import javafx.util.Pair;
 import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.extern.java.Log;
 import org.w3c.dom.Document;
@@ -44,7 +45,7 @@ public class UPnP {
 
     private static final String SERVICE_NAME = "urn:schemas-upnp-org:service:WANIPConnection:1";
 
-    private static final ArrayList<Pair<Integer, String>> sMappings = new ArrayList<>();
+    private static final Map<Integer, Collection<String>> sMappings = new HashMap<>();
     private static Inet4Address sLocal;
     private static URL sControlURL;
     private static boolean sInitialised;
@@ -160,7 +161,7 @@ public class UPnP {
                         "0");
 
         if (out != null) {
-            sMappings.add(new Pair<>(port, protocol));
+            storePortMapping(port, protocol);
             log.info("Added port mapping " + protocol + " : " + port);
             return true;
         } else {
@@ -192,7 +193,7 @@ public class UPnP {
                         protocol);
 
         if (out != null) {
-            sMappings.removeIf(mapping -> mapping.equals(new Pair<>(port, protocol)));
+            removePortMapping(port, protocol);
             log.info("Deleted port mapping " + protocol + " : " + port);
             return true;
         } else {
@@ -203,10 +204,44 @@ public class UPnP {
 
     /** Delete all port mappings that were added at runtime */
     public static void deleteAllMappings() {
+        Set<Map.Entry<Integer, Collection<String>>> entries = sMappings.entrySet();
+        for (Map.Entry<Integer, Collection<String>> entry : entries) {
+            for (String protocol : entry.getValue()) {
+                deletePortMapping(entry.getKey(), protocol);
+            }
+        }
+    }
 
-        ArrayList<Pair<Integer, String>> mappings = new ArrayList<>(sMappings);
-        for (Pair<Integer, String> mapping : mappings) {
-            deletePortMapping(mapping.getKey(), mapping.getValue());
+    /**
+     * Store a new port mapping in the map of mappings.
+     *
+     * @param port Port of the new mapping
+     * @param protocol Protocol of the new mapping
+     */
+    private static void storePortMapping(Integer port, String protocol) {
+        if (sMappings.containsKey(port)) {
+            sMappings.get(port).add(protocol);
+        } else {
+            ArrayList<String> values = new ArrayList<>();
+            values.add(protocol);
+            sMappings.put(port, values);
+        }
+    }
+
+    /**
+     * Remove an existing port mapping from the map of mappings.
+     *
+     * @param port Port of the mapping to remove
+     * @param protocol Protocol of the mapping to remove
+     */
+    private static void removePortMapping(Integer port, String protocol) {
+        if (sMappings.containsKey(port)) {
+            Collection<String> values = sMappings.get(port);
+            if (values.size() == 1) {
+                sMappings.remove(port);
+            } else {
+                values.remove(protocol);
+            }
         }
     }
 
