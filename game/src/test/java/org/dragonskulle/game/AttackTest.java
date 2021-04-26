@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * This class will test the attack component and what happens when you upgrade a building
+ * This class will test the attack component and what happens when you upgrade a building.
  *
  * @author DragonSkulle
  */
@@ -29,7 +29,7 @@ public class AttackTest {
     }
 
     /**
-     * This will do the actual attacking
+     * This will do the actual attacking.
      *
      * @param attacker The attacking {@link Building}
      * @param defender The defending {@link Building}
@@ -48,7 +48,7 @@ public class AttackTest {
         return wins / iterations;
     }
 
-    /** This method tests a basic attack done by 2 buildings */
+    /** This method tests a basic attack done by 2 buildings. */
     @Test
     public void basicAttack() {
         float percentageOfWins = runAttack(mAttacker, mDefender);
@@ -58,7 +58,7 @@ public class AttackTest {
 
     /**
      * This will test when an attacker is max level and a defender is lowest level that attacker
-     * wins on average more
+     * wins on average more.
      */
     @Test
     public void attackerIsMax() {
@@ -74,7 +74,7 @@ public class AttackTest {
     }
 
     /**
-     * This will test that when a defender is max level and attacker isn't that defender wins most
+     * This will test that when a defender is max level and attacker isn't that defender wins most.
      */
     @Test
     public void defenderIsMax() {
@@ -91,7 +91,7 @@ public class AttackTest {
 
     /**
      * This will test that the amount of wins for attacking is at 50% when both buildings levels are
-     * the same
+     * the same.
      */
     @Test
     public void equalAttackDefence() {
@@ -115,7 +115,7 @@ public class AttackTest {
         }
     }
 
-    /** This is a small test when buildings are at different levels */
+    /** This is a small test when buildings are at different levels. */
     @Test
     public void differentLevels() {
         SyncStat statAttacker = mAttacker.getStat(StatType.ATTACK);
