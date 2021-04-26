@@ -148,7 +148,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             }
                         });
         IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
-
+        
         // Volume:
         UITextRect sliderTitle = new UITextRect("Volume:");
         UISlider slider =
@@ -166,9 +166,58 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         });
 
         // Combined:
-        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, mute, volume, back);
+        //uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, mute, volume, back);
+        
+        final float startY = 0.3f;
+        final float startX = 0f;
+        final float endX = 1f;
+        
+        mAudioContainer.buildChild(
+                "ui_child",
+                new TransformUI(true),
+                (child) -> {
+                    TransformUI transform = child.getTransform(TransformUI.class);
+                    transform.setParentAnchor(startX, generateYPosition(0, startY), endX, generateYPosition(0, startY));
+                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
+                    title.handleUIBuild(child);
+                });
+        
+        mAudioContainer.buildChild(
+                "ui_child",
+                new TransformUI(true),
+                (child) -> {
+                    TransformUI transform = child.getTransform(TransformUI.class);
+                    transform.setParentAnchor(-0.15f, generateYPosition(1, startY), endX, generateYPosition(1, startY));
+                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
+                    mute.handleUIBuild(child);
+                });
+        
+        mAudioContainer.buildChild(
+                "ui_child",
+                new TransformUI(true),
+                (child) -> {
+                    TransformUI transform = child.getTransform(TransformUI.class);
+                    transform.setParentAnchor(-0.15f, generateYPosition(2, startY), endX, generateYPosition(2, startY));
+                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
+                    volume.handleUIBuild(child);
+                });
+        
+        mAudioContainer.buildChild(
+                "ui_child",
+                new TransformUI(true),
+                (child) -> {
+                    TransformUI transform = child.getTransform(TransformUI.class);
+                    transform.setParentAnchor(startX, generateYPosition(3, startY), endX, generateYPosition(3, startY));
+                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
+                    back.handleUIBuild(child);
+                });
     }
 
+    private float generateYPosition(int count, float startY) {
+    	final UIManager uiManager = UIManager.getInstance();
+    	return count * (uiManager.getAppearance().getVerticalUIElemHeight() + uiManager.getAppearance().getVerticalUIElemGap()) + startY;
+    }
+    
     /** Generate the contents of {@link #mGraphicsContainer}. */
     private void generateGraphics() {
         final UIManager uiManager = UIManager.getInstance();
