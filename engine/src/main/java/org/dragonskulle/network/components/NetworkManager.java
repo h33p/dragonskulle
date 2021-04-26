@@ -149,7 +149,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      * @param port network port to connect to
      * @param resultHandler connection result callback
      */
-    public void createClient(String ip, int port, IConnectionResultEvent resultHandler, IHostStartedGameEvent startHandler) {
+    public void createClient(
+            String ip,
+            int port,
+            IConnectionResultEvent resultHandler,
+            IHostStartedGameEvent startHandler) {
         if (mClientManager == null && mServerManager == null) {
             mClientManager = new ClientNetworkManager(this, ip, port, resultHandler, startHandler);
         }

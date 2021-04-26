@@ -235,7 +235,7 @@ public class ServerNetworkManager {
 
         for (ServerClient c : mServer.getClients()) {
             try {
-                c.sendBytes(new byte[] { NetworkConfig.Codes.MESSAGE_HOST_STARTED });
+                c.sendBytes(new byte[] {NetworkConfig.Codes.MESSAGE_HOST_STARTED});
             } catch (IOException e) {
                 e.printStackTrace();
                 c.closeSocket();

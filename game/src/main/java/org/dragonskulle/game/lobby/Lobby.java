@@ -4,7 +4,6 @@ package org.dragonskulle.game.lobby;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -263,7 +262,10 @@ public class Lobby extends Component implements IFrameUpdate {
                                     LobbyAPI.addNewHost(ip, PORT, this::handleAddNewHost);
                                     mNetworkManager
                                             .get()
-                                            .createServer(PORT, this::onClientLoaded, this::onGameStarted);
+                                            .createServer(
+                                                    PORT,
+                                                    this::onClientLoaded,
+                                                    this::onGameStarted);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -272,7 +274,10 @@ public class Lobby extends Component implements IFrameUpdate {
                                 (__, ___) -> {
                                     mNetworkManager
                                             .get()
-                                            .createServer(PORT, this::onClientLoaded, this::onGameStarted);
+                                            .createServer(
+                                                    PORT,
+                                                    this::onClientLoaded,
+                                                    this::onGameStarted);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -297,13 +302,13 @@ public class Lobby extends Component implements IFrameUpdate {
         mHosts.clear();
         JSONParser parser = new JSONParser();
         try {
-            JSONArray array = (JSONArray)parser.parse(response);
+            JSONArray array = (JSONArray) parser.parse(response);
 
             for (int i = 0; i < array.size(); i++) {
-                JSONObject obj = (JSONObject)array.get(i);
+                JSONObject obj = (JSONObject) array.get(i);
 
-                String ip = (String)obj.get("address");
-                int port = Math.toIntExact((Long)obj.get("port"));
+                String ip = (String) obj.get("address");
+                int port = Math.toIntExact((Long) obj.get("port"));
 
                 log.info("New host: " + ip + ":" + port);
                 mHosts.add(new InetSocketAddress(ip, port));
@@ -320,8 +325,8 @@ public class Lobby extends Component implements IFrameUpdate {
         log.info("Add new host returned:\n\t" + response);
         JSONParser parser = new JSONParser();
         try {
-            JSONObject obj = (JSONObject)parser.parse(response);
-            lobbyID = (String)obj.get("_id");
+            JSONObject obj = (JSONObject) parser.parse(response);
+            lobbyID = (String) obj.get("_id");
             log.info(lobbyID);
         } catch (ParseException e) {
             e.printStackTrace();

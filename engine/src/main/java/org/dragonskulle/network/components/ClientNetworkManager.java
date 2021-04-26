@@ -171,7 +171,8 @@ public class ClientNetworkManager {
     /** Current connection state. */
     @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener). */
-    private final AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
+    private final AtomicReference<ConnectionState> mNextConnectionState =
+            new AtomicReference<>(null);
     /** Callback for connection result processing. */
     private final NetworkManager.IConnectionResultEvent mConnectionHandler;
     /** Callback for when host has started game. */
@@ -380,7 +381,7 @@ public class ClientNetworkManager {
     private void joinGame() {
         Engine engine = Engine.getInstance();
 
-        //mManager.createGameScene(false);
+        // mManager.createGameScene(false);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
@@ -389,7 +390,7 @@ public class ClientNetworkManager {
         }
 
         mConnectionState = ConnectionState.JOINED_GAME;
-        mClient.sendBytes(new byte[] { NetworkConfig.Codes.MESSAGE_CLIENT_LOADED });
+        mClient.sendBytes(new byte[] {NetworkConfig.Codes.MESSAGE_CLIENT_LOADED});
     }
 
     /**
