@@ -221,9 +221,22 @@ public class App implements NativeResource {
                             handle.addComponent(networkManager.get());
                         });
 
-        GameObject audio =
+        GameObject audioObject = new GameObject("menu audio",
+	        		(audio) -> {
+	        			AudioSource bgm = new AudioSource();
+                        bgm.setVolume(0.1f);
+                        bgm.setLooping(true);
+                        bgm.playSound(BGM_ID);
+
+                        audio.addComponent(bgm);
+                        audio.addComponent(new AudioListener());
+	        		}
+        		);
+
+        // TODO : Remove
+        GameObject debugMute =
                 new GameObject(
-                        "audio",
+                        "debug mute",
                         (audioRoot) -> {
                             audioRoot.buildChild(
                                     "muteUI",
@@ -240,17 +253,10 @@ public class App implements NativeResource {
                                                             AudioManager.getInstance()
                                                                     .toggleMasterMute();
                                                         }));
-                                    });
-
-                            AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.1f);
-                            bgm.setLooping(true);
-                            bgm.playSound(BGM_ID);
-
-                            audioRoot.addComponent(bgm);
-                            audioRoot.addComponent(new AudioListener());
+                                    });                            
                         });
-
+        mainMenu.addRootObject(debugMute);
+        
         GameObject gameTitle =
                 new GameObject(
                         "title",
@@ -430,7 +436,7 @@ public class App implements NativeResource {
 
         mainMenu.addRootObject(networkManagerObject);
 
-        mainMenu.addRootObject(audio);
+        mainMenu.addRootObject(audioObject);
         mainMenu.addRootObject(gameTitle);
 
         mainMenu.addRootObject(mainUi);
