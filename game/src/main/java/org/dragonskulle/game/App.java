@@ -116,15 +116,6 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
-
-                                                    AudioListener listener = new AudioListener();
-                                                    camera.addComponent(listener);
-
-                                                    AudioSource bgm = new AudioSource();
-                                                    bgm.setVolume(0.1f);
-                                                    bgm.setLooping(true);
-                                                    bgm.playSound(BGM_ID);
-                                                    camera.addComponent(bgm);
                                                 });
                                     });
                         });
@@ -132,6 +123,22 @@ public class App implements NativeResource {
         GameObject camera = GameObject.instantiate(cameraRig);
         mainScene.addRootObject(camera);
 
+        GameObject audioObject =
+                new GameObject(
+                        "game_audio",
+                        (audio) -> {
+                        	AudioListener listener = new AudioListener();
+                        	audio.addComponent(listener);
+
+                            AudioSource bgm = new AudioSource();
+                            bgm.setVolume(0.1f);
+                            bgm.setLooping(true);
+                            bgm.playSound(BGM_ID);
+                            audio.addComponent(bgm);
+                        }
+        );
+        mainScene.addRootObject(audioObject);
+        
         // Pause menu
         GameObject pauseMenu =
                 new GameObject(
