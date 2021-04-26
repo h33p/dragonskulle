@@ -235,8 +235,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
                 return Integer.MAX_VALUE;
             }
             nextNode = mPath.pop();
-            if (Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
+            if (Reference.isInvalid(mGraph.getNode(nextNode).getHexTile())) {
                 nextTile = null;
+                return Integer.MAX_VALUE;
             } else {
                 nextTile = mGraph.getNode(nextNode).getHexTile().get();
             }
