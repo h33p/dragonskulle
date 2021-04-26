@@ -72,7 +72,7 @@ public class Settings {
     }
 
     /**
-     * Saves a key value pair in the settings. If {@link saveFile} is true we will also save to
+     * Saves a key value pair in the settings. If {@code saveFile} is true we will also save to
      * disk.
      *
      * @param <T> the type of the value to be saved
