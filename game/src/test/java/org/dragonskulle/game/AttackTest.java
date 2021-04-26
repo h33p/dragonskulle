@@ -50,7 +50,7 @@ public class AttackTest {
 
     /** This method tests a basic attack done by 2 buildings */
     @Test
-    public void basicAttackTest() {
+    public void basicAttack() {
         float percentageOfWins = runAttack(mAttacker, mDefender);
 
         assertEquals(0.5f, percentageOfWins, 0.1f);
@@ -61,7 +61,7 @@ public class AttackTest {
      * wins on average more
      */
     @Test
-    public void attackerMaxTest() {
+    public void attackerIsMax() {
         SyncStat stat = mAttacker.getStat(StatType.ATTACK);
 
         stat.set(SyncStat.LEVEL_MAX);
@@ -77,7 +77,7 @@ public class AttackTest {
      * This will test that when a defender is max level and attacker isn't that defender wins most
      */
     @Test
-    public void defenderMaxTest() {
+    public void defenderIsMax() {
         SyncStat stat = mDefender.getStat(StatType.DEFENCE);
 
         stat.set(SyncStat.LEVEL_MAX);
@@ -94,7 +94,7 @@ public class AttackTest {
      * the same
      */
     @Test
-    public void bothEqualTest() {
+    public void equalAttackDefence() {
         float percentageOfWins = runAttack(mAttacker, mDefender);
 
         assertEquals(0.5f, percentageOfWins, 0.1f);
@@ -117,7 +117,7 @@ public class AttackTest {
 
     /** This is a small test when buildings are at different levels */
     @Test
-    public void differentLevelsTest() {
+    public void differentLevels() {
         SyncStat statAttacker = mAttacker.getStat(StatType.ATTACK);
         SyncStat statDefender = mDefender.getStat(StatType.DEFENCE);
 
