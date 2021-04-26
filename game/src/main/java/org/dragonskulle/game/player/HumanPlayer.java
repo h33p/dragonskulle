@@ -49,7 +49,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // Data which is needed on different screens
     @Getter @Setter private HexagonTile mHexChosen;
 
-    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter @Setter private Reference<Building> mBuildingChosen;
 
     // The player
     private Reference<Player> mPlayer;
@@ -60,12 +60,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     // Visual effects
     private Reference<MapEffects> mMapEffects;
-    private boolean mVisualsNeedUpdate;
+    
     private Reference<UITokenCounter> mTokenCounter;
     private HexagonTile mLastHexChosen;
 
     private boolean mMovedCameraToCapital = false;
 
+    private boolean mVisualsNeedUpdate = true;
+    
     /**
      * Create a {@link HumanPlayer}.
      *
@@ -120,6 +122,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     		);
         getGameObject().addChild(menuObject);
         
+        // Ensure that the visuals will be updated.
         mVisualsNeedUpdate = true;
     }
 
@@ -131,7 +134,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (!mMovedCameraToCapital) {
             TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
-
             Building capital = player.getCapital();
 
             if (targetRig != null && capital != null) {
@@ -141,13 +143,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
 
         if (player.hasLost()) {
-            log.warning("You've lost your capital");
+            log.warning("You've lost your capital.");
             setEnabled(false);
-            return;
-        }
-
-        if (player.getNumberOfOwnedBuildings() == 0) {
-            log.warning("You have 0 buildings -- should be sorted in mo");
             return;
         }
         
@@ -164,71 +161,58 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void frameUpdate(float deltaTime) {
-        // Choose which screen to show
-
-        if (Reference.isValid(mMenuDrawer)) {
-            mMenuDrawer.get().setVisibleScreen(mScreenOn);
-        }
-
-        mapScreen();
+    	detectTileSelection();
 
         if (mVisualsNeedUpdate) {
             updateVisuals();
         }
     }
 
-    /** This will choose what to do when the user can see the full map. */
-    private void mapScreen() {
-
+    /**
+     * If the user selects a tile, swap to the relevant screen.
+     */
+    private void detectTileSelection() {
     	Player player = getPlayer();
-    	if(player == null) return;
-    	
-        Cursor cursor = Actions.getCursor();
+    	Cursor cursor = Actions.getCursor();
+    	if(player == null || cursor == null) return;        
 
-        // Checks that its clicking something
-        if (GameActions.LEFT_CLICK.isJustDeactivated()
-                && (cursor == null || !cursor.hadLittleDrag())) {
-            if (UIManager.getInstance().getHoveredObject() == null) {
-                // And then select the tile
-                HexagonMap component = player.getMap();
-                if (component != null) {
-                    mLastHexChosen = mHexChosen;
-                    mHexChosen = component.cursorToTile();
-                    if (mHexChosen != null) {
-                        Building building = mHexChosen.getBuilding();
-                        if (building != null)
-                            setBuildingChosen(building.getReference(Building.class));
-                    }
-                }
+        boolean click = GameActions.LEFT_CLICK.isJustDeactivated() && !cursor.hadLittleDrag();
+        // If no clicking is occurring, exit.
+        if(!click) return;
 
-                if (mScreenOn == Screen.ATTACKING_SCREEN) {
-                    return;
-                }
-                log.fine("Human:Got the Hexagon to enter");
-                if (mHexChosen != null) {
-                    if (mHexChosen.hasBuilding()) {
-                        Building building = mHexChosen.getBuilding();
+        // If the mouse is over the UI, exit.
+        if(UIManager.getInstance().getHoveredObject() != null) return;
 
-                        if (player.isBuildingOwner(building)) {
-                            mBuildingChosen = building.getReference(Building.class);
-                            setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
-                        }
-                    } else {
-                        if (mHexChosen.isBuildable(player)) { // If you can build
-                            // If you can build
-                            log.info("Human:Change Screen");
-                            setScreenOn(Screen.PLACING_NEW_BUILDING);
-                        } else {
-                            log.info("Human:Cannot build");
-                            mBuildingChosen = null;
-                            setScreenOn(Screen.DEFAULT_SCREEN);
-                        }
-                    }
-                }
-            } else if (GameActions.RIGHT_CLICK.isJustDeactivated()) {
-                HexagonTile tile = player.getMap().cursorToTile();
-                Vector3f pos = new Vector3f(tile.getQ(), tile.getR(), tile.getS());
-                log.info("[DEBUG] RCL Position From Camera : " + pos);
+        // Ensure a tile can be selected.
+        HexagonMap map = player.getMap();
+        if(map == null) return;
+        
+        // Select a tile.
+        mLastHexChosen = mHexChosen;
+        mHexChosen = map.cursorToTile();
+        if(mHexChosen == null) return;
+        
+        // Do not swap screens.
+        if (mScreenOn == Screen.ATTACKING_SCREEN) return;
+        
+        if(mHexChosen.hasBuilding()) {
+        	Building building = mHexChosen.getBuilding();
+            if (building == null) return;
+            
+            // Select the building.
+            mBuildingChosen = building.getReference(Building.class);
+        	
+            if (player.isBuildingOwner(building)) {
+                setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+            } else {
+            	setScreenOn(Screen.DEFAULT_SCREEN);
+            }
+        } else {
+        	if (mHexChosen.isBuildable(player)) {
+                setScreenOn(Screen.PLACING_NEW_BUILDING);
+            } else {
+                mBuildingChosen = null;
+                setScreenOn(Screen.DEFAULT_SCREEN);
             }
         }
     }
@@ -293,6 +277,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             mVisualsNeedUpdate = true;
         }
         mScreenOn = newScreen;
+        
+        if (Reference.isValid(mMenuDrawer)) {
+            mMenuDrawer.get().setVisibleScreen(mScreenOn);
+        }
     }
     
     /**

@@ -566,10 +566,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Get the {@link HexagonMap} being used by the Player, as stored in {@link #mMap}.
      *
-     * @return The HexagonMap.
+     * @return The HexagonMap, or {@code null}.
      */
     public HexagonMap getMap() {
-        return mMap.get();
+        if(!Reference.isValid(mMap)) return null;
+    	return mMap.get();
     }
 
     /**
