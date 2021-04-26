@@ -183,7 +183,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                             .get()
                                             .createClient(
                                                     "127.0.0.1",
-                                                    7000,
+                                                    PORT,
                                                     (manager, netID) -> {
                                                         button.getLabelText()
                                                                 .get()

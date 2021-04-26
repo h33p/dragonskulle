@@ -292,8 +292,7 @@ public class ClientNetworkManager {
 
     /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mConnectionState == ConnectionState.JOINED_GAME
-            || mConnectionState == ConnectionState.CONNECTED) {
+        if (mConnectionState == ConnectionState.JOINED_GAME) {
             if (mClient.processRequests() <= 0) {
                 mTicksWithoutRequests++;
                 if (mTicksWithoutRequests > 3200) {

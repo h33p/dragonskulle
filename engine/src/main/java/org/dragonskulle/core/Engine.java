@@ -92,6 +92,7 @@ public class Engine {
 
         UPnP.initialise();
         UPnP.addPortMapping(17569, "TCP");
+
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;

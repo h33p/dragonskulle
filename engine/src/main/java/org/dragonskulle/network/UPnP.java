@@ -136,6 +136,9 @@ public class UPnP {
      * @return true if the port mapping was added successfully, false otherwise
      */
     public static boolean addPortMapping(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
         if (protocol.equals("BOTH")) {
             return addPortMapping(port, "TCP") & addPortMapping(port, "UDP");
         }
@@ -178,6 +181,9 @@ public class UPnP {
      * @return true if the mapping was deleted successfully, false otherwise
      */
     public static boolean deletePortMapping(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
         if (protocol.equals("BOTH")) {
             return deletePortMapping(port, "TCP") & deletePortMapping(port, "UDP");
         }
@@ -204,6 +210,9 @@ public class UPnP {
 
     /** Delete all port mappings that were added at runtime */
     public static void deleteAllMappings() {
+        if (!sInitialised) {
+            return;
+        }
         Set<Map.Entry<Integer, Collection<String>>> entries = sMappings.entrySet();
         for (Map.Entry<Integer, Collection<String>> entry : entries) {
             for (String protocol : entry.getValue()) {
