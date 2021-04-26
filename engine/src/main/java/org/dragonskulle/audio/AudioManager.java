@@ -240,6 +240,9 @@ public class AudioManager {
      * scene.
      */
     private void updateListenerPosAndRot() {
+
+        if (!Reference.isValid(mAudioListener)) return;
+
         Transform t = mAudioListener.get().getGameObject().getTransform();
 
         Vector3f pos = t.getPosition();
