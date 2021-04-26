@@ -265,11 +265,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                             .get()
                                             .isBuildingAttackable(defendingBuilding);
                             if (canAttack) {
-                                Reference<Player> playerReference = mGetPlayer.getPlayer();
-                                if (Reference.isValid(playerReference)) {
-                                    playerReference
-                                            .get()
-                                            .getClientAttackRequest()
+                                Player player = mGetPlayer.getPlayer();
+                                if (player != null) {
+                                	player.getClientAttackRequest()
                                             .invoke(
                                                     new AttackData(
                                                             mAttackingBuilding.get(),

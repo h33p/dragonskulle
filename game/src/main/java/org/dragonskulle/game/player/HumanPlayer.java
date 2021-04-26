@@ -62,7 +62,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<MapEffects> mMapEffects;
     private boolean mVisualsNeedUpdate;
     private Reference<UITokenCounter> mTokenCounter;
-    private Reference<GameObject> mTokenCounterObject;
     private HexagonTile mLastHexChosen;
 
     private boolean mMovedCameraToCapital = false;
@@ -81,40 +80,46 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void onStart() {
 
+    	// Create the slider used for zooming.
         getGameObject()
                 .buildChild(
                         "zoom_slider",
                         new TransformUI(true),
                         (go) -> go.addComponent(new UILinkedScrollBar()));
-
-        Reference<GameObject> tmpRef =
-                getGameObject()
-                        .buildChild(
-                                "menu_drawer",
-                                new TransformUI(true),
-                                (go) -> {
-                                    mTokenCounterObject =
-                                            go.buildChild(
-                                                    "token_counter",
-                                                    new TransformUI(true),
-                                                    (self) -> {
-                                                        UITokenCounter tokenCounter =
-                                                                new UITokenCounter();
-                                                        self.addComponent(tokenCounter);
-                                                    });
-                                    go.addComponent(
-                                            new UIMenuLeftDrawer(
-                                                    this::getBuildingChosen,
-                                                    this::setBuildingChosen,
-                                                    this::getHexChosen,
-                                                    this::setHexChosen,
-                                                    this::setScreenOn,
-                                                    this::getPlayer));
-                                });
-
-        mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
-        mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
-
+    	
+        // Create the token counter.
+        UITokenCounter counter = new UITokenCounter();
+        mTokenCounter = counter.getReference(UITokenCounter.class);
+        
+        // Store the token counter in its own game object.
+        GameObject tokenObject = new GameObject(
+                "token_counter",
+                new TransformUI(true),
+                (self) -> {
+                    self.addComponent(counter);
+                });
+        
+        // Create the left menu.
+        UIMenuLeftDrawer menu = new UIMenuLeftDrawer(
+                this::getBuildingChosen,
+                this::setBuildingChosen,
+                this::getHexChosen,
+                this::setHexChosen,
+                this::setScreenOn,
+                this::getPlayer);
+        mMenuDrawer = menu.getReference(UIMenuLeftDrawer.class);
+        
+        // Create a GameObject to store the token counter, and to hold the left menu.
+        GameObject menuObject = new GameObject(
+        		"menu_draw",
+        		new TransformUI(true),
+        		(draw) -> {
+        			draw.addChild(tokenObject);
+        			draw.addComponent(menu);
+        		}
+    		);
+        getGameObject().addChild(menuObject);
+        
         mVisualsNeedUpdate = true;
     }
 
@@ -154,8 +159,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mLocalTokens = getPlayer().getTokens().get();
         if (Reference.isValid(mTokenCounter)) {
             mTokenCounter.get().setLabelReference(mLocalTokens);
-        } else {
-            mTokenCounter = getGameObject().getComponent(UITokenCounter.class);
         }
     }
 
