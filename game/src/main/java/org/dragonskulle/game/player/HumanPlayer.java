@@ -301,7 +301,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(
                             (fx) -> {
                                 highlightSelectedTile(fx, StandardHighlightType.VALID);
-                                highlightBuildableTiles(fx, StandardHighlightType.PLACE);
+                                highlightAttackableTiles(fx, StandardHighlightType.PLACE);
                             });
                     break;
                 case ATTACK_SCREEN:
@@ -327,6 +327,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                                highlightBuildableTiles(fx, StandardHighlightType.PLACE );
+                            }
+                    );
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
