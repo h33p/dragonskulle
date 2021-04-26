@@ -8,7 +8,9 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.Settings;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.input.Cursor;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIDropDown;
@@ -18,6 +20,10 @@ import org.dragonskulle.ui.UISlider;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A component that displays a settings menu.
  *
@@ -25,37 +31,53 @@ import org.dragonskulle.ui.UITextRect;
  */
 public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate {
 
-    /** Contains the action to execute when the user requests to leave the settings menu. */
+    /**
+     * Contains the action to execute when the user requests to leave the settings menu.
+     */
     public static interface IOnBack {
-        /** Contains the code to execute on a back action. */
+        /**
+         * Contains the code to execute on a back action.
+         */
         public void run();
     }
 
-    /** The action to execute when the user requests to leave the settings menu. */
+    /**
+     * The action to execute when the user requests to leave the settings menu.
+     */
     private IOnBack mReturnAction;
 
-    /** The possible states the settings menu can be in. */
+    /**
+     * The possible states the settings menu can be in.
+     */
     private static enum State {
         MENU,
         AUDIO,
         GRAPHICS
     }
 
-    /** The current state the settings menu is in. */
+    /**
+     * The current state the settings menu is in.
+     */
     private State mCurrentState = State.MENU;
 
-    /** GameObject that contains the main settings menu. */
+    /**
+     * GameObject that contains the main settings menu.
+     */
     private GameObject mMenuContainer;
-    /** GameObject that contains the audio settings menu. */
+    /**
+     * GameObject that contains the audio settings menu.
+     */
     private GameObject mAudioContainer;
-    /** GameObject that contains the graphics settings menu. */
+    /**
+     * GameObject that contains the graphics settings menu.
+     */
     private GameObject mGraphicsContainer;
 
     /**
      * Create a new settings menu component.
      *
      * @param returnAction The action to be executed when the user requests to leave the settings
-     *     menu.
+     *                     menu.
      */
     public UISettingsMenu(IOnBack returnAction) {
         mReturnAction = returnAction;
@@ -92,7 +114,9 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         mCurrentState = state;
     }
 
-    /** Generate the contents of {@link #mMenuContainer}. */
+    /**
+     * Generate the contents of {@link #mMenuContainer}.
+     */
     private void generateMenu() {
         UITextRect title = new UITextRect("Settings");
 
@@ -122,7 +146,9 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         uiManager.buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
     }
 
-    /** Generate the contents of {@link #mAudioContainer}. */
+    /**
+     * Generate the contents of {@link #mAudioContainer}.
+     */
     private void generateAudio() {
         final UIManager uiManager = UIManager.getInstance();
 
@@ -148,7 +174,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             }
                         });
         IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
-        
+
         // Volume:
         UITextRect sliderTitle = new UITextRect("Volume:");
         UISlider slider =
@@ -167,11 +193,11 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
         // Combined:
         //uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, mute, volume, back);
-        
+
         final float startY = 0.3f;
         final float startX = 0f;
         final float endX = 1f;
-        
+
         mAudioContainer.buildChild(
                 "ui_child",
                 new TransformUI(true),
@@ -181,7 +207,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                     transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
                     title.handleUIBuild(child);
                 });
-        
+
         mAudioContainer.buildChild(
                 "ui_child",
                 new TransformUI(true),
@@ -191,7 +217,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                     transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
                     mute.handleUIBuild(child);
                 });
-        
+
         mAudioContainer.buildChild(
                 "ui_child",
                 new TransformUI(true),
@@ -201,7 +227,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                     transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
                     volume.handleUIBuild(child);
                 });
-        
+
         mAudioContainer.buildChild(
                 "ui_child",
                 new TransformUI(true),
@@ -214,11 +240,13 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
     }
 
     private float generateYPosition(int count, float startY) {
-    	final UIManager uiManager = UIManager.getInstance();
-    	return count * (uiManager.getAppearance().getVerticalUIElemHeight() + uiManager.getAppearance().getVerticalUIElemGap()) + startY;
+        final UIManager uiManager = UIManager.getInstance();
+        return count * (uiManager.getAppearance().getVerticalUIElemHeight() + uiManager.getAppearance().getVerticalUIElemGap()) + startY;
     }
-    
-    /** Generate the contents of {@link #mGraphicsContainer}. */
+
+    /**
+     * Generate the contents of {@link #mGraphicsContainer}.
+     */
     private void generateGraphics() {
         final UIManager uiManager = UIManager.getInstance();
 
@@ -236,6 +264,23 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                                 },
                                 "Windowed",
                                 "Fullscreen"));
+        List<String> cursorScales = Arrays.asList("0.1f", "0.2f", "0.3f", "0.4f","1f");
+        String[] cursorScalesArray = cursorScales.toArray(new String[cursorScales.size()]);
+        IUIBuildHandler cursorScale =
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Cursor Size:"),
+                        new UIDropDown(
+                                cursorScales.indexOf(Settings.getInstance().retrieveString("cursorScale")),
+                                (drop) -> {
+                                    Settings instance = Settings.getInstance();
+                                    try {
+                                        instance.saveValue("cursorScale", drop.getSelectedOption());
+                                        Cursor.setCustomCursor(Engine.getInstance().getGLFWState().getWindow(),Integer.parseInt(drop.getSelectedOption()));
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                },
+                                cursorScalesArray));
 
         UIButton back =
                 new UIButton(
@@ -244,7 +289,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             switchToState(State.MENU);
                         });
 
-        uiManager.buildVerticalUi(mGraphicsContainer, 0.3f, 0, 1f, title, windowed, back);
+        uiManager.buildVerticalUi(mGraphicsContainer, 0.3f, 0, 1f, title, windowed, cursorScale, back);
     }
 
     @Override

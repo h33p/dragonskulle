@@ -91,13 +91,19 @@ public class Cursor {
         // Set the cursor on a window
     }
 
+
+    public static void setCustomCursor(long window) {
+
+    }
+
     /**
      * Sets a custom hardware cursor.
      *
      * @param window the window to attach to
+     * @param scale  the scale of the cursor
      * @throws IOException thrown if the cursor file doesn't exist
      */
-    private void setCustomCursor(long window) throws IOException {
+    public static void setCustomCursor(long window, int scale) throws IOException {
         Resource<BufferedImage> fcursor =
                 ResourceManager.getResource(BufferedImage.class, "ui/cursor.png");
         BufferedImage bImage = fcursor.get();
