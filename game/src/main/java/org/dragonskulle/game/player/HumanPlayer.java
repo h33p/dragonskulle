@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -48,13 +47,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
-    @Getter
-    @Setter
-    private HexagonTile mHexChosen;
+    @Getter @Setter private HexagonTile mHexChosen;
 
-    @Getter
-    @Setter
-    private Reference<Building> mBuildingChosen = new Reference<>(null);
+    @Getter @Setter private Reference<Building> mBuildingChosen = new Reference<>(null);
 
     // The player
     private Reference<Player> mPlayer;
@@ -76,7 +71,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * Create a {@link HumanPlayer}.
      *
      * @param networkManager The network manager.
-     * @param netId          The human player's network ID.
+     * @param netId The human player's network ID.
      */
     public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
         mNetworkManager = networkManager;
@@ -210,9 +205,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /**
-     * This will choose what to do when the user can see the full map.
-     */
+    /** This will choose what to do when the user can see the full map. */
     private void mapScreen() {
 
         Cursor cursor = Actions.getCursor();
@@ -292,61 +285,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             switch (mScreenOn) {
                 case DEFAULT_SCREEN:
-                    effects.setHighlightOverlay((fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     effects.setHighlightOverlay(
-                            (fx) -> {
-                                highlightSelectedTile(fx, StandardHighlightType.VALID);
-                                highlightAttackableTiles(fx);
-                            });
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
                     break;
                 case UPGRADE_SCREEN:
                     break;
                 case ATTACKING_SCREEN:
-                    effects.setHighlightOverlay((fx) -> {
-                        highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER);
-                        highlightAttackableTiles(fx);
-                    });
+                    effects.setHighlightOverlay(
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
                     break;
                 case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
                     effects.setHighlightOverlay(
-                            (fx) -> {
-                                highlightSelectedTile(fx, StandardHighlightType.VALID);
-                                highlightAllBuildableTiles(fx);
-                            });
+                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
 
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
-            }
-        }
-
-    }
-
-    private void highlightAllBuildableTiles(MapEffects effects) {
-        mPlayer.get()
-                .getOwnedBuildingsAsStream()
-                .filter(Reference::isValid)
-                .map(Reference::get)
-                .forEach(
-                        b -> {
-                            for (HexagonTile buildableTile : b.getBuildableTiles()) {
-                                if (buildableTile.equals(mHexChosen)) return;
-                                effects.highlightTile(buildableTile,
-                                        StandardHighlightType.BUILD.asSelection());
-                            }
-                        });
-    }
-
-    private void highlightAttackableTiles(MapEffects effects) {
-        if (Reference.isValid(mBuildingChosen)) {
-            for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
-                HexagonTile tile = attackableBuilding.getTile();
-                if (tile.equals(mHexChosen)) return;
-                effects.highlightTile(tile, StandardHighlightType.ATTACK.asSelection());
             }
         }
     }
