@@ -41,8 +41,7 @@ import org.lwjgl.system.NativeResource;
 @Accessors(prefix = "m")
 @Log
 public class GLFWState implements NativeResource {
-    @Getter
-    private long mWindow;
+    @Getter private long mWindow;
     /** Window size in screen coordinates. */
     @Getter private final Vector2i mWindowSize = new Vector2i();
 

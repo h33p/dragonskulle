@@ -2,10 +2,8 @@
 package org.dragonskulle.core;
 
 import com.rits.cloning.Cloner;
-
 import java.util.ArrayList;
 import java.util.HashSet;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -29,8 +27,8 @@ import org.dragonskulle.ui.UIManager;
  * Engine core.
  *
  * @author Harry Stoltz
- * <p>The core of the engine, contains the main loop which executes all game logic. Gives all
- * components access to engine components such as the AudioManager and InputManager.
+ *     <p>The core of the engine, contains the main loop which executes all game logic. Gives all
+ *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
 @Log
@@ -59,21 +57,16 @@ public class Engine {
 
     private final HashSet<Scene> mInactiveScenes = new HashSet<>();
     private final HashSet<Scene> mActiveScenes = new HashSet<>();
-    @Getter
-    private Scene mPresentationScene = null;
+    @Getter private Scene mPresentationScene = null;
 
-    /**
-     * Engine's GLFW window state.
-     */
-    @Getter
-    private GLFWState mGLFWState = null;
+    /** Engine's GLFW window state. */
+    @Getter private GLFWState mGLFWState = null;
 
     private final ArrayList<IScheduledEvent> mFrameEvents = new ArrayList<>();
     private final ArrayList<IScheduledEvent> mEndOfLoopEvents = new ArrayList<>();
     private final ArrayList<IScheduledEvent> mFixedUpdateEvents = new ArrayList<>();
 
-    @Getter
-    private float mCurTime = 0f;
+    @Getter private float mCurTime = 0f;
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
     private final ArrayList<Light> mTmpLights = new ArrayList<>();
@@ -122,7 +115,7 @@ public class Engine {
     /**
      * Load a scene, choosing whether or not it should be active from the next frame or not.
      *
-     * @param scene  Scene to load
+     * @param scene Scene to load
      * @param active Whether the scene will be active
      */
     public void loadScene(Scene scene, boolean active) {
@@ -222,37 +215,27 @@ public class Engine {
         }
     }
 
-    /**
-     * Schedule an event for the next frame update.
-     */
+    /** Schedule an event for the next frame update. */
     public void scheduleFrameEvent(IScheduledEvent event) {
         mFrameEvents.add(event);
     }
 
-    /**
-     * Schedule an event for the next fixed update.
-     */
+    /** Schedule an event for the next fixed update. */
     public void scheduleFixedUpdateEvent(IScheduledEvent event) {
         mFixedUpdateEvents.add(event);
     }
 
-    /**
-     * Schedule an event for the end of main loop iteration.
-     */
+    /** Schedule an event for the end of main loop iteration. */
     public void scheduleEndOfLoopEvent(IScheduledEvent event) {
         mEndOfLoopEvents.add(event);
     }
 
-    /**
-     * Stops the engine when the current frame has finished.
-     */
+    /** Stops the engine when the current frame has finished. */
     public void stop() {
         mIsRunning = false;
     }
 
-    /**
-     * Main loop of the engine.
-     */
+    /** Main loop of the engine. */
     private void mainLoop(IEngineExitCondition exitCondition, boolean present) {
 
         double prevTime = Time.getPreciseTimeInSeconds();
@@ -337,9 +320,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Iterate through a list of components that aren't awake and wake them.
-     */
+    /** Iterate through a list of components that aren't awake and wake them. */
     private void wakeComponents() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -390,9 +371,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Do all Fixed Updates on components that implement it.
-     */
+    /** Do all Fixed Updates on components that implement it. */
     private void fixedUpdate() {
         for (IScheduledEvent event : mFixedUpdateEvents) {
             event.invoke();
@@ -411,9 +390,7 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
-    /**
-     * Do all Network Updates on components that implement it.
-     */
+    /** Do all Network Updates on components that implement it. */
     private void networkUpdate() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -426,9 +403,7 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
-    /**
-     * Do all Late Network Updates on components that implement it.
-     */
+    /** Do all Late Network Updates on components that implement it. */
     private void lateNetworkUpdate() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -454,9 +429,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Destroy all GameObjects and Components that need to be destroyed.s
-     */
+    /** Destroy all GameObjects and Components that need to be destroyed.s */
     private void destroyObjectsAndComponents() {
         // Destroy all game objects that need to be destroyed
         for (GameObject object : mDestroyedObjects) {
@@ -546,9 +519,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Destroy all game objects and components in all scenes. Used for cleanup
-     */
+    /** Destroy all game objects and components in all scenes. Used for cleanup */
     private void destroyAllObjects() {
         for (Scene s : mActiveScenes) {
             for (GameObject r : s.getGameObjects()) {
@@ -567,9 +538,7 @@ public class Engine {
         }
     }
 
-    /**
-     * Update the component lists in every active scene.
-     */
+    /** Update the component lists in every active scene. */
     private void updateScenesComponentsList() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -578,9 +547,7 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
-    /**
-     * Cleans up all resources used by the engine on shutdown.
-     */
+    /** Cleans up all resources used by the engine on shutdown. */
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
 

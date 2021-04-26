@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.GameObject.IBuildHandler;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
@@ -145,6 +146,49 @@ public class UIManager {
                         (child) -> {
                             TransformUI transform = child.getTransform(TransformUI.class);
                             transform.setParentAnchor(startX, curY, endX, curY);
+                            transform.setMargin(0, 0, 0, mAppearance.getVerticalUIElemHeight());
+                            handler.handleUIBuild(child);
+                        });
+            }
+
+            cnt++;
+        }
+    }
+
+    /**
+     * Build a vertical UI on the object
+     *
+     * <p>This method will build UI elements vertically in accordance to {@link UIAppearance}
+     * settings.
+     *
+     * @param go object to build the children on.
+     * @param startY starting Y parent anchor, this will act as an offset.
+     * @param startX starting X parent anchor, this will be consistent for all elements.
+     * @param endX ending X parent anchor, this will be consistent for all elements.
+     * @param elems list of {@link BuildHandlerInfo} objects. These each contain an {@link
+     *     IBuildHandler} and an xOffset.
+     */
+    public void buildVerticalUi(
+            GameObject go, float startY, float startX, float endX, BuildHandlerInfo... elems) {
+        int cnt = 0;
+
+        for (BuildHandlerInfo handlerInfo : elems) {
+            IUIBuildHandler handler = handlerInfo.getHandler();
+            final float xOffset = handlerInfo.getXOffset();
+
+            final float curY =
+                    cnt
+                                    * (mAppearance.getVerticalUIElemHeight()
+                                            + mAppearance.getVerticalUIElemGap())
+                            + startY;
+
+            if (handler != null) {
+                go.buildChild(
+                        "ui_child",
+                        new TransformUI(true),
+                        (child) -> {
+                            TransformUI transform = child.getTransform(TransformUI.class);
+                            transform.setParentAnchor(startX + xOffset, curY, endX, curY);
                             transform.setMargin(0, 0, 0, mAppearance.getVerticalUIElemHeight());
                             handler.handleUIBuild(child);
                         });

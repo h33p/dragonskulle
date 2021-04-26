@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
+import java.io.IOException;
+import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
@@ -11,6 +13,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.settings.Settings;
+import org.dragonskulle.ui.BuildHandlerInfo;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIDropDown;
@@ -20,64 +23,45 @@ import org.dragonskulle.ui.UISlider;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * A component that displays a settings menu.
  *
  * @author Craig Wilbourne
  */
+@Log
 public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate {
 
-    /**
-     * Contains the action to execute when the user requests to leave the settings menu.
-     */
+    /** Contains the action to execute when the user requests to leave the settings menu. */
     public static interface IOnBack {
-        /**
-         * Contains the code to execute on a back action.
-         */
+        /** Contains the code to execute on a back action. */
         public void run();
     }
 
-    /**
-     * The action to execute when the user requests to leave the settings menu.
-     */
+    /** The action to execute when the user requests to leave the settings menu. */
     private IOnBack mReturnAction;
 
-    /**
-     * The possible states the settings menu can be in.
-     */
+    /** The possible states the settings menu can be in. */
     private static enum State {
         MENU,
         AUDIO,
         GRAPHICS
     }
 
-    /**
-     * The current state the settings menu is in.
-     */
+    /** The current state the settings menu is in. */
     private State mCurrentState = State.MENU;
 
-    /**
-     * GameObject that contains the main settings menu.
-     */
+    /** GameObject that contains the main settings menu. */
     private GameObject mMenuContainer;
-    /**
-     * GameObject that contains the audio settings menu.
-     */
+    /** GameObject that contains the audio settings menu. */
     private GameObject mAudioContainer;
-    /**
-     * GameObject that contains the graphics settings menu.
-     */
+    /** GameObject that contains the graphics settings menu. */
     private GameObject mGraphicsContainer;
 
     /**
      * Create a new settings menu component.
      *
      * @param returnAction The action to be executed when the user requests to leave the settings
-     *                     menu.
+     *     menu.
      */
     public UISettingsMenu(IOnBack returnAction) {
         mReturnAction = returnAction;
@@ -114,9 +98,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         mCurrentState = state;
     }
 
-    /**
-     * Generate the contents of {@link #mMenuContainer}.
-     */
+    /** Generate the contents of {@link #mMenuContainer}. */
     private void generateMenu() {
         UITextRect title = new UITextRect("Settings");
 
@@ -146,9 +128,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         uiManager.buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
     }
 
-    /**
-     * Generate the contents of {@link #mAudioContainer}.
-     */
+    /** Generate the contents of {@link #mAudioContainer}. */
     private void generateAudio() {
         final UIManager uiManager = UIManager.getInstance();
 
@@ -192,61 +172,16 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         });
 
         // Combined:
-        //uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, mute, volume, back);
+        BuildHandlerInfo titleInfo = new BuildHandlerInfo(title, 0);
+        BuildHandlerInfo muteInfo = new BuildHandlerInfo(mute, -0.15f);
+        BuildHandlerInfo volumeInfo = new BuildHandlerInfo(volume, -0.15f);
+        BuildHandlerInfo backInfo = new BuildHandlerInfo(back, 0f);
 
-        final float startY = 0.3f;
-        final float startX = 0f;
-        final float endX = 1f;
-
-        mAudioContainer.buildChild(
-                "ui_child",
-                new TransformUI(true),
-                (child) -> {
-                    TransformUI transform = child.getTransform(TransformUI.class);
-                    transform.setParentAnchor(startX, generateYPosition(0, startY), endX, generateYPosition(0, startY));
-                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
-                    title.handleUIBuild(child);
-                });
-
-        mAudioContainer.buildChild(
-                "ui_child",
-                new TransformUI(true),
-                (child) -> {
-                    TransformUI transform = child.getTransform(TransformUI.class);
-                    transform.setParentAnchor(-0.15f, generateYPosition(1, startY), endX, generateYPosition(1, startY));
-                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
-                    mute.handleUIBuild(child);
-                });
-
-        mAudioContainer.buildChild(
-                "ui_child",
-                new TransformUI(true),
-                (child) -> {
-                    TransformUI transform = child.getTransform(TransformUI.class);
-                    transform.setParentAnchor(-0.15f, generateYPosition(2, startY), endX, generateYPosition(2, startY));
-                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
-                    volume.handleUIBuild(child);
-                });
-
-        mAudioContainer.buildChild(
-                "ui_child",
-                new TransformUI(true),
-                (child) -> {
-                    TransformUI transform = child.getTransform(TransformUI.class);
-                    transform.setParentAnchor(startX, generateYPosition(3, startY), endX, generateYPosition(3, startY));
-                    transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
-                    back.handleUIBuild(child);
-                });
+        uiManager.buildVerticalUi(
+                mAudioContainer, 0.3f, 0, 1f, titleInfo, muteInfo, volumeInfo, backInfo);
     }
 
-    private float generateYPosition(int count, float startY) {
-        final UIManager uiManager = UIManager.getInstance();
-        return count * (uiManager.getAppearance().getVerticalUIElemHeight() + uiManager.getAppearance().getVerticalUIElemGap()) + startY;
-    }
-
-    /**
-     * Generate the contents of {@link #mGraphicsContainer}.
-     */
+    /** Generate the contents of {@link #mGraphicsContainer}. */
     private void generateGraphics() {
         final UIManager uiManager = UIManager.getInstance();
 
@@ -257,39 +192,44 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         new UITextRect("Fullscreen mode:"),
                         new UIDropDown(
                                 0,
-                                (drop) -> {
-                                    Engine.getInstance()
-                                            .getGLFWState()
-                                            .setFullscreen(drop.getSelected() == 1);
-                                },
+                                (drop) ->
+                                        Engine.getInstance()
+                                                .getGLFWState()
+                                                .setFullscreen(drop.getSelected() == 1),
                                 "Windowed",
                                 "Fullscreen"));
-        List<String> cursorScales = Arrays.asList("0.1f", "0.2f", "0.3f", "0.4f", "1f");
-        String[] cursorScalesArray = cursorScales.toArray(new String[cursorScales.size()]);
+        Settings settingsInstance = Settings.getInstance();
         IUIBuildHandler cursorScale =
                 uiManager.buildWithChildrenRightOf(
                         new UITextRect("Cursor Size:"),
-                        new UIDropDown(
-                                cursorScales.indexOf(Settings.getInstance().retrieveString("cursorScale")),
-                                (drop) -> {
-                                    Settings instance = Settings.getInstance();
+                        new UISlider(
+                                settingsInstance.retrieveFloat("cursorScale"),
+                                0.1f,
+                                1f,
+                                0.01f,
+                                (__, value) -> { // on slider change
+                                    settingsInstance.saveValue("cursorScale", value);
                                     try {
-                                        instance.saveValue("cursorScale", drop.getSelectedOption());
-                                        Cursor.setCustomCursor(Engine.getInstance().getGLFWState().getWindow(), Float.parseFloat(drop.getSelectedOption()));
+                                        Cursor.setCustomCursor(
+                                                Engine.getInstance().getGLFWState().getWindow(),
+                                                value);
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                 },
-                                cursorScalesArray));
+                                (__, ___) -> { // on button release
+                                    settingsInstance.save();
+                                }));
 
-        UIButton back =
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            switchToState(State.MENU);
-                        });
+        UIButton back = new UIButton("Back", (__, ___) -> switchToState(State.MENU));
 
-        uiManager.buildVerticalUi(mGraphicsContainer, 0.3f, 0, 1f, title, windowed, cursorScale, back);
+        BuildHandlerInfo titleInfo = new BuildHandlerInfo(title, 0);
+        BuildHandlerInfo windowedInfo = new BuildHandlerInfo(windowed, -0.15f);
+        BuildHandlerInfo cursorInfo = new BuildHandlerInfo(cursorScale, -0.15f);
+        BuildHandlerInfo backInfo = new BuildHandlerInfo(back, 0f);
+
+        uiManager.buildVerticalUi(
+                mGraphicsContainer, 0.3f, 0, 1f, titleInfo, windowedInfo, cursorInfo, backInfo);
     }
 
     @Override

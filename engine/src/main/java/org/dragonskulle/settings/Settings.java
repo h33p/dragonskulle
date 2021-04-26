@@ -1,17 +1,13 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.settings;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -35,14 +31,10 @@ public class Settings {
     private HashMap mSettings = new HashMap<>();
     private String mFilePath;
 
-    /**
-     * Singleton constructor.
-     */
+    /** Singleton constructor. */
     private Settings() {}
 
-    /**
-     * Loads settings from the default location. root/settings.json
-     */
+    /** Loads settings from the default location. root/settings.json */
     public void loadSettings() {
         loadSettings("settings.json");
     }
@@ -68,29 +60,39 @@ public class Settings {
         }
     }
 
+    /**
+     * Saves a key value pair in the settings without saving to disk.
+     *
+     * @param <T> the type of the value to be saved
+     * @param name the name
+     * @param value the value
+     */
     public <T> void saveValue(String name, T value) {
-        try {
-            FileOutputStream out = new FileOutputStream(mFilePath);
-            mSettings.put(name, value.toString());
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                String json = mapper.writeValueAsString(mSettings);
-                out.write(json.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            log.severe("Cannot Find settings file");
-        }
+        saveValue(name, value, false);
     }
 
+    /**
+     * Saves a key value pair in the settings. If {@link saveFile} is true we will also save to
+     * disk.
+     *
+     * @param <T> the type of the value to be saved
+     * @param name the name
+     * @param value the value
+     * @param saveFile true if we should save to the physical file
+     */
+    public <T> void saveValue(String name, T value, boolean saveFile) {
+        mSettings.put(name, value.toString());
+        if (saveFile) {
+            save();
+        }
+    }
 
     /**
      * Retrieves a loaded setting by name, if the settings aren't loaded or the setting doesn't
      * exist then will return null.
      *
      * @param name the name of the setting as it is written in the settings.json file. Nested
-     *             Settings are not allowed.
+     *     Settings are not allowed.
      * @return the float setting value.
      */
     @SuppressWarnings("unchecked")
@@ -113,8 +115,8 @@ public class Settings {
      * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested
-     *                     Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the float setting value.
      */
     public Float retrieveFloat(String name, Float defaultValue) {
@@ -127,7 +129,7 @@ public class Settings {
      * exist then will return null.
      *
      * @param name the name of the setting as it is written in the settings.json file. Nested
-     *             Settings are not allowed.
+     *     Settings are not allowed.
      * @return the string setting value.
      */
     @SuppressWarnings("unchecked")
@@ -150,8 +152,8 @@ public class Settings {
      * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested
-     *                     Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the String setting value.
      */
     public String retrieveString(String name, String defaultValue) {
@@ -164,7 +166,7 @@ public class Settings {
      * exist then will return null.
      *
      * @param name the name of the setting as it is written in the settings.json file. Nested
-     *             Settings are not allowed.
+     *     Settings are not allowed.
      * @return the double setting value.
      */
     @SuppressWarnings("unchecked")
@@ -187,8 +189,8 @@ public class Settings {
      * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested
-     *                     Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the double setting value.
      */
     public Double retrieveDouble(String name, Double defaultValue) {
@@ -201,7 +203,7 @@ public class Settings {
      * exist then will return null.
      *
      * @param name the name of the setting as it is written in the settings.json file. Nested
-     *             Settings are not allowed.
+     *     Settings are not allowed.
      * @return the long setting value.
      */
     @SuppressWarnings("unchecked")
@@ -224,8 +226,8 @@ public class Settings {
      * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested
-     *                     Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the long setting value.
      */
     public Long retrieveLong(String name, Long defaultValue) {
@@ -238,7 +240,7 @@ public class Settings {
      * exist then will return null.
      *
      * @param name the name of the setting as it is written in the settings.json file. Nested
-     *             Settings are not allowed.
+     *     Settings are not allowed.
      * @return the boolean setting value.
      */
     @SuppressWarnings("unchecked")
@@ -261,8 +263,8 @@ public class Settings {
      * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested
-     *                     Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the boolean setting value.
      */
     public Boolean retrieveBoolean(String name, Boolean defaultValue) {
@@ -275,7 +277,7 @@ public class Settings {
      * exist then will return default value.
      *
      * @param name the name of the setting as it is written in the settings.json file. Nested
-     *             Settings are not allowed.
+     *     Settings are not allowed.
      * @return the integer setting value.
      */
     @SuppressWarnings("unchecked")
@@ -298,12 +300,30 @@ public class Settings {
      * exist then will return default value.
      *
      * @param defaultValue the value returned if failed to retrieve
-     * @param name         the name of the setting as it is written in the settings.json file. Nested
-     *                     Settings are not allowed.
+     * @param name the name of the setting as it is written in the settings.json file. Nested
+     *     Settings are not allowed.
      * @return the integer setting value.
      */
     public Integer retrieveInteger(String name, Integer defaultValue) {
         Integer value = retrieveInteger(name);
         return (value == -1 ? value : defaultValue);
+    }
+
+    public void save() {
+        try {
+            FileOutputStream out = new FileOutputStream(mFilePath);
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                String json = mapper.writeValueAsString(mSettings);
+                out.write(json.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            out.close();
+        } catch (FileNotFoundException e) {
+            log.severe("Cannot Find settings file");
+        } catch (IOException e) {
+            log.severe("failed to close stream");
+        }
     }
 }
