@@ -127,18 +127,17 @@ public class App implements NativeResource {
                 new GameObject(
                         "game_audio",
                         (audio) -> {
-                        	AudioListener listener = new AudioListener();
-                        	audio.addComponent(listener);
+                            AudioListener listener = new AudioListener();
+                            audio.addComponent(listener);
 
                             AudioSource bgm = new AudioSource();
                             bgm.setVolume(0.1f);
                             bgm.setLooping(true);
                             bgm.playSound(BGM_ID);
                             audio.addComponent(bgm);
-                        }
-        );
+                        });
         mainScene.addRootObject(audioObject);
-        
+
         // Pause menu
         GameObject pauseMenu =
                 new GameObject(
@@ -221,17 +220,18 @@ public class App implements NativeResource {
                             handle.addComponent(networkManager.get());
                         });
 
-        GameObject audioObject = new GameObject("menu audio",
-	        		(audio) -> {
-	        			AudioSource bgm = new AudioSource();
-                        bgm.setVolume(0.1f);
-                        bgm.setLooping(true);
-                        bgm.playSound(BGM_ID);
+        GameObject audioObject =
+                new GameObject(
+                        "menu audio",
+                        (audio) -> {
+                            AudioSource bgm = new AudioSource();
+                            bgm.setVolume(0.1f);
+                            bgm.setLooping(true);
+                            bgm.playSound(BGM_ID);
 
-                        audio.addComponent(bgm);
-                        audio.addComponent(new AudioListener());
-	        		}
-        		);
+                            audio.addComponent(bgm);
+                            audio.addComponent(new AudioListener());
+                        });
 
         // TODO : Remove
         GameObject debugMute =
@@ -253,10 +253,10 @@ public class App implements NativeResource {
                                                             AudioManager.getInstance()
                                                                     .toggleMasterMute();
                                                         }));
-                                    });                            
+                                    });
                         });
         mainMenu.addRootObject(debugMute);
-        
+
         GameObject gameTitle =
                 new GameObject(
                         "title",

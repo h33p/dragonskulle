@@ -25,7 +25,7 @@ import org.dragonskulle.ui.UITextRect;
  * @author Craig Wilbourne
  */
 public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate {
-	
+
     /** Contains the action to execute when the user requests to leave the settings menu. */
     public static interface IOnBack {
         /** Contains the code to execute on a back action. */
@@ -122,7 +122,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         final UIManager uiManager = UIManager.getInstance();
         uiManager.buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
     }
-    
+
     /** Generate the contents of {@link #mAudioContainer}. */
     private void generateAudio() {
         final UIManager uiManager = UIManager.getInstance();
@@ -149,7 +149,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             }
                         });
         IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
-        
+
         // Volume:
         UITextRect sliderTitle = new UITextRect("Volume:");
         UISlider slider =
@@ -166,15 +166,16 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             switchToState(State.MENU);
                         });
 
-        // Combined:        
+        // Combined:
         BuildHandlerInfo titleInfo = new BuildHandlerInfo(title, 0);
         BuildHandlerInfo muteInfo = new BuildHandlerInfo(mute, -0.15f);
         BuildHandlerInfo volumeInfo = new BuildHandlerInfo(volume, -0.15f);
         BuildHandlerInfo backInfo = new BuildHandlerInfo(back, 0f);
-        
-        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, titleInfo, muteInfo, volumeInfo, backInfo);
+
+        uiManager.buildVerticalUi(
+                mAudioContainer, 0.3f, 0, 1f, titleInfo, muteInfo, volumeInfo, backInfo);
     }
-    
+
     /** Generate the contents of {@link #mGraphicsContainer}. */
     private void generateGraphics() {
         final UIManager uiManager = UIManager.getInstance();
@@ -204,8 +205,9 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         BuildHandlerInfo titleInfo = new BuildHandlerInfo(title, 0);
         BuildHandlerInfo windowedInfo = new BuildHandlerInfo(windowed, -0.15f);
         BuildHandlerInfo backInfo = new BuildHandlerInfo(back, 0f);
-        
-        uiManager.buildVerticalUi(mGraphicsContainer, 0.3f, 0, 1f, titleInfo, windowedInfo, backInfo);
+
+        uiManager.buildVerticalUi(
+                mGraphicsContainer, 0.3f, 0, 1f, titleInfo, windowedInfo, backInfo);
     }
 
     @Override
