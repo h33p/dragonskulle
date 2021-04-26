@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lombok.Getter;
@@ -33,6 +34,8 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+
+import static jdk.nashorn.internal.objects.NativeMath.max;
 
 /**
  * A Building component.
@@ -159,7 +162,11 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     @Getter
     @Accessors(prefix = "m")
     private int mStatUpdateCount = 0;
+    private Reference<GameObject> base_mesh;
     private Reference<GameObject> defence_mesh;
+    private Reference<GameObject> attack_mesh;
+    private Reference<GameObject> generation_mesh;
+    private Reference<GameObject> mVisibleMesh;
 
     /**
      * Increments {@code mStatUpdateCount} to signify an update is needed.
@@ -274,10 +281,33 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         checkInitialise();
 
         TemplateManager spawnableTemplates = getNetworkManager().getSpawnableTemplates();
-        GameObject defence_mesh = spawnableTemplates.instantiate(spawnableTemplates.find("defence"));
-        defence_mesh.setEnabled(false);
-        this.defence_mesh = defence_mesh.getReference();
+
+        if (isCapital()) {
+            GameObject capital_mesh = spawnableTemplates.instantiate(spawnableTemplates.find("capital_building"));
+            getGameObject().addChild(capital_mesh);
+            capital_mesh.setEnabled(true);
+            mVisibleMesh = capital_mesh.getReference();
+            return;
+        }
+
+        GameObject base_mesh = spawnableTemplates.instantiate(spawnableTemplates.find("base_building"));
+        GameObject defence_mesh = spawnableTemplates.instantiate(spawnableTemplates.find("defence_building"));
+        GameObject attack_mesh = spawnableTemplates.instantiate(spawnableTemplates.find("attack_building"));
+        GameObject generation_mesh = spawnableTemplates.instantiate(spawnableTemplates.find("generation_building"));
+        getGameObject().addChild(base_mesh);
         getGameObject().addChild(defence_mesh);
+        getGameObject().addChild(attack_mesh);
+        getGameObject().addChild(generation_mesh);
+        base_mesh.setEnabled(false);
+        defence_mesh.setEnabled(false);
+        attack_mesh.setEnabled(false);
+        generation_mesh.setEnabled(false);
+        this.base_mesh = base_mesh.getReference();
+        this.defence_mesh = defence_mesh.getReference();
+        this.attack_mesh = attack_mesh.getReference();
+        this.generation_mesh = generation_mesh.getReference();
+        assignMesh();
+
     }
 
     /**
@@ -294,27 +324,59 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         generateStatBaseCost();
 
         generateTileLists();
-        Stream<SyncStat> stream = getUpgradeableStats().stream();
-        if (stream.distinct().count() <= 1) {
-            base_mesh.get().setEnabled(true);
-            defence_mesh.get().setEnabled(false);
-            attack_mesh.get().setEnabled(false);
-            generation_mesh.get().setEnabled(false);
-
-        } else {
-            Optional<SyncStat> max = stream.max(Comparator.comparingInt(SyncStat::getLevel));
-            if (Reference.isValid(defence_mesh)) {
-                max.ifPresent(syncStat -> {
-                    base_mesh.get().setEnabled(syncStat.getType() == StatType.DEFENCE);
-                    defence_mesh.get().setEnabled(syncStat.getType() == StatType.DEFENCE);
-                    attack_mesh.get().setEnabled(syncStat.getType() == StatType.ATTACK);
-                    generation_mesh.get().setEnabled(syncStat.getType() == StatType.TOKEN_GENERATION);
-                });
-            }
-        }
+        if (!isCapital()) assignMesh();
 
         setStatsRequireVisualUpdate();
 
+    }
+
+    private void assignMesh() {
+        Map<StatType, Integer> statLevels = getUpgradeableStats().stream().collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
+        if (statLevels.values().stream().distinct().count() <= 1) {
+            log.info("the stats are all the same");
+            if (Reference.isValid(mVisibleMesh)) {
+                mVisibleMesh.get().setEnabled(false);
+            }
+            if (Reference.isValid(base_mesh)) {
+                base_mesh.get().setEnabled(true);
+                mVisibleMesh = base_mesh;
+            }
+
+        } else {
+            Map.Entry<StatType, Integer> max = null;
+            for (Map.Entry<StatType, Integer> entry : statLevels.entrySet()) {
+                if (max == null || entry.getValue().compareTo(max.getValue()) > 0) {
+                    max = entry;
+                }
+            }
+            if (max != null) {
+                log.info("this stat is the biggest " + max.getKey());
+                if (Reference.isValid(mVisibleMesh)) {
+                    mVisibleMesh.get().setEnabled(false);
+                }
+                switch (max.getKey()) {
+                    case ATTACK:
+                        if (Reference.isValid(attack_mesh)) {
+                            attack_mesh.get().setEnabled(true);
+                            mVisibleMesh = attack_mesh;
+                        }
+                        break;
+                    case DEFENCE:
+                        if (Reference.isValid(defence_mesh)) {
+                            defence_mesh.get().setEnabled(true);
+                            mVisibleMesh = defence_mesh;
+                        }
+                        break;
+                    case TOKEN_GENERATION:
+                        if (Reference.isValid(generation_mesh)) {
+                            generation_mesh.get().setEnabled(true);
+                            mVisibleMesh = generation_mesh;
+                        }
+                        break;
+
+                }
+            }
+        }
     }
 
     /**
