@@ -43,6 +43,8 @@ public class UPnP {
 
     private static final String SERVICE_NAME = "urn:schemas-upnp-org:service:WANIPConnection:1";
 
+    // TODO: Store list of port mappings to clear on shutdown
+
     private static Inet4Address sLocal;
     private static URL sControlURL;
     private static boolean sInitialised;
@@ -123,15 +125,80 @@ public class UPnP {
         if (!sInitialised) {
             return null;
         }
-        return executeCommand("GetExternalIPAddress").get("NewExternalIPAddress");
+        Map<String, String> out = executeCommand("GetExternalIPAddress");
+        return out == null ? null : out.get("NewExternalIPAddress");
     }
 
     /**
-     * Execute a command via the control URL
+     * Add a new port mapping via UPnP.
+     *
+     * @param port Port to be forwarded to local address. Must be in the range 0 - 65535
+     * @param protocol Protocol of the new mapping. Can be TCP, UDP or BOTH
+     * @return true if the port mapping was added successfully, false otherwise
+     */
+    public static boolean addPortMapping(int port, String protocol) {
+        if (protocol.equals("BOTH")) {
+            return addPortMapping(port, "TCP")
+                & addPortMapping(port, "UDP");
+        } else if (!protocol.equals("TCP") && !protocol.equals("UDP")) {
+            log.warning("Invalid protocol \"" + protocol + "\" passed to addPortMapping");
+            return false;
+        }
+
+        if (port < 0 || port > 65535) {
+            log.warning("Invalid port " + port + " passed to addPortMapping");
+            return false;
+        }
+
+        Map<String, String> out = executeCommand("AddPortMapping",
+                "NewRemoteHost", "",
+                "NewExternalPort", Integer.toString(port),
+                "NewProtocol", protocol,
+                "NewInternalPort", Integer.toString(port),
+                "NewInternalClient", sLocal.getHostAddress(),
+                "NewEnabled", "",
+                "NewPortMappingDescription", "",
+                "NewLeaseDuration", "0");
+
+        return out != null;
+    }
+
+    /**
+     * Delete an existing port mapping.
+     *
+     * @param port Port of the mapping to be deleted
+     * @param protocol Protocol of the mapping to be deleted
+     * @return true if the mapping was deleted successfully, false otherwise
+     */
+    public static boolean deletePortMapping(int port, String protocol) {
+        if (protocol.equals("BOTH")) {
+            return deletePortMapping(port, "TCP")
+                    & deletePortMapping(port, "UDP");
+        } else if (!protocol.equals("TCP") && !protocol.equals("UDP")) {
+            log.warning("Invalid protocol \"" + protocol + "\" passed to deletePortMapping");
+            return false;
+        }
+
+        if (port < 0 || port > 65535) {
+            log.warning("Invalid port " + port + " passed to deletePortMapping");
+            return false;
+        }
+
+        Map<String, String> out = executeCommand("DeletePortMapping",
+                "NewRemoteHost", "",
+                "NewExternalPort", Integer.toString(port),
+                "NewProtocol", protocol);
+
+        return out != null;
+    }
+
+    /**
+     * Execute a command via the control URL. The arguments should be passed with the name of the
+     * argument followed by the value. e.g. executeCommand("Command", "Arg1", "7") would execute
+     * the command "Command" with "Arg1" = 7.
      *
      * @param command Name of the command to execute
-     * @param args List of arguments for the command. Name of argument should be immediately
-     *     followed by the value
+     * @param args List of arguments for the command
      * @return A Map containing the returned values and their names
      */
     private static Map<String, String> executeCommand(String command, String... args) {
@@ -192,7 +259,7 @@ public class UPnP {
         } catch (Exception e) {
             log.warning("Error making request to UPnP Service control URL");
         }
-        return out;
+        return null;
     }
 
     /**
