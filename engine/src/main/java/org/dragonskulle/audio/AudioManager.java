@@ -241,8 +241,6 @@ public class AudioManager {
      */
     private void updateListenerPosAndRot() {
 
-        if (!Reference.isValid(mAudioListener)) return;
-
         Transform t = mAudioListener.get().getGameObject().getTransform();
 
         Vector3f pos = t.getPosition();
@@ -262,7 +260,7 @@ public class AudioManager {
      * need them.
      */
     public void update() {
-        if (!mInitialized || mAudioListener == null) {
+        if (!mInitialized || !Reference.isValid(mAudioListener)) {
             return;
         }
 

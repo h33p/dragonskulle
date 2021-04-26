@@ -151,12 +151,6 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                                     // The button should disconnect the client.
                                     if (networkManager.getClientManager() == null) return;
                                     networkManager.getClientManager().disconnect();
-
-                                    // Remove the HumanPlayer singleton.
-                                    for (Scene scene : Engine.getInstance().getActiveScenes()) {
-                                        scene.unregisterSingleton(HumanPlayer.class);
-                                    }
-                                    log.info("Removed HumanPlayer singleton.");
                                 }
                             } else {
                                 log.severe("Unable to get network manager.");
