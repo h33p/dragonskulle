@@ -137,7 +137,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mLobbyUi.setEnabled(false);
                                 }),
                         new UIButton(
-                                "Cancel",
+                                "Back",
                                 (__, ___) -> {
                                     mainUi.get().setEnabled(true);
                                     mLobbyUi.setEnabled(false);
@@ -150,16 +150,25 @@ public class Lobby extends Component implements IFrameUpdate {
                         0,
                         0.2f,
                         new UIButton(
-                                // TODO: When we start a game remove it from the server list
                                 "Start Game",
                                 (__, ___) -> {
                                     mNetworkManager.get().getServerManager().start();
-                                }));
+                                    LobbyAPI.deleteHost(lobbyID, this::onDeleteHost);
+                                }),
+                        new UIButton(
+                                "Close lobby",
+                                (__, ___) -> {
+                                    // TODO: Shutdown server
+                                    LobbyAPI.deleteHost(lobbyID, this::onDeleteHost);
+                                    mHostUi.setEnabled(true);
+                                    mHostingUi.setEnabled(false);
+                                }
+                        ));
 
         buildJoinUi();
         buildHostUi();
         buildServerList();
-        LobbyAPI.getAllHosts(this::handleGetAllHosts);
+        LobbyAPI.getAllHosts(this::onGetAllHosts);
     }
 
     private void buildJoinUi() {
@@ -197,7 +206,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                     this::onHostStartGame);
                                 }),
                         new UIButton(
-                                "Cancel",
+                                "Back",
                                 (__, ___) -> {
                                     mJoinUi.setEnabled(false);
                                     mLobbyUi.setEnabled(true);
@@ -217,7 +226,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         "Refresh list",
                         (button, ___) -> {
                             button.getLabelText().get().setText("Refreshing...");
-                            LobbyAPI.getAllHosts(this::handleGetAllHosts);
+                            LobbyAPI.getAllHosts(this::onGetAllHosts);
                         });
 
         for (int i = 0; i < mHosts.size(); i++) {
@@ -244,6 +253,14 @@ public class Lobby extends Component implements IFrameUpdate {
                             });
         }
 
+        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0.15f, 0.35f,
+                new UIButton(
+                        "Back",
+                        (__, ___) -> {
+                            mJoinUi.setEnabled(true);
+                            mServerBrowserUi.setEnabled(false);
+                        }));
+
         UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, buttons);
 
         mServerBrowserUi.addChild(mServerList.get());
@@ -260,7 +277,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Host publicly",
                                 (__, ___) -> {
                                     String ip = UPnP.getExternalIPAddress();
-                                    LobbyAPI.addNewHost(ip, PORT, this::handleAddNewHost);
+                                    LobbyAPI.addNewHost(ip, PORT, this::onAddNewHost);
                                     mNetworkManager
                                             .get()
                                             .createServer(PORT, this::onClientLoaded, this::onGameStarted);
@@ -277,7 +294,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mHostUi.setEnabled(false);
                                 }),
                         new UIButton(
-                                "Cancel",
+                                "Back",
                                 (__, ___) -> {
                                     mHostUi.setEnabled(false);
                                     mLobbyUi.setEnabled(true);
@@ -293,19 +310,24 @@ public class Lobby extends Component implements IFrameUpdate {
         mainMenu.addRootObject(mHostingUi);
     }
 
-    private void handleGetAllHosts(String response) {
+    private void onGetAllHosts(String response, boolean success) {
+        if (!success) {
+            log.warning("Failed to get server list");
+            return;
+        }
+
         mHosts.clear();
         JSONParser parser = new JSONParser();
         try {
             JSONArray array = (JSONArray)parser.parse(response);
 
-            for (int i = 0; i < array.size(); i++) {
-                JSONObject obj = (JSONObject)array.get(i);
+            for (Object o : array) {
+                JSONObject obj = (JSONObject) o;
 
-                String ip = (String)obj.get("address");
-                int port = Math.toIntExact((Long)obj.get("port"));
+                String ip = (String) obj.get("address");
+                int port = Math.toIntExact((Long) obj.get("port"));
 
-                log.info("New host: " + ip + ":" + port);
+                log.fine("New host found: " + ip + ":" + port);
                 mHosts.add(new InetSocketAddress(ip, port));
             }
 
@@ -316,22 +338,29 @@ public class Lobby extends Component implements IFrameUpdate {
         mHostsUpdated.set(true);
     }
 
-    private void handleAddNewHost(String response) {
-        log.info("Add new host returned:\n\t" + response);
+    private void onAddNewHost(String response, boolean success) {
+        if (!success) {
+            log.warning("Failed to add new host to server list");
+            return;
+        }
+        // TODO: Close server if we were unable to add to the server list? Or just leave it?
         JSONParser parser = new JSONParser();
         try {
             JSONObject obj = (JSONObject)parser.parse(response);
             lobbyID = (String)obj.get("_id");
-            log.info(lobbyID);
         } catch (ParseException e) {
             e.printStackTrace();
-            log.warning("Failed to parse response from add new host. Likely failed.");
+            log.warning("Failed to parse response from add new host.");
+        }
+    }
+
+    private void onDeleteHost(String response, boolean success) {
+        if (!success) {
+            log.warning("Failed to delete host from the server list");
         }
     }
 
     private void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
-        log.info("CONNECTED ID " + netId);
-
         GameObject humanPlayer =
                 new GameObject(
                         "human player",
@@ -346,14 +375,14 @@ public class Lobby extends Component implements IFrameUpdate {
 
     private void onClientLoaded(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
-        log.info("Client ID: " + networkClient.getNetworkID() + " loaded.");
+        log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 
     private void onGameStarted(NetworkManager manager) {
-        log.severe("Game Start");
-        log.warning("Spawning 'Server' Owned objects");
+        log.fine("Game Start");
+        log.fine("Spawning 'Server' Owned objects");
         manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 

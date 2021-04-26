@@ -31,7 +31,7 @@ public class LobbyAPI {
     }
 
     public interface IAsyncCallback {
-        void call(String response);
+        void call(String response, boolean success);
     }
 
     /**
@@ -47,12 +47,43 @@ public class LobbyAPI {
         private String mContentType;
         private String mContent;
 
+        /**
+         * Create a new AsyncRequest.
+         *
+         * @param url URL to make a request to
+         * @param method Method of the request (GET, POST, DELETE etc)
+         * @param callback Method to call after request execution
+         * @throws MalformedURLException If the url passed is invalid
+         */
+        public AsyncRequest(String url, String method, IAsyncCallback callback)
+                throws MalformedURLException {
+            mUrl = new URL(url);
+            mMethod = method;
+            mCallback = callback;
+        }
+
+        /**
+         * Create a new AsyncRequest.
+         *
+         * @param url URL to make a request to
+         * @param method Method of the request (GET, POST, DELETE etc)
+         * @param callback Method to call after request execution
+         */
         public AsyncRequest(URL url, String method, IAsyncCallback callback) {
             mUrl = url;
             mMethod = method;
             mCallback = callback;
         }
 
+        /**
+         * Create a new AsyncRequest.
+         *
+         * @param url URL to make a request to
+         * @param method Method of the request (GET, POST, DELETE etc)
+         * @param callback Method to call after request execution
+         * @param contentType Value for request property "content-type"
+         * @param content Data to send in the request
+         */
         public AsyncRequest(
                 URL url,
                 String method,
@@ -90,7 +121,8 @@ public class LobbyAPI {
                 reader.close();
 
                 if (mCallback != null) {
-                    mCallback.call(builder.toString());
+                    boolean success = con.getResponseCode() == HttpURLConnection.HTTP_OK;
+                    mCallback.call(builder.toString(), success);
                 }
             } catch (IOException e) {
                 log.warning(String.format("%s request to %s failed", mMethod, mUrl.toString()));
@@ -101,7 +133,7 @@ public class LobbyAPI {
     /**
      * Attempt to get all of the currently up hosts via the API.
      *
-     * @param callback Method to call if the request is successful.
+     * @param callback Method to call after the request is completed.
      */
     public static void getAllHosts(IAsyncCallback callback) {
         if (url == null) {
@@ -111,15 +143,40 @@ public class LobbyAPI {
         request.start();
     }
 
+    /**
+     * Add a new host to the server list via the API.
+     *
+     * @param ip IP address of the host
+     * @param port Port that the server is hosted on
+     * @param callback Method to call after the request is completed.
+     */
     public static void addNewHost(String ip, int port, IAsyncCallback callback) {
         if (url == null) {
             return;
         }
-        final String contentType = "application/json";
-        // {"address":"255.255.255.255","port":1337}
-        final String content = String.format("{\"address\":\"%s\",\"port\":%d}", ip, port);
+        String contentType = "application/json";
+        String content = String.format("{\"address\":\"%s\",\"port\":%d}", ip, port);
 
         AsyncRequest request = new AsyncRequest(url, "POST", callback, contentType, content);
         request.start();
+    }
+
+    /**
+     * Delete an existing host from the server list
+     *
+     * @param id ID of the entry to be deleted
+     * @param callback Method to call after the requets is completed.
+     */
+    public static void deleteHost(String id, IAsyncCallback callback) {
+        if (url == null) {
+            return;
+        }
+
+        try {
+            AsyncRequest request = new AsyncRequest(API_URL + "/" + id, "DELETE", callback);
+            request.start();
+        } catch (MalformedURLException e) {
+            log.warning("Invalid url for delete request");
+        }
     }
 }
