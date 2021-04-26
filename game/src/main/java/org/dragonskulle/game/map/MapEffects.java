@@ -105,7 +105,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
     public static final HighlightSelection PLACE_MATERIAL =
-            highlightSelectionFromColour(0.1f,0.9f,0.7f);
+            highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
 
     private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
@@ -170,7 +170,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param selector selector that handles tile selection
      */
     public void highlightTiles(IHighlightSelector selector) {
-        mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t, mHighlightedTiles.get(t))));
+        mMapReference
+                .get()
+                .getAllTiles()
+                .forEach(t -> highlightTile(t, selector.handleTile(t, mHighlightedTiles.get(t))));
         mDefaultHighlight = false;
     }
 

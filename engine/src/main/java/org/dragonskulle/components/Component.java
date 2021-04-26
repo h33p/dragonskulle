@@ -70,5 +70,4 @@ public abstract class Component implements Serializable {
         mReference.clear();
         mReference = new Reference<>(this);
     }
-
 }
