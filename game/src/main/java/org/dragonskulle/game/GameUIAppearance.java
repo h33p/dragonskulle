@@ -8,6 +8,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.SampledTexture;
+import org.dragonskulle.renderer.TextureMapping;
+import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.ui.UIAppearance;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
@@ -25,6 +27,8 @@ public class GameUIAppearance {
 
     public static final int INFO_BOX = 0;
     public static final int DRAWER = 1;
+    public static final int SQUARE_BUTTON = 2;
+    public static final int INFO_BOX_2_1 = 3;
 
     /**
      * Get a information box texture.
@@ -47,6 +51,26 @@ public class GameUIAppearance {
     }
 
     /**
+     * Get a square button texture
+     *
+     * @return square button texture. The reference is cloned, so this texture needs to be freed by
+     *     the callee
+     */
+    public static SampledTexture getSquareButtonTexture() {
+        return UIManager.getInstance().getAppearance().getRectTextures()[SQUARE_BUTTON].clone();
+    }
+
+    /**
+     * Get a 2:1 info box texture
+     *
+     * @return 2:1 info box texture. The reference is cloned, so this texture needs to be freed by
+     *     the callee
+     */
+    public static SampledTexture getInfoBox21Texture() {
+        return UIManager.getInstance().getAppearance().getRectTextures()[INFO_BOX_2_1].clone();
+    }
+
+    /**
      * Initialise the UI appearance.
      *
      * <p>This method will set the game's UI settings to look consistent.
@@ -61,7 +85,11 @@ public class GameUIAppearance {
         appearance.setSliderKnobTexture(new SampledTexture("ui/slider_bar.png"));
         appearance.setRectTextures(
                 new SampledTexture[] {
-                    new SampledTexture("ui/info_box.png"), new SampledTexture("ui/drawer.png")
+                    new SampledTexture("ui/info_box.png"),
+                    new SampledTexture("ui/drawer.png"),
+                    new SampledTexture(
+                            "ui/square_button.png", new TextureMapping(TextureFiltering.NEAREST)),
+                    new SampledTexture("ui/info_box_2_1.png")
                 });
         appearance.setRectTextVertMargin(0.3f);
         appearance.setRectTextHorizMargin(0.15f);

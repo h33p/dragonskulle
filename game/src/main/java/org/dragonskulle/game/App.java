@@ -117,7 +117,6 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
-                                                    camera.addComponent(new FogOfWar());
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);
@@ -133,27 +132,15 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(GameObject.instantiate(cameraRig));
 
-        GameObject hexagonMap =
-                new GameObject(
-                        "hexagon map",
-                        new Transform3D(),
-                        (map) -> {
-                            map.addComponent(new HexagonMap(51));
-                        });
-
-        mainScene.addRootObject(hexagonMap);
-
         return mainScene;
     }
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
-        log.warning("We have got here " + asServer);
         Scene mainScene = createMainScene();
-
         // asServer = true;
         if (asServer) {
-            log.warning("I am the server");
+            log.info("I am the server");
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
@@ -194,10 +181,13 @@ public class App implements NativeResource {
 
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
-
         addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();
+
+        for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
+            log.info(obj.getName());
+        }
 
         templates.addAllObjects(
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
@@ -408,6 +398,26 @@ public class App implements NativeResource {
                             settingsUI.setEnabled(true);
                         }));
 
+        uiManager.buildVerticalUi(
+                hostUi,
+                0.05f,
+                0f,
+                MENU_BASEWIDTH,
+                new UIButton(
+                        "Host (Temporary)",
+                        (__, ___) -> {
+                            networkManager
+                                    .get()
+                                    .createServer(
+                                            sPort, this::onClientConnected, this::onGameStarted);
+                        }),
+                new UIButton(
+                        "Cancel",
+                        (uiButton, __) -> {
+                            hostUi.setEnabled(false);
+                            mainUi.setEnabled(true);
+                        }));
+
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(audio);
@@ -478,6 +488,33 @@ public class App implements NativeResource {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
+    }
+
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
+        log.info("CONNECTED ID " + netId);
+
+        GameObject humanPlayer =
+                new GameObject(
+                        "human player",
+                        (handle) -> {
+                            handle.addComponent(
+                                    new HumanPlayer(
+                                            manager.getReference(NetworkManager.class), netId));
+                        });
+
+        gameScene.addRootObject(humanPlayer);
+    }
+
+    private void onClientConnected(
+            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
+        int id = networkClient.getNetworkID();
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+    }
+
+    private void onGameStarted(NetworkManager manager) {
+        log.severe("Game Start");
+        log.warning("Spawning 'Server' Owned objects");
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 
     @Override

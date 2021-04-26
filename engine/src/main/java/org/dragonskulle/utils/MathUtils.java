@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.utils;
 
+import java.nio.ByteBuffer;
+
 /**
  * Basic additional math utilities.
  *
@@ -9,6 +11,7 @@ package org.dragonskulle.utils;
 public class MathUtils {
 
     public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
+
     /**
      * Interpolate a float value between start and end with time.
      *
@@ -83,5 +86,27 @@ public class MathUtils {
      */
     public static float normalise(float value, float minimum, float maximum) {
         return (float) mapOneRangeToAnother(value, minimum, maximum, 0, 1, 9);
+    }
+
+    /**
+     * Converts RGB integer Array to a RGBA byte array. Adapted from
+     * https://www.javaer101.com/en/article/46458013.html
+     *
+     * @param argb the ARGB array
+     * @param height the height of the image
+     * @param width the width of the image
+     * @param dest the destination buffer
+     */
+    public static void intARGBtoByteRGBA(int[] argb, int height, int width, ByteBuffer dest) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = argb[y * width + x];
+                dest.put((byte) ((pixel >> 16) & 0xFF)); // red
+                dest.put((byte) ((pixel >> 8) & 0xFF)); // green
+                dest.put((byte) (pixel & 0xFF)); // blue
+                dest.put((byte) ((pixel >> 24) & 0xFF)); // alpha
+            }
+        }
+        dest.flip();
     }
 }

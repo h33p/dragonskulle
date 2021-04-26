@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,12 +18,15 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
 import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * Server network manager.
@@ -33,6 +37,14 @@ import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 @Accessors(prefix = "m")
 @Log
 public class ServerNetworkManager {
+
+    public enum ServerGameState {
+        IN_PROGRESS,
+        LOBBY,
+        STARTING,
+        NONE;
+    }
+
     /** Server event listener. */
     public class Listener implements IServerListener {
         /**
@@ -51,12 +63,6 @@ public class ServerNetworkManager {
             if (mConnectedClientHandler != null) {
                 mConnectedClientHandler.handle(mManager.getGameScene(), mManager, client);
             }
-        }
-
-        @Override
-        public void clientLoaded(ServerClient client) {
-            log.info("Client with id " + client.getNetworkID() + " has fully loaded");
-            spawnNetworkObject(client.getNetworkID(), mManager.findTemplateByName("player"));
         }
 
         /**
@@ -122,6 +128,7 @@ public class ServerNetworkManager {
         @Getter private final Reference<NetworkObject> mNetworkObject;
         @Getter private final int mTemplateId;
         @Getter private final Set<ServerClient> mSpawnedFor;
+        private boolean mAwoken = false;
 
         public ServerObjectEntry(Reference<NetworkObject> networkObject, int templateId) {
             mNetworkObject = networkObject;
@@ -135,6 +142,11 @@ public class ServerNetworkManager {
 
             if (obj == null) {
                 return;
+            }
+
+            if (!mAwoken) {
+                obj.beforeNetSerialize();
+                mAwoken = true;
             }
 
             boolean forceUpdate = false;
@@ -162,11 +174,15 @@ public class ServerNetworkManager {
     /** Underlying server instance. */
     private final Server mServer;
     /** Back reference to {@link NetworkManager}. */
-    private final NetworkManager mManager;
+    @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
     private final NetworkManager.IConnectedClientEvent mConnectedClientHandler;
+    /** Callback for game start. */
+    private final NetworkManager.IGameStartEvent mGameStartEventHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
+    /** Describes the current state of the game. */
+    private ServerGameState mGameState = ServerGameState.STARTING;
 
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
@@ -174,39 +190,43 @@ public class ServerNetworkManager {
      */
     @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
+    /** Stores per-owner singletons. Can be looked up with getIdSingletons */
+    private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
+
     /**
      * Constructor for {@link ServerNetworkManager}.
      *
      * @param manager back reference to {@link NetworkManager}
      * @param port target port to listen on
      * @param connectedClientHandler callback for client connections
+     * @param gameStartEventHandler callback for when the game starts
      */
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
-            NetworkManager.IConnectedClientEvent connectedClientHandler)
+            NetworkManager.IConnectedClientEvent connectedClientHandler,
+            NetworkManager.IGameStartEvent gameStartEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
         mConnectedClientHandler = connectedClientHandler;
-        // TODO: startLobby();
-        //      Create lobby UI (List connected players/ show connected count
-        //      Once host clicks start game, reject new connections and createGameScene
-        log.info("Lobby started");
+        mGameStartEventHandler = gameStartEventHandler;
     }
 
     /** Start the game, load game scene. */
-    public void startGame() {
+    void startGame() {
         Engine engine = Engine.getInstance();
 
         mManager.createGameScene(true);
-
-        clientStart();
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
         } else {
             engine.activateScene(mManager.getGameScene());
+        }
+
+        if (mGameStartEventHandler != null) {
+            mGameStartEventHandler.handle(mManager);
         }
     }
 
@@ -215,6 +235,7 @@ public class ServerNetworkManager {
      *
      * @param owner target owner of the object
      * @param templateId ID of spawnable template
+     * @return reference to the newly spawned network object
      */
     public Reference<NetworkObject> spawnNetworkObject(ServerClient owner, int templateId) {
         return spawnNetworkObject(owner.getNetworkID(), templateId);
@@ -225,14 +246,24 @@ public class ServerNetworkManager {
      *
      * @param ownerId target owner of the object. For server (AI) owned objects, use negative IDs
      * @param templateId ID of the spawnable template
+     * @return reference to newly spawned network object. {@code null} if invalid template was
+     *     passed.
      */
     public Reference<NetworkObject> spawnNetworkObject(int ownerId, int templateId) {
         int netId = this.allocateId();
 
         NetworkObject networkObject = new NetworkObject(netId, ownerId, true, mManager);
         GameObject object = mManager.getSpawnableTemplates().instantiate(templateId);
+
+        if (object == null) {
+            log.warning("Failed to instantiate template ID " + templateId);
+            return null;
+        }
+
         object.addComponent(networkObject);
         Reference<NetworkObject> ref = networkObject.getReference(NetworkObject.class);
+        object.getTransform()
+                .setLocal3DTransformation(new Vector3f(), new Quaternionf(), new Vector3f(1));
 
         mManager.getGameScene().addRootObject(object);
 
@@ -297,11 +328,48 @@ public class ServerNetworkManager {
         mManager.onServerDestroy();
     }
 
+    /**
+     * Get collection of clients connected to the server.
+     *
+     * @return collection of clients connected to the server.
+     */
+    public Collection<ServerClient> getClients() {
+        return mServer.getClients();
+    }
+
+    /**
+     * Get singletons for a object owner.
+     *
+     * @param ownerId owner of the singletons
+     * @return singleton store for the given owner ID. If the store does not exist, a new one gets
+     *     created.
+     */
+    public SingletonStore getIdSingletons(int ownerId) {
+        Integer id = ownerId;
+        SingletonStore store = mIdSingletons.get(id);
+        if (store == null) {
+            store = new SingletonStore();
+            mIdSingletons.put(id, store);
+        }
+        return store;
+    }
+
     /** Network update, called by {@link NetworkManager}. */
     void networkUpdate() {
         if (mServer == null) {
             return;
         }
+
+        switch (mGameState) {
+            case STARTING:
+                startGame();
+                mGameState = ServerGameState.IN_PROGRESS;
+                break;
+            default:
+                break;
+        }
+
+        if (mGameState == ServerGameState.STARTING) return;
 
         mServer.updateClientList();
         mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
@@ -321,7 +389,7 @@ public class ServerNetworkManager {
         clientUpdate();
     }
 
-    /** Late network update, called by {@link NetworkManager} */
+    /** Late network update, called by {@link NetworkManager}. */
     void lateNetworkUpdate() {
 
         for (ServerClient c : mServer.getClients()) {
@@ -378,20 +446,6 @@ public class ServerNetworkManager {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    /** Sends start event to all clients. */
-    private void clientStart() {
-        final byte[] msg = {NetworkConfig.Codes.MESSAGE_SERVER_START};
-
-        for (ServerClient c : mServer.getClients()) {
-            try {
-                c.sendBytes(msg);
-            } catch (IOException e) {
-                e.printStackTrace();
-                c.closeSocket();
-            }
         }
     }
 }

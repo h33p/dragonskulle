@@ -35,7 +35,8 @@
                 1,
                 2,
                 3,
-                4
+                4,
+                5
             ]
         }
     ],
@@ -89,10 +90,20 @@
                     "components" : [
                         {
                             "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
-                            "enabled" : true
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSyncHeight",
+                                    "value" : false
+                                }
+                            ]
                         },
                         {
                             "class_name" : "org.dragonskulle.game.building.Building",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
                             "enabled" : true
                         }
                     ]
@@ -144,6 +155,31 @@
             "name" : "aiPlayer",
             "translation" : [
                 -8,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.map.HexagonMap",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSize",
+                                    "value" : 51
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "map",
+            "translation" : [
+                -10,
                 0,
                 0
             ]

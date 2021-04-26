@@ -12,7 +12,7 @@ import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
 /**
- * Describes UI appearance and visual behaviour
+ * Describes UI appearance and visual behaviour.
  *
  * @author Aurimas Blažulionis
  */
@@ -34,7 +34,7 @@ public class UIAppearance implements NativeResource {
     private Resource<Font> mTextFont = Font.getFontResource("CascadiaCode.ttf");
     /** The colour text has. */
     private Vector4f mTextColour = new Vector4f(0f, 0f, 0f, 1f);
-    /** How much of a button is used by its icon (on the left side) */
+    /** How much of a button is used by its icon (on the left side). */
     private float mButtonIconSplit = 0.2f;
     /** Margins from parent box edges that are set for text. */
     private float mRectTextVertMargin = 0.05f;
@@ -44,6 +44,8 @@ public class UIAppearance implements NativeResource {
     private float mSliderKnobSize = 10f;
     /** Height of a UI element in vertical UI. */
     private float mVerticalUIElemHeight = 0.07f;
+    /** Width of a UI element in Horizontal UI. */
+    private float mHorizontalUIElemWidth = 0.27f;
     /** Gap between UI elements in vertical UI. */
     private float mVerticalUIElemGap = 0.03f;
     /** Gap between UI elements in vertical UI. */
@@ -56,6 +58,8 @@ public class UIAppearance implements NativeResource {
     private SampledTexture mDropDownIconTexture = new SampledTexture("ui/drop_down_icon.png");
     /** Texture of a slider knob. */
     private SampledTexture mSliderKnobTexture = new SampledTexture("ui/round_knob.png");
+    /** Texture of a hint. */
+    private SampledTexture mHintTexture = new SampledTexture("ui/wide_button_new.png");
     /** Texture of a regular rectangle. */
     private SampledTexture[] mRectTextures = {new SampledTexture("white.bmp")};
     /** Injected onClick event to play sounds or something. */

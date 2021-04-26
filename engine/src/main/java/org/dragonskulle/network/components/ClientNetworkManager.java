@@ -4,9 +4,7 @@ package org.dragonskulle.network.components;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -16,27 +14,30 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
-import org.dragonskulle.network.NetworkConfig;
-import org.dragonskulle.network.components.NetworkManager.IObjectOwnerModifiedEvent;
-import org.dragonskulle.network.components.NetworkManager.IObjectSpawnEvent;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
+ * Client side network manager.
+ *
  * @author Aurimas Blažulionis
  * @author Oscar L
+ *     <p>This network manager exists on {@link NetworkManager} if, and only if there is a client
+ *     game instance spawned on it. It contains the current game state, and spawned objects. It
+ *     keeps track of game state, and communicates with the server.
  */
 @Accessors(prefix = "m")
 @Log
 public class ClientNetworkManager {
 
     /** Describes client connection state. */
-    private enum ConnectionState {
+    private static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,
-        IN_LOBBY,
-        JOINING_GAME,
         JOINED_GAME,
         CONNECTION_ERROR,
         CLEAN_DISCONNECTED
@@ -92,11 +93,7 @@ public class ClientNetworkManager {
                 log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
                 return;
             }
-            int oldOwner = entry.mNetworkObject.get().getOwnerId();
-            int newOwner = entry.mNetworkObject.get().updateFromBytes(stream);
-            if (oldOwner != newOwner) { // ownership has changed
-                updateOwnershipLink(entry.mNetworkObject);
-            }
+            entry.mNetworkObject.get().updateFromBytes(stream);
             if (!entry.mSynchronized) {
                 entry.mSynchronized = true;
                 entry.mNetworkObject.get().getGameObject().setEnabled(true);
@@ -111,10 +108,6 @@ public class ClientNetworkManager {
         @Override
         public void updateServerState(DataInputStream stream) throws IOException {
             mServerTime = stream.readFloat();
-        }
-
-        private void updateOwnershipLink(Reference<NetworkObject> mNetworkObject) {
-            mModifiedOwnerListeners.stream().forEach(l -> l.handleModifyOwner(mNetworkObject));
         }
 
         @Override
@@ -141,18 +134,23 @@ public class ClientNetworkManager {
                 nob.handleServerEvent(eventId, stream);
             }
         }
-
-        @Override
-        public void startEvent() {
-            log.info("Server starting game");
-            mNextConnectionState.set(ConnectionState.JOINING_GAME);
-        }
     }
 
+    /** Internal entry for a client-side networked object. */
     private static class ClientObjectEntry {
+        /**
+         * Whether the object has been synchronized. Until this value is {@code true}, the object
+         * will be disabled.
+         */
         private boolean mSynchronized;
+        /** Reference to the actual network object. */
         private final Reference<NetworkObject> mNetworkObject;
 
+        /**
+         * Constructor for {@link ClientObjectEntry}.
+         *
+         * @param networkObject reference to the network object in question
+         */
         public ClientObjectEntry(Reference<NetworkObject> networkObject) {
             mSynchronized = false;
             mNetworkObject = networkObject;
@@ -166,17 +164,13 @@ public class ClientNetworkManager {
     /** Current connection state. */
     @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener). */
-    private final AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
+    private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
     /** Callback for connection result processing. */
-    private final NetworkManager.IConnectionResultEvent mConnectionHandler;
+    private NetworkManager.IConnectionResultEvent mConnectionHandler;
     /** Back reference to the network manager. */
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates. */
     private int mTicksWithoutRequests = 0;
-    /** Listeners for spawn events. */
-    private final List<IObjectSpawnEvent> mSpawnListeners = new ArrayList<>();
-    /** Listeners for owner modification events. */
-    private final List<IObjectOwnerModifiedEvent> mModifiedOwnerListeners = new ArrayList<>();
 
     @Getter private int mNetId = -1;
 
@@ -184,6 +178,9 @@ public class ClientNetworkManager {
 
     /** An map of references to objects. */
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();
+
+    /** Stores per-owner singletons. Can be looked up with getIdSingletons */
+    private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
 
     /**
      * Constructor for ClientNetworkManager.
@@ -213,6 +210,15 @@ public class ClientNetworkManager {
         mClient.sendBytes(message);
     }
 
+    /**
+     * Get data output stream.
+     *
+     * <p>This will get a stream for client to server communication.
+     *
+     * @return output stream used to send data to the server. This is a wrapped stream which will
+     *     append message length at the front of the message before sending. The message gets sent
+     *     only when the stream gets closed.
+     */
     public DataOutputStream getDataOut() {
         return mClient.getDataOut();
     }
@@ -226,22 +232,6 @@ public class ClientNetworkManager {
     public Reference<NetworkObject> getNetworkObject(int networkObjectId) {
         ClientObjectEntry entry = getNetworkObjectEntry(networkObjectId);
         return entry == null ? null : entry.mNetworkObject;
-    }
-
-    public void registerSpawnListener(IObjectSpawnEvent listener) {
-        mSpawnListeners.add(listener);
-    }
-
-    public void unregisterSpawnListener(IObjectSpawnEvent listener) {
-        mSpawnListeners.remove(listener);
-    }
-
-    public void registerOwnershipModificationListener(IObjectOwnerModifiedEvent listener) {
-        mModifiedOwnerListeners.add(listener);
-    }
-
-    public void unregisterOwnershipModificationListener(IObjectOwnerModifiedEvent listener) {
-        mModifiedOwnerListeners.remove(listener);
     }
 
     /**
@@ -272,10 +262,26 @@ public class ClientNetworkManager {
         mNetworkObjectReferences.clear();
     }
 
+    /**
+     * Get singletons for a object owner.
+     *
+     * @param ownerId owner of the singletons
+     * @return singleton store for the given owner ID. If the store does not exist, a new one gets
+     *     created.
+     */
+    public SingletonStore getIdSingletons(int ownerId) {
+        Integer id = ownerId;
+        SingletonStore store = mIdSingletons.get(id);
+        if (store == null) {
+            store = new SingletonStore();
+            mIdSingletons.put(id, store);
+        }
+        return store;
+    }
+
     /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mConnectionState == ConnectionState.JOINED_GAME
-                || mConnectionState == ConnectionState.IN_LOBBY) {
+        if (mConnectionState == ConnectionState.JOINED_GAME) {
             if (mClient.processRequests() <= 0) {
                 mTicksWithoutRequests++;
                 if (mTicksWithoutRequests > 3200) {
@@ -303,13 +309,9 @@ public class ClientNetworkManager {
             log.info(nextState.toString());
             log.info(mConnectionState.toString());
 
-            if (mConnectionState == ConnectionState.CONNECTING
-                    || mConnectionState == ConnectionState.IN_LOBBY) {
+            if (mConnectionState == ConnectionState.CONNECTING) {
                 switch (nextState) {
                     case CONNECTED:
-                        joinLobby();
-                        break;
-                    case JOINING_GAME:
                         joinGame();
                         if (mConnectionHandler != null) {
                             mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetId);
@@ -342,9 +344,7 @@ public class ClientNetworkManager {
     }
 
     // TODO: implement lobby
-    private void joinLobby() {
-        mConnectionState = ConnectionState.IN_LOBBY;
-    }
+    // private void joinLobby() {}
 
     /** Join the game map. */
     private void joinGame() {
@@ -357,8 +357,6 @@ public class ClientNetworkManager {
         } else {
             engine.activateScene(mManager.getGameScene());
         }
-
-        sendToServer(new byte[] {NetworkConfig.Codes.MESSAGE_CLIENT_LOADED});
 
         mConnectionState = ConnectionState.JOINED_GAME;
     }
@@ -383,6 +381,14 @@ public class ClientNetworkManager {
      */
     private void spawnNewNetworkObject(int networkObjectId, int ownerID, int templateId) {
         final GameObject go = mManager.getSpawnableTemplates().instantiate(templateId);
+
+        if (go == null) {
+            log.warning("Failed to instantiate template ID " + templateId);
+            return;
+        }
+
+        go.getTransform()
+                .setLocal3DTransformation(new Vector3f(), new Quaternionf(), new Vector3f(1));
         final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false, mManager);
         go.addComponent(nob);
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
@@ -392,6 +398,5 @@ public class ClientNetworkManager {
         mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), new ClientObjectEntry(ref));
         nob.networkInitialize();
-        mSpawnListeners.stream().forEach(l -> l.handleSpawn(nob));
     }
 }

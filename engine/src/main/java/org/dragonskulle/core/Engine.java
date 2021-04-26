@@ -17,6 +17,7 @@ import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
@@ -61,6 +62,10 @@ public class Engine {
     /** Engine's GLFW window state. */
     @Getter private GLFWState mGLFWState = null;
 
+    private final ArrayList<IScheduledEvent> mFrameEvents = new ArrayList<>();
+    private final ArrayList<IScheduledEvent> mEndOfLoopEvents = new ArrayList<>();
+    private final ArrayList<IScheduledEvent> mFixedUpdateEvents = new ArrayList<>();
+
     @Getter private float mCurTime = 0f;
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
@@ -68,6 +73,10 @@ public class Engine {
 
     public interface IEngineExitCondition {
         boolean shouldExit();
+    }
+
+    public interface IScheduledEvent {
+        void invoke();
     }
 
     private Engine() {}
@@ -81,6 +90,10 @@ public class Engine {
     public void start(String gameName, Bindings bindings) {
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
+
+        UPnP.initialise();
+        log.info(UPnP.getExternalIPAddress());
+        UPnP.addPortMapping(17569, "TCP");
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
@@ -204,6 +217,21 @@ public class Engine {
         }
     }
 
+    /** Schedule an event for the next frame update. */
+    public void scheduleFrameEvent(IScheduledEvent event) {
+        mFrameEvents.add(event);
+    }
+
+    /** Schedule an event for the next fixed update. */
+    public void scheduleFixedUpdateEvent(IScheduledEvent event) {
+        mFixedUpdateEvents.add(event);
+    }
+
+    /** Schedule an event for the end of main loop iteration. */
+    public void scheduleEndOfLoopEvent(IScheduledEvent event) {
+        mEndOfLoopEvents.add(event);
+    }
+
     /** Stops the engine when the current frame has finished. */
     public void stop() {
         mIsRunning = false;
@@ -247,7 +275,6 @@ public class Engine {
             if (present) {
                 Scene.setActiveScene(mPresentationScene);
                 UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
-                AudioManager.getInstance().updateAudioListener();
 
                 // Call FrameUpdate on the presentation scene
                 frameUpdate((float) deltaTime);
@@ -271,6 +298,7 @@ public class Engine {
 
             if (present) {
                 Scene.setActiveScene(mPresentationScene);
+                AudioManager.getInstance().updateAudioListener();
 
                 // Call LateFrameUpdate on the presentation scene
                 lateFrameUpdate((float) deltaTime);
@@ -282,6 +310,12 @@ public class Engine {
             if (triggerFixedUpdate) {
                 lateNetworkUpdate();
             }
+
+            for (IScheduledEvent event : mEndOfLoopEvents) {
+                event.invoke();
+            }
+
+            mEndOfLoopEvents.clear();
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
@@ -326,6 +360,12 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(float deltaTime) {
+        for (IScheduledEvent event : mFrameEvents) {
+            event.invoke();
+        }
+
+        mFrameEvents.clear();
+
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
                 ((IFrameUpdate) component).frameUpdate(deltaTime);
@@ -335,6 +375,12 @@ public class Engine {
 
     /** Do all Fixed Updates on components that implement it. */
     private void fixedUpdate() {
+        for (IScheduledEvent event : mFixedUpdateEvents) {
+            event.invoke();
+        }
+
+        mFixedUpdateEvents.clear();
+
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
             for (Component component : s.getEnabledComponents()) {
@@ -507,6 +553,7 @@ public class Engine {
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
 
+        UPnP.deleteAllMappings();
         destroyAllObjects();
         mGLFWState.free();
     }
