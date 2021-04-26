@@ -42,7 +42,7 @@ public class ServerNetworkManager {
         IN_PROGRESS,
         LOBBY,
         STARTING,
-        NONE;
+        NONE
     }
 
     /** Server event listener. */
@@ -418,6 +418,7 @@ public class ServerNetworkManager {
 
             if (engine.getPresentationScene() == mManager.getGameScene()) {
                 engine.loadPresentationScene(Scene.getActiveScene());
+                engine.unloadScene(mManager.getGameScene());
             }
 
             mManager.onServerDestroy();
