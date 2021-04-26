@@ -9,6 +9,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
+import org.dragonskulle.ui.BuildHandlerInfo;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIDropDown;
@@ -24,7 +25,7 @@ import org.dragonskulle.ui.UITextRect;
  * @author Craig Wilbourne
  */
 public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate {
-
+	
     /** Contains the action to execute when the user requests to leave the settings menu. */
     public static interface IOnBack {
         /** Contains the code to execute on a back action. */
@@ -121,7 +122,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         final UIManager uiManager = UIManager.getInstance();
         uiManager.buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
     }
-
+    
     /** Generate the contents of {@link #mAudioContainer}. */
     private void generateAudio() {
         final UIManager uiManager = UIManager.getInstance();
@@ -168,6 +169,14 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         // Combined:
         //uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, title, mute, volume, back);
         
+        BuildHandlerInfo titleInfo = new BuildHandlerInfo(title, 0);
+        BuildHandlerInfo muteInfo = new BuildHandlerInfo(mute, -0.15f);
+        BuildHandlerInfo volumeInfo = new BuildHandlerInfo(volume, -0.15f);
+        BuildHandlerInfo backInfo = new BuildHandlerInfo(back, 0f);
+        
+        uiManager.buildVerticalUi(mAudioContainer, 0.3f, 0, 1f, titleInfo, muteInfo, volumeInfo, backInfo);
+        
+        /*
         final float startY = 0.3f;
         final float startX = 0f;
         final float endX = 1f;
@@ -211,6 +220,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                     transform.setMargin(0, 0, 0, uiManager.getAppearance().getVerticalUIElemHeight());
                     back.handleUIBuild(child);
                 });
+       */
     }
 
     private float generateYPosition(int count, float startY) {

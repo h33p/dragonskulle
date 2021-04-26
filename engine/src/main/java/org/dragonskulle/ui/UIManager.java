@@ -97,8 +97,8 @@ public class UIManager {
         }
     }
 
-    public static interface IUIBuildHandler {
-        /**
+    public static interface IUIBuildHandler {    	
+    	/**
          * Handle building of UI object
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
@@ -145,6 +145,36 @@ public class UIManager {
                         (child) -> {
                             TransformUI transform = child.getTransform(TransformUI.class);
                             transform.setParentAnchor(startX, curY, endX, curY);
+                            transform.setMargin(0, 0, 0, mAppearance.getVerticalUIElemHeight());
+                            handler.handleUIBuild(child);
+                        });
+            }
+
+            cnt++;
+        }
+    }
+    
+    public void buildVerticalUi(
+            GameObject go, float startY, float startX, float endX, BuildHandlerInfo... elems) {
+        int cnt = 0;
+
+        for (BuildHandlerInfo handlerInfo : elems) {
+            IUIBuildHandler handler = handlerInfo.getHandler();
+            final float xOffset = handlerInfo.getXOffset();
+        	
+        	final float curY =
+                    cnt
+                                    * (mAppearance.getVerticalUIElemHeight()
+                                            + mAppearance.getVerticalUIElemGap())
+                            + startY;
+
+            if (handler != null) {
+                go.buildChild(
+                        "ui_child",
+                        new TransformUI(true),
+                        (child) -> {
+                            TransformUI transform = child.getTransform(TransformUI.class);
+                            transform.setParentAnchor(startX + xOffset, curY, endX, curY);
                             transform.setMargin(0, 0, 0, mAppearance.getVerticalUIElemHeight());
                             handler.handleUIBuild(child);
                         });
