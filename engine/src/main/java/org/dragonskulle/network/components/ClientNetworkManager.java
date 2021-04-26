@@ -374,7 +374,6 @@ public class ClientNetworkManager {
         mConnectionState = ConnectionState.CONNECTED;
 
         mManager.createGameScene(false);
-        mClient.sendBytes(new byte[] { NetworkConfig.Codes.MESSAGE_CLIENT_LOADED });
     }
 
     /** Join the game map. */
@@ -390,6 +389,7 @@ public class ClientNetworkManager {
         }
 
         mConnectionState = ConnectionState.JOINED_GAME;
+        mClient.sendBytes(new byte[] { NetworkConfig.Codes.MESSAGE_CLIENT_LOADED });
     }
 
     /**
