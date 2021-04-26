@@ -230,8 +230,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                 mNetworkManager
                                         .get()
                                         .createClient(
-                                                "127.0.0.1",
-                                                7000,
+                                                text,
+                                                PORT,
                                                 (manager, netID) -> {
                                                     button.getLabelText().get().setText(text);
 
