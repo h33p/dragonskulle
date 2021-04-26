@@ -105,7 +105,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
     public static final HighlightSelection PLACE_MATERIAL =
-            highlightSelectionFromColour(0.3f,1.0f,0.7f);
+            highlightSelectionFromColour(0f,1f,0.7f);
 
     private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
