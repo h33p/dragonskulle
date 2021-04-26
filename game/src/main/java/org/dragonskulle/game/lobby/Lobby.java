@@ -158,7 +158,9 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Close lobby",
                                 (__, ___) -> {
                                     // TODO: Shutdown server
-                                    LobbyAPI.deleteHost(lobbyID, this::onDeleteHost);
+                                    if (!lobbyID.equals("")) {
+                                        LobbyAPI.deleteHost(lobbyID, this::onDeleteHost);
+                                    }
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
                                 }));
@@ -366,6 +368,8 @@ public class Lobby extends Component implements IFrameUpdate {
     private void onDeleteHost(String response, boolean success) {
         if (!success) {
             log.warning("Failed to delete host from the server list");
+        } else {
+            lobbyID = "";
         }
     }
 
