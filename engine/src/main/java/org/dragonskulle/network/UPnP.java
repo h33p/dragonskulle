@@ -203,7 +203,9 @@ public class UPnP {
 
     /** Delete all port mappings that were added at runtime */
     public static void deleteAllMappings() {
-        for (Pair<Integer, String> mapping : sMappings) {
+
+        ArrayList<Pair<Integer, String>> mappings = new ArrayList<>(sMappings);
+        for (Pair<Integer, String> mapping : mappings) {
             deletePortMapping(mapping.getKey(), mapping.getValue());
         }
     }
