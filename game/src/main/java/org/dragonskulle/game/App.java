@@ -22,8 +22,6 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.lobby.Lobby;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.player.HumanPlayer;
-import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
@@ -47,7 +45,7 @@ public class App implements NativeResource {
             AudioManager.getInstance().loadSound("country_background_short.wav");
 
     private static String sIP = "127.0.0.1";
-    private static int sPort = 7000;
+    private static int sPort = 17569;
     private static boolean sReload = false;
 
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
@@ -311,7 +309,7 @@ public class App implements NativeResource {
                         "Play Game",
                         (__, ___) -> {
                             mainUi.setEnabled(false);
-                            lobby.get().getMLobbyUi().setEnabled(true);
+                            lobby.get().getLobbyUi().setEnabled(true);
                         }),
                 new UIButton(
                         "Settings",

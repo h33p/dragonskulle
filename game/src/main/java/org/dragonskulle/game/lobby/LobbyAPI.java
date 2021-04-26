@@ -88,7 +88,9 @@ public class LobbyAPI {
                 }
                 reader.close();
 
-                mCallback.call(builder.toString());
+                if (mCallback != null) {
+                    mCallback.call(builder.toString());
+                }
             } catch (IOException e) {
                 log.warning(String.format("%s request to %s failed", mMethod, mUrl.toString()));
             }

@@ -88,12 +88,9 @@ public class Engine {
      * @param bindings User input bindings
      */
     public void start(String gameName, Bindings bindings) {
-
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
         UPnP.initialise();
-        log.info(UPnP.getExternalIPAddress());
-        UPnP.addPortMapping(17569, "TCP");
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 

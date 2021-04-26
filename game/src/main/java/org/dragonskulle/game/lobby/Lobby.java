@@ -4,7 +4,9 @@ package org.dragonskulle.game.lobby;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import lombok.Getter;
+import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
@@ -13,6 +15,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
+import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
@@ -20,20 +23,29 @@ import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 @Log
+@Accessors(prefix = "m")
 public class Lobby extends Component implements IFrameUpdate {
+
+    private static final int PORT = 17569;
 
     private final ArrayList<InetSocketAddress> mHosts = new ArrayList<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
     @Getter private final GameObject mLobbyUi;
-    @Getter private final GameObject mHostUi;
-    @Getter private final GameObject mJoinUi;
-    @Getter private final GameObject mServerBrowserUi;
+    private final GameObject mHostUi;
+    private final GameObject mJoinUi;
+    private final GameObject mServerBrowserUi;
     private Reference<GameObject> mServerList;
-    @Getter private final GameObject mHostingUi;
-    @Getter private final GameObject mJoiningUi;
+    private final GameObject mHostingUi;
+    private final GameObject mJoiningUi;
     private final Reference<NetworkManager> mNetworkManager;
+
+    private String lobbyID = "";
 
     public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
         mNetworkManager = networkManager;
@@ -208,9 +220,6 @@ public class Lobby extends Component implements IFrameUpdate {
                             LobbyAPI.getAllHosts(this::handleGetAllHosts);
                         });
 
-        // TODO: Handle connection failures
-        //      Either change the handler to
-
         for (int i = 0; i < mHosts.size(); i++) {
             final String text = mHosts.get(i).getHostString();
             buttons[i + 1] =
@@ -248,17 +257,23 @@ public class Lobby extends Component implements IFrameUpdate {
                         0,
                         0.2f,
                         new UIButton(
-                                // TODO: Online
-                                // TODO: Get public ip
-                                // TODO: Do auto port-forwarding with UPnP
-                                // TODO: Use lobbyAPI to add lobby to list
-                                ),
+                                "Host publicly",
+                                (__, ___) -> {
+                                    UPnP.addPortMapping(PORT, "TCP");
+                                    String ip = UPnP.getExternalIPAddress();
+                                    LobbyAPI.addNewHost(ip, PORT, this::handleAddNewHost);
+                                    mNetworkManager
+                                            .get()
+                                            .createServer(PORT, this::onClientLoaded, this::onGameStarted);
+                                    mHostingUi.setEnabled(true);
+                                    mHostUi.setEnabled(false);
+                                }),
                         new UIButton(
                                 "Host locally",
                                 (__, ___) -> {
                                     mNetworkManager
                                             .get()
-                                            .createServer(7000, this::onClientLoaded, this::onGameStarted);
+                                            .createServer(PORT, this::onClientLoaded, this::onGameStarted);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -280,10 +295,39 @@ public class Lobby extends Component implements IFrameUpdate {
     }
 
     private void handleGetAllHosts(String response) {
-        // TODO: Process response and separate each host into INetAddress
-        log.info("Get all hosts returned:\n\t" + response);
-        mHosts.add(new InetSocketAddress("127.0.0.1", 7000));
+        mHosts.clear();
+        JSONParser parser = new JSONParser();
+        try {
+            JSONArray array = (JSONArray)parser.parse(response);
+
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject obj = (JSONObject)array.get(i);
+
+                String ip = (String)obj.get("address");
+                int port = Math.toIntExact((Long)obj.get("port"));
+
+                log.info("New host: " + ip + ":" + port);
+                mHosts.add(new InetSocketAddress(ip, port));
+            }
+
+        } catch (ParseException e) {
+            log.info("Failed to parse response from get all hosts");
+            return;
+        }
         mHostsUpdated.set(true);
+    }
+
+    private void handleAddNewHost(String response) {
+        log.info("Add new host returned:\n\t" + response);
+        JSONParser parser = new JSONParser();
+        try {
+            JSONObject obj = (JSONObject)parser.parse(response);
+            lobbyID = (String)obj.get("_id");
+            log.info(lobbyID);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            log.warning("Failed to parse response from add new host. Likely failed.");
+        }
     }
 
     private void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
