@@ -41,8 +41,8 @@ import org.joml.Vector3f;
 @Log
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
-    // All screens to be used
-    private Screen mScreenOn = Screen.DEFAULT_SCREEN;
+    /** The current {@link Screen} being displayed. */
+    private Screen mCurrentScreen = Screen.DEFAULT_SCREEN;
 
     private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
@@ -107,7 +107,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 this::setBuildingChosen,
                 this::getHexChosen,
                 this::setHexChosen,
-                this::setScreenOn,
+                this::switchScreen,
                 this::getPlayer);
         mMenuDrawer = menu.getReference(UIMenuLeftDrawer.class);
         
@@ -190,7 +190,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if(mHexChosen == null) return;
         
         // Do not swap screens.
-        if (mScreenOn == Screen.ATTACKING_SCREEN) return;
+        if (mCurrentScreen == Screen.ATTACKING_SCREEN) return;
         
         if(mHexChosen.hasBuilding()) {
         	Building building = mHexChosen.getBuilding();
@@ -200,16 +200,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             mBuildingChosen = building.getReference(Building.class);
         	
             if (player.isBuildingOwner(building)) {
-                setScreenOn(Screen.BUILDING_SELECTED_SCREEN);
+            	switchScreen(Screen.BUILDING_SELECTED_SCREEN);
             } else {
-            	setScreenOn(Screen.DEFAULT_SCREEN);
+            	switchScreen(Screen.DEFAULT_SCREEN);
             }
         } else {
         	if (mHexChosen.isBuildable(player)) {
-                setScreenOn(Screen.PLACING_NEW_BUILDING);
+        		switchScreen(Screen.PLACING_NEW_BUILDING);
             } else {
                 mBuildingChosen = null;
-                setScreenOn(Screen.DEFAULT_SCREEN);
+                switchScreen(Screen.DEFAULT_SCREEN);
             }
         }
     }
@@ -231,7 +231,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Set the player for the effects.
         effects.setActivePlayer(mPlayer);
 
-        switch (mScreenOn) {
+        switch (mCurrentScreen) {
             case DEFAULT_SCREEN:
                 effects.setHighlightOverlay(
                         (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
@@ -252,30 +252,29 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                 break;
             default:
-                log.warning("State '" + mScreenOn + "' not recognised.");
+                log.warning("State '" + mCurrentScreen + "' not recognised.");
                 break;
         }
     }
 
-    private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
-        if (mHexChosen != null) {
-            fx.highlightTile(mHexChosen, highlight.asSelection());
-        }
+    private void highlightSelectedTile(MapEffects effects, StandardHighlightType highlight) {
+        if (mHexChosen == null || effects == null || highlight == null) return;
+        effects.highlightTile(mHexChosen, highlight.asSelection());
     }
 
     /**
-     * Sets screen and notifies that an update is needed for the visuals.
+     * Switches to the specified {@link Screen} and notifies that an update is needed for the visuals.
      *
-     * @param newScreen the new screen
+     * @param newScreen The screen to switch to.
      */
-    private void setScreenOn(Screen newScreen) {
-        if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
-            mVisualsNeedUpdate = true;
-        }
-        mScreenOn = newScreen;
+    private void switchScreen(Screen desired) {
+        if(desired.equals(mCurrentScreen)) return;
+        
+        mCurrentScreen = desired;
+        mVisualsNeedUpdate = true;
         
         if (Reference.isValid(mMenuDrawer)) {
-            mMenuDrawer.get().setVisibleScreen(mScreenOn);
+            mMenuDrawer.get().setVisibleScreen(mCurrentScreen);
         }
     }
     
