@@ -13,6 +13,8 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameState;
+import org.dragonskulle.game.GameState.IGameEndEvent;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
@@ -30,7 +32,10 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 /**
  * This class will allow a user to interact with game.
@@ -66,6 +71,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private HexagonTile mLastHexChosen;
 
     private boolean mMovedCameraToCapital = false;
+
+    private Reference<GameObject> mWinnerScreen;
+    private Reference<GameObject> mLoserScreen;
+    private Reference<IGameEndEvent> mGameEndEventHandler;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -120,6 +129,40 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
 
+        mWinnerScreen =
+                getGameObject()
+                        .buildChild(
+                                "winner_screen",
+                                false,
+                                new TransformUI(),
+                                (go) -> {
+                                    go.addComponent(new UIRenderable(new Vector4f(0.3f)));
+                                    UIManager.getInstance()
+                                            .buildVerticalUi(
+                                                    go,
+                                                    0.3f,
+                                                    0.1f,
+                                                    0.9f,
+                                                    new UITextRect("You are winner!"));
+                                });
+
+        mLoserScreen =
+                getGameObject()
+                        .buildChild(
+                                "loser_screen",
+                                false,
+                                new TransformUI(),
+                                (go) -> {
+                                    go.addComponent(new UIRenderable(new Vector4f(0.3f)));
+                                    UIManager.getInstance()
+                                            .buildVerticalUi(
+                                                    go,
+                                                    0.3f,
+                                                    0.1f,
+                                                    0.9f,
+                                                    new UITextRect("You are very loose!"));
+                                });
+
         mVisualsNeedUpdate = true;
     }
 
@@ -128,7 +171,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+        if (mGameEndEventHandler != null) {
+            mGameEndEventHandler.clear();
+        }
+    }
 
     @Override
     public void fixedUpdate(float deltaTime) {
@@ -152,6 +199,30 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         if (!Reference.isValid(mPlayer)) {
             return;
+        }
+
+        if (!Reference.isValid(mGameEndEventHandler)) {
+            GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
+
+            if (gameState != null) {
+                mGameEndEventHandler =
+                        new Reference<>(
+                                (winnerId) -> {
+                                    if (Reference.isValid(mPlayer)) {
+                                        int id = mPlayer.get().getNetworkObject().getOwnerId();
+
+                                        if (id == winnerId && Reference.isValid(mWinnerScreen)) {
+                                            mWinnerScreen.get().setEnabled(true);
+                                            return;
+                                        }
+                                    }
+
+                                    if (Reference.isValid(mLoserScreen)) {
+                                        mLoserScreen.get().setEnabled(true);
+                                    }
+                                });
+                gameState.registerGameEndListener(mGameEndEventHandler);
+            }
         }
 
         if (!mMovedCameraToCapital) {

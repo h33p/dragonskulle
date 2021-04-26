@@ -24,6 +24,7 @@ import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.ui.TransformUI;
@@ -580,7 +581,14 @@ public class App implements NativeResource {
     private void onGameStarted(NetworkManager manager) {
         log.severe("Game Start");
         log.warning("Spawning 'Server' Owned objects");
-        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+        Reference<NetworkObject> obj =
+                manager.getServerManager()
+                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+
+        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
+
+        // 6 players for now
+        gameState.get().getNumPlayers().set(6);
     }
 
     @Override

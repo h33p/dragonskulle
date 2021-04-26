@@ -18,6 +18,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
@@ -66,6 +67,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Link to the current capital. */
     private Reference<Building> mCapital = null;
 
+    private Reference<GameState> mGameState;
+
     /** The number of tokens the player has, synchronised from server to client. */
     @Getter private SyncInt mTokens = new SyncInt(0);
 
@@ -91,9 +94,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
-
-    // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private static final int MAX_PLAYERS = 6;
 
     /** Controls how deep into unviewable tiles we go for mTilesAround. */
     private static final int VIEWABILITY_LOWER_BOUND = -5;
@@ -142,6 +142,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (!assignMap()) log.severe("Player has no HexagonMap.");
 
+        mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+
         if (getNetworkObject().isServer()) distributeCoordinates();
 
         Vector3fc col = mPlayerColour.get();
@@ -179,6 +181,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         final int attempts = 20;
 
+        GameState state = mGameState.get();
+
+        final int maxPlayers = state.getNumPlayers().get();
+
         for (int i = 0; i <= attempts; i++) {
 
             log.severe("This is attempt number " + i);
@@ -186,8 +192,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             // Add the building
             float angleBetween;
             if (i < attempts / 2) {
-                float angleOfCircle = 360f / (MAX_PLAYERS + 1);
-                angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
+                float angleOfCircle = 360f / (maxPlayers + 1);
+                angleBetween = (360 - (angleOfCircle * maxPlayers)) / maxPlayers;
             } else {
                 angleBetween = 0;
             }
@@ -202,6 +208,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             } else {
                 buildingToBecomeCapital.setCapital(true);
+                mGameState.get().getNumCapitalsStanding().add(1);
                 log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
                 return;
             }
@@ -223,6 +230,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         } else {
 
             buildingToBecomeCapital.setCapital(true);
+            mGameState.get().getNumCapitalsStanding().add(1);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
             return;
         }
@@ -235,12 +243,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return A {@code Vector2f} with the coordinates to use
      */
     private Vector2f createCoordinates(float angleBetween) {
-        float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+        final int maxPlayers = mGameState.get().getNumPlayers().get();
+
+        float angleOfCircle = 360f / (maxPlayers + 1);
 
         // The number of players online
-        int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
+        int playersOnlineNow = getNetworkObject().getOwnerId() % maxPlayers;
         if (playersOnlineNow < 0) {
-            playersOnlineNow += MAX_PLAYERS; // handle AI Players
+            playersOnlineNow += maxPlayers; // handle AI Players
         }
 
         // This gives us the angle to find our coordinates.  Stored in degrees
@@ -715,6 +725,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             // Special checks for Capital
             if (defender.isCapital()) {
                 defender.setCapital(false);
+
+                GameState state = mGameState.get();
+                state.getNumCapitalsStanding().add(-1);
+                if (state.getNumCapitalsStanding().get() <= 1) {
+                    state.endGame(attacker.getOwnerId());
+                }
 
                 // Update stats
                 ArrayList<SyncStat> stats = defender.getStats();

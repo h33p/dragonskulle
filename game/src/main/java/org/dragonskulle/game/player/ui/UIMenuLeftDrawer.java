@@ -516,7 +516,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         getGameObject()
                 .buildChild(
                         "shop",
-                        false,
+                        true,
                         new TransformUI(),
                         (go) -> go.addComponent(new UIShopSection(this)));
         ArrayList<Reference<UIShopSection>> shops = new ArrayList<>();
