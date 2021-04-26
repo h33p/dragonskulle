@@ -28,8 +28,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         INVALID(1),
         PLAIN(2),
         ATTACK(3),
-        BUILD(4),
-        ATTACK_DARKER(5);
+        PLACE(4);
 
         @Accessors(prefix = "m")
         @Getter
@@ -49,11 +48,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
-                case BUILD:
-                    return BUILD_MATERIAL;
-                case ATTACK_DARKER:
-                    return ATTACK_DARKER_MATERIAL;
-
+                case PLACE:
+                    return PLACE_MATERIAL;
                 default:
                     return null;
             }
@@ -93,28 +89,28 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
-        public HighlightSelection handleTile(HexagonTile tile);
+        public HighlightSelection handleTile(HexagonTile tile, HighlightSelection currentSelection);
     }
 
     public static final HighlightSelection VALID_MATERIAL =
-            highlightSelectionFromColour(0f, 1f, 0.2f);
+            highlightSelectionFromColour(0.1f, 0.6f, 0f);
     public static final HighlightSelection INVALID_MATERIAL =
             highlightSelectionFromColour(1f, 0.08f, 0f);
     public static final HighlightSelection PLAIN_MATERIAL =
             highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final HighlightSelection ATTACK_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
-    public static final HighlightSelection ATTACK_DARKER_MATERIAL =
-            highlightSelectionFromColour(0.443f, 0.039f, 0.039f);
     public static final HighlightSelection BUILD_MATERIAL =
             highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
+    public static final HighlightSelection PLACE_MATERIAL =
+            highlightSelectionFromColour(0.3f,1.0f,0.7f);
 
     private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
 
-    /** Turn on to enable default highlighting (teritory bounds). */
+    /** Turn on to enable default highlighting (territory bounds). */
     @Getter @Setter private boolean mDefaultHighlight = true;
     /** This interface gets called to allow overlaying any selections on top. */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
@@ -174,7 +170,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param selector selector that handles tile selection
      */
     public void highlightTiles(IHighlightSelector selector) {
-        mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t)));
+        mMapReference.get().getAllTiles().forEach(t -> highlightTile(t, selector.handleTile(t, mHighlightedTiles.get(t))));
+        mDefaultHighlight = false;
     }
 
     /**
@@ -231,7 +228,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
 
         highlightTiles(
-                (tile) -> {
+                (tile, __) -> {
                     if (activePlayer != null && !activePlayer.hasLost()) {
                         if (!activePlayer.isTileViewable(tile)) {
                             return FOG_MATERIAL;

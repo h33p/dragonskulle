@@ -1,11 +1,17 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.apache.commons.codec.binary.Hex;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -31,6 +37,8 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
 import org.joml.Vector3f;
+import org.dragonskulle.game.building.Building;
+import org.lwjgl.system.CallbackI;
 
 /**
  * This class will allow a user to interact with game.
@@ -286,24 +294,31 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             switch (mScreenOn) {
                 case DEFAULT_SCREEN:
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    break;
-                case BUILDING_SELECTED_SCREEN:
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                               // highlightAttackableTiles(fx, StandardHighlightType.PLACE);
+                            });
                     break;
                 case UPGRADE_SCREEN:
                     break;
                 case ATTACKING_SCREEN:
+                    effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
+                            (fx) -> {
+                                highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            });
                     break;
                 case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
+                    effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-
+                            (fx) -> {
+                                highlightBuildableTiles(fx, StandardHighlightType.PLACE);
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            }
+                    );
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
@@ -314,6 +329,34 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
         if (mHexChosen != null) {
             fx.highlightTile(mHexChosen, highlight.asSelection());
+        }
+    }
+
+    private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
+        HexagonMap map = mPlayer.get().getMap();
+        Stream<HexagonTile> buildableTiles =  map.getAllTiles();
+
+        buildableTiles.forEach(
+                (tile) -> {
+                    if (!tile.isClaimed() && !tile.hasBuilding() && fx.getTileHighlight(tile) != MapEffects.FOG_MATERIAL){
+                        fx.highlightTile(tile, highlight.asSelection());
+                    }
+                }
+        );
+    }
+
+    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
+        if (Reference.isValid(mBuildingChosen)){
+            for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
+                fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+            }
+        }
+    }
+
+    /** Marks visuals to update whenever a new object is spawned. */
+    private void onSpawnObject(NetworkObject obj) {
+        if (obj.getGameObject().getComponent(Building.class) != null) {
+            mVisualsNeedUpdate = true;
         }
     }
 
