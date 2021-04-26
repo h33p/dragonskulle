@@ -48,6 +48,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** Random Creator */
     private Random mRandom = new Random();
 
+    /** This states whether we are aiming at the capital */
+    private boolean mCapitalAimer;
+
     /** Whether to use the A* route */
     private final float PLAY_A_STAR = 0.9f;
 
@@ -297,58 +300,6 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will find the capital node for both you and the opponent
-     *
-     * @param graph The {@code Graph} to check through
-     * @param opponentPlayer The opponent {@code Player} which you are attacking
-     * @return An Array of {@code Node}'s which you start from and end at
-     */
-    private ImportantNodes findCapital(Graph graph, Player opponentPlayer) {
-        Integer[] nodesInGraph = graph.getNodes();
-
-        ImportantNodes capitals = new ImportantNodes();
-        // Go through all nodes to find the capital
-        for (int nodeNumber : nodesInGraph) {
-            Node node = graph.getNode(nodeNumber);
-            HexagonTile nodesHexagonTile = node.getHexTile().get();
-
-            // Checks if hexagontile has a capital
-            if (nodesHexagonTile.isClaimed()
-                    && node.getHexTile().get().getBuilding() != null
-                    && node.getHexTile().get().getBuilding().isCapital()) {
-
-                // Checks if the hexagonTiles capital is the opponent players
-                if (opponentPlayer.isClaimingTile(node.getHexTile().get())) {
-                    capitals.goalNode = node;
-
-                    // Checks if hexagonTiles capital is ours
-                } else if (getPlayer().isClaimingTile(node.getHexTile().get())) {
-                    capitals.startNode = node;
-                }
-            }
-        }
-        return capitals;
-    }
-
-    /**
-     * This will get the tile which needs to be aimed for
-     *
-     * @param opponentPlayer The Opponent {@code Player} to aim for
-     * @return A {@code Reference} to a {@code HexagonTile}
-     */
-    private Reference<HexagonTile> getTileCapital(Player opponentPlayer) {
-
-        Building capitalBuilding = opponentPlayer.getCapital();
-
-        if (capitalBuilding == null) {
-            log.warning("No Capital on this player");
-            return null;
-        }
-
-        return new Reference<HexagonTile>(capitalBuilding.getTile());
-    }
-
-    /**
      * This will set the opponent to aim for
      *
      * @return The {@code Player} to attack
@@ -401,58 +352,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
         if (opponentPlayer != null) {
 
-            if (mRandom.nextFloat() < AIM_AT_CAPITAL) {
-                aimCapital(opponentPlayer);
-            } else {
-                aimBuilding(opponentPlayer);
-            }
-        } else {
-            mPath = new ArrayDeque<Integer>();
-        }
-    }
-
-    /**
-     * This will aim for a capital
-     *
-     * @param opponentPlayer The {@code Player} to aim for
-     */
-    private void aimCapital(Player opponentPlayer) {
-        // Will find the tile to attack
-        Reference<HexagonTile> tileToAim = getTileCapital(opponentPlayer);
-        log.info("Found Tile");
-
-        if (Reference.isValid(tileToAim)) {
-            // Creates a graph
-            mGraph = new Graph(getPlayer().getMap(), tileToAim.get());
-
-            // Finds the capitals
-            ImportantNodes capitals = findCapital(mGraph, opponentPlayer);
-
-            Node capNode = capitals.startNode;
-            Node oppCapNode = capitals.goalNode;
-
-            if (capNode == null || oppCapNode == null) {
-
-                // Null pointer check to try and not destroy the server
-                mPath = new ArrayDeque<Integer>();
-                return;
-            }
-            // Performs A* Search
-            AStar aStar = new AStar(mGraph, capNode.getNodeId(), oppCapNode.getNodeId());
-
-            mPath = aStar.getPath();
-
-            // TODO Testing - remove before PR
-            String answer = "";
-            if (mPath.size() == 0) {
-                log.severe("HOWWWWW");
-            }
-            for (int node : mPath) {
-                answer = answer + node + " ->";
-            }
-            log.info(answer);
-
-            mGone = new ArrayDeque<Integer>();
+            aimBuilding(opponentPlayer);
         } else {
             mPath = new ArrayDeque<Integer>();
         }
@@ -468,6 +368,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
             mPath = new ArrayDeque<Integer>();
             return;
         }
+
+        mCapitalAimer = mRandom.nextFloat() <= AIM_AT_CAPITAL;
+
         // Will find the tile to attack
         Reference<HexagonTile> tileToAim = getTileBuilding(opponentPlayer);
         log.info("Found Tile");
@@ -476,12 +379,17 @@ public class AimerAi extends ProbabilisticAiPlayer {
             mPath = new ArrayDeque<Integer>();
         }
 
-        // Creates a graph
-        mGraph =
-                new Graph(
-                        getPlayer().getMap(), // TODO Change to stream
-                        tileToAim.get(),
-                        this);
+        if (!mCapitalAimer) {
+
+            // Creates a graph
+            mGraph =
+                    new Graph(
+                            getPlayer().getMap(), // TODO Change to stream
+                            tileToAim.get(),
+                            this);
+        } else {
+            mGraph = new Graph(getPlayer().getMap(), tileToAim.get());
+        }
         // Finds the buildings
         ImportantNodes buildings = findBuilding(mGraph, opponentPlayer, tileToAim.get());
 
@@ -520,6 +428,13 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @return The {@code HexagonTile} to aim for
      */
     private Reference<HexagonTile> getTileBuilding(Player opponentPlayer) {
+
+        if (mCapitalAimer) {
+            if (opponentPlayer.getCapital() == null) {
+                return null;
+            }
+            return new Reference<HexagonTile>(opponentPlayer.getCapital().getTile());
+        }
 
         HexagonTile[] tileToAim = new HexagonTile[1];
         // This checks if any of the buildings are the capital
