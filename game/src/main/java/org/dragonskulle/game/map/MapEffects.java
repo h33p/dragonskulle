@@ -100,7 +100,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection PLAIN_MATERIAL =
             highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final HighlightSelection ATTACK_MATERIAL =
-            highlightSelectionFromColour(0.6f, 0f, 0f);
+            highlightSelectionFromColour(1f, 0f, 0f);
     public static final HighlightSelection FOG_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
     public static final HighlightSelection PLACE_MATERIAL =
