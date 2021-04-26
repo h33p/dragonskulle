@@ -69,6 +69,7 @@ public class LobbyAPI {
             try {
                 HttpURLConnection con = (HttpURLConnection) mUrl.openConnection();
                 con.setRequestMethod(mMethod);
+                con.setConnectTimeout(5000);
 
                 if (mMethod.equals("POST")) {
                     con.setDoOutput(true);
