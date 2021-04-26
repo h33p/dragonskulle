@@ -32,6 +32,10 @@ public class TransformUI extends Transform {
     /** Target aspect ratio of the element. */
     @Getter private float mTargetAspectRatio = 1.f;
 
+    public Vector4fc getParentAnchor() {
+        return mParentAnchor;
+    }
+
     /** Describes how local coordinates are anchored to parent. */
     private final Vector4f mParentAnchor = new Vector4f(0f, 0f, 1f, 1f);
 

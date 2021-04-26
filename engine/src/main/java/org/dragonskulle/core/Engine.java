@@ -91,8 +91,8 @@ public class Engine {
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
-        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
         Settings.getInstance().loadSettings();
+        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
         mIsRunning = true;
         mainLoop(mGLFWState::processEvents, true);

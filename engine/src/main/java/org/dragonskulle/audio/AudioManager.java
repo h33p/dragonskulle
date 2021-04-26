@@ -17,6 +17,7 @@ import org.dragonskulle.audio.formats.WaveSound;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.settings.Settings;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL11;
@@ -170,7 +171,9 @@ public class AudioManager {
         mAlCtx = ctx;
 
         setupSources();
-        setMasterVolume(0.5f);
+        Settings settings = Settings.getInstance();
+        float volume = settings.retrieveFloat("masterVolume", 0.5f);
+        setMasterVolume(volume);
 
         mInitialized = true;
 

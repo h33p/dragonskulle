@@ -154,13 +154,19 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                             }
                         });
         IUIBuildHandler mute = uiManager.buildWithChildrenRightOf(muteTitle, muteButton);
+        Settings settingsInstance = Settings.getInstance();
 
         // Volume:
         UITextRect sliderTitle = new UITextRect("Volume:");
         UISlider slider =
                 new UISlider(
                         AudioManager.getInstance().getMasterVolume(),
-                        (__, value) -> AudioManager.getInstance().setMasterVolume(value));
+                        (__, value) -> {
+                            settingsInstance.saveValue("masterVolume", value);
+                            AudioManager.getInstance().setMasterVolume(value);
+                        },
+                        (__, ___) -> settingsInstance.save() // on button release
+                        );
         IUIBuildHandler volume = uiManager.buildWithChildrenRightOf(sliderTitle, slider);
 
         // Back:
@@ -217,9 +223,8 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                                         e.printStackTrace();
                                     }
                                 },
-                                (__, ___) -> { // on button release
-                                    settingsInstance.save();
-                                }));
+                                (__, ___) -> settingsInstance.save() // on button release
+                                ));
 
         UIButton back = new UIButton("Back", (__, ___) -> switchToState(State.MENU));
 
