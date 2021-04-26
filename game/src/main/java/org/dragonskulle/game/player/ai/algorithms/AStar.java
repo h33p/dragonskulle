@@ -126,40 +126,7 @@ public class AStar {
 
             mVisited.add(currentNode); // Adds the current node to the mVisited stack
 
-            for (int i = 0; i < connections.size(); i++) { // Go through each connection
-
-                Connection connection = connections.get(i);
-                int child = connection.getDestinationNode(); // Gets the destination node
-                int heurusticInfo = mGraph.getNodeHeuristic(child); // Gets the heuristic info
-                int weight =
-                        connection.getWeight()
-                                + oldFNode; // Gets the weight of the node and add the old
-                // weights known
-
-                int fNode = heurusticInfo + weight; // This is the fnode known
-
-                if (!mVisited.contains(child)) { // If the child is not already mVisited
-                    if (!mFrontier.containsKey(child)) { // If it is not in the mFrontier
-
-                        // Info to be added
-                        Frontier toAdd = new Frontier(child, fNode, weight, currentNode);
-
-                        mFrontier.put(child, toAdd); // Added to mFrontier
-
-                    } else {
-                        Frontier oldInfo = mFrontier.get(child); // Get the info
-
-                        if (oldInfo.mFNode
-                                > fNode) { // If the new info is smaller than the old info
-
-                            Frontier toAdd = new Frontier(child, fNode, weight, currentNode);
-
-                            mFrontier.remove(child); // Remove the current data
-                            mFrontier.put(child, toAdd); // Add the new data
-                        }
-                    }
-                }
-            }
+            checkConnections(currentNode, connections, oldFNode);
 
             int nextNodeIndex = nextNode();
 
@@ -191,11 +158,48 @@ public class AStar {
                     i >= 0;
                     i--) { // Keeps pushing the next node on
 
-                if (connectionsFinal.get(i).mChildNode
-                        == currentNode) { // If the node on this connection is the right one
+                // If the node on this connection is the right one
+                if (connectionsFinal.get(i).mChildNode == currentNode) {
 
                     mPath.push(connectionsFinal.get(i).mCurrentNode);
                     currentNode = connectionsFinal.get(i).mCurrentNode;
+                }
+            }
+        }
+    }
+
+    private void checkConnections(
+            int currentNode, ArrayList<Connection> connections, int oldFNode) {
+
+        for (Connection connection : connections) { // Go through each connection
+
+            int child = connection.getDestinationNode(); // Gets the destination node
+            int heurusticInfo = mGraph.getNodeHeuristic(child); // Gets the heuristic info
+            int weight =
+                    connection.getWeight()
+                            + oldFNode; // Gets the weight of the node and add the old
+            // weights known
+
+            int fNode = heurusticInfo + weight; // This is the fnode known
+
+            if (!mVisited.contains(child)) { // If the child is not already mVisited
+                if (!mFrontier.containsKey(child)) { // If it is not in the mFrontier
+
+                    // Info to be added
+                    Frontier toAdd = new Frontier(child, fNode, weight, currentNode);
+
+                    mFrontier.put(child, toAdd); // Added to mFrontier
+
+                } else {
+                    Frontier oldInfo = mFrontier.get(child); // Get the info
+
+                    if (oldInfo.mFNode > fNode) { // If the new info is smaller than the old info
+
+                        Frontier toAdd = new Frontier(child, fNode, weight, currentNode);
+
+                        mFrontier.remove(child); // Remove the current data
+                        mFrontier.put(child, toAdd); // Add the new data
+                    }
                 }
             }
         }

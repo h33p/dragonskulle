@@ -30,9 +30,6 @@ public class Graph {
     /** The {@code HexagonMap} which is used */
     private Reference<HexagonMap> mMap;
 
-    /** The {@code HexgaonTile} to aim at */
-    private Reference<HexagonTile> mTarget;
-
     /**
      * Constructor to create the whole map
      *
@@ -45,7 +42,7 @@ public class Graph {
 
         mCurrentNodeId = 0;
         mGraph = new HashMap<Integer, Node>();
-        map.getAllTiles().forEach(this::convertToNode);
+        map.getAllTiles().forEach((tile) -> convertToNode(tile, target));
         mCurrentNodeId = 0;
         map.getAllTiles().forEach(this::addConnections);
     }
@@ -62,7 +59,7 @@ public class Graph {
         initialise(map, target);
 
         mCurrentNodeId = 0;
-        aimer.getViewableTiles().forEach(this::convertToNode);
+        aimer.getViewableTiles().forEach((tile) -> convertToNode(tile, target));
         mCurrentNodeId = 0;
         aimer.getViewableTiles().forEach(this::addConnections);
     }
@@ -74,7 +71,7 @@ public class Graph {
      * @param tileAiming The {@code HexagonTile} being aimed at
      */
     private void initialise(HexagonMap map, HexagonTile tileAiming) {
-        mTarget = new Reference<HexagonTile>(tileAiming);
+
         mMap = map.getReference(HexagonMap.class);
         mGraph = new HashMap<Integer, Node>();
     }
@@ -85,7 +82,7 @@ public class Graph {
      *
      * @param tile The {@code HexagonTile} to be made a node
      */
-    private void convertToNode(HexagonTile tile) {
+    private void convertToNode(HexagonTile tile, HexagonTile target) {
 
         if (tile.getTileType() != TileType.LAND) {
             return;
@@ -93,7 +90,7 @@ public class Graph {
         log.info("Node num: " + mCurrentNodeId);
 
         addNode(mCurrentNodeId, tile);
-        int heuristic = tile.distTo(mTarget.get().getQ(), mTarget.get().getR());
+        int heuristic = tile.distTo(target.getQ(), target.getR());
         setNodeHeuristic(mCurrentNodeId, heuristic);
         mCurrentNodeId++;
     }
@@ -109,6 +106,9 @@ public class Graph {
         }
         log.info("Node num: " + mCurrentNodeId);
         ArrayList<HexagonTile> neighbourTilesList = new ArrayList<HexagonTile>();
+        if (Reference.isInvalid(mMap)) {
+            return;
+        }
         List<HexagonTile> neighbourTiles =
                 mMap.get().getTilesInRadius(tile, 1, false, neighbourTilesList);
 
@@ -175,6 +175,9 @@ public class Graph {
      */
     public int getNodeHeuristic(int nodeToGet) {
 
+        if (mGraph.get(nodeToGet) == null) {
+            return Integer.MAX_VALUE;
+        }
         return mGraph.get(nodeToGet).getHeuristic();
     }
 
