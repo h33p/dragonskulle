@@ -553,6 +553,7 @@ public class Engine {
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
 
+        UPnP.deleteAllMappings();
         destroyAllObjects();
         mGLFWState.free();
     }

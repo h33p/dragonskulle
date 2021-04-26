@@ -16,6 +16,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import javafx.util.Pair;
 import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.extern.java.Log;
 import org.w3c.dom.Document;
@@ -43,8 +44,7 @@ public class UPnP {
 
     private static final String SERVICE_NAME = "urn:schemas-upnp-org:service:WANIPConnection:1";
 
-    // TODO: Store list of port mappings to clear on shutdown
-
+    private static final ArrayList<Pair<Integer, String>> sMappings = new ArrayList<>();
     private static Inet4Address sLocal;
     private static URL sControlURL;
     private static boolean sInitialised;
@@ -114,8 +114,6 @@ public class UPnP {
         }
     }
 
-    // TODO: Port forwarding stuff
-
     /**
      * Get the external IP address for the current network
      *
@@ -138,29 +136,37 @@ public class UPnP {
      */
     public static boolean addPortMapping(int port, String protocol) {
         if (protocol.equals("BOTH")) {
-            return addPortMapping(port, "TCP")
-                & addPortMapping(port, "UDP");
-        } else if (!protocol.equals("TCP") && !protocol.equals("UDP")) {
-            log.warning("Invalid protocol \"" + protocol + "\" passed to addPortMapping");
-            return false;
+            return addPortMapping(port, "TCP") & addPortMapping(port, "UDP");
         }
 
-        if (port < 0 || port > 65535) {
-            log.warning("Invalid port " + port + " passed to addPortMapping");
+        Map<String, String> out =
+                executeCommand(
+                        "AddPortMapping",
+                        "NewRemoteHost",
+                        "",
+                        "NewExternalPort",
+                        Integer.toString(port),
+                        "NewProtocol",
+                        protocol,
+                        "NewInternalPort",
+                        Integer.toString(port),
+                        "NewInternalClient",
+                        sLocal.getHostAddress(),
+                        "NewEnabled",
+                        "",
+                        "NewPortMappingDescription",
+                        "",
+                        "NewLeaseDuration",
+                        "0");
+
+        if (out != null) {
+            sMappings.add(new Pair<>(port, protocol));
+            log.info("Added port mapping " + protocol + " : " + port);
+            return true;
+        } else {
+            log.warning("Failed to add port mapping " + protocol + " : " + port);
             return false;
         }
-
-        Map<String, String> out = executeCommand("AddPortMapping",
-                "NewRemoteHost", "",
-                "NewExternalPort", Integer.toString(port),
-                "NewProtocol", protocol,
-                "NewInternalPort", Integer.toString(port),
-                "NewInternalClient", sLocal.getHostAddress(),
-                "NewEnabled", "",
-                "NewPortMappingDescription", "",
-                "NewLeaseDuration", "0");
-
-        return out != null;
     }
 
     /**
@@ -172,30 +178,40 @@ public class UPnP {
      */
     public static boolean deletePortMapping(int port, String protocol) {
         if (protocol.equals("BOTH")) {
-            return deletePortMapping(port, "TCP")
-                    & deletePortMapping(port, "UDP");
-        } else if (!protocol.equals("TCP") && !protocol.equals("UDP")) {
-            log.warning("Invalid protocol \"" + protocol + "\" passed to deletePortMapping");
-            return false;
+            return deletePortMapping(port, "TCP") & deletePortMapping(port, "UDP");
         }
 
-        if (port < 0 || port > 65535) {
-            log.warning("Invalid port " + port + " passed to deletePortMapping");
+        Map<String, String> out =
+                executeCommand(
+                        "DeletePortMapping",
+                        "NewRemoteHost",
+                        "",
+                        "NewExternalPort",
+                        Integer.toString(port),
+                        "NewProtocol",
+                        protocol);
+
+        if (out != null) {
+            sMappings.removeIf(mapping -> mapping.equals(new Pair<>(port, protocol)));
+            log.info("Deleted port mapping " + protocol + " : " + port);
+            return true;
+        } else {
+            log.info("Failed to delete port mapping " + protocol + " : " + port);
             return false;
         }
+    }
 
-        Map<String, String> out = executeCommand("DeletePortMapping",
-                "NewRemoteHost", "",
-                "NewExternalPort", Integer.toString(port),
-                "NewProtocol", protocol);
-
-        return out != null;
+    /** Delete all port mappings that were added at runtime */
+    public static void deleteAllMappings() {
+        for (Pair<Integer, String> mapping : sMappings) {
+            deletePortMapping(mapping.getKey(), mapping.getValue());
+        }
     }
 
     /**
      * Execute a command via the control URL. The arguments should be passed with the name of the
-     * argument followed by the value. e.g. executeCommand("Command", "Arg1", "7") would execute
-     * the command "Command" with "Arg1" = 7.
+     * argument followed by the value. e.g. executeCommand("Command", "Arg1", "7") would execute the
+     * command "Command" with "Arg1" = "7".
      *
      * @param command Name of the command to execute
      * @param args List of arguments for the command
