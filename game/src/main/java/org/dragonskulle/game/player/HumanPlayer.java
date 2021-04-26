@@ -308,8 +308,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
                             (fx) -> {
-                                highlightSelectedTile(fx, StandardHighlightType.VALID);
                                 highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
                             });
                     for (Building attackableBuilding :
                             mHexChosen.getBuilding().getAttackableBuildings()) {
@@ -323,6 +323,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     effects.setHighlightOverlay(null);
                     break;
                 case ATTACKING_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> {
+                                highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            });
+                    for (Building attackableBuilding :
+                            mHexChosen.getBuilding().getAttackableBuildings()) {
+                        effects.highlightTile(
+                                attackableBuilding.getTile(),
+                                StandardHighlightType.ATTACK.asSelection());
+                    }
                     break;
                 case SELLING_SCREEN:
                     break;
@@ -358,22 +370,21 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     }
                 }
         );
-
     }
 
     private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
-        HexagonMap map = mPlayer.get().getMap();
-        Stream<HexagonTile> allTiles = map.getAllTiles();
-        Building attackingBuilding = mHexChosen.getBuilding();
-        Set<Building> attackableBuildings = attackingBuilding.getAttackableBuildings();
-
-        attackableBuildings.forEach(
-                (building) -> {
-                    HexagonTile tile = building.getTile();
-                    if(tile.equals(mHexChosen)) return;
-                    fx.highlightTile(tile, highlight.asSelection());
-                }
-        );
+//        Building attackingBuilding = mHexChosen.getBuilding();
+//        Set<Building> attackableBuildings = attackingBuilding.getAttackableBuildings();
+//
+//        attackableBuildings.forEach(
+//                (building) -> {
+//                    HexagonTile tile = building.getTile();
+//                    fx.highlightTile(tile, highlight.asSelection());
+//                }
+//        );
+        for (Building attackableBuilding : mHexChosen.getBuilding().getAttackableBuildings()) {
+            fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+        }
     }
 
     /** Marks visuals to update whenever a new object is spawned. */
