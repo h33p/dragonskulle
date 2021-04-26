@@ -4,7 +4,6 @@ package org.dragonskulle.game.lobby;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -162,8 +161,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     LobbyAPI.deleteHost(lobbyID, this::onDeleteHost);
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
-                                }
-                        ));
+                                }));
 
         buildJoinUi();
         buildHostUi();
@@ -253,13 +251,18 @@ public class Lobby extends Component implements IFrameUpdate {
                             });
         }
 
-        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0.15f, 0.35f,
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            mJoinUi.setEnabled(true);
-                            mServerBrowserUi.setEnabled(false);
-                        }));
+        UIManager.getInstance()
+                .buildVerticalUi(
+                        serverList,
+                        0.05f,
+                        0.15f,
+                        0.35f,
+                        new UIButton(
+                                "Back",
+                                (__, ___) -> {
+                                    mJoinUi.setEnabled(true);
+                                    mServerBrowserUi.setEnabled(false);
+                                }));
 
         UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, buttons);
 
@@ -280,7 +283,10 @@ public class Lobby extends Component implements IFrameUpdate {
                                     LobbyAPI.addNewHost(ip, PORT, this::onAddNewHost);
                                     mNetworkManager
                                             .get()
-                                            .createServer(PORT, this::onClientLoaded, this::onGameStarted);
+                                            .createServer(
+                                                    PORT,
+                                                    this::onClientLoaded,
+                                                    this::onGameStarted);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -289,7 +295,10 @@ public class Lobby extends Component implements IFrameUpdate {
                                 (__, ___) -> {
                                     mNetworkManager
                                             .get()
-                                            .createServer(PORT, this::onClientLoaded, this::onGameStarted);
+                                            .createServer(
+                                                    PORT,
+                                                    this::onClientLoaded,
+                                                    this::onGameStarted);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -319,7 +328,7 @@ public class Lobby extends Component implements IFrameUpdate {
         mHosts.clear();
         JSONParser parser = new JSONParser();
         try {
-            JSONArray array = (JSONArray)parser.parse(response);
+            JSONArray array = (JSONArray) parser.parse(response);
 
             for (Object o : array) {
                 JSONObject obj = (JSONObject) o;
@@ -346,8 +355,8 @@ public class Lobby extends Component implements IFrameUpdate {
         // TODO: Close server if we were unable to add to the server list? Or just leave it?
         JSONParser parser = new JSONParser();
         try {
-            JSONObject obj = (JSONObject)parser.parse(response);
-            lobbyID = (String)obj.get("_id");
+            JSONObject obj = (JSONObject) parser.parse(response);
+            lobbyID = (String) obj.get("_id");
         } catch (ParseException e) {
             e.printStackTrace();
             log.warning("Failed to parse response from add new host.");
