@@ -35,6 +35,8 @@ public class ServerClient {
     @Setter(AccessLevel.PACKAGE)
     private int mNetworkID = -1;
 
+    @Getter @Setter private boolean mInGame = false;
+
     /** Underlying {@link Socket}. */
     private final Socket mSocket;
     /** Is the client loop running, and supposed to be running. */

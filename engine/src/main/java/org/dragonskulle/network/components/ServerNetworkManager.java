@@ -60,6 +60,7 @@ public class ServerNetworkManager {
 
         @Override
         public void clientLoaded(ServerClient client) {
+            client.setInGame(true);
             mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
         }
 
@@ -405,6 +406,9 @@ public class ServerNetworkManager {
     void lateNetworkUpdate() {
 
         for (ServerClient c : mServer.getClients()) {
+            if (!c.isInGame()) {
+                continue;
+            }
             for (ServerObjectEntry entry : mNetworkObjects.values()) {
                 entry.updateClient(c);
             }
