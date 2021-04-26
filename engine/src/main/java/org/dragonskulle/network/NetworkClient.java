@@ -47,9 +47,9 @@ public class NetworkClient {
     private final AtomicBoolean mDidDispose = new AtomicBoolean(false);
 
     /** Stores all requests from the server once scheduled. */
-    private final ConcurrentLinkedQueue<byte[]> mSpawnRequests = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
 
-    private final ConcurrentLinkedQueue<byte[]> mOtherRequests = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<byte[]> mGameRequests = new ConcurrentLinkedQueue<>();
 
     public DataOutputStream getDataOut() {
         return new NetworkMessageStream(mDataOut);
@@ -170,10 +170,11 @@ public class NetworkClient {
                     try {
                         short len = input.readShort();
                         byte[] bytes = IOUtils.readExactlyNBytes(input, len);
-                        if (bytes[0] == NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT) {
-                            mSpawnRequests.add(bytes);
+                        if (bytes[0] == NetworkConfig.Codes.MESSAGE_UPDATE_STATE
+                            || bytes[0] == NetworkConfig.Codes.MESSAGE_HOST_STARTED) {
+                            mRequests.add(bytes);
                         } else {
-                            mOtherRequests.add(bytes);
+                            mGameRequests.add(bytes);
                         }
                     } catch (IOException e) {
                         break;
@@ -197,15 +198,15 @@ public class NetworkClient {
     }
 
     public int processAllRequests() {
-        return processSpawnRequests() + processOtherRequests();
+        return processRequests() + processGameRequests();
     }
 
-    public int processSpawnRequests() {
-        return processRequests(mSpawnRequests);
+    public int processRequests() {
+        return processRequests(mRequests);
     }
 
-    public int processOtherRequests() {
-        return processRequests(mOtherRequests);
+    public int processGameRequests() {
+        return processRequests(mGameRequests);
     }
 
     /** Processes all requests. */

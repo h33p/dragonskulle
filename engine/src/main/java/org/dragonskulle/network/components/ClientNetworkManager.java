@@ -295,7 +295,7 @@ public class ClientNetworkManager {
         int requestsProcessed = 0;
         switch (mConnectionState) {
             case CONNECTED:
-                requestsProcessed = mClient.processOtherRequests();
+                requestsProcessed = mClient.processRequests();
                 break;
             case JOINED_GAME:
                 requestsProcessed = mClient.processAllRequests();
