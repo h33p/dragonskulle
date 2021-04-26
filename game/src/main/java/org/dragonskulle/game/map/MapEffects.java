@@ -228,7 +228,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      */
     private void defaultHighlight() {
 
-        Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
+        Player activePlayer = Reference.isValid(mActivePlayer) ? mActivePlayer.get() : null;
 
         highlightTiles(
                 (tile) -> {

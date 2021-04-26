@@ -322,7 +322,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     newScreen = mMapScreenMenu;
                     setShopState(ShopState.CLOSED);
                     break;
-                case UPGRADE_SCREEN:
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
                     setShopState(ShopState.MY_BUILDING_SELECTED, true);

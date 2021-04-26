@@ -162,10 +162,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
     	detectTileSelection();
-
-        if (mVisualsNeedUpdate) {
-            updateVisuals();
-        }
+    	updateVisuals();
     }
 
     /**
@@ -217,47 +214,46 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /* AURI!! This updates what the user can see */
+    /** This updates what the user can see */
     private void updateVisuals() {
-        
+    	
+    	// Ensure Player and MapEffects exist.
     	Player player = getPlayer();
     	MapEffects effects = getMapEffects();
         if (player == null || effects == null) return;
 
+        // Only run if visuals need updating.
+    	if (!mVisualsNeedUpdate) return;
         mVisualsNeedUpdate = false;
         
-        if (!player.hasLost()) {
-            if (Reference.isValid(mMenuDrawer)) {
-                mMenuDrawer.get().setVisibleScreen(mScreenOn);
-            }
+        if(player.hasLost()) return;
 
-            effects.setActivePlayer(mPlayer);
+        // Set the player for the effects.
+        effects.setActivePlayer(mPlayer);
 
-            switch (mScreenOn) {
-                case DEFAULT_SCREEN:
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    break;
-                case BUILDING_SELECTED_SCREEN:
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    break;
-                case UPGRADE_SCREEN:
-                    break;
-                case ATTACKING_SCREEN:
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
-                    break;
-                case SELLING_SCREEN:
-                    break;
-                case PLACING_NEW_BUILDING:
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+        switch (mScreenOn) {
+            case DEFAULT_SCREEN:
+                effects.setHighlightOverlay(
+                        (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                break;
+            case BUILDING_SELECTED_SCREEN:
+                effects.setHighlightOverlay(
+                        (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                break;
+            case ATTACKING_SCREEN:
+                effects.setHighlightOverlay(
+                        (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
+                break;
+            case SELLING_SCREEN:
+                break;
+            case PLACING_NEW_BUILDING:
+                effects.setHighlightOverlay(
+                        (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
 
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + mScreenOn);
-            }
+                break;
+            default:
+                log.warning("State '" + mScreenOn + "' not recognised.");
+                break;
         }
     }
 
