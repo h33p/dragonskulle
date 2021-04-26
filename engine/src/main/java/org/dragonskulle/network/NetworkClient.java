@@ -47,7 +47,9 @@ public class NetworkClient {
     private final AtomicBoolean mDidDispose = new AtomicBoolean(false);
 
     /** Stores all requests from the server once scheduled. */
-    private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<byte[]> mSpawnRequests = new ConcurrentLinkedQueue<>();
+
+    private final ConcurrentLinkedQueue<byte[]> mOtherRequests = new ConcurrentLinkedQueue<>();
 
     public DataOutputStream getDataOut() {
         return new NetworkMessageStream(mDataOut);
@@ -168,7 +170,11 @@ public class NetworkClient {
                     try {
                         short len = input.readShort();
                         byte[] bytes = IOUtils.readExactlyNBytes(input, len);
-                        mRequests.add(bytes);
+                        if (bytes[0] == NetworkConfig.Codes.MESSAGE_SPAWN_OBJECT) {
+                            mSpawnRequests.add(bytes);
+                        } else {
+                            mOtherRequests.add(bytes);
+                        }
                     } catch (IOException e) {
                         break;
                     }
@@ -190,18 +196,30 @@ public class NetworkClient {
         }
     }
 
+    public int processAllRequests() {
+        return processSpawnRequests() + processOtherRequests();
+    }
+
+    public int processSpawnRequests() {
+        return processRequests(mSpawnRequests);
+    }
+
+    public int processOtherRequests() {
+        return processRequests(mOtherRequests);
+    }
+
     /** Processes all requests. */
-    public int processRequests() {
+    private int processRequests(ConcurrentLinkedQueue<byte[]> requests) {
 
         if (mDidDispose.get()) {
             return 0;
         }
 
-        log.fine("processing all " + this.mRequests.size() + " requests");
+        log.fine("processing all " + requests.size() + " requests");
         int cnt = 0;
 
-        while (!this.mRequests.isEmpty()) {
-            byte[] requestBytes = mRequests.poll();
+        while (!requests.isEmpty()) {
+            byte[] requestBytes = requests.poll();
             if (requestBytes != null) {
                 try {
                     ByteArrayInputStream bin = new ByteArrayInputStream(requestBytes);
@@ -212,7 +230,6 @@ public class NetworkClient {
                     cnt++;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    // closeAllConnections();
                 }
             }
         }

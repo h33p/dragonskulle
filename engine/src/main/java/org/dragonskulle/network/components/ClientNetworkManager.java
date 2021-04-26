@@ -292,16 +292,26 @@ public class ClientNetworkManager {
 
     /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
-            if (mClient.processRequests() <= 0) {
-                mTicksWithoutRequests++;
-                if (mTicksWithoutRequests > 3200) {
-                    disconnect();
-                } else if (mTicksWithoutRequests == 1000) {
-                    log.info("1000 ticks without updates! 2200 more till disconnect!");
-                }
-            } else mTicksWithoutRequests = 0;
+        int requestsProcessed = 0;
+        switch (mConnectionState) {
+            case CONNECTED:
+                requestsProcessed = mClient.processOtherRequests();
+                break;
+            case JOINED_GAME:
+                requestsProcessed = mClient.processAllRequests();
+                break;
+            default:
+                break;
         }
+
+        if (requestsProcessed <= 0) {
+            mTicksWithoutRequests++;
+            if (mTicksWithoutRequests > 3200) {
+                disconnect();
+            } else if (mTicksWithoutRequests == 1000) {
+                log.info("1000 ticks without updates! 2200 more till disconnect!");
+            }
+        } else mTicksWithoutRequests = 0;
 
         mNetworkObjectReferences
                 .entrySet()
