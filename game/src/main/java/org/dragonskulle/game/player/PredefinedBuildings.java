@@ -22,8 +22,7 @@ public class PredefinedBuildings {
                             BASE,
                             new BuildingDescriptor(1, 1, 1, 1, 1, 10, 2, "ui/1_stars.png", "Oscar"),
                             new BuildingDescriptor(2, 3, 2, 2, 3, 30, 2, "ui/2_stars.png", "Auri"),
-                            new BuildingDescriptor(
-                                    5, 3, 4, 2, 3, 31, 2, "ui/3_stars.png", "Harry"),
+                            new BuildingDescriptor(5, 3, 4, 2, 3, 31, 2, "ui/3_stars.png", "Harry"),
                             new BuildingDescriptor(8, 3, 6, 2, 3, 32, 2, "ui/4_stars.png", "Auri"),
                             new BuildingDescriptor(
                                     10, 3, 8, 2, 3, 33, 2, "ui/5_stars.png", "Leela"),

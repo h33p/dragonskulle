@@ -201,7 +201,6 @@ public class App implements NativeResource {
                 mBuildingTemplates.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
 
-
         Reference<NetworkManager> networkManager =
                 new NetworkManager(templates, App::createMainScene)
                         .getReference(NetworkManager.class);

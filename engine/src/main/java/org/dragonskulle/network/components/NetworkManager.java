@@ -74,8 +74,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     /** Registered spawnable templates. */
-    @Getter()
-    protected final TemplateManager mSpawnableTemplates;
+    @Getter() protected final TemplateManager mSpawnableTemplates;
     /** Target game scene. */
     @Getter(AccessLevel.PACKAGE)
     private Scene mGameScene;
