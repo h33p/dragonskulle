@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.core.Time;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -51,6 +52,11 @@ public class ServerClient {
     /** The scheduled requests to be processed. */
     private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
 
+    private final ConcurrentLinkedQueue<TimestampedRequest> mDelayedRequests =
+            new ConcurrentLinkedQueue<>();
+
+    private float mSimLatency = 0f;
+
     /**
      * Constructor for {@link ServerClient}.
      *
@@ -84,6 +90,8 @@ public class ServerClient {
         int i = 0;
 
         byte[] req = null;
+
+        queueDelayedRequests();
 
         for (i = 0; i < count && (req = mRequests.poll()) != null; i++) {
             try {
@@ -145,6 +153,14 @@ public class ServerClient {
         mThread.start();
     }
 
+    private void queueDelayedRequests() {
+        TimestampedRequest r;
+        float time = Time.getTimeInSeconds() - mSimLatency;
+        while ((r = mDelayedRequests.peek()) != null && r.getTimestamp() <= time) {
+            mRequests.add(mDelayedRequests.poll().getData());
+        }
+    }
+
     /**
      * THe Client Runner is the thread given to each client to handle its own socket. Commands are
      * read from the input stream. It will pass all commands to the correct handler function. {@link
@@ -171,7 +187,11 @@ public class ServerClient {
             while (mRunning && mSocket.isConnected() && !mSocket.isClosed()) {
                 short len = input.readShort();
                 byte[] bytes = IOUtils.readExactlyNBytes(input, len);
-                mRequests.add(bytes);
+                if (mSimLatency <= 0f) {
+                    mRequests.add(bytes);
+                } else {
+                    mDelayedRequests.add(new TimestampedRequest(bytes));
+                }
             }
         } catch (EOFException | SocketException ignored) {
         } catch (Exception exception) {

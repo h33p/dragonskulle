@@ -11,8 +11,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.core.Time;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -50,6 +53,11 @@ public class NetworkClient {
     private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
 
     private final ConcurrentLinkedQueue<byte[]> mGameRequests = new ConcurrentLinkedQueue<>();
+
+    private final ConcurrentLinkedQueue<TimestampedRequest> mDelayedRequests =
+            new ConcurrentLinkedQueue<>();
+
+    @Getter @Setter private float mSimLatency = 0f;
 
     public DataOutputStream getDataOut() {
         return new NetworkMessageStream(mDataOut);
@@ -147,6 +155,23 @@ public class NetworkClient {
         return mOpen;
     }
 
+    private void queueRequest(byte[] bytes) {
+        if (bytes[0] == NetworkConfig.Codes.MESSAGE_UPDATE_STATE
+                || bytes[0] == NetworkConfig.Codes.MESSAGE_HOST_STARTED) {
+            mRequests.add(bytes);
+        } else {
+            mGameRequests.add(bytes);
+        }
+    }
+
+    private void queueDelayedRequests() {
+        TimestampedRequest r;
+        float time = Time.getTimeInSeconds() - mSimLatency;
+        while ((r = mDelayedRequests.peek()) != null && r.getTimestamp() <= time) {
+            queueRequest(mDelayedRequests.poll().getData());
+        }
+    }
+
     /**
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
@@ -170,11 +195,10 @@ public class NetworkClient {
                     try {
                         short len = input.readShort();
                         byte[] bytes = IOUtils.readExactlyNBytes(input, len);
-                        if (bytes[0] == NetworkConfig.Codes.MESSAGE_UPDATE_STATE
-                            || bytes[0] == NetworkConfig.Codes.MESSAGE_HOST_STARTED) {
-                            mRequests.add(bytes);
+                        if (mSimLatency <= 0f) {
+                            queueRequest(bytes);
                         } else {
-                            mGameRequests.add(bytes);
+                            mDelayedRequests.add(new TimestampedRequest(bytes));
                         }
                     } catch (IOException e) {
                         break;
@@ -202,6 +226,9 @@ public class NetworkClient {
     }
 
     public int processRequests() {
+
+        queueDelayedRequests();
+
         return processRequests(mRequests);
     }
 

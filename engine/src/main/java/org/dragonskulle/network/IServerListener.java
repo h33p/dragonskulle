@@ -24,8 +24,8 @@ public interface IServerListener {
     /**
      * Client loaded event.
      *
-     * <p>This is called after the host has started game when the client has fully loaded.
-     * Networked objects can only be spawned after this point
+     * <p>This is called after the host has started game when the client has fully loaded. Networked
+     * objects can only be spawned after this point
      *
      * @param client the client
      */
