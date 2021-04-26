@@ -17,6 +17,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.NetworkConfig;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -34,10 +35,11 @@ import org.joml.Vector3f;
 public class ClientNetworkManager {
 
     /** Describes client connection state. */
-    private static enum ConnectionState {
+    private enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,
+        JOINING_GAME,
         JOINED_GAME,
         CONNECTION_ERROR,
         CLEAN_DISCONNECTED
@@ -72,6 +74,11 @@ public class ClientNetworkManager {
         public void connectedToServer(int netId) {
             mNetId = netId;
             mNextConnectionState.set(ConnectionState.CONNECTED);
+        }
+
+        @Override
+        public void hostStartedGame() {
+            mNextConnectionState.set(ConnectionState.JOINING_GAME);
         }
 
         @Override
@@ -164,9 +171,11 @@ public class ClientNetworkManager {
     /** Current connection state. */
     @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener). */
-    private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
+    private final AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
     /** Callback for connection result processing. */
-    private NetworkManager.IConnectionResultEvent mConnectionHandler;
+    private final NetworkManager.IConnectionResultEvent mConnectionHandler;
+    /** Callback for when host has started game. */
+    private final NetworkManager.IHostStartedGameEvent mHostStartedHandler;
     /** Back reference to the network manager. */
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates. */
@@ -194,11 +203,13 @@ public class ClientNetworkManager {
             NetworkManager manager,
             String ip,
             int port,
-            NetworkManager.IConnectionResultEvent handler) {
+            NetworkManager.IConnectionResultEvent handler,
+            NetworkManager.IHostStartedGameEvent startHandler) {
         mManager = manager;
         mConnectionState = ConnectionState.CONNECTING;
         mClient = new NetworkClient(ip, port, mListener);
         mConnectionHandler = handler;
+        mHostStartedHandler = startHandler;
     }
 
     /**
@@ -281,7 +292,8 @@ public class ClientNetworkManager {
 
     /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
+        if (mConnectionState == ConnectionState.JOINED_GAME
+            || mConnectionState == ConnectionState.CONNECTED) {
             if (mClient.processRequests() <= 0) {
                 mTicksWithoutRequests++;
                 if (mTicksWithoutRequests > 3200) {
@@ -312,22 +324,28 @@ public class ClientNetworkManager {
             if (mConnectionState == ConnectionState.CONNECTING) {
                 switch (nextState) {
                     case CONNECTED:
-                        joinGame();
+                        joinLobby();
                         if (mConnectionHandler != null) {
-                            mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetId);
+                            mConnectionHandler.handle(mManager, mNetId);
                         }
                         break;
                     case CONNECTION_ERROR:
                         if (mConnectionHandler != null) {
-                            mConnectionHandler.handle(mManager.getGameScene(), mManager, -1);
+                            mConnectionHandler.handle(mManager, -1);
                         }
                         disconnect();
                         break;
                     default:
                         break;
                 }
+            } else if (mConnectionState == ConnectionState.CONNECTED) {
+                if (nextState == ConnectionState.JOINING_GAME) {
+                    joinGame();
+                    if (mHostStartedHandler != null) {
+                        mHostStartedHandler.handle(mManager.getGameScene(), mManager, mNetId);
+                    }
+                }
             } else if (mConnectionState == ConnectionState.JOINED_GAME) {
-                // TODO: handle lobby -> game transition here
                 disconnect();
             }
         }
@@ -343,14 +361,18 @@ public class ClientNetworkManager {
         }
     }
 
-    // TODO: implement lobby
-    // private void joinLobby() {}
+    private void joinLobby() {
+        mConnectionState = ConnectionState.CONNECTED;
+
+        mManager.createGameScene(false);
+        mClient.sendBytes(new byte[] { NetworkConfig.Codes.MESSAGE_CLIENT_LOADED });
+    }
 
     /** Join the game map. */
     private void joinGame() {
         Engine engine = Engine.getInstance();
 
-        mManager.createGameScene(false);
+        //mManager.createGameScene(false);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());

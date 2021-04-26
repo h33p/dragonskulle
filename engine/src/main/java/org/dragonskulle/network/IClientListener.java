@@ -32,6 +32,11 @@ public interface IClientListener {
     void connectedToServer(int netID);
 
     /**
+     * Host started the game.
+     */
+    void hostStartedGame();
+
+    /**
      * Error.
      *
      * @param s the s
@@ -69,7 +74,4 @@ public interface IClientListener {
      * @throws IOException if there was an error parsing the message
      */
     void objectEvent(DataInputStream stream) throws IOException;
-
-    /** Invoke the start game event on the client. */
-    void startEvent();
 }

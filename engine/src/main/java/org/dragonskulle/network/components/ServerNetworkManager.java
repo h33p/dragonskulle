@@ -42,7 +42,7 @@ public class ServerNetworkManager {
         IN_PROGRESS,
         LOBBY,
         STARTING,
-        NONE;
+        NONE
     }
 
     /** Server event listener. */
@@ -59,10 +59,8 @@ public class ServerNetworkManager {
         }
 
         @Override
-        public void clientActivated(ServerClient client) {
-            if (mConnectedClientHandler != null) {
-                mConnectedClientHandler.handle(mManager.getGameScene(), mManager, client);
-            }
+        public void clientLoaded(ServerClient client) {
+            mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
         }
 
         /**
@@ -176,13 +174,13 @@ public class ServerNetworkManager {
     /** Back reference to {@link NetworkManager}. */
     @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
-    private final NetworkManager.IConnectedClientEvent mConnectedClientHandler;
+    private final NetworkManager.IClientLoadedEvent mClientLoadedEvent;
     /** Callback for game start. */
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
-    private ServerGameState mGameState = ServerGameState.STARTING;
+    private ServerGameState mGameState = ServerGameState.LOBBY;
 
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
@@ -198,26 +196,31 @@ public class ServerNetworkManager {
      *
      * @param manager back reference to {@link NetworkManager}
      * @param port target port to listen on
-     * @param connectedClientHandler callback for client connections
+     * @param clientLoadedEvent callback for client connections
      * @param gameStartEventHandler callback for when the game starts
      */
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
-            NetworkManager.IConnectedClientEvent connectedClientHandler,
+            NetworkManager.IClientLoadedEvent clientLoadedEvent,
             NetworkManager.IGameStartEvent gameStartEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
-        mConnectedClientHandler = connectedClientHandler;
+        mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
+        mManager.createGameScene(true);
+    }
+
+    public void start() {
+        if (mGameState == ServerGameState.LOBBY) {
+            mGameState = ServerGameState.STARTING;
+        }
     }
 
     /** Start the game, load game scene. */
     void startGame() {
         Engine engine = Engine.getInstance();
-
-        mManager.createGameScene(true);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
@@ -227,6 +230,15 @@ public class ServerNetworkManager {
 
         if (mGameStartEventHandler != null) {
             mGameStartEventHandler.handle(mManager);
+        }
+
+        for (ServerClient c : mServer.getClients()) {
+            try {
+                c.sendBytes(new byte[] { NetworkConfig.Codes.MESSAGE_HOST_STARTED });
+            } catch (IOException e) {
+                e.printStackTrace();
+                c.closeSocket();
+            }
         }
     }
 

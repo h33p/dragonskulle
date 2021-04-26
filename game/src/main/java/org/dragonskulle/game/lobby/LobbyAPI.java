@@ -30,7 +30,7 @@ public class LobbyAPI {
         }
     }
 
-    public interface AsyncCallback {
+    public interface IAsyncCallback {
         void call(String response);
     }
 
@@ -43,11 +43,11 @@ public class LobbyAPI {
     private static class AsyncRequest extends Thread {
         private final URL mUrl;
         private final String mMethod;
-        private final AsyncCallback mCallback;
+        private final IAsyncCallback mCallback;
         private String mContentType;
         private String mContent;
 
-        public AsyncRequest(URL url, String method, AsyncCallback callback) {
+        public AsyncRequest(URL url, String method, IAsyncCallback callback) {
             mUrl = url;
             mMethod = method;
             mCallback = callback;
@@ -56,7 +56,7 @@ public class LobbyAPI {
         public AsyncRequest(
                 URL url,
                 String method,
-                AsyncCallback callback,
+                IAsyncCallback callback,
                 String contentType,
                 String content) {
             this(url, method, callback);
@@ -100,7 +100,7 @@ public class LobbyAPI {
      *
      * @param callback Method to call if the request is successful.
      */
-    public static void getAllHosts(AsyncCallback callback) {
+    public static void getAllHosts(IAsyncCallback callback) {
         if (url == null) {
             return;
         }
@@ -108,7 +108,7 @@ public class LobbyAPI {
         request.start();
     }
 
-    public static void addNewHost(String ip, int port, AsyncCallback callback) {
+    public static void addNewHost(String ip, int port, IAsyncCallback callback) {
         if (url == null) {
             return;
         }

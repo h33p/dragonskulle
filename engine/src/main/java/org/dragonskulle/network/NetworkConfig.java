@@ -18,10 +18,10 @@ public class NetworkConfig {
         public static final byte MESSAGE_SERVER_EVENT = 18;
         /** ID of client to server request message. */
         public static final byte MESSAGE_CLIENT_REQUEST = 21;
-        /** ID of game start event. */
-        public static final byte MESSAGE_SERVER_START = 22;
-        /** ID of client to server loaded request. */
-        public static final byte MESSAGE_CLIENT_LOADED = 23;
+        /** ID of server starting game message. */
+        public static final byte MESSAGE_HOST_STARTED = 24;
+        /** ID of client to server loading finished message. */
+        public static final byte MESSAGE_CLIENT_LOADED = 25;
     }
 
     /** The constant MAX_TRANSMISSION_SIZE. */

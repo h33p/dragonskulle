@@ -54,7 +54,7 @@ public class ServerTest {
                 new GameObject("netman", handle -> handle.addComponent(SERVER_NETWORK_MANAGER)));
     }
 
-    private static ReentrantLock sEngineLock = new ReentrantLock();
+    private static final ReentrantLock sEngineLock = new ReentrantLock();
 
     private static void cleanupNetmans() {
         log.info("Cleanup netmans");
@@ -71,7 +71,7 @@ public class ServerTest {
 
         private Thread mTestThread;
         private boolean mShouldExit;
-        private int mPort;
+        private final int mPort;
 
         private Throwable mToThrow = null;
 
@@ -111,10 +111,11 @@ public class ServerTest {
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
                     mPort,
-                    (__1, __2, netid) -> {
+                    (__1, netid) -> {
                         log.info("CONNECTED CLIENT");
                         assertTrue(netid >= 0);
-                    });
+                    },
+                    null);
 
             sEngineLock.unlock();
         }

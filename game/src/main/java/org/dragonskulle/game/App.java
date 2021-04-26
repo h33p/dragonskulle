@@ -21,9 +21,9 @@ import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.lobby.Lobby;
-import org.dragonskulle.game.map.FogOfWar;
-import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
@@ -398,6 +398,7 @@ public class App implements NativeResource {
                             settingsUI.setEnabled(true);
                         }));
 
+        /*
         uiManager.buildVerticalUi(
                 hostUi,
                 0.05f,
@@ -417,6 +418,7 @@ public class App implements NativeResource {
                             hostUi.setEnabled(false);
                             mainUi.setEnabled(true);
                         }));
+         */
 
         mainMenu.addRootObject(networkManagerObject);
 
@@ -488,33 +490,6 @@ public class App implements NativeResource {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
-    }
-
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
-        log.info("CONNECTED ID " + netId);
-
-        GameObject humanPlayer =
-                new GameObject(
-                        "human player",
-                        (handle) -> {
-                            handle.addComponent(
-                                    new HumanPlayer(
-                                            manager.getReference(NetworkManager.class), netId));
-                        });
-
-        gameScene.addRootObject(humanPlayer);
-    }
-
-    private void onClientConnected(
-            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
-        int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
-    }
-
-    private void onGameStarted(NetworkManager manager) {
-        log.severe("Game Start");
-        log.warning("Spawning 'Server' Owned objects");
-        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 
     @Override

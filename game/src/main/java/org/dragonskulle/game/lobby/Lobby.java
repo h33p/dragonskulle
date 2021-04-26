@@ -141,7 +141,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 // TODO: When we start a game remove it from the server list
                                 "Start Game",
                                 (__, ___) -> {
-                                    mNetworkManager.get().getServerManager().startGame();
+                                    mNetworkManager.get().getServerManager().start();
                                 }));
 
         buildJoinUi();
@@ -172,8 +172,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                             .createClient(
                                                     "127.0.0.1",
                                                     7000,
-                                                    (scene, manager, netID) -> {
-                                                        onConnectToHost(scene, manager, netID);
+                                                    (manager, netID) -> {
                                                         button.getLabelText()
                                                                 .get()
                                                                 .setText("Join locally");
@@ -182,7 +181,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                                             mJoiningUi.setEnabled(true);
                                                             mJoinUi.setEnabled(false);
                                                         }
-                                                    });
+                                                    },
+                                                    this::onHostStartGame);
                                 }),
                         new UIButton(
                                 "Cancel",
@@ -223,15 +223,15 @@ public class Lobby extends Component implements IFrameUpdate {
                                         .createClient(
                                                 "127.0.0.1",
                                                 7000,
-                                                (scene, manager, netID) -> {
-                                                    onConnectToHost(scene, manager, netID);
+                                                (manager, netID) -> {
                                                     button.getLabelText().get().setText(text);
 
                                                     if (netID >= 0) {
                                                         mJoiningUi.setEnabled(true);
                                                         mServerBrowserUi.setEnabled(false);
                                                     }
-                                                });
+                                                },
+                                                this::onHostStartGame);
                             });
         }
 
@@ -258,7 +258,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 (__, ___) -> {
                                     mNetworkManager
                                             .get()
-                                            .createServer(7000, this::onClientConnected);
+                                            .createServer(7000, this::onClientLoaded, this::onGameStarted);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -286,26 +286,32 @@ public class Lobby extends Component implements IFrameUpdate {
         mHostsUpdated.set(true);
     }
 
-    private void onClientConnected(
-            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
-        int id = networkClient.getNetworkID();
-        log.info("New player connected to lobby with id " + id);
-        // TODO: Track number of connected clients in the lobby
+    private void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
+        log.info("CONNECTED ID " + netId);
+
+        GameObject humanPlayer =
+                new GameObject(
+                        "human player",
+                        (handle) -> {
+                            handle.addComponent(
+                                    new HumanPlayer(
+                                            manager.getReference(NetworkManager.class), netId));
+                        });
+
+        gameScene.addRootObject(humanPlayer);
     }
 
-    private void onConnectToHost(Scene gameScene, NetworkManager manager, int netID) {
-        if (netID >= 0) {
-            GameObject humanPlayer =
-                    new GameObject(
-                            "human player",
-                            (handle) -> {
-                                handle.addComponent(
-                                        new HumanPlayer(
-                                                manager.getReference(NetworkManager.class), netID));
-                            });
+    private void onClientLoaded(
+            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
+        log.info("Client ID: " + networkClient.getNetworkID() + " loaded.");
+        int id = networkClient.getNetworkID();
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+    }
 
-            gameScene.addRootObject(humanPlayer);
-        }
+    private void onGameStarted(NetworkManager manager) {
+        log.severe("Game Start");
+        log.warning("Spawning 'Server' Owned objects");
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 
     @Override

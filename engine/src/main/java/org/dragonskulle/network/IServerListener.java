@@ -22,19 +22,10 @@ public interface IServerListener {
     int clientConnected(ServerClient client);
 
     /**
-     * Client activated event.
-     *
-     * <p>This will be called from the main thread when the client gets fully connected.
-     *
-     * @param client the client
-     */
-    void clientActivated(ServerClient client);
-
-    /**
      * Client loaded event.
      *
-     * <p>This will be called from the client socket thread when the server has started and the
-     * client has fully loaded the game scene.
+     * <p>This is called after the host has started game when the client has fully loaded.
+     * Networked objects can only be spawned after this point
      *
      * @param client the client
      */
