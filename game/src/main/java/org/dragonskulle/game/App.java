@@ -169,8 +169,6 @@ public class App implements NativeResource {
                                                                                         .findTemplateByName(
                                                                                                 "aStarAi"));
 
-                                                                log.warning("Created ai");
-
                                                                 networkManager
                                                                         .getServerManager()
                                                                         .spawnNetworkObject(
@@ -178,8 +176,6 @@ public class App implements NativeResource {
                                                                                 networkManager
                                                                                         .findTemplateByName(
                                                                                                 "aiPlayer"));
-
-                                                                log.warning("Created ai");
                                                             }));
                                         });
                             });
