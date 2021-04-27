@@ -181,13 +181,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         final int attempts = 20;
 
-        GameState state = mGameState.get();
+        final int maxPlayers;
 
-        final int maxPlayers = state.getNumPlayers().get();
+        if (Reference.isValid(mGameState)) {
+            GameState state = mGameState.get();
+            maxPlayers = state.getNumPlayers().get();
+        } else {
+            maxPlayers = 6;
+            log.severe("Failed to get max players from game state!");
+        }
 
         for (int i = 0; i <= attempts; i++) {
 
-            log.severe("This is attempt number " + i);
+            log.fine("This is attempt number " + i);
 
             // Add the building
             float angleBetween;

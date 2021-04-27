@@ -168,6 +168,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             return;
         }
 
+        // Initialise the event handler if haven't already.
+        // This can lag by a frame or two, before game state gets spawned.
         if (!Reference.isValid(mGameEndEventHandler)) {
             GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
