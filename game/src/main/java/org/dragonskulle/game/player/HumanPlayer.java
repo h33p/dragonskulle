@@ -25,18 +25,15 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
+import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UITokenCounter;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
-import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 /**
  * This class will allow a user to interact with game.
@@ -74,8 +71,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private boolean mMovedCameraToCapital = false;
     @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
-    private Reference<GameObject> mEndScreen;
-    private Reference<UITextRect> mEndScreenText;
     private Reference<IGameEndEvent> mGameEndEventHandler;
 
     /**
@@ -135,51 +130,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
 
-        UITextRect endScreenText = new UITextRect("End of game!");
-
-        mEndScreen =
-                getGameObject()
-                        .buildChild(
-                                "end_screen",
-                                false,
-                                new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(new UIRenderable(new Vector4f(0.3f)));
-                                    UIManager.getInstance()
-                                            .buildVerticalUi(
-                                                    go,
-                                                    0.3f,
-                                                    0.1f,
-                                                    0.9f,
-                                                    endScreenText,
-                                                    new UIButton(
-                                                            "View Map",
-                                                            (__, ___) -> go.setEnabled(false)),
-                                                    new UIButton(
-                                                            "Quit",
-                                                            (__, ___) -> {
-                                                                if (!Reference.isValid(mPlayer)) {
-                                                                    return;
-                                                                }
-
-                                                                NetworkManager man =
-                                                                        mPlayer.get()
-                                                                                .getNetworkObject()
-                                                                                .getNetworkManager();
-                                                                if (man.isClient()) {
-                                                                    man.getClientManager()
-                                                                            .disconnect();
-                                                                }
-
-                                                                if (man.isServer()) {
-                                                                    man.getServerManager()
-                                                                            .destroy();
-                                                                }
-                                                            }));
-                                });
-
-        mEndScreenText = endScreenText.getReference(UITextRect.class);
-
         mVisualsNeedUpdate = true;
     }
 
@@ -221,24 +171,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (!Reference.isValid(mGameEndEventHandler)) {
             GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
-            if (gameState != null) {
+            Reference<UIPauseMenu> pauseMenu =
+                    Scene.getActiveScene().getSingletonRef(UIPauseMenu.class);
+
+            if (gameState != null && Reference.isValid(pauseMenu)) {
                 mGameEndEventHandler =
                         new Reference<>(
                                 (winnerId) -> {
-                                    if (Reference.isValid(mEndScreen)) {
-                                        mEndScreen.get().setEnabled(true);
+                                    if (!Reference.isValid(pauseMenu)) {
+                                        return;
                                     }
 
-                                    if (Reference.isValid(mPlayer)
-                                            && Reference.isValid(mEndScreenText)) {
+                                    if (Reference.isValid(mPlayer)) {
                                         int id = mPlayer.get().getNetworkObject().getOwnerId();
 
-                                        String res =
-                                                id == winnerId
-                                                        ? "You are winner!"
-                                                        : "You are loose!";
+                                        String res = id == winnerId ? "You win!" : "You lose!";
 
-                                        mEndScreenText.get().getLabelText().get().setText(res);
+                                        pauseMenu.get().endGame(res);
                                     }
                                 });
 

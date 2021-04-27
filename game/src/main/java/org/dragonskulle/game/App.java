@@ -547,36 +547,17 @@ public class App implements NativeResource {
         // 6 players for now
         gameState.get().getNumPlayers().set(6);
 
-        GameObject endScreen =
-                new GameObject(
-                        "end_screen",
-                        false,
-                        new TransformUI(),
-                        (go) -> {
-                            go.addComponent(new UIRenderable(new Vector4f(0.3f)));
-                            UIManager.getInstance()
-                                    .buildVerticalUi(
-                                            go,
-                                            0.3f,
-                                            0.1f,
-                                            0.9f,
-                                            new UITextRect("Game has ended!"),
-                                            new UIButton(
-                                                    "View Map", (__, ___) -> go.setEnabled(false)),
-                                            new UIButton(
-                                                    "Quit",
-                                                    (__, ___) -> {
-                                                        if (manager.isServer()) {
-                                                            manager.getServerManager().destroy();
-                                                        }
-                                                    }));
-                        });
-
-        manager.getGameScene().addRootObject(endScreen);
-
         gameState
                 .get()
-                .registerGameEndListener(new Reference<>((__) -> endScreen.setEnabled(true)));
+                .registerGameEndListener(
+                        new Reference<>(
+                                (__) -> {
+                                    UIPauseMenu pauseMenu =
+                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
+                                    if (pauseMenu != null) {
+                                        pauseMenu.endGame();
+                                    }
+                                }));
     }
 
     @Override
