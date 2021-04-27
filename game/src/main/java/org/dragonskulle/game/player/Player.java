@@ -181,7 +181,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         for (int i = 0; i <= attempts; i++) {
 
-            log.severe("This is attempt number " + i);
+            log.info("This is attempt number " + i);
 
             // Add the building
             float angleBetween;
@@ -207,22 +207,30 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        Building buildingToBecomeCapital =
+        Object[] buildingToBecomeCapital =
                 getMap().getAllTiles()
                         .map(tile -> createBuilding(tile.getQ(), tile.getR(), true))
                         .filter(building -> building != null)
-                        .findFirst()
-                        .orElse(null);
+                        .toArray();
 
-        if (buildingToBecomeCapital == null) {
+        if (buildingToBecomeCapital.length == 0) {
             // Cannot add a capital
             setOwnsCapital(false);
             log.severe("Disconnecting");
             getGameObject().destroy();
 
         } else {
+            Random random = new Random();
+            int index = random.nextInt(buildingToBecomeCapital.length);
 
-            buildingToBecomeCapital.setCapital(true);
+            for (int i = 0; i < buildingToBecomeCapital.length; i++) {
+                if (i != index) {
+                    Building toDestroy = (Building) buildingToBecomeCapital[i];
+                    toDestroy.getGameObject().destroy();
+                }
+            }
+            Building capital = (Building) buildingToBecomeCapital[index];
+            capital.setCapital(true);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
             return;
         }
@@ -301,8 +309,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 // Reduce the cumulative time by the TOKEN_TIME.
                 mCumulativeTokenTime -= TOKEN_TIME;
-
-                log.info("Tokens at: " + mTokens.get());
             }
         }
     }
