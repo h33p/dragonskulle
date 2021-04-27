@@ -36,7 +36,8 @@
                 2,
                 3,
                 4,
-                5
+                5,
+                6
             ]
         }
     ],
@@ -180,6 +181,29 @@
             "name" : "map",
             "translation" : [
                 -10,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.player.Player",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "aStarAi",
+            "translation" : [
+                -7,
                 0,
                 0
             ]
