@@ -14,15 +14,17 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
-import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -47,7 +49,8 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnStart, IFrameUpdate, IFixedUpdate {
+public class Building extends NetworkableComponent
+        implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
 
     /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -76,6 +79,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
 
     /** The tiles the building can currently attack (those with claims neighboring our claims). */
     private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+
+    /** Building templates, used to distinguish the buildings. */
+    private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -161,6 +167,34 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         checkInitialise();
     }
 
+    @Override
+    public void onAwake() {
+
+        GLTF gltf = sBuildingTemplates.get();
+
+        GameObject baseMesh =
+                GameObject.instantiate(gltf.getDefaultScene().findRootObject("base_building"));
+        GameObject defenceMesh =
+                GameObject.instantiate(gltf.getDefaultScene().findRootObject("defence_building"));
+        GameObject attackMesh =
+                GameObject.instantiate(gltf.getDefaultScene().findRootObject("attack_building"));
+        GameObject generationMesh =
+                GameObject.instantiate(
+                        gltf.getDefaultScene().findRootObject("generation_building"));
+        getGameObject().addChild(baseMesh);
+        getGameObject().addChild(defenceMesh);
+        getGameObject().addChild(attackMesh);
+        getGameObject().addChild(generationMesh);
+        baseMesh.setEnabled(false);
+        defenceMesh.setEnabled(false);
+        attackMesh.setEnabled(false);
+        generationMesh.setEnabled(false);
+        mBaseMesh = baseMesh.getReference();
+        mDefenceMesh = defenceMesh.getReference();
+        mAttackMesh = attackMesh.getReference();
+        mGenerationMesh = generationMesh.getReference();
+    }
+
     /** Initialise the building only when it is properly on the map and the tile is synced */
     void checkInitialise() {
         if (mInitialised) {
@@ -242,37 +276,19 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
 
         checkInitialise();
 
-        TemplateManager spawnableTemplates = getNetworkManager().getSpawnableTemplates();
-
         if (isCapital()) {
+            GLTF gltf = sBuildingTemplates.get();
+
             GameObject capital_mesh =
-                    spawnableTemplates.instantiate(spawnableTemplates.find("capital_building"));
+                    GameObject.instantiate(
+                            gltf.getDefaultScene().findRootObject("capital_building"));
+
             getGameObject().addChild(capital_mesh);
             capital_mesh.setEnabled(true);
             mVisibleMesh = capital_mesh.getReference();
             return;
         }
 
-        GameObject base_mesh =
-                spawnableTemplates.instantiate(spawnableTemplates.find("base_building"));
-        GameObject defence_mesh =
-                spawnableTemplates.instantiate(spawnableTemplates.find("defence_building"));
-        GameObject attack_mesh =
-                spawnableTemplates.instantiate(spawnableTemplates.find("attack_building"));
-        GameObject generation_mesh =
-                spawnableTemplates.instantiate(spawnableTemplates.find("generation_building"));
-        getGameObject().addChild(base_mesh);
-        getGameObject().addChild(defence_mesh);
-        getGameObject().addChild(attack_mesh);
-        getGameObject().addChild(generation_mesh);
-        base_mesh.setEnabled(false);
-        defence_mesh.setEnabled(false);
-        attack_mesh.setEnabled(false);
-        generation_mesh.setEnabled(false);
-        this.mBaseMesh = base_mesh.getReference();
-        this.mDefenceMesh = defence_mesh.getReference();
-        this.mAttackMesh = attack_mesh.getReference();
-        this.mGenerationMesh = generation_mesh.getReference();
         assignMesh();
     }
 
@@ -339,6 +355,8 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
                             mGenerationMesh.get().setEnabled(true);
                             mVisibleMesh = mGenerationMesh;
                         }
+                        break;
+                    default:
                         break;
                 }
             }
