@@ -167,9 +167,15 @@ public class App implements NativeResource {
                                                                                 -1,
                                                                                 networkManager
                                                                                         .findTemplateByName(
-                                                                                                "aiPlayer"));
+                                                                                                "aStarAi"));
 
-                                                                log.warning("Created ai");
+                                                                networkManager
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -2,
+                                                                                networkManager
+                                                                                        .findTemplateByName(
+                                                                                                "aiPlayer"));
                                                             }));
                                         });
                             });
