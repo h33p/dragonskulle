@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
-import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.renderer.components.Renderable;
+
+import lombok.extern.java.Log;
 
 /**
  * Make buildings invisible in fog.
@@ -19,7 +21,8 @@ import org.dragonskulle.renderer.components.Renderable;
  *     invisible/only get updated when seen by the player. It hides objects when they are on the fog
  *     tile type.
  */
-public class FogInvisibility extends Component implements IOnAwake, ILateFrameUpdate {
+@Log
+public class FogInvisibility extends Component implements IOnStart, ILateFrameUpdate {
 
     /** Internal list of renderables to control the visibility for. */
     private final List<Reference<Renderable>> mRenderables = new ArrayList<>();
@@ -27,7 +30,7 @@ public class FogInvisibility extends Component implements IOnAwake, ILateFrameUp
     private Reference<Building> mBuilding;
 
     @Override
-    public void onAwake() {
+    public void onStart() {
         getGameObject().getComponents(Renderable.class, mRenderables);
         getGameObject().getComponentsInChildren(Renderable.class, mRenderables);
         mBuilding = getGameObject().getComponent(Building.class);
