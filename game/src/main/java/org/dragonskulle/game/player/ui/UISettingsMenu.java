@@ -209,7 +209,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                 uiManager.buildWithChildrenRightOf(
                         new UITextRect("Cursor Size:"),
                         new UISlider(
-                                settingsInstance.retrieveFloat("cursorScale"),
+                                settingsInstance.retrieveFloat("cursorScale", 0.4f),
                                 0.1f,
                                 1f,
                                 0.01f,

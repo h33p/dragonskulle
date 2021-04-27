@@ -95,7 +95,7 @@ public class Cursor {
      */
     public static void setCustomCursor(long window) {
         Settings instance = Settings.getInstance();
-        float scale = instance.retrieveFloat("cursorScale");
+        float scale = instance.retrieveFloat("cursorScale", 0.4f);
         try {
             setCustomCursor(window, scale);
         } catch (IOException e) {

@@ -12,10 +12,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIManager;
-import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.*;
 import org.joml.Vector4f;
 
 /**
@@ -122,6 +119,8 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
     /** Generate the contents of {@link #mMenuContainer}. */
     private void generateMenu() {
+        UITextRect title = new UITextRect("Paused");
+
         UIButton resume =
                 new UIButton(
                         "Resume",
@@ -158,7 +157,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                         });
 
         UIManager.getInstance()
-                .buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, resume, settings, exit);
+                .buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
     }
 
     @Override
