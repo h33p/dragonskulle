@@ -23,9 +23,8 @@ public class AttackTest {
     public void setup() {
         mAttacker = new Building();
         mDefender = new Building();
-
-        mAttacker.onAwake();
-        mDefender.onAwake();
+        mAttacker.onConnectedSyncvars();
+        mDefender.onConnectedSyncvars();
     }
 
     /**
