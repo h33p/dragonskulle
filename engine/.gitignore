@@ -3,5 +3,3 @@ target/*
 *.swp
 /target/
 src/main/resources/shaderc/
-/.apt_generated/
-/.apt_generated_tests/
