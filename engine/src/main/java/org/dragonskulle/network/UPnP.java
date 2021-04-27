@@ -82,9 +82,13 @@ public class UPnP {
                                 socket.receive(packet);
                                 received[idx] = packet.getData();
                                 sLocal = address;
-                                log.info("Received response to query on address : " + address.getHostAddress());
+                                log.info(
+                                        "Received response to query on address : "
+                                                + address.getHostAddress());
                             } catch (SocketTimeoutException e) {
-                                log.info("Didn't receive response to query on address : " + address.getHostAddress());
+                                log.info(
+                                        "Didn't receive response to query on address : "
+                                                + address.getHostAddress());
                             }
                         } catch (SocketException e) {
                             log.info(
@@ -116,6 +120,8 @@ public class UPnP {
                 return;
             }
         }
+        log.severe(
+                "Failed to initialise UPnP. Hosting a lobby will not be possible without manual port forwarding");
     }
 
     /**
