@@ -14,8 +14,8 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 
 /**
- * Class which performs the A* Algorithm This has been adapted from Nathaniel Lowis's (one of our
- * group members) repository: https://github.com/low101043/aiProjectComputer
+ * Class which performs the A* Algorithm. This has been adapted from Nathaniel Lowis's (one of our
+ * group members) repository: https://github.com/low101043/aiProjectComputer.
  *
  * @author DragonSkulle
  */
@@ -23,35 +23,35 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 @Log
 public class AStar {
 
-    /** This will hold the nodes to be visited with the nodeId being the key */
+    /** This will hold the nodes to be visited with the nodeId being the key. */
     private HashMap<Integer, Frontier> mFrontier = new HashMap<Integer, Frontier>();
 
     /**
-     * A class which holds the variables for a node in the frontier
+     * A class which holds the variables for a node in the frontier.
      *
      * @author DragonSkulle
      */
     private class Frontier {
 
-        /** The child node */
-        @Getter private int mChild;
+        /** The child node. */
+        private int mChild;
 
-        /** The cost of getting to the child node */
-        @Getter private int mFNode;
+        /** The cost of getting to the child node. */
+        private int mFNode;
 
-        /** The weight of the connection */
-        @Getter private int mWeight;
+        /** The weight of the connection. */
+        private int mWeight;
 
-        /** The parent node */
-        @Getter private int mParent;
+        /** The parent node. */
+        private int mParent;
 
         /**
-         * Simple constructor
+         * Simple constructor.
          *
-         * @param child The child node
-         * @param fNode The cost of getting to the child node
-         * @param weight The weight from parent to child
-         * @param currentNode The parent node
+         * @param child The child node.
+         * @param fNode The cost of getting to the child node.
+         * @param weight The weight from parent to child.
+         * @param currentNode The parent node.
          */
         public Frontier(int child, int fNode, int weight, int currentNode) {
             mChild = child;
@@ -62,23 +62,23 @@ public class AStar {
     }
 
     /**
-     * Holds the details of the connections
+     * Holds the details of the connections.
      *
      * @author DragonSkulle
      */
     private class ConnectionIds {
 
-        /** The parent node */
+        /** The parent node. */
         private int mCurrentNode;
 
-        /** The child node */
+        /** The child node. */
         private int mChildNode;
 
         /**
-         * Simple constructor
+         * Simple constructor.
          *
-         * @param currentNode The parent node
-         * @param childNode the child node
+         * @param currentNode The parent node.
+         * @param childNode the child node.
          */
         private ConnectionIds(int currentNode, int childNode) {
             mCurrentNode = currentNode;
@@ -86,21 +86,21 @@ public class AStar {
         }
     }
 
-    /** This will hold the node ids which has been visited */
+    /** This will hold the node ids which has been visited. */
     private Set<Integer> mVisited = new HashSet<Integer>();
 
-    /** This will hold the Graph being processed */
+    /** This will hold the Graph being processed. */
     private Graph mGraph;
 
-    /** This hold the solution of which nodes to visit */
+    /** This hold the solution of which nodes to visit. */
     @Getter private Deque<Integer> mPath = new ArrayDeque<Integer>();
 
     /**
      * The constructor which allows you to make the object.
      *
-     * @param graph The {@code Graph} to use A* on
-     * @param currentNode The start {@code Node}
-     * @param endNode The end {@code Node}
+     * @param graph The {@code Graph} to use A* on.
+     * @param currentNode The start {@code Node}'s nodeId.
+     * @param endNode The end {@code Node}'s nodeId.
      */
     public AStar(Graph graph, int currentNode, int endNode) {
         this.mGraph = graph;
@@ -108,10 +108,10 @@ public class AStar {
     }
 
     /**
-     * This will perform the A* Search
+     * This will perform the A* Search.
      *
-     * @param currentNode The node to start from
-     * @param endNode The goal node
+     * @param currentNode The {@code Node}'s nodeId to start from.
+     * @param endNode The goal node's nodeId.
      */
     private void aStarAlgorithm(int currentNode, int endNode) {
 
@@ -167,6 +167,14 @@ public class AStar {
         }
     }
 
+    /**
+     * This will check through all the connections and add to the frontier.
+     *
+     * @param currentNode The current node we are at.
+     * @param connections An {@code ArrayList} of {@code Connections}'s which come off the current
+     *     node.
+     * @param oldFNode The weight to get to the currentNode.
+     */
     private void checkConnections(
             int currentNode, ArrayList<Connection> connections, int oldFNode) {
 
@@ -208,7 +216,7 @@ public class AStar {
      * This will go through mFrontier and will find the next node to expand by checking what the
      * fNode is.
      *
-     * @return the index of the next node to check or -1 if the list is empty
+     * @return the index of the next node to check or -1 if the list is empty.
      */
     private int nextNode() {
         int smallest = Integer.MAX_VALUE;

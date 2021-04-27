@@ -20,17 +20,17 @@ import org.dragonskulle.game.player.ai.AimerAi;
 @Log
 public class Graph {
 
-    /** The hash map which will hold the node id to the Node */
+    /** The hash map which will hold the node id to the Node. */
     protected HashMap<Integer, Node> mGraph;
 
-    /** The {@code HexagonMap} which is used */
+    /** The {@code HexagonMap} which is used. */
     private Reference<HexagonMap> mMap;
 
     /**
-     * Constructor to create the whole map
+     * Constructor to create the whole map.
      *
-     * @param map The {@code HexagonMap} to convert to a {@code Graph}
-     * @param target The {@code HexagonTile} to aim for
+     * @param map The {@code HexagonMap} to convert to a {@code Graph}.
+     * @param target The {@code HexagonTile} to aim for.
      */
     public Graph(HexagonMap map, HexagonTile target) {
 
@@ -42,11 +42,11 @@ public class Graph {
     }
 
     /**
-     * Constructor to create only part of the map
+     * Constructor to create only part of the map.
      *
-     * @param map The {@code HexagonMap} to convert to a {@code Graph}
-     * @param target The {@code HexagonTile} to aim for
-     * @param aimer The {@code CapitalAimer} to use to create the map
+     * @param map The {@code HexagonMap} to convert to a {@code Graph}.
+     * @param target The {@code HexagonTile} to aim for.
+     * @param aimer The {@code AimerAi} to use to create the map.
      */
     public Graph(HexagonMap map, HexagonTile target, AimerAi aimer) {
 
@@ -57,10 +57,10 @@ public class Graph {
     }
 
     /**
-     * This is the variables set up in both constructors
+     * This is the variables set up in both constructors.
      *
-     * @param map The {@code HexagonMap} to be used
-     * @param tileAiming The {@code HexagonTile} being aimed at
+     * @param map The {@code HexagonMap} to be used.
+     * @param tileAiming The {@code HexagonTile} being aimed at.
      */
     private void initialise(HexagonMap map, HexagonTile tileAiming) {
 
@@ -70,9 +70,10 @@ public class Graph {
 
     /**
      * This will convert a {@code HexagonTile} to a {@code Node} which can be used by a {@code
-     * Graph}
+     * Graph}.
      *
-     * @param tile The {@code HexagonTile} to be made a node
+     * @param tile The {@code HexagonTile} to be made a node.
+     * @param target The {@code HexagonTile} to aim for
      */
     private void convertToNode(HexagonTile tile, HexagonTile target) {
 
@@ -90,9 +91,9 @@ public class Graph {
     }
 
     /**
-     * This will add all the connections for a node
+     * This will add all the connections for a node.
      *
-     * @param tile The {@code HexagonTile} to add connections for in the graph
+     * @param tile The {@code HexagonTile} to add connections for in the graph.
      */
     private void addConnections(HexagonTile tile) {
         if (!Reference.isValid(mMap)) {
@@ -130,10 +131,10 @@ public class Graph {
     }
 
     /**
-     * This will add a node to a mGraph with no connections
+     * This will add a node to a mGraph with no connections.
      *
-     * @param nodeId The node number
-     * @param tile The {@code HexagonTile} it corresponds to
+     * @param nodeId The node number.
+     * @param tile The {@code HexagonTile} it corresponds to.
      */
     public void addNode(int nodeId, HexagonTile tile) {
 
@@ -142,11 +143,11 @@ public class Graph {
     }
 
     /**
-     * Adds a connection between two nodes
+     * Adds a connection between two nodes.
      *
-     * @param originNode The origin node
-     * @param destinationNode the end node
-     * @param weight The weight between the nodes
+     * @param originNode The origin node.
+     * @param destinationNode the end nod.e
+     * @param weight The weight between the nodes.
      */
     public void addConnection(int originNode, int destinationNode, int weight) {
 
@@ -157,10 +158,10 @@ public class Graph {
     }
 
     /**
-     * Returns the connections of that node
+     * Returns the connections of that node.
      *
-     * @param nodeNum The node to find
-     * @return The connections
+     * @param nodeNum The node to find.
+     * @return The connections.
      */
     public ArrayList<Connection> getConnection(int nodeNum) {
 
@@ -173,10 +174,10 @@ public class Graph {
     }
 
     /**
-     * Returns the heuristic for that node
+     * Returns the heuristic for that node.
      *
-     * @param nodeToGet The node which has the special info to get
-     * @return the heuristic for that node
+     * @param nodeToGet The node which has the special info to get.
+     * @return the heuristic for that node or {@code Integer.MAX_VALUE} if the Node does not exist.
      */
     public int getNodeHeuristic(int nodeToGet) {
 
@@ -187,10 +188,10 @@ public class Graph {
     }
 
     /**
-     * A setter which sets the extra info
+     * A setter which sets the heuristic info.
      *
-     * @param nodeToChange The node to change
-     * @param newInfo The extra info to change
+     * @param nodeToChange The node to change.
+     * @param newInfo The extra info to change.
      */
     public void setNodeHeuristic(int nodeToChange, int newInfo) {
 
@@ -201,20 +202,32 @@ public class Graph {
     }
 
     /**
-     * Returns a node
+     * Returns a node.
      *
-     * @param node The node to find
-     * @return The actual {@code Node}
+     * @param node The nodeID to find.
+     * @return The actual {@code Node}.
      */
     public Node getNode(Integer node) {
         return mGraph.get(node);
     }
 
+    /**
+     * Will return a node when given a {@code HexagonTile}.
+     *
+     * @param tile The {@code HexagonTile} to find a {@code Node} for.
+     * @return The {@code Node} which corresponds to the {@code HexagonTile} or {@code null}.
+     */
     public Node getNode(HexagonTile tile) {
         int targetNodeHash = (tile.getQ() * mMap.get().getSize()) + tile.getR();
         return getNode(targetNodeHash);
     }
 
+    /**
+     * Gets the hash of a {@code HexagonTile}
+     *
+     * @param tile The {@code HexagonTile} to get a hash for
+     * @return The hash of it
+     */
     public int getHash(HexagonTile tile) {
         int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
         return nodeNum;

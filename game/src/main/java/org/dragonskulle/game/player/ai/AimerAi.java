@@ -18,7 +18,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
 /**
  * An AI player which will aim for a {@code Building} of a player when viewed. This is done using
- * the A* Algorithm
+ * the A* Algorithm.
  *
  * @author Dragonskulle
  */
@@ -26,50 +26,53 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 public class AimerAi extends ProbabilisticAiPlayer {
 
     /**
-     * A Class which holds the Goal Node and Start Node
+     * A Class which holds the Goal Node and Start Node.
      *
      * @author DragonSkulle
      */
     private class ImportantNodes {
 
-        private Node goalNode;
-        private Node startNode;
+        /** This will be the goal node. */
+        private Node mGoalNode;
+
+        /** This will be the start node. */
+        private Node mStartNode;
     }
 
-    /** This will hold the path to go */
+    /** This will hold the path to go. */
     private Deque<Integer> mPath = new ArrayDeque<Integer>();
 
-    /** This will hold where we have gone */
+    /** This will hold where we have gone. */
     private Deque<Integer> mGone;
 
-    /** This is the graph to traverse */
+    /** This is the graph to traverse. */
     private Graph mGraph;
 
-    /** Random Creator */
+    /** Random Creator. */
     private Random mRandom = new Random();
 
-    /** This states whether we are aiming at the capital */
+    /** This states whether we are aiming at the capital. */
     private boolean mCapitalAimer;
 
-    /** This states how many times we have tried to move from the same place */
+    /** This states how many times we have tried to move from the same place. */
     private int mAttempts = 0;
 
-    /** The node we previously were on */
+    /** The node we previously were on. */
     private Node mNodePreviouslyOn = null;
 
-    /** Whether to use the A* route */
+    /** Whether to use the A* route. */
     private final float PLAY_A_STAR = 0.9f;
 
-    /** Whether to attack or to upgrade a building */
+    /** Whether to attack or to upgrade a building. */
     private final float GO_DOWN_PATH = .6f;
 
-    /** The chance to aim at a capital */
+    /** The chance to aim at a capital. */
     private final float AIM_AT_CAPITAL = 0.01f;
 
-    /** This is the number of tries we should do before resetting */
+    /** This is the number of tries we should do before resetting. */
     private final int TRIES = 10;
 
-    /** Basic Constructor */
+    /** Basic Constructor. */
     public AimerAi() {}
 
     @Override
@@ -153,11 +156,10 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will attack the next building
+     * This will attack the next building.
      *
-     * @param nextTile The next {@code HexagonTile} to aim for
-     * @param nextTilePlayer The {@code Player} which owns the next tile
-     * @param nextNode The {@code Node} number for the next {@code HexagonTile}
+     * @param nextTile The next {@code HexagonTile} to aim for.
+     * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
      */
     private void attack(HexagonTile nextTile, int nextNode) {
         log.info("Attacking");
@@ -250,10 +252,10 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will build the next building
+     * This will build the next building.
      *
-     * @param nextTile The next {@code HexagonTile} to aim for
-     * @param nextNode The {@code Node} number for the next {@code HexagonTile}
+     * @param nextTile The next {@code HexagonTile} to aim for.
+     * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("Building");
@@ -262,7 +264,11 @@ public class AimerAi extends ProbabilisticAiPlayer {
         mGone.push(nextNode);
     }
 
-    /** Move the Player forward to the first node not owned by them */
+    /**
+     * Move the Player forward to the first node not owned by them
+     *
+     * @return The nodeId which we end up at
+     */
     private int moveForwards() {
         // This will point us to the next tile to use
         int nextNode = mPath.pop();
@@ -343,9 +349,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will set the opponent to aim for
+     * This will set the opponent to aim for.
      *
-     * @return The {@code Player} to attack
+     * @return The {@code Player} to attack.
      */
     private Player findOpponent() {
 
@@ -386,7 +392,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
         }
     }
 
-    /** This will perform the A* Search and all related operations to it */
+    /** This will perform the A* Search and all related operations to it. */
     private void aStar() {
 
         // Will find the opponent to attack
@@ -402,9 +408,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will aim for a building
+     * This will aim for a building.
      *
-     * @param opponentPlayer The {@code Player} to aim for
+     * @param opponentPlayer The {@code Player} to aim for.
      */
     private void aimBuilding(Player opponentPlayer) {
         if (opponentPlayer == null) {
@@ -436,8 +442,8 @@ public class AimerAi extends ProbabilisticAiPlayer {
         // Finds the buildings
         ImportantNodes buildings = findBuilding(mGraph, opponentPlayer, tileToAim);
 
-        Node startNode = buildings.startNode;
-        Node endNode = buildings.goalNode;
+        Node startNode = buildings.mStartNode;
+        Node endNode = buildings.mGoalNode;
 
         if (startNode == null || endNode == null) {
 
@@ -467,10 +473,10 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * Get a tile to aim for
+     * Get a tile to aim for.
      *
-     * @param opponentPlayer The {@code Player} to aim for
-     * @return The {@code HexagonTile} to aim for
+     * @param opponentPlayer The {@code Player} to aim for.
+     * @return The {@code HexagonTile} to aim for.
      */
     private HexagonTile getTileBuilding(Player opponentPlayer) {
 
@@ -521,9 +527,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will convert the visible tiles into a stream
+     * This will convert the visible tiles into a stream.
      *
-     * @return The visible {@code HexagonTile}'s as a {@code Stream}
+     * @return The visible {@code HexagonTile}'s as a {@code Stream}.
      */
     public Stream<HexagonTile> getViewableTiles() {
 
@@ -531,20 +537,22 @@ public class AimerAi extends ProbabilisticAiPlayer {
     }
 
     /**
-     * This will find the Building node for both your opponent and the capital for you
+     * This will find the Building node for both your opponent and the capital for you.
      *
-     * @param graph The {@code Graph} to use
-     * @param opponentPlayer The {@code Player} to aim for
-     * @return An array of {@code Node}s which have the {@code Node} to start from and go to
+     * @param graph The {@code Graph} to use.
+     * @param opponentPlayer The {@code Player} to aim for.
+     * @param target The target {@code HexagonTile} to aim for.
+     * @return An {@code Object} of type {@code ImportantNodes} which have the {@code Node} to start
+     *     from and go to.
      */
     private ImportantNodes findBuilding(Graph graph, Player opponentPlayer, HexagonTile target) {
 
         ImportantNodes buildings = new ImportantNodes();
         // Go through all nodes to find the capital
 
-        buildings.goalNode = mGraph.getNode(target);
+        buildings.mGoalNode = mGraph.getNode(target);
 
-        buildings.startNode = mGraph.getNode(getPlayer().getCapital().getTile());
+        buildings.mStartNode = mGraph.getNode(getPlayer().getCapital().getTile());
 
         return buildings;
     }
@@ -552,7 +560,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /**
      * Returns the AI {@code Player}
      *
-     * @return The {@code Player} in the {@code Reference}
+     * @return The {@code Player} in the {@code Reference} or {@code null} if it does not exist
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayer)) {
