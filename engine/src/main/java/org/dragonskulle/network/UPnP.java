@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +41,7 @@ public class UPnP {
                             + "HOST: 239.255.255.250:1900\r\n"
                             + "MAN: \"ssdp:discover\"\r\n"
                             + "MX: 1\r\n"
-                            + "ST: urn:schemas-upnp-org:service:WANIPConnection:1\r\n\r\n")
+                            + "ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1\r\n\r\n")
                     .getBytes();
 
     private static final String SERVICE_NAME = "urn:schemas-upnp-org:service:WANIPConnection:1";
@@ -75,14 +76,18 @@ public class UPnP {
                                             QUERY,
                                             QUERY.length,
                                             new InetSocketAddress("239.255.255.250", 1900)));
+                            try {
+                                DatagramPacket packet = new DatagramPacket(new byte[2048], 2048);
+                                socket.setSoTimeout(2000);
+                                socket.receive(packet);
+                                received[idx] = packet.getData();
+                                log.info("Received respone : \n" + new String(received[idx]));
+                                sLocal = address;
+                                log.info("Received response on address : " + address.getHostAddress());
 
-                            DatagramPacket packet = new DatagramPacket(new byte[2048], 2048);
-                            socket.setSoTimeout(2000);
-                            socket.receive(packet);
-                            received[idx] = packet.getData();
-                            sLocal = address;
-
-                            log.info("Received response on address : " + address.getHostAddress());
+                            } catch (SocketTimeoutException e) {
+                                log.info("Didn't receive response to query on address : " + address.getHostAddress());
+                            }
                         } catch (SocketException e) {
                             log.info(
                                     "Failed to create UDP socket on address : "
