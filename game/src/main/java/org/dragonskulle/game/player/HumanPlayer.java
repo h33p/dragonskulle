@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -332,16 +331,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
         if (Reference.isValid(mPlayer)) {
-            Stream<HexagonTile> buildableTiles = mPlayer.get().getMap().getAllTiles();
-
-            buildableTiles.forEach(
-                    (tile) -> {
+            fx.highlightTiles(
+                    (tile, __) -> {
                         if (tile.isBuildable(mPlayer.get())) {
-                            fx.highlightTile(tile, highlight.asSelection());
+                            return highlight.asSelection();
                         } else if (!tile.isBuildable(mPlayer.get())
                                 && tile.getTileType() != HexagonTile.TileType.FOG) {
-                            fx.highlightTile(tile, MapEffects.INVALID_MATERIAL);
+                            return MapEffects.INVALID_MATERIAL;
                         }
+                        return null;
                     });
         }
     }
