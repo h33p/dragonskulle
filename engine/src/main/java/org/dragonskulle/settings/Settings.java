@@ -1,9 +1,12 @@
 /* (C) 2021 DragonSkulle */
-package org.dragonskulle.game;
+package org.dragonskulle.settings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,7 +21,7 @@ import lombok.extern.java.Log;
 @Accessors(prefix = "m")
 @Log
 public class Settings {
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(AccessLevel.PUBLIC)
     @Accessors(prefix = "s")
     private static final Settings sInstance = new Settings();
 
@@ -26,22 +29,30 @@ public class Settings {
     private static boolean sIsLoaded = false;
 
     private HashMap mSettings = new HashMap<>();
+    private String mFilePath;
+    private final String mDefaultFilePath = "settings.json";
 
     /** Singleton constructor. */
     private Settings() {}
 
-    /** Loads settings from the default location. root/settings.json */
-    public void loadSettings() {
-        loadSettings("settings.json");
+    /**
+     * Loads settings from the default location. root/settings.json
+     *
+     * @return the settings instance
+     */
+    public Settings loadSettings() {
+        return loadSettings(mDefaultFilePath);
     }
 
     /**
      * Load settings into the singleton by file path.
      *
      * @param filePath the settings file path
+     * @return the settings instance
      */
-    void loadSettings(String filePath) {
+    Settings loadSettings(String filePath) {
         try {
+            mFilePath = filePath;
             File sFile = new File(filePath);
             if (sFile.exists()) {
                 mSettings = new ObjectMapper().readValue(sFile, HashMap.class);
@@ -53,6 +64,34 @@ public class Settings {
         } catch (IOException e) {
             log.warning("failed to load settings file, reason: " + e.getMessage());
         }
+        return getInstance();
+    }
+
+    /**
+     * Saves a key value pair in the settings without saving to disk.
+     *
+     * @param <T> the type of the value to be saved
+     * @param name the name
+     * @param value the value
+     */
+    public <T> void saveValue(String name, T value) {
+        saveValue(name, value, false);
+    }
+
+    /**
+     * Saves a key value pair in the settings. If {@code saveFile} is true we will also save to
+     * disk.
+     *
+     * @param <T> the type of the value to be saved
+     * @param name the name
+     * @param value the value
+     * @param saveFile true if we should save to the physical file
+     */
+    public <T> void saveValue(String name, T value, boolean saveFile) {
+        mSettings.put(name, value.toString());
+        if (saveFile) {
+            save();
+        }
     }
 
     /**
@@ -63,17 +102,19 @@ public class Settings {
      *     Settings are not allowed.
      * @return the float setting value.
      */
-    @SuppressWarnings("unchecked")
     public Float retrieveFloat(String name) {
         try {
             if (sIsLoaded) {
-                return Float.parseFloat((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.get(name);
+                if (val == null) return null;
+                return Float.parseFloat(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
             }
         } catch (Exception e) {
             log.warning("Failed to parse as a float, maybe it isn't one?");
+            log.warning(e.getMessage());
             return null;
         }
     }
@@ -89,6 +130,9 @@ public class Settings {
      */
     public Float retrieveFloat(String name, Float defaultValue) {
         Float value = retrieveFloat(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -100,11 +144,12 @@ public class Settings {
      *     Settings are not allowed.
      * @return the string setting value.
      */
-    @SuppressWarnings("unchecked")
     public String retrieveString(String name) {
         try {
             if (sIsLoaded) {
-                return (String) mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
+                if (val == null) return null;
+                return val.toString();
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -126,7 +171,15 @@ public class Settings {
      */
     public String retrieveString(String name, String defaultValue) {
         String value = retrieveString(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
+    }
+
+    private <T> void recreateSettingsFile(String name, T defaultValue) {
+        if (mFilePath == null) mFilePath = mDefaultFilePath;
+        saveValue(name, defaultValue, true);
     }
 
     /**
@@ -137,11 +190,12 @@ public class Settings {
      *     Settings are not allowed.
      * @return the double setting value.
      */
-    @SuppressWarnings("unchecked")
     public Double retrieveDouble(String name) {
         try {
             if (sIsLoaded) {
-                return Double.parseDouble((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.get(name);
+                if (val == null) return null;
+                return Double.parseDouble(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -163,6 +217,9 @@ public class Settings {
      */
     public Double retrieveDouble(String name, Double defaultValue) {
         Double value = retrieveDouble(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -174,11 +231,12 @@ public class Settings {
      *     Settings are not allowed.
      * @return the long setting value.
      */
-    @SuppressWarnings("unchecked")
     public Long retrieveLong(String name) {
         try {
             if (sIsLoaded) {
-                return Long.parseLong((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.get(name);
+                if (val == null) return null;
+                return Long.parseLong(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -200,6 +258,9 @@ public class Settings {
      */
     public Long retrieveLong(String name, Long defaultValue) {
         Long value = retrieveLong(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -211,11 +272,12 @@ public class Settings {
      *     Settings are not allowed.
      * @return the boolean setting value.
      */
-    @SuppressWarnings("unchecked")
     public Boolean retrieveBoolean(String name) {
         try {
             if (sIsLoaded) {
-                return Boolean.parseBoolean((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.get(name);
+                if (val == null) return null;
+                return Boolean.parseBoolean(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -237,6 +299,9 @@ public class Settings {
      */
     public Boolean retrieveBoolean(String name, Boolean defaultValue) {
         Boolean value = retrieveBoolean(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -248,11 +313,12 @@ public class Settings {
      *     Settings are not allowed.
      * @return the integer setting value.
      */
-    @SuppressWarnings("unchecked")
     public Integer retrieveInteger(String name) {
         try {
             if (sIsLoaded) {
-                return Integer.parseInt((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.get(name);
+                if (val == null) return null;
+                return Integer.parseInt(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return -1;
@@ -274,6 +340,27 @@ public class Settings {
      */
     public Integer retrieveInteger(String name, Integer defaultValue) {
         Integer value = retrieveInteger(name);
+        if (value == -1) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value == -1 ? value : defaultValue);
+    }
+
+    public void save() {
+        try {
+            FileOutputStream out = new FileOutputStream(mFilePath);
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                String json = mapper.writeValueAsString(mSettings);
+                out.write(json.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            out.close();
+        } catch (FileNotFoundException e) {
+            log.severe("Cannot Find settings file");
+        } catch (IOException e) {
+            log.severe("failed to close stream");
+        }
     }
 }

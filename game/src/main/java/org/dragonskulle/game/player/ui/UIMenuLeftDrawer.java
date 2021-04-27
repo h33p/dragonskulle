@@ -50,6 +50,24 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
     @Setter @Getter private Screen mLastScreen = null;
 
+    @Setter
+    @Accessors(fluent = true, prefix = "m")
+    private boolean mIsHidden = false;
+
+    private TransformUI mTransform;
+
+    public void setHidden(boolean hide) {
+        if (hide && mIsHidden) return;
+        if (!hide && !mIsHidden) return;
+        if (hide) {
+            mTransform.translate(-100f, 0);
+            isHidden(true);
+        } else {
+            mTransform.translate(100f, 0);
+            isHidden(false);
+        }
+    }
+
     /** Notify the parent of the screen change and set it. */
     public interface INotifyScreenChange {
         /**
@@ -193,10 +211,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         mShop = buildShop();
 
         UIRenderable drawer = new UIRenderable(GameUIAppearance.getDrawerTexture());
-        TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        tran.setMargin(0f, 0f, 0f, 0f);
-        tran.setPivotOffset(0f, 0f);
-        tran.setParentAnchor(0f, 0f);
+        mTransform = getGameObject().getTransform(TransformUI.class);
+        mTransform.setMargin(0f, 0f, 0f, 0f);
+        mTransform.setPivotOffset(0f, 0f);
+        mTransform.setParentAnchor(0f, 0f);
         getGameObject().addComponent(drawer);
     }
 
@@ -256,7 +274,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "Attack Selected",
                 (handle, __) -> {
                     if (mGetHexChosen != null) {
-                        Building defendingBuilding = mGetHexChosen.getHex().getBuilding();
+                        HexagonTile tile = mGetHexChosen.getHex();
+                        if (tile == null) return;
+                        Building defendingBuilding = tile.getBuilding();
 
                         if (Reference.isValid(mAttackingBuilding) && defendingBuilding != null) {
                             // Checks the building can be attacked

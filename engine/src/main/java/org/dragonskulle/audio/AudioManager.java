@@ -17,6 +17,7 @@ import org.dragonskulle.audio.formats.WaveSound;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.settings.Settings;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL11;
@@ -170,7 +171,9 @@ public class AudioManager {
         mAlCtx = ctx;
 
         setupSources();
-        setMasterVolume(0.5f);
+        Settings settings = Settings.getInstance();
+        float volume = settings.retrieveFloat("masterVolume", 0.5f);
+        setMasterVolume(volume);
 
         mInitialized = true;
 
@@ -240,6 +243,7 @@ public class AudioManager {
      * scene.
      */
     private void updateListenerPosAndRot() {
+
         Transform t = mAudioListener.get().getGameObject().getTransform();
 
         Vector3f pos = t.getPosition();
@@ -259,7 +263,7 @@ public class AudioManager {
      * need them.
      */
     public void update() {
-        if (!mInitialized || mAudioListener == null) {
+        if (!mInitialized || !Reference.isValid(mAudioListener)) {
             return;
         }
 
@@ -342,6 +346,9 @@ public class AudioManager {
 
         mMasterVolume = volume;
         AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
+
+        // Ensure the volume stays either muted or unmuted.
+        setMasterMute(mMasterMuted);
     }
 
     public void setMasterMute(boolean muted) {
