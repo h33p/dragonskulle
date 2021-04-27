@@ -338,9 +338,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 (tile) -> {
                     if (!tile.isClaimed()
                             && !tile.hasBuilding()
-                            && fx.getTileHighlight(tile) != MapEffects.FOG_MATERIAL) {
+                            && fx.getTileHighlight(tile) != MapEffects.FOG_MATERIAL
+                            && tile.getTileType() != HexagonTile.TileType.MOUNTAIN) {
                         fx.highlightTile(tile, highlight.asSelection());
-                    } else if (tile.getTileType() != HexagonTile.TileType.FOG) {
+                    } else if (tile.getTileType() != HexagonTile.TileType.FOG
+                            && tile.getTileType() != HexagonTile.TileType.MOUNTAIN) {
                         fx.highlightTile(tile, MapEffects.INVALID_MATERIAL);
                     }
                 });
