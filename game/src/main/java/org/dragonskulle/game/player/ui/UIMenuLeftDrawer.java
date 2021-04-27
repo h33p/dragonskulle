@@ -267,7 +267,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                             if (canAttack) {
                                 Player player = mGetPlayer.getPlayer();
                                 if (player != null) {
-                                	player.getClientAttackRequest()
+                                    player.getClientAttackRequest()
                                             .invoke(
                                                     new AttackData(
                                                             mAttackingBuilding.get(),

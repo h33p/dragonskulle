@@ -189,7 +189,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param type the type
      */
     private void purchaseUpgrade(StatType type) {
-        Reference<Player> player = getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
+        Reference<Player> player =
+                getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
         if (Reference.isValid(player)) {
             HexagonTile hex = getParent().getParent().mGetHexChosen.getHex();
             if (hex != null) {

@@ -569,8 +569,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return The HexagonMap, or {@code null}.
      */
     public HexagonMap getMap() {
-        if(!Reference.isValid(mMap)) return null;
-    	return mMap.get();
+        if (!Reference.isValid(mMap)) return null;
+        return mMap.get();
     }
 
     /**
