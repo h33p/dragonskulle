@@ -231,43 +231,41 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Set the player for the effects.
         effects.setActivePlayer(mPlayer);
 
-        switch (mScreenOn) {
-              case DEFAULT_SCREEN:
-                  effects.setHighlightOverlay(
-                          (fx) -> {
-                              highlightSelectedTile(fx, StandardHighlightType.VALID);
-                          });
-                  break;
-              case BUILDING_SELECTED_SCREEN:
-                  effects.setHighlightOverlay(
-                          (fx) -> {
-                              highlightSelectedTile(fx, StandardHighlightType.VALID);
-                              highlightAttackableTiles(fx, StandardHighlightType.PLAIN);
-                          });
-                  break;
-              case UPGRADE_SCREEN:
-                  break;
-              case ATTACKING_SCREEN:
-                  effects.setDefaultHighlight(true);
-                  effects.setHighlightOverlay(
-                          (fx) -> {
-                              highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
-                              highlightSelectedTile(fx, StandardHighlightType.VALID);
-                          });
-                  break;
-              case SELLING_SCREEN:
-                  break;
-              case PLACING_NEW_BUILDING:
-                  effects.setDefaultHighlight(true);
-                  effects.setHighlightOverlay(
-                          (fx) -> {
-                              highlightBuildableTiles(fx, StandardHighlightType.VALID);
-                              highlightSelectedTile(fx, StandardHighlightType.PLACE);
-                          });
-                  break;
-              default:
-                  throw new IllegalStateException("Unexpected value: " + mScreenOn);
-          }
+        switch (mCurrentScreen) {
+            case DEFAULT_SCREEN:
+                effects.setHighlightOverlay(
+                        (fx) -> {
+                            highlightSelectedTile(fx, StandardHighlightType.VALID);
+                        });
+                break;
+            case BUILDING_SELECTED_SCREEN:
+                effects.setHighlightOverlay(
+                        (fx) -> {
+                            highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            highlightAttackableTiles(fx, StandardHighlightType.PLAIN);
+                        });
+                break;
+            case ATTACKING_SCREEN:
+                effects.setDefaultHighlight(true);
+                effects.setHighlightOverlay(
+                        (fx) -> {
+                            highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
+                            highlightSelectedTile(fx, StandardHighlightType.VALID);
+                        });
+                break;
+            case SELLING_SCREEN:
+                break;
+            case PLACING_NEW_BUILDING:
+                effects.setDefaultHighlight(true);
+                effects.setHighlightOverlay(
+                        (fx) -> {
+                            highlightBuildableTiles(fx, StandardHighlightType.VALID);
+                            highlightSelectedTile(fx, StandardHighlightType.PLACE);
+                        });
+                break;
+            default:
+                break;
+        }
     }
 
     private void highlightSelectedTile(MapEffects effects, StandardHighlightType highlight) {
