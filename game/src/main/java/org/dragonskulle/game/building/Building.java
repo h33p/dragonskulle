@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building;
 
-import static jdk.nashorn.internal.objects.NativeMath.max;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -23,7 +21,11 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
-import org.dragonskulle.core.*;
+import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.SingletonStore;
+import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
