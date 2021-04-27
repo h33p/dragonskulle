@@ -23,7 +23,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
  * @author Dragonskulle
  */
 @Log
-public class AimerAi extends ProbabilisticAiPlayer {
+public class AimerAi extends AiPlayer {
 
     /**
      * A Class which holds the Goal Node and Start Node.
@@ -69,8 +69,21 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** This is the number of tries we should do before resetting. */
     private final int TRIES = 10;
 
+    protected ProbabilisticAiPlayer mProbabilisticAi = null;
+
     /** Basic Constructor. */
     public AimerAi() {}
+
+    @Override
+    public void onStart() {
+
+        if (mProbabilisticAi == null
+                && Reference.isValid(getGameObject().getComponent(ProbabilisticAiPlayer.class))) {
+            mProbabilisticAi = getGameObject().getComponent(ProbabilisticAiPlayer.class).get();
+        }
+
+        super.onStart();
+    }
 
     @Override
     protected void simulateInput() {
@@ -89,7 +102,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
 
-                super.simulateInput();
+                mProbabilisticAi.simulateInput();
             }
             return;
         }
@@ -141,7 +154,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
             }
 
         } else {
-            super.simulateInput();
+            mProbabilisticAi.simulateInput();
         }
     }
 
@@ -209,7 +222,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
             if (building != null && getPlayer().isBuildingOwner(building)) {
                 // Will attack
 
-                super.tryToAttack(building);
+                mProbabilisticAi.tryToAttack(building);
 
                 // Assumption is that the code at the start of the method will move back
                 // to
@@ -444,6 +457,16 @@ public class AimerAi extends ProbabilisticAiPlayer {
         AStar aStar = new AStar(mGraph, startNode.getNodeId(), endNode.getNodeId());
 
         mPath = aStar.getPath();
+
+        // TODO Testing - remove before PR
+        String answer = "";
+        if (mPath.size() == 0) {
+            log.severe("HOWWWWW");
+        }
+        for (int node : mPath) {
+            answer = answer + node + " ->";
+        }
+        log.info(answer);
 
         mGone = new ArrayDeque<Integer>();
         mNodePreviouslyOn = startNode;

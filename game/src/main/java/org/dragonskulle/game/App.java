@@ -169,13 +169,13 @@ public class App implements NativeResource {
                                                                                         .findTemplateByName(
                                                                                                 "aStarAi"));
 
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -2,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aiPlayer"));
+                                                                /*networkManager
+                                                                .getServerManager()
+                                                                .spawnNetworkObject(
+                                                                        -2,
+                                                                        networkManager
+                                                                                .findTemplateByName(
+                                                                                        "aiPlayer"));*/
                                                             }));
                                         });
                             });
