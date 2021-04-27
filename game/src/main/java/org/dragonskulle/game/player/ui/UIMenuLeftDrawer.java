@@ -274,7 +274,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "Attack Selected",
                 (handle, __) -> {
                     if (mGetHexChosen != null) {
-                        Building defendingBuilding = mGetHexChosen.getHex().getBuilding();
+                        HexagonTile tile = mGetHexChosen.getHex();
+                        if (tile == null) return;
+                        Building defendingBuilding = tile.getBuilding();
 
                         if (Reference.isValid(mAttackingBuilding) && defendingBuilding != null) {
                             // Checks the building can be attacked

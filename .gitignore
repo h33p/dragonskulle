@@ -19,3 +19,6 @@ thunderclap.wav
 *.blend2
 *.blend3
 settings.json
+assets/*.blend1
+assets/*.blend2
+assets/*.blend3

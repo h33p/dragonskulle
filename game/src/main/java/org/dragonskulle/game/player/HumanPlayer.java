@@ -291,24 +291,36 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             switch (mScreenOn) {
                 case DEFAULT_SCREEN:
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            });
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                                highlightAttackableTiles(fx, StandardHighlightType.PLAIN);
+                            });
                     break;
                 case UPGRADE_SCREEN:
                     break;
                 case ATTACKING_SCREEN:
+                    effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.ATTACK_DARKER));
+                            (fx) -> {
+                                highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            });
                     break;
                 case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
+                    effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-
+                            (fx) -> {
+                                highlightBuildableTiles(fx, StandardHighlightType.VALID);
+                                highlightSelectedTile(fx, StandardHighlightType.PLACE);
+                            });
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
@@ -319,6 +331,36 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private void highlightSelectedTile(MapEffects fx, StandardHighlightType highlight) {
         if (mHexChosen != null) {
             fx.highlightTile(mHexChosen, highlight.asSelection());
+        }
+    }
+
+    private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
+        if (Reference.isValid(mPlayer)) {
+            fx.highlightTiles(
+                    (tile, __) -> {
+                        if (tile.isBuildable(mPlayer.get())) {
+                            return highlight.asSelection();
+                        } else if (!tile.isBuildable(mPlayer.get())
+                                && tile.getTileType() != HexagonTile.TileType.FOG) {
+                            return MapEffects.INVALID_MATERIAL;
+                        }
+                        return null;
+                    });
+        }
+    }
+
+    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
+        if (Reference.isValid(mBuildingChosen)) {
+            for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
+                fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+            }
+        }
+    }
+
+    /** Marks visuals to update whenever a new object is spawned. */
+    private void onSpawnObject(NetworkObject obj) {
+        if (obj.getGameObject().getComponent(Building.class) != null) {
+            mVisualsNeedUpdate = true;
         }
     }
 
