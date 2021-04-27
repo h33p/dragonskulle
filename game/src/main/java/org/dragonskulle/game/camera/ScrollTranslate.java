@@ -81,7 +81,9 @@ public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake
                                     (float) java.lang.Math.pow(mTargetLerpTime, mPowFactor));
 
             mTargetLerpTime = Math.min(1.f, Math.max(mTargetLerpTime, 0.f));
-            float lerpTime = MathUtils.lerp(mZoomLevel, mTargetLerpTime, deltaTime / mZoomLerpTime);
+            float lerpTime =
+                    MathUtils.lerp(
+                            mZoomLevel, mTargetLerpTime, Math.min(deltaTime / mZoomLerpTime, 1));
 
             mZoomLevel = Math.min(1.f, Math.max(lerpTime, 0.f));
             mStartPos.lerp(mEndPos, mZoomLevel, mTmpTransform);
