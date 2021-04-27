@@ -335,9 +335,15 @@ public class ServerNetworkManager {
     /**
      * Get collection of clients connected to the server.
      *
-     * @return collection of clients connected to the server.
+     * @return collection of clients connected to the server. {@code null} if the server has been
+     *     destroyed.
      */
     public Collection<ServerClient> getClients() {
+
+        if (mServer == null) {
+            return null;
+        }
+
         return mServer.getClients();
     }
 

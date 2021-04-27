@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,14 +76,20 @@ public class UPnP {
                                             QUERY,
                                             QUERY.length,
                                             new InetSocketAddress("239.255.255.250", 1900)));
-
-                            DatagramPacket packet = new DatagramPacket(new byte[2048], 2048);
-                            socket.setSoTimeout(2000);
-                            socket.receive(packet);
-                            received[idx] = packet.getData();
-                            sLocal = address;
-
-                            log.info("Received response on address : " + address.getHostAddress());
+                            try {
+                                DatagramPacket packet = new DatagramPacket(new byte[2048], 2048);
+                                socket.setSoTimeout(2000);
+                                socket.receive(packet);
+                                received[idx] = packet.getData();
+                                sLocal = address;
+                                log.info(
+                                        "Received response to query on address : "
+                                                + address.getHostAddress());
+                            } catch (SocketTimeoutException e) {
+                                log.info(
+                                        "Didn't receive response to query on address : "
+                                                + address.getHostAddress());
+                            }
                         } catch (SocketException e) {
                             log.info(
                                     "Failed to create UDP socket on address : "
@@ -113,6 +120,8 @@ public class UPnP {
                 return;
             }
         }
+        log.severe(
+                "Failed to initialise UPnP. Hosting a lobby will not be possible without manual port forwarding");
     }
 
     /**
@@ -136,6 +145,9 @@ public class UPnP {
      * @return true if the port mapping was added successfully, false otherwise
      */
     public static boolean addPortMapping(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
         if (protocol.equals("BOTH")) {
             return addPortMapping(port, "TCP") & addPortMapping(port, "UDP");
         }
@@ -178,6 +190,9 @@ public class UPnP {
      * @return true if the mapping was deleted successfully, false otherwise
      */
     public static boolean deletePortMapping(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
         if (protocol.equals("BOTH")) {
             return deletePortMapping(port, "TCP") & deletePortMapping(port, "UDP");
         }
@@ -204,6 +219,9 @@ public class UPnP {
 
     /** Delete all port mappings that were added at runtime */
     public static void deleteAllMappings() {
+        if (!sInitialised) {
+            return;
+        }
         Set<Map.Entry<Integer, Collection<String>>> entries = sMappings.entrySet();
         for (Map.Entry<Integer, Collection<String>> entry : entries) {
             for (String protocol : entry.getValue()) {
