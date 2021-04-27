@@ -32,10 +32,6 @@ public class TransformUI extends Transform {
     /** Target aspect ratio of the element. */
     @Getter private float mTargetAspectRatio = 1.f;
 
-    public Vector4fc getParentAnchor() {
-        return mParentAnchor;
-    }
-
     /** Describes how local coordinates are anchored to parent. */
     private final Vector4f mParentAnchor = new Vector4f(0f, 0f, 1f, 1f);
 
@@ -57,6 +53,7 @@ public class TransformUI extends Transform {
     private final Vector4f mScaledLocalCorners = new Vector4f(0f);
 
     private final Vector4f mParentCorners = new Vector4f(0f);
+    private final Vector2f mParentPivotPoint = new Vector2f();
 
     private float mRotation = 0f;
 
@@ -80,8 +77,6 @@ public class TransformUI extends Transform {
     public TransformUI(float width, float height) {
         this(width, height, false);
     }
-
-    private final Vector2f mParentPivotPoint = new Vector2f();
 
     private void updateParentCorners() {
         Transform parentGen = getGameObject().getParentTransform();
@@ -160,6 +155,10 @@ public class TransformUI extends Transform {
 
     private final Vector2f mPivotPoint = new Vector2f();
 
+    private Matrix4f mBoxMatrix = new Matrix4f();
+
+    private float mScreenAspectRatio = 1f;
+
     public Matrix4fc cornersToWorld() {
         mCornerMatrix.identity().set(getMatrixForChildren());
 
@@ -179,10 +178,6 @@ public class TransformUI extends Transform {
 
         return mCornerMatrix;
     }
-
-    private Matrix4f mBoxMatrix = new Matrix4f();
-
-    private float mScreenAspectRatio = 1f;
 
     /** Check whether screen aspect ratio changed. If so, dirty all transforms */
     private void checkScreenChange() {
@@ -281,6 +276,15 @@ public class TransformUI extends Transform {
             updateLocalCorners();
         }
         return mLocalCorners;
+    }
+
+    /**
+     * Gets the parent anchor.
+     *
+     * @return the parent anchor
+     */
+    public Vector4fc getParentAnchor() {
+        return mParentAnchor;
     }
 
     public Vector4fc getScaledLocalCorners() {
