@@ -51,9 +51,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** Store a reference to the relevant {@link Player}. */
     private Reference<Player> mPlayer;
 
-    /** Store the HumanPlayer's id. */
-    private final int mNetId;
-
     /** Store a reference to the {@link NetworkManager}. */
     private final Reference<NetworkManager> mNetworkManager;
 
@@ -78,9 +75,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * @param networkManager The network manager.
      * @param netId The human player's network ID.
      */
-    public HumanPlayer(Reference<NetworkManager> networkManager, int netId) {
+    public HumanPlayer(Reference<NetworkManager> networkManager) {
         mNetworkManager = networkManager;
-        mNetId = netId;
     }
 
     @Override
