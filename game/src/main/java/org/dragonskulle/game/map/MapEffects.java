@@ -174,7 +174,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                 .get()
                 .getAllTiles()
                 .forEach(t -> highlightTile(t, selector.handleTile(t, mHighlightedTiles.get(t))));
-        mDefaultHighlight = false;
     }
 
     /**
