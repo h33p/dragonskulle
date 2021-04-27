@@ -141,6 +141,7 @@ public class App implements NativeResource {
         // asServer = true;
         if (asServer) {
             log.info("I am the server");
+
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
@@ -174,6 +175,7 @@ public class App implements NativeResource {
                                                             }));
                                         });
                             });
+
             mainScene.addRootObject(hostGameUi);
         }
         return mainScene;
@@ -589,6 +591,37 @@ public class App implements NativeResource {
 
         // 6 players for now
         gameState.get().getNumPlayers().set(6);
+
+        GameObject endScreen =
+                new GameObject(
+                        "end_screen",
+                        false,
+                        new TransformUI(),
+                        (go) -> {
+                            go.addComponent(new UIRenderable(new Vector4f(0.3f)));
+                            UIManager.getInstance()
+                                    .buildVerticalUi(
+                                            go,
+                                            0.3f,
+                                            0.1f,
+                                            0.9f,
+                                            new UITextRect("Game has ended!"),
+                                            new UIButton(
+                                                    "View Map", (__, ___) -> go.setEnabled(false)),
+                                            new UIButton(
+                                                    "Quit",
+                                                    (__, ___) -> {
+                                                        if (manager.isServer()) {
+                                                            manager.getServerManager().destroy();
+                                                        }
+                                                    }));
+                        });
+
+        manager.getGameScene().addRootObject(endScreen);
+
+        gameState
+                .get()
+                .registerGameEndListener(new Reference<>((__) -> endScreen.setEnabled(true)));
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UITextRect;
@@ -72,8 +73,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     private boolean mMovedCameraToCapital = false;
 
-    private Reference<GameObject> mWinnerScreen;
-    private Reference<GameObject> mLoserScreen;
+    private Reference<GameObject> mEndScreen;
+    private Reference<UITextRect> mEndScreenText;
     private Reference<IGameEndEvent> mGameEndEventHandler;
 
     /**
@@ -129,10 +130,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mTokenCounter = mTokenCounterObject.get().getComponent(UITokenCounter.class);
         mMenuDrawer = tmpRef.get().getComponent(UIMenuLeftDrawer.class);
 
-        mWinnerScreen =
+        UITextRect endScreenText = new UITextRect("End of game!");
+
+        mEndScreen =
                 getGameObject()
                         .buildChild(
-                                "winner_screen",
+                                "end_screen",
                                 false,
                                 new TransformUI(),
                                 (go) -> {
@@ -143,25 +146,34 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                                     0.3f,
                                                     0.1f,
                                                     0.9f,
-                                                    new UITextRect("You are winner!"));
+                                                    endScreenText,
+                                                    new UIButton(
+                                                            "View Map",
+                                                            (__, ___) -> go.setEnabled(false)),
+                                                    new UIButton(
+                                                            "Quit",
+                                                            (__, ___) -> {
+                                                                if (!Reference.isValid(mPlayer)) {
+                                                                    return;
+                                                                }
+
+                                                                NetworkManager man =
+                                                                        mPlayer.get()
+                                                                                .getNetworkObject()
+                                                                                .getNetworkManager();
+                                                                if (man.isClient()) {
+                                                                    man.getClientManager()
+                                                                            .disconnect();
+                                                                }
+
+                                                                if (man.isServer()) {
+                                                                    man.getServerManager()
+                                                                            .destroy();
+                                                                }
+                                                            }));
                                 });
 
-        mLoserScreen =
-                getGameObject()
-                        .buildChild(
-                                "loser_screen",
-                                false,
-                                new TransformUI(),
-                                (go) -> {
-                                    go.addComponent(new UIRenderable(new Vector4f(0.3f)));
-                                    UIManager.getInstance()
-                                            .buildVerticalUi(
-                                                    go,
-                                                    0.3f,
-                                                    0.1f,
-                                                    0.9f,
-                                                    new UITextRect("You are very loose!"));
-                                });
+        mEndScreenText = endScreenText.getReference(UITextRect.class);
 
         mVisualsNeedUpdate = true;
     }
@@ -208,19 +220,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 mGameEndEventHandler =
                         new Reference<>(
                                 (winnerId) -> {
-                                    if (Reference.isValid(mPlayer)) {
+                                    if (Reference.isValid(mEndScreen)) {
+                                        mEndScreen.get().setEnabled(true);
+                                    }
+
+                                    if (Reference.isValid(mPlayer)
+                                            && Reference.isValid(mEndScreenText)) {
                                         int id = mPlayer.get().getNetworkObject().getOwnerId();
 
-                                        if (id == winnerId && Reference.isValid(mWinnerScreen)) {
-                                            mWinnerScreen.get().setEnabled(true);
-                                            return;
-                                        }
-                                    }
+                                        String res =
+                                                id == winnerId
+                                                        ? "You are winner!"
+                                                        : "You are loose!";
 
-                                    if (Reference.isValid(mLoserScreen)) {
-                                        mLoserScreen.get().setEnabled(true);
+                                        mEndScreenText.get().getLabelText().get().setText(res);
                                     }
                                 });
+
                 gameState.registerGameEndListener(mGameEndEventHandler);
             }
         }
