@@ -549,7 +549,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the player owns the building, otherwise {@code false}.
      */
     public boolean isBuildingOwner(Building building) {
+        if (building == null) {
+            return false;
+        }
         return building.getOwnerId() == getNetworkObject().getOwnerId();
+    }
+
+    /**
+     * Check if the {@link HexagonTile}'s owner is the player
+     *
+     * @param tile The {@code HexagonTile} to check
+     * @return {@code true} if the Player owns the tile
+     */
+    public boolean isClaimingTile(HexagonTile tile) {
+        if (tile == null) {
+            return false;
+        }
+        return tile.getClaimantId() == getNetworkObject().getOwnerId();
     }
 
     /**
