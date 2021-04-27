@@ -641,7 +641,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // TODO set to late update as this wont work fun times yay
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
-        building.getTokenGeneration().setLevel(descriptor.getTokenGeneration());
+        building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
         log.info("Stats on building to be added: " + building.getAttack()); // NOT DOING THA THING

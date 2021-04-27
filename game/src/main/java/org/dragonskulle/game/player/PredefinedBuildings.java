@@ -21,14 +21,13 @@ public class PredefinedBuildings {
                     Arrays.asList(
                             BASE,
                             new BuildingDescriptor(1, 1, 1, 1, 1, 10, 2, "ui/1_stars.png", "Oscar"),
-                            new BuildingDescriptor(1, 3, 10, 2, 3, 30, 2, "ui/2_stars.png", "Auri"),
+                            new BuildingDescriptor(2, 3, 2, 2, 3, 30, 2, "ui/2_stars.png", "Auri"),
+                            new BuildingDescriptor(5, 3, 4, 2, 3, 31, 2, "ui/3_stars.png", "Harry"),
+                            new BuildingDescriptor(8, 3, 6, 2, 3, 32, 2, "ui/4_stars.png", "Auri"),
                             new BuildingDescriptor(
-                                    1, 3, 10, 2, 3, 31, 2, "ui/3_stars.png", "Harry"),
-                            new BuildingDescriptor(1, 3, 10, 2, 3, 32, 2, "ui/4_stars.png", "Auri"),
+                                    10, 3, 8, 2, 3, 33, 2, "ui/5_stars.png", "Leela"),
                             new BuildingDescriptor(
-                                    1, 3, 10, 2, 3, 33, 2, "ui/5_stars.png", "Leela"),
-                            new BuildingDescriptor(
-                                    1, 1, 100, 1, 1, 25, 2, "ui/6_stars.png", "Craig")));
+                                    4, 1, 10, 1, 1, 25, 2, "ui/6_stars.png", "Craig")));
 
     /**
      * Gets all the buildings which can be placed filtered by the cost of the building.

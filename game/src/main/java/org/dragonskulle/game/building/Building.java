@@ -10,15 +10,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.game.building.stat.StatType;
@@ -45,7 +49,8 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent implements IOnStart, IFrameUpdate, IFixedUpdate {
+public class Building extends NetworkableComponent
+        implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
 
     /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -74,6 +79,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
 
     /** The tiles the building can currently attack (those with claims neighboring our claims). */
     private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+
+    /** Building templates, used to distinguish the buildings. */
+    private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -121,6 +129,17 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     @Accessors(prefix = "m")
     private int mStatUpdateCount = 0;
 
+    /** The base building mesh. */
+    private Reference<GameObject> mBaseMesh;
+    /** The Mesh for when the highest stat is defence. */
+    private Reference<GameObject> mDefenceMesh;
+    /** The Mesh for when the highest stat is attacking. */
+    private Reference<GameObject> mAttackMesh;
+    /** The Mesh for when the highest stat is generation. */
+    private Reference<GameObject> mGenerationMesh;
+    /** The current building mesh. */
+    private Reference<GameObject> mVisibleMesh;
+
     /** Increments {@code mStatUpdateCount} to signify an update is needed. */
     public void setStatsRequireVisualUpdate() {
         mStatUpdateCount++;
@@ -146,6 +165,34 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     @Override
     public void fixedUpdate(float deltaTime) {
         checkInitialise();
+    }
+
+    @Override
+    public void onAwake() {
+
+        GLTF gltf = sBuildingTemplates.get();
+
+        GameObject baseMesh =
+                GameObject.instantiate(gltf.getDefaultScene().findRootObject("base_building"));
+        GameObject defenceMesh =
+                GameObject.instantiate(gltf.getDefaultScene().findRootObject("defence_building"));
+        GameObject attackMesh =
+                GameObject.instantiate(gltf.getDefaultScene().findRootObject("attack_building"));
+        GameObject generationMesh =
+                GameObject.instantiate(
+                        gltf.getDefaultScene().findRootObject("generation_building"));
+        getGameObject().addChild(baseMesh);
+        getGameObject().addChild(defenceMesh);
+        getGameObject().addChild(attackMesh);
+        getGameObject().addChild(generationMesh);
+        baseMesh.setEnabled(false);
+        defenceMesh.setEnabled(false);
+        attackMesh.setEnabled(false);
+        generationMesh.setEnabled(false);
+        mBaseMesh = baseMesh.getReference();
+        mDefenceMesh = defenceMesh.getReference();
+        mAttackMesh = attackMesh.getReference();
+        mGenerationMesh = generationMesh.getReference();
     }
 
     /** Initialise the building only when it is properly on the map and the tile is synced */
@@ -228,6 +275,21 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         generateClaimTiles();
 
         checkInitialise();
+
+        if (isCapital()) {
+            GLTF gltf = sBuildingTemplates.get();
+
+            GameObject capital_mesh =
+                    GameObject.instantiate(
+                            gltf.getDefaultScene().findRootObject("capital_building"));
+
+            getGameObject().addChild(capital_mesh);
+            capital_mesh.setEnabled(true);
+            mVisibleMesh = capital_mesh.getReference();
+            return;
+        }
+
+        assignMesh();
     }
 
     /**
@@ -244,7 +306,61 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         generateStatBaseCost();
 
         generateTileLists();
+        if (!isCapital()) assignMesh();
+
         setStatsRequireVisualUpdate();
+    }
+
+    private void assignMesh() {
+        Map<StatType, Integer> statLevels =
+                getUpgradeableStats().stream()
+                        .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
+        if (statLevels.values().stream().distinct().count() <= 1) {
+            log.info("the stats are all the same");
+            if (Reference.isValid(mVisibleMesh)) {
+                mVisibleMesh.get().setEnabled(false);
+            }
+            if (Reference.isValid(mBaseMesh)) {
+                mBaseMesh.get().setEnabled(true);
+                mVisibleMesh = mBaseMesh;
+            }
+
+        } else {
+            Map.Entry<StatType, Integer> max = null;
+            for (Map.Entry<StatType, Integer> entry : statLevels.entrySet()) {
+                if (max == null || entry.getValue().compareTo(max.getValue()) > 0) {
+                    max = entry;
+                }
+            }
+            if (max != null) {
+                log.info("this stat is the biggest " + max.getKey());
+                if (Reference.isValid(mVisibleMesh)) {
+                    mVisibleMesh.get().setEnabled(false);
+                }
+                switch (max.getKey()) {
+                    case ATTACK:
+                        if (Reference.isValid(mAttackMesh)) {
+                            mAttackMesh.get().setEnabled(true);
+                            mVisibleMesh = mAttackMesh;
+                        }
+                        break;
+                    case DEFENCE:
+                        if (Reference.isValid(mDefenceMesh)) {
+                            mDefenceMesh.get().setEnabled(true);
+                            mVisibleMesh = mDefenceMesh;
+                        }
+                        break;
+                    case TOKEN_GENERATION:
+                        if (Reference.isValid(mGenerationMesh)) {
+                            mGenerationMesh.get().setEnabled(true);
+                            mVisibleMesh = mGenerationMesh;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
     /** Generate the stored lists of {@link HexagonTile}s. */
