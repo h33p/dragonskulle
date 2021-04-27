@@ -62,7 +62,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** A class describing a sleection. Value of null means ignoring */
     public static class HighlightSelection {
-        private boolean mClear;
+        private boolean mClear = false;
         private Vector4f mOverlay = new Vector4f();
 
         public static final HighlightSelection CLEARED = cleared();
