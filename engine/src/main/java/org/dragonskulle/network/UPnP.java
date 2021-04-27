@@ -41,7 +41,7 @@ public class UPnP {
                             + "HOST: 239.255.255.250:1900\r\n"
                             + "MAN: \"ssdp:discover\"\r\n"
                             + "MX: 1\r\n"
-                            + "ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1\r\n\r\n")
+                            + "ST: urn:schemas-upnp-org:device:WANIPConnection:1\r\n\r\n")
                     .getBytes();
 
     private static final String SERVICE_NAME = "urn:schemas-upnp-org:service:WANIPConnection:1";
@@ -81,10 +81,8 @@ public class UPnP {
                                 socket.setSoTimeout(2000);
                                 socket.receive(packet);
                                 received[idx] = packet.getData();
-                                log.info("Received respone : \n" + new String(received[idx]));
                                 sLocal = address;
-                                log.info("Received response on address : " + address.getHostAddress());
-
+                                log.info("Received response to query on address : " + address.getHostAddress());
                             } catch (SocketTimeoutException e) {
                                 log.info("Didn't receive response to query on address : " + address.getHostAddress());
                             }
@@ -141,6 +139,9 @@ public class UPnP {
      * @return true if the port mapping was added successfully, false otherwise
      */
     public static boolean addPortMapping(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
         if (protocol.equals("BOTH")) {
             return addPortMapping(port, "TCP") & addPortMapping(port, "UDP");
         }
@@ -183,6 +184,9 @@ public class UPnP {
      * @return true if the mapping was deleted successfully, false otherwise
      */
     public static boolean deletePortMapping(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
         if (protocol.equals("BOTH")) {
             return deletePortMapping(port, "TCP") & deletePortMapping(port, "UDP");
         }
@@ -209,6 +213,9 @@ public class UPnP {
 
     /** Delete all port mappings that were added at runtime */
     public static void deleteAllMappings() {
+        if (!sInitialised) {
+            return;
+        }
         Set<Map.Entry<Integer, Collection<String>>> entries = sMappings.entrySet();
         for (Map.Entry<Integer, Collection<String>> entry : entries) {
             for (String protocol : entry.getValue()) {
