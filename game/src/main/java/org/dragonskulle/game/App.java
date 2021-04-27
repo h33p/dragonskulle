@@ -28,6 +28,7 @@ import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIInputBox;
@@ -40,7 +41,7 @@ import org.lwjgl.system.NativeResource;
 
 @Log
 public class App implements NativeResource {
-
+    private static final Settings settings = Settings.getInstance().loadSettings();
     private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
     private static final int BGM2_ID =
             AudioManager.getInstance().loadSound("country_background_short.wav");

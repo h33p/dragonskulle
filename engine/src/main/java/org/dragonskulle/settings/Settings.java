@@ -30,13 +30,19 @@ public class Settings {
 
     private HashMap mSettings = new HashMap<>();
     private String mFilePath;
+    private final String mDefaultFilePath = "settings.json";
 
     /** Singleton constructor. */
     private Settings() {}
 
-    /** Loads settings from the default location. root/settings.json */
-    public void loadSettings() {
-        loadSettings("settings.json");
+    /**
+     * Loads settings from the default location. root/settings.json
+     *
+     * @return
+     */
+    public Settings loadSettings() {
+        loadSettings(mDefaultFilePath);
+        return getInstance();
     }
 
     /**
@@ -99,13 +105,16 @@ public class Settings {
     public Float retrieveFloat(String name) {
         try {
             if (sIsLoaded) {
-                return Float.parseFloat((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.getOrDefault(name, null);
+                if (val == null) return null;
+                return Float.parseFloat(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
             }
         } catch (Exception e) {
             log.warning("Failed to parse as a float, maybe it isn't one?");
+            log.warning(e.getMessage());
             return null;
         }
     }
@@ -121,6 +130,9 @@ public class Settings {
      */
     public Float retrieveFloat(String name, Float defaultValue) {
         Float value = retrieveFloat(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -136,7 +148,9 @@ public class Settings {
     public String retrieveString(String name) {
         try {
             if (sIsLoaded) {
-                return (String) mSettings.getOrDefault(name, null);
+                Object val = mSettings.getOrDefault(name, null);
+                if (val == null) return null;
+                return val.toString();
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -158,7 +172,15 @@ public class Settings {
      */
     public String retrieveString(String name, String defaultValue) {
         String value = retrieveString(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
+    }
+
+    private <T> void recreateSettingsFile(String name, T defaultValue) {
+        if (mFilePath == null) mFilePath = mDefaultFilePath;
+        saveValue(name, defaultValue, true);
     }
 
     /**
@@ -173,7 +195,9 @@ public class Settings {
     public Double retrieveDouble(String name) {
         try {
             if (sIsLoaded) {
-                return Double.parseDouble((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.getOrDefault(name, null);
+                if (val == null) return null;
+                return Double.parseDouble(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -195,6 +219,9 @@ public class Settings {
      */
     public Double retrieveDouble(String name, Double defaultValue) {
         Double value = retrieveDouble(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -210,7 +237,9 @@ public class Settings {
     public Long retrieveLong(String name) {
         try {
             if (sIsLoaded) {
-                return Long.parseLong((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.getOrDefault(name, null);
+                if (val == null) return null;
+                return Long.parseLong(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -232,6 +261,9 @@ public class Settings {
      */
     public Long retrieveLong(String name, Long defaultValue) {
         Long value = retrieveLong(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -247,7 +279,9 @@ public class Settings {
     public Boolean retrieveBoolean(String name) {
         try {
             if (sIsLoaded) {
-                return Boolean.parseBoolean((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.getOrDefault(name, null);
+                if (val == null) return null;
+                return Boolean.parseBoolean(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return null;
@@ -269,6 +303,9 @@ public class Settings {
      */
     public Boolean retrieveBoolean(String name, Boolean defaultValue) {
         Boolean value = retrieveBoolean(name);
+        if (value == null) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value != null ? value : defaultValue);
     }
 
@@ -284,7 +321,9 @@ public class Settings {
     public Integer retrieveInteger(String name) {
         try {
             if (sIsLoaded) {
-                return Integer.parseInt((String) mSettings.getOrDefault(name, null));
+                Object val = mSettings.getOrDefault(name, null);
+                if (val == null) return null;
+                return Integer.parseInt(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
                 return -1;
@@ -306,6 +345,9 @@ public class Settings {
      */
     public Integer retrieveInteger(String name, Integer defaultValue) {
         Integer value = retrieveInteger(name);
+        if (value == -1) {
+            recreateSettingsFile(name, defaultValue);
+        }
         return (value == -1 ? value : defaultValue);
     }
 
@@ -316,7 +358,6 @@ public class Settings {
             try {
                 String json = mapper.writeValueAsString(mSettings);
                 out.write(json.getBytes(StandardCharsets.UTF_8));
-                loadSettings(mFilePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }

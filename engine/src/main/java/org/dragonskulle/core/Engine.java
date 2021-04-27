@@ -21,7 +21,6 @@ import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
-import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.UIManager;
 
 /**
@@ -92,11 +91,9 @@ public class Engine {
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
-        Settings.getInstance().loadSettings();
-
-        //        UPnP.initialise();
-        //        log.info(UPnP.getExternalIPAddress());
-        //        UPnP.addPortMapping(17569, "TCP");
+        UPnP.initialise();
+        log.info(UPnP.getExternalIPAddress());
+        UPnP.addPortMapping(17569, "TCP");
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
