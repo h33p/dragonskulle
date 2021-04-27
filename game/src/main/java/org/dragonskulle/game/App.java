@@ -15,6 +15,7 @@ import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.DragMovement;
+import org.dragonskulle.game.camera.HeightByMap;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
@@ -93,8 +94,10 @@ public class App implements NativeResource {
                             rig.addComponent(keyboardMovement);
                             rig.addComponent(new TargetMovement());
                             rig.addComponent(new DragMovement());
+                            HeightByMap heightByMap = new HeightByMap();
+                            rig.addComponent(heightByMap);
 
-                            rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
+                            rig.getTransform(Transform3D.class).setPosition(0, -4, 0.5f);
 
                             rig.buildChild(
                                     "rotationRig",
@@ -106,8 +109,10 @@ public class App implements NativeResource {
                                                 (camera) -> {
                                                     ScrollTranslate scroll =
                                                             new ScrollTranslate(
-                                                                    keyboardMovement, zoomTilt);
-                                                    scroll.getStartPos().set(0f, -5f, 0f);
+                                                                    keyboardMovement,
+                                                                    zoomTilt,
+                                                                    heightByMap);
+                                                    scroll.getStartPos().set(0f, -2.5f, 0f);
                                                     scroll.getEndPos().set(0f, -100f, 0f);
                                                     camera.addComponent(scroll);
 

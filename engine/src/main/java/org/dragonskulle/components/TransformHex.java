@@ -260,8 +260,9 @@ public class TransformHex extends Transform {
      * @param axial Vector2fc with axial coordinates to convert
      * @param height height of the hexagon
      * @param cartesian Vector3f where the result will be written
+     * @return input cartesian vector
      */
-    public static void axialToCartesian(Vector2fc axial, float height, Vector3f cartesian) {
+    public static Vector3f axialToCartesian(Vector2fc axial, float height, Vector3f cartesian) {
         // Multiply axial by the HEX_TO_PIXEL matrix
         cartesian.set(axial.x(), axial.y(), 0);
         cartesian.mul(HEX_TO_WORLD);
@@ -270,6 +271,8 @@ public class TransformHex extends Transform {
         cartesian.x *= HEX_SIZE;
         cartesian.y *= HEX_SIZE;
         cartesian.z = height;
+
+        return cartesian;
     }
 
     /**
