@@ -140,17 +140,8 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                         "Quit",
                         (__, ___) -> {
                             if (Reference.isValid(mNetworkManager)) {
-                                NetworkManager networkManager = mNetworkManager.get();
-
-                                if (networkManager.isServer()) {
-                                    // The button should close the server.
-                                    if (networkManager.getServerManager() == null) return;
-                                    networkManager.getServerManager().destroy();
-                                } else {
-                                    // The button should disconnect the client.
-                                    if (networkManager.getClientManager() == null) return;
-                                    networkManager.getClientManager().disconnect();
-                                }
+                                mNetworkManager.get().closeInstance();
+                                ;
                             } else {
                                 log.severe("Unable to get network manager.");
                             }

@@ -268,6 +268,16 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         }
     }
 
+    /** Close any active client/server instances. */
+    public void closeInstance() {
+        if (mServerManager != null) {
+            mServerManager.destroy();
+        }
+        if (mClientManager != null) {
+            mClientManager.disconnect();
+        }
+    }
+
     /** Called whenever client disconnects. */
     void onClientDisconnect() {
         mClientManager = null;
@@ -280,11 +290,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
 
     @Override
     protected void onDestroy() {
+        closeInstance();
         if (mServerManager != null) {
-            mServerManager.destroy();
+            mServerManager.lateNetworkUpdate();
         }
         if (mClientManager != null) {
-            mClientManager.disconnect();
+            mClientManager.lateNetworkUpdate();
         }
         if (mGameScene != null) {
             Engine.getInstance().unloadScene(mGameScene);
