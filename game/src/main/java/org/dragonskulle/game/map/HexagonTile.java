@@ -295,6 +295,11 @@ public class HexagonTile implements INetSerializable {
      * @return true if buildable, false otherwise
      */
     public boolean isBuildable(Player player) {
+
+        if (this.getTileType() != TileType.LAND){
+            return false;
+        }
+
         if (player == null) {
             log.warning("player was null so false");
             return false;
