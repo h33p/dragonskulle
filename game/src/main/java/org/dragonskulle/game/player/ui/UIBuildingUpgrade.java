@@ -81,9 +81,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (Reference.isValid(buildingRef)) {
             Building building = buildingRef.get();
-            attackVal = String.valueOf(building.getStat(StatType.ATTACK).getValue());
-            defenceVal = String.valueOf(building.getStat(StatType.DEFENCE).getValue());
-            tokenGenVal = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getValue());
+            attackVal = String.valueOf(building.getStat(StatType.ATTACK).getLevel());
+            defenceVal = String.valueOf(building.getStat(StatType.DEFENCE).getLevel());
+            tokenGenVal = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getLevel());
 
             attackCost = String.valueOf(building.getStat(StatType.ATTACK).getCost());
             defenceCost = String.valueOf(building.getStat(StatType.DEFENCE).getCost());
@@ -226,7 +226,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             s ->
                                     builder.append(s.getType())
                                             .append(" -> ")
-                                            .append(s.getValue())
+                                            .append(s.getLevel())
                                             .append("\n"));
                     log.info(builder.toString());
                 }
@@ -256,7 +256,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private void setTextRef(
             SyncStat upgradeableStat, Reference<UIText> textRef, boolean isCostRef) {
         if (Reference.isValid(textRef)) {
-            textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
+            textRef.get().setText((String.valueOf(upgradeableStat.getLevel())));
         } else {
             if (isCostRef) {
                 textRef = reassignTextCostReferencesForStatButton(upgradeableStat);
@@ -267,7 +267,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                 if (isCostRef) {
                     textRef.get().setText((String.valueOf(upgradeableStat.getCost())));
                 } else {
-                    textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
+                    textRef.get().setText((String.valueOf(upgradeableStat.getLevel())));
                 }
             }
         }
