@@ -33,7 +33,7 @@ public class HeightByMap extends Component implements IFrameUpdate, IOnAwake, IZ
     /** Constant offset from the land. */
     @Getter @Setter private float mHeightOffset = 1f;
     /** Flattened out map height when zoomed out. */
-    @Getter @Setter private float mMinHeightLerped = 1f;
+    @Getter @Setter private float mMinHeightLerped = 0f;
     /** Zoom value beyond this will flatten out the calculated height. */
     @Getter @Setter private float mMaxZoomValue = 0.1f;
     /** How fast the height will change. */
