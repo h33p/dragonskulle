@@ -51,19 +51,21 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Getter @Setter private Reference<Building> mBuildingChosen;
 
-    // The player
+    /** Store a reference to the relevant {@link Player}. */
     private Reference<Player> mPlayer;
-    private int mLocalTokens = 0;
 
+    /** Store the HumanPlayer's id. */
     private final int mNetId;
+    
+    /** Store a reference to the {@link NetworkManager}. */
     private final Reference<NetworkManager> mNetworkManager;
 
-    // Visual effects
+    /** Store a reference to the {@link MapEffects} component. */
     private Reference<MapEffects> mMapEffects;
     
+    /** Store a reference to the {@link UITokenCounter} component. */
     private Reference<UITokenCounter> mTokenCounter;
-    private HexagonTile mLastHexChosen;
-
+    
     private boolean mMovedCameraToCapital = false;
 
     private boolean mVisualsNeedUpdate = true;
@@ -153,9 +155,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void updateVisibleTokens() {
-        mLocalTokens = getPlayer().getTokens().get();
+        Player player = getPlayer();
+    	if(player == null) return;
+    	
         if (Reference.isValid(mTokenCounter)) {
-            mTokenCounter.get().setLabelReference(mLocalTokens);
+            mTokenCounter.get().setLabelReference(player.getTokens().get());
         }
     }
 
@@ -185,7 +189,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if(map == null) return;
         
         // Select a tile.
-        mLastHexChosen = mHexChosen;
         mHexChosen = map.cursorToTile();
         if(mHexChosen == null) return;
         
