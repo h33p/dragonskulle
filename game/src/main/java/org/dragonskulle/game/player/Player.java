@@ -67,8 +67,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Link to the current capital. */
     private Reference<Building> mCapital = null;
 
-    private Reference<GameState> mGameState;
-
     /** The number of tokens the player has, synchronised from server to client. */
     @Getter private SyncInt mTokens = new SyncInt(0);
 
@@ -78,7 +76,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter private HighlightSelection mPlayerHighlightSelection;
 
     /** Reference to the HexagonMap being used by the Player. */
-    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+    private Reference<HexagonMap> mMap = null;
+    /** Reference to the GameState on the connection. */
+    private Reference<GameState> mGameState = null;
 
     /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
@@ -168,7 +168,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void fixedUpdate(float deltaTime) {
         // Update the token count.
-        if (!hasLost()) updateTokens(deltaTime);
+        if (!gameEnd()) updateTokens(deltaTime);
     }
 
     @Override
@@ -608,8 +608,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-        if (hasLost()) {
-            log.warning("Lost Capital");
+        if (gameEnd()) {
             return;
         }
         HexagonMap map = getMap();
@@ -721,6 +720,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
+        if (gameEnd()) {
+            return false;
+        }
+
         if (!attackCheck(attacker, defender)) {
             log.info("Unable to pass attack check.");
             return false;
@@ -772,9 +775,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean attackCheck(Building attacker, Building defender) {
 
-        // Checks if you have capital
-        if (hasLost()) {
-            log.warning("You have lost your capital");
+        // Checks if you have capital, and the game is still going
+        if (gameEnd()) {
             return false;
         }
 
@@ -834,8 +836,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void sellEvent(SellData data) {
 
-        if (hasLost()) {
-            log.warning("You have lost your capital");
+        if (gameEnd()) {
             return;
         }
 
@@ -916,8 +917,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void statEvent(StatData data) {
 
-        if (hasLost()) {
-            log.warning("You have lost your capital");
+        if (gameEnd()) {
             return;
         }
 
@@ -1023,6 +1023,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean hasLost() {
         return !mOwnsCapital.get();
+    }
+
+    /**
+     * This will return whether the game has ended and no further actions can take place.
+     *
+     * <p>This method includes {@link hasLost()} check.
+     *
+     * @return {@code true} if the game has has ended, {@code false} if not
+     */
+    public boolean gameEnd() {
+        if (hasLost()) {
+            return true;
+        }
+
+        if (!Reference.isValid(mGameState)) {
+            mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+        }
+
+        return Reference.isValid(mGameState) && !mGameState.get().isInGame();
     }
 
     public void setOwnsCapital(boolean hasCapital) {

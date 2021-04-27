@@ -47,6 +47,9 @@ public class GameState extends NetworkableComponent implements IOnAwake {
 
     @Getter private final SyncInt mNumPlayers = new SyncInt(0);
     @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
+
+    @Getter private boolean mInGame = true;
+
     private transient ServerEvent<GameEndEventData> mGameEndEvent;
 
     private final List<Reference<IGameEndEvent>> mGameEndListeners = new ArrayList<>();
@@ -56,11 +59,13 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         mGameEndEvent =
                 new ServerEvent<>(
                         new GameEndEventData(),
-                        (data) ->
-                                mGameEndListeners.stream()
-                                        .filter(Reference::isValid)
-                                        .map(Reference::get)
-                                        .forEach(e -> e.handle(data.mWinnerId)),
+                        (data) -> {
+                            mInGame = false;
+                            mGameEndListeners.stream()
+                                    .filter(Reference::isValid)
+                                    .map(Reference::get)
+                                    .forEach(e -> e.handle(data.mWinnerId));
+                        },
                         EventRecipients.ALL_CLIENTS,
                         EventTimeframe.INSTANT);
     }

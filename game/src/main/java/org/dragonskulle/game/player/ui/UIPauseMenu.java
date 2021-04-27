@@ -162,8 +162,6 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     @Override
     public void onAwake() {
 
-        log.info("REGISTER ON " + Scene.getActiveScene().getName());
-
         Scene.getActiveScene().registerSingleton(this);
 
         // Create the GameObject that will hold all of the menu contents.

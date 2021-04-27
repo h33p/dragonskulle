@@ -206,8 +206,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             }
         }
 
-        if (mPlayer.get().hasLost()) {
-            log.warning("You've lost your capital");
+        if (mPlayer.get().gameEnd()) {
             setEnabled(false);
             return;
         }
@@ -317,7 +316,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
 
         MapEffects effects = mMapEffects.get();
-        if (!mPlayer.get().hasLost()) {
+        if (!mPlayer.get().gameEnd()) {
             if (Reference.isValid(mMenuDrawer)) {
                 mMenuDrawer.get().setVisibleScreen(mScreenOn);
             }
