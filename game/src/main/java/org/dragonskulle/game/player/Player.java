@@ -155,8 +155,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Used as a queue for tiles to be flood filled */
     private final Deque<HexagonTile> mFillTiles = new ArrayDeque<>();
 
-    /** Adds building's viewable tiles to player's viewable tile list.
-     * 
+    /**
+     * Adds building's viewable tiles to player's viewable tile list.
+     *
      * @param building The building whose visible tiles should be made viewable.
      */
     public void updateViewableTiles(Building building) {
@@ -601,13 +602,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.warning("Unable to parse BuildData: Tile from BuildData is null.");
             return;
         }
-        
+
         BuildingDescriptor descriptor = data.getDescriptor();
         if (descriptor == null) {
             log.warning("Unable to parse BuildData: Descriptor from BuildData is null.");
             return;
         }
-        
+
         // Try to place the building on the tile.
         buildAttempt(tile, descriptor);
     }
