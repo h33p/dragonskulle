@@ -418,6 +418,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
         if (tileToAim == null) {
             mPath = new ArrayDeque<Integer>();
+            return;
         }
 
         if (!mCapitalAimer) {
