@@ -3,6 +3,8 @@ package org.dragonskulle.game.player;
 
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import com.sun.javafx.collections.MappingChange;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -340,6 +342,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             && !tile.hasBuilding()
                             && fx.getTileHighlight(tile) != MapEffects.FOG_MATERIAL) {
                         fx.highlightTile(tile, highlight.asSelection());
+                    }
+                    else if (tile.getTileType() != HexagonTile.TileType.FOG){
+                        fx.highlightTile(tile, MapEffects.INVALID_MATERIAL);
                     }
                 });
     }
