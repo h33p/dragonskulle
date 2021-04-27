@@ -51,6 +51,12 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** This states whether we are aiming at the capital */
     private boolean mCapitalAimer;
 
+    /** This states how many times we have tried to move from the same place */
+    private int mAttempts = 0;
+
+    /** The node we previously were on */
+    private Node mNodePreviouslyOn = null;
+
     /** Whether to use the A* route */
     private final float PLAY_A_STAR = 0.9f;
 
@@ -59,6 +65,9 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
     /** The chance to aim at a capital */
     private final float AIM_AT_CAPITAL = 0.01f;
+
+    /** This is the number of tries we should do before resetting */
+    private final int TRIES = 10;
 
     /** Basic Constructor */
     public AimerAi() {}
@@ -109,14 +118,26 @@ public class AimerAi extends ProbabilisticAiPlayer {
                 }
 
                 if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
+                    mPath = new ArrayDeque<Integer>();
                     return;
                 }
                 HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
 
+                if (mGraph.getNode(nextNode) == mNodePreviouslyOn) {
+                    mAttempts++;
+                }
+
+                // Checks if we have been on this tile for ages
+                if (mAttempts > TRIES) {
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
+                mNodePreviouslyOn = mGraph.getNode(nextNode);
                 // Checks whether to build or to attack
                 if (nextTile.isClaimed()) {
 
                     attack(nextTile, nextNode);
+
                     return;
                 } else {
                     build(nextTile, nextNode);
@@ -141,9 +162,10 @@ public class AimerAi extends ProbabilisticAiPlayer {
     private void attack(HexagonTile nextTile, int nextNode) {
         log.info("Attacking");
         Player nextTilePlayer = nextTile.getClaimant();
+
         // ATTACK
         if (!nextTile.hasBuilding()) {
-            // Assuming that the building is on the next node
+            // If the building is not on the current node get the next tile
 
             mGone.push(nextNode);
             nextNode = mPath.pop();
@@ -155,45 +177,61 @@ public class AimerAi extends ProbabilisticAiPlayer {
             nextTilePlayer = nextTile.getClaimant();
         }
 
-        // Checks if building exists && Checks if we have to build
+        // Get the building on the tile.
         Building building = nextTile.getBuilding();
         if (!nextTile.hasBuilding() && nextTilePlayer == null) {
+
+            // If there is no building here and no one claims build.
 
             build(nextTile, nextNode);
             return;
         }
+
         if (!nextTile.hasBuilding()) {
 
-            // Will attack instead and remove
+            // The tile has not got a building but it is claimed so there is a building nearby
+
+            // Go Back
             while (!nextTile.hasBuilding()) {
                 mPath.push(nextNode);
+
+                // Get the next node which is behind you.
                 if (mGone.size() == 0) {
-                    mPath = new ArrayDeque<Integer>();
+
                     return;
                 }
                 nextNode = mGone.pop();
+
                 if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
                     // Something is wrong so reset everything
                     mPath = new ArrayDeque<Integer>();
                     return;
                 }
+
+                // Get the tile and building
                 nextTile = mGraph.getNode(nextNode).getHexTile().get();
                 nextTilePlayer = nextTile.getClaimant();
                 building = nextTile.getBuilding();
             }
-            super.tryToAttack(building);
 
-            // Assumption is that the code at the start of the method will move back
-            // to
-            // correct postion
-            mPath.push(nextNode);
+            if (building != null && getPlayer().isBuildingOwner(building)) {
+                // Will attack
+
+                super.tryToAttack(building);
+
+                // Assumption is that the code at the start of the method will move back
+                // to
+                // correct postion
+                mPath.push(nextNode);
+            }
 
             return;
         }
 
-        // Checks for attackable buildings
+        // This will check for buildings to attack from
         for (Building attacker : building.getAttackableBuildings()) {
 
+            // Checks its ours
             if (getPlayer().isBuildingOwner(attacker)) {
 
                 // Used so lambdas work
@@ -296,6 +334,8 @@ public class AimerAi extends ProbabilisticAiPlayer {
         if (getPlayer().isClaimingTile(mGraph.getNode(firstElement).getHexTile().get())) {
 
             mGone.push(firstElement);
+            mNodePreviouslyOn = mGraph.getNode(firstElement);
+
         } else {
             log.warning("Cannot do the first move");
         }
@@ -422,6 +462,8 @@ public class AimerAi extends ProbabilisticAiPlayer {
         log.info(answer);
 
         mGone = new ArrayDeque<Integer>();
+        mNodePreviouslyOn = startNode;
+        mAttempts = 0;
     }
 
     /**
