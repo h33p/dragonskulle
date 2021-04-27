@@ -46,6 +46,8 @@ public class Lobby extends Component implements IFrameUpdate {
 
     private String lobbyID = "";
 
+    // TODO: Refresh server list upon connection failure?
+
     public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
         mNetworkManager = networkManager;
 
@@ -104,7 +106,6 @@ public class Lobby extends Component implements IFrameUpdate {
 
         mJoiningUi =
                 new GameObject(
-                        // TODO: Need a way to leave a lobby
                         "joiningUI",
                         false,
                         new TransformUI(false),
@@ -157,13 +158,38 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Close lobby",
                                 (__, ___) -> {
-                                    // TODO: Shutdown server
+                                    if (Reference.isValid(networkManager)) {
+                                        final NetworkManager manager = networkManager.get();
+                                        if (manager.getServerManager() != null) {
+                                            manager.getServerManager().destroy();
+                                        }
+                                    }
                                     if (!lobbyID.equals("")) {
                                         LobbyAPI.deleteHost(lobbyID, this::onDeleteHost);
                                     }
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
                                 }));
+
+        UIManager.getInstance()
+                .buildVerticalUi(
+                        mJoiningUi,
+                        0.05f,
+                        0,
+                        0.2f,
+                        new UIButton(
+                                "Leave lobby",
+                                (__, ___) -> {
+                                    if (Reference.isValid(networkManager)) {
+                                        final NetworkManager manager = networkManager.get();
+                                        if (manager.getClientManager() != null) {
+                                            manager.getClientManager().disconnect();
+                                        }
+                                    }
+                                    mJoinUi.setEnabled(true);
+                                    mJoiningUi.setEnabled(false);
+                                }
+                        ));
 
         buildJoinUi();
         buildHostUi();
