@@ -41,7 +41,7 @@ public class UPnP {
                             + "HOST: 239.255.255.250:1900\r\n"
                             + "MAN: \"ssdp:discover\"\r\n"
                             + "MX: 1\r\n"
-                            + "ST: urn:schemas-upnp-org:device:WANIPConnection:1\r\n\r\n")
+                            + "ST: urn:schemas-upnp-org:service:WANIPConnection:1\r\n\r\n")
                     .getBytes();
 
     private static final String SERVICE_NAME = "urn:schemas-upnp-org:service:WANIPConnection:1";
