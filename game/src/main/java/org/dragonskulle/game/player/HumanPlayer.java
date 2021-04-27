@@ -44,7 +44,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     // All screens to be used
     @Getter private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
-    private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
     @Getter @Setter private HexagonTile mHexChosen;
@@ -66,6 +66,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private HexagonTile mLastHexChosen;
 
     private boolean mMovedCameraToCapital = false;
+    @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -86,11 +87,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
 
+        UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
                 .buildChild(
                         "zoom_slider",
                         new TransformUI(true),
-                        (go) -> go.addComponent(new UILinkedScrollBar()));
+                        (go) -> {
+                            go.addComponent(component);
+                        });
+        mScrollBar = component.getReference(UILinkedScrollBar.class);
 
         Reference<GameObject> tmpRef =
                 getGameObject()

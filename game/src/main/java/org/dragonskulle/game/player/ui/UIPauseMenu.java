@@ -24,6 +24,10 @@ import org.joml.Vector4f;
 @Log
 public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
+    public interface IHandleEvent {
+        void handle();
+    }
+
     /** The possible states the settings menu can be in. */
     private static enum State {
         MENU,
@@ -113,6 +117,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
             if (humanPlayer == null) continue;
             mPreviousScreen = humanPlayer.getScreenOn();
             humanPlayer.setScreenOn(newScreen);
+            hideMenu(pause, humanPlayer);
             break;
         }
     }
@@ -198,6 +203,17 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         // If the pause screen is in the main menu and the pause key is pressed.
         if (GameActions.TOGGLE_PAUSE.isJustActivated() && mCurrentState == State.MENU) {
             togglePause();
+        }
+    }
+
+    private static void hideMenu(boolean hide, HumanPlayer hp) {
+        Reference<UIMenuLeftDrawer> menuDrawer = hp.getMenuDrawer();
+        Reference<UILinkedScrollBar> scrollBar = hp.getScrollBar();
+        if (Reference.isValid(menuDrawer)) {
+            menuDrawer.get().setHidden(hide);
+        }
+        if (Reference.isValid(scrollBar)) {
+            scrollBar.get().getGameObject().setEnabled(!hide);
         }
     }
 

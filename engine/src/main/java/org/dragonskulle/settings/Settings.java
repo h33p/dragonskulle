@@ -38,19 +38,19 @@ public class Settings {
     /**
      * Loads settings from the default location. root/settings.json
      *
-     * @return
+     * @return the settings instance
      */
     public Settings loadSettings() {
-        loadSettings(mDefaultFilePath);
-        return getInstance();
+        return loadSettings(mDefaultFilePath);
     }
 
     /**
      * Load settings into the singleton by file path.
      *
      * @param filePath the settings file path
+     * @return the settings instance
      */
-    void loadSettings(String filePath) {
+    Settings loadSettings(String filePath) {
         try {
             mFilePath = filePath;
             File sFile = new File(filePath);
@@ -64,6 +64,7 @@ public class Settings {
         } catch (IOException e) {
             log.warning("failed to load settings file, reason: " + e.getMessage());
         }
+        return getInstance();
     }
 
     /**
@@ -101,11 +102,10 @@ public class Settings {
      *     Settings are not allowed.
      * @return the float setting value.
      */
-    @SuppressWarnings("unchecked")
     public Float retrieveFloat(String name) {
         try {
             if (sIsLoaded) {
-                Object val = mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
                 if (val == null) return null;
                 return Float.parseFloat(val.toString());
             } else {
@@ -144,11 +144,10 @@ public class Settings {
      *     Settings are not allowed.
      * @return the string setting value.
      */
-    @SuppressWarnings("unchecked")
     public String retrieveString(String name) {
         try {
             if (sIsLoaded) {
-                Object val = mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
                 if (val == null) return null;
                 return val.toString();
             } else {
@@ -191,11 +190,10 @@ public class Settings {
      *     Settings are not allowed.
      * @return the double setting value.
      */
-    @SuppressWarnings("unchecked")
     public Double retrieveDouble(String name) {
         try {
             if (sIsLoaded) {
-                Object val = mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
                 if (val == null) return null;
                 return Double.parseDouble(val.toString());
             } else {
@@ -233,11 +231,10 @@ public class Settings {
      *     Settings are not allowed.
      * @return the long setting value.
      */
-    @SuppressWarnings("unchecked")
     public Long retrieveLong(String name) {
         try {
             if (sIsLoaded) {
-                Object val = mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
                 if (val == null) return null;
                 return Long.parseLong(val.toString());
             } else {
@@ -275,11 +272,10 @@ public class Settings {
      *     Settings are not allowed.
      * @return the boolean setting value.
      */
-    @SuppressWarnings("unchecked")
     public Boolean retrieveBoolean(String name) {
         try {
             if (sIsLoaded) {
-                Object val = mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
                 if (val == null) return null;
                 return Boolean.parseBoolean(val.toString());
             } else {
@@ -317,11 +313,10 @@ public class Settings {
      *     Settings are not allowed.
      * @return the integer setting value.
      */
-    @SuppressWarnings("unchecked")
     public Integer retrieveInteger(String name) {
         try {
             if (sIsLoaded) {
-                Object val = mSettings.getOrDefault(name, null);
+                Object val = mSettings.get(name);
                 if (val == null) return null;
                 return Integer.parseInt(val.toString());
             } else {

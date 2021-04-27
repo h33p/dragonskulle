@@ -8,12 +8,7 @@ import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Transform3D;
-import org.dragonskulle.core.Engine;
-import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
-import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.core.*;
 import org.dragonskulle.game.camera.DragMovement;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
@@ -147,6 +142,7 @@ public class App implements NativeResource {
                         (menu) -> {
                             menu.addComponent(new UIPauseMenu(networkManager, camera));
                         });
+
         mainScene.addRootObject(pauseMenu);
 
         return mainScene;
