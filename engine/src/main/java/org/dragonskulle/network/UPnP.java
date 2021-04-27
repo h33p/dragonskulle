@@ -138,9 +138,9 @@ public class UPnP {
     public static boolean addPortMapping(int port, String protocol) {
         if (protocol.equals("BOTH")) {
             return addPortMapping(port, "TCP") & addPortMapping(port, "UDP");
-        }return false;
+        }
 
-        /*Map<String, String> out =
+        Map<String, String> out =
                 executeCommand(
                         "AddPortMapping",
                         "NewRemoteHost",
@@ -167,7 +167,7 @@ public class UPnP {
         } else {
             log.warning("Failed to add port mapping " + protocol + " : " + port);
             return false;
-        }*/
+        }
     }
 
     /**

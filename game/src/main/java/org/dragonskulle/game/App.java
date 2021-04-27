@@ -170,16 +170,16 @@ public class App implements NativeResource {
                                                                                                 "aStarAi"));
 
                                                                 log.warning("Created ai");
-                                                                
-                                                                 networkManager
-                                                                .getServerManager()
-                                                                .spawnNetworkObject(
-                                                                        -2,
-                                                                        networkManager
-                                                                                .findTemplateByName(
-                                                                                        "aiPlayer"));
 
-                                                        log.warning("Created ai");
+                                                                networkManager
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -2,
+                                                                                networkManager
+                                                                                        .findTemplateByName(
+                                                                                                "aiPlayer"));
+
+                                                                log.warning("Created ai");
                                                             }));
                                         });
                             });
@@ -525,7 +525,6 @@ public class App implements NativeResource {
         do {
             sReload = false;
             Settings.getInstance().loadSettings();
-            AudioManager.getInstance().toggleMasterMute();
             try (App app = new App()) {
                 app.run();
             }

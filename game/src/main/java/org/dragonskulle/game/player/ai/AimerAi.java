@@ -103,8 +103,6 @@ public class AimerAi extends ProbabilisticAiPlayer {
         // This will choose whether to play as an A* player or as a Probablistic Player
         if (mRandom.nextFloat() < PLAY_A_STAR) {
 
-            log.info("Using A*");
-
             moveBackwards();
 
             int nextNode = moveForwards();
@@ -154,7 +152,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
      */
     private void attack(HexagonTile nextTile, int nextNode) {
-        log.info("Attacking");
+        log.info("A* Attacking");
         Player nextTilePlayer = nextTile.getClaimant();
 
         // ATTACK
@@ -250,7 +248,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
-        log.info("Building");
+        log.info("A* Building");
         // BUILD
         getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
         mGone.push(nextNode);
@@ -321,7 +319,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
     /** This is what happens when we start the search and moves from the capital */
     private void atCapital() {
-        log.info("mGone == 0");
+
         int nextDoor = mPath.pop();
         mGone.push(nextDoor);
         int firstElement = mPath.pop();
@@ -388,7 +386,6 @@ public class AimerAi extends ProbabilisticAiPlayer {
     private void aStar() {
 
         // Will find the opponent to attack
-        log.info("Changing opponent");
         Player opponentPlayer = findOpponent();
 
         if (opponentPlayer != null) {
@@ -414,7 +411,6 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
         // Will find the tile to attack
         HexagonTile tileToAim = getTileBuilding(opponentPlayer);
-        log.info("Found Tile");
 
         if (tileToAim == null) {
             mPath = new ArrayDeque<Integer>();
@@ -446,19 +442,8 @@ public class AimerAi extends ProbabilisticAiPlayer {
         }
         // Performs A* Search
         AStar aStar = new AStar(mGraph, startNode.getNodeId(), endNode.getNodeId());
-        log.info("Completed A*");
 
         mPath = aStar.getPath();
-
-        // TODO Testing - remove before PR
-        String answer = "";
-        if (mPath.size() == 0) {
-            log.severe("HOWWWWW");
-        }
-        for (int node : mPath) {
-            answer = answer + node + " ->";
-        }
-        log.info(answer);
 
         mGone = new ArrayDeque<Integer>();
         mNodePreviouslyOn = startNode;
