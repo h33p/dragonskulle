@@ -80,7 +80,7 @@ public class Graph {
             return;
         }
 
-        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
+        int nodeNum = getHash(tile);
         // log.info("Node num: " + nodeNum);
         log.severe("Node number: " + nodeNum + " Q: " + tile.getQ() + " R: " + tile.getR());
 
@@ -95,16 +95,18 @@ public class Graph {
      * @param tile The {@code HexagonTile} to add connections for in the graph
      */
     private void addConnections(HexagonTile tile) {
+        if (Reference.isInvalid(mMap)) {
+            return;
+        }
+
         if (tile.getTileType() != TileType.LAND) {
             return;
         }
 
-        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
+        int nodeNum = getHash(tile);
         log.info("Node num: " + nodeNum);
         ArrayList<HexagonTile> neighbourTilesList = new ArrayList<HexagonTile>();
-        if (Reference.isInvalid(mMap)) {
-            return;
-        }
+
         List<HexagonTile> neighbourTiles =
                 mMap.get().getTilesInRadius(tile, 1, false, neighbourTilesList);
 
@@ -211,5 +213,10 @@ public class Graph {
     public Node getNode(HexagonTile tile) {
         int targetNodeHash = (tile.getQ() * mMap.get().getSize()) + tile.getR();
         return getNode(targetNodeHash);
+    }
+
+    public int getHash(HexagonTile tile) {
+        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
+        return nodeNum;
     }
 }

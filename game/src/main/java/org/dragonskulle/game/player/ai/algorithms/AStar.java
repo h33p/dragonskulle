@@ -43,7 +43,7 @@ public class AStar {
         @Getter private int mWeight;
 
         /** The parent node */
-        @Getter private int mCurrentNode;
+        @Getter private int mParent;
 
         /**
          * Simple constructor
@@ -57,7 +57,7 @@ public class AStar {
             mChild = child;
             mFNode = fNode;
             mWeight = weight;
-            mCurrentNode = currentNode;
+            mParent = currentNode;
         }
     }
 
@@ -66,7 +66,7 @@ public class AStar {
      *
      * @author DragonSkulle
      */
-    private class ConnectionInteger {
+    private class ConnectionIds {
 
         /** The parent node */
         private int mCurrentNode;
@@ -80,7 +80,7 @@ public class AStar {
          * @param currentNode The parent node
          * @param childNode the child node
          */
-        private ConnectionInteger(int currentNode, int childNode) {
+        private ConnectionIds(int currentNode, int childNode) {
             mCurrentNode = currentNode;
             mChildNode = childNode;
         }
@@ -117,8 +117,8 @@ public class AStar {
 
         boolean finished = false; // This checks if it finished
         int oldFNode = 0; // This is what the previous f node value was
-        ArrayList<ConnectionInteger> connectionsFinal =
-                new ArrayList<ConnectionInteger>(); // This will hold the route
+        ArrayList<ConnectionIds> connectionsFinal =
+                new ArrayList<ConnectionIds>(); // This will hold the route
 
         while (!finished) {
             ArrayList<Connection> connections =
@@ -134,8 +134,7 @@ public class AStar {
                 Frontier nextNode =
                         mFrontier.remove(
                                 nextNodeIndex); // Removes the element with the smallest fNode
-                ConnectionInteger connectionHere =
-                        new ConnectionInteger(nextNode.mCurrentNode, nextNode.mChild);
+                ConnectionIds connectionHere = new ConnectionIds(nextNode.mParent, nextNode.mChild);
 
                 connectionsFinal.add(connectionHere); // Add it to the final connections
                 if (nextNode.mChild == endNode) { // If it ends at the final node
