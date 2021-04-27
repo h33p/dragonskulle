@@ -88,7 +88,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @param lambdaMethod What to on a building
      * @return If the stuff is invoked on the server
      */
-    public boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
+    protected boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
 
         Player player = getPlayer();
 
@@ -145,7 +145,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Try and place a {@link Building} from the specified Building.
      *
-     * @param building The building to place from.
+     * @param building the {@code Building} to try and build from.
      * @return Whether building placement was invoked.
      */
     private boolean tryToAddBuilding(Building building) {
@@ -183,7 +183,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      *
      * @return Whether the attempt to upgrade a building's stats was invoked.
      */
-    private boolean upgradeBuilding() {
+    protected boolean upgradeBuilding() {
         log.info("AI: Upgrading");
 
         return attemptRunEvent(this::tryToUpgrade);
@@ -236,10 +236,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * This will try to attack from a building.
      *
-     * @param attacker The building to attack from.
+     * @param attacker The building to lauch the attack from.
      * @return Whether attacking was invoked.
      */
-    private boolean tryToAttack(Building attacker) {
+    protected boolean tryToAttack(Building attacker) {
         Set<Building> builds = attacker.getAttackableBuildings();
 
         if (builds.size() != 0) {
