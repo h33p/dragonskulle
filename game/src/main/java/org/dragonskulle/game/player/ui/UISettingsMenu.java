@@ -193,38 +193,44 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
         UITextRect title = new UITextRect("Graphics");
 
+        UIDropDown uiDropDown =
+                new UIDropDown(
+                        0,
+                        (drop) ->
+                                Engine.getInstance()
+                                        .getGLFWState()
+                                        .setFullscreen(drop.getSelected() == 1),
+                        "Windowed",
+                        "Fullscreen");
+
         IUIBuildHandler windowed =
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Fullscreen mode:"),
-                        new UIDropDown(
-                                0,
-                                (drop) ->
-                                        Engine.getInstance()
-                                                .getGLFWState()
-                                                .setFullscreen(drop.getSelected() == 1),
-                                "Windowed",
-                                "Fullscreen"));
+                uiManager.buildWithChildrenRightOf(new UITextRect("Fullscreen mode:"), uiDropDown);
+
         Settings settingsInstance = Settings.getInstance();
+
+        UISlider uiSlider =
+                new UISlider(
+                        settingsInstance.retrieveFloat("cursorScale", 0.4f),
+                        0.1f,
+                        1f,
+                        0.01f,
+                        (__, value) -> { // on slider change
+                            settingsInstance.saveValue("cursorScale", value);
+                            try {
+                                Cursor.setCustomCursor(
+                                        Engine.getInstance().getGLFWState().getWindow(), value);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        },
+                        (__, ___) -> settingsInstance.save() // on button release
+                        );
+
+        uiDropDown.setOnOpen((__) -> uiSlider.getGameObject().setEnabled(false));
+        uiDropDown.setOnHide((__) -> uiSlider.getGameObject().setEnabled(true));
+
         IUIBuildHandler cursorScale =
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Cursor Size:"),
-                        new UISlider(
-                                settingsInstance.retrieveFloat("cursorScale", 0.4f),
-                                0.1f,
-                                1f,
-                                0.01f,
-                                (__, value) -> { // on slider change
-                                    settingsInstance.saveValue("cursorScale", value);
-                                    try {
-                                        Cursor.setCustomCursor(
-                                                Engine.getInstance().getGLFWState().getWindow(),
-                                                value);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                },
-                                (__, ___) -> settingsInstance.save() // on button release
-                                ));
+                uiManager.buildWithChildrenRightOf(new UITextRect("Cursor Size:"), uiSlider);
 
         UIButton back = new UIButton("Back", (__, ___) -> switchToState(State.MENU));
 
