@@ -331,21 +331,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
-        HexagonMap map = mPlayer.get().getMap();
-        Stream<HexagonTile> buildableTiles = map.getAllTiles();
+//        HexagonMap map = mPlayer.get().getMap();
+//        Stream<HexagonTile> buildableTiles = map.getAllTiles();
+//
+//        buildableTiles.forEach(
+//                (tile) -> {
+//                    if (!tile.isClaimed()
+//                            && !tile.hasBuilding()
+//                            && fx.getTileHighlight(tile) != MapEffects.FOG_MATERIAL
+//                            && tile.getTileType() != HexagonTile.TileType.MOUNTAIN) {
+//                        fx.highlightTile(tile, highlight.asSelection());
+//                    } else if (tile.getTileType() != HexagonTile.TileType.FOG
+//                            && tile.getTileType() != HexagonTile.TileType.MOUNTAIN) {
+//                        fx.highlightTile(tile, MapEffects.INVALID_MATERIAL);
+//                    }
+//                });
 
-        buildableTiles.forEach(
-                (tile) -> {
-                    if (!tile.isClaimed()
-                            && !tile.hasBuilding()
-                            && fx.getTileHighlight(tile) != MapEffects.FOG_MATERIAL
-                            && tile.getTileType() != HexagonTile.TileType.MOUNTAIN) {
-                        fx.highlightTile(tile, highlight.asSelection());
-                    } else if (tile.getTileType() != HexagonTile.TileType.FOG
-                            && tile.getTileType() != HexagonTile.TileType.MOUNTAIN) {
-                        fx.highlightTile(tile, MapEffects.INVALID_MATERIAL);
-                    }
-                });
+
     }
 
     private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {

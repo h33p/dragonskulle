@@ -307,12 +307,12 @@ public class HexagonTile implements INetSerializable {
         }
 
         if (isClaimed()) {
-            log.info("Tile already claimed.");
+            log.fine("Tile already claimed.");
             return false;
         }
 
         if (hasBuilding()) {
-            log.info("Building already on tile.");
+            log.fine("Building already on tile.");
             return false;
         }
 
@@ -327,7 +327,7 @@ public class HexagonTile implements INetSerializable {
         }
 
         if (!buildable) {
-            log.info("Building not in buildable range/on suitable tile.");
+            log.fine("Building not in buildable range/on suitable tile.");
             return false;
         }
 
