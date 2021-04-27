@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building;
 
-import static jdk.nashorn.internal.objects.NativeMath.max;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
