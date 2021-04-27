@@ -129,10 +129,15 @@ public class Building extends NetworkableComponent
     @Accessors(prefix = "m")
     private int mStatUpdateCount = 0;
 
-    private Reference<GameObject> base_mesh;
-    private Reference<GameObject> defence_mesh;
-    private Reference<GameObject> attack_mesh;
-    private Reference<GameObject> generation_mesh;
+    /** The base building mesh. */
+    private Reference<GameObject> mBaseMesh;
+    /** The Mesh for when the highest stat is defence. */
+    private Reference<GameObject> mDefenceMesh;
+    /** The Mesh for when the highest stat is attacking. */
+    private Reference<GameObject> mAttackMesh;
+    /** The Mesh for when the highest stat is generation. */
+    private Reference<GameObject> mGenerationMesh;
+    /** The current building mesh. */
     private Reference<GameObject> mVisibleMesh;
 
     /** Increments {@code mStatUpdateCount} to signify an update is needed. */
@@ -167,27 +172,27 @@ public class Building extends NetworkableComponent
 
         GLTF gltf = sBuildingTemplates.get();
 
-        GameObject base_mesh =
+        GameObject baseMesh =
                 GameObject.instantiate(gltf.getDefaultScene().findRootObject("base_building"));
-        GameObject defence_mesh =
+        GameObject defenceMesh =
                 GameObject.instantiate(gltf.getDefaultScene().findRootObject("defence_building"));
-        GameObject attack_mesh =
+        GameObject attackMesh =
                 GameObject.instantiate(gltf.getDefaultScene().findRootObject("attack_building"));
-        GameObject generation_mesh =
+        GameObject generationMesh =
                 GameObject.instantiate(
                         gltf.getDefaultScene().findRootObject("generation_building"));
-        getGameObject().addChild(base_mesh);
-        getGameObject().addChild(defence_mesh);
-        getGameObject().addChild(attack_mesh);
-        getGameObject().addChild(generation_mesh);
-        base_mesh.setEnabled(false);
-        defence_mesh.setEnabled(false);
-        attack_mesh.setEnabled(false);
-        generation_mesh.setEnabled(false);
-        this.base_mesh = base_mesh.getReference();
-        this.defence_mesh = defence_mesh.getReference();
-        this.attack_mesh = attack_mesh.getReference();
-        this.generation_mesh = generation_mesh.getReference();
+        getGameObject().addChild(baseMesh);
+        getGameObject().addChild(defenceMesh);
+        getGameObject().addChild(attackMesh);
+        getGameObject().addChild(generationMesh);
+        baseMesh.setEnabled(false);
+        defenceMesh.setEnabled(false);
+        attackMesh.setEnabled(false);
+        generationMesh.setEnabled(false);
+        mBaseMesh = baseMesh.getReference();
+        mDefenceMesh = defenceMesh.getReference();
+        mAttackMesh = attackMesh.getReference();
+        mGenerationMesh = generationMesh.getReference();
     }
 
     /** Initialise the building only when it is properly on the map and the tile is synced */
@@ -315,9 +320,9 @@ public class Building extends NetworkableComponent
             if (Reference.isValid(mVisibleMesh)) {
                 mVisibleMesh.get().setEnabled(false);
             }
-            if (Reference.isValid(base_mesh)) {
-                base_mesh.get().setEnabled(true);
-                mVisibleMesh = base_mesh;
+            if (Reference.isValid(mBaseMesh)) {
+                mBaseMesh.get().setEnabled(true);
+                mVisibleMesh = mBaseMesh;
             }
 
         } else {
@@ -334,21 +339,21 @@ public class Building extends NetworkableComponent
                 }
                 switch (max.getKey()) {
                     case ATTACK:
-                        if (Reference.isValid(attack_mesh)) {
-                            attack_mesh.get().setEnabled(true);
-                            mVisibleMesh = attack_mesh;
+                        if (Reference.isValid(mAttackMesh)) {
+                            mAttackMesh.get().setEnabled(true);
+                            mVisibleMesh = mAttackMesh;
                         }
                         break;
                     case DEFENCE:
-                        if (Reference.isValid(defence_mesh)) {
-                            defence_mesh.get().setEnabled(true);
-                            mVisibleMesh = defence_mesh;
+                        if (Reference.isValid(mDefenceMesh)) {
+                            mDefenceMesh.get().setEnabled(true);
+                            mVisibleMesh = mDefenceMesh;
                         }
                         break;
                     case TOKEN_GENERATION:
-                        if (Reference.isValid(generation_mesh)) {
-                            generation_mesh.get().setEnabled(true);
-                            mVisibleMesh = generation_mesh;
+                        if (Reference.isValid(mGenerationMesh)) {
+                            mGenerationMesh.get().setEnabled(true);
+                            mVisibleMesh = mGenerationMesh;
                         }
                         break;
                     default:
