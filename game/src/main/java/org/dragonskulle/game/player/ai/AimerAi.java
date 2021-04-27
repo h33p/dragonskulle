@@ -63,9 +63,6 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** Whether to use the A* route. */
     private final float PLAY_A_STAR = 0.9f;
 
-    /** Whether to attack or to upgrade a building. */
-    private final float GO_DOWN_PATH = .6f;
-
     /** The chance to aim at a capital. */
     private final float AIM_AT_CAPITAL = 0.01f;
 
@@ -106,50 +103,45 @@ public class AimerAi extends ProbabilisticAiPlayer {
         // This will choose whether to play as an A* player or as a Probablistic Player
         if (mRandom.nextFloat() < PLAY_A_STAR) {
 
-            // This will choose whether to go attacking and get closer to the building/capital or to
-            // upgrade
-            if (mRandom.nextFloat() < GO_DOWN_PATH) {
+            log.info("Using A*");
 
-                log.info("Using A*");
+            moveBackwards();
 
-                moveBackwards();
+            int nextNode = moveForwards();
 
-                int nextNode = moveForwards();
-
-                if (nextNode == Integer.MAX_VALUE) {
-                    return;
-                }
-
-                if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
-                    mPath = new ArrayDeque<Integer>();
-                    return;
-                }
-                HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
-
-                if (mGraph.getNode(nextNode) == mNodePreviouslyOn) {
-                    mAttempts++;
-                }
-
-                // Checks if we have been on this tile for ages
-                if (mAttempts > TRIES) {
-                    mPath = new ArrayDeque<Integer>();
-                    return;
-                }
-                mNodePreviouslyOn = mGraph.getNode(nextNode);
-                // Checks whether to build or to attack
-                if (nextTile.isClaimed()) {
-
-                    attack(nextTile, nextNode);
-
-                    return;
-                } else {
-                    build(nextTile, nextNode);
-                    return;
-                }
-
-            } else {
-                super.upgradeBuilding();
+            if (nextNode == Integer.MAX_VALUE) {
+                return;
             }
+
+            if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
+                mPath = new ArrayDeque<Integer>();
+                return;
+            }
+            HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
+
+            if (mGraph.getNode(nextNode) == mNodePreviouslyOn) {
+                mAttempts++;
+            } else {
+                mAttempts = 0;
+            }
+
+            // Checks if we have been on this tile for ages
+            if (mAttempts > TRIES) {
+                mPath = new ArrayDeque<Integer>();
+                return;
+            }
+            mNodePreviouslyOn = mGraph.getNode(nextNode);
+            // Checks whether to build or to attack
+            if (nextTile.isClaimed()) {
+
+                attack(nextTile, nextNode);
+
+                return;
+            } else {
+                build(nextTile, nextNode);
+                return;
+            }
+
         } else {
             super.simulateInput();
         }
