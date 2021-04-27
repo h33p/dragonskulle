@@ -335,6 +335,37 @@ public class HexagonTile implements INetSerializable {
         return true;
     }
 
+    /**
+     * Determines if for a given player if this tile is buildable upon.
+     *
+     * @param map the {@code HexagonMap} to use
+     * @return true if buildable, false otherwise
+     */
+    public boolean isBuildable(HexagonMap map) {
+
+        if (map == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        if (map.isIsland(this)) {
+            log.warning("This is an island and a capital cannot be placed here");
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void serialize(DataOutputStream stream, int clientId) throws IOException {
         stream.writeFloat(mHeight);

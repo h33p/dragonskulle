@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -207,13 +208,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        Object[] buildingToBecomeCapital =
+        List<HexagonTile> buildable =
                 getMap().getAllTiles()
-                        .map(tile -> createBuilding(tile.getQ(), tile.getR(), true))
-                        .filter(building -> building != null)
-                        .toArray();
-
-        if (buildingToBecomeCapital.length == 0) {
+                        .filter((tile) -> tile.isBuildable(getMap()))
+                        .collect(Collectors.toList());
+        if (buildable.isEmpty()) {
             // Cannot add a capital
             setOwnsCapital(false);
             log.severe("Disconnecting");
@@ -221,18 +220,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         } else {
             Random random = new Random();
-            int index = random.nextInt(buildingToBecomeCapital.length);
-
-            for (int i = 0; i < buildingToBecomeCapital.length; i++) {
-                if (i != index) {
-                    Building toDestroy = (Building) buildingToBecomeCapital[i];
-                    toDestroy.getGameObject().destroy();
-                }
+            HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
+            Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
+            if (capital == null) {
+                log.info("Failed to create capital");
+                return;
             }
-            Building capital = (Building) buildingToBecomeCapital[index];
             capital.setCapital(true);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
-            return;
         }
     }
 
