@@ -33,7 +33,13 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
         public void eventHandler(UISlider slider, float value);
     }
 
+    /** The onValue Handler. */
     private ISliderValueEvent mOnValueChange;
+    /** The onRelease Button handler. */
+    private UIButton.IButtonEvent mOnRelease = null;
+    /** The default handler for onRelease. This is to disable the button press. */
+    private final UIButton.IButtonEvent mDefaultRelease = this::buttonRelease;
+
     /** Controls the current value of the slider. */
     @Getter @Setter private float mValue = 0f;
     /** Controls the minimum value the slider can have. */
@@ -42,6 +48,9 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
     @Getter @Setter private float mMaxValue = 1f;
     /** Controls the rounding of slider (1f will round to whole numbers). */
     @Getter @Setter private float mRoundStep = 0f;
+
+    /** The colour of the bar. */
+    @Setter private Vector4f mColour = new Vector4f(0.9f);
 
     private TransformUI mKnobTransform;
     private boolean mPressed = false;
@@ -110,6 +119,20 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
      * Constructor for {@link UISlider}.
      *
      * @param value default value of the slider
+     * @param onValueChange event that gets called when the slider value changes
+     * @param onButtonRelease event ran on button release
+     */
+    public UISlider(
+            float value, ISliderValueEvent onValueChange, UIButton.IButtonEvent onButtonRelease) {
+        this(value);
+        mOnRelease = onButtonRelease;
+        mOnValueChange = onValueChange;
+    }
+
+    /**
+     * Constructor for {@link UISlider}.
+     *
+     * @param value default value of the slider
      * @param minValue minimum value of the slider
      * @param maxValue minimum value of the slider
      * @param onValueChange event that gets called when the slider value changes
@@ -138,6 +161,28 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
         mOnValueChange = onValueChange;
     }
 
+    /**
+     * Constructor for {@link UISlider}.
+     *
+     * @param value default value of the slider
+     * @param minValue minimum value of the slider
+     * @param maxValue minimum value of the slider
+     * @param roundStep rounding of the slider value
+     * @param onValueChange event that gets called when the slider value changes
+     * @param onButtonRelease event ran on button release
+     */
+    public UISlider(
+            float value,
+            float minValue,
+            float maxValue,
+            float roundStep,
+            ISliderValueEvent onValueChange,
+            UIButton.IButtonEvent onButtonRelease) {
+        this(value, minValue, maxValue, roundStep);
+        mOnValueChange = onValueChange;
+        mOnRelease = onButtonRelease;
+    }
+
     @Override
     public void onAwake() {
 
@@ -151,11 +196,10 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
                         new TransformUI(false),
                         (bar) -> {
                             bar.addComponent(
-                                    new UIRenderable(
-                                            new Vector4f(0.5f), new SampledTexture("white.bmp")));
+                                    new UIRenderable(mColour, new SampledTexture("white.bmp")));
                             TransformUI barTransform = bar.getTransform(TransformUI.class);
                             barTransform.setParentAnchor(0f, 0.5f, 1f, 0.5f);
-                            barTransform.setMargin(0.05f, -0.01f, -0.05f, 0.01f);
+                            barTransform.setMargin(0.06f, -0.02f, -0.06f, 0.02f);
                             bar.buildChild(
                                     "slider knob",
                                     new TransformUI(true),
@@ -165,12 +209,17 @@ public class UISlider extends UIBuildableComponent implements IOnAwake, IFrameUp
                                                         appearance.getSliderKnobTexture().clone()));
                                         mKnobTransform = knob.getTransform(TransformUI.class);
                                         mKnobTransform.setParentAnchor(0f, 0f, 0f, 0f);
-                                        mKnobTransform.setMargin(-10f, -10f, 10f, 10f);
+                                        mKnobTransform.setMargin(-9f, -9f, 9f, 9f);
                                         knob.addComponent(
                                                 new UIButton(
                                                         null,
                                                         this::buttonPressDown,
-                                                        this::buttonRelease));
+                                                        (__, v) -> {
+                                                            if (mOnRelease != null) {
+                                                                mOnRelease.eventHandler(__, v);
+                                                            }
+                                                            mDefaultRelease.eventHandler(__, v);
+                                                        }));
                                     });
                         });
     }

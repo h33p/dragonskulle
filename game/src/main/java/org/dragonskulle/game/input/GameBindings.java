@@ -3,7 +3,6 @@ package org.dragonskulle.game.input;
 
 import org.dragonskulle.devtools.RenderDebug;
 import org.dragonskulle.input.Bindings;
-import org.dragonskulle.input.Scroll;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIInputBox;
 import org.lwjgl.glfw.GLFW;
@@ -17,11 +16,11 @@ public class GameBindings extends Bindings {
 
     /** Create all initial game bindings. */
     public GameBindings() {
-        addBinding(GLFW.GLFW_KEY_UP, GameActions.UP, GameActions.MENU_UP);
-        addBinding(GLFW.GLFW_KEY_W, GameActions.UP, GameActions.MENU_UP);
+        addBinding(GLFW.GLFW_KEY_UP, GameActions.UP);
+        addBinding(GLFW.GLFW_KEY_W, GameActions.UP);
 
-        addBinding(GLFW.GLFW_KEY_DOWN, GameActions.DOWN, GameActions.MENU_DOWN);
-        addBinding(GLFW.GLFW_KEY_S, GameActions.DOWN, GameActions.MENU_DOWN);
+        addBinding(GLFW.GLFW_KEY_DOWN, GameActions.DOWN);
+        addBinding(GLFW.GLFW_KEY_S, GameActions.DOWN);
 
         addBinding(GLFW.GLFW_KEY_LEFT, GameActions.LEFT, UIInputBox.CURSOR_LEFT);
         addBinding(GLFW.GLFW_KEY_A, GameActions.LEFT);
@@ -47,11 +46,10 @@ public class GameBindings extends Bindings {
                 GameActions.TRIGGER_DRAG,
                 UIButton.UI_PRESS);
         addBinding(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GameActions.RIGHT_CLICK);
-        addBinding(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, GameActions.ACTION_3);
-
-        addBinding(Scroll.UP, GameActions.MENU_UP, GameActions.ZOOM_IN);
-        addBinding(Scroll.DOWN, GameActions.MENU_DOWN, GameActions.ZOOM_OUT);
+        addBinding(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, GameActions.MIDDLE_CLICK);
 
         addBinding(GLFW.GLFW_KEY_F3, RenderDebug.DEBUG_ACTION);
+
+        addBinding(GLFW.GLFW_KEY_ESCAPE, GameActions.TOGGLE_PAUSE);
     }
 }

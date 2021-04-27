@@ -339,6 +339,8 @@ public class ClientNetworkManager {
                 engine.loadPresentationScene(Scene.getActiveScene());
             }
 
+            engine.unloadScene(mManager.getGameScene());
+
             mManager.onClientDisconnect();
         }
     }

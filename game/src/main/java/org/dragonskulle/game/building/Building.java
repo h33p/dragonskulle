@@ -706,6 +706,7 @@ public class Building extends NetworkableComponent
      * @return The owning player, or {@code null}.
      */
     public Player getOwner() {
+        if (getNetworkObject() == null) return null;
         return getOwner(getNetworkObject().getOwnerId());
     }
 
