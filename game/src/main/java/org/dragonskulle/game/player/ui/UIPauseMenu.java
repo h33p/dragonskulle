@@ -5,7 +5,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -111,15 +110,11 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
             newScreen = mPreviousScreen;
         }
 
-        // Get the human player, if they exist, and make them go to the default screen.
-        for (Scene scene : Engine.getInstance().getActiveScenes()) {
-            HumanPlayer humanPlayer = scene.getSingleton(HumanPlayer.class);
-            if (humanPlayer == null) continue;
-            mPreviousScreen = humanPlayer.getScreenOn();
-            humanPlayer.setScreenOn(newScreen);
-            hideMenu(pause, humanPlayer);
-            break;
-        }
+        HumanPlayer humanPlayer = Scene.getActiveScene().getSingleton(HumanPlayer.class);
+        if (humanPlayer == null) return;
+        mPreviousScreen = humanPlayer.getScreenOn();
+        humanPlayer.setScreenOn(newScreen);
+        hideMenu(pause, humanPlayer);
     }
 
     /** Generate the contents of {@link #mMenuContainer}. */

@@ -517,7 +517,7 @@ public class App implements NativeResource {
 
         gameScene.addRootObject(humanPlayerObject);
 
-        Scene.getActiveScene().registerSingleton(humanPlayer);
+        gameScene.registerSingleton(humanPlayer);
         log.info("Registered HumanPlayer as singleton.");
     }
 
