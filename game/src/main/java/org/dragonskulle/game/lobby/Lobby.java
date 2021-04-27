@@ -46,8 +46,6 @@ public class Lobby extends Component implements IFrameUpdate {
 
     private String lobbyID = "";
 
-    // TODO: Refresh server list upon connection failure?
-
     public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
         mNetworkManager = networkManager;
 
@@ -188,8 +186,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     }
                                     mJoinUi.setEnabled(true);
                                     mJoiningUi.setEnabled(false);
-                                }
-                        ));
+                                }));
 
         buildJoinUi();
         buildHostUi();
@@ -273,6 +270,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                                     if (netID >= 0) {
                                                         mJoiningUi.setEnabled(true);
                                                         mServerBrowserUi.setEnabled(false);
+                                                    } else {
+                                                        LobbyAPI.getAllHosts(this::onGetAllHosts);
                                                     }
                                                 },
                                                 this::onHostStartGame);
