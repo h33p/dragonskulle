@@ -316,6 +316,7 @@ public class Settings {
             try {
                 String json = mapper.writeValueAsString(mSettings);
                 out.write(json.getBytes(StandardCharsets.UTF_8));
+                loadSettings(mFilePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }

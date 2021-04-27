@@ -126,6 +126,7 @@ public class Cursor {
                         scaledImage.getWidth(null),
                         scaledImage.getHeight(null),
                         BufferedImage.TYPE_INT_ARGB);
+
         // Draw the image on to the buffered image
         Graphics2D bGr = bImage.createGraphics();
         bGr.drawImage(scaledImage, 0, 0, null);
@@ -133,6 +134,7 @@ public class Cursor {
         // end
         int width = bImage.getWidth();
         int height = bImage.getHeight();
+        int cursorPos = (int) (10 * scale);
 
         int[] pixels = new int[width * height];
         bImage.getRGB(0, 0, width, height, pixels, 0, width);
@@ -140,7 +142,7 @@ public class Cursor {
         MathUtils.intARGBtoByteRGBA(pixels, height, width, buffer);
         GLFWImage image = GLFWImage.create();
         image.set(width, height, buffer);
-        long cursor = GLFW.glfwCreateCursor(image, 10, 10);
+        long cursor = GLFW.glfwCreateCursor(image, cursorPos, cursorPos);
 
         GLFW.glfwSetCursor(window, cursor);
     }
