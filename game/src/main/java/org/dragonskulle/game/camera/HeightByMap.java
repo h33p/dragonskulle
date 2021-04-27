@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
@@ -30,22 +29,31 @@ import org.joml.Vector3fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Log
 public class HeightByMap extends Component implements IFrameUpdate, IOnAwake, IZoomNotify {
-    @Getter @Setter private float mHeightOffset = 2f;
+    /** Constant offset from the land. */
+    @Getter @Setter private float mHeightOffset = 1f;
+    /** Flattened out map height when zoomed out. */
     @Getter @Setter private float mMinHeightLerped = 1f;
+    /** Zoom value beyond this will flatten out the calculated height. */
     @Getter @Setter private float mMaxZoomValue = 0.1f;
+    /** How fast the height will change. */
     @Getter @Setter private float mLerpSpeed = 5f;
-
+    /** Current zoom level */
     @Getter @Setter private float mZoomLevel;
 
+    /** Internal reference to the map. */
     private Reference<HexagonMap> mMapReference = null;
 
+    /** Internal reference to our 3D transform. */
     private transient Transform3D mTransform;
 
+    /** Temporary axial coordinate. */
     private final Vector2f mAxial = new Vector2f();
+    /** Temporary transformed coordinate. */
     private final Vector3f mTransformed = new Vector3f();
+    /** Second temporary transformed coordinate. */
     private final Vector3f mTmpTransformed = new Vector3f();
+    /** Temporary list of tiles around the object. */
     private final List<HexagonTile> mTilesAround = new ArrayList<>();
 
     @Override
@@ -125,6 +133,13 @@ public class HeightByMap extends Component implements IFrameUpdate, IOnAwake, IZ
         mTransform.setPosition(mTransformed);
     }
 
+    /**
+     * Get the distance from tile to a point.
+     *
+     * @param point target point to calculate the distance to
+     * @param tile the tile to check against
+     * @return cartesian distance between tile and the point
+     */
     private float getTileDistance(Vector3fc point, HexagonTile tile) {
         mAxial.set(tile.getQ(), tile.getR());
         Vector3f vec = TransformHex.axialToCartesian(mAxial, point.z(), mTmpTransformed);
@@ -134,6 +149,11 @@ public class HeightByMap extends Component implements IFrameUpdate, IOnAwake, IZ
     @Override
     protected void onDestroy() {}
 
+    /**
+     * Ensure that the map reference exists.
+     *
+     * @return {@code true} if map reference is valid, {@code false} otherwise.
+     */
     private boolean ensureMapReference() {
         if (Reference.isValid(mMapReference)) {
             return true;

@@ -3,6 +3,7 @@ package org.dragonskulle.game.building;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -10,8 +11,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.renderer.components.Renderable;
-
-import lombok.extern.java.Log;
 
 /**
  * Make buildings invisible in fog.
