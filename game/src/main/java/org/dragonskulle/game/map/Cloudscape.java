@@ -15,7 +15,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.NoiseUtil;
-import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.player.Player;
 
 /**
@@ -68,8 +67,7 @@ public class Cloudscape extends Component implements IOnStart, ILateFrameUpdate 
                                 setClouds(
                                         tile,
                                         !activePlayer.hasLost()
-                                                && tile.getTileType() == TileType.FOG
-                                                && !activePlayer.isTileViewable(tile)
+                                                && activePlayer.getTileViewability(tile) < -1
                                                 && perlinCheck(tile)));
     }
 

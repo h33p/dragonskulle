@@ -19,6 +19,12 @@ import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 @Accessors(prefix = "m")
 public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrameUpdate {
 
+    /** Ran on dropdown open. */
+    @Setter IDropDownEvent mOnOpen;
+
+    /** Ran on dropdown hide. */
+    @Setter IDropDownEvent mOnHide;
+
     /** Interface that is invoked when an event occurs for the drop down. */
     public static interface IDropDownEvent {
         void handle(UIDropDown dropDown);
@@ -121,7 +127,6 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         if (mOptionObjects.size() != 0 || mOptions == null) {
             return;
         }
-
         for (int i = 0; i < mOptions.length; i++) {
             final int ii = i;
             GameObject option =
@@ -137,8 +142,10 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
                             });
             mOptionObjects.add(option);
         }
-
         getGameObject().addChildren(mOptionObjects);
+        if (mOnOpen != null) {
+            mOnOpen.handle(this);
+        }
     }
 
     /** Stop showing options, if they are still being shown. */
@@ -152,6 +159,9 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         }
 
         mOptionObjects.clear();
+        if (mOnHide != null) {
+            mOnHide.handle(this);
+        }
     }
 
     /** Toggle between showing and not showing the option list. */

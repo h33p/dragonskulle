@@ -58,6 +58,15 @@ public class TextureMapping implements Serializable {
         this(filtering, wrap, wrap, wrap);
     }
 
+    /**
+     * Constructor for {@link TextureMapping}
+     *
+     * @param filtering filtering mode to use
+     */
+    public TextureMapping(TextureFiltering filtering) {
+        this(filtering, TextureWrapping.CLAMP);
+    }
+
     /** Default constructor for {@link TextureMapping}. */
     public TextureMapping() {
         this(TextureFiltering.LINEAR, TextureWrapping.CLAMP);
