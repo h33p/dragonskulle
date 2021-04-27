@@ -95,7 +95,7 @@ public class Graph {
      * @param tile The {@code HexagonTile} to add connections for in the graph
      */
     private void addConnections(HexagonTile tile) {
-        if (Reference.isInvalid(mMap)) {
+        if (!Reference.isValid(mMap)) {
             return;
         }
 

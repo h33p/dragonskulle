@@ -108,7 +108,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
                     return;
                 }
 
-                if (Reference.isInvalid(mGraph.getNode(nextNode).getHexTile())) {
+                if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
                     return;
                 }
                 HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
@@ -147,7 +147,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             mGone.push(nextNode);
             nextNode = mPath.pop();
-            if (Reference.isInvalid(mGraph.getNode(nextNode).getHexTile())) {
+            if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
                 mPath.push(nextNode);
                 return;
             }
@@ -172,7 +172,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
                     return;
                 }
                 nextNode = mGone.pop();
-                if (!Reference.isInvalid(mGraph.getNode(nextNode).getHexTile())) {
+                if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
                     // Something is wrong so reset everything
                     mPath = new ArrayDeque<Integer>();
                     return;
@@ -228,7 +228,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
     private int moveForwards() {
         // This will point us to the next tile to use
         int nextNode = mPath.pop();
-        if (Reference.isInvalid(mGraph.getNode(nextNode).getHexTile())) {
+        if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
             mPath = new ArrayDeque<Integer>();
             return Integer.MAX_VALUE;
         }
@@ -242,7 +242,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
                 return Integer.MAX_VALUE;
             }
             nextNode = mPath.pop();
-            if (Reference.isInvalid(mGraph.getNode(nextNode).getHexTile())) {
+            if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
                 return Integer.MAX_VALUE;
             }
 
@@ -264,7 +264,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             Reference<HexagonTile> hexagonTile = mGraph.getNode(previousNode).getHexTile();
 
-            if (Reference.isInvalid(hexagonTile)) {
+            if (!Reference.isValid(hexagonTile)) {
                 mPath.push(previousNode);
                 return;
             }
@@ -289,7 +289,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
         int nextDoor = mPath.pop();
         mGone.push(nextDoor);
         int firstElement = mPath.pop();
-        if (Reference.isInvalid(mGraph.getNode(firstElement).getHexTile())) {
+        if (!Reference.isValid(mGraph.getNode(firstElement).getHexTile())) {
             mPath.push(firstElement);
             return;
         }
@@ -513,7 +513,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @return The {@code Player} in the {@code Reference}
      */
     private Player getPlayer() {
-        if (Reference.isInvalid(mPlayer)) {
+        if (!Reference.isValid(mPlayer)) {
             return null;
         }
         return mPlayer.get();
