@@ -865,7 +865,7 @@ public class Building extends NetworkableComponent
      * @return An ArrayList of SyncStats that can currently be upgraded.
      */
     public ArrayList<SyncStat> getUpgradeableStats() {
-        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+        ArrayList<SyncStat> stats = new ArrayList<>();
 
         for (SyncStat stat : mStats.values()) {
             if (stat.isUpgradeable()) {
@@ -877,15 +877,16 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded.
+     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded, this excludes
+     * those that are their maximum value and therefore cannot be upgraded further.
      *
-     * @return An ArrayList of SyncStats that can currently be upgraded.
+     * @return An ArrayList of SyncStats that can currently be upgraded further.
      */
-    public ArrayList<SyncStat> getUpgradeableStatsNonMax() {
-        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+    public ArrayList<SyncStat> getAvailableStats() {
+        ArrayList<SyncStat> stats = new ArrayList<>();
 
         for (SyncStat stat : mStats.values()) {
-            if (stat.isUpgradeableNonMax()) {
+            if (stat.isAvailableToUpgrade()) {
                 stats.add(stat);
             }
         }

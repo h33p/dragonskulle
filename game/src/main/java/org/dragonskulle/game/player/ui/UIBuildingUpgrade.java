@@ -37,8 +37,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     @Getter(AccessLevel.PROTECTED)
     private final UIShopSection mParent;
 
-    private final HashMap<StatType, Reference<UITextRect>> mTextValueReferences = new HashMap<>();
-    private final HashMap<StatType, Reference<UITextRect>> mTextCostReferences = new HashMap<>();
+    private final HashMap<StatType, Reference<UITextRect>> mLevelTexts = new HashMap<>();
+    private final HashMap<StatType, Reference<UITextRect>> mValueTexts = new HashMap<>();
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
@@ -66,46 +66,21 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     public void onStart() {
         mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
         mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
-        String attackVal, defenceVal, tokenGenVal, attackCost, defenceCost, tokenGenCost;
-        attackVal = defenceVal = tokenGenVal = attackCost = defenceCost = tokenGenCost = "";
+        String attackLevel, defenceLevel, tokenGenLevel, attackCost, defenceCost, tokenGenCost;
+        attackLevel = defenceLevel = tokenGenLevel = attackCost = defenceCost = tokenGenCost = "";
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (Reference.isValid(buildingRef)) {
             Building building = buildingRef.get();
-            attackVal = String.valueOf(building.getStat(StatType.ATTACK).getLevel());
-            defenceVal = String.valueOf(building.getStat(StatType.DEFENCE).getLevel());
-            tokenGenVal = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getLevel());
+            attackLevel = String.valueOf(building.getStat(StatType.ATTACK).getLevel());
+            defenceLevel = String.valueOf(building.getStat(StatType.DEFENCE).getLevel());
+            tokenGenLevel = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getLevel());
 
             attackCost = String.valueOf(building.getStat(StatType.ATTACK).getCost());
             defenceCost = String.valueOf(building.getStat(StatType.DEFENCE).getCost());
             tokenGenCost = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getCost());
         }
-        // better way to do this dynamically
-        UITextRect mAttackLevelText = new UITextRect(attackVal);
-        mAttackLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-
-        UITextRect mDefenceLevelText = new UITextRect(defenceVal);
-        mDefenceLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-
-        UITextRect mTokenGenerationText = new UITextRect(tokenGenVal);
-        mTokenGenerationText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-
-        mTextValueReferences.put(StatType.ATTACK, mAttackLevelText.getReference(UITextRect.class));
-        mTextValueReferences.put(
-                StatType.DEFENCE, mDefenceLevelText.getReference(UITextRect.class));
-        mTextValueReferences.put(
-                StatType.TOKEN_GENERATION, mTokenGenerationText.getReference(UITextRect.class));
-
-        UITextRect mAttackCostText = new UITextRect(attackCost);
-        mAttackCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        UITextRect mDefenceCostText = new UITextRect(defenceCost);
-        mDefenceCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        UITextRect mTokenGenerationCostText = new UITextRect(tokenGenCost);
-        mTokenGenerationCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-
-        mTextCostReferences.put(StatType.ATTACK, mAttackCostText.getReference(UITextRect.class));
-        mTextCostReferences.put(StatType.DEFENCE, mDefenceCostText.getReference(UITextRect.class));
-        mTextCostReferences.put(
-                StatType.TOKEN_GENERATION, mTokenGenerationCostText.getReference(UITextRect.class));
+        storeReferences(attackLevel, defenceLevel, tokenGenLevel, mLevelTexts);
+        storeReferences(attackCost, defenceCost, tokenGenCost, mValueTexts);
 
         getGameObject()
                 .buildChild(
@@ -115,13 +90,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             UIManager manager = UIManager.getInstance();
 
                             manager.buildHorizontalUI(
-                                    self,
-                                    0.05f,
-                                    0.2f,
-                                    0.4f,
-                                    mAttackLevelText,
-                                    mDefenceLevelText,
-                                    mTokenGenerationText);
+                                    self, 0.05f, 0.2f, 0.4f, unpackReferences(mLevelTexts));
 
                             manager.buildHorizontalUI(
                                     self,
@@ -144,14 +113,59 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                         g.addComponent(new UIText("COST"));
                                     });
                             manager.buildHorizontalUI(
-                                    self,
-                                    0.05f,
-                                    0.65f,
-                                    1.15f,
-                                    mAttackCostText,
-                                    mDefenceCostText,
-                                    mTokenGenerationCostText);
+                                    self, 0.05f, 0.65f, 1.15f, unpackReferences(mValueTexts));
                         });
+    }
+
+    /**
+     * Unpacks the references in the src map, then returns an array of the {@link
+     * org.dragonskulle.ui.UIManager.IUIBuildHandler}'s in the {@link UITextRect}.
+     *
+     * @param src the src
+     * @return an array of the {@link org.dragonskulle.ui.UIManager.IUIBuildHandler}'s
+     */
+    private UIManager.IUIBuildHandler[] unpackReferences(
+            HashMap<StatType, Reference<UITextRect>> src) {
+        return new UIManager.IUIBuildHandler[] {
+            src.get(StatType.ATTACK).get(),
+            src.get(StatType.DEFENCE).get(),
+            src.get(StatType.TOKEN_GENERATION).get()
+        };
+    }
+
+    /**
+     * Creates a {@link UITextRect} with aspect ration 2:1, then stores a reference in the
+     * destination map.
+     *
+     * @param attack the string for the {@link UITextRect} constructor for {@code StatType.ATTACK}
+     * @param defence the string for the {@link UITextRect} constructor for {@code StatType.DEFENCE}
+     * @param tokenGeneration the string for the {@link UITextRect} constructor for {@code
+     *     StatType.TOKEN_GENERATION}
+     * @param dest the destination map.
+     */
+    private void storeReferences(
+            String attack,
+            String defence,
+            String tokenGeneration,
+            HashMap<StatType, Reference<UITextRect>> dest) {
+        UITextRect attackUI = create21TextRect(attack);
+        UITextRect defenceUI = create21TextRect(defence);
+        UITextRect tokenGenerationUI = create21TextRect(tokenGeneration);
+        dest.put(StatType.ATTACK, attackUI.getReference(UITextRect.class));
+        dest.put(StatType.DEFENCE, defenceUI.getReference(UITextRect.class));
+        dest.put(StatType.TOKEN_GENERATION, tokenGenerationUI.getReference(UITextRect.class));
+    }
+
+    /**
+     * Creates a @{link UITextRect} with a 2:1 aspect ratio.
+     *
+     * @param text the text to be displayed inside the renderable
+     * @return the UITextRect Component
+     */
+    private static UITextRect create21TextRect(String text) {
+        UITextRect tokenGenerationCostText = new UITextRect(text);
+        tokenGenerationCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
+        return tokenGenerationCostText;
     }
 
     /**
@@ -213,7 +227,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                     setBuildingStatUpdateCount(statUpdateCount);
                     getParent().markDidBuild(false);
                     mLastBuilding = building;
-                    building.getUpgradeableStatsNonMax().forEach(this::updateVisibleStat);
+                    building.getAvailableStats().forEach(this::updateVisibleStat);
                 }
             }
         }
@@ -247,7 +261,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the stat to update
      */
     private void setCostTextRef(SyncStat upgradeableStat) {
-        Reference<UITextRect> textRef = mTextValueReferences.get(upgradeableStat.getType());
+        Reference<UITextRect> textRef = mValueTexts.get(upgradeableStat.getType());
         if (Reference.isValid(textRef)) {
             Reference<UIText> label = textRef.get().getLabelText();
             setTextOnRef(label, (String.valueOf(upgradeableStat.getCost())));
@@ -260,7 +274,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the stat to update
      */
     private void setLevelTextRef(SyncStat upgradeableStat) {
-        Reference<UITextRect> textRef = mTextValueReferences.get(upgradeableStat.getType());
+        Reference<UITextRect> textRef = mLevelTexts.get(upgradeableStat.getType());
         if (Reference.isValid(textRef)) {
             Reference<UIText> label = textRef.get().getLabelText();
             setTextOnRef(label, (String.valueOf(upgradeableStat.getLevel())));
