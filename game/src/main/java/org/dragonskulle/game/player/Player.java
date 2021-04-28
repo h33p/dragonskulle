@@ -155,7 +155,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Used as a queue for tiles to be flood filled */
     private final Deque<HexagonTile> mFillTiles = new ArrayDeque<>();
 
-    /** Adds building's viewable tiles to player's viewable tile list */
+    /**
+     * Adds building's viewable tiles to player's viewable tile list.
+     *
+     * @param building The building whose visible tiles should be made viewable.
+     */
     public void updateViewableTiles(Building building) {
         for (HexagonTile tile : building.getClaimedTiles()) {
             mFillTiles.push(tile);
@@ -582,9 +586,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Get the {@link HexagonMap} being used by the Player, as stored in {@link #mMap}.
      *
-     * @return The HexagonMap.
+     * @return The HexagonMap, or {@code null}.
      */
     public HexagonMap getMap() {
+        if (!Reference.isValid(mMap)) return null;
         return mMap.get();
     }
 
@@ -614,8 +619,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
+        BuildingDescriptor descriptor = data.getDescriptor();
+        if (descriptor == null) {
+            log.warning("Unable to parse BuildData: Descriptor from BuildData is null.");
+            return;
+        }
+
         // Try to place the building on the tile.
-        buildAttempt(tile, data.getDescriptor());
+        buildAttempt(tile, descriptor);
     }
 
     /**
@@ -653,6 +664,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * Ensure that the {@link HexagonTile} is eligible to have a {@link Building} placed on it.
      *
      * @param tile The tile to put a building on.
+     * @param buyPrice The cost of the building.
      * @return {@code true} if the tile is eligible, otherwise {@code false}.
      */
     public boolean buildCheck(HexagonTile tile, int buyPrice) {
