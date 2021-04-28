@@ -114,11 +114,11 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                             UITextRect component =
                                     new UITextRect(
                                             String.format(
-                                                    "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Value: %d\nCost: %d",
+                                                    "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Level: %d\nCost: %d",
                                                     descriptor.getName().toUpperCase(),
                                                     descriptor.getAttack(),
                                                     descriptor.getDefence(),
-                                                    descriptor.getTokenGeneration(),
+                                                    descriptor.getTokenGenerationLevel(),
                                                     descriptor.getCost()));
                             component.setRectTexture(
                                     UIManager.getInstance()
@@ -207,7 +207,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                 descriptor.getName().toUpperCase(),
                                 descriptor.getAttack(),
                                 descriptor.getDefence(),
-                                descriptor.getTokenGeneration(),
+                                descriptor.getTokenGenerationLevel(),
                                 descriptor.getCost());
 
                 labelText.get().setText(txt);

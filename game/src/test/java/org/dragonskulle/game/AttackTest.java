@@ -69,7 +69,7 @@ public class AttackTest {
 
         float percentageOfWins = runAttack(mAttacker, mDefender);
 
-        assertEquals(0.7f, percentageOfWins, 0.1f);
+        assertEquals(0.8f, percentageOfWins, 0.1f);
     }
 
     /**
@@ -85,7 +85,7 @@ public class AttackTest {
 
         float percentageOfWins = runAttack(mAttacker, mDefender);
 
-        assertEquals(0.3f, percentageOfWins, 0.1f);
+        assertEquals(0.1505f, percentageOfWins, 0.1f);
     }
 
     /**
