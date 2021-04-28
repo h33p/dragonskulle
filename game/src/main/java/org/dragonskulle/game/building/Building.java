@@ -600,7 +600,7 @@ public class Building extends NetworkableComponent
      * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
      */
     public boolean isBuildingAttackable(Building target, Reference<Player> attackingPlayer) {
-        if (Reference.isInvalid(attackingPlayer)) return false;
+        if (!Reference.isValid(attackingPlayer)) return false;
         if (attackingPlayer.get().isBuildingOwner(target)) return false;
         return isBuildingAttackable(target);
     }
