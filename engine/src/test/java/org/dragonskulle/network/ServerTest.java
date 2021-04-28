@@ -99,21 +99,26 @@ public class ServerTest {
 
             SERVER_NETWORK_MANAGER.createServer(
                     mPort,
-                    (__, man, id) -> {
-                        log.info("CONNECTED");
-                        man.getServerManager()
-                                .spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
-                        man.getServerManager()
-                                .spawnNetworkObject(id, TEMPLATE_MANAGER.find("capital"));
+                    (scene, man, client) -> {
+                        log.info("NEW CLIENT");
                     },
-                    null);
+                    (man) -> {
+                        log.info("CLIENT LOADED");
+                        man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
+                        man.getServerManager()
+                                .spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
+                    });
 
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
                     mPort,
-                    (__1, netid) -> {
-                        log.info("CONNECTED CLIENT");
-                        assertTrue(netid >= 0);
+                    (man, id) -> {
+                        SERVER_NETWORK_MANAGER.getServerManager().start();
+                        log.info("CONNECTED TO SERVER");
+                        assertTrue(id >= 0);
+                        man.getClientManager()
+                                .sendToServer(
+                                        new byte[] {NetworkConfig.Codes.MESSAGE_CLIENT_LOADED});
                     },
                     null);
 
