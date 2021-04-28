@@ -3,6 +3,7 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,7 +50,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
-    @Getter @Setter private int mBuildingStatUpdateCount;
+    @Getter
+    @Setter
+    private int mBuildingStatUpdateCount;
 
     /**
      * Constructor.
@@ -60,7 +63,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy.
+     */
     @Override
     protected void onDestroy() {}
 
@@ -72,12 +77,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     public void onStart() {
         mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
         mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
-        String attackVal = "-";
-        String defenceVal = "-";
-        String tokenGenVal = "-";
-        String attackCost = "-";
-        String defenceCost = "-";
-        String tokenGenCost = "-";
+        String attackVal = "";
+        String defenceVal = "";
+        String tokenGenVal = "";
+        String attackCost = "";
+        String defenceCost = "";
+        String tokenGenCost = "";
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (Reference.isValid(buildingRef)) {
             Building building = buildingRef.get();
@@ -162,7 +167,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     /**
      * Build a stat upgrader with a custom texture.
      *
-     * @param type the stat type
+     * @param type        the stat type
      * @param textureName the texture file path
      * @return the builder
      */
@@ -240,36 +245,45 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the upgradeable stat
      */
     private void updateStatVisibleTexts(SyncStat upgradeableStat) {
-        Reference<UIText> statTextValueRef = mTextValueReferences.get(upgradeableStat.getType());
-        setTextRef(upgradeableStat, statTextValueRef, false);
-        Reference<UIText> statTextCostRef = mTextCostReferences.get(upgradeableStat.getType());
-        setTextRef(upgradeableStat, statTextCostRef, true);
+        setValueTextRef(upgradeableStat, mTextValueReferences.get(upgradeableStat.getType()));
+        setCostTextRef(upgradeableStat, mTextCostReferences.get(upgradeableStat.getType()));
     }
 
     /**
-     * Sets a value or cost text ref for a buildings stats.
+     * Sets the text reference which represents the cost with the SyncStats cost.
      *
-     * @param upgradeableStat the upgradeable stat whos values we are using
-     * @param textRef the ref to set text on
-     * @param isCostRef true if setting the cost text
+     * @param upgradeableStat the stat to update
+     * @param textRef         the reference to the object
      */
-    private void setTextRef(
-            SyncStat upgradeableStat, Reference<UIText> textRef, boolean isCostRef) {
+    private void setCostTextRef(SyncStat upgradeableStat, Reference<UIText> textRef) {
+        if (Reference.isInvalid(textRef)) {
+            textRef = ensureCostTextRef(upgradeableStat);
+        }
+        setTextOnRef(textRef, (String.valueOf(upgradeableStat.getCost())));
+    }
+
+    /**
+     * Sets the text reference which represents the level with the SyncStats cost.
+     *
+     * @param upgradeableStat the stat to update
+     * @param textRef         the reference to the object
+     */
+    private void setValueTextRef(SyncStat upgradeableStat, Reference<UIText> textRef) {
+        if (Reference.isInvalid(textRef)) {
+            textRef = ensureValueTextRef(upgradeableStat);
+        }
+        setTextOnRef(textRef, (String.valueOf(upgradeableStat.getValue())));
+    }
+
+    /**
+     * Sets text on the object if the reference is valid.
+     *
+     * @param textRef the reference to the {@link UIText}
+     * @param value   the string to be set
+     */
+    private void setTextOnRef(Reference<UIText> textRef, String value) {
         if (Reference.isValid(textRef)) {
-            textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
-        } else {
-            if (isCostRef) {
-                textRef = reassignTextCostReferencesForStatButton(upgradeableStat);
-            } else {
-                textRef = reassignTextValueReferencesForStatButton(upgradeableStat);
-            }
-            if (Reference.isValid(textRef)) {
-                if (isCostRef) {
-                    textRef.get().setText((String.valueOf(upgradeableStat.getCost())));
-                } else {
-                    textRef.get().setText((String.valueOf(upgradeableStat.getValue())));
-                }
-            }
+            textRef.get().setText(value);
         }
     }
 
@@ -279,7 +293,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the stat who's cost reference we are looking for
      * @return the reference assigned
      */
-    private Reference<UIText> reassignTextCostReferencesForStatButton(SyncStat upgradeableStat) {
+    private Reference<UIText> ensureCostTextRef(SyncStat upgradeableStat) {
         Reference<UIText> textReference = new Reference<UIText>(null);
         switch (upgradeableStat.getType()) {
             case ATTACK:
@@ -310,7 +324,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the stat who's value reference we are looking for
      * @return the reference assigned
      */
-    private Reference<UIText> reassignTextValueReferencesForStatButton(SyncStat upgradeableStat) {
+    private Reference<UIText> ensureValueTextRef(SyncStat upgradeableStat) {
         Reference<UIText> textReference = new Reference<UIText>(null);
         switch (upgradeableStat.getType()) {
             case ATTACK:
