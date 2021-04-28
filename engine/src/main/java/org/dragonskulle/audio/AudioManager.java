@@ -50,7 +50,9 @@ public class AudioManager {
     private long mAlCtx = -1;
 
     @Getter private float mMasterVolume = 1f;
-    @Getter private boolean mMasterMuted = false;
+
+    @Getter
+    private boolean mMasterMuted = Settings.getInstance().retrieveBoolean("masterMuted", false);
 
     @Getter private boolean mInitialized = false;
 
@@ -359,6 +361,7 @@ public class AudioManager {
             mMasterMuted = false;
             AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
         }
+        Settings.getInstance().saveValue("masterMuted", muted, true);
     }
 
     public void toggleMasterMute() {
