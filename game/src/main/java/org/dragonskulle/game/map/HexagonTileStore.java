@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -45,7 +46,11 @@ class HexagonTileStore implements ISyncVar {
 
             if (serverManager == null) return;
 
-            for (ServerClient c : serverManager.getClients()) {
+            Collection<ServerClient> clients = serverManager.getClients();
+
+            if (clients == null) return;
+
+            for (ServerClient c : clients) {
                 Integer id = c.getNetworkID();
                 Player p = serverManager.getIdSingletons(id).get(Player.class);
 

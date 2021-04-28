@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 public class BuildingDescriptor {
     @Getter public final int mAttack;
     @Getter public final int mDefence;
-    @Getter public final int mTokenGeneration;
+    @Getter public final int mTokenGenerationLevel;
     @Getter public final int mViewDistance;
     @Getter public final int mAttackDistance;
     @Getter public final int mCost;
@@ -47,7 +47,7 @@ public class BuildingDescriptor {
             String mName) {
         this.mAttack = mAttack;
         this.mDefence = mDefence;
-        this.mTokenGeneration = mTokenGeneration;
+        this.mTokenGenerationLevel = mTokenGeneration;
         this.mViewDistance = mViewDistance;
         this.mAttackDistance = mAttackDistance;
         this.mCost = mCost;
@@ -62,7 +62,7 @@ public class BuildingDescriptor {
                 "BuildingDescriptor{(%d:%d:%d:%d:%d:%d:%d)",
                 mAttack,
                 mDefence,
-                mTokenGeneration,
+                mTokenGenerationLevel,
                 mViewDistance,
                 mAttackDistance,
                 mCost,

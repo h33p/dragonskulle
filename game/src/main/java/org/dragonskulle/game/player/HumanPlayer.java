@@ -42,9 +42,9 @@ import org.joml.Vector3f;
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     // All screens to be used
-    private Screen mScreenOn = Screen.DEFAULT_SCREEN;
+    @Getter private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
-    private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
     @Getter @Setter private HexagonTile mHexChosen;
@@ -66,6 +66,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private HexagonTile mLastHexChosen;
 
     private boolean mMovedCameraToCapital = false;
+    @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -86,11 +87,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
 
+        UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
                 .buildChild(
                         "zoom_slider",
                         new TransformUI(true),
-                        (go) -> go.addComponent(new UILinkedScrollBar()));
+                        (go) -> {
+                            go.addComponent(component);
+                        });
+        mScrollBar = component.getReference(UILinkedScrollBar.class);
 
         Reference<GameObject> tmpRef =
                 getGameObject()
@@ -364,7 +369,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      *
      * @param newScreen the new screen
      */
-    private void setScreenOn(Screen newScreen) {
+    public void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;
         }

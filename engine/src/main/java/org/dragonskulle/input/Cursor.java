@@ -13,6 +13,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GLFWState;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
+import org.dragonskulle.settings.Settings;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -82,28 +83,42 @@ public class Cursor {
 
         GLFW.glfwSetCursorPosCallback(window, listener);
 
+        setCustomCursor(window);
+
+        // Set the cursor on a window
+    }
+
+    /**
+     * Sets custom cursor using the scale saved in settings.
+     *
+     * @param window the window
+     */
+    public static void setCustomCursor(long window) {
+        Settings instance = Settings.getInstance();
+        float scale = instance.retrieveFloat("cursorScale", 0.4f);
         try {
-            setCustomCursor(window);
+            setCustomCursor(window, scale);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // Set the cursor on a window
     }
 
     /**
      * Sets a custom hardware cursor.
      *
      * @param window the window to attach to
+     * @param scale the scale of the cursor
      * @throws IOException thrown if the cursor file doesn't exist
      */
-    private void setCustomCursor(long window) throws IOException {
+    public static void setCustomCursor(long window, float scale) throws IOException {
         Resource<BufferedImage> fcursor =
                 ResourceManager.getResource(BufferedImage.class, "ui/cursor.png");
         BufferedImage bImage = fcursor.get();
         Image scaledImage =
                 bImage.getScaledInstance(
-                        bImage.getWidth() / 2, bImage.getHeight() / 2, Image.SCALE_FAST);
+                        Math.round(bImage.getWidth() * scale),
+                        Math.round(bImage.getHeight() * scale),
+                        Image.SCALE_FAST);
 
         // from https://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage
         bImage =
@@ -111,6 +126,7 @@ public class Cursor {
                         scaledImage.getWidth(null),
                         scaledImage.getHeight(null),
                         BufferedImage.TYPE_INT_ARGB);
+
         // Draw the image on to the buffered image
         Graphics2D bGr = bImage.createGraphics();
         bGr.drawImage(scaledImage, 0, 0, null);
@@ -118,6 +134,7 @@ public class Cursor {
         // end
         int width = bImage.getWidth();
         int height = bImage.getHeight();
+        int cursorPos = (int) (10 * scale);
 
         int[] pixels = new int[width * height];
         bImage.getRGB(0, 0, width, height, pixels, 0, width);
@@ -125,7 +142,7 @@ public class Cursor {
         MathUtils.intARGBtoByteRGBA(pixels, height, width, buffer);
         GLFWImage image = GLFWImage.create();
         image.set(width, height, buffer);
-        long cursor = GLFW.glfwCreateCursor(image, 10, 10);
+        long cursor = GLFW.glfwCreateCursor(image, cursorPos, cursorPos);
 
         GLFW.glfwSetCursor(window, cursor);
     }
