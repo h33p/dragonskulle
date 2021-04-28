@@ -279,7 +279,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * Switches to the specified {@link Screen} and notifies that an update is needed for the
      * visuals.
      *
-     * @param newScreen The screen to switch to.
+     * @param desired The screen to switch to.
      */
     public void switchScreen(Screen desired) {
         if (desired.equals(mCurrentScreen)) return;
