@@ -457,17 +457,6 @@ public class AimerAi extends AiPlayer {
         AStar aStar = new AStar(mGraph, startNode.getNodeId(), endNode.getNodeId());
 
         mPath = aStar.getPath();
-
-        // TODO Testing - remove before PR
-        String answer = "";
-        if (mPath.size() == 0) {
-            log.severe("HOWWWWW");
-        }
-        for (int node : mPath) {
-            answer = answer + node + " ->";
-        }
-        log.info(answer);
-
         mGone = new ArrayDeque<Integer>();
         mNodePreviouslyOn = startNode;
         mAttempts = 0;
