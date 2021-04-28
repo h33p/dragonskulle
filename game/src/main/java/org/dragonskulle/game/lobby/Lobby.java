@@ -30,6 +30,11 @@ import org.json.simple.parser.ParseException;
 
 @Log
 @Accessors(prefix = "m")
+/**
+ * Class that handles the creation, deletion, joining and leaving of game lobbies
+ *
+ * @author Harry Stoltz
+ */
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
@@ -48,6 +53,13 @@ public class Lobby extends Component implements IFrameUpdate {
     private String mLobbyId = "";
     private final UIInputBox mLobbyIDText;
 
+    /**
+     * Default constructor, creates all static UI elements and also GameObjects that will have the
+     * dynamic UI elements added to them.
+     *
+     * @param mainUi Reference to the main UI object
+     * @param networkManager NetworkManager for the scene
+     */
     public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
         mNetworkManager = networkManager;
 
@@ -199,6 +211,7 @@ public class Lobby extends Component implements IFrameUpdate {
         LobbyAPI.getAllHosts(this::onGetAllHosts);
     }
 
+    /** Builds the "Join" section of the UI. */
     private void buildJoinUi() {
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -241,6 +254,11 @@ public class Lobby extends Component implements IFrameUpdate {
                                 }));
     }
 
+    /**
+     * Takes the map of hosts that we received from the API and converts them into a list of buttons
+     * that can be used to join the various hosts. This is called every time the mHosts map is
+     * updated.
+     */
     private void buildServerList() {
         boolean enabled = mServerList.get().isEnabled();
         mServerList.get().destroy();
@@ -340,6 +358,7 @@ public class Lobby extends Component implements IFrameUpdate {
         mServerBrowserUi.addChild(mServerList.get());
     }
 
+    /** Builds the "Host" section of the UI. */
     private void buildHostUi() {
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -381,6 +400,11 @@ public class Lobby extends Component implements IFrameUpdate {
                                 }));
     }
 
+    /**
+     * Adds all UI objects to the main menu scene.
+     *
+     * @param mainMenu Scene to add the GameObjects to
+     */
     public void addUiToScene(Scene mainMenu) {
         mainMenu.addRootObject(mLobbyUi);
         mainMenu.addRootObject(mJoinUi);
@@ -390,6 +414,13 @@ public class Lobby extends Component implements IFrameUpdate {
         mainMenu.addRootObject(mHostingUi);
     }
 
+    /**
+     * Handles LobbyAPI.getAllHosts. If success is true, the response string is parsed and all of
+     * the hosts in the JSON array are added to mHosts.
+     *
+     * @param response String containing the response from the getAllHosts request
+     * @param success true if the request was successful, false otherwise
+     */
     private void onGetAllHosts(String response, boolean success) {
         if (!success) {
             log.warning("Failed to get server list");
@@ -421,6 +452,13 @@ public class Lobby extends Component implements IFrameUpdate {
         mHostsUpdated.set(true);
     }
 
+    /**
+     * Handles LobbyAPI.addNewHost. If success is true, the response string is parsed and the new
+     * lobby ID for our lobby is stored.
+     *
+     * @param response String containing the response from the addNewHost request
+     * @param success true if the request was successful, false otherwise
+     */
     private void onAddNewHost(String response, boolean success) {
         if (!success) {
             log.warning("Failed to add new host to server list");
@@ -438,6 +476,12 @@ public class Lobby extends Component implements IFrameUpdate {
         }
     }
 
+    /**
+     * Handles LobbyAPI.deleteHost. If success is true, mLobbyId is set to a blank string.
+     *
+     * @param response String containing the response from the deleteHost request
+     * @param success true if the request was successful, false otherwise
+     */
     private void onDeleteHost(String response, boolean success) {
         if (!success) {
             log.warning("Failed to delete host from the server list");
@@ -446,6 +490,14 @@ public class Lobby extends Component implements IFrameUpdate {
         }
     }
 
+    /**
+     * Called on client side when the server the client is connected to sends the start game
+     * message.
+     *
+     * @param gameScene The current game scene
+     * @param manager The network manager
+     * @param netId The network ID of the client
+     */
     private void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
         GameObject humanPlayer =
                 new GameObject(
@@ -459,6 +511,14 @@ public class Lobby extends Component implements IFrameUpdate {
         gameScene.addRootObject(humanPlayer);
     }
 
+    /**
+     * Called on server side when a client has fully loaded and sent the client loaded message to
+     * the server.
+     *
+     * @param gameScene The current game scene
+     * @param manager The network manager
+     * @param networkClient The client that sent the loaded message
+     */
     private void onClientLoaded(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
@@ -466,6 +526,11 @@ public class Lobby extends Component implements IFrameUpdate {
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 
+    /**
+     * Called on server side when the server is starting the game.
+     *
+     * @param manager The network manager.
+     */
     private void onGameStarted(NetworkManager manager) {
         log.fine("Game Start");
         log.fine("Spawning 'Server' Owned objects");
