@@ -74,7 +74,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
      * Create a pause menu.
      *
      * @param networkManager The {@link NetworkManager} being used.
-     * @param camera<F9> The camera {@link GameObject} being used.
+     * @param camera The camera {@link GameObject} being used.
      */
     public UIPauseMenu(NetworkManager networkManager, GameObject camera) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
