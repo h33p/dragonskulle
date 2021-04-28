@@ -51,6 +51,11 @@ class HexagonTileStore implements ISyncVar {
             if (clients == null) return;
 
             for (ServerClient c : clients) {
+
+                if (!c.isInGame()) {
+                    continue;
+                }
+
                 Integer id = c.getNetworkID();
                 Player p = serverManager.getIdSingletons(id).get(Player.class);
 
@@ -141,7 +146,7 @@ class HexagonTileStore implements ISyncVar {
         boolean[] tileRowMask = getTileRowMask(id);
         boolean[] dirty = getDirty(id);
 
-        if (p.hasLost()) p = null;
+        if (p != null && p.hasLost()) p = null;
 
         for (int q = 0; q < viewedTileMask.length; q++) {
             for (int r = 0; r < viewedTileMask.length; r++) {
