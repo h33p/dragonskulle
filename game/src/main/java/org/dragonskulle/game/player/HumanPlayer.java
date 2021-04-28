@@ -62,7 +62,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Store a reference to the {@link UITokenCounter} component. */
     private Reference<UITokenCounter> mTokenCounter;
-    
+
     /** Store a reference to the {@link UILinkedScrollBar} component. */
     @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
