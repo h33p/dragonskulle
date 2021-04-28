@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -47,32 +48,61 @@ import org.joml.Vector3i;
 @Log
 public class Building extends NetworkableComponent implements IOnStart, IFrameUpdate, IFixedUpdate {
 
-    /** A map between {@link StatType}s and their {@link SyncStat} values. */
+    /**
+     * A map between {@link StatType}s and their {@link SyncStat} values.
+     */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
 
-    /** Stores the attack strength of the building. */
-    @Getter private final SyncStat mAttack = new SyncStat(this);
-    /** Stores the defence strength of the building. */
-    @Getter private final SyncStat mDefence = new SyncStat(this);
-    /** Stores how many tokens the building can generate in one go. */
-    @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
-    /** Stores the view range of the building. */
-    @Getter private final SyncStat mViewDistance = new SyncStat(this);
-    /** Stores the build range of the building. */
-    @Getter private final SyncStat mBuildDistance = new SyncStat(this);
-    /** Stores the claim range of the building. */
-    @Getter private final SyncStat mClaimDistance = new SyncStat(this);
+    /**
+     * Stores the attack strength of the building.
+     */
+    @Getter
+    private final SyncStat mAttack = new SyncStat(this);
+    /**
+     * Stores the defence strength of the building.
+     */
+    @Getter
+    private final SyncStat mDefence = new SyncStat(this);
+    /**
+     * Stores how many tokens the building can generate in one go.
+     */
+    @Getter
+    private final SyncStat mTokenGeneration = new SyncStat(this);
+    /**
+     * Stores the view range of the building.
+     */
+    @Getter
+    private final SyncStat mViewDistance = new SyncStat(this);
+    /**
+     * Stores the build range of the building.
+     */
+    @Getter
+    private final SyncStat mBuildDistance = new SyncStat(this);
+    /**
+     * Stores the claim range of the building.
+     */
+    @Getter
+    private final SyncStat mClaimDistance = new SyncStat(this);
 
-    /** Whether the building is a capital. */
+    /**
+     * Whether the building is a capital.
+     */
     private final SyncBool mIsCapital = new SyncBool(false);
 
-    /** The tiles the building claims, including the tile the building is currently on. */
-    @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
+    /**
+     * The tiles the building claims, including the tile the building is currently on.
+     */
+    @Getter
+    private Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
-    /** Tiles that are around {@link mClaimedTiles}. */
+    /**
+     * Tiles that are around {@link mClaimedTiles}.
+     */
     private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
-    /** The tiles the building can currently attack (those with claims neighboring our claims). */
+    /**
+     * The tiles the building can currently attack (those with claims neighboring our claims).
+     */
     private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
     /**
@@ -95,21 +125,30 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
 
     private boolean mInitialised = false;
 
-    /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
+    /**
+     * Controls how deep around claimed tiles we go for neighbouring tile calculation.
+     */
     private static final int NEIGHBOUR_BOUND = 5;
 
-    /** The cost to buy a {@link Building}. */
+    /**
+     * The cost to buy a {@link Building}.
+     */
     public static final int BUY_PRICE = 10;
-    /** The reimbursement from selling a {@link Building}. */
+    /**
+     * The reimbursement from selling a {@link Building}.
+     */
     public static final int SELL_PRICE = 2;
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
      * Should alwyas be at least {@code 1}.
      */
-    @Getter private int mStatBaseCost = 1;
+    @Getter
+    private int mStatBaseCost = 1;
 
-    /** Store the {@link HexagonMap} that the {@link Building} is on. */
+    /**
+     * Store the {@link HexagonMap} that the {@link Building} is on.
+     */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /**
@@ -121,7 +160,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     @Accessors(prefix = "m")
     private int mStatUpdateCount = 0;
 
-    /** Increments {@code mStatUpdateCount} to signify an update is needed. */
+    /**
+     * Increments {@code mStatUpdateCount} to signify an update is needed.
+     */
     public void setStatsRequireVisualUpdate() {
         mStatUpdateCount++;
     }
@@ -148,7 +189,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         checkInitialise();
     }
 
-    /** Initialise the building only when it is properly on the map and the tile is synced */
+    /**
+     * Initialise the building only when it is properly on the map and the tile is synced
+     */
     void checkInitialise() {
         if (mInitialised) {
             return;
@@ -247,14 +290,18 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         setStatsRequireVisualUpdate();
     }
 
-    /** Generate the stored lists of {@link HexagonTile}s. */
+    /**
+     * Generate the stored lists of {@link HexagonTile}s.
+     */
     private void generateTileLists() {
         generateNeighboringTiles();
         generateAttackableTiles();
         generatePlaceableTiles();
     }
 
-    /** Cleanup generated tile lists. */
+    /**
+     * Cleanup generated tile lists.
+     */
     private void cleanupTileLists() {
         // Reset the list of claimed, viewable and attackable tiles.
         mAttackableTiles.clear();
@@ -275,7 +322,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
-    /** Claim the tiles around the building and the tile the building is on. */
+    /**
+     * Claim the tiles around the building and the tile the building is on.
+     */
     private void generateClaimTiles() {
         if (getNetworkObject().isServer()) {
             // Get the map.
@@ -348,7 +397,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
                 });
     }
 
-    /** Store the tiles that are suitable for attacking. */
+    /**
+     * Store the tiles that are suitable for attacking.
+     */
     private void generateAttackableTiles() {
         // Clear the current list of attackable tiles.
         mAttackableTiles.clear();
@@ -361,7 +412,9 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
                 });
     }
 
-    /** Store the tiles that are suitable for placing a building on. */
+    /**
+     * Store the tiles that are suitable for placing a building on.
+     */
     private void generatePlaceableTiles() {
         // Clear the current list of buildable tiles.
         mPlaceableTiles.clear();
@@ -465,13 +518,27 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
     }
 
     /**
-     * Get whether the target {@link Building} is within attackable range from the Building.
+     * Get whether the target {@link Building} is within attackable range from the Building. This ignores any ownership of the building.
      *
      * @param target The Building to attack.
      * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
      */
     public boolean isBuildingAttackable(Building target) {
         return getAttackableBuildings().contains(target);
+    }
+
+    /**
+     * Get whether the target {@link Building} is within attackable range from the Building and isn't owned by the player.
+     * This method is stricter than its sister.
+     *
+     * @param target          The Building to attack.
+     * @param attackingPlayer the attacking player
+     * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
+     */
+    public boolean isBuildingAttackable(Building target, Reference<Player> attackingPlayer) {
+        if(Reference.isInvalid(attackingPlayer)) return false;
+        if (attackingPlayer.get().isBuildingOwner(target)) return false;
+        return isBuildingAttackable(target);
     }
 
     /**
@@ -542,7 +609,7 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
      * TransformHex}.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code
-     *     null}.
+     * null}.
      */
     private Vector3i getPosition() {
 
