@@ -74,7 +74,7 @@ public class Building extends NetworkableComponent
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
-    /** Tiles that are around {@link mClaimedTiles}. */
+    /** Tiles that are around {@code mClaimedTiles}. */
     private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
     /** The tiles the building can currently attack (those with claims neighboring our claims). */
@@ -599,9 +599,9 @@ public class Building extends NetworkableComponent
      * @param attackingPlayer the attacking player
      * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
      */
-    public boolean isBuildingAttackable(Building target, Reference<Player> attackingPlayer) {
-        if (!Reference.isValid(attackingPlayer)) return false;
-        if (attackingPlayer.get().isBuildingOwner(target)) return false;
+    public boolean isBuildingAttackable(Building target, Player attackingPlayer) {
+        if (attackingPlayer == null) return false;
+        if (attackingPlayer.isBuildingOwner(target)) return false;
         return isBuildingAttackable(target);
     }
 
