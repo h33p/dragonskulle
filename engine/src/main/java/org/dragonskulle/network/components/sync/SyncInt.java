@@ -9,10 +9,12 @@ import java.io.IOException;
  * The type Sync int.
  *
  * @author Aurimas B The type Sync int.
- *     <p>This primitve type is implemented manually more space savings.
+ * <p>This primitve type is implemented manually more space savings.
  */
 public class SyncInt extends BaseSyncVar {
-    /** The Data. */
+    /**
+     * The Data.
+     */
     private int mData;
 
     /**
@@ -24,7 +26,9 @@ public class SyncInt extends BaseSyncVar {
         mData = initialValue;
     }
 
-    /** Instantiates a new Sync int. */
+    /**
+     * Instantiates a new Sync int.
+     */
     public SyncInt() {}
 
     /**
@@ -67,7 +71,7 @@ public class SyncInt extends BaseSyncVar {
     /**
      * Serialize bytes.
      *
-     * @param out The output stream
+     * @param out      The output stream
      * @param clientId client ID which to serialize the changes for
      * @throws IOException the io exception
      */
@@ -87,7 +91,7 @@ public class SyncInt extends BaseSyncVar {
 
     @Override
     public String toString() {
-        return "SyncInt{" + "data=" + mData + '\'' + '}';
+        return "SyncInt{" + "data=" + '\'' + mData + '\'' + '}';
     }
 
     @Override

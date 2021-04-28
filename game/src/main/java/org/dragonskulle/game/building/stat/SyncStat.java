@@ -25,7 +25,7 @@ public class SyncStat extends SyncInt {
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 1;
     /** The highest level possible. */
-    public static final int LEVEL_MAX = 5;
+    public static final int LEVEL_MAX = 10;
 
     /** The cost of upgrading a stat if there is an error. */
     private static final int sErrorCost = 9999;
@@ -110,6 +110,20 @@ public class SyncStat extends SyncInt {
      */
     public boolean isUpgradeable() {
         return (mType.isFixedValue()) ? false : getLevel() < LEVEL_MAX;
+    }
+    /**
+     * Get whether the stat is able to be upgraded at any time.
+     *
+     * <p>Will be {@code false} if:
+     *
+     * <ul>
+     *   <li>It is impossible to upgrade the stat (as its value is fixed).
+     * </ul>
+     *
+     * @return {@code true} if the stat is able to be upgraded; otherwise {@code false}.
+     */
+    public boolean isUpgradeable(boolean ignoreMax) {
+        return (!mType.isFixedValue());
     }
 
     /**

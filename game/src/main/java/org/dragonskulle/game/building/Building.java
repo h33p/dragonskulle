@@ -811,6 +811,23 @@ public class Building extends NetworkableComponent implements IOnStart, IFrameUp
         return stats;
     }
 
+    /**
+     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded.
+     *
+     * @return An ArrayList of SyncStats that can currently be upgraded.
+     */
+    public ArrayList<SyncStat> getUpgradeableStats(boolean includeMax) {
+        ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
+
+        for (SyncStat stat : mStats.values()) {
+            if (stat.isUpgradeable(true)) {
+                stats.add(stat);
+            }
+        }
+
+        return stats;
+    }
+
     @Override
     protected void onDestroy() {
         Player owner = getOwner();

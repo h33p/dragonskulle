@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import lombok.AccessLevel;
@@ -27,6 +26,7 @@ import org.dragonskulle.ui.UIFlatImage;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
+import org.lwjgl.CLongBuffer;
 
 /**
  * The UI Component to display the stats and upgradeable options for the selected building.
@@ -53,6 +53,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     @Getter
     @Setter
     private int mBuildingStatUpdateCount;
+    private final HashMap<StatType, Reference<UIButton>> mUpgradeButtonRefs = new HashMap<>();
 
     /**
      * Constructor.
@@ -185,6 +186,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                         handle.addComponent(
                                 new UIFlatImage(new SampledTexture(textureName), false));
                     });
+
+            mUpgradeButtonRefs.put(type, but.getReference(UIButton.class));
         };
     }
 
@@ -221,32 +224,31 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                     setBuildingStatUpdateCount(statUpdateCount);
                     getParent().markDidBuild(false);
                     mLastBuilding = building;
-                    StringBuilder builder = new StringBuilder("#Selected Building Stats \n");
-                    ArrayList<SyncStat> upgradeableStats = building.getUpgradeableStats();
-                    for (SyncStat upgradeableStat : upgradeableStats) {
-                        updateStatVisibleTexts(upgradeableStat);
-                    }
-
-                    upgradeableStats.forEach(
-                            s ->
-                                    builder.append(s.getType())
-                                            .append(" -> ")
-                                            .append(s.getValue())
-                                            .append("\n"));
-                    log.info(builder.toString());
+                    building.getUpgradeableStats(true).forEach(this::updateVisibleStat);
                 }
             }
         }
     }
 
     /**
-     * Updates the SyncStat values and costs shown in the shop.
+     * Updates the SyncStat values and costs shown in the shop. It will also disable upgrading of any max level buildings.
      *
      * @param upgradeableStat the upgradeable stat
      */
-    private void updateStatVisibleTexts(SyncStat upgradeableStat) {
+    private void updateVisibleStat(SyncStat upgradeableStat) {
+        if (!upgradeableStat.isUpgradeable()) disableFurtherUpgrade(upgradeableStat);
         setValueTextRef(upgradeableStat, mTextValueReferences.get(upgradeableStat.getType()));
         setCostTextRef(upgradeableStat, mTextCostReferences.get(upgradeableStat.getType()));
+    }
+
+    /**
+     * Disables the button to upgrade the stat further.
+     *
+     * @param upgradeableStat the upgradeable stat which is at max level
+     */
+    private void disableFurtherUpgrade(SyncStat upgradeableStat) {
+        Reference<UIButton> uiButtonReference = mUpgradeButtonRefs.get(upgradeableStat.getType());
+        if (Reference.isValid(uiButtonReference)) uiButtonReference.get().setEnabled(false);
     }
 
     /**
