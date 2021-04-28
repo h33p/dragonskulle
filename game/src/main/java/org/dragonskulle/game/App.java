@@ -403,8 +403,7 @@ public class App implements NativeResource {
                                                 port,
                                                 (gameScene, manager, netID) -> {
                                                     if (netID >= 0) {
-                                                        onConnectedClient(
-                                                                gameScene, manager, netID);
+                                                        onConnectedClient(gameScene, manager);
                                                     } else {
                                                         connectingText.setEnabled(false);
                                                         connectingText
@@ -510,11 +509,10 @@ public class App implements NativeResource {
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
-        log.info("CONNECTED ID " + netId);
+    private void onConnectedClient(Scene gameScene, NetworkManager manager) {
+        log.info("CONNECTING.");
 
-        HumanPlayer humanPlayer =
-                new HumanPlayer(manager.getReference(NetworkManager.class), netId);
+        HumanPlayer humanPlayer = new HumanPlayer(manager.getReference(NetworkManager.class));
 
         GameObject humanPlayerObject =
                 new GameObject(

@@ -235,6 +235,10 @@
                         {
                             "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
                             "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
+                            "enabled" : true
                         }
                     ]
                 }
