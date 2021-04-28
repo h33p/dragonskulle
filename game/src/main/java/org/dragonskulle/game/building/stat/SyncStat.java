@@ -30,6 +30,10 @@ public class SyncStat extends SyncInt {
     /** The cost of upgrading a stat if there is an error. */
     private static final int sErrorCost = 9999;
 
+    public boolean isMaxLevel() {
+        return getLevel() == LEVEL_MAX;
+    }
+
     /** An interface for getting the value of a stat at a given level. */
     public static interface IValueCalculator extends Serializable {
         int getValue(int level);
@@ -109,7 +113,7 @@ public class SyncStat extends SyncInt {
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
      */
     public boolean isUpgradeable() {
-        return (mType.isFixedValue()) ? false : getLevel() < LEVEL_MAX;
+        return !mType.isFixedValue() && getLevel() < LEVEL_MAX;
     }
     /**
      * Get whether the stat is able to be upgraded at any time.
@@ -122,7 +126,7 @@ public class SyncStat extends SyncInt {
      *
      * @return {@code true} if the stat is able to be upgraded; otherwise {@code false}.
      */
-    public boolean isUpgradeable(boolean ignoreMax) {
+    public boolean isUpgradeableNonMax() {
         return (!mType.isFixedValue());
     }
 

@@ -881,11 +881,11 @@ public class Building extends NetworkableComponent
      *
      * @return An ArrayList of SyncStats that can currently be upgraded.
      */
-    public ArrayList<SyncStat> getUpgradeableStats(boolean includeMax) {
+    public ArrayList<SyncStat> getUpgradeableStatsNonMax() {
         ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
 
         for (SyncStat stat : mStats.values()) {
-            if (stat.isUpgradeable(true)) {
+            if (stat.isUpgradeableNonMax()) {
                 stats.add(stat);
             }
         }

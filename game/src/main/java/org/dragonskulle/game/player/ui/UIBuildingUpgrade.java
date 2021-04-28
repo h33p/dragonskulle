@@ -37,14 +37,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     @Getter(AccessLevel.PROTECTED)
     private final UIShopSection mParent;
 
-    private final HashMap<StatType, Reference<UIText>> mTextValueReferences = new HashMap<>();
-    private UITextRect mAttackLevelText;
-    private UITextRect mDefenceLevelText;
-    private UITextRect mTokenGenerationText;
-    private UITextRect mAttackCostText;
-    private UITextRect mDefenceCostText;
-    private UITextRect mTokenGenerationCostText;
-    private final HashMap<StatType, Reference<UIText>> mTextCostReferences = new HashMap<>();
+    private final HashMap<StatType, Reference<UITextRect>> mTextValueReferences = new HashMap<>();
+    private final HashMap<StatType, Reference<UITextRect>> mTextCostReferences = new HashMap<>();
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
@@ -72,12 +66,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     public void onStart() {
         mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
         mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
-        String attackVal = "";
-        String defenceVal = "";
-        String tokenGenVal = "";
-        String attackCost = "";
-        String defenceCost = "";
-        String tokenGenCost = "";
+        String attackVal, defenceVal, tokenGenVal, attackCost, defenceCost, tokenGenCost;
+        attackVal = defenceVal = tokenGenVal = attackCost = defenceCost = tokenGenCost = "";
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (Reference.isValid(buildingRef)) {
             Building building = buildingRef.get();
@@ -90,27 +80,32 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
             tokenGenCost = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getCost());
         }
         // better way to do this dynamically
-        mAttackLevelText = new UITextRect(attackVal);
+        UITextRect mAttackLevelText = new UITextRect(attackVal);
         mAttackLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        mDefenceLevelText = new UITextRect(defenceVal);
+
+        UITextRect mDefenceLevelText = new UITextRect(defenceVal);
         mDefenceLevelText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        mTokenGenerationText = new UITextRect(tokenGenVal);
+
+        UITextRect mTokenGenerationText = new UITextRect(tokenGenVal);
         mTokenGenerationText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
 
-        mTextValueReferences.put(StatType.ATTACK, mAttackLevelText.getLabelText());
-        mTextValueReferences.put(StatType.DEFENCE, mDefenceLevelText.getLabelText());
-        mTextValueReferences.put(StatType.TOKEN_GENERATION, mTokenGenerationText.getLabelText());
+        mTextValueReferences.put(StatType.ATTACK, mAttackLevelText.getReference(UITextRect.class));
+        mTextValueReferences.put(
+                StatType.DEFENCE, mDefenceLevelText.getReference(UITextRect.class));
+        mTextValueReferences.put(
+                StatType.TOKEN_GENERATION, mTokenGenerationText.getReference(UITextRect.class));
 
-        mAttackCostText = new UITextRect(attackCost);
+        UITextRect mAttackCostText = new UITextRect(attackCost);
         mAttackCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        mDefenceCostText = new UITextRect(defenceCost);
+        UITextRect mDefenceCostText = new UITextRect(defenceCost);
         mDefenceCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
-        mTokenGenerationCostText = new UITextRect(tokenGenCost);
+        UITextRect mTokenGenerationCostText = new UITextRect(tokenGenCost);
         mTokenGenerationCostText.setRectTexture(GameUIAppearance.getInfoBox21Texture());
 
-        mTextCostReferences.put(StatType.ATTACK, mAttackCostText.getLabelText());
-        mTextCostReferences.put(StatType.DEFENCE, mDefenceCostText.getLabelText());
-        mTextCostReferences.put(StatType.TOKEN_GENERATION, mTokenGenerationCostText.getLabelText());
+        mTextCostReferences.put(StatType.ATTACK, mAttackCostText.getReference(UITextRect.class));
+        mTextCostReferences.put(StatType.DEFENCE, mDefenceCostText.getReference(UITextRect.class));
+        mTextCostReferences.put(
+                StatType.TOKEN_GENERATION, mTokenGenerationCostText.getReference(UITextRect.class));
 
         getGameObject()
                 .buildChild(
@@ -218,7 +213,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                     setBuildingStatUpdateCount(statUpdateCount);
                     getParent().markDidBuild(false);
                     mLastBuilding = building;
-                    building.getUpgradeableStats(true).forEach(this::updateVisibleStat);
+                    building.getUpgradeableStatsNonMax().forEach(this::updateVisibleStat);
                 }
             }
         }
@@ -231,9 +226,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the upgradeable stat
      */
     private void updateVisibleStat(SyncStat upgradeableStat) {
-        if (!upgradeableStat.isUpgradeable()) disableFurtherUpgrade(upgradeableStat);
-        setValueTextRef(upgradeableStat, mTextValueReferences.get(upgradeableStat.getType()));
-        setCostTextRef(upgradeableStat, mTextCostReferences.get(upgradeableStat.getType()));
+        if (upgradeableStat.isMaxLevel()) disableFurtherUpgrade(upgradeableStat);
+        setLevelTextRef(upgradeableStat);
+        setCostTextRef(upgradeableStat);
     }
 
     /**
@@ -250,26 +245,26 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * Sets the text reference which represents the cost with the SyncStats cost.
      *
      * @param upgradeableStat the stat to update
-     * @param textRef the reference to the object
      */
-    private void setCostTextRef(SyncStat upgradeableStat, Reference<UIText> textRef) {
-        if (Reference.isInvalid(textRef)) {
-            textRef = ensureCostTextRef(upgradeableStat);
+    private void setCostTextRef(SyncStat upgradeableStat) {
+        Reference<UITextRect> textRef = mTextValueReferences.get(upgradeableStat.getType());
+        if (Reference.isValid(textRef)) {
+            Reference<UIText> label = textRef.get().getLabelText();
+            setTextOnRef(label, (String.valueOf(upgradeableStat.getCost())));
         }
-        setTextOnRef(textRef, (String.valueOf(upgradeableStat.getCost())));
     }
 
     /**
      * Sets the text reference which represents the level with the SyncStats cost.
      *
      * @param upgradeableStat the stat to update
-     * @param textRef the reference to the object
      */
-    private void setValueTextRef(SyncStat upgradeableStat, Reference<UIText> textRef) {
-        if (Reference.isInvalid(textRef)) {
-            textRef = ensureValueTextRef(upgradeableStat);
+    private void setLevelTextRef(SyncStat upgradeableStat) {
+        Reference<UITextRect> textRef = mTextValueReferences.get(upgradeableStat.getType());
+        if (Reference.isValid(textRef)) {
+            Reference<UIText> label = textRef.get().getLabelText();
+            setTextOnRef(label, (String.valueOf(upgradeableStat.getLevel())));
         }
-        setTextOnRef(textRef, (String.valueOf(upgradeableStat.getValue())));
     }
 
     /**
@@ -282,67 +277,5 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         if (Reference.isValid(textRef)) {
             textRef.get().setText(value);
         }
-    }
-
-    /**
-     * Ensures the References For the cost text's exist.
-     *
-     * @param upgradeableStat the stat who's cost reference we are looking for
-     * @return the reference assigned
-     */
-    private Reference<UIText> ensureCostTextRef(SyncStat upgradeableStat) {
-        Reference<UIText> textReference = new Reference<UIText>(null);
-        switch (upgradeableStat.getType()) {
-            case ATTACK:
-                textReference = mAttackCostText.getLabelText();
-                if (mAttackLevelText != null) {
-                    mTextCostReferences.put(StatType.ATTACK, textReference);
-                }
-                break;
-            case DEFENCE:
-                if (mDefenceLevelText != null) {
-                    textReference = mDefenceCostText.getLabelText();
-                    mTextCostReferences.put(StatType.DEFENCE, textReference);
-                }
-                break;
-            case TOKEN_GENERATION:
-                if (mTokenGenerationText != null) {
-                    textReference = mTokenGenerationCostText.getLabelText();
-                    mTextCostReferences.put(StatType.TOKEN_GENERATION, textReference);
-                }
-                break;
-        }
-        return textReference;
-    }
-
-    /**
-     * Ensures the References For the value text's exist.
-     *
-     * @param upgradeableStat the stat who's value reference we are looking for
-     * @return the reference assigned
-     */
-    private Reference<UIText> ensureValueTextRef(SyncStat upgradeableStat) {
-        Reference<UIText> textReference = new Reference<UIText>(null);
-        switch (upgradeableStat.getType()) {
-            case ATTACK:
-                textReference = mAttackLevelText.getLabelText();
-                if (mAttackLevelText != null) {
-                    mTextValueReferences.put(StatType.ATTACK, textReference);
-                }
-                break;
-            case DEFENCE:
-                if (mDefenceLevelText != null) {
-                    textReference = mDefenceLevelText.getLabelText();
-                    mTextValueReferences.put(StatType.DEFENCE, textReference);
-                }
-                break;
-            case TOKEN_GENERATION:
-                if (mTokenGenerationText != null) {
-                    textReference = mTokenGenerationText.getLabelText();
-                    mTextValueReferences.put(StatType.TOKEN_GENERATION, textReference);
-                }
-                break;
-        }
-        return textReference;
     }
 }

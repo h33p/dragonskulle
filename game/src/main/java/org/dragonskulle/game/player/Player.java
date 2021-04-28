@@ -644,15 +644,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
-        log.warning(
-                "ATTack Stats on building to be added: "
-                        + building.getAttack()); // NOT DOING THA THING
-        log.warning(
-                "dEF Stats on building to be added: "
-                        + building.getDefence()); // NOT DOING THA THING
-        log.warning(
-                "TGEN Stats on building to be added: "
-                        + building.getTokenGeneration()); // NOT DOING THA THING
         log.warning("Added building.");
         return true;
     }
