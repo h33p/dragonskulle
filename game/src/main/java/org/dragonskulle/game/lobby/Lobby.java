@@ -202,7 +202,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         0,
                         0.2f,
                         new UIButton(
-                                "Join remote lobby",
+                                "Join public lobby",
                                 (__, ___) -> {
                                     mServerBrowserUi.setEnabled(true);
                                     mJoinUi.setEnabled(false);
@@ -246,10 +246,10 @@ public class Lobby extends Component implements IFrameUpdate {
         UIButton[] buttons = new UIButton[mHosts.size() + 1];
         buttons[0] =
                 new UIButton(
-                        "Refresh list",
-                        (button, ___) -> {
-                            button.getLabelText().get().setText("Refreshing...");
-                            LobbyAPI.getAllHosts(this::onGetAllHosts);
+                        "Back",
+                        (__, ___) -> {
+                            mJoinUi.setEnabled(true);
+                            mServerBrowserUi.setEnabled(false);
                         });
 
         int i = 1;
@@ -288,13 +288,13 @@ public class Lobby extends Component implements IFrameUpdate {
                         0.15f,
                         0.35f,
                         new UIButton(
-                                "Back",
-                                (__, ___) -> {
-                                    mJoinUi.setEnabled(true);
-                                    mServerBrowserUi.setEnabled(false);
-                                }));
+                            "Refresh list",
+                            (button, ___) -> {
+                                button.getLabelText().get().setText("Refreshing...");
+                                LobbyAPI.getAllHosts(this::onGetAllHosts);
+                        }));
 
-        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.25f, buttons);
+        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, buttons);
 
         mServerBrowserUi.addChild(mServerList.get());
     }
@@ -307,7 +307,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         0,
                         0.2f,
                         new UIButton(
-                                "Host publicly",
+                                "Host public lobby",
                                 (__, ___) -> {
                                     String ip = UPnP.getExternalIPAddress();
                                     LobbyAPI.addNewHost(ip, PORT, this::onAddNewHost);
