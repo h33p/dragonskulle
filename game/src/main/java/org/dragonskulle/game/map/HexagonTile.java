@@ -163,7 +163,7 @@ public class HexagonTile implements INetSerializable {
      * Retrieve the third (cube) coordinate.
      *
      * <p>This coordinate will always be equal to -getQ() -getR()
-     * 
+     *
      * @return The S value.
      */
     public int getS() {
