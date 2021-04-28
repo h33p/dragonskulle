@@ -208,6 +208,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             }
         }
 
+        if (mPlayer.get().hasLost() && Reference.isValid(mGameEndEventHandler)) {
+            mGameEndEventHandler.get().handle(-1000);
+        }
+
         if (mPlayer.get().gameEnd()) {
             setEnabled(false);
             return;
