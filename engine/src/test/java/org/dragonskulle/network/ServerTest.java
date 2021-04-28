@@ -117,9 +117,6 @@ public class ServerTest {
                         SERVER_NETWORK_MANAGER.getServerManager().start();
                         log.info("CONNECTED TO SERVER");
                         assertTrue(id >= 0);
-                        // man.getClientManager()
-                        //        .sendToServer(
-                        //                new byte[] {NetworkConfig.Codes.MESSAGE_CLIENT_LOADED});
                     },
                     null);
 
