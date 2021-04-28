@@ -28,11 +28,9 @@ import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIInputBox;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
-import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
