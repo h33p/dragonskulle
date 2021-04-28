@@ -509,8 +509,7 @@ public class App implements NativeResource {
     private void onConnectedClient(Scene gameScene, NetworkManager manager) {
         log.info("CONNECTING.");
 
-        HumanPlayer humanPlayer =
-                new HumanPlayer(manager.getReference(NetworkManager.class));
+        HumanPlayer humanPlayer = new HumanPlayer(manager.getReference(NetworkManager.class));
 
         GameObject humanPlayerObject =
                 new GameObject(

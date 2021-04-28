@@ -112,8 +112,8 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
         HumanPlayer humanPlayer = Scene.getActiveScene().getSingleton(HumanPlayer.class);
         if (humanPlayer == null) return;
-        mPreviousScreen = humanPlayer.getScreenOn();
-        humanPlayer.setScreenOn(newScreen);
+        mPreviousScreen = humanPlayer.getCurrentScreen();
+        humanPlayer.switchScreen(newScreen);
         hideMenu(pause, humanPlayer);
     }
 

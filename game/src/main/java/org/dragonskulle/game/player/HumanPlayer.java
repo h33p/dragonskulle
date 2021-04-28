@@ -41,7 +41,7 @@ import org.dragonskulle.ui.UIManager;
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     /** The current {@link Screen} being displayed. */
-    private Screen mCurrentScreen = Screen.DEFAULT_SCREEN;
+    @Getter private Screen mCurrentScreen = Screen.DEFAULT_SCREEN;
 
     /** Stores the current HexagonTile selected. */
     @Getter @Setter private HexagonTile mHexChosen;
@@ -62,10 +62,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Store a reference to the {@link UITokenCounter} component. */
     private Reference<UITokenCounter> mTokenCounter;
+    
+    /** Store a reference to the {@link UILinkedScrollBar} component. */
+    @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
     /** Whether the camera is moving to the capital. */
     private boolean mMovedCameraToCapital = false;
-    @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
     /** Whether the visuals need to be updated. */
     private boolean mVisualsNeedUpdate = true;
@@ -81,7 +83,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void onStart() {
-      
+
         // Create the slider used for zooming.
         UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
@@ -120,11 +122,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Create a GameObject to store the token counter, and to hold the left menu.
         GameObject menuObject =
                 new GameObject(
-                        "menu_draw",
+                        "menu_drawer",
                         new TransformUI(true),
-                        (draw) -> {
-                            draw.addChild(tokenObject);
-                            draw.addComponent(menu);
+                        (drawer) -> {
+                            drawer.addChild(tokenObject);
+                            drawer.addComponent(menu);
                         });
         getGameObject().addChild(menuObject);
 
@@ -273,55 +275,57 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    private void highlightSelectedTile(MapEffects effects, StandardHighlightType highlight) {
-        if (mHexChosen == null || effects == null || highlight == null) return;
-        effects.highlightTile(mHexChosen, highlight.asSelection());
-    }
-
     /**
      * Switches to the specified {@link Screen} and notifies that an update is needed for the
      * visuals.
      *
      * @param newScreen The screen to switch to.
      */
-    private void switchScreen(Screen desired) {
+    public void switchScreen(Screen desired) {
         if (desired.equals(mCurrentScreen)) return;
 
         mCurrentScreen = desired;
-        mVisualsNeedUpdate = true;
 
         if (Reference.isValid(mMenuDrawer)) {
             mMenuDrawer.get().setVisibleScreen(mCurrentScreen);
+            mVisualsNeedUpdate = true;
         }
+    }
+
+    private void highlightSelectedTile(MapEffects effects, StandardHighlightType highlight) {
+        if (mHexChosen == null || effects == null || highlight == null) return;
+        effects.highlightTile(mHexChosen, highlight.asSelection());
     }
 
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
-        if (Reference.isValid(mPlayer)) {
-            fx.highlightTiles(
-                    (tile, __) -> {
-                        if (tile.isBuildable(mPlayer.get())) {
-                            return highlight.asSelection();
-                        } else if (!tile.isBuildable(mPlayer.get())
-                                && tile.getTileType() != HexagonTile.TileType.FOG) {
-                            return MapEffects.INVALID_MATERIAL;
-                        }
+        Player player = getPlayer();
+        if (player == null || fx == null || highlight == null) return;
+
+        fx.highlightTiles(
+                (tile, __) -> {
+                    if (tile.isBuildable(player)) {
+                        return highlight.asSelection();
+                    }
+
+                    // Do not highlight if the tile is already claimed, or if the tile is not
+                    // visible.
+                    if (tile.isClaimed() || !player.isTileViewable(tile)) {
                         return null;
-                    });
-        }
+                    }
+
+                    if (tile.getTileType() != HexagonTile.TileType.FOG) {
+                        return MapEffects.INVALID_MATERIAL;
+                    }
+
+                    return null;
+                });
     }
 
     private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
-        if (Reference.isValid(mBuildingChosen)) {
-            for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
-                fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
-            }
-        }
-    }
+        if (!Reference.isValid(mBuildingChosen) || fx == null || highlight == null) return;
 
-    /** Marks visuals to update whenever a new object is spawned. */
-    private void onSpawnObject(NetworkObject obj) {
-        if (obj.getGameObject().getComponent(Building.class) != null) {
-            mVisualsNeedUpdate = true;
+        for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
+            fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
         }
     }
 

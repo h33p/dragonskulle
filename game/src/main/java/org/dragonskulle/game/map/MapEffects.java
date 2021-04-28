@@ -118,7 +118,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     @Getter @Setter private Reference<Player> mActivePlayer;
 
     public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
-        return HighlightSelection.with(new Vector4f(r, g, b, 0.2f));
+        return HighlightSelection.with(new Vector4f(r, g, b, 0.25f));
     }
 
     /**
