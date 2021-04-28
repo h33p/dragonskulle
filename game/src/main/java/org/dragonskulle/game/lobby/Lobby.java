@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.lobby;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -33,7 +33,7 @@ public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
 
-    private final ArrayList<InetSocketAddress> mHosts = new ArrayList<>();
+    private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
     @Getter private final GameObject mLobbyUi;
     private final GameObject mHostUi;
@@ -252,20 +252,22 @@ public class Lobby extends Component implements IFrameUpdate {
                             LobbyAPI.getAllHosts(this::onGetAllHosts);
                         });
 
-        for (int i = 0; i < mHosts.size(); i++) {
-            final String text = mHosts.get(i).getHostString();
-            buttons[i + 1] =
+        int i = 1;
+        for (Map.Entry<String, String> entry : mHosts.entrySet()) {
+            final String id = entry.getKey().substring(0, 10);
+            final String ip = entry.getValue();
+            buttons[i] =
                     new UIButton(
-                            text,
+                            id,
                             (button, ___) -> {
                                 button.getLabelText().get().setText("Connecting...");
                                 mNetworkManager
                                         .get()
                                         .createClient(
-                                                text,
+                                                ip,
                                                 PORT,
                                                 (manager, netID) -> {
-                                                    button.getLabelText().get().setText(text);
+                                                    button.getLabelText().get().setText(id);
 
                                                     if (netID >= 0) {
                                                         mJoiningUi.setEnabled(true);
@@ -276,6 +278,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                 },
                                                 this::onHostStartGame);
                             });
+            i++;
         }
 
         UIManager.getInstance()
@@ -291,7 +294,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mServerBrowserUi.setEnabled(false);
                                 }));
 
-        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, buttons);
+        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.25f, buttons);
 
         mServerBrowserUi.addChild(mServerList.get());
     }
@@ -360,11 +363,14 @@ public class Lobby extends Component implements IFrameUpdate {
             for (Object o : array) {
                 JSONObject obj = (JSONObject) o;
 
+                String id = (String) obj.get("_id");
                 String ip = (String) obj.get("address");
                 int port = Math.toIntExact((Long) obj.get("port"));
 
+                // Shouldn't need to save port since all servers are created with a constant port
+
                 log.fine("New host found: " + ip + ":" + port);
-                mHosts.add(new InetSocketAddress(ip, port));
+                mHosts.put(id, ip);
             }
 
         } catch (ParseException e) {
