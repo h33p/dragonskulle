@@ -231,7 +231,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
         highlightTiles(
                 (tile, __) -> {
-                    if (activePlayer != null && !activePlayer.hasLost()) {
+                    if (activePlayer != null && !activePlayer.gameEnd()) {
                         if (!activePlayer.isTileViewable(tile)) {
                             return FOG_MATERIAL;
                         }

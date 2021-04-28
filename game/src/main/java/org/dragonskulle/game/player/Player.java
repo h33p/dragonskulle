@@ -18,6 +18,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
@@ -75,7 +76,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter private HighlightSelection mPlayerHighlightSelection;
 
     /** Reference to the HexagonMap being used by the Player. */
-    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+    private Reference<HexagonMap> mMap = null;
+    /** Reference to the GameState on the connection. */
+    private Reference<GameState> mGameState = null;
 
     /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
@@ -91,9 +94,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
-
-    // TODO this needs to be set dynamically -- specifies how many players will play this game
-    private static final int MAX_PLAYERS = 6;
 
     /** Controls how deep into unviewable tiles we go for mTilesAround. */
     private static final int VIEWABILITY_LOWER_BOUND = -5;
@@ -142,6 +142,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (!assignMap()) log.severe("Player has no HexagonMap.");
 
+        mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+
         if (getNetworkObject().isServer()) distributeCoordinates();
 
         Vector3fc col = mPlayerColour.get();
@@ -170,7 +172,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Override
     public void fixedUpdate(float deltaTime) {
         // Update the token count.
-        if (!hasLost()) updateTokens(deltaTime);
+        if (!gameEnd()) updateTokens(deltaTime);
     }
 
     @Override
@@ -183,15 +185,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         final int attempts = 20;
 
+        final int maxPlayers;
+
+        if (Reference.isValid(mGameState)) {
+            GameState state = mGameState.get();
+            maxPlayers = state.getNumPlayers().get();
+        } else {
+            maxPlayers = 6;
+            log.severe("Failed to get max players from game state!");
+        }
+
         for (int i = 0; i <= attempts; i++) {
 
-            log.severe("This is attempt number " + i);
+            log.fine("This is attempt number " + i);
 
             // Add the building
             float angleBetween;
             if (i < attempts / 2) {
-                float angleOfCircle = 360f / (MAX_PLAYERS + 1);
-                angleBetween = (360 - (angleOfCircle * MAX_PLAYERS)) / MAX_PLAYERS;
+                float angleOfCircle = 360f / (maxPlayers + 1);
+                angleBetween = (360 - (angleOfCircle * maxPlayers)) / maxPlayers;
             } else {
                 angleBetween = 0;
             }
@@ -206,6 +218,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
             } else {
                 buildingToBecomeCapital.setCapital(true);
+                mGameState.get().getNumCapitalsStanding().add(1);
                 log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
                 return;
             }
@@ -227,6 +240,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         } else {
 
             buildingToBecomeCapital.setCapital(true);
+            mGameState.get().getNumCapitalsStanding().add(1);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
             return;
         }
@@ -239,12 +253,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return A {@code Vector2f} with the coordinates to use
      */
     private Vector2f createCoordinates(float angleBetween) {
-        float angleOfCircle = 360f / (MAX_PLAYERS + 1);
+        final int maxPlayers = mGameState.get().getNumPlayers().get();
+
+        float angleOfCircle = 360f / (maxPlayers + 1);
 
         // The number of players online
-        int playersOnlineNow = getNetworkObject().getOwnerId() % MAX_PLAYERS;
+        int playersOnlineNow = getNetworkObject().getOwnerId() % maxPlayers;
         if (playersOnlineNow < 0) {
-            playersOnlineNow += MAX_PLAYERS; // handle AI Players
+            playersOnlineNow += maxPlayers; // handle AI Players
         }
 
         // This gives us the angle to find our coordinates.  Stored in degrees
@@ -603,8 +619,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link BuildData} sent by the client.
      */
     void buildEvent(BuildData data) {
-        if (hasLost()) {
-            log.warning("Lost Capital");
+        if (gameEnd()) {
             return;
         }
         HexagonMap map = getMap();
@@ -723,6 +738,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
+        if (gameEnd()) {
+            return false;
+        }
+
         if (!attackCheck(attacker, defender)) {
             log.info("Unable to pass attack check.");
             return false;
@@ -743,6 +762,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             // Special checks for Capital
             if (defender.isCapital()) {
                 defender.setCapital(false);
+
+                GameState state = mGameState.get();
+                state.getNumCapitalsStanding().add(-1);
+                if (state.getNumCapitalsStanding().get() <= 1) {
+                    state.endGame(attacker.getOwnerId());
+                }
 
                 // Update stats
                 ArrayList<SyncStat> stats = defender.getStats();
@@ -768,9 +793,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean attackCheck(Building attacker, Building defender) {
 
-        // Checks if you have capital
-        if (hasLost()) {
-            log.warning("You have lost your capital");
+        // Checks if you have capital, and the game is still going
+        if (gameEnd()) {
             return false;
         }
 
@@ -830,8 +854,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void sellEvent(SellData data) {
 
-        if (hasLost()) {
-            log.warning("You have lost your capital");
+        if (gameEnd()) {
             return;
         }
 
@@ -912,8 +935,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     void statEvent(StatData data) {
 
-        if (hasLost()) {
-            log.warning("You have lost your capital");
+        if (gameEnd()) {
             return;
         }
 
@@ -1019,6 +1041,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean hasLost() {
         return !mOwnsCapital.get();
+    }
+
+    /**
+     * This will return whether the game has ended and no further actions can take place.
+     *
+     * <p>This method includes {@link hasLost()} check.
+     *
+     * @return {@code true} if the game has has ended, {@code false} if not
+     */
+    public boolean gameEnd() {
+        if (hasLost()) {
+            return true;
+        }
+
+        if (!Reference.isValid(mGameState)) {
+            mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+        }
+
+        return Reference.isValid(mGameState) && !mGameState.get().isInGame();
     }
 
     public void setOwnsCapital(boolean hasCapital) {

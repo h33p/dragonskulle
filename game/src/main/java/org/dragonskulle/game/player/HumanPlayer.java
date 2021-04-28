@@ -5,7 +5,6 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -13,6 +12,8 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameState;
+import org.dragonskulle.game.GameState.IGameEndEvent;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
@@ -23,6 +24,7 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
+import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UITokenCounter;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
@@ -37,7 +39,6 @@ import org.dragonskulle.ui.UIManager;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
-@Log
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     /** The current {@link Screen} being displayed. */
@@ -65,6 +66,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Store a reference to the {@link UILinkedScrollBar} component. */
     @Getter private Reference<UILinkedScrollBar> mScrollBar;
+
+    /** Event that gets invoked whenever player loses its capital/the game ends. */
+    private Reference<IGameEndEvent> mGameEndEventHandler;
 
     /** Whether the camera is moving to the capital. */
     private boolean mMovedCameraToCapital = false;
@@ -129,9 +133,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             drawer.addComponent(menu);
                         });
         getGameObject().addChild(menuObject);
+    }
 
-        // Ensure that the visuals will be updated.
-        mVisualsNeedUpdate = true;
+    @Override
+    protected void onDestroy() {
+        if (mGameEndEventHandler != null) {
+            mGameEndEventHandler.clear();
+        }
     }
 
     @Override
@@ -139,6 +147,35 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         Player player = getPlayer();
         if (player == null) return;
+
+        // Initialise the event handler if haven't already.
+        // This can lag by a frame or two, before game state gets spawned.
+        if (!Reference.isValid(mGameEndEventHandler)) {
+            GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
+
+            Reference<UIPauseMenu> pauseMenu =
+                    Scene.getActiveScene().getSingletonRef(UIPauseMenu.class);
+
+            if (gameState != null && Reference.isValid(pauseMenu)) {
+                mGameEndEventHandler =
+                        new Reference<>(
+                                (winnerId) -> {
+                                    if (!Reference.isValid(pauseMenu)) {
+                                        return;
+                                    }
+
+                                    if (Reference.isValid(mPlayer)) {
+                                        int id = mPlayer.get().getNetworkObject().getOwnerId();
+
+                                        String res = id == winnerId ? "You win!" : "You lose!";
+
+                                        pauseMenu.get().endGame(res);
+                                    }
+                                });
+
+                gameState.registerGameEndListener(mGameEndEventHandler);
+            }
+        }
 
         if (!mMovedCameraToCapital) {
             TargetMovement targetRig = Scene.getActiveScene().getSingleton(TargetMovement.class);
@@ -150,8 +187,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             }
         }
 
-        if (player.hasLost()) {
-            log.warning("You've lost your capital.");
+        if (mPlayer.get().hasLost() && Reference.isValid(mGameEndEventHandler)) {
+            mGameEndEventHandler.get().handle(-1000);
+        }
+
+        if (mPlayer.get().gameEnd()) {
             setEnabled(false);
             return;
         }
@@ -284,6 +324,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     public void switchScreen(Screen desired) {
         if (desired.equals(mCurrentScreen)) return;
 
+        if (Reference.isValid(mPlayer) && mPlayer.get().gameEnd()) {
+            return;
+        }
+
         mCurrentScreen = desired;
 
         if (Reference.isValid(mMenuDrawer)) {
@@ -380,7 +424,4 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         return mMapEffects.get();
     }
-
-    @Override
-    protected void onDestroy() {}
 }

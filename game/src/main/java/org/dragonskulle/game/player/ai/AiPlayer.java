@@ -78,7 +78,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         // If you can play simulate the input
         if (shouldPlayGame(deltaTime)
                 && mServerSide
-                && !mPlayer.get().hasLost()
+                && !mPlayer.get().gameEnd()
                 && mPlayer.get().getNumberOfOwnedBuildings() != 0) {
             log.info("Playing game");
             simulateInput();

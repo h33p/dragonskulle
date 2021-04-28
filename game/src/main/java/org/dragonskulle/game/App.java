@@ -22,6 +22,7 @@ import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UISettingsMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
@@ -159,6 +160,7 @@ public class App implements NativeResource {
         // asServer = true;
         if (asServer) {
             log.info("I am the server");
+
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
@@ -198,6 +200,7 @@ public class App implements NativeResource {
                                                             }));
                                         });
                             });
+
             mainScene.addRootObject(hostGameUi);
         }
         return mainScene;
@@ -533,7 +536,26 @@ public class App implements NativeResource {
     private void onGameStarted(NetworkManager manager) {
         log.severe("Game Start");
         log.warning("Spawning 'Server' Owned objects");
-        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+        Reference<NetworkObject> obj =
+                manager.getServerManager()
+                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+
+        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
+
+        // 6 players for now
+        gameState.get().getNumPlayers().set(6);
+
+        gameState
+                .get()
+                .registerGameEndListener(
+                        new Reference<>(
+                                (__) -> {
+                                    UIPauseMenu pauseMenu =
+                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
+                                    if (pauseMenu != null) {
+                                        pauseMenu.endGame();
+                                    }
+                                }));
     }
 
     @Override

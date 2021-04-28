@@ -66,7 +66,7 @@ public class Cloudscape extends Component implements IOnStart, ILateFrameUpdate 
                         tile ->
                                 setClouds(
                                         tile,
-                                        !activePlayer.hasLost()
+                                        !activePlayer.gameEnd()
                                                 && activePlayer.getTileViewability(tile) < -1
                                                 && perlinCheck(tile)));
     }
