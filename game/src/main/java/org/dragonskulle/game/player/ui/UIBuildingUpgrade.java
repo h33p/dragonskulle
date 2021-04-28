@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player.ui;
 
 import java.util.HashMap;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +25,6 @@ import org.dragonskulle.ui.UIFlatImage;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
-import org.lwjgl.CLongBuffer;
 
 /**
  * The UI Component to display the stats and upgradeable options for the selected building.
@@ -50,9 +48,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
-    @Getter
-    @Setter
-    private int mBuildingStatUpdateCount;
+    @Getter @Setter private int mBuildingStatUpdateCount;
     private final HashMap<StatType, Reference<UIButton>> mUpgradeButtonRefs = new HashMap<>();
 
     /**
@@ -64,9 +60,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -87,9 +81,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (Reference.isValid(buildingRef)) {
             Building building = buildingRef.get();
-            attackVal = String.valueOf(building.getStat(StatType.ATTACK).getValue());
-            defenceVal = String.valueOf(building.getStat(StatType.DEFENCE).getValue());
-            tokenGenVal = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getValue());
+            attackVal = String.valueOf(building.getStat(StatType.ATTACK).getLevel());
+            defenceVal = String.valueOf(building.getStat(StatType.DEFENCE).getLevel());
+            tokenGenVal = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getLevel());
 
             attackCost = String.valueOf(building.getStat(StatType.ATTACK).getCost());
             defenceCost = String.valueOf(building.getStat(StatType.DEFENCE).getCost());
@@ -168,7 +162,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     /**
      * Build a stat upgrader with a custom texture.
      *
-     * @param type        the stat type
+     * @param type the stat type
      * @param textureName the texture file path
      * @return the builder
      */
@@ -231,7 +225,8 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     }
 
     /**
-     * Updates the SyncStat values and costs shown in the shop. It will also disable upgrading of any max level buildings.
+     * Updates the SyncStat values and costs shown in the shop. It will also disable upgrading of
+     * any max level buildings.
      *
      * @param upgradeableStat the upgradeable stat
      */
@@ -255,7 +250,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * Sets the text reference which represents the cost with the SyncStats cost.
      *
      * @param upgradeableStat the stat to update
-     * @param textRef         the reference to the object
+     * @param textRef the reference to the object
      */
     private void setCostTextRef(SyncStat upgradeableStat, Reference<UIText> textRef) {
         if (Reference.isInvalid(textRef)) {
@@ -268,7 +263,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * Sets the text reference which represents the level with the SyncStats cost.
      *
      * @param upgradeableStat the stat to update
-     * @param textRef         the reference to the object
+     * @param textRef the reference to the object
      */
     private void setValueTextRef(SyncStat upgradeableStat, Reference<UIText> textRef) {
         if (Reference.isInvalid(textRef)) {
@@ -281,7 +276,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * Sets text on the object if the reference is valid.
      *
      * @param textRef the reference to the {@link UIText}
-     * @param value   the string to be set
+     * @param value the string to be set
      */
     private void setTextOnRef(Reference<UIText> textRef, String value) {
         if (Reference.isValid(textRef)) {

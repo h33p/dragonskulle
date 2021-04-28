@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -39,27 +38,37 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     protected final INotifyScreenChange mNotifyScreenChange;
     protected final IGetPlayer mGetPlayer;
     protected final IUpdateBuildingChosen mUpdateBuildingSelected;
-
+    @Setter private Reference<Building> mAttackingBuilding = null;
     private final float mOffsetToTop = 0.25f;
-    @Getter
-    private Reference<UIShopSection> mShop;
+    @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
     private Reference<GameObject> mAttackScreenMenu;
     private Reference<GameObject> mMapScreenMenu;
-    private Reference<GameObject> mTileSelectedMenu;
     private Reference<GameObject> mSellConfirmScreenMenu;
     private Reference<GameObject> mPlaceNewBuildingScreenMenu;
 
-    @Setter
-    @Getter
-    private Reference<GameObject> mCurrentScreen = new Reference<>(null);
-    @Setter
-    @Getter
-    private Screen mLastScreen = null;
+    @Setter @Getter private Reference<GameObject> mCurrentScreen = new Reference<>(null);
+    @Setter @Getter private Screen mLastScreen = null;
 
-    /**
-     * Notify the parent of the screen change and set it.
-     */
+    @Setter
+    @Accessors(fluent = true, prefix = "m")
+    private boolean mIsHidden = false;
+
+    private TransformUI mTransform;
+
+    public void setHidden(boolean hide) {
+        if (hide && mIsHidden) return;
+        if (!hide && !mIsHidden) return;
+        if (hide) {
+            mTransform.translate(-100f, 0);
+            isHidden(true);
+        } else {
+            mTransform.translate(100f, 0);
+            isHidden(false);
+        }
+    }
+
+    /** Notify the parent of the screen change and set it. */
     public interface INotifyScreenChange {
         /**
          * Call the function.
@@ -69,19 +78,13 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void call(Screen newScreen);
     }
 
-    /**
-     * Update the parents building field.
-     */
+    /** Update the parents building field. */
     public interface IUpdateBuildingChosen {
-        /**
-         * Call the function.
-         */
+        /** Call the function. */
         void update();
     }
 
-    /**
-     * Get the player reference from the parent.
-     */
+    /** Get the player reference from the parent. */
     public interface IGetPlayer {
         /**
          * Get the player reference.
@@ -91,9 +94,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         Reference<Player> getPlayer();
     }
 
-    /**
-     * Get the building chosen from the parent.
-     */
+    /** Get the building chosen from the parent. */
     public interface IGetBuildingChosen {
         /**
          * Get the building.
@@ -103,9 +104,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         Reference<Building> getBuilding();
     }
 
-    /**
-     * Get the hex chosen from the parent.
-     */
+    /** Get the hex chosen from the parent. */
     public interface IGetHexChosen {
         /**
          * Get the hexagon tile.
@@ -115,9 +114,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         HexagonTile getHex();
     }
 
-    /**
-     * Set the parent hex tile.
-     */
+    /** Set the parent hex tile. */
     public interface ISetHexChosen {
         /**
          * Set.
@@ -127,9 +124,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void setHex(HexagonTile tile);
     }
 
-    /**
-     * Set the building on the parent.
-     */
+    /** Set the building on the parent. */
     public interface ISetBuildingChosen {
         /**
          * Set the building.
@@ -142,12 +137,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     /**
      * Constructor.
      *
-     * @param getBuildingChosen  the get building chosen callback
-     * @param setBuildingChosen  the set building chosen callback
-     * @param getHexChosen       the get hex chosen callback
-     * @param setHexChosen       the set hex chosen callback
+     * @param getBuildingChosen the get building chosen callback
+     * @param setBuildingChosen the set building chosen callback
+     * @param getHexChosen the get hex chosen callback
+     * @param setHexChosen the set hex chosen callback
      * @param notifyScreenChange the notify screen change callback
-     * @param getPlayer          the get player callback
+     * @param getPlayer the get player callback
      */
     public UIMenuLeftDrawer(
             IGetBuildingChosen getBuildingChosen,
@@ -166,7 +161,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
 
         this.mUpdateBuildingSelected =
                 () -> {
-                    log.info("updating building");
                     if (mGetHexChosen != null && mSetBuildingChosen != null) {
                         HexagonTile hex = mGetHexChosen.getHex();
                         if (hex != null) {
@@ -180,9 +174,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 };
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -195,8 +187,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mSellConfirmScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> buildingSelectedScreenMenuItems = new ArrayList<>();
-        ArrayList<UITextButtonFrame> mapScreenMenuItems = new ArrayList<>();
-        ArrayList<UITextButtonFrame> tileSelectedScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mPlaceNewBuildingScreenMenuItems = new ArrayList<>();
 
         attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
@@ -207,8 +197,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         mSellConfirmScreenMenuItems.add(buildCancelSellButtonFrame());
         mSellConfirmScreenMenu = buildMenu(mSellConfirmScreenMenuItems);
 
-        //        mPlaceNewBuildingScreenMenuItems.add(buildConfirmBuildButtonFrame()); //this will
-        // be done inside the shop section
         mPlaceNewBuildingScreenMenuItems.add(buildCancelBuildButtonFrame());
         mPlaceNewBuildingScreenMenu = buildMenu(mPlaceNewBuildingScreenMenuItems);
 
@@ -217,20 +205,16 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mBuildScreenMenu = buildMenu(buildingSelectedScreenMenuItems);
 
-        //        tileSelectedScreenMenuItems.add(buildPlaceButtonFrame());
-        tileSelectedScreenMenuItems.add(buildDeselectButtonFrame());
-        mTileSelectedMenu = buildMenu(tileSelectedScreenMenuItems);
-
         mMapScreenMenu = new Reference<>(null);
 
         setVisibleScreen(Screen.DEFAULT_SCREEN);
         mShop = buildShop();
 
         UIRenderable drawer = new UIRenderable(GameUIAppearance.getDrawerTexture());
-        TransformUI tran = getGameObject().getTransform(TransformUI.class);
-        tran.setMargin(0f, 0f, 0f, 0f);
-        tran.setPivotOffset(0f, 0f);
-        tran.setParentAnchor(0f, 0f);
+        mTransform = getGameObject().getTransform(TransformUI.class);
+        mTransform.setMargin(0f, 0f, 0f, 0f);
+        mTransform.setPivotOffset(0f, 0f);
+        mTransform.setParentAnchor(0f, 0f);
         getGameObject().addComponent(drawer);
     }
 
@@ -244,7 +228,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_attack",
                 "Cancel Attack",
                 (handle, __) -> {
-                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -260,7 +243,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_sell",
                 "Cancel Sell",
                 (handle, __) -> {
-                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -276,7 +258,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "cancel_build",
                 "Cancel Build",
                 (handle, __) -> {
-                    mSetHexChosen.setHex(null);
                     mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
                 },
                 true);
@@ -292,26 +273,32 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 "confirm_attack_button",
                 "Attack Selected",
                 (handle, __) -> {
-                    Reference<Building> attackingBuilding = mGetBuildingChosen.getBuilding();
-                    Building defendingBuilding = mGetHexChosen.getHex().getBuilding();
-                    if (Reference.isValid(attackingBuilding) && defendingBuilding != null) {
-                        // Checks the building can be attacked
-                        boolean canAttack =
-                                attackingBuilding.get().isBuildingAttackable(defendingBuilding, mGetPlayer.getPlayer());
-                        if (canAttack) {
-                            Reference<Player> playerReference = mGetPlayer.getPlayer();
-                            if (Reference.isValid(playerReference)) {
-                                playerReference
-                                        .get()
-                                        .getClientAttackRequest()
-                                        .invoke(
-                                                new AttackData(
-                                                        attackingBuilding.get(),
-                                                        defendingBuilding));
-                            }
+                    if (mGetHexChosen != null) {
+                        HexagonTile tile = mGetHexChosen.getHex();
+                        if (tile == null) return;
+                        Building defendingBuilding = tile.getBuilding();
+                        if (Reference.isValid(mAttackingBuilding) && defendingBuilding != null) {
+                            // Checks the building can be attacked
+                            boolean canAttack =
+                                    mAttackingBuilding
+                                            .get()
+                                            .isBuildingAttackable(
+                                                    defendingBuilding, mGetPlayer.getPlayer());
+                            if (canAttack) {
+                                Reference<Player> playerReference = mGetPlayer.getPlayer();
+                                if (Reference.isValid(playerReference)) {
+                                    playerReference
+                                            .get()
+                                            .getClientAttackRequest()
+                                            .invoke(
+                                                    new AttackData(
+                                                            mAttackingBuilding.get(),
+                                                            defendingBuilding));
+                                }
 
-                            mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
-                            mSetHexChosen.setHex(null);
+                                mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
+                                mSetHexChosen.setHex(null);
+                            }
                         }
                     }
                 },
@@ -363,11 +350,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     newScreen = mBuildScreenMenu;
                     setShopState(ShopState.MY_BUILDING_SELECTED, true);
                     break;
-                case ATTACK_SCREEN:
-                    newScreen = mAttackScreenMenu;
-                    setShopState(ShopState.CLOSED);
-                    break;
                 case ATTACKING_SCREEN:
+                    setAttackingBuilding(mGetBuildingChosen.getBuilding());
                     newScreen = mAttackScreenMenu;
                     setShopState(ShopState.CLOSED);
                     break;
@@ -408,7 +392,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
      * Show the game object from reference.
      *
      * @param gameObject the game object
-     * @param show       true to show, false to hide
+     * @param show true to show, false to hide
      */
     private void show(Reference<GameObject> gameObject, boolean show) {
         gameObject.get().setEnabled(show);
@@ -443,7 +427,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     /**
      * Sets the shop state.
      *
-     * @param shopState      the new state
+     * @param shopState the new state
      * @param updateBuilding this will force the parents mSelectedBuilding variable to update
      */
     private void setShopState(ShopState shopState, boolean updateBuilding) {

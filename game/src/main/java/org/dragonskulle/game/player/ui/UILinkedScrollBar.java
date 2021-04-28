@@ -10,6 +10,7 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UISlider;
+import org.joml.Vector4f;
 
 /**
  * A scroll bar that is linked to the mouse scroll position and map zoom.
@@ -61,6 +62,8 @@ public class UILinkedScrollBar extends Component implements IFrameUpdate, IOnSta
                                 mScrollRef.get().setTargetLerpTime(val);
                             }
                         });
+        // Use a darker slider bar colour.
+        newSlider.setColour(new Vector4f(0.4f));
 
         mSliderReference = newSlider.getReference(UISlider.class);
         newSlider.setRoundStep(0.01f);

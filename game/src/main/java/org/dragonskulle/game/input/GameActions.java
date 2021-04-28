@@ -23,13 +23,9 @@ public class GameActions extends Actions {
     public static final Action ROTATE_LEFT = new Action("ROTATE_LEFT");
     public static final Action ROTATE_RIGHT = new Action("ROTATE_RIGHT");
 
-    public static final Action ZOOM_IN = new Action("ZOOM_IN");
-    public static final Action ZOOM_OUT = new Action("ZOOM_OUT");
-
-    public static final Action MENU_UP = new Action("MENU_UP");
-    public static final Action MENU_DOWN = new Action("MENU_DOWN");
-
     public static final Action LEFT_CLICK = new Action("LEFT_CLICK");
     public static final Action RIGHT_CLICK = new Action("RIGHT_CLICK");
-    public static final Action ACTION_3 = new Action("ACTION_3");
+    public static final Action MIDDLE_CLICK = new Action("MIDDLE_CLICK");
+
+    public static final Action TOGGLE_PAUSE = new Action("TOGGLE_PAUSE");
 }

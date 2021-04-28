@@ -42,9 +42,9 @@ import org.joml.Vector3f;
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     // All screens to be used
-    private Screen mScreenOn = Screen.DEFAULT_SCREEN;
+    @Getter private Screen mScreenOn = Screen.DEFAULT_SCREEN;
 
-    private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     // Data which is needed on different screens
     @Getter @Setter private HexagonTile mHexChosen;
@@ -66,6 +66,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private HexagonTile mLastHexChosen;
 
     private boolean mMovedCameraToCapital = false;
+    @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -86,11 +87,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         .getSingleton(MapEffects.class)
                         .getReference(MapEffects.class);
 
+        UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
                 .buildChild(
                         "zoom_slider",
                         new TransformUI(true),
-                        (go) -> go.addComponent(new UILinkedScrollBar()));
+                        (go) -> {
+                            go.addComponent(component);
+                        });
+        mScrollBar = component.getReference(UILinkedScrollBar.class);
 
         Reference<GameObject> tmpRef =
                 getGameObject()
@@ -285,40 +290,37 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             switch (mScreenOn) {
                 case DEFAULT_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(null);
+                    effects.setHighlightOverlay(
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            });
                     break;
                 case BUILDING_SELECTED_SCREEN:
-                    effects.setDefaultHighlight(true);
                     effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    break;
-                    //                case BUILD_TILE_SCREEN:
-                    //                    effects.setDefaultHighlight(true);
-                    //                    effects.setHighlightOverlay(
-                    //                            (fx) -> highlightSelectedTile(fx,
-                    // StandardHighlightType.PLAIN));
-                    //                    break;
-                case ATTACK_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(
-                            (fx) -> highlightSelectedTile(fx, StandardHighlightType.VALID));
-                    for (Building attackableBuilding :
-                            mHexChosen.getBuilding().getAttackableBuildings()) {
-                        effects.highlightTile(
-                                attackableBuilding.getTile(),
-                                StandardHighlightType.ATTACK.asSelection());
-                    }
+                            (fx) -> {
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                                highlightAttackableTiles(fx, StandardHighlightType.PLAIN);
+                            });
                     break;
                 case UPGRADE_SCREEN:
-                    effects.setDefaultHighlight(true);
-                    effects.setHighlightOverlay(null);
                     break;
                 case ATTACKING_SCREEN:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> {
+                                highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
+                                highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            });
                     break;
                 case SELLING_SCREEN:
                     break;
                 case PLACING_NEW_BUILDING:
+                    effects.setDefaultHighlight(true);
+                    effects.setHighlightOverlay(
+                            (fx) -> {
+                                highlightBuildableTiles(fx, StandardHighlightType.VALID);
+                                highlightSelectedTile(fx, StandardHighlightType.PLACE);
+                            });
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mScreenOn);
@@ -332,12 +334,42 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
+    private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
+        if (Reference.isValid(mPlayer)) {
+            fx.highlightTiles(
+                    (tile, __) -> {
+                        if (tile.isBuildable(mPlayer.get())) {
+                            return highlight.asSelection();
+                        } else if (!tile.isBuildable(mPlayer.get())
+                                && tile.getTileType() != HexagonTile.TileType.FOG) {
+                            return MapEffects.INVALID_MATERIAL;
+                        }
+                        return null;
+                    });
+        }
+    }
+
+    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
+        if (Reference.isValid(mBuildingChosen)) {
+            for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
+                fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+            }
+        }
+    }
+
+    /** Marks visuals to update whenever a new object is spawned. */
+    private void onSpawnObject(NetworkObject obj) {
+        if (obj.getGameObject().getComponent(Building.class) != null) {
+            mVisualsNeedUpdate = true;
+        }
+    }
+
     /**
      * Sets screen and notifies that an update is needed for the visuals.
      *
      * @param newScreen the new screen
      */
-    private void setScreenOn(Screen newScreen) {
+    public void setScreenOn(Screen newScreen) {
         if (!newScreen.equals(mScreenOn) || (mLastHexChosen != mHexChosen)) {
             mVisualsNeedUpdate = true;
         }

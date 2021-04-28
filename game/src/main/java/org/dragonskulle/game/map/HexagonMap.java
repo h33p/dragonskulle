@@ -149,7 +149,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
     public List<HexagonTile> getTilesInRadius(
-            HexagonTile tile, int radius, boolean includeTile, ArrayList<HexagonTile> tilesOut) {
+            HexagonTile tile, int radius, boolean includeTile, List<HexagonTile> tilesOut) {
         int minimum = includeTile ? 0 : 1;
         return getTilesInRadius(tile, minimum, radius, tilesOut);
     }

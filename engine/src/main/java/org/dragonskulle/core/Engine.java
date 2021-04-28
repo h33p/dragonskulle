@@ -17,6 +17,7 @@ import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.input.Bindings;
+import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
@@ -89,10 +90,14 @@ public class Engine {
     public void start(String gameName, Bindings bindings) {
 
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
-//
-//        UPnP.initialise();
-//        log.info(UPnP.getExternalIPAddress());
-//        UPnP.addPortMapping(17569, "TCP");
+        //
+        UPnP.initialise();
+        log.info(UPnP.getExternalIPAddress());
+        UPnP.addPortMapping(17569, "TCP");
+
+        UPnP.initialise();
+        log.info(UPnP.getExternalIPAddress());
+        UPnP.addPortMapping(17569, "TCP");
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
@@ -173,6 +178,7 @@ public class Engine {
             }
         }
     }
+
     /**
      * Completely unload a scene from the engine. This will remove the scene regardless of whether
      * it is active, inactive or the presentation scene. No references to the scene will be kept in
@@ -496,18 +502,21 @@ public class Engine {
 
         // Disable all scenes that need to be disabled
         for (Scene s : mScenesToDeactivate) {
+            if (s == null) continue;
             mActiveScenes.remove(s);
             mInactiveScenes.add(s);
         }
 
         // Enable all scenes that need to be enabled
         for (Scene s : mScenesToActivate) {
+            if (s == null) continue;
             mInactiveScenes.remove(s);
             mActiveScenes.add(s);
         }
 
         // Unload all scenes that need to be unloaded and flag all gameobjects for destruction
         for (Scene s : mScenesToUnload) {
+            if (s == null) continue;
             mScenesToUnload.remove(s);
             mActiveScenes.remove(s);
             mInactiveScenes.remove(s);
@@ -552,6 +561,7 @@ public class Engine {
     private void cleanup() {
         // TODO: Release all resources that are still used at the time of shutdown here
 
+        UPnP.deleteAllMappings();
         destroyAllObjects();
         mGLFWState.free();
     }
