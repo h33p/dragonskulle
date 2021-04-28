@@ -171,7 +171,7 @@ public class ServerNetworkManager {
     /** Server event listener. */
     private final Listener mListener = new Listener();
     /** Underlying server instance. */
-    private final Server mServer;
+    private Server mServer;
     /** Back reference to {@link NetworkManager}. */
     @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
@@ -293,6 +293,9 @@ public class ServerNetworkManager {
      * @param stream serialized data of the event
      */
     public void sendEvent(ServerEvent<?> event, ByteArrayOutputStream stream) throws IOException {
+
+        if (mServer == null) return;
+
         byte[] msg = stream.toByteArray();
 
         int oid = event.getNetworkObject().getOwnerId();
@@ -329,7 +332,10 @@ public class ServerNetworkManager {
 
     /** Destroy the server, and tell {@link NetworkManager} about it. */
     public void destroy() {
+        if (mServer == null) return;
+
         mServer.dispose();
+        mServer = null;
 
         mNetworkObjects.values().stream()
                 .map(e -> e.mNetworkObject)
@@ -337,16 +343,20 @@ public class ServerNetworkManager {
                 .map(Reference::get)
                 .map(NetworkObject::getGameObject)
                 .forEach(GameObject::destroy);
-
-        mManager.onServerDestroy();
     }
 
     /**
      * Get collection of clients connected to the server.
      *
-     * @return collection of clients connected to the server.
+     * @return collection of clients connected to the server. {@code null} if the server has been
+     *     destroyed.
      */
     public Collection<ServerClient> getClients() {
+
+        if (mServer == null) {
+            return null;
+        }
+
         return mServer.getClients();
     }
 
@@ -405,26 +415,36 @@ public class ServerNetworkManager {
     /** Late network update, called by {@link NetworkManager}. */
     void lateNetworkUpdate() {
 
-        for (ServerClient c : mServer.getClients()) {
-            if (!c.isInGame()) {
-                continue;
-            }
-            for (ServerObjectEntry entry : mNetworkObjects.values()) {
-                entry.updateClient(c);
-            }
-        }
+        if (mServer == null) {
+            Engine engine = Engine.getInstance();
 
-        mNetworkObjects
-                .entrySet()
-                .removeIf(
-                        entry -> {
-                            NetworkObject obj = entry.getValue().mNetworkObject.get();
-                            if (obj != null) {
-                                obj.resetUpdateMask();
-                                return false;
-                            }
-                            return true;
-                        });
+            if (engine.getPresentationScene() == mManager.getGameScene()) {
+                engine.loadPresentationScene(Scene.getActiveScene());
+                engine.unloadScene(mManager.getGameScene());
+            }
+
+            mManager.onServerDestroy();
+        } else {
+            for (ServerClient c : mServer.getClients()) {
+                if (!c.isInGame()) {
+                    continue;
+                }
+                for (ServerObjectEntry entry : mNetworkObjects.values()) {
+                    entry.updateClient(c);
+                }
+            }
+            mNetworkObjects
+                    .entrySet()
+                    .removeIf(
+                            entry -> {
+                                NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                if (obj != null) {
+                                    obj.resetUpdateMask();
+                                    return false;
+                                }
+                                return true;
+                            });
+        }
     }
 
     /**

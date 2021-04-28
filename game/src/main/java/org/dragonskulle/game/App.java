@@ -8,13 +8,9 @@ import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Transform3D;
-import org.dragonskulle.core.Engine;
-import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
-import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.core.*;
 import org.dragonskulle.game.camera.DragMovement;
+import org.dragonskulle.game.camera.HeightByMap;
 import org.dragonskulle.game.camera.KeyboardMovement;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
@@ -22,16 +18,19 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.lobby.Lobby;
 import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.ui.UIPauseMenu;
+import org.dragonskulle.game.player.ui.UISettingsMenu;
+import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
+import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIDropDown;
 import org.dragonskulle.ui.UIInputBox;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UISlider;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
@@ -39,7 +38,7 @@ import org.lwjgl.system.NativeResource;
 
 @Log
 public class App implements NativeResource {
-
+    private static final Settings settings = Settings.getInstance().loadSettings();
     private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
     private static final int BGM2_ID =
             AudioManager.getInstance().loadSound("country_background_short.wav");
@@ -69,7 +68,7 @@ public class App implements NativeResource {
         scene.addRootObject(debugUi);
     }
 
-    private static Scene createMainScene() {
+    private static Scene createMainScene(NetworkManager networkManager) {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -91,8 +90,10 @@ public class App implements NativeResource {
                             rig.addComponent(keyboardMovement);
                             rig.addComponent(new TargetMovement());
                             rig.addComponent(new DragMovement());
+                            HeightByMap heightByMap = new HeightByMap();
+                            rig.addComponent(heightByMap);
 
-                            rig.getTransform(Transform3D.class).setPosition(0, -4, 1.5f);
+                            rig.getTransform(Transform3D.class).setPosition(0, -4, 0.5f);
 
                             rig.buildChild(
                                     "rotationRig",
@@ -104,8 +105,10 @@ public class App implements NativeResource {
                                                 (camera) -> {
                                                     ScrollTranslate scroll =
                                                             new ScrollTranslate(
-                                                                    keyboardMovement, zoomTilt);
-                                                    scroll.getStartPos().set(0f, -5f, 0f);
+                                                                    keyboardMovement,
+                                                                    zoomTilt,
+                                                                    heightByMap);
+                                                    scroll.getStartPos().set(0f, -2.5f, 0f);
                                                     scroll.getEndPos().set(0f, -100f, 0f);
                                                     camera.addComponent(scroll);
 
@@ -115,27 +118,45 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
-
-                                                    AudioListener listener = new AudioListener();
-                                                    camera.addComponent(listener);
-
-                                                    AudioSource bgm = new AudioSource();
-                                                    bgm.setVolume(0.1f);
-                                                    bgm.setLooping(true);
-                                                    bgm.playSound(BGM_ID);
-                                                    camera.addComponent(bgm);
                                                 });
                                     });
                         });
 
-        mainScene.addRootObject(GameObject.instantiate(cameraRig));
+        GameObject camera = GameObject.instantiate(cameraRig);
+        mainScene.addRootObject(camera);
+
+        GameObject audioObject =
+                new GameObject(
+                        "game_audio",
+                        (audio) -> {
+                            AudioListener listener = new AudioListener();
+                            audio.addComponent(listener);
+
+                            AudioSource bgm = new AudioSource();
+                            bgm.setVolume(0.1f);
+                            bgm.setLooping(true);
+                            bgm.playSound(BGM_ID);
+                            audio.addComponent(bgm);
+                        });
+        mainScene.addRootObject(audioObject);
+
+        // Pause menu
+        GameObject pauseMenu =
+                new GameObject(
+                        "pause menu",
+                        new TransformUI(),
+                        (menu) -> {
+                            menu.addComponent(new UIPauseMenu(networkManager, camera));
+                        });
+
+        mainScene.addRootObject(pauseMenu);
 
         return mainScene;
     }
 
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
-        Scene mainScene = createMainScene();
+        Scene mainScene = createMainScene(networkManager);
         // asServer = true;
         if (asServer) {
             log.info("I am the server");
@@ -166,9 +187,15 @@ public class App implements NativeResource {
                                                                                 -1,
                                                                                 networkManager
                                                                                         .findTemplateByName(
-                                                                                                "aiPlayer"));
+                                                                                                "aStarAi"));
 
-                                                                log.warning("Created ai");
+                                                                networkManager
+                                                                        .getServerManager()
+                                                                        .spawnNetworkObject(
+                                                                                -2,
+                                                                                networkManager
+                                                                                        .findTemplateByName(
+                                                                                                "aiPlayer"));
                                                             }));
                                         });
                             });
@@ -202,9 +229,23 @@ public class App implements NativeResource {
                             handle.addComponent(networkManager.get());
                         });
 
-        GameObject audio =
+        GameObject audioObject =
                 new GameObject(
-                        "audio",
+                        "menu audio",
+                        (audio) -> {
+                            AudioSource bgm = new AudioSource();
+                            bgm.setVolume(0.1f);
+                            bgm.setLooping(true);
+                            bgm.playSound(BGM_ID);
+
+                            audio.addComponent(bgm);
+                            audio.addComponent(new AudioListener());
+                        });
+
+        // TODO : Remove
+        GameObject debugMute =
+                new GameObject(
+                        "debug mute",
                         (audioRoot) -> {
                             audioRoot.buildChild(
                                     "muteUI",
@@ -222,15 +263,8 @@ public class App implements NativeResource {
                                                                     .toggleMasterMute();
                                                         }));
                                     });
-
-                            AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.1f);
-                            bgm.setLooping(true);
-                            bgm.playSound(BGM_ID);
-
-                            audioRoot.addComponent(bgm);
-                            audioRoot.addComponent(new AudioListener());
                         });
+        mainMenu.addRootObject(debugMute);
 
         GameObject gameTitle =
                 new GameObject(
@@ -272,30 +306,16 @@ public class App implements NativeResource {
                 new GameObject(
                         "settingsUI",
                         false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                        });
-
-        GameObject audioSettingsUI =
-                new GameObject(
-                        "audioSettingsUI",
-                        false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                        });
-
-        GameObject graphicsSettingsUI =
-                new GameObject(
-                        "graphicsSettingsUI",
-                        false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                        new TransformUI(),
+                        (settings) -> {
+                            settings.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            // settings.getTransform(TransformUI.class).setParentAnchor(0f);
+                            settings.addComponent(
+                                    new UISettingsMenu(
+                                            () -> {
+                                                mainUi.setEnabled(true);
+                                                settings.setEnabled(false);
+                                            }));
                         });
 
         final UIManager uiManager = UIManager.getInstance();
@@ -325,110 +345,15 @@ public class App implements NativeResource {
                             Engine.getInstance().stop();
                         }));
 
-        final UITextRect connectingText = new UITextRect("");
-        connectingText.setEnabled(false);
-        connectingText.setOverrideAspectRatio(4f);
-        connectingText.getColour().set(0f);
-
-        UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
-
-        uiManager.buildVerticalUi(
-                settingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                new UIButton(
-                        "Sound",
-                        (__, ___) -> {
-                            settingsUI.setEnabled(false);
-                            audioSettingsUI.setEnabled(true);
-                        }),
-                new UIButton(
-                        "Graphics",
-                        (__, ___) -> {
-                            settingsUI.setEnabled(false);
-                            graphicsSettingsUI.setEnabled(true);
-                        }),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            settingsUI.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }));
-
-        uiManager.buildVerticalUi(
-                audioSettingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Master volume:"),
-                        new UISlider(
-                                AudioManager.getInstance().getMasterVolume(),
-                                (__, val) -> AudioManager.getInstance().setMasterVolume(val))),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            audioSettingsUI.setEnabled(false);
-                            settingsUI.setEnabled(true);
-                        }));
-
-        uiManager.buildVerticalUi(
-                graphicsSettingsUI,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                uiManager.buildWithChildrenRightOf(
-                        new UITextRect("Fullscreen mode:"),
-                        new UIDropDown(
-                                0,
-                                (drop) -> {
-                                    Engine.getInstance()
-                                            .getGLFWState()
-                                            .setFullscreen(drop.getSelected() == 1);
-                                },
-                                "Windowed",
-                                "Fullscreen")),
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            graphicsSettingsUI.setEnabled(false);
-                            settingsUI.setEnabled(true);
-                        }));
-
-        /*
-        uiManager.buildVerticalUi(
-                hostUi,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                new UIButton(
-                        "Host (Temporary)",
-                        (__, ___) -> {
-                            networkManager
-                                    .get()
-                                    .createServer(
-                                            sPort, this::onClientConnected, this::onGameStarted);
-                        }),
-                new UIButton(
-                        "Cancel",
-                        (uiButton, __) -> {
-                            hostUi.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }));
-         */
-
         mainMenu.addRootObject(networkManagerObject);
 
-        mainMenu.addRootObject(audio);
+        mainMenu.addRootObject(audioObject);
         mainMenu.addRootObject(gameTitle);
         mainMenu.addRootObject(lobbyObject);
 
         mainMenu.addRootObject(mainUi);
         lobby.get().addUiToScene(mainMenu);
         mainMenu.addRootObject(settingsUI);
-        mainMenu.addRootObject(audioSettingsUI);
-        mainMenu.addRootObject(graphicsSettingsUI);
 
         return mainMenu;
     }
@@ -444,7 +369,6 @@ public class App implements NativeResource {
 
         do {
             sReload = false;
-            Settings.getInstance().loadSettings();
             try (App app = new App()) {
                 app.run();
             }
@@ -452,10 +376,6 @@ public class App implements NativeResource {
 
         AudioManager.getInstance().cleanup();
         System.exit(0);
-    }
-
-    void test(String response) {
-        System.out.println(response);
     }
 
     private void run() {
@@ -488,6 +408,37 @@ public class App implements NativeResource {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
+    }
+
+    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
+        log.info("CONNECTED ID " + netId);
+
+        HumanPlayer humanPlayer =
+                new HumanPlayer(manager.getReference(NetworkManager.class), netId);
+
+        GameObject humanPlayerObject =
+                new GameObject(
+                        "human player",
+                        (handle) -> {
+                            handle.addComponent(humanPlayer);
+                        });
+
+        gameScene.addRootObject(humanPlayerObject);
+
+        gameScene.registerSingleton(humanPlayer);
+        log.info("Registered HumanPlayer as singleton.");
+    }
+
+    private void onClientConnected(
+            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
+        int id = networkClient.getNetworkID();
+        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+    }
+
+    private void onGameStarted(NetworkManager manager) {
+        log.severe("Game Start");
+        log.warning("Spawning 'Server' Owned objects");
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
     }
 
     @Override

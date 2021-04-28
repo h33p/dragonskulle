@@ -172,6 +172,7 @@ public class Engine {
             }
         }
     }
+
     /**
      * Completely unload a scene from the engine. This will remove the scene regardless of whether
      * it is active, inactive or the presentation scene. No references to the scene will be kept in
@@ -495,18 +496,21 @@ public class Engine {
 
         // Disable all scenes that need to be disabled
         for (Scene s : mScenesToDeactivate) {
+            if (s == null) continue;
             mActiveScenes.remove(s);
             mInactiveScenes.add(s);
         }
 
         // Enable all scenes that need to be enabled
         for (Scene s : mScenesToActivate) {
+            if (s == null) continue;
             mInactiveScenes.remove(s);
             mActiveScenes.add(s);
         }
 
         // Unload all scenes that need to be unloaded and flag all gameobjects for destruction
         for (Scene s : mScenesToUnload) {
+            if (s == null) continue;
             mScenesToUnload.remove(s);
             mActiveScenes.remove(s);
             mInactiveScenes.remove(s);

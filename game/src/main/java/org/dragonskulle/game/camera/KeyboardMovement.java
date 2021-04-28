@@ -19,7 +19,7 @@ import org.dragonskulle.utils.MathUtils;
  */
 @Accessors(prefix = "m")
 public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwake, IZoomNotify {
-    @Getter @Setter public float mMinMoveSpeed = 10f;
+    @Getter @Setter public float mMinMoveSpeed = 5f;
     @Getter @Setter public float mMaxMoveSpeed = 90f;
 
     @Getter @Setter public float mRotateSpeed = 180f;

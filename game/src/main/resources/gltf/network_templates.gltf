@@ -36,7 +36,9 @@
                 2,
                 3,
                 4,
-                5
+                5,
+                6,
+                7
             ]
         }
     ],
@@ -110,7 +112,7 @@
                 }
             },
             "mesh" : 0,
-            "name" : "building",
+            "name" : "old_building",
             "translation" : [
                 -4,
                 0,
@@ -180,6 +182,62 @@
             "name" : "map",
             "translation" : [
                 -10,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSyncHeight",
+                                    "value" : false
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.Building",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "building",
+            "translation" : [
+                -4,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.player.Player",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "aStarAi",
+            "translation" : [
+                -12,
                 0,
                 0
             ]
