@@ -58,13 +58,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     private Reference<MapEffects> mMapEffects;
 
     /** Store a reference to the {@link UIMenuLeftDrawer}. */
-    private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
     /** Store a reference to the {@link UITokenCounter} component. */
     private Reference<UITokenCounter> mTokenCounter;
 
     /** Whether the camera is moving to the capital. */
     private boolean mMovedCameraToCapital = false;
+    @Getter private Reference<UILinkedScrollBar> mScrollBar;
 
     /** Whether the visuals need to be updated. */
     private boolean mVisualsNeedUpdate = true;
@@ -80,13 +81,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void onStart() {
-
+      
         // Create the slider used for zooming.
+        UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
                 .buildChild(
                         "zoom_slider",
                         new TransformUI(true),
-                        (go) -> go.addComponent(new UILinkedScrollBar()));
+                        (go) -> {
+                            go.addComponent(component);
+                        });
+        mScrollBar = component.getReference(UILinkedScrollBar.class);
 
         // Create the token counter.
         UITokenCounter counter = new UITokenCounter();

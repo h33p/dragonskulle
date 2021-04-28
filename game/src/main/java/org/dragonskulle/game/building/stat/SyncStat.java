@@ -25,7 +25,7 @@ public class SyncStat extends SyncInt {
     /** The lowest level possible. */
     public static final int LEVEL_MIN = 1;
     /** The highest level possible. */
-    public static final int LEVEL_MAX = 5;
+    public static final int LEVEL_MAX = 10;
 
     /** The cost of upgrading a stat if there is an error. */
     private static final int sErrorCost = 9999;
