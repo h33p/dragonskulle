@@ -146,6 +146,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      * @param radius The radius around the selected tile.
      * @param includeTile Whether or not to include the selected tile in the resultant {@link
      *     ArrayList}.
+     * @param tilesOut A {@link List} where {@link HexagonTile}s in radius will be filled into.
      * @return A list of tiles within a radius of the selected tile, otherwise an empty ArrayList.
      */
     public List<HexagonTile> getTilesInRadius(

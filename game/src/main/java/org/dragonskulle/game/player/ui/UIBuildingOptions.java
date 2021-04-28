@@ -231,7 +231,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     /** Ensure that the player reference isValid, otherwise fetch. */
     private void ensurePlayerReference() {
         if (Reference.isInvalid(mPlayerReference)) {
-            mPlayerReference = getParent().getParent().mGetPlayer.getPlayer();
+            mPlayerReference =
+                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
         }
     }
 
@@ -243,7 +244,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private void buildOnClick(UIButton __, float ___) {
         if (getParent().getParent().mGetHexChosen.getHex() != null) {
-            Reference<Player> player = getParent().getParent().mGetPlayer.getPlayer();
+            Reference<Player> player =
+                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
             if (Reference.isValid(player)) {
                 player.get()
                         .getClientBuildRequest()

@@ -175,6 +175,10 @@
                                     "value" : 51
                                 }
                             ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.GameState",
+                            "enabled" : true
                         }
                     ]
                 }

@@ -84,14 +84,14 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         void update();
     }
 
-    /** Get the player reference from the parent. */
+    /** Get the {@link Player} from the parent. */
     public interface IGetPlayer {
         /**
-         * Get the player reference.
+         * Get the player.
          *
          * @return the reference
          */
-        Reference<Player> getPlayer();
+        Player getPlayer();
     }
 
     /** Get the building chosen from the parent. */
@@ -285,11 +285,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                                             .get()
                                             .isBuildingAttackable(defendingBuilding);
                             if (canAttack) {
-                                Reference<Player> playerReference = mGetPlayer.getPlayer();
-                                if (Reference.isValid(playerReference)) {
-                                    playerReference
-                                            .get()
-                                            .getClientAttackRequest()
+                                Player player = mGetPlayer.getPlayer();
+                                if (player != null) {
+                                    player.getClientAttackRequest()
                                             .invoke(
                                                     new AttackData(
                                                             mAttackingBuilding.get(),
@@ -317,10 +315,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 (handle, __) -> {
                     Reference<Building> buildingToSell = mGetBuildingChosen.getBuilding();
                     if (Reference.isValid(buildingToSell)) {
-                        Reference<Player> player = mGetPlayer.getPlayer();
-                        if (Reference.isValid(player)) {
-                            player.get()
-                                    .getClientSellRequest()
+                        Player player = mGetPlayer.getPlayer();
+                        if (player != null) {
+                            player.getClientSellRequest()
                                     .invoke(new SellData(buildingToSell.get())); // Send Data
                         }
                     }
@@ -345,7 +342,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                     newScreen = mMapScreenMenu;
                     setShopState(ShopState.CLOSED);
                     break;
-                case UPGRADE_SCREEN:
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
                     setShopState(ShopState.MY_BUILDING_SELECTED, true);
@@ -536,7 +532,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         getGameObject()
                 .buildChild(
                         "shop",
-                        false,
+                        true,
                         new TransformUI(),
                         (go) -> go.addComponent(new UIShopSection(this)));
         ArrayList<Reference<UIShopSection>> shops = new ArrayList<>();

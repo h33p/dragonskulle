@@ -11,6 +11,7 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.renderer.Font;
 import org.dragonskulle.renderer.Mesh;
@@ -19,6 +20,7 @@ import org.dragonskulle.renderer.Texture;
 import org.dragonskulle.renderer.Vertex;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
+import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4fc;
@@ -34,7 +36,7 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
+public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBuildHandler {
     @Getter private String mText = "";
     @Getter private Resource<Font> mFont;
 
@@ -74,6 +76,11 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate {
         } else {
             setMesh(mTextWithCursor);
         }
+    }
+
+    @Override
+    public void handleUIBuild(GameObject go) {
+        go.addComponent(this);
     }
 
     /** Constructor for UIText. */

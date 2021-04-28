@@ -118,7 +118,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     @Getter @Setter private Reference<Player> mActivePlayer;
 
     public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
-        return HighlightSelection.with(new Vector4f(r, g, b, 0.2f));
+        return HighlightSelection.with(new Vector4f(r, g, b, 0.25f));
     }
 
     /**
@@ -227,11 +227,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      */
     private void defaultHighlight() {
 
-        Player activePlayer = mActivePlayer != null ? mActivePlayer.get() : null;
+        Player activePlayer = Reference.isValid(mActivePlayer) ? mActivePlayer.get() : null;
 
         highlightTiles(
                 (tile, __) -> {
-                    if (activePlayer != null && !activePlayer.hasLost()) {
+                    if (activePlayer != null && !activePlayer.gameEnd()) {
                         if (!activePlayer.isTileViewable(tile)) {
                             return FOG_MATERIAL;
                         }
