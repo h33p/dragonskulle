@@ -34,11 +34,14 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     private static enum State {
         MENU,
         SETTINGS,
-        END_GAME
+        END_GAME,
+        QUIT_CONFIRM
     }
 
     /** The current state the pause menu is in. */
     private State mCurrentState = State.MENU;
+
+    private State mQuitBackState = State.MENU;
 
     /** The {@link NetworkManager} being used. */
     private Reference<NetworkManager> mNetworkManager;
@@ -54,9 +57,11 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     private GameObject mSettingsContainer;
     /** Contains the end game menu. */
     private GameObject mEndGameContainer;
+    /** Contains the quit confirmation menu. */
+    private GameObject mQuitConfirmContainer;
     /** Used to grey out the background. */
     private UIRenderable mBackground;
-    /** Text displayed at the end screen */
+    /** Text displayed at the end screen. */
     private UITextRect mEndGameRect;
 
     /** Stores the {@link Screen} the {@link HumanPlayer} was previously on. */
@@ -69,7 +74,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
      * Create a pause menu.
      *
      * @param networkManager The {@link NetworkManager} being used.
-     * @param camera The camera {@link GameObject} being used.
+     * @param camera<F9> The camera {@link GameObject} being used.
      */
     public UIPauseMenu(NetworkManager networkManager, GameObject camera) {
         mNetworkManager = networkManager.getReference(NetworkManager.class);
@@ -86,6 +91,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mSettingsContainer.setEnabled(mPaused && state == State.SETTINGS);
         mMenuContainer.setEnabled(mPaused && state == State.MENU);
         mEndGameContainer.setEnabled(mPaused && state == State.END_GAME);
+        mQuitConfirmContainer.setEnabled(mPaused && state == State.QUIT_CONFIRM);
         mCurrentState = state;
     }
 
@@ -143,17 +149,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                             switchToState(State.SETTINGS);
                         });
 
-        UIButton exit =
-                new UIButton(
-                        "Quit",
-                        (__, ___) -> {
-                            if (Reference.isValid(mNetworkManager)) {
-                                mNetworkManager.get().closeInstance();
-                                ;
-                            } else {
-                                log.severe("Unable to get network manager.");
-                            }
-                        });
+        UIButton exit = new UIButton("Quit", (__, ___) -> onClickQuit());
 
         UIManager.getInstance()
                 .buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
@@ -198,16 +194,44 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                                             0.9f,
                                             mEndGameRect,
                                             new UIButton("View Map", (__, ___) -> setPaused(false)),
-                                            new UIButton(
-                                                    "Quit",
-                                                    (__, ___) -> {
-                                                        if (Reference.isValid(mNetworkManager)) {
-                                                            mNetworkManager.get().closeInstance();
-                                                        }
-                                                    }));
+                                            new UIButton("Quit", (__, ___) -> onClickQuit()));
                         });
 
         getGameObject().addChild(mEndGameContainer);
+
+        mQuitConfirmContainer =
+                new GameObject(
+                        "confirm_quit",
+                        false,
+                        new TransformUI(),
+                        (go) -> {
+                            UIManager.getInstance()
+                                    .buildVerticalUi(
+                                            go,
+                                            0.3f,
+                                            0.3f,
+                                            0.7f,
+                                            new UITextRect("Are you sure?"),
+                                            new UIText("Unsaved progress will be lost."),
+                                            new UIButton(
+                                                    "Yes",
+                                                    (__, ___) -> {
+                                                        if (Reference.isValid(mNetworkManager)) {
+                                                            mNetworkManager.get().closeInstance();
+                                                            ;
+                                                        } else {
+                                                            log.severe(
+                                                                    "Unable to get network manager.");
+                                                        }
+                                                    }),
+                                            new UIButton(
+                                                    "No",
+                                                    (__, ___) -> {
+                                                        switchToState(mQuitBackState);
+                                                    }));
+                        });
+
+        getGameObject().addChild(mQuitConfirmContainer);
 
         // Used to grey out the background.
         mBackground = new UIRenderable(new Vector4f(1f, 1f, 1f, 0.25f));
@@ -272,6 +296,11 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         if (Reference.isValid(scrollBar)) {
             scrollBar.get().getGameObject().setEnabled(!hide);
         }
+    }
+
+    private void onClickQuit() {
+        mQuitBackState = mCurrentState;
+        switchToState(State.QUIT_CONFIRM);
     }
 
     @Override
