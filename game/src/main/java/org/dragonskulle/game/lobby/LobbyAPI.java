@@ -19,6 +19,7 @@ import lombok.extern.java.Log;
 public class LobbyAPI {
 
     private static final String API_URL = "https://dragonskulle.vercel.app/api/hosts";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0";
     private static URL url;
 
     static {
@@ -101,6 +102,7 @@ public class LobbyAPI {
                 HttpURLConnection con = (HttpURLConnection) mUrl.openConnection();
                 con.setRequestMethod(mMethod);
                 con.setConnectTimeout(5000);
+                con.setRequestProperty("User-Agent", USER_AGENT);
 
                 if (mMethod.equals("POST")) {
                     con.setDoOutput(true);
