@@ -248,7 +248,7 @@ public class Lobby extends Component implements IFrameUpdate {
 
         final GameObject serverList = mServerList.get();
 
-        UIManager.IUIBuildHandler[] uiElements = new UIButton[mHosts.size() + 2];
+        UIManager.IUIBuildHandler[] uiElements = new UIManager.IUIBuildHandler[mHosts.size() + 3];
 
         int i = 1;
         for (Map.Entry<String, String> entry : mHosts.entrySet()) {
@@ -279,7 +279,11 @@ public class Lobby extends Component implements IFrameUpdate {
             i++;
         }
 
-        uiElements[0] =
+        UIInputBox inputBox = new UIInputBox("Enter Lobby ID");
+
+        uiElements[0] = inputBox;
+
+        uiElements[1] =
                 new UIButton(
                         "Refresh",
                         (button, ___) -> {
@@ -295,15 +299,12 @@ public class Lobby extends Component implements IFrameUpdate {
                             mServerBrowserUi.setEnabled(false);
                         });
 
-        UIInputBox inputBox = new UIInputBox("Enter Lobby ID");
-
         UIManager.getInstance()
                 .buildVerticalUi(
                         serverList,
                         0.05f,
                         0.15f,
                         0.35f,
-                        inputBox,
                         new UIButton(
                                 "Join with ID",
                                 (button, ___) -> {
