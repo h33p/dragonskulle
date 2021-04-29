@@ -102,7 +102,9 @@ public class LobbyAPI {
             try {
                 HttpURLConnection con = (HttpURLConnection) mUrl.openConnection();
                 con.setRequestMethod(mMethod);
-                con.setConnectTimeout(5000);
+                con.setConnectTimeout(10000);
+                con.setReadTimeout(10000);
+
                 con.setRequestProperty("User-Agent", USER_AGENT);
 
                 if (mMethod.equals("POST")) {
