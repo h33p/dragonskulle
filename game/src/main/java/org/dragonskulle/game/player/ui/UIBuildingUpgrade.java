@@ -38,7 +38,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private final UIShopSection mParent;
 
     private final HashMap<StatType, Reference<UITextRect>> mLevelTexts = new HashMap<>();
-    private final HashMap<StatType, Reference<UITextRect>> mValueTexts = new HashMap<>();
+    private final HashMap<StatType, Reference<UITextRect>> mCostTexts = new HashMap<>();
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
@@ -80,7 +80,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
             tokenGenCost = String.valueOf(building.getStat(StatType.TOKEN_GENERATION).getCost());
         }
         storeReferences(attackLevel, defenceLevel, tokenGenLevel, mLevelTexts);
-        storeReferences(attackCost, defenceCost, tokenGenCost, mValueTexts);
+        storeReferences(attackCost, defenceCost, tokenGenCost, mCostTexts);
 
         getGameObject()
                 .buildChild(
@@ -113,7 +113,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                         g.addComponent(new UIText("COST"));
                                     });
                             manager.buildHorizontalUI(
-                                    self, 0.05f, 0.65f, 1.15f, unpackReferences(mValueTexts));
+                                    self, 0.05f, 0.65f, 1.15f, unpackReferences(mCostTexts));
                         });
     }
 
@@ -241,7 +241,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the upgradeable stat
      */
     private void updateVisibleStat(SyncStat upgradeableStat) {
-        if (upgradeableStat.isMaxLevel()) disableFurtherUpgrade(upgradeableStat);
+        disableIfMaxLevel(upgradeableStat);
         setLevelTextRef(upgradeableStat);
         setCostTextRef(upgradeableStat);
     }
@@ -251,9 +251,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      *
      * @param upgradeableStat the upgradeable stat which is at max level
      */
-    private void disableFurtherUpgrade(SyncStat upgradeableStat) {
+    private void disableIfMaxLevel(SyncStat upgradeableStat) {
         Reference<UIButton> uiButtonReference = mUpgradeButtonRefs.get(upgradeableStat.getType());
-        if (Reference.isValid(uiButtonReference)) uiButtonReference.get().setEnabled(false);
+        boolean shouldDisable = !upgradeableStat.isMaxLevel();
+        if (Reference.isValid(uiButtonReference)) {
+            uiButtonReference.get().setEnabled(shouldDisable);
+        }
     }
 
     /**
@@ -262,7 +265,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param upgradeableStat the stat to update
      */
     private void setCostTextRef(SyncStat upgradeableStat) {
-        Reference<UITextRect> textRef = mValueTexts.get(upgradeableStat.getType());
+        Reference<UITextRect> textRef = mCostTexts.get(upgradeableStat.getType());
         if (Reference.isValid(textRef)) {
             Reference<UIText> label = textRef.get().getLabelText();
             setTextOnRef(label, (String.valueOf(upgradeableStat.getCost())));
@@ -278,7 +281,13 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         Reference<UITextRect> textRef = mLevelTexts.get(upgradeableStat.getType());
         if (Reference.isValid(textRef)) {
             Reference<UIText> label = textRef.get().getLabelText();
-            setTextOnRef(label, (String.valueOf(upgradeableStat.getLevel())));
+            String s;
+            if (upgradeableStat.isMaxLevel()) {
+                s = "MAX";
+            } else {
+                s = String.valueOf(upgradeableStat.getLevel());
+            }
+            setTextOnRef(label, s);
         }
     }
 
