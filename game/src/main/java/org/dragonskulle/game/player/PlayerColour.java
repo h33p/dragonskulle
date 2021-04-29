@@ -19,17 +19,17 @@ import org.joml.Vector3fc;
 enum PlayerColour {
     // BLACK(0, 0, 0),
     // GREY(64, 64, 64),
-    RED(255, 0, 0),
-    ORANGE(255, 106, 0),
+    // RED(255, 0, 0),
     // YELLOW(255, 216, 0),
-    LIGHT_BLUE(0, 255, 255),
     // SKY_BLUE(0, 148, 255),
-    BLUE(0, 0, 255),
     // DARK_BLUE(0, 0, 128),
-    DARK_PURPLE(72, 0, 255),
-    PURPLE(178, 0, 255),
     // PINK(255, 0, 255),
-    WHITE(255, 255, 255);
+    ORANGE(255, 106, 0),
+    BLUE(0, 0, 255),
+    PURPLE(178, 0, 255),
+    LIGHT_BLUE(0, 255, 255),
+    WHITE(255, 255, 255),
+    DARK_PURPLE(72, 0, 255);
 
     /** The minimum normal RBG value. */
     private static final int sMin = 0;
