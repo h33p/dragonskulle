@@ -375,15 +375,13 @@ public class ClientNetworkManager {
 
     private void joinLobby() {
         mConnectionState = ConnectionState.CONNECTED;
-
-        mManager.createGameScene(false);
     }
 
     /** Join the game map. */
     private void joinGame() {
         Engine engine = Engine.getInstance();
 
-        // mManager.createGameScene(false);
+        mManager.createGameScene(false);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());

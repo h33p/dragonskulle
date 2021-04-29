@@ -210,7 +210,6 @@ public class ServerNetworkManager {
         mServer = new Server(port, mListener);
         mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
-        mManager.createGameScene(true);
     }
 
     public void start() {
@@ -222,6 +221,8 @@ public class ServerNetworkManager {
     /** Start the game, load game scene. */
     void startGame() {
         Engine engine = Engine.getInstance();
+
+        mManager.createGameScene(true);
 
         if (engine.getPresentationScene() == Scene.getActiveScene()) {
             engine.loadPresentationScene(mManager.getGameScene());
