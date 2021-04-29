@@ -369,6 +369,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Host public lobby",
                                 (__, ___) -> {
+                                    UPnP.addPortMapping(17569, "TCP");
                                     String ip = UPnP.getExternalIPAddress();
                                     LobbyAPI.addNewHost(ip, PORT, this::onAddNewHost);
                                     mNetworkManager
