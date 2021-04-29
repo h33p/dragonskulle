@@ -226,9 +226,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         List<HexagonTile> buildable =
-                getMap().getAllTiles()
-                        .filter((tile) -> tile.isBuildable(getMap()))
-                        .collect(Collectors.toList());
+                getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
         if (buildable.isEmpty()) {
             // Cannot add a capital
             setOwnsCapital(false);
@@ -248,6 +246,37 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             mGameState.get().getNumCapitalsStanding().add(1);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
         }
+    }
+
+    /**
+     * Determines if for a given player if this tile is buildable upon.
+     *
+     * @param tile The {@code HexagonTile} to check for
+     * @return true if buildable, false otherwise
+     */
+    private boolean isBuildable(HexagonTile tile) {
+
+        if (getMap() == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (tile.isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (tile.hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        if (getMap().isIsland(tile)) {
+            log.warning("This is an island and a capital cannot be placed here");
+            return false;
+        }
+
+        return true;
     }
 
     /**
