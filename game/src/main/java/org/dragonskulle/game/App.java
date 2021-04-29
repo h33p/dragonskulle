@@ -18,12 +18,9 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.lobby.Lobby;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UISettingsMenu;
-import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
@@ -407,56 +404,6 @@ public class App implements NativeResource {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
-    }
-
-    private void onConnectedClient(Scene gameScene, NetworkManager manager, int netId) {
-        log.info("CONNECTED ID " + netId);
-
-        HumanPlayer humanPlayer =
-                new HumanPlayer(manager.getReference(NetworkManager.class), netId);
-
-        GameObject humanPlayerObject =
-                new GameObject(
-                        "human player",
-                        (handle) -> {
-                            handle.addComponent(humanPlayer);
-                        });
-
-        gameScene.addRootObject(humanPlayerObject);
-
-        gameScene.registerSingleton(humanPlayer);
-        log.info("Registered HumanPlayer as singleton.");
-    }
-
-    private void onClientConnected(
-            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
-        int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
-    }
-
-    private void onGameStarted(NetworkManager manager) {
-        log.severe("Game Start");
-        log.warning("Spawning 'Server' Owned objects");
-        Reference<NetworkObject> obj =
-                manager.getServerManager()
-                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
-
-        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
-
-        // 6 players for now
-        gameState.get().getNumPlayers().set(6);
-
-        gameState
-                .get()
-                .registerGameEndListener(
-                        new Reference<>(
-                                (__) -> {
-                                    UIPauseMenu pauseMenu =
-                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
-                                    if (pauseMenu != null) {
-                                        pauseMenu.endGame();
-                                    }
-                                }));
     }
 
     @Override

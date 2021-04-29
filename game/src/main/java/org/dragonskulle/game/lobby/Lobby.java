@@ -12,10 +12,13 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIInputBox;
@@ -509,8 +512,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         "human player",
                         (handle) -> {
                             handle.addComponent(
-                                    new HumanPlayer(
-                                            manager.getReference(NetworkManager.class), netId));
+                                    new HumanPlayer(manager.getReference(NetworkManager.class)));
                         });
 
         gameScene.addRootObject(humanPlayer);
@@ -539,7 +541,26 @@ public class Lobby extends Component implements IFrameUpdate {
     private void onGameStarted(NetworkManager manager) {
         log.fine("Game Start");
         log.fine("Spawning 'Server' Owned objects");
-        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+        Reference<NetworkObject> obj =
+                manager.getServerManager()
+                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+
+        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
+
+        // 6 players for now
+        gameState.get().getNumPlayers().set(6);
+
+        gameState
+                .get()
+                .registerGameEndListener(
+                        new Reference<>(
+                                (__) -> {
+                                    UIPauseMenu pauseMenu =
+                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
+                                    if (pauseMenu != null) {
+                                        pauseMenu.endGame();
+                                    }
+                                }));
     }
 
     @Override
@@ -553,5 +574,9 @@ public class Lobby extends Component implements IFrameUpdate {
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+        if (!mLobbyId.equals("")) {
+            LobbyAPI.deleteHost(mLobbyId, null);
+        }
+    }
 }
