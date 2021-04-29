@@ -162,7 +162,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                 new UISlider(
                         AudioManager.getInstance().getMasterVolume(),
                         (__, value) -> {
-                            settingsInstance.saveValue("masterVolume", value);
+                            settingsInstance.saveValue(AudioManager.settingsVolumeString, value);
                             AudioManager.getInstance().setMasterVolume(value);
                         },
                         (__, ___) -> settingsInstance.save() // on button release
@@ -210,12 +210,12 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
         UISlider uiSlider =
                 new UISlider(
-                        settingsInstance.retrieveFloat("cursorScale", 0.4f),
+                        settingsInstance.retrieveFloat(Cursor.settingsString, 0.4f),
                         0.1f,
                         1f,
                         0.01f,
                         (__, value) -> { // on slider change
-                            settingsInstance.saveValue("cursorScale", value);
+                            settingsInstance.saveValue(Cursor.settingsString, value);
                             try {
                                 Cursor.setCustomCursor(
                                         Engine.getInstance().getGLFWState().getWindow(), value);
