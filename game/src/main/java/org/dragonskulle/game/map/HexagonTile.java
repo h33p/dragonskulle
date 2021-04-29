@@ -121,11 +121,6 @@ public class HexagonTile implements INetSerializable {
 
     private int mNextClaimedBy = -1;
 
-    /** Reference to the {@link Player} that owns this tile. Must also own mClaimedBy */
-    private Reference<Player> mPlayer = null;
-
-    private int mNextPlayer = -1;
-
     /**
      * Constructor that creates the HexagonTile.
      *
@@ -198,7 +193,6 @@ public class HexagonTile implements INetSerializable {
 
         building.onClaimTile(this);
         mClaimedBy = building.getReference(Building.class);
-        mPlayer = building.getOwner().getReference(Player.class);
         mHandler.update(this);
 
         return true;
@@ -206,11 +200,10 @@ public class HexagonTile implements INetSerializable {
 
     /** Remove any claim over the HexagonTile. */
     public void removeClaim() {
-        if (mClaimedBy != null || mPlayer != null) {
+        if (mClaimedBy != null) {
             mHandler.update(this);
         }
         mClaimedBy = null;
-        mPlayer = null;
     }
 
     /**
@@ -219,7 +212,7 @@ public class HexagonTile implements INetSerializable {
      * @return Whether the tile is claimed by a building.
      */
     public boolean isClaimed() {
-        return Reference.isValid(mPlayer);
+        return Reference.isValid(mClaimedBy);
     }
 
     /**
@@ -233,7 +226,7 @@ public class HexagonTile implements INetSerializable {
             return null;
         }
 
-        return mPlayer.get();
+        return mClaimedBy.get().getOwner();
     }
 
     /**
@@ -377,16 +370,6 @@ public class HexagonTile implements INetSerializable {
 
         stream.writeInt(id);
 
-        final int claimantId;
-
-        if (Reference.isValid(mPlayer)) {
-            claimantId = mPlayer.get().getNetworkObject().getId();
-        } else {
-            claimantId = -1;
-        }
-
-        stream.writeInt(claimantId);
-
         final int claimId;
 
         if (Reference.isValid(mClaimedBy)) {
@@ -424,12 +407,11 @@ public class HexagonTile implements INetSerializable {
             setBuilding(null);
         }
 
-        mNextPlayer = stream.readInt();
         mNextClaimedBy = stream.readInt();
 
-        if (mNextClaimedBy >= 0 || mNextPlayer >= 0) {
+        if (mNextClaimedBy >= 0) {
             onClaimChange(manager);
-        } else if (Reference.isValid(mClaimedBy) || Reference.isValid(mPlayer)) {
+        } else if (Reference.isValid(mClaimedBy)) {
             removeClaim();
         }
     }
@@ -467,18 +449,8 @@ public class HexagonTile implements INetSerializable {
      */
     private void onClaimChange(NetworkManager manager) {
 
-        if (mNextClaimedBy < 0 && mNextPlayer < 0) {
+        if (mNextClaimedBy < 0) {
             return;
-        }
-
-        NetworkObject pobj = manager.getObjectById(mNextPlayer);
-
-        Reference<Player> p = pobj == null ? null : pobj.getGameObject().getComponent(Player.class);
-
-        if (Reference.isValid(p)) {
-            removeClaim();
-            mPlayer = p;
-            mNextPlayer = -1;
         }
 
         NetworkObject obj = manager.getObjectById(mNextClaimedBy);
@@ -491,15 +463,9 @@ public class HexagonTile implements INetSerializable {
             Engine.getInstance().scheduleEndOfLoopEvent(() -> onClaimChange(manager));
             log.fine("Deserialized a claimant, but did not find it locally!");
         } else if (b != mClaimedBy) {
-
-            if (b.get().getOwner().getReference(Player.class) != mPlayer) {
-                log.severe("Player owner and building mismatch!");
-            }
-
             removeClaim();
             setClaimedBy(b.get());
             mNextClaimedBy = -1;
-            mNextPlayer = -1;
         }
     }
 
