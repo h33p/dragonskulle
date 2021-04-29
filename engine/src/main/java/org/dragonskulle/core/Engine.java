@@ -62,9 +62,10 @@ public class Engine {
     /** Engine's GLFW window state. */
     @Getter private GLFWState mGLFWState = null;
 
-    private final ArrayList<IScheduledEvent> mFrameEvents = new ArrayList<>();
-    private final ArrayList<IScheduledEvent> mEndOfLoopEvents = new ArrayList<>();
-    private final ArrayList<IScheduledEvent> mFixedUpdateEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mFrameEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mEndOfLoopEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mFixedUpdateEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mEventsToConsume = new ArrayList<>();
 
     @Getter private float mCurTime = 0f;
 
@@ -309,11 +310,9 @@ public class Engine {
                 lateNetworkUpdate();
             }
 
-            for (IScheduledEvent event : mEndOfLoopEvents) {
-                event.invoke();
-            }
-
-            mEndOfLoopEvents.clear();
+            ArrayList<IScheduledEvent> toConsume = mEndOfLoopEvents;
+            mEndOfLoopEvents = mEventsToConsume;
+            consumeEvents(toConsume);
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
@@ -351,6 +350,14 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
+    private void consumeEvents(ArrayList<IScheduledEvent> toConsume) {
+        mEventsToConsume = toConsume;
+        for (IScheduledEvent event : mEventsToConsume) {
+            event.invoke();
+        }
+        mEventsToConsume.clear();
+    }
+
     /**
      * Do all frameUpdates on components that implement it. Only components in the presentation
      * scene have frame update called
@@ -358,11 +365,9 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(float deltaTime) {
-        for (IScheduledEvent event : mFrameEvents) {
-            event.invoke();
-        }
-
-        mFrameEvents.clear();
+        ArrayList<IScheduledEvent> toConsume = mFrameEvents;
+        mFrameEvents = mEventsToConsume;
+        consumeEvents(toConsume);
 
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
@@ -373,11 +378,9 @@ public class Engine {
 
     /** Do all Fixed Updates on components that implement it. */
     private void fixedUpdate() {
-        for (IScheduledEvent event : mFixedUpdateEvents) {
-            event.invoke();
-        }
-
-        mFixedUpdateEvents.clear();
+        ArrayList<IScheduledEvent> toConsume = mFixedUpdateEvents;
+        mFixedUpdateEvents = mEventsToConsume;
+        consumeEvents(toConsume);
 
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
