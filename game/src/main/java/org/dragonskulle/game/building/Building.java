@@ -223,6 +223,7 @@ public class Building extends NetworkableComponent
         GameObject generationMesh =
                 GameObject.instantiate(
                         gltf.getDefaultScene().findRootObject("generation_building"));
+        getGameObject().addComponent(mBuildingProps.get());
         getGameObject().addChild(baseMesh);
         getGameObject().addChild(defenceMesh);
         getGameObject().addChild(attackMesh);
@@ -235,7 +236,6 @@ public class Building extends NetworkableComponent
         mDefenceMesh = defenceMesh.getReference();
         mAttackMesh = attackMesh.getReference();
         mGenerationMesh = generationMesh.getReference();
-
     }
 
     /**
