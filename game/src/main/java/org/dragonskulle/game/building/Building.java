@@ -38,6 +38,11 @@ public class Building extends NetworkableComponent
         implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
 
     /**
+     * The base prop mesh.
+     */
+    private Reference<BuildingProps> mBuildingProps;
+
+    /**
      * A map between {@link StatType}s and their {@link SyncStat} values.
      */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -352,7 +357,6 @@ public class Building extends NetworkableComponent
     }
 
     private void assignMesh() {
-
 
         Map.Entry<StatType, Integer> max = getStatForVisuals();
         if (max == null) {
