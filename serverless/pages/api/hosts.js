@@ -34,7 +34,7 @@ export default function handler(req, res) {
                     resolve();
                 })
             }
-            let hash = md5(base.address + base.port);
+            let hash = md5(Date.now());
             base["_code"] = hash.shuffle().substring(0, Math.min(6,hash.length)).toUpperCase();
             console.log(base);
             return new Promise((resolve, _reject) => {
