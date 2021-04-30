@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
@@ -36,7 +36,7 @@ import org.dragonskulle.ui.UITextRect;
  */
 @Log
 @Accessors(prefix = "m")
-public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpdate {
+public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwake {
     @Getter(AccessLevel.PROTECTED)
     private final UIShopSection mParent;
 
@@ -45,7 +45,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
     private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
     private Building mLastBuilding = null;
-    @Getter @Setter private int mBuildingStatUpdateCount;
+    @Getter @Setter private int mBuildingStatUpdateCount = -1;
     private final HashMap<StatType, Reference<UIButton>> mUpgradeButtonRefs = new HashMap<>();
     private Reference<GameObject> mCostLabel;
 
@@ -67,7 +67,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * frameUpdate. Used for setup of references to necessary Components and GameObjects
      */
     @Override
-    public void onStart() {
+    public void onAwake() {
         mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
         mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
 
@@ -298,4 +298,9 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
             textRef.get().setText(value);
         }
     }
+    //
+    //    @Override
+    //    public void onAwake() {
+    //
+    //    }
 }
