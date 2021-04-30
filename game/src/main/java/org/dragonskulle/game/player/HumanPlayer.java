@@ -301,27 +301,28 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         switch (mCurrentScreen) {
             case DEFAULT_SCREEN:
-                effects.setHighlightOverlay(
+            	effects.setDefaultHighlight(true);
+            	effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                effects.setHighlightOverlay(
+            	effects.setDefaultHighlight(true);
+            	effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
-                            highlightAttackableTiles(fx, StandardHighlightType.PLAIN);
                         });
                 break;
             case ATTACKING_SCREEN:
-                effects.setDefaultHighlight(true);
+                effects.setDefaultHighlight(false);
                 effects.setHighlightOverlay(
                         (fx) -> {
-                            highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
-                            highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            highlightAttackableTiles(fx, StandardHighlightType.ATTACK, StandardHighlightType.VALID);
                         });
                 break;
             case SELLING_SCREEN:
+            	effects.setDefaultHighlight(true);
                 break;
             case PLACING_NEW_BUILDING:
                 effects.setDefaultHighlight(true);
@@ -386,12 +387,37 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
-    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
-        if (!Reference.isValid(mBuildingChosen) || fx == null || highlight == null) return;
-
-        for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
-            fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+    /**
+     * Highlight surrounding Buildings based on the {@link #mHexChosen}.
+     * 
+     * @param fx The MapEffects to be used.
+     * @param attackHighlight Used to highlight attackable buildings.
+     * @param selectHighlight Used when an attackable building is selected.
+     */
+    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType attackHighlight, StandardHighlightType selectHighlight) {
+        if (mHexChosen == null || fx == null || attackHighlight == null || selectHighlight == null) return;
+        Player player = getPlayer();
+        if(player == null || !mHexChosen.hasBuilding()) return;
+        Building myBuilding = mHexChosen.getBuilding();
+        
+        Building targetBuilding = null;
+        if(Reference.isValid(mBuildingChosen)) {
+        	targetBuilding = mBuildingChosen.get();
         }
+        
+        for (Building attackableBuilding : myBuilding.getAttackableBuildings()) {
+        	HexagonTile tile = attackableBuilding.getTile();
+
+        	// Highlight the building to attack in a different colour.
+        	if(targetBuilding != null && attackableBuilding.equals(targetBuilding)) {
+        		fx.highlightTile(tile, selectHighlight.asSelection());
+        		continue;
+            }
+        	
+        	fx.highlightTile(tile, attackHighlight.asSelection());
+        }
+        
+        mVisualsNeedUpdate = true;
     }
 
     /**

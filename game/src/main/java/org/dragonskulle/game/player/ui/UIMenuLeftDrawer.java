@@ -583,9 +583,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     /**
-     * Ensure the chosen HexagonTile has a player owned building.
+     * Ensure the chosen HexagonTile has a player owned building, if in attack mode.
      */
     private void checkOwnership() {
+    	
+    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
+    	
     	HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building building = tile.getBuilding();
@@ -601,7 +604,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
     
     private void updateSellButton() {
-        if (!Reference.isValid(mBuildScreenMenu)) return;
+        
+    	if(mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
+    	
+    	if (!Reference.isValid(mBuildScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
         GameObject menu = mBuildScreenMenu.get();
@@ -624,6 +630,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     private void updateAttackLaunchButton() {
+    	
+    	if(mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
+    	
     	if (!Reference.isValid(mBuildScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
@@ -648,7 +657,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
     
     private void updateAttackCostButton() {
-        if (!Reference.isValid(mAttackScreenMenu)) return;
+        
+    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
+    	
+    	if (!Reference.isValid(mAttackScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
         GameObject menu = mAttackScreenMenu.get();

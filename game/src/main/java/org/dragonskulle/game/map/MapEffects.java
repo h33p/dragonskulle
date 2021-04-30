@@ -95,11 +95,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection VALID_MATERIAL =
             highlightSelectionFromColour(0.1f, 0.6f, 0f);
     public static final HighlightSelection INVALID_MATERIAL =
-            highlightSelectionFromColour(1f, 0f, 0f);
+            highlightSelectionFromColour(1f, 0f, 0f, 0.1f);
     public static final HighlightSelection PLAIN_MATERIAL =
             highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final HighlightSelection ATTACK_MATERIAL =
-            highlightSelectionFromColour(0.9f, 0.3f, 0.3f);
+    		highlightSelectionFromColour(0.9f, 0.1f, 0.1f, 0.5f);
     public static final HighlightSelection BUILD_MATERIAL =
             highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
     public static final HighlightSelection FOG_MATERIAL =
@@ -117,8 +117,29 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     @Getter @Setter private Reference<Player> mActivePlayer;
 
+    /**
+     * Create a new {@link HighlightSelection} with the specified values.
+     * 
+     * @param r The red.
+     * @param g The green.
+     * @param b The blue.
+     * @return The new HighlightSelection.
+     */
     public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
-        return HighlightSelection.with(new Vector4f(r, g, b, 0.25f));
+        return highlightSelectionFromColour(r, g, b, 0.25f);
+    }
+    
+    /**
+     * Create a new {@link HighlightSelection} with the specified values.
+     * 
+     * @param r The red.
+     * @param g The green.
+     * @param b The blue.
+     * @param alpha The alpha.
+     * @return The new HighlightSelection.
+     */
+    public static HighlightSelection highlightSelectionFromColour(float r, float g, float b, float alpha) {
+        return HighlightSelection.with(new Vector4f(r, g, b, alpha));
     }
 
     /**
