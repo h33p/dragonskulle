@@ -60,7 +60,7 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
     @Override
     public void fixedUpdate(float deltaTime) {
         if (mCurTokens == mTargetTokens) return;
-        float step = Math.abs(mTargetTokens - mCurTokens) / 100;
+        float step = Math.abs(mTargetTokens - mCurTokens) / 2;
         float incrToken = mCurTokens + (mCurTokens < mTargetTokens ? step : -step);
         setTokens(incrToken);
     }

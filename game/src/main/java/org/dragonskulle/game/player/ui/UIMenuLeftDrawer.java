@@ -190,9 +190,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         ArrayList<UITextButtonFrame> buildingSelectedScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mPlaceNewBuildingScreenMenuItems = new ArrayList<>();
 
+        attackScreenMenuItems.add(new UITextButtonFrame("attack_cost", "Cost: ", (__, ___) -> {}, true));
         attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
         attackScreenMenuItems.add(buildCancelAttackButtonFrame());
         mAttackScreenMenu = buildMenu(attackScreenMenuItems);
+        mAttackScreenMenu.get().getChildren().get(0).setEnabled(false);
 
         mSellConfirmScreenMenuItems.add(buildConfirmSellButtonFrame());
         mSellConfirmScreenMenuItems.add(buildCancelSellButtonFrame());
@@ -267,21 +269,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     /**
-     * Build the cancel build button frame.
-     *
-     * @return the ui text button frame
-     */
-    private UITextButtonFrame buildCancelBuildButtonFrame() {
-        return new UITextButtonFrame(
-                "cancel_build",
-                "Cancel Build",
-                (handle, __) -> {
-                    mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
-                },
-                true);
-    }
-
-    /**
      * Build the confirm attack button frame.
      *
      * @return the ui text button frame
@@ -316,7 +303,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 },
                 true);
     }
-
+    
     /**
      * Build the confirm sell button frame.
      *
@@ -489,36 +476,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     /**
-     * Build the deselect button frame.
-     *
-     * @return the ui text button frame
-     */
-    private UITextButtonFrame buildDeselectButtonFrame() {
-        return new UITextButtonFrame(
-                "deselect_button",
-                "Deselect Tile",
-                (handle, __) -> {
-                    mSetHexChosen.setHex(null);
-                    mSetBuildingChosen.setBuilding(null);
-                    mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
-                },
-                true);
-    }
-
-    /**
-     * Build the place button frame.
-     *
-     * @return the ui text button frame
-     */
-    private UITextButtonFrame buildPlaceButtonFrame() {
-        return new UITextButtonFrame(
-                "place_button",
-                "Place Building",
-                (handle, __) -> mNotifyScreenChange.call(Screen.PLACING_NEW_BUILDING),
-                true);
-    }
-
-    /**
      * Build the sell button frame.
      *
      * @return the ui text button frame
@@ -656,7 +613,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
     }
     
-    private void updateAttackCostButton() {
+    private void updateAttackCostText() {
         
     	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
     	
@@ -678,18 +635,49 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (player == null) return;
 
         if (player.isBuildingOwner(building)) {
+            text.get().setText("Cost: -");
+            button.get().setEnabled(false);
+            return;
+        }
+
+        int cost = building.getAttackCost();
+        text.get().setText("Cost: " + cost);
+    }
+    
+    private void updateAttackButton() {
+    	
+    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
+    	
+    	if (!Reference.isValid(mAttackScreenMenu)) return;
+        if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
+        Building building = mGetBuildingChosen.getBuilding().get();
+        GameObject menu = mAttackScreenMenu.get();
+        if (menu.getChildren().size() < 1) return;
+        GameObject child = menu.getChildren().get(1);
+
+        Reference<UIButton> button = child.getComponent(UIButton.class);
+        if (!Reference.isValid(button)) return;
+
+        Reference<UIText> text = button.get().getLabelText();
+        if (!Reference.isValid(text)) return;
+
+        if (mGetPlayer == null) return;
+        Player player = mGetPlayer.getPlayer();
+        if (player == null) return;
+
+        if (player.isBuildingOwner(building)) {
             text.get().setText("[SELECT A BUILDING]");
             button.get().setEnabled(false);
             return;
         }
 
         int cost = building.getAttackCost();
-        text.get().setText("Attack for " + cost);
-
         if (cost <= player.getTokens().get()) {
-            button.get().setEnabled(true);
+        	text.get().setText("Attack!");
+        	button.get().setEnabled(true);
         } else {
-            button.get().setEnabled(false);
+        	text.get().setText("[TOO EXPENSIVE]");
+        	button.get().setEnabled(false);
         }
     }
 
@@ -698,6 +686,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         checkOwnership();
     	updateSellButton();
     	updateAttackLaunchButton();
-    	updateAttackCostButton();
+    	updateAttackCostText();
+    	updateAttackButton();
     }
 }
