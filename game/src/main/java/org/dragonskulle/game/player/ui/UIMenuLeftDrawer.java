@@ -238,6 +238,14 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 "cancel_attack",
                 "Cancel Attack",
                 (handle, __) -> {
+                	// Reset the Building back to the HexagonTile's building.                	
+                    HexagonTile tile = mGetHexChosen.getHex();
+                    if(tile == null) return;
+                    
+                    if(tile.hasBuilding()) {
+                    	mSetBuildingChosen.setBuilding(tile.getBuilding().getReference(Building.class));
+                    }
+                    
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -469,10 +477,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.getBuilding();
                     if (Reference.isValid(buildingChosen)) {
-                        mSetHexChosen.setHex(null);
                         mNotifyScreenChange.call(Screen.ATTACKING_SCREEN);
                     } else {
-                        mSetHexChosen.setHex(null);
                         mSetBuildingChosen.setBuilding(null);
                         mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
                     }
