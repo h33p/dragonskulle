@@ -49,6 +49,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(Scene gameScene, NetworkManager manager, int netID);
     }
 
+    public interface IHostClosedGameEvent {
+        /** Handle the host ended game event */
+        void handle();
+    }
+
     /** Simple server client connection handler interface. */
     public interface IClientLoadedEvent {
         /**
@@ -65,6 +70,15 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     public interface IGameStartEvent {
         /**
          * Handle game start event.
+         *
+         * @param manager network manager which the event is called from
+         */
+        void handle(NetworkManager manager);
+    }
+
+    public interface IGameEndEvent {
+        /**
+         * Handle game end event.
          *
          * @param manager network manager which the event is called from
          */
@@ -151,9 +165,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
             String ip,
             int port,
             IConnectionResultEvent resultHandler,
-            IHostStartedGameEvent startHandler) {
+            IHostStartedGameEvent startHandler,
+            IHostClosedGameEvent closedHandler) {
         if (mClientManager == null && mServerManager == null) {
-            mClientManager = new ClientNetworkManager(this, ip, port, resultHandler, startHandler);
+            mClientManager =
+                    new ClientNetworkManager(
+                            this, ip, port, resultHandler, startHandler, closedHandler);
         }
     }
 
@@ -165,11 +182,15 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      * @param startEventHandler callback that gets called when the game starts
      */
     public void createServer(
-            int port, IClientLoadedEvent connectionHandler, IGameStartEvent startEventHandler) {
+            int port,
+            IClientLoadedEvent connectionHandler,
+            IGameStartEvent startEventHandler,
+            IGameEndEvent endEventHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
                 mServerManager =
-                        new ServerNetworkManager(this, port, connectionHandler, startEventHandler);
+                        new ServerNetworkManager(
+                                this, port, connectionHandler, startEventHandler, endEventHandler);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -177,6 +177,8 @@ public class ClientNetworkManager {
     private final NetworkManager.IConnectionResultEvent mConnectionHandler;
     /** Callback for when host has started game. */
     private final NetworkManager.IHostStartedGameEvent mHostStartedHandler;
+    /** Callback for when host has ended game. */
+    private final NetworkManager.IHostClosedGameEvent mHostClosedHandler;
     /** Back reference to the network manager. */
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates. */
@@ -205,12 +207,14 @@ public class ClientNetworkManager {
             String ip,
             int port,
             NetworkManager.IConnectionResultEvent handler,
-            NetworkManager.IHostStartedGameEvent startHandler) {
+            NetworkManager.IHostStartedGameEvent startHandler,
+            NetworkManager.IHostClosedGameEvent closedHandler) {
         mManager = manager;
         mConnectionState = ConnectionState.CONNECTING;
         mClient = new NetworkClient(ip, port, mListener);
         mConnectionHandler = handler;
         mHostStartedHandler = startHandler;
+        mHostClosedHandler = closedHandler;
     }
 
     /**
@@ -264,6 +268,10 @@ public class ClientNetworkManager {
     public void disconnect() {
         mConnectionState = ConnectionState.NOT_CONNECTED;
         mClient.dispose();
+
+        if (mHostClosedHandler != null) {
+            mHostClosedHandler.handle();
+        }
 
         mNetworkObjectReferences.values().stream()
                 .map(e -> e.mNetworkObject)

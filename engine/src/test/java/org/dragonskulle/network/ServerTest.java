@@ -108,7 +108,8 @@ public class ServerTest {
                         man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
                         man.getServerManager()
                                 .spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
-                    });
+                    },
+                    null);
 
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
@@ -118,6 +119,7 @@ public class ServerTest {
                         log.info("CONNECTED TO SERVER");
                         assertTrue(id >= 0);
                     },
+                    null,
                     null);
 
             sEngineLock.unlock();

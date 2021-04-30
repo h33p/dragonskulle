@@ -187,6 +187,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     }
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
+                                    UPnP.deletePortMapping(PORT, "TCP");
                                 }));
 
         UIManager.getInstance()
@@ -247,7 +248,11 @@ public class Lobby extends Component implements IFrameUpdate {
                                                             mJoinUi.setEnabled(false);
                                                         }
                                                     },
-                                                    this::onHostStartGame);
+                                                    this::onHostStartGame,
+                                                    () -> {
+                                                        mJoiningUi.setEnabled(false);
+                                                        mJoinUi.setEnabled(true);
+                                                    });
                                 }),
                         new UIButton(
                                 "Back",
@@ -295,7 +300,12 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         LobbyAPI.getAllHosts(this::onGetAllHosts);
                                                     }
                                                 },
-                                                this::onHostStartGame);
+                                                this::onHostStartGame,
+                                                () -> {
+                                                    LobbyAPI.getAllHosts(this::onGetAllHosts);
+                                                    mJoiningUi.setEnabled(false);
+                                                    mServerBrowserUi.setEnabled(true);
+                                                });
                             });
             i++;
         }
@@ -351,7 +361,13 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                             this::onGetAllHosts);
                                                                 }
                                                             },
-                                                            this::onHostStartGame);
+                                                            this::onHostStartGame,
+                                                            () -> {
+                                                                LobbyAPI.getAllHosts(
+                                                                        this::onGetAllHosts);
+                                                                mJoiningUi.setEnabled(false);
+                                                                mServerBrowserUi.setEnabled(true);
+                                                            });
                                         }
                                     }
                                 }));
@@ -372,11 +388,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Host public lobby",
                                 (__, ___) -> {
-                                    if (!UPnP.addPortMapping(17569, "TCP")) {
-                                        // TODO: If we fail to open the port choose a random one?
-                                        log.warning("Failed to open port 17569.");
-                                        return;
-                                    }
+                                    UPnP.addPortMapping(PORT, "TCP");
                                     String ip = UPnP.getExternalIPAddress();
                                     LobbyAPI.addNewHost(ip, PORT, this::onAddNewHost);
                                     mNetworkManager
@@ -384,7 +396,12 @@ public class Lobby extends Component implements IFrameUpdate {
                                             .createServer(
                                                     PORT,
                                                     this::onClientLoaded,
-                                                    this::onGameStarted);
+                                                    this::onGameStarted,
+                                                    (____) -> {
+                                                        UPnP.deletePortMapping(PORT, "TCP");
+                                                        mHostingUi.setEnabled(false);
+                                                        mHostUi.setEnabled(true);
+                                                    });
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -396,7 +413,11 @@ public class Lobby extends Component implements IFrameUpdate {
                                             .createServer(
                                                     PORT,
                                                     this::onClientLoaded,
-                                                    this::onGameStarted);
+                                                    this::onGameStarted,
+                                                    (____) -> {
+                                                        mHostingUi.setEnabled(false);
+                                                        mHostUi.setEnabled(true);
+                                                    });
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),

@@ -178,6 +178,8 @@ public class ServerNetworkManager {
     private final NetworkManager.IClientLoadedEvent mClientLoadedEvent;
     /** Callback for game start. */
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
+    /** Callback for game end. */
+    private final NetworkManager.IGameEndEvent mGameEndEventHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
@@ -204,12 +206,14 @@ public class ServerNetworkManager {
             NetworkManager manager,
             int port,
             NetworkManager.IClientLoadedEvent clientLoadedEvent,
-            NetworkManager.IGameStartEvent gameStartEventHandler)
+            NetworkManager.IGameStartEvent gameStartEventHandler,
+            NetworkManager.IGameEndEvent gameEndEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
         mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
+        mGameEndEventHandler = gameEndEventHandler;
     }
 
     public void start() {
@@ -334,6 +338,10 @@ public class ServerNetworkManager {
     /** Destroy the server, and tell {@link NetworkManager} about it. */
     public void destroy() {
         if (mServer == null) return;
+
+        if (mGameEndEventHandler != null) {
+            mGameEndEventHandler.handle(mManager);
+        }
 
         mServer.dispose();
         mServer = null;
