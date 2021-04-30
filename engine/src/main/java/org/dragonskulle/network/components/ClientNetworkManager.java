@@ -339,31 +339,29 @@ public class ClientNetworkManager {
             log.info(nextState.toString());
             log.info(mConnectionState.toString());
 
-            if (mConnectionState == ConnectionState.CONNECTING) {
-                switch (nextState) {
-                    case CONNECTED:
-                        joinLobby();
-                        if (mConnectionHandler != null) {
-                            mConnectionHandler.handle(mManager, mNetId);
-                        }
-                        break;
-                    case CONNECTION_ERROR:
-                        if (mConnectionHandler != null) {
-                            mConnectionHandler.handle(mManager, -1);
-                        }
-                        disconnect();
-                        break;
-                    default:
-                        break;
-                }
-            } else if (mConnectionState == ConnectionState.CONNECTED) {
-                if (nextState == ConnectionState.JOINING_GAME) {
+            switch (nextState) {
+                case CONNECTED:
+                    joinLobby();
+                    if (mConnectionHandler != null) {
+                        mConnectionHandler.handle(mManager, mNetId);
+                    }
+                    break;
+                case CONNECTION_ERROR:
+                    if (mConnectionHandler != null) {
+                        mConnectionHandler.handle(mManager, -1);
+                    }
+                    disconnect();
+                    break;
+                case JOINING_GAME:
                     joinGame();
                     if (mHostStartedHandler != null) {
                         mHostStartedHandler.handle(mManager.getGameScene(), mManager, mNetId);
                     }
-                }
-            } else if (mConnectionState == ConnectionState.JOINED_GAME) {
+                    break;
+                default:
+                    break;
+            }
+            if (mConnectionState == ConnectionState.JOINED_GAME) {
                 disconnect();
             }
         }
