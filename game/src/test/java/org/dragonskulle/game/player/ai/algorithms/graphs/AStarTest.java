@@ -33,7 +33,7 @@ public class AStarTest {
     /**
      * A Basic Constructor which is used for testing Creates a Graph from A* lecture by Dr Miqing Li
      *
-     * @param testing Set to {@code true} for testing
+     * @return The {@code Graph} to test
      */
     public Graph basicGraph() {
 
