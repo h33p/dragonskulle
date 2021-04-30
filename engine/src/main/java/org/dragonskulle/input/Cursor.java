@@ -39,7 +39,7 @@ import org.lwjgl.glfw.GLFWImage;
 @Log
 @Accessors(prefix = "m")
 public class Cursor {
-    public static final String settingsString = "cursorScale";
+    public static final String SETTINGS_STRING = "cursorScale";
 
     static {
         ResourceManager.registerResource(
@@ -97,7 +97,7 @@ public class Cursor {
      */
     public static void setCustomCursor(long window) {
         Settings instance = Settings.getInstance();
-        float scale = instance.retrieveFloat(settingsString, 0.4f);
+        float scale = instance.retrieveFloat(SETTINGS_STRING, 0.4f);
         try {
             setCustomCursor(window, scale);
         } catch (IOException e) {

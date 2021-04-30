@@ -328,13 +328,7 @@ public class App implements NativeResource {
                             mainUi.setEnabled(false);
                             settingsUI.setEnabled(true);
                         }),
-                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
-                new UIButton(
-                        "Quick Reload",
-                        (__, ___) -> {
-                            sReload = true;
-                            Engine.getInstance().stop();
-                        }));
+                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()));
 
         final UITextRect connectingText = new UITextRect("");
         connectingText.setEnabled(false);

@@ -44,8 +44,8 @@ public class AudioManager {
     private final ArrayList<Sound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
     private final HashSet<Reference<AudioSource>> mAudioSources = new HashSet<>();
-    public static final String settingsVolumeString = "masterVolume";
-    public static final String settingsMuteString = "masterMuted";
+    public static final String SETTINGS_VOLUME_STRING = "masterVolume";
+    public static final String SETTINGS_MUTE_STRING = "masterMuted";
 
     @Getter private Reference<AudioListener> mAudioListener;
     private long mAlDev = -1;
@@ -55,7 +55,7 @@ public class AudioManager {
 
     @Getter
     private boolean mMasterMuted =
-            Settings.getInstance().retrieveBoolean(settingsMuteString, false);
+            Settings.getInstance().retrieveBoolean(SETTINGS_MUTE_STRING, false);
 
     @Getter private boolean mInitialized = false;
 
@@ -177,7 +177,7 @@ public class AudioManager {
 
         setupSources();
         Settings settings = Settings.getInstance();
-        float volume = settings.retrieveFloat(settingsVolumeString, 0.5f);
+        float volume = settings.retrieveFloat(SETTINGS_VOLUME_STRING, 0.5f);
         setMasterVolume(volume);
 
         mInitialized = true;
@@ -364,7 +364,7 @@ public class AudioManager {
             mMasterMuted = false;
             AL11.alListenerf(AL11.AL_GAIN, mMasterVolume);
         }
-        Settings.getInstance().saveValue(settingsMuteString, muted, true);
+        Settings.getInstance().saveValue(SETTINGS_MUTE_STRING, muted, true);
     }
 
     public void toggleMasterMute() {
