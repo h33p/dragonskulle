@@ -875,23 +875,23 @@ public class Building extends NetworkableComponent
     public List<SyncStat> getShopStats() {
         return getShopStatTypes().stream().map(mStats::get).collect(Collectors.toList());
     }
-    
+
     /**
      * Set the sell price.
-     * 
+     *
      * @param price The price.
      */
     public void setSellPrice(int price) {
-    	mSellPrice.set(price);
+        mSellPrice.set(price);
     }
-    
+
     /**
      * Get the sell price.
-     * 
+     *
      * @return The sell price.
      */
     public int getSellPrice() {
-    	return mSellPrice.get();
+        return mSellPrice.get();
     }
 
     @Override

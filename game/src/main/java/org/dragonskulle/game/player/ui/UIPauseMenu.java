@@ -93,10 +93,10 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mEndGameContainer.setEnabled(mPaused && state == State.END_GAME);
         mQuitConfirmContainer.setEnabled(mPaused && state == State.QUIT_CONFIRM);
         mCurrentState = state;
-        
-        if(state == State.END_GAME && Reference.isValid(mHumanPlayer)) {
-        	mPreviousScreen = Screen.DEFAULT_SCREEN;
-        	mHumanPlayer.get().switchScreen(Screen.DEFAULT_SCREEN);
+
+        if (state == State.END_GAME && Reference.isValid(mHumanPlayer)) {
+            mPreviousScreen = Screen.DEFAULT_SCREEN;
+            mHumanPlayer.get().switchScreen(Screen.DEFAULT_SCREEN);
         }
     }
 
@@ -155,10 +155,10 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                         });
 
         String leaveText = "Quit";
-        if(Reference.isValid(mNetworkManager) && mNetworkManager.get().isServer()) {
-        	leaveText = "End Game";
+        if (Reference.isValid(mNetworkManager) && mNetworkManager.get().isServer()) {
+            leaveText = "End Game";
         }
-        
+
         UIButton exit = new UIButton(leaveText, (__, ___) -> onClickQuit());
 
         UIManager.getInstance()
@@ -203,9 +203,11 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                                             0.1f,
                                             0.9f,
                                             mEndGameRect,
-                                            new UIButton("View Map", (__, ___) -> {
-                                            	setPaused(false);
-                                            }),
+                                            new UIButton(
+                                                    "View Map",
+                                                    (__, ___) -> {
+                                                        setPaused(false);
+                                                    }),
                                             new UIButton("Quit", (__, ___) -> onClickQuit()));
                         });
 
@@ -281,7 +283,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         if (Reference.isValid(mEndGameRect.getLabelText())) {
             mEndGameRect.getLabelText().get().setText(label);
         }
-        
+
         endGame();
     }
 

@@ -189,7 +189,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 "main_shop_text",
                                 new TransformUI(true),
                                 (self) -> {
-                                	UIText mWindowText = new UIText("");
+                                    UIText mWindowText = new UIText("");
                                     self.addComponent(mWindowText);
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });

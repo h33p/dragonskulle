@@ -65,8 +65,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     @Override
     public void onStart() {
-    	
-    	mPossibleBuildingComponent =
+
+        mPossibleBuildingComponent =
                 getGameObject()
                         .buildChild(
                                 "possible_buildings",
@@ -78,7 +78,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                             mBuildingsCanPlace.stream()
                                                     .map(this::buildPredefinedBuildingBox)
                                                     .collect(Collectors.toList());
-                                    
+
                                     manager.buildGridUI(
                                             self,
                                             3,
@@ -244,14 +244,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private void buildOnClick(UIButton __, float ___) {
         if (getParent().getParent().mGetHexChosen.getHex() != null) {
-            Player player =
-                    getParent().getParent().mGetPlayer.getPlayer();
+            Player player = getParent().getParent().mGetPlayer.getPlayer();
             if (player == null) return;
-            
+
             // Ensure the player can afford to build.
             int cost = mSelectedBuildingDescriptor.getCost();
-            if(cost > player.getTokens().get()) return;
-            
+            if (cost > player.getTokens().get()) return;
+
             player.getClientBuildRequest()
                     .invoke(
                             new BuildData(
@@ -259,7 +258,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                     PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
 
             getParent().markDidBuild(true);
-            
+
             getParent().getParent().mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
         }
     }

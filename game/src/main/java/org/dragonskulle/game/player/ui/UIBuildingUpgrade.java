@@ -81,7 +81,11 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             UIManager manager = UIManager.getInstance();
 
                             manager.buildHorizontalUI(
-                                    self, 0.05f, -0.4f, -0.4f + 0.2f, unpackReferences(mLevelTexts));
+                                    self,
+                                    0.05f,
+                                    -0.4f,
+                                    -0.4f + 0.2f,
+                                    unpackReferences(mLevelTexts));
 
                             manager.buildHorizontalUI(
                                     self,

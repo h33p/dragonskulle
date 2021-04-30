@@ -52,10 +52,6 @@ public class BuildingDescriptor {
     public String toString() {
         return String.format(
                 "BuildingDescriptor{(%d:%d:%d:%d:%d)",
-                mAttack,
-                mDefence,
-                mTokenGenerationLevel,
-                mCost,
-                mSellPrice);
+                mAttack, mDefence, mTokenGenerationLevel, mCost, mSellPrice);
     }
 }

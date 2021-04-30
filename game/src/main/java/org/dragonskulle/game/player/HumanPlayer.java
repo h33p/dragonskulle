@@ -21,7 +21,6 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
-import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
@@ -218,18 +217,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /**
      * Only allow the player to select opponent buildings.
-     * 
+     *
      * @param selected The hexagon tile clicked on.
      */
     private void attackSelect(HexagonTile selected) {
-    	Player player = getPlayer();
-    	if(!selected.hasBuilding()) return;
-    	Building building = selected.getBuilding();
-        if(player.isBuildingOwner(building)) return;
+        Player player = getPlayer();
+        if (!selected.hasBuilding()) return;
+        Building building = selected.getBuilding();
+        if (player.isBuildingOwner(building)) return;
         // mHexChosen = selected;
         mBuildingChosen = building.getReference(Building.class);
     }
-    
+
     /** If the user selects a tile, swap to the relevant screen. */
     private void detectTileSelection() {
         Player player = getPlayer();
@@ -250,12 +249,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Select a tile.
         HexagonTile selected = map.cursorToTile();
         if (selected == null) return;
-        
-        if(mCurrentScreen == Screen.ATTACKING_SCREEN) {
-        	attackSelect(selected);
-        	return;
+
+        if (mCurrentScreen == Screen.ATTACKING_SCREEN) {
+            attackSelect(selected);
+            return;
         }
-        
+
         mHexChosen = selected;
 
         // Do not swap screens.
