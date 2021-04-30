@@ -197,12 +197,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         mSellConfirmScreenMenuItems.add(buildCancelSellButtonFrame());
         mSellConfirmScreenMenu = buildMenu(mSellConfirmScreenMenuItems);
 
-        mPlaceNewBuildingScreenMenuItems.add(buildCancelBuildButtonFrame());
+        // mPlaceNewBuildingScreenMenuItems.add(buildCancelBuildButtonFrame());
         mPlaceNewBuildingScreenMenu = buildMenu(mPlaceNewBuildingScreenMenuItems);
 
         buildingSelectedScreenMenuItems.add(buildAttackButtonFrame());
         buildingSelectedScreenMenuItems.add(buildSellButtonFrame());
-        buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
+        // buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mBuildScreenMenu = buildMenu(buildingSelectedScreenMenuItems);
 
         mMapScreenMenu = new Reference<>(null);

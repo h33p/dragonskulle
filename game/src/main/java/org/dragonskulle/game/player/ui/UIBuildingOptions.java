@@ -65,27 +65,27 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     @Override
     public void onStart() {
-        mPossibleBuildingComponent =
+    	
+    	mPossibleBuildingComponent =
                 getGameObject()
                         .buildChild(
                                 "possible_buildings",
                                 new TransformUI(),
                                 (self) -> {
-                                    TransformUI t = self.getTransform(TransformUI.class);
                                     UIManager manager = UIManager.getInstance();
                                     mBuildingsCanPlace = PredefinedBuildings.getAll();
                                     mBuildingsCanPlaceButtons =
                                             mBuildingsCanPlace.stream()
                                                     .map(this::buildPredefinedBuildingBox)
                                                     .collect(Collectors.toList());
-
+                                    
                                     manager.buildGridUI(
                                             self,
-                                            4,
-                                            -0.08f,
+                                            3,
+                                            0.07f,
                                             0.2f,
-                                            0.41f,
-                                            0.25f,
+                                            0.35f + 0.6f,
+                                            0.3f,
                                             mBuildingsCanPlaceButtons);
 
                                     self.buildChild(
@@ -98,7 +98,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                                 TransformUI transformUI =
                                                         me.getTransform(TransformUI.class);
                                                 transformUI.setParentAnchor(
-                                                        0.16f, 0.6f, 0.86f, 1.1f);
+                                                        0.16f, 1.08f, 0.86f, 1.08f + 0.25f);
                                             });
                                 });
 
@@ -108,7 +108,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                         new TransformUI(),
                         (self) -> {
                             TransformUI hintTransform = self.getTransform(TransformUI.class);
-                            hintTransform.setParentAnchor(-0.05f, -0.7f, 1.05f, -0.05f);
+                            hintTransform.setParentAnchor(0.05f, -0.35f, 1f - 0.05f, -0.35f + 0.5f);
 
                             BuildingDescriptor descriptor = PredefinedBuildings.BASE;
                             UITextRect component =

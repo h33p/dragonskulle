@@ -179,23 +179,23 @@ public class UIShopSection extends Component implements IOnStart {
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         //        0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f when using transform
-        tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
+        tran.setParentAnchor(0.08f, 0.15f, 1 - 0.08f, 1 - 0.15f);
         UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
         ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
-        getGameObject().addComponent(renderable);
+        // getGameObject().addComponent(renderable);
         Reference<GameObject> textObj =
                 getGameObject()
                         .buildChild(
                                 "main_shop_text",
                                 new TransformUI(true),
                                 (self) -> {
-                                    UIText mWindowText = new UIText("Shop is Closed");
+                                	UIText mWindowText = new UIText("Shop is Closed");
                                     self.addComponent(mWindowText);
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });
 
         TransformUI mTextTransform = textObj.get().getTransform(TransformUI.class);
         mTextTransform.setParentAnchor(0.05f, 0f);
-        mTextTransform.translate(0, -0.22f); // remove if using transforms
+        mTextTransform.translate(0, -0.65f); // remove if using transforms
     }
 }
