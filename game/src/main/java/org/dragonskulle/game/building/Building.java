@@ -872,7 +872,7 @@ public class Building extends NetworkableComponent
     }
 
     public List<SyncStat> getShopStats() {
-        return Arrays.asList(getAttack(), getDefence(), getTokenGeneration());
+        return getShopStatTypes().stream().map(mStats::get).collect(Collectors.toList());
     }
 
     @Override
