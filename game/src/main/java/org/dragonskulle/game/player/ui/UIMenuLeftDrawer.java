@@ -582,6 +582,24 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         return mShop;
     }
 
+    /**
+     * Ensure the chosen HexagonTile has a player owned building.
+     */
+    private void checkOwnership() {
+    	HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building building = tile.getBuilding();
+    	
+        Player player = mGetPlayer.getPlayer();
+        if (player == null) return;
+        
+        if(!player.isBuildingOwner(building)) {
+        	mSetHexChosen.setHex(null);
+        	mSetBuildingChosen.setBuilding(null);
+        	mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
+        }
+    }
+    
     private void updateSellButton() {
         if (!Reference.isValid(mBuildScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
@@ -597,7 +615,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (!Reference.isValid(sellText)) return;
 
         if (building.isCapital()) {
-            sellText.get().setText("Cannot Sell Capital");
+            sellText.get().setText("[CANNOT SELL CAPITAL]");
             sellButton.get().setEnabled(false);
         } else {
             sellText.get().setText("Sell Building");
@@ -605,7 +623,31 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
     }
 
-    private void updateAttackButton() {
+    private void updateAttackLaunchButton() {
+    	if (!Reference.isValid(mBuildScreenMenu)) return;
+        if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
+        Building building = mGetBuildingChosen.getBuilding().get();
+        GameObject menu = mBuildScreenMenu.get();
+        if (menu.getChildren().size() == 0) return;
+        GameObject object = menu.getChildren().get(0);
+
+        Reference<UIButton> button = object.getComponent(UIButton.class);
+        if (!Reference.isValid(button)) return;
+
+        Reference<UIText> text = button.get().getLabelText();
+        if (!Reference.isValid(text)) return;
+
+        if(building.getAttackableBuildings().size() == 0) {
+        	text.get().setText("[OUT OF RANGE]");
+            button.get().setEnabled(false);
+        } else {
+        	text.get().setText("Launch Attack!");
+            button.get().setEnabled(true);
+        }
+
+    }
+    
+    private void updateAttackCostButton() {
         if (!Reference.isValid(mAttackScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
@@ -641,7 +683,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        updateSellButton();
-        updateAttackButton();
+        checkOwnership();
+    	updateSellButton();
+    	updateAttackLaunchButton();
+    	updateAttackCostButton();
     }
 }

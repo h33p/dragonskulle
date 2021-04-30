@@ -203,7 +203,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
             if (Reference.isValid(labelText)) {
                 String txt =
                         String.format(
-                                "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Value: %d\nCost: %d",
+                                "%s\nAttack: %d\nDefence: %d\nToken Generation: %d\nCost: %d",
                                 descriptor.getName().toUpperCase(),
                                 descriptor.getAttack(),
                                 descriptor.getDefence(),
