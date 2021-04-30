@@ -51,7 +51,7 @@ public class GameUIAppearance {
     }
 
     /**
-     * Get a square button texture
+     * Get a square button texture.
      *
      * @return square button texture. The reference is cloned, so this texture needs to be freed by
      *     the callee
@@ -61,7 +61,7 @@ public class GameUIAppearance {
     }
 
     /**
-     * Get a 2:1 info box texture
+     * Get a 2:1 info box texture.
      *
      * @return 2:1 info box texture. The reference is cloned, so this texture needs to be freed by
      *     the callee

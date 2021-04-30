@@ -25,7 +25,7 @@ public class ClientFogTileHeight extends Component implements IOnStart, ILateFra
     private HexagonTile mTile;
     private TransformHex mTransform;
     private Reference<NetworkManager> mNetworkManager;
-    private int netId = -1;
+    private int mNetId = -1;
     private Reference<Player> mPlayer;
     private Reference<FadeTile> mFadeTile;
     private float mMaxVisibility = Float.NEGATIVE_INFINITY;
@@ -60,9 +60,9 @@ public class ClientFogTileHeight extends Component implements IOnStart, ILateFra
             return;
         }
 
-        netId = mClientManager.getNetId();
+        mNetId = mClientManager.getNetId();
 
-        mPlayer = mNetworkManager.get().getIdSingletons(netId).getRef(Player.class);
+        mPlayer = mNetworkManager.get().getIdSingletons(mNetId).getRef(Player.class);
 
         mFadeTile = getGameObject().getComponent(FadeTile.class);
     }
@@ -73,12 +73,12 @@ public class ClientFogTileHeight extends Component implements IOnStart, ILateFra
             return;
         }
 
-        if (netId == -1 || !Reference.isValid(mNetworkManager)) {
+        if (mNetId == -1 || !Reference.isValid(mNetworkManager)) {
             return;
         }
 
         if (!Reference.isValid(mPlayer)) {
-            mPlayer = mNetworkManager.get().getIdSingletons(netId).getRef(Player.class);
+            mPlayer = mNetworkManager.get().getIdSingletons(mNetId).getRef(Player.class);
             if (!Reference.isValid(mPlayer)) {
                 return;
             }

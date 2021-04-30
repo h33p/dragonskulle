@@ -76,7 +76,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         getAllTiles()
                 .forEach(
                         tile -> {
-                            if (tile.landMassNumber == -1) {
+                            if (tile.mLandMassNumber == -1) {
                                 floodFillLand(tile);
                             }
                         });
@@ -90,8 +90,8 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      */
     private void floodFillLand(HexagonTile tile) {
         // Checks that we haven't already checked it
-        int size[] = {0};
-        if (tile.getTileType() != TileType.LAND || tile.landMassNumber != -1) {
+        int[] size = {0};
+        if (tile.getTileType() != TileType.LAND || tile.mLandMassNumber != -1) {
             return;
         }
 
@@ -102,12 +102,12 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
                 tiles,
                 (__, tileToUse, neighbours, tilesOut) -> {
                     if (tileToUse.getTileType() == TileType.LAND
-                            && tileToUse.landMassNumber == -1) {
+                            && tileToUse.mLandMassNumber == -1) {
                         size[0]++;
-                        tileToUse.landMassNumber = mLandMass;
+                        tileToUse.mLandMassNumber = mLandMass;
 
                         for (HexagonTile neighbour : neighbours) {
-                            if (neighbour.landMassNumber == -1
+                            if (neighbour.mLandMassNumber == -1
                                     && neighbour.getTileType() == TileType.LAND) {
                                 tilesOut.add(neighbour);
                             }
@@ -348,7 +348,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
             log.severe("ERROR");
         }
 
-        return tile.landMassNumber != mLargestLandMass[0];
+        return tile.mLandMassNumber != mLargestLandMass[0];
     }
 
     @Override
