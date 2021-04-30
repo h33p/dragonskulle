@@ -291,31 +291,30 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 "confirm_attack_button",
                 "Attack Selected",
                 (handle, __) -> {
-                    if (mGetHexChosen != null) {
-                        HexagonTile tile = mGetHexChosen.getHex();
-                        if (tile == null) return;
-                        Building defendingBuilding = tile.getBuilding();
-                        if (Reference.isValid(mAttackingBuilding) && defendingBuilding != null) {
-                            // Checks the building can be attacked
-                            boolean canAttack =
-                                    mAttackingBuilding
-                                            .get()
-                                            .isBuildingAttackable(defendingBuilding);
-                            if (canAttack) {
-                                Player player = mGetPlayer.getPlayer();
-                                if (player != null) {
-                                    player.getClientAttackRequest()
-                                            .invoke(
-                                                    new AttackData(
-                                                            mAttackingBuilding.get(),
-                                                            defendingBuilding));
-                                }
+                	HexagonTile tile = mGetHexChosen.getHex();
+                	if (tile == null || !tile.hasBuilding()) return;
+                	Building attacking = tile.getBuilding();
+                	
+                	Reference<Building> defendingRef = mGetBuildingChosen.getBuilding();
+                	if(!Reference.isValid(defendingRef)) return;
+                	Building defending = defendingRef.get();
+                	
+                	// Checks the building can be attacked
+                    if (!attacking.isBuildingAttackable(defending)) return;
+                	
+                    Player player = mGetPlayer.getPlayer();
+                    if (player == null) return;
+                    player.getClientAttackRequest()
+                            .invoke(
+                                    new AttackData(attacking, defending));
 
-                                mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
-                                mSetHexChosen.setHex(null);
-                            }
-                        }
+                    
+                    // Reset the Building back to the HexagonTile's building.                    
+                    if(tile.hasBuilding()) {
+                    	mSetBuildingChosen.setBuilding(tile.getBuilding().getReference(Building.class));
                     }
+                    
+                    mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
     }
