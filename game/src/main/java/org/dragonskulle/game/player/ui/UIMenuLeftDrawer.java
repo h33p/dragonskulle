@@ -10,7 +10,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
@@ -96,7 +95,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
          */
         Player getPlayer();
     }
-
+    
     /** Get the building chosen from the parent. */
     public interface IGetBuildingChosen {
         /**

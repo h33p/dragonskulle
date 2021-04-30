@@ -244,19 +244,22 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private void buildOnClick(UIButton __, float ___) {
         if (getParent().getParent().mGetHexChosen.getHex() != null) {
-            Reference<Player> player =
-                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
-            if (Reference.isValid(player)) {
-                player.get()
-                        .getClientBuildRequest()
-                        .invoke(
-                                new BuildData(
-                                        getParent().getParent().mGetHexChosen.getHex(),
-                                        PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
+            Player player =
+                    getParent().getParent().mGetPlayer.getPlayer();
+            if (player == null) return;
+            
+            // Ensure the player can afford to build.
+            int cost = mSelectedBuildingDescriptor.getCost();
+            if(cost > player.getTokens().get()) return;
+            
+            player.getClientBuildRequest()
+                    .invoke(
+                            new BuildData(
+                                    getParent().getParent().mGetHexChosen.getHex(),
+                                    PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
 
-                getParent().markDidBuild(true);
-            }
-
+            getParent().markDidBuild(true);
+            
             getParent().getParent().mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
         }
     }
