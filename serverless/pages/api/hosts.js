@@ -3,20 +3,6 @@ import {md5} from "./md5";
 const connectToDatabase = require('./db');
 'use strict';
 
-//Fisher Yates Shuffle
-String.prototype.shuffle = function () {
-    var a = this.split(""),
-        n = a.length;
-
-    for(var i = n - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = a[i];
-        a[i] = a[j];
-        a[j] = tmp;
-    }
-    return a.join("");
-}
-
 
 export default function handler(req, res) {
     var contype = req.headers['content-type'];
@@ -34,9 +20,9 @@ export default function handler(req, res) {
                     resolve();
                 })
             }
-            let hash = md5(Date.now());
-            base["_code"] = hash.shuffle().substring(0, Math.min(6,hash.length)).toUpperCase();
-            console.log(base);
+            let hash = md5(Date.now().toString());
+            base["_code"] = hash.substring(0, Math.min(6,hash.length)).toUpperCase();
+            
             return new Promise((resolve, _reject) => {
                 connectToDatabase()
                     .then(() => {
