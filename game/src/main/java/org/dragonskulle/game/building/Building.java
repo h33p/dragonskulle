@@ -212,6 +212,11 @@ public class Building extends NetworkableComponent
     @Override
     public void onAwake() {
 
+
+        BuildingProps newProp = new BuildingProps();
+        getGameObject().addComponent(newProp);
+        mBuildingProps = newProp.getReference(BuildingProps.class);
+
         GLTF gltf = sBuildingTemplates.get();
 
         GameObject baseMesh =
