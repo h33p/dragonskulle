@@ -21,7 +21,7 @@ import org.dragonskulle.game.player.ai.AimerAi;
 public class Graph {
 
     /** The hash map which will hold the node id to the Node. */
-    protected HashMap<Integer, Node> mGraph;
+    protected HashMap<Integer, Node> mGraph = new HashMap<Integer, Node>();;
 
     /** The {@code HexagonMap} which is used. */
     private Reference<HexagonMap> mMap;
@@ -56,46 +56,8 @@ public class Graph {
         aimer.getViewableTiles().forEach(this::addConnections);
     }
 
-    /**
-     * A Basic Constructor - USED ONLY FOR TESTING Creates a Graph from A* lecture by Dr Miqing Li
-     *
-     * @param testing Set to {@code true} for testing
-     */
-    public Graph(boolean testing) {
-        log.severe("THIS IS ONLY FOR TESTING");
-        if (!testing) {
-            return;
-        }
-
-        mGraph = new HashMap<Integer, Node>();
-
-        addNode(0, null);
-        addNode(1, null);
-        addNode(2, null);
-        addNode(3, null);
-        addNode(4, null);
-        addNode(5, null);
-
-        setNodeHeuristic(0, 10);
-        addConnection(0, 1, 4);
-        addConnection(0, 2, 10);
-
-        setNodeHeuristic(1, 14);
-
-        setNodeHeuristic(2, 4);
-        addConnection(2, 5, 6);
-
-        setNodeHeuristic(3, 1);
-        addConnection(3, 2, 3);
-        addConnection(3, 5, 4);
-
-        setNodeHeuristic(4, 8);
-        addConnection(4, 0, 2);
-        addConnection(4, 2, 4);
-        addConnection(4, 3, 8);
-
-        setNodeHeuristic(5, 0);
-    }
+    /** Basic Constructor. */
+    public Graph() {}
 
     /**
      * This is the variables set up in both constructors.
@@ -106,7 +68,6 @@ public class Graph {
     private void initialise(HexagonMap map, HexagonTile tileAiming) {
 
         mMap = map.getReference(HexagonMap.class);
-        mGraph = new HashMap<Integer, Node>();
     }
 
     /**
