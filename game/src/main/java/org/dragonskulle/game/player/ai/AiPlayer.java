@@ -35,7 +35,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     /** The Random Number Generator. */
     protected Random mRandom = new Random();
 
-    /** This is the {@code Reference} to the {@code Player} which is used by this AI Player. */
+    /** This is the {@link Reference} to the {@link Player} which is used by this AI Player. */
     protected Reference<Player> mPlayer;
 
     /** Basic Constructor. */

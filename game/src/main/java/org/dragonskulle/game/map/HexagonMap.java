@@ -43,10 +43,10 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         /**
          * The method which states what should happen when reaching a {@code HexagonTile}.
          *
-         * @param map The {@code HexagonMap} to look through.
-         * @param tile The {@code HexagonTile} to look through.
-         * @param neighbours A {@code List} which will hold the neighbours of the tile.
-         * @param tilesToFill This will hold the {@code HexagonTile}'s which need to be filled.
+         * @param map The {@link HexagonMap} to look through.
+         * @param tile The {@link HexagonTile} to look through.
+         * @param neighbours A {@link List} which will hold the neighbours of the tile.
+         * @param tilesToFill This will hold the {@link HexagonTile}'s which need to be flooded
          */
         void onVisit(
                 HexagonMap map,

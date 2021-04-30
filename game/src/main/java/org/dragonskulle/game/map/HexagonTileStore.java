@@ -323,7 +323,8 @@ class HexagonTileStore implements ISyncVar {
      *
      * @param q q coordinate of the tile
      * @param r r coordinate of the tile
-     * @return The {@code HexagonTile} which is at the coordinates (q,r)
+     * @return The {@link HexagonTile} which is at the coordinates (q,r) or {@code null} if nothing
+     *     exists there
      */
     public HexagonTile getTile(int q, int r) {
         q += mCoordShift;
