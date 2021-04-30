@@ -32,7 +32,11 @@ public class BuildingProps extends Component {
             });
 
 
-    private void onStatChange(Building building){
+   public void onStatChange(Building building){
+
+
+        log.info( "PROPS WORK");
+
 
         mMap = Scene.getActiveScene().getSingleton(HexagonMap.class);
 
@@ -43,7 +47,10 @@ public class BuildingProps extends Component {
         mTokenStat = building.getStat(StatType.TOKEN_GENERATION);
 
         for (HexagonTile tile : claimedTiles) {
-            mMap.getGameObject().addChild(GameObject.instantiate(mProps, new TransformHex(tile.getQ(),tile.getR())));
+
+
+            mMap.getGameObject()
+                    .addChild(GameObject.instantiate(mProps, new TransformHex(tile.getQ(),tile.getR(), 2)));
         }
 
     }

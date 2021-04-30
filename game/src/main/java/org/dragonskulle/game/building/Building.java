@@ -216,6 +216,7 @@ public class Building extends NetworkableComponent
         BuildingProps newProp = new BuildingProps();
         getGameObject().addComponent(newProp);
         mBuildingProps = newProp.getReference(BuildingProps.class);
+        mBuildingProps.get().onStatChange(this);
 
         GLTF gltf = sBuildingTemplates.get();
 
@@ -359,6 +360,9 @@ public class Building extends NetworkableComponent
         if (!isCapital()) assignMesh();
 
         setStatsRequireVisualUpdate();
+
+        mBuildingProps.get().onStatChange(this);
+
     }
 
     private void assignMesh() {

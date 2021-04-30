@@ -1,15 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building.stat;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.network.components.sync.SyncInt;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Stores a level and calculates the stat's value from this.
@@ -170,7 +171,7 @@ public class SyncStat extends SyncInt {
         if (!Reference.isValid(mBuilding)) {
             return;
         }
-        mBuilding.get().afterStatChange();
+
     }
 
     /**
