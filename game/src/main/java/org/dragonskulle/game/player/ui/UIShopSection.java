@@ -78,7 +78,7 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
-            String newText = "Shop is Closed";
+            String newText = "";
             if (state.equals(ShopState.CLOSED)) {
                 show(mNewBuildingPanel, false);
                 show(mCurrentPanel, false);
@@ -189,7 +189,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 "main_shop_text",
                                 new TransformUI(true),
                                 (self) -> {
-                                	UIText mWindowText = new UIText("Shop is Closed");
+                                	UIText mWindowText = new UIText("");
                                     self.addComponent(mWindowText);
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });

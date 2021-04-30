@@ -211,8 +211,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         	GameObject menu = mBuildScreenMenu.get();
         	TransformUI transform = menu.getTransform(TransformUI.class);        	
         	if(transform != null) {
-        		transform.setParentAnchor(0.1f, 0.2f, 1f - 0.1f, 1.5f);
-        		//transform.translate(0f, 0.5f);
+        		transform.translate(0f, 0.55f);
         	}
         }
         
@@ -545,6 +544,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         final GameObject built_menu = new GameObject("build_menu", new TransformUI());
         manager.buildVerticalUi(built_menu, mOffsetToTop, 0f, 1f, buttons);
         getGameObject().addChild(built_menu);
+        
+    	TransformUI transform = built_menu.getTransform(TransformUI.class);        	
+    	if(transform != null) {
+    		transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1.2f);
+    	}
+        
         built_menu.setEnabled(false);
         return built_menu.getReference();
     }
