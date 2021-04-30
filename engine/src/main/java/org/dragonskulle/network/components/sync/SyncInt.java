@@ -87,7 +87,7 @@ public class SyncInt extends BaseSyncVar {
 
     @Override
     public String toString() {
-        return "SyncInt{" + "data=" + mData + '\'' + '}';
+        return "SyncInt{" + "data=" + '\'' + mData + '\'' + '}';
     }
 
     @Override
