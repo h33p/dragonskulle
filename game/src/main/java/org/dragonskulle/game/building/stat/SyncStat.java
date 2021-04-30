@@ -97,19 +97,37 @@ public class SyncStat extends SyncInt {
     }
 
     /**
-     * Get whether the stat is able to be upgraded at this point in time.
+     * Get whether the stat is able to be upgraded at the current time.
      *
      * <p>Will be {@code false} if:
      *
      * <ul>
      *   <li>It is impossible to upgrade the stat (as its value is fixed).
-     *   <li>The current level is at the {@link #LEVEL_MAX}.
+     *   <li>The current level is equal to {@link #LEVEL_MAX}.
      * </ul>
      *
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
      */
     public boolean isUpgradeable() {
-        return (mType.isFixedValue()) ? false : getLevel() < LEVEL_MAX;
+        return !(isFixed() || isMaxLevel());
+    }
+
+    /**
+     * Checks if the Stat is a fixed value.
+     *
+     * @return true if fixed
+     */
+    public boolean isFixed() {
+        return mType.isFixedValue();
+    }
+
+    /**
+     * Checks if the Stat is equal to it's maximum level.
+     *
+     * @return true if equal
+     */
+    public boolean isMaxLevel() {
+        return getLevel() == LEVEL_MAX;
     }
 
     /**
@@ -174,9 +192,9 @@ public class SyncStat extends SyncInt {
     }
 
     /**
+     * @return The level.
      * @deprecated Please use #getLevel() for clarity.
      *     <p>Get the stat's current level.
-     * @return The level.
      */
     @Override
     public int get() {

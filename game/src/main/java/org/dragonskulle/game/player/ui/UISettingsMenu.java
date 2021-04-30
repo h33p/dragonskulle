@@ -139,7 +139,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         UITextRect muteTitle = new UITextRect("Toggle mute:");
         UIButton muteButton =
                 new UIButton(
-                        "Mute",
+                        AudioManager.getInstance().isMasterMuted() ? "Unmute" : "Mute",
                         (button, __) -> {
                             AudioManager audioManager = AudioManager.getInstance();
                             audioManager.toggleMasterMute();
@@ -162,7 +162,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                 new UISlider(
                         AudioManager.getInstance().getMasterVolume(),
                         (__, value) -> {
-                            settingsInstance.saveValue("masterVolume", value);
+                            settingsInstance.saveValue(AudioManager.SETTINGS_VOLUME_STRING, value);
                             AudioManager.getInstance().setMasterVolume(value);
                         },
                         (__, ___) -> settingsInstance.save() // on button release
@@ -210,12 +210,12 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
         UISlider uiSlider =
                 new UISlider(
-                        settingsInstance.retrieveFloat("cursorScale", 0.4f),
+                        settingsInstance.retrieveFloat(Cursor.SETTINGS_STRING, 0.4f),
                         0.1f,
                         1f,
                         0.01f,
                         (__, value) -> { // on slider change
-                            settingsInstance.saveValue("cursorScale", value);
+                            settingsInstance.saveValue(Cursor.SETTINGS_STRING, value);
                             try {
                                 Cursor.setCustomCursor(
                                         Engine.getInstance().getGLFWState().getWindow(), value);

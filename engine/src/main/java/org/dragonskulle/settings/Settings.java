@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.settings;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,7 +29,7 @@ public class Settings {
     @Accessors(prefix = "s")
     private static boolean sIsLoaded = false;
 
-    private HashMap mSettings = new HashMap<>();
+    private HashMap<String, String> mSettings = new HashMap<>();
     private String mFilePath;
     private final String mDefaultFilePath = "settings.json";
 
@@ -55,7 +56,9 @@ public class Settings {
             mFilePath = filePath;
             File sFile = new File(filePath);
             if (sFile.exists()) {
-                mSettings = new ObjectMapper().readValue(sFile, HashMap.class);
+                TypeReference<HashMap<String, String>> typeRef =
+                        new TypeReference<HashMap<String, String>>() {};
+                mSettings = new ObjectMapper().readValue(sFile, typeRef);
                 log.info("Loaded Settings");
                 sIsLoaded = true;
             } else {
