@@ -1,30 +1,12 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
-import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IFrameUpdate;
-import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.TransformHex;
-import org.dragonskulle.core.GameObject;
-import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
-import org.dragonskulle.core.Scene;
-import org.dragonskulle.core.SingletonStore;
+import org.dragonskulle.components.*;
+import org.dragonskulle.core.*;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -36,6 +18,9 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A Building component.
@@ -193,6 +178,7 @@ public class Building extends NetworkableComponent
         mDefenceMesh = defenceMesh.getReference();
         mAttackMesh = attackMesh.getReference();
         mGenerationMesh = generationMesh.getReference();
+
     }
 
     /** Initialise the building only when it is properly on the map and the tile is synced */
