@@ -78,9 +78,10 @@ public class HexagonTile implements INetSerializable {
     static final float MOUNTAINS_THRESHOLD = 0.8f;
     static final float WATER_OFF = 0.1f;
 
-    /** This is the axial storage system for each tile. */
+    /** The Axial Coordinate in the Q Position. */
     @Getter private final int mQ;
 
+    /** The Axial Coordinate in the R Position */
     @Getter private final int mR;
 
     @Setter(AccessLevel.PACKAGE)
