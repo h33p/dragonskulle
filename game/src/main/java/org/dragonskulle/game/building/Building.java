@@ -16,6 +16,7 @@ import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -312,12 +313,7 @@ public class Building extends NetworkableComponent
             }
 
         } else {
-            Map.Entry<StatType, Integer> max = null;
-            for (Map.Entry<StatType, Integer> entry : statLevels.entrySet()) {
-                if (max == null || entry.getValue().compareTo(max.getValue()) > 0) {
-                    max = entry;
-                }
-            }
+            Map.Entry<StatType, Integer> max = getMaxStatForVisuals(statLevels);
             if (max != null) {
                 log.info("this stat is the biggest " + max.getKey());
                 if (Reference.isValid(mVisibleMesh)) {
@@ -347,6 +343,22 @@ public class Building extends NetworkableComponent
                 }
             }
         }
+    }
+
+    /**
+     * Gets the {@link SyncStat} which will determine the type of mesh and props displayed.
+     *
+     * @param statLevels the stat types and their levels.
+     * @return the stat chosen
+     */
+    private static Map.Entry<StatType, Integer> getMaxStatForVisuals(Map<StatType, Integer> statLevels) {
+        Map.Entry<StatType, Integer> max = null;
+        for (Map.Entry<StatType, Integer> entry : statLevels.entrySet()) {
+            if (max == null || entry.getValue().compareTo(max.getValue()) > 0) {
+                max = entry;
+            }
+        }
+        return max;
     }
 
     /** Generate the stored lists of {@link HexagonTile}s. */
