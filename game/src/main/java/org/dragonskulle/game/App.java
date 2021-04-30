@@ -244,30 +244,6 @@ public class App implements NativeResource {
                             audio.addComponent(new AudioListener());
                         });
 
-        // TODO : Remove
-        GameObject debugMute =
-                new GameObject(
-                        "debug mute",
-                        (audioRoot) -> {
-                            audioRoot.buildChild(
-                                    "muteUI",
-                                    new TransformUI(true),
-                                    (muteUi) -> {
-                                        TransformUI t = muteUi.getTransform(TransformUI.class);
-                                        t.setParentAnchor(0.78f, 0.75f, 1f, 0.75f);
-                                        t.setMargin(0f, 0.1f, 0f, 0.2f);
-
-                                        muteUi.addComponent(
-                                                new UIButton(
-                                                        "Toggle Mute",
-                                                        (uiButton, __) -> {
-                                                            AudioManager.getInstance()
-                                                                    .toggleMasterMute();
-                                                        }));
-                                    });
-                        });
-        mainMenu.addRootObject(debugMute);
-
         GameObject gameTitle =
                 new GameObject(
                         "title",
@@ -355,13 +331,7 @@ public class App implements NativeResource {
                             mainUi.setEnabled(false);
                             settingsUI.setEnabled(true);
                         }),
-                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()),
-                new UIButton(
-                        "Quick Reload",
-                        (__, ___) -> {
-                            sReload = true;
-                            Engine.getInstance().stop();
-                        }));
+                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()));
 
         final UITextRect connectingText = new UITextRect("");
         connectingText.setEnabled(false);
