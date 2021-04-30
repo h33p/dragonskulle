@@ -11,6 +11,12 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkManager;
 
+/**
+ * This {@code abstract} class contains all the needed methods and variables which are needed by all
+ * AI Player to actually play.
+ *
+ * @author DragonSkulle
+ */
 @Log
 public abstract class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
@@ -23,12 +29,16 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     /** Will hold how long the AI player has to wait until playing. */
     protected int mTimeToWait;
 
+    /** This is whether the AiPlayer is being ran on the server. */
     private boolean mServerSide = false;
 
+    /** The Random Number Generator. */
     protected Random mRandom = new Random();
 
+    /** This is the {@code Reference} to the {@code Player} which is used by this AI Player. */
     protected Reference<Player> mPlayer;
 
+    /** Basic Constructor. */
     public AiPlayer() {}
 
     @Override

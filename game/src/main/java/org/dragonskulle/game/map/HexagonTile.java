@@ -81,6 +81,7 @@ public class HexagonTile implements INetSerializable {
     /** This is the axial storage system for each tile. */
     @Getter private final int mQ;
 
+    /** This is the other Axial Coordinate */
     @Getter private final int mR;
 
     @Setter(AccessLevel.PACKAGE)
