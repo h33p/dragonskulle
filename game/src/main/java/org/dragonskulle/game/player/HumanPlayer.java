@@ -227,6 +227,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     	Building building = selected.getBuilding();
         if(player.isBuildingOwner(building)) return;
         mHexChosen = selected;
+        mBuildingChosen = building.getReference(Building.class);
     }
     
     /** If the user selects a tile, swap to the relevant screen. */
