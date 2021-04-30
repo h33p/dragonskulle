@@ -30,10 +30,6 @@ public class SyncStat extends SyncInt {
     /** The cost of upgrading a stat if there is an error. */
     private static final int sErrorCost = 9999;
 
-    public boolean isMaxLevel() {
-        return getLevel() == LEVEL_MAX;
-    }
-
     /** An interface for getting the value of a stat at a given level. */
     public static interface IValueCalculator extends Serializable {
         int getValue(int level);
@@ -101,29 +97,37 @@ public class SyncStat extends SyncInt {
     }
 
     /**
-     * Get whether the stat is able to be upgraded at any time.
+     * Get whether the stat is able to be upgraded at the current time.
      *
      * <p>Will be {@code false} if:
      *
      * <ul>
      *   <li>It is impossible to upgrade the stat (as its value is fixed).
-     *   <li>The current level is at the {@link #LEVEL_MAX}.
+     *   <li>The current level is less than the {@link #LEVEL_MAX}.
      * </ul>
      *
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
      */
     public boolean isUpgradeable() {
-        return !mType.isFixedValue() && getLevel() < LEVEL_MAX;
+        return !(isFixed() || isMaxLevel());
     }
 
     /**
-     * Get whether the stat is able to be upgraded at this point in time, if it is the max level
-     * then it cannot be upgraded further.
+     * Checks if the Stat is a fixed value.
      *
-     * @return {@code true} if the stat is able to be upgraded further; otherwise {@code false}.
+     * @return true if fixed
      */
-    public boolean isAvailableToUpgrade() {
-        return (!mType.isFixedValue());
+    public boolean isFixed() {
+        return mType.isFixedValue();
+    }
+
+    /**
+     * Checks if the Stat is equal to it's maximum level.
+     *
+     * @return true if equal
+     */
+    public boolean isMaxLevel() {
+        return getLevel() == LEVEL_MAX;
     }
 
     /**

@@ -279,12 +279,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                         Building defendingBuilding = tile.getBuilding();
                         if (Reference.isValid(mAttackingBuilding) && defendingBuilding != null) {
                             // Checks the building can be attacked
-                            Player player = mGetPlayer.getPlayer();
                             boolean canAttack =
                                     mAttackingBuilding
                                             .get()
-                                            .isBuildingAttackable(defendingBuilding, player);
+                                            .isBuildingAttackable(defendingBuilding);
                             if (canAttack) {
+                                Player player = mGetPlayer.getPlayer();
                                 if (player != null) {
                                     player.getClientAttackRequest()
                                             .invoke(

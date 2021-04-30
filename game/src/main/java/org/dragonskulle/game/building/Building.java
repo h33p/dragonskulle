@@ -1,15 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -74,7 +66,7 @@ public class Building extends NetworkableComponent
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
-    /** Tiles that are around {@code mClaimedTiles}. */
+    /** Tiles that are around {@link #mClaimedTiles}. */
     private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
     /** The tiles the building can currently attack (those with claims neighboring our claims). */
@@ -139,6 +131,24 @@ public class Building extends NetworkableComponent
     private Reference<GameObject> mGenerationMesh;
     /** The current building mesh. */
     private Reference<GameObject> mVisibleMesh;
+
+    /**
+     * Gets an array of stats that will be available to upgrade in the shop.
+     *
+     * @return an array of stat types
+     */
+    public static List<StatType> getDefaultShopStats() {
+        return Arrays.asList(StatType.ATTACK, StatType.DEFENCE, StatType.TOKEN_GENERATION);
+    }
+
+    /**
+     * Gets the number of stats displayed in the shop.
+     *
+     * @return the number of stats
+     */
+    public static int getNumberOfDefaultShopStats() {
+        return 3;
+    }
 
     /** Increments {@code mStatUpdateCount} to signify an update is needed. */
     public void setStatsRequireVisualUpdate() {
@@ -313,7 +323,7 @@ public class Building extends NetworkableComponent
 
     private void assignMesh() {
         Map<StatType, Integer> statLevels =
-                getUpgradeableStats().stream()
+                getShopStats().stream()
                         .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
         if (statLevels.values().stream().distinct().count() <= 1) {
             log.info("the stats are all the same");
@@ -581,28 +591,13 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get whether the target {@link Building} is within attackable range from the Building. This
-     * ignores any ownership of the building.
+     * Get whether the target {@link Building} is within attackable range from the Building.
      *
      * @param target The Building to attack.
      * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
      */
     public boolean isBuildingAttackable(Building target) {
         return getAttackableBuildings().contains(target);
-    }
-
-    /**
-     * Get whether the target {@link Building} is within attackable range from the Building and
-     * isn't owned by the player. This method is stricter than its sister.
-     *
-     * @param target The Building to attack.
-     * @param attackingPlayer the attacking player
-     * @return {@code true} if the target is within attackable distance, otherwise {@code false}.
-     */
-    public boolean isBuildingAttackable(Building target, Player attackingPlayer) {
-        if (attackingPlayer == null) return false;
-        if (attackingPlayer.isBuildingOwner(target)) return false;
-        return isBuildingAttackable(target);
     }
 
     /**
@@ -876,22 +871,8 @@ public class Building extends NetworkableComponent
         return stats;
     }
 
-    /**
-     * Get an {@link ArrayList} of {@link SyncStat}s that can currently be upgraded, this excludes
-     * those that are their maximum value and therefore cannot be upgraded further.
-     *
-     * @return An ArrayList of SyncStats that can currently be upgraded further.
-     */
-    public ArrayList<SyncStat> getAvailableStats() {
-        ArrayList<SyncStat> stats = new ArrayList<>();
-
-        for (SyncStat stat : mStats.values()) {
-            if (stat.isAvailableToUpgrade()) {
-                stats.add(stat);
-            }
-        }
-
-        return stats;
+    public List<SyncStat> getShopStats() {
+        return Arrays.asList(getAttack(), getDefence(), getTokenGeneration());
     }
 
     @Override
