@@ -16,7 +16,6 @@ import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -38,35 +37,66 @@ import java.util.stream.Collectors;
 public class Building extends NetworkableComponent
         implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
 
-    /** A map between {@link StatType}s and their {@link SyncStat} values. */
+    /**
+     * A map between {@link StatType}s and their {@link SyncStat} values.
+     */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
 
-    /** Stores the attack strength of the building. */
-    @Getter private final SyncStat mAttack = new SyncStat(this);
-    /** Stores the defence strength of the building. */
-    @Getter private final SyncStat mDefence = new SyncStat(this);
-    /** Stores how many tokens the building can generate in one go. */
-    @Getter private final SyncStat mTokenGeneration = new SyncStat(this);
-    /** Stores the view range of the building. */
-    @Getter private final SyncStat mViewDistance = new SyncStat(this);
-    /** Stores the build range of the building. */
-    @Getter private final SyncStat mBuildDistance = new SyncStat(this);
-    /** Stores the claim range of the building. */
-    @Getter private final SyncStat mClaimDistance = new SyncStat(this);
+    /**
+     * Stores the attack strength of the building.
+     */
+    @Getter
+    private final SyncStat mAttack = new SyncStat(this);
+    /**
+     * Stores the defence strength of the building.
+     */
+    @Getter
+    private final SyncStat mDefence = new SyncStat(this);
+    /**
+     * Stores how many tokens the building can generate in one go.
+     */
+    @Getter
+    private final SyncStat mTokenGeneration = new SyncStat(this);
+    /**
+     * Stores the view range of the building.
+     */
+    @Getter
+    private final SyncStat mViewDistance = new SyncStat(this);
+    /**
+     * Stores the build range of the building.
+     */
+    @Getter
+    private final SyncStat mBuildDistance = new SyncStat(this);
+    /**
+     * Stores the claim range of the building.
+     */
+    @Getter
+    private final SyncStat mClaimDistance = new SyncStat(this);
 
-    /** Whether the building is a capital. */
+    /**
+     * Whether the building is a capital.
+     */
     private final SyncBool mIsCapital = new SyncBool(false);
 
-    /** The tiles the building claims, including the tile the building is currently on. */
-    @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
+    /**
+     * The tiles the building claims, including the tile the building is currently on.
+     */
+    @Getter
+    private Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
-    /** Tiles that are around {@link mClaimedTiles}. */
+    /**
+     * Tiles that are around {@link mClaimedTiles}.
+     */
     private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
-    /** The tiles the building can currently attack (those with claims neighboring our claims). */
+    /**
+     * The tiles the building can currently attack (those with claims neighboring our claims).
+     */
     private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
 
-    /** Building templates, used to distinguish the buildings. */
+    /**
+     * Building templates, used to distinguish the buildings.
+     */
     private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
 
     /**
@@ -89,21 +119,30 @@ public class Building extends NetworkableComponent
 
     private boolean mInitialised = false;
 
-    /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
+    /**
+     * Controls how deep around claimed tiles we go for neighbouring tile calculation.
+     */
     private static final int NEIGHBOUR_BOUND = 5;
 
-    /** The cost to buy a {@link Building}. */
+    /**
+     * The cost to buy a {@link Building}.
+     */
     public static final int BUY_PRICE = 10;
-    /** The reimbursement from selling a {@link Building}. */
+    /**
+     * The reimbursement from selling a {@link Building}.
+     */
     public static final int SELL_PRICE = 2;
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
      * Should alwyas be at least {@code 1}.
      */
-    @Getter private int mStatBaseCost = 1;
+    @Getter
+    private int mStatBaseCost = 1;
 
-    /** Store the {@link HexagonMap} that the {@link Building} is on. */
+    /**
+     * Store the {@link HexagonMap} that the {@link Building} is on.
+     */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
 
     /**
@@ -115,18 +154,30 @@ public class Building extends NetworkableComponent
     @Accessors(prefix = "m")
     private int mStatUpdateCount = 0;
 
-    /** The base building mesh. */
+    /**
+     * The base building mesh.
+     */
     private Reference<GameObject> mBaseMesh;
-    /** The Mesh for when the highest stat is defence. */
+    /**
+     * The Mesh for when the highest stat is defence.
+     */
     private Reference<GameObject> mDefenceMesh;
-    /** The Mesh for when the highest stat is attacking. */
+    /**
+     * The Mesh for when the highest stat is attacking.
+     */
     private Reference<GameObject> mAttackMesh;
-    /** The Mesh for when the highest stat is generation. */
+    /**
+     * The Mesh for when the highest stat is generation.
+     */
     private Reference<GameObject> mGenerationMesh;
-    /** The current building mesh. */
+    /**
+     * The current building mesh.
+     */
     private Reference<GameObject> mVisibleMesh;
 
-    /** Increments {@code mStatUpdateCount} to signify an update is needed. */
+    /**
+     * Increments {@code mStatUpdateCount} to signify an update is needed.
+     */
     public void setStatsRequireVisualUpdate() {
         mStatUpdateCount++;
     }
@@ -182,7 +233,9 @@ public class Building extends NetworkableComponent
 
     }
 
-    /** Initialise the building only when it is properly on the map and the tile is synced */
+    /**
+     * Initialise the building only when it is properly on the map and the tile is synced
+     */
     void checkInitialise() {
         if (mInitialised) {
             return;
@@ -299,10 +352,10 @@ public class Building extends NetworkableComponent
     }
 
     private void assignMesh() {
-        Map<StatType, Integer> statLevels =
-                getUpgradeableStats().stream()
-                        .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
-        if (statLevels.values().stream().distinct().count() <= 1) {
+
+
+        Map.Entry<StatType, Integer> max = getStatForVisuals();
+        if (max == null) {
             log.info("the stats are all the same");
             if (Reference.isValid(mVisibleMesh)) {
                 mVisibleMesh.get().setEnabled(false);
@@ -311,47 +364,47 @@ public class Building extends NetworkableComponent
                 mBaseMesh.get().setEnabled(true);
                 mVisibleMesh = mBaseMesh;
             }
-
         } else {
-            Map.Entry<StatType, Integer> max = getMaxStatForVisuals(statLevels);
-            if (max != null) {
-                log.info("this stat is the biggest " + max.getKey());
-                if (Reference.isValid(mVisibleMesh)) {
-                    mVisibleMesh.get().setEnabled(false);
-                }
-                switch (max.getKey()) {
-                    case ATTACK:
-                        if (Reference.isValid(mAttackMesh)) {
-                            mAttackMesh.get().setEnabled(true);
-                            mVisibleMesh = mAttackMesh;
-                        }
-                        break;
-                    case DEFENCE:
-                        if (Reference.isValid(mDefenceMesh)) {
-                            mDefenceMesh.get().setEnabled(true);
-                            mVisibleMesh = mDefenceMesh;
-                        }
-                        break;
-                    case TOKEN_GENERATION:
-                        if (Reference.isValid(mGenerationMesh)) {
-                            mGenerationMesh.get().setEnabled(true);
-                            mVisibleMesh = mGenerationMesh;
-                        }
-                        break;
-                    default:
-                        break;
-                }
+            log.info("this stat is the biggest " + max.getKey());
+            if (Reference.isValid(mVisibleMesh)) {
+                mVisibleMesh.get().setEnabled(false);
+            }
+            switch (max.getKey()) {
+                case ATTACK:
+                    if (Reference.isValid(mAttackMesh)) {
+                        mAttackMesh.get().setEnabled(true);
+                        mVisibleMesh = mAttackMesh;
+                    }
+                    break;
+                case DEFENCE:
+                    if (Reference.isValid(mDefenceMesh)) {
+                        mDefenceMesh.get().setEnabled(true);
+                        mVisibleMesh = mDefenceMesh;
+                    }
+                    break;
+                case TOKEN_GENERATION:
+                    if (Reference.isValid(mGenerationMesh)) {
+                        mGenerationMesh.get().setEnabled(true);
+                        mVisibleMesh = mGenerationMesh;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
+
     }
 
     /**
      * Gets the {@link SyncStat} which will determine the type of mesh and props displayed.
      *
-     * @param statLevels the stat types and their levels.
-     * @return the stat chosen
+     * @return the stat chosen, null if they are all the same value.
      */
-    private static Map.Entry<StatType, Integer> getMaxStatForVisuals(Map<StatType, Integer> statLevels) {
+    private Map.Entry<StatType, Integer> getStatForVisuals() {
+        Map<StatType, Integer> statLevels =
+                getUpgradeableStats().stream()
+                        .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
+        if (statLevels.values().stream().distinct().count() <= 1) return null;
         Map.Entry<StatType, Integer> max = null;
         for (Map.Entry<StatType, Integer> entry : statLevels.entrySet()) {
             if (max == null || entry.getValue().compareTo(max.getValue()) > 0) {
@@ -361,14 +414,18 @@ public class Building extends NetworkableComponent
         return max;
     }
 
-    /** Generate the stored lists of {@link HexagonTile}s. */
+    /**
+     * Generate the stored lists of {@link HexagonTile}s.
+     */
     private void generateTileLists() {
         generateNeighboringTiles();
         generateAttackableTiles();
         generatePlaceableTiles();
     }
 
-    /** Cleanup generated tile lists. */
+    /**
+     * Cleanup generated tile lists.
+     */
     private void cleanupTileLists() {
         // Reset the list of claimed, viewable and attackable tiles.
         mAttackableTiles.clear();
@@ -389,7 +446,9 @@ public class Building extends NetworkableComponent
         mStatBaseCost = 1 + totalUpgrades / 2;
     }
 
-    /** Claim the tiles around the building and the tile the building is on. */
+    /**
+     * Claim the tiles around the building and the tile the building is on.
+     */
     private void generateClaimTiles() {
         if (getNetworkObject().isServer()) {
             // Get the map.
@@ -462,7 +521,9 @@ public class Building extends NetworkableComponent
                 });
     }
 
-    /** Store the tiles that are suitable for attacking. */
+    /**
+     * Store the tiles that are suitable for attacking.
+     */
     private void generateAttackableTiles() {
         // Clear the current list of attackable tiles.
         mAttackableTiles.clear();
@@ -475,7 +536,9 @@ public class Building extends NetworkableComponent
                 });
     }
 
-    /** Store the tiles that are suitable for placing a building on. */
+    /**
+     * Store the tiles that are suitable for placing a building on.
+     */
     private void generatePlaceableTiles() {
         // Clear the current list of buildable tiles.
         mPlaceableTiles.clear();
@@ -656,7 +719,7 @@ public class Building extends NetworkableComponent
      * TransformHex}.
      *
      * @return A 3d-vector of integers containing the x, y and z position of the building, or {@code
-     *     null}.
+     * null}.
      */
     private Vector3i getPosition() {
 
