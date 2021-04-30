@@ -336,9 +336,12 @@ public class ClientNetworkManager {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
         if (nextState != null) {
-            log.info(nextState.toString());
             log.info(mConnectionState.toString());
+            log.info(nextState.toString());
 
+            if (mConnectionState == ConnectionState.JOINED_GAME) {
+                disconnect();
+            }
             switch (nextState) {
                 case CONNECTED:
                     joinLobby();
@@ -360,9 +363,6 @@ public class ClientNetworkManager {
                     break;
                 default:
                     break;
-            }
-            if (mConnectionState == ConnectionState.JOINED_GAME) {
-                disconnect();
             }
         }
 
