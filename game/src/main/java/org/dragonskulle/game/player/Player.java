@@ -699,6 +699,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
+        building.setSellPrice(descriptor.getSellPrice());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
         log.warning("Added building.");
@@ -919,7 +920,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Adds the tokens
-        mTokens.add(Building.SELL_PRICE);
+        mTokens.add(building.getSellPrice());
 
         // Remove the building
         building.remove();

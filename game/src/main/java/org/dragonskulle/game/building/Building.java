@@ -26,6 +26,7 @@ import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -101,7 +102,7 @@ public class Building extends NetworkableComponent
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
-    public static final int SELL_PRICE = 2;
+    public SyncInt mSellPrice = new SyncInt(2);
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
@@ -873,6 +874,24 @@ public class Building extends NetworkableComponent
 
     public List<SyncStat> getShopStats() {
         return getShopStatTypes().stream().map(mStats::get).collect(Collectors.toList());
+    }
+    
+    /**
+     * Set the sell price.
+     * 
+     * @param price The price.
+     */
+    public void setSellPrice(int price) {
+    	mSellPrice.set(price);
+    }
+    
+    /**
+     * Get the sell price.
+     * 
+     * @return The sell price.
+     */
+    public int getSellPrice() {
+    	return mSellPrice.get();
     }
 
     @Override

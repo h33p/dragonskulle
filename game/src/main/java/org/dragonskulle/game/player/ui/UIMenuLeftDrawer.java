@@ -22,6 +22,7 @@ import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
 
 /**
  * The menu drawer on the left side of the screen.
@@ -310,14 +311,16 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private UITextButtonFrame buildConfirmSellButtonFrame() {
         return new UITextButtonFrame(
                 "confirm_sell_button",
-                "Sell Selected for " + Building.SELL_PRICE,
+                "Sell Building",
                 (handle, __) -> {
                     Reference<Building> buildingToSell = mGetBuildingChosen.getBuilding();
                     if (Reference.isValid(buildingToSell)) {
-                        Player player = mGetPlayer.getPlayer();
+                    	Building building = buildingToSell.get();
+                    	
+                    	Player player = mGetPlayer.getPlayer();
                         if (player != null) {
                             player.getClientSellRequest()
-                                    .invoke(new SellData(buildingToSell.get())); // Send Data
+                                    .invoke(new SellData(building)); // Send Data
                         }
                     }
                     mSetHexChosen.setHex(null);
@@ -353,6 +356,20 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
                 case SELLING_SCREEN:
                     newScreen = mSellConfirmScreenMenu;
                     setShopState(ShopState.CLOSED);
+                    
+                    if(!Reference.isValid(mSellConfirmScreenMenu)) break;
+                	if(!Reference.isValid(mGetBuildingChosen.getBuilding())) break;
+                	
+                	GameObject sellMenu = mSellConfirmScreenMenu.get();
+                	GameObject child = sellMenu.getChildren().get(0);
+					
+                	Reference<UIButton> button = child.getComponent(UIButton.class);
+                	if(!Reference.isValid(button)) break;
+                	
+            		Reference<UIText> text = button.get().getLabelText();
+            		if(!Reference.isValid(text)) break;
+            		text.get().setText("Sell for " + mGetBuildingChosen.getBuilding().get().getSellPrice());
+                	
                     break;
                 case PLACING_NEW_BUILDING:
                     newScreen = mPlaceNewBuildingScreenMenu;
