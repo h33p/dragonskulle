@@ -3,7 +3,10 @@ package org.dragonskulle.game;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
+import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.PredefinedBuildings;
 import org.junit.Test;
@@ -29,6 +32,8 @@ public class CostTest {
         assertEquals(25, actualBuildings.get(6).getCost());
     }
 
+    /** This will check that the sell price is right */
+    @Test
     public void sellCost() {
         List<BuildingDescriptor> actualBuildings = PredefinedBuildings.getAll();
 
@@ -39,5 +44,50 @@ public class CostTest {
         assertEquals(2, actualBuildings.get(4).getSellPrice());
         assertEquals(2, actualBuildings.get(5).getSellPrice());
         assertEquals(2, actualBuildings.get(6).getSellPrice());
+    }
+
+    /** This will test attacking cost */
+    @Test
+    public void attackCost() {
+        Building building = new Building();
+        building.onConnectedSyncvars();
+
+        assertEquals(27, building.getAttackCost());
+        ArrayList<SyncStat> stats = building.getUpgradeableStats();
+
+        SyncStat attack = stats.get(0);
+        attack.increaseLevel();
+
+        building.afterStatChange();
+        assertEquals(29, building.getAttackCost());
+
+        attack.increaseLevel();
+        attack.increaseLevel();
+
+        SyncStat defence = stats.get(1);
+
+        defence.increaseLevel();
+        defence.increaseLevel();
+
+        building.afterStatChange();
+
+        assertEquals(39, building.getAttackCost());
+    }
+
+    /** This will test that the cost increases when stats are upgraded */
+    @Test
+    public void upgradeStats() {
+        Building building = new Building();
+        building.onConnectedSyncvars();
+        ArrayList<SyncStat> stats = building.getUpgradeableStats();
+
+        assertEquals(1, stats.get(0).getCost());
+        stats.get(0).increaseLevel();
+        building.afterStatChange();
+        assertEquals(2, stats.get(0).getCost());
+        stats.get(1).increaseLevel();
+        stats.get(1).increaseLevel();
+        building.afterStatChange();
+        assertEquals(3, stats.get(0).getCost());
     }
 }
