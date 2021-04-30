@@ -103,7 +103,7 @@ public class SyncStat extends SyncInt {
      *
      * <ul>
      *   <li>It is impossible to upgrade the stat (as its value is fixed).
-     *   <li>The current level is less than the {@link #LEVEL_MAX}.
+     *   <li>The current level is equal to {@link #LEVEL_MAX}.
      * </ul>
      *
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.

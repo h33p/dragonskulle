@@ -137,7 +137,7 @@ public class Building extends NetworkableComponent
      *
      * @return an array of stat types
      */
-    public static List<StatType> getDefaultShopStats() {
+    public static List<StatType> getShopStatTypes() {
         return Arrays.asList(StatType.ATTACK, StatType.DEFENCE, StatType.TOKEN_GENERATION);
     }
 
@@ -146,8 +146,8 @@ public class Building extends NetworkableComponent
      *
      * @return the number of stats
      */
-    public static int getNumberOfDefaultShopStats() {
-        return 3;
+    public static int getNumberOfShopStatTypes() {
+        return getShopStatTypes().size();
     }
 
     /** Increments {@code mStatUpdateCount} to signify an update is needed. */

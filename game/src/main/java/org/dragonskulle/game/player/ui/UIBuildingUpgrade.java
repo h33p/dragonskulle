@@ -2,6 +2,7 @@
 package org.dragonskulle.game.player.ui;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -119,11 +120,12 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      */
     private UIManager.IUIBuildHandler[] unpackReferences(
             HashMap<StatType, Reference<UITextRect>> src) {
-        return new UIManager.IUIBuildHandler[] {
-            src.get(StatType.ATTACK).get(),
-            src.get(StatType.DEFENCE).get(),
-            src.get(StatType.TOKEN_GENERATION).get()
-        };
+        List<StatType> types = Building.getShopStatTypes();
+        UIManager.IUIBuildHandler[] out = new UIManager.IUIBuildHandler[types.size()];
+        for (int i = 0; i < types.size(); i++) {
+            out[i] = src.get(types.get(i)).get();
+        }
+        return out;
     }
 
     /**
@@ -133,7 +135,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
      * @param dest the destination map.
      */
     private void createReferences(HashMap<StatType, Reference<UITextRect>> dest) {
-        for (StatType stat : Building.getDefaultShopStats()) {
+        for (StatType stat : Building.getShopStatTypes()) {
             UITextRect ui = create21TextRect();
             dest.put(stat, ui.getReference(UITextRect.class));
         }
@@ -240,7 +242,7 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
         if (Reference.isValid(mCostLabel)) {
             mCostLabel
                     .get()
-                    .setEnabled(numberOfMaxStats.get() != Building.getNumberOfDefaultShopStats());
+                    .setEnabled(numberOfMaxStats.get() != Building.getNumberOfShopStatTypes());
         }
     }
 
