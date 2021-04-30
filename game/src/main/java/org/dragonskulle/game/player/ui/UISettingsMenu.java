@@ -139,7 +139,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
         UITextRect muteTitle = new UITextRect("Toggle mute:");
         UIButton muteButton =
                 new UIButton(
-                        "Mute",
+                        AudioManager.getInstance().isMasterMuted() ? "Unmute" : "Mute",
                         (button, __) -> {
                             AudioManager audioManager = AudioManager.getInstance();
                             audioManager.toggleMasterMute();
