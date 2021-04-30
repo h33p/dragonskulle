@@ -363,6 +363,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param qPos The q position of the building.
      * @param rPos The r position of the building.
+     * @param checkIsland {@code true} when we don't want to place on an Island otherwise {@code
+     *     false}
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
     private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
