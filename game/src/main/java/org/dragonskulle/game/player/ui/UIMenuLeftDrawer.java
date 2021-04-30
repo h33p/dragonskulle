@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.GameObject;
@@ -32,7 +33,7 @@ import org.dragonskulle.ui.UIText;
  */
 @Log
 @Accessors(prefix = "m")
-public class UIMenuLeftDrawer extends Component implements IOnStart {
+public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdate {
     protected final IGetBuildingChosen mGetBuildingChosen;
     protected final ISetBuildingChosen mSetBuildingChosen;
     protected final IGetHexChosen mGetHexChosen;
@@ -573,4 +574,32 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         }
         return mShop;
     }
+
+    private void updateSellButton() {
+    	if(!Reference.isValid(mBuildScreenMenu)) return;
+        if(!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
+        Building building = mGetBuildingChosen.getBuilding().get();
+        GameObject menu = mBuildScreenMenu.get();
+        if(menu.getChildren().size() < 2) return;
+        GameObject sellObject = menu.getChildren().get(1);
+        
+        Reference<UIButton> sellButton = sellObject.getComponent(UIButton.class);
+    	if(!Reference.isValid(sellButton)) return;
+        
+    	Reference<UIText> sellText = sellButton.get().getLabelText();
+		if(!Reference.isValid(sellText)) return;
+		
+		if(building.isCapital()){
+			sellText.get().setText("Cannot Sell Capital");     
+			sellButton.get().setEnabled(false);
+		} else {
+			sellText.get().setText("Sell Building");     
+			sellButton.get().setEnabled(true);
+		}
+    }
+    
+	@Override
+	public void fixedUpdate(float deltaTime) {
+		updateSellButton();		
+	}
 }
