@@ -12,7 +12,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
@@ -37,7 +36,7 @@ import org.dragonskulle.ui.UITextRect;
  */
 @Log
 @Accessors(prefix = "m")
-public class UIBuildingUpgrade extends Component implements  IFixedUpdate, IOnAwake {
+public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwake {
     @Getter(AccessLevel.PROTECTED)
     private final UIShopSection mParent;
 
@@ -299,9 +298,9 @@ public class UIBuildingUpgrade extends Component implements  IFixedUpdate, IOnAw
             textRef.get().setText(value);
         }
     }
-//
-//    @Override
-//    public void onAwake() {
-//
-//    }
+    //
+    //    @Override
+    //    public void onAwake() {
+    //
+    //    }
 }
