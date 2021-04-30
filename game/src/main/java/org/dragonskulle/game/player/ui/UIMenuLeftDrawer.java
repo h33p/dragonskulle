@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
@@ -205,7 +206,16 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
         buildingSelectedScreenMenuItems.add(buildSellButtonFrame());
         // buildingSelectedScreenMenuItems.add(buildDeselectButtonFrame());
         mBuildScreenMenu = buildMenu(buildingSelectedScreenMenuItems);
-
+        
+        if(Reference.isValid(mBuildScreenMenu)) {
+        	GameObject menu = mBuildScreenMenu.get();
+        	TransformUI transform = menu.getTransform(TransformUI.class);        	
+        	if(transform != null) {
+        		transform.setParentAnchor(0.1f, 0.2f, 1f - 0.1f, 1.5f);
+        		//transform.translate(0f, 0.5f);
+        	}
+        }
+        
         mMapScreenMenu = new Reference<>(null);
 
         setVisibleScreen(Screen.DEFAULT_SCREEN);
@@ -455,7 +465,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart {
     private UITextButtonFrame buildAttackButtonFrame() {
         return new UITextButtonFrame(
                 "attack_button",
-                "Attack From Here",
+                "Launch Attack!",
                 (handle, __) -> {
                     // -- Need way to show different buildingSelectedView
                     Reference<Building> buildingChosen = mGetBuildingChosen.getBuilding();

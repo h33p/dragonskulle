@@ -81,13 +81,13 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                             UIManager manager = UIManager.getInstance();
 
                             manager.buildHorizontalUI(
-                                    self, 0.05f, 0.2f, 0.4f, unpackReferences(mLevelTexts));
+                                    self, 0.05f, -0.4f, -0.4f + 0.2f, unpackReferences(mLevelTexts));
 
                             manager.buildHorizontalUI(
                                     self,
                                     0.05f,
-                                    0.4f,
-                                    0.9f,
+                                    -0.2f,
+                                    0.3f,
                                     buildStatUpgrade(StatType.ATTACK, "ui/attack_symbol.png"),
                                     buildStatUpgrade(StatType.DEFENCE, "ui/defence_symbol.png"),
                                     buildStatUpgrade(
@@ -101,13 +101,13 @@ public class UIBuildingUpgrade extends Component implements IOnStart, IFixedUpda
                                             g -> {
                                                 TransformUI tran =
                                                         g.getTransform(TransformUI.class);
-                                                tran.setParentAnchor(0.3f, 0.38f);
-                                                tran.setPosition(0f, 0.145f);
+                                                tran.setParentAnchor(0.3f, 0f);
+                                                tran.setPosition(0f, -0.215f);
                                                 g.addComponent(new UIText("COST"));
                                             });
 
                             manager.buildHorizontalUI(
-                                    self, 0.05f, 0.65f, 1.15f, unpackReferences(mCostTexts));
+                                    self, 0.05f, 0.22f, 0.22f + 0.2f, unpackReferences(mCostTexts));
                         });
     }
 
