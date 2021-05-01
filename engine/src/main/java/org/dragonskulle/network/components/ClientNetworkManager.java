@@ -350,7 +350,7 @@ public class ClientNetworkManager {
                     }
                     break;
                 case CONNECTION_ERROR:
-                    if (mConnectionHandler != null) {
+                    if (mConnectionHandler != null && mConnectionState == ConnectionState.CONNECTING) {
                         mConnectionHandler.handle(mManager, -1);
                     }
                     disconnect();

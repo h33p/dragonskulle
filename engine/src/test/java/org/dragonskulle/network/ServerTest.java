@@ -18,6 +18,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.junit.Test;
 import org.lwjgl.system.NativeResource;
 
@@ -84,17 +85,6 @@ public class ServerTest {
          * and only then recreate netmans.
          */
         private void ensureNetworkIsRecreated() {
-            boolean closed = false;
-
-            while (!closed) {
-                closed = true;
-
-                sEngineLock.lock();
-                if (CLIENT_NETWORK_MANAGER.getClientManager() != null) closed = false;
-                if (SERVER_NETWORK_MANAGER.getServerManager() != null) closed = false;
-                sEngineLock.unlock();
-            }
-
             sEngineLock.lock();
 
             SERVER_NETWORK_MANAGER.createServer(
@@ -134,13 +124,27 @@ public class ServerTest {
                                     ensureNetworkIsRecreated();
 
                                     runnable.run();
+
+                                    sEngineLock.lock();
+                                    cleanupNetmans();
+                                    sEngineLock.unlock();
+
+                                    boolean closed = false;
+
+                                    while (!closed) {
+                                        closed = true;
+
+                                        sEngineLock.lock();
+                                        if (CLIENT_NETWORK_MANAGER.getClientManager() != null) closed = false;
+                                        if (SERVER_NETWORK_MANAGER.getServerManager() != null) closed = false;
+                                        sEngineLock.unlock();
+                                    }
+
                                 } finally {
                                     mShouldExit = true;
                                 }
                             });
             sEngineLock.lock();
-
-            cleanupNetmans();
 
             mTestThread.setUncaughtExceptionHandler(
                     (t, e) -> {

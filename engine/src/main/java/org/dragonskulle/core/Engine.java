@@ -486,8 +486,7 @@ public class Engine {
             if (mPresentationScene != null) {
 
                 // Deactivate the old presentation scene
-                mInactiveScenes.add(mPresentationScene);
-                mActiveScenes.remove(mPresentationScene);
+                mScenesToDeactivate.add(mPresentationScene);
             }
 
             // And then load the new one
@@ -513,7 +512,6 @@ public class Engine {
         // Unload all scenes that need to be unloaded and flag all gameobjects for destruction
         for (Scene s : mScenesToUnload) {
             if (s == null) continue;
-            mScenesToUnload.remove(s);
             mActiveScenes.remove(s);
             mInactiveScenes.remove(s);
             if (mPresentationScene != null && mPresentationScene == s) {
@@ -523,6 +521,7 @@ public class Engine {
                 r.destroy();
             }
         }
+        mScenesToUnload.clear();
     }
 
     /** Destroy all game objects and components in all scenes. Used for cleanup */
