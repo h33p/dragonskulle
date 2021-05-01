@@ -8,7 +8,12 @@ import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Transform3D;
-import org.dragonskulle.core.*;
+import org.dragonskulle.core.Engine;
+import org.dragonskulle.core.GameObject;
+import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.DragMovement;
 import org.dragonskulle.game.camera.HeightByMap;
 import org.dragonskulle.game.camera.KeyboardMovement;
@@ -34,7 +39,7 @@ import org.lwjgl.system.NativeResource;
 
 @Log
 public class App implements NativeResource {
-    private static final Settings settings = Settings.getInstance().loadSettings();
+    private static final Settings mSettings = Settings.getInstance().loadSettings();
     private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
     private static final int BGM2_ID =
             AudioManager.getInstance().loadSound("country_background_short.wav");
@@ -48,6 +53,11 @@ public class App implements NativeResource {
 
     public static final float MENU_BASEWIDTH = 0.2f;
 
+    /**
+     * Adds the debug overlay, this is enabled by pressing F3.
+     *
+     * @param scene the scene
+     */
     private static void addDebugUi(Scene scene) {
         GameObject debugUi =
                 new GameObject(
@@ -64,6 +74,12 @@ public class App implements NativeResource {
         scene.addRootObject(debugUi);
     }
 
+    /**
+     * Creates the main scene.
+     *
+     * @param networkManager the network manager
+     * @return the scene created
+     */
     private static Scene createMainScene(NetworkManager networkManager) {
         // Create a scene
         Scene mainScene = new Scene("game");
@@ -150,10 +166,15 @@ public class App implements NativeResource {
         return mainScene;
     }
 
+    /**
+     * Creates the main scene.
+     *
+     * @param networkManager the network manager
+     * @param asServer true, if to create as server
+     * @return the scene created
+     */
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
-
         Scene mainScene = createMainScene(networkManager);
-        // asServer = true;
         if (asServer) {
             log.info("I am the server");
             GameObject hostGameUi =
@@ -200,6 +221,11 @@ public class App implements NativeResource {
         return mainScene;
     }
 
+    /**
+     * Creates the main menu scene.
+     *
+     * @return the scene created
+     */
     private Scene createMainMenu() {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
         addDebugUi(mainMenu);

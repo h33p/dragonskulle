@@ -138,8 +138,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
 
     @Override
     public void lateNetworkUpdate() {
-        if (mServerManager != null) mServerManager.lateNetworkUpdate();
-        else if (mClientManager != null) mClientManager.lateNetworkUpdate();
+        if (mServerManager != null) {
+            mServerManager.lateNetworkUpdate();
+        } else if (mClientManager != null) {
+            mClientManager.lateNetworkUpdate();
+        }
     }
 
     /**
