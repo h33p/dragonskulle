@@ -145,7 +145,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Try and place a {@link Building} from the specified Building.
      *
-     * @param building the {@code Building} to try and build from.
+     * @param building the {@link Building} to try and build from.
      * @return Whether building placement was invoked.
      */
     private boolean tryToAddBuilding(Building building) {
