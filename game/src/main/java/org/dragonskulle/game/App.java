@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import java.util.Scanner;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -68,7 +67,7 @@ public class App implements NativeResource {
         scene.addRootObject(debugUi);
     }
 
-    private static Scene createMainScene(NetworkManager networkManager) {
+    static Scene createMainScene(NetworkManager networkManager) {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -154,7 +153,7 @@ public class App implements NativeResource {
         return mainScene;
     }
 
-    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
+    static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
 
         Scene mainScene = createMainScene(networkManager);
         // asServer = true;
@@ -206,10 +205,7 @@ public class App implements NativeResource {
         return mainScene;
     }
 
-    private Scene createMainMenu() {
-        Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
-        addDebugUi(mainMenu);
-
+    TemplateManager createTemplateManager() {
         TemplateManager templates = new TemplateManager();
 
         for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
@@ -220,9 +216,19 @@ public class App implements NativeResource {
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
 
+        return templates;
+    }
+
+    NetworkManager createNetworkManager() {
+        return new NetworkManager(createTemplateManager(), App::createMainScene);
+    }
+
+    private Scene createMainMenu() {
+        Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
+        addDebugUi(mainMenu);
+
         Reference<NetworkManager> networkManager =
-                new NetworkManager(templates, App::createMainScene)
-                        .getReference(NetworkManager.class);
+                createNetworkManager().getReference(NetworkManager.class);
 
         GameObject networkManagerObject =
                 new GameObject(
@@ -454,32 +460,11 @@ public class App implements NativeResource {
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
 
-        // Load dev console
-        // TODO: actually make a fully fledged console
-        // TODO: join it at the end
-        new Thread(
-                        () -> {
-                            Scanner in = new Scanner(System.in);
-
-                            String line;
-
-                            while ((line = in.nextLine()) != null) {
-                                try {
-                                    sPort = in.nextInt();
-                                    sIP = line.trim();
-                                    log.info("Address set successfully!");
-                                } catch (Exception e) {
-                                    log.info("Failed to set IP and port!");
-                                }
-                            }
-                        })
-                .start();
-
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
     }
 
-    private void onConnectedClient(Scene gameScene, NetworkManager manager) {
+    void onConnectedClient(Scene gameScene, NetworkManager manager) {
         log.info("CONNECTING.");
 
         HumanPlayer humanPlayer = new HumanPlayer(manager.getReference(NetworkManager.class));
@@ -497,13 +482,12 @@ public class App implements NativeResource {
         log.info("Registered HumanPlayer as singleton.");
     }
 
-    private void onClientConnected(
-            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
+    void onClientConnected(Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         int id = networkClient.getNetworkID();
         manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 
-    private void onGameStarted(NetworkManager manager) {
+    void onGameStarted(NetworkManager manager) {
         log.severe("Game Start");
         log.warning("Spawning 'Server' Owned objects");
         Reference<NetworkObject> obj =
