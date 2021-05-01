@@ -41,7 +41,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     public static interface IFloodFillVisitor {
 
         /**
-         * The method which states what should happen when reaching a {@code HexagonTile}.
+         * The method which states what should happen when reaching a {@link HexagonTile}.
          *
          * @param map The {@link HexagonMap} to look through.
          * @param tile The {@link HexagonTile} to look through.
@@ -83,7 +83,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     }
 
     /**
-     * This will use flood fill to find all connected tiles on land from the given {@code
+     * This will use flood fill to find all connected tiles on land from the given {@link
      * HexagonTile}
      *
      * @param tile The tile to start flooding from
@@ -126,8 +126,8 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     /**
      * This will perform the flood fill algorithm.
      *
-     * @param tiles The {@code Deque} to hold the tiles to which need to be visited.
-     * @param visitor The {@code IFloodFillVisitor} which states what needs to be done when visiting
+     * @param tiles The {@link Deque} to hold the tiles to which need to be visited.
+     * @param visitor The {@link IFloodFillVisitor} which states what needs to be done when visiting
      *     a node.
      */
     public void floodFill(Deque<HexagonTile> tiles, IFloodFillVisitor visitor) {
@@ -337,10 +337,10 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     }
 
     /**
-     * This checks if the given {@code HexagonTile} is an island (An island is defined as a land
+     * This checks if the given {@link HexagonTile} is an island (An island is defined as a land
      * mass which is disconnected completely from the largest land mass)
      *
-     * @param tile The {@code HexagonTile} to check if its in an island
+     * @param tile The {@link HexagonTile} to check if its in an island
      * @return Returns {@code true} if it is an island, {@code false} if not
      */
     public boolean isIsland(HexagonTile tile) {

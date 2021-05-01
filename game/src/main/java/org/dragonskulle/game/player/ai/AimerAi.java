@@ -532,8 +532,7 @@ public class AimerAi extends AiPlayer {
      * @param graph The {@link Graph} to use.
      * @param opponentPlayer The {@link Player} to aim for.
      * @param target The target {@link HexagonTile} to aim for.
-     * @return An {@link ImportantNodes} which have the {@link Node} to start
-     *     from and go to.
+     * @return An {@link ImportantNodes} which have the {@link Node} to start from and go to.
      */
     private ImportantNodes findBuilding(Graph graph, Player opponentPlayer, HexagonTile target) {
 
