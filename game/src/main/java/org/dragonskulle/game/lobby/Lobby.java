@@ -19,12 +19,7 @@ import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIInputBox;
-import org.dragonskulle.ui.UIManager;
-import org.dragonskulle.ui.UIRenderable;
-import org.dragonskulle.ui.UITextRect;
+import org.dragonskulle.ui.*;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -223,11 +218,13 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance()
                 .buildVerticalUi(
                         mFailedToForwardUi,
-                        0.05f,
-                        0,
-                        0.2f,
-                        new UITextRect("Automatic port forwarding failed!"),
-                        new UITextRect(
+                        0.3f,
+                        0.1f,
+                        0.9f,
+                        new UIText(
+                                new Vector4f(0f, 0f, 0f, 0f), "Automatic port forwarding failed!"),
+                        new UIText(
+                                new Vector4f(0f, 0f, 0f, 0f),
                                 "To play online, please ensure port 17569 is opened and points to your local IP"),
                         new UIButton(
                                 "Continue anyway",
