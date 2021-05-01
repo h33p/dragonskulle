@@ -610,7 +610,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         	text.get().setText("Launch Attack!");
             button.get().setEnabled(true);
         }
-
+        
     }
     
     private void updateAttackCostText() {
@@ -635,7 +635,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (player == null) return;
 
         if (player.isBuildingOwner(building)) {
-            text.get().setText("Cost: -");
+            text.get().setText("[SELECT BUILDING]");
             button.get().setEnabled(false);
             return;
         }
@@ -665,12 +665,18 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         Player player = mGetPlayer.getPlayer();
         if (player == null) return;
 
-        if (player.isBuildingOwner(building)) {
-            text.get().setText("[SELECT A BUILDING]");
+        if(player.inCooldown()) {
+        	text.get().setText(String.format("[COOLDOWN: %d]", (int) player.getRemainingCooldown() + 1));
             button.get().setEnabled(false);
             return;
         }
-
+        
+        if (player.isBuildingOwner(building)) {
+            text.get().setText("[SELECT BUILDING]");
+            button.get().setEnabled(false);
+            return;
+        }
+        
         int cost = building.getAttackCost();
         if (cost <= player.getTokens().get()) {
         	text.get().setText("Attack!");

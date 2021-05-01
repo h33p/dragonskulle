@@ -85,9 +85,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack. */
-    private static final float ATTACK_COOLDOWN = 2f;
+    public static final float ATTACK_COOLDOWN = 5f;
     /** When the last time a player attacked. */
-    private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
+    @Getter private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
     private static final int TOKEN_RATE = 5;
@@ -641,6 +641,24 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
+     * Get whether the player is currently in the attack cooldown.
+     * 
+     * @return Whether the player is in the attack cooldown period. 
+     */
+    public boolean inCooldown() {
+    	return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+    }
+    
+    /**
+     * Get the time left in the cooldown period.
+     * 
+     * @return The remaining time to wait.
+     */
+    public float getRemainingCooldown() {
+    	return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
+    }
+    
+    /**
      * Process and parse an event in which the <b>client</b> player wishes to place a {@link
      * Building}.
      *
@@ -864,7 +882,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks if you're in cooldown
-        if (getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN) {
+        if (inCooldown()) {
             log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
