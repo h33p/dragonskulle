@@ -172,16 +172,18 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                 setSelectedBuildingDescriptor(descriptor);
                 but.setLockPressed(true);
             }
+            /*
             go.addComponent(
                     new LambdaFixedUpdate(
                             (dt) -> {
                                 if (descriptor.getCost() > mTokens) {
-                                    but.disable();
+                                    // but.disable();
                                 } else {
-                                    but.enable();
+                                    // but.enable();
                                 }
                             }));
-
+             */
+            
             but.setRectTexture(GameUIAppearance.getSquareButtonTexture());
             go.addComponent(but);
             go.buildChild(

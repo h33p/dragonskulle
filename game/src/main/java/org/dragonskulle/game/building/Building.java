@@ -117,7 +117,7 @@ public class Building extends NetworkableComponent
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
      * Should alwyas be at least {@code 1}.
      */
-    @Getter private int mStatBaseCost = 1;
+    @Getter private int mStatBaseCost = 10;
 
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
@@ -409,7 +409,7 @@ public class Building extends NetworkableComponent
             totalUpgrades += stat.getLevel() - SyncStat.LEVEL_MIN;
         }
 
-        mStatBaseCost = 1 + totalUpgrades / 2;
+        mStatBaseCost = 1 + totalUpgrades * 3;
     }
 
     /** Claim the tiles around the building and the tile the building is on. */

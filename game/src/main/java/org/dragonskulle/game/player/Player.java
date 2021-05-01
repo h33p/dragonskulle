@@ -90,7 +90,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
-    private static final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 2;
     /** How frequently the tokens should be added. */
     private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
