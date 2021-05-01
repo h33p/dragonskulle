@@ -383,7 +383,7 @@ public class AimerAi extends AiPlayer {
                 // Check
 
                 ArrayList<Building> attackableBuildings =
-                        new ArrayList<Building>(building.get().getAttackableBuildings());
+                		building.get().getAttackableBuildings();
                 Building buildingToAim =
                         attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
                 return buildingToAim.getOwner();

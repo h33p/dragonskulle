@@ -554,16 +554,16 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get a {@link HashSet} of opponent {@link Building}s that neighbour our tiles.
+     * Get a {@link ArrayList} of opponent {@link Building}s that neighbour our tiles.
      *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
-    public Set<Building> getAttackableBuildings() {
+    public ArrayList<Building> getAttackableBuildings() {
         if (mAttackableTiles.isEmpty()) {
             generateTileLists();
         }
 
-        HashSet<Building> attackableBuildings = new HashSet<>();
+        ArrayList<Building> attackableBuildings = new ArrayList<>();
 
         Player owner = getOwner();
 
