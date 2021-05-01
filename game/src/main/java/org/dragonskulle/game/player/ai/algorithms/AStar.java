@@ -99,8 +99,8 @@ public class AStar {
      * The constructor which allows you to make the object.
      *
      * @param graph The {@link Graph} to use A* on.
-     * @param currentNode The start {@link Node}'s nodeId.
-     * @param endNode The end {@link Node}'s nodeId.
+     * @param currentNode The start {@code Node}'s nodeId.
+     * @param endNode The end {@code Node}'s nodeId.
      */
     public AStar(Graph graph, int currentNode, int endNode) {
         this.mGraph = graph;
