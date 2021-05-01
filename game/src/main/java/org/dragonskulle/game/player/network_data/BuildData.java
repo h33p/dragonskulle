@@ -38,7 +38,7 @@ public class BuildData implements INetSerializable {
 
     /**
      * Set the contents of the BuildData.
-     * 
+     *
      * @param hexTileToAdd The hexagon tile.
      * @param descriptorIndex The type of building it should be.
      */

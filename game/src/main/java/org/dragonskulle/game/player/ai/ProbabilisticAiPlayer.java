@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -40,7 +39,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     @Override
     protected void simulateInput() {
-    	
+
         // If only one building assumed that its capital
         if (getPlayer().getNumberOfOwnedBuildings() == 1) {
 
@@ -72,8 +71,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             } else if (randomNumber
                     <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
                 // Only attempt to attack if you're not in cooldown.
-            	if(!getPlayer().inCooldown()) {
-                	attack();
+                if (!getPlayer().inCooldown()) {
+                    attack();
                 }
             } else if (randomNumber
                     <= mBuildProbability
@@ -155,13 +154,14 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean tryToAddBuilding(Building building) {
 
-    	List<BuildingDescriptor> options = PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
-    	// Test if they can afford to build anything.
-    	if(options.size() == 0) return false;
-    	
-    	int optionIndex = mRandom.nextInt(options.size());
-    	BuildingDescriptor option = options.get(optionIndex);
-    	
+        List<BuildingDescriptor> options =
+                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+        // Test if they can afford to build anything.
+        if (options.size() == 0) return false;
+
+        int optionIndex = mRandom.nextInt(options.size());
+        BuildingDescriptor option = options.get(optionIndex);
+
         if (building.getBuildableTiles().size() != 0) {
 
             // Get the buildable tiles
@@ -174,8 +174,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             while (true) {
                 HexagonTile tile = buildableTiles.get(index);
                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
-	                	getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile, PredefinedBuildings.getIndex(option)));
-	                    return true;
+                    getPlayer()
+                            .getClientBuildRequest()
+                            .invoke((d) -> d.setTile(tile, PredefinedBuildings.getIndex(option)));
+                    return true;
                 }
                 index++;
                 if (index >= buildableTiles.size()) {
@@ -252,21 +254,21 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether attacking was invoked.
      */
     protected boolean tryToAttack(Building attacker) {
-        
-    	// Ensure the player can afford to attack.
-    	if(attacker.getAttackCost() > getPlayer().getTokens().get()) return false;
-    	
-    	ArrayList<Building> buildings = attacker.getAttackableBuildings();
-        if(buildings.size() == 0) return false;
-        
+
+        // Ensure the player can afford to attack.
+        if (attacker.getAttackCost() > getPlayer().getTokens().get()) return false;
+
+        ArrayList<Building> buildings = attacker.getAttackableBuildings();
+        if (buildings.size() == 0) return false;
+
         int index = mRandom.nextInt(buildings.size());
         final int end = index;
         do {
-        	Building defender = buildings.get(index);
-        	if(defender != null) {
-        		getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
-        		return true;
-        	}
+            Building defender = buildings.get(index);
+            if (defender != null) {
+                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+                return true;
+            }
 
             // Go to the next stat.
             index++;
@@ -274,7 +276,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 index = 0;
             }
         } while (index != end);
-        
+
         return false;
     }
 

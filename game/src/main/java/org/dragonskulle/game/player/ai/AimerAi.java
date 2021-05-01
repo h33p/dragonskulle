@@ -91,7 +91,7 @@ public class AimerAi extends AiPlayer {
     protected void simulateInput() {
 
         if (getPlayer() == null) return;
-        
+
         // Checks if we have reached the capital
         if (mPath.size() == 0) {
 
@@ -128,13 +128,13 @@ public class AimerAi extends AiPlayer {
                 mPath = new ArrayDeque<Integer>();
                 return;
             }
-            
+
             HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
             // If the AI wants to attack, then try to ensure its not in cooldown.
             if (nextTile.isClaimed() && getPlayer().inCooldown()) {
-            	return;
+                return;
             }
-            
+
             if (mGraph.getNode(nextNode) == mNodePreviouslyOn) {
                 mAttempts++;
             } else {
@@ -144,7 +144,7 @@ public class AimerAi extends AiPlayer {
             // Checks if we have been on this tile for ages
             if (mAttempts > TRIES) {
                 log.info("All tried depleted.");
-            	mPath = new ArrayDeque<Integer>();
+                mPath = new ArrayDeque<Integer>();
                 return;
             }
             mNodePreviouslyOn = mGraph.getNode(nextNode);
@@ -261,16 +261,19 @@ public class AimerAi extends AiPlayer {
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
-        
-        List<BuildingDescriptor> options = PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
-    	// Test if they can afford to build anything.
-    	if(options.size() == 0) return;
-        
-    	int optionIndex = mRandom.nextInt(options.size());
-    	BuildingDescriptor option = options.get(optionIndex);
-    	
+
+        List<BuildingDescriptor> options =
+                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+        // Test if they can afford to build anything.
+        if (options.size() == 0) return;
+
+        int optionIndex = mRandom.nextInt(options.size());
+        BuildingDescriptor option = options.get(optionIndex);
+
         // BUILD
-        getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn, PredefinedBuildings.getIndex(option)));
+        getPlayer()
+                .getClientBuildRequest()
+                .invoke((d) -> d.setTile(tileToBuildOn, PredefinedBuildings.getIndex(option)));
         mGone.push(nextNode);
     }
 
@@ -382,8 +385,7 @@ public class AimerAi extends AiPlayer {
                     && building.get().getAttackableBuildings().size() != 0) {
                 // Check
 
-                ArrayList<Building> attackableBuildings =
-                		building.get().getAttackableBuildings();
+                ArrayList<Building> attackableBuildings = building.get().getAttackableBuildings();
                 Building buildingToAim =
                         attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
                 return buildingToAim.getOwner();

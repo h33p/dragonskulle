@@ -35,8 +35,8 @@ import org.dragonskulle.ui.UITextRect;
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
-	private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Setter private BuildingDescriptor mSelectedBuildingDescriptor;
+    private List<BuildingDescriptor> mBuildingsCanPlace;
+    @Setter private BuildingDescriptor mSelectedBuildingDescriptor = PredefinedBuildings.BASE;
     @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
     @Getter private final UIShopSection mParent;
@@ -45,13 +45,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
 
     // Sued for the descriptors:
     private Reference<UITextRect> mNameRef;
-	private Reference<UITextRect> mAttackRef;
-	private Reference<UITextRect> mDefenceRef;
-	private Reference<UITextRect> mTokenRef;
-	private Reference<UITextRect> mCostRef;
-	
-	private Reference<UIButton> mBuyButton;
-	
+    private Reference<UITextRect> mAttackRef;
+    private Reference<UITextRect> mDefenceRef;
+    private Reference<UITextRect> mTokenRef;
+    private Reference<UITextRect> mCostRef;
+
+    private Reference<UIButton> mBuyButton;
+
     /**
      * Constructor.
      *
@@ -72,13 +72,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
-    	GameObject buttonObject = new GameObject("build_button", new TransformUI());
-    	UIButton button = new UIButton("Build", this::buildOnClick);
-    	mBuyButton = button.getReference(UIButton.class);
-    	buttonObject.addComponent(button);
+        GameObject buttonObject = new GameObject("build_button", new TransformUI());
+        UIButton button = new UIButton("Build", this::buildOnClick);
+        mBuyButton = button.getReference(UIButton.class);
+        buttonObject.addComponent(button);
         TransformUI transformUI = buttonObject.getTransform(TransformUI.class);
         transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
-    	
+
         getGameObject()
                 .buildChild(
                         "possible_buildings",
@@ -103,43 +103,44 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                             self.addChild(buttonObject);
                         });
 
-        
-        BuildingDescriptor descriptor = PredefinedBuildings.BASE;         
-        
+        // Create the display for the descriptor.
+        BuildingDescriptor descriptor = PredefinedBuildings.BASE;
+
         UITextRect nameComponent = new UITextRect(descriptor.getName().toUpperCase());
         mNameRef = nameComponent.getReference(UITextRect.class);
         TransformUI nameTransform = generateDescriptor(nameComponent, "descriptor_name");
         nameTransform.setParentAnchor(0.05f, -0.37f, 1f - 0.05f, -0.37f + 0.1f);
-        
+
         UITextRect attackComponent = new UITextRect("Attack: " + descriptor.getAttack());
         mAttackRef = attackComponent.getReference(UITextRect.class);
         TransformUI attackTransform = generateDescriptor(attackComponent, "descriptor_attack");
         attackTransform.setParentAnchor(0.05f, -0.25f, 1f - 0.05f, -0.25f + 0.1f);
-        
+
         UITextRect defenceComponent = new UITextRect("Defence: " + descriptor.getDefence());
         mDefenceRef = defenceComponent.getReference(UITextRect.class);
         TransformUI defenceTransform = generateDescriptor(defenceComponent, "descriptor_defence");
         defenceTransform.setParentAnchor(0.05f, -0.15f, 1f - 0.05f, -0.15f + 0.1f);
-        
-        UITextRect tokenComponent = new UITextRect("Generation: " + descriptor.getTokenGenerationLevel());
+
+        UITextRect tokenComponent =
+                new UITextRect("Generation: " + descriptor.getTokenGenerationLevel());
         mTokenRef = tokenComponent.getReference(UITextRect.class);
         TransformUI tokenTransform = generateDescriptor(tokenComponent, "descriptor_token");
         tokenTransform.setParentAnchor(0.05f, -0.05f, 1f - 0.05f, -0.05f + 0.1f);
-        
+
         UITextRect costComponent = new UITextRect("COST: " + descriptor.getCost());
         mCostRef = costComponent.getReference(UITextRect.class);
         TransformUI costTransform = generateDescriptor(costComponent, "descriptor_cost");
         costTransform.setParentAnchor(0.05f, 0.07f, 1f - 0.05f, 0.07f + 0.1f);
     }
 
-    private TransformUI generateDescriptor(UITextRect component, String objectName) {    	
-    	GameObject object = new GameObject(objectName, new TransformUI());
-    	object.addComponent(component);
-    	getGameObject().addChild(object);
-    	
-    	return object.getTransform(TransformUI.class);
+    private TransformUI generateDescriptor(UITextRect component, String objectName) {
+        GameObject object = new GameObject(objectName, new TransformUI());
+        object.addComponent(component);
+        getGameObject().addChild(object);
+
+        return object.getTransform(TransformUI.class);
     }
-    
+
     /**
      * Build a graphic from a building descriptor.
      *
@@ -205,23 +206,23 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      *
      * @param descriptor the descriptor
      */
-    private void showDescriptor(BuildingDescriptor descriptor) {    	
-    	updateDescriptor(mNameRef, descriptor.getName().toUpperCase());
-    	updateDescriptor(mAttackRef, "Attack: " + descriptor.getAttack());
-    	updateDescriptor(mDefenceRef, "Defence: " + descriptor.getDefence());
-    	updateDescriptor(mTokenRef, "Generation: " + descriptor.getTokenGenerationLevel());
-    	updateDescriptor(mCostRef, "COST: " + descriptor.getCost());
+    private void showDescriptor(BuildingDescriptor descriptor) {
+        updateDescriptor(mNameRef, descriptor.getName().toUpperCase());
+        updateDescriptor(mAttackRef, "Attack: " + descriptor.getAttack());
+        updateDescriptor(mDefenceRef, "Defence: " + descriptor.getDefence());
+        updateDescriptor(mTokenRef, "Generation: " + descriptor.getTokenGenerationLevel());
+        updateDescriptor(mCostRef, "COST: " + descriptor.getCost());
     }
 
     private void updateDescriptor(Reference<UITextRect> box, String text) {
-    	if(Reference.isValid(box)) {
-    		Reference<UIText> label = box.get().getLabelText();
-    		if (Reference.isValid(label)) {
-    			label.get().setText(text);
-    		}
-    	}
+        if (Reference.isValid(box)) {
+            Reference<UIText> label = box.get().getLabelText();
+            if (Reference.isValid(label)) {
+                label.get().setText(text);
+            }
+        }
     }
-    
+
     @Override
     public void fixedUpdate(float deltaTime) {
         ensurePlayerReference();
@@ -231,26 +232,26 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
 
     /** Enable and disable the buy button. */
     private void updateBuyButton() {
-    	if (!Reference.isValid(mPlayerReference)) return;
-    	if (!Reference.isValid(mBuyButton)) return;
-    	if (mSelectedBuildingDescriptor == null) return;
-    	
-    	Player player = mPlayerReference.get();
-    	UIButton button = mBuyButton.get();
-    	int cost = mSelectedBuildingDescriptor.getCost();
-    	
-    	if(!Reference.isValid(button.getLabelText())) return;
-    	UIText label = button.getLabelText().get();
-    	
-    	if(player.getTokens().get() >= cost) {
-    		button.setEnabled(true);
-    		label.setText("Build");
-    	} else {
-    		button.setEnabled(false);
-    		label.setText("[TOO EXPENSIVE]");
-    	}
+        if (!Reference.isValid(mPlayerReference)) return;
+        if (!Reference.isValid(mBuyButton)) return;
+        if (mSelectedBuildingDescriptor == null) return;
+
+        Player player = mPlayerReference.get();
+        UIButton button = mBuyButton.get();
+        int cost = mSelectedBuildingDescriptor.getCost();
+
+        if (!Reference.isValid(button.getLabelText())) return;
+        UIText label = button.getLabelText().get();
+
+        if (player.getTokens().get() >= cost) {
+            button.setEnabled(true);
+            label.setText("Build");
+        } else {
+            button.setEnabled(false);
+            label.setText("[TOO EXPENSIVE]");
+        }
     }
-    
+
     /** Update the local tokens. */
     private void updateTokens() {
         if (Reference.isValid(mPlayerReference)) {

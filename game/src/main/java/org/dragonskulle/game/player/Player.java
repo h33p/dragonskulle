@@ -429,11 +429,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // TODO: Increase AI view distance.
-        if(true) {
-        	//building.get().getViewDistance().setLevel(5);
-        	//building.get().getAttack().setLevel(5);
+        if (true) {
+            // building.get().getViewDistance().setLevel(5);
+            // building.get().getAttack().setLevel(5);
         }
-        
+
         return building.get();
     }
 
@@ -648,22 +648,22 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /**
      * Get whether the player is currently in the attack cooldown.
-     * 
-     * @return Whether the player is in the attack cooldown period. 
+     *
+     * @return Whether the player is in the attack cooldown period.
      */
     public boolean inCooldown() {
-    	return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+        return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
     }
-    
+
     /**
      * Get the time left in the cooldown period.
-     * 
+     *
      * @return The remaining time to wait.
      */
     public float getRemainingCooldown() {
-    	return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
+        return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
     }
-    
+
     /**
      * Process and parse an event in which the <b>client</b> player wishes to place a {@link
      * Building}.
@@ -1108,12 +1108,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean gameEnd() {
         if (hasLost()) {
             for (Reference<Building> building : getOwnedBuildings()) {
-            	if(!Reference.isValid(building)) continue;
-            	// Remove the building
+                if (!Reference.isValid(building)) continue;
+                // Remove the building
                 building.get().remove();
-			}
-        	
-        	return true;
+            }
+
+            return true;
         }
 
         if (!Reference.isValid(mGameState)) {

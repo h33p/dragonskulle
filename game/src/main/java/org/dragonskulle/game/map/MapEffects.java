@@ -99,7 +99,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final HighlightSelection PLAIN_MATERIAL =
             highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final HighlightSelection ATTACK_MATERIAL =
-    		highlightSelectionFromColour(0.9f, 0.1f, 0.1f, 0.5f);
+            highlightSelectionFromColour(0.9f, 0.1f, 0.1f, 0.5f);
     public static final HighlightSelection BUILD_MATERIAL =
             highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
     public static final HighlightSelection FOG_MATERIAL =
@@ -119,7 +119,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /**
      * Create a new {@link HighlightSelection} with the specified values.
-     * 
+     *
      * @param r The red.
      * @param g The green.
      * @param b The blue.
@@ -128,17 +128,18 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
         return highlightSelectionFromColour(r, g, b, 0.25f);
     }
-    
+
     /**
      * Create a new {@link HighlightSelection} with the specified values.
-     * 
+     *
      * @param r The red.
      * @param g The green.
      * @param b The blue.
      * @param alpha The alpha.
      * @return The new HighlightSelection.
      */
-    public static HighlightSelection highlightSelectionFromColour(float r, float g, float b, float alpha) {
+    public static HighlightSelection highlightSelectionFromColour(
+            float r, float g, float b, float alpha) {
         return HighlightSelection.with(new Vector4f(r, g, b, alpha));
     }
 

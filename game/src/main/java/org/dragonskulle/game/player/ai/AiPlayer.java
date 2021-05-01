@@ -91,7 +91,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      * have not lost. For the base class this will be done using probability
      */
     protected abstract void simulateInput();
-    
+
     /**
      * Gets the player.
      *

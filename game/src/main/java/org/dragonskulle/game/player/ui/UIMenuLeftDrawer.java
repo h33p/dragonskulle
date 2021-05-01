@@ -191,7 +191,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         ArrayList<UITextButtonFrame> mPlaceNewBuildingScreenMenuItems = new ArrayList<>();
 
         generateAttackMenu();
-        
+
         // The sell confirmation menu.
         mSellConfirmScreenMenuItems.add(buildConfirmSellButtonFrame());
         mSellConfirmScreenMenuItems.add(buildCancelSellButtonFrame());
@@ -227,42 +227,50 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     private void generateAttackMenu() {
-    	ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
-    	
-    	// The attack menu.
+        ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
+
+        // The attack menu.
         attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
         attackScreenMenuItems.add(buildCancelAttackButtonFrame());
         mAttackScreenMenu = buildMenu(attackScreenMenuItems);
-        
+
         // Move the buttons down.
         for (GameObject object : mAttackScreenMenu.get().getChildren()) {
-        	TransformUI objectTransform = object.getTransform(TransformUI.class);
-        	objectTransform.translate(0, 0.4f);
-		}
-        
+            TransformUI objectTransform = object.getTransform(TransformUI.class);
+            objectTransform.translate(0, 0.4f);
+        }
+
         // Move the 2nd button up slightly.
         GameObject secondButton = mAttackScreenMenu.get().getChildren().get(1);
         secondButton.getTransform(TransformUI.class).translate(0, -0.05f);
-        
+
         // Add an attack cost label.
         UITextRect cost = new UITextRect("Cost: ?");
-        GameObject costObject = new GameObject("attack_cost", new TransformUI(), (object) -> {
-        	object.addComponent(cost);
-        });
+        GameObject costObject =
+                new GameObject(
+                        "attack_cost",
+                        new TransformUI(),
+                        (object) -> {
+                            object.addComponent(cost);
+                        });
         TransformUI costTransform = costObject.getTransform(TransformUI.class);
         costTransform.setParentAnchor(0.02f, 0.225f, 1f - 0.02f, 0.225f + 0.08f);
         mAttackScreenMenu.get().addChild(costObject);
 
         // Add an attack info label.
         UITextRect attackInfo = new UITextRect("Chance: ------");
-        GameObject attackInfoObject = new GameObject("attack_info", new TransformUI(), (object) -> {
-        	object.addComponent(attackInfo);
-        });
+        GameObject attackInfoObject =
+                new GameObject(
+                        "attack_info",
+                        new TransformUI(),
+                        (object) -> {
+                            object.addComponent(attackInfo);
+                        });
         TransformUI infoTransform = attackInfoObject.getTransform(TransformUI.class);
         infoTransform.setParentAnchor(0.02f, 0.315f, 1f - 0.02f, 0.315f + 0.08f);
         mAttackScreenMenu.get().addChild(attackInfoObject);
     }
-    
+
     /**
      * Build the attack button frame.
      *
@@ -337,7 +345,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 },
                 true);
     }
-    
+
     /**
      * Build the confirm sell button frame.
      *
@@ -573,32 +581,30 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         return mShop;
     }
 
-    /**
-     * Ensure the chosen HexagonTile has a player owned building, if in attack mode.
-     */
+    /** Ensure the chosen HexagonTile has a player owned building, if in attack mode. */
     private void checkOwnership() {
-    	
-    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
-    	
-    	HexagonTile tile = mGetHexChosen.getHex();
+
+        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+
+        HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building building = tile.getBuilding();
-    	
+
         Player player = mGetPlayer.getPlayer();
         if (player == null) return;
-        
-        if(!player.isBuildingOwner(building)) {
-        	mSetHexChosen.setHex(null);
-        	mSetBuildingChosen.setBuilding(null);
-        	mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
+
+        if (!player.isBuildingOwner(building)) {
+            mSetHexChosen.setHex(null);
+            mSetBuildingChosen.setBuilding(null);
+            mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
         }
     }
-    
+
     private void updateSellButton() {
-        
-    	if(mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
-    	
-    	if (!Reference.isValid(mBuildScreenMenu)) return;
+
+        if (mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
+
+        if (!Reference.isValid(mBuildScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
         GameObject menu = mBuildScreenMenu.get();
@@ -621,16 +627,16 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     private void updateAttackLaunchButton() {
-    	
-    	if(mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
-    	
-    	if (!Reference.isValid(mBuildScreenMenu)) return;
+
+        if (mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
+
+        if (!Reference.isValid(mBuildScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
-        
+
         Player player = mGetPlayer.getPlayer();
         if (player == null) return;
-        
+
         GameObject menu = mBuildScreenMenu.get();
         if (menu.getChildren().size() == 0) return;
         GameObject object = menu.getChildren().get(0);
@@ -641,110 +647,108 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         Reference<UIText> text = button.get().getLabelText();
         if (!Reference.isValid(text)) return;
 
-        if(building.getAttackableBuildings().size() == 0) {
-        	text.get().setText("[OUT OF RANGE]");
+        if (building.getAttackableBuildings().size() == 0) {
+            text.get().setText("[OUT OF RANGE]");
             button.get().setEnabled(false);
             return;
         }
-        
+
         int cost = building.getAttackCost();
-        if(cost <= player.getTokens().get()) {
-        	text.get().setText("Launch Attack for " + cost);
+        if (cost <= player.getTokens().get()) {
+            text.get().setText("Launch Attack for " + cost);
             button.get().setEnabled(true);
         } else {
-        	text.get().setText(String.format("[TOO EXPENSIVE: %d]", cost));
+            text.get().setText(String.format("[TOO EXPENSIVE: %d]", cost));
             button.get().setEnabled(false);
         }
     }
-    
-    private void updateAttackCostText() {
-    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
-    	
-    	HexagonTile tile = mGetHexChosen.getHex();
-        if (tile == null || !tile.hasBuilding()) return;
-        Building attacker = tile.getBuilding();
-        
-        GameObject menu = mAttackScreenMenu.get();        
-        for (GameObject child : menu.getChildren()) { 
-        	if(child.getName() != "attack_cost") continue;
-        	
-			Reference<UITextRect> textRect = child.getComponent(UITextRect.class);
-			if (!Reference.isValid(textRect)) return;
-			
-			Reference<UIText> text = textRect.get().getLabelText();
-			if (!Reference.isValid(text)) return;
-			 
-			int cost = attacker.getAttackCost();
-			text.get().setText("Cost: " + cost);
-		}
-    }
-    
-    /**
-     * Display the chance of success.
-     */
-    private void updateAttackInfoText() {
-    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
-    	
-    	HexagonTile tile = mGetHexChosen.getHex();
-        if (tile == null || !tile.hasBuilding()) return;
-        Building attacker = tile.getBuilding();
-        
-        Reference<Building> defenderReference = mGetBuildingChosen.getBuilding();
-        if(!Reference.isValid(defenderReference)) return;
-        Building defender = defenderReference.get();
-        
-        Player player = mGetPlayer.getPlayer();
-        if (player == null) return;
-        
-        GameObject menu = mAttackScreenMenu.get();
-        for (GameObject child : menu.getChildren()) { 
-        	if(child.getName() != "attack_info") continue;
-        	
-			Reference<UITextRect> textRect = child.getComponent(UITextRect.class);
-			if (!Reference.isValid(textRect)) return;
-			
-			Reference<UIText> text = textRect.get().getLabelText();
-			if (!Reference.isValid(text)) return;
-			 
-			if(player.isBuildingOwner(defender)) {
-				text.get().setText("Chance: ------");
-				break;
-			}
-			
-			int attackLevel = attacker.getAttack().getLevel();
-			int defendLevel = defender.getDefence().getLevel();
-			int difference = attackLevel - defendLevel;
-			String output = "MEDIUM";
 
-			if(difference <= -5) {
-				output = "VERY LOW";
-			} else if(difference <= -3) {
-				output = "LOW";
-			}
-			
-			if(difference >= 5) {
-				output = "VERY HIGH";
-			} else if(difference >= 3) {
-				output = "HIGH";
-			}
-			
-			text.get().setText(String.format("Chance: %s", output));
-			break;
-		}
-    }
-    
-    private void updateAttackButton() {
-    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
-    	
-    	if (!Reference.isValid(mAttackScreenMenu)) return;
-        
-    	if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
-        Building defender = mGetBuildingChosen.getBuilding().get();
-        
+    private void updateAttackCostText() {
+        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building attacker = tile.getBuilding();
-        
+
+        GameObject menu = mAttackScreenMenu.get();
+        for (GameObject child : menu.getChildren()) {
+            if (child.getName() != "attack_cost") continue;
+
+            Reference<UITextRect> textRect = child.getComponent(UITextRect.class);
+            if (!Reference.isValid(textRect)) return;
+
+            Reference<UIText> text = textRect.get().getLabelText();
+            if (!Reference.isValid(text)) return;
+
+            int cost = attacker.getAttackCost();
+            text.get().setText("Cost: " + cost);
+        }
+    }
+
+    /** Display the chance of success. */
+    private void updateAttackInfoText() {
+        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+
+        HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building attacker = tile.getBuilding();
+
+        Reference<Building> defenderReference = mGetBuildingChosen.getBuilding();
+        if (!Reference.isValid(defenderReference)) return;
+        Building defender = defenderReference.get();
+
+        Player player = mGetPlayer.getPlayer();
+        if (player == null) return;
+
+        GameObject menu = mAttackScreenMenu.get();
+        for (GameObject child : menu.getChildren()) {
+            if (child.getName() != "attack_info") continue;
+
+            Reference<UITextRect> textRect = child.getComponent(UITextRect.class);
+            if (!Reference.isValid(textRect)) return;
+
+            Reference<UIText> text = textRect.get().getLabelText();
+            if (!Reference.isValid(text)) return;
+
+            if (player.isBuildingOwner(defender)) {
+                text.get().setText("Chance: ------");
+                break;
+            }
+
+            int attackLevel = attacker.getAttack().getLevel();
+            int defendLevel = defender.getDefence().getLevel();
+            int difference = attackLevel - defendLevel;
+            String output = "MEDIUM";
+
+            if (difference <= -5) {
+                output = "VERY LOW";
+            } else if (difference <= -3) {
+                output = "LOW";
+            }
+
+            if (difference >= 5) {
+                output = "VERY HIGH";
+            } else if (difference >= 3) {
+                output = "HIGH";
+            }
+
+            text.get().setText(String.format("Chance: %s", output));
+            break;
+        }
+    }
+
+    private void updateAttackButton() {
+        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+
+        if (!Reference.isValid(mAttackScreenMenu)) return;
+
+        if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
+        Building defender = mGetBuildingChosen.getBuilding().get();
+
+        HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building attacker = tile.getBuilding();
+
         GameObject menu = mAttackScreenMenu.get();
         if (menu.getChildren().size() == 0) return;
         GameObject child = menu.getChildren().get(0);
@@ -758,35 +762,38 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         Player player = mGetPlayer.getPlayer();
         if (player == null) return;
 
-        if(player.inCooldown()) {
-        	text.get().setText(String.format("[COOLDOWN: %d]", (int) player.getRemainingCooldown() + 1));
+        if (player.inCooldown()) {
+            text.get()
+                    .setText(
+                            String.format(
+                                    "[COOLDOWN: %d]", (int) player.getRemainingCooldown() + 1));
             button.get().setEnabled(false);
             return;
         }
-        
+
         if (player.isBuildingOwner(defender)) {
             text.get().setText("[SELECT BUILDING]");
             button.get().setEnabled(false);
             return;
         }
-        
+
         int cost = attacker.getAttackCost();
         if (cost <= player.getTokens().get()) {
-        	text.get().setText("Attack!");
-        	button.get().setEnabled(true);
+            text.get().setText("Attack!");
+            button.get().setEnabled(true);
         } else {
-        	text.get().setText("[TOO EXPENSIVE]");
-        	button.get().setEnabled(false);
+            text.get().setText("[TOO EXPENSIVE]");
+            button.get().setEnabled(false);
         }
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
         checkOwnership();
-    	updateSellButton();
-    	updateAttackLaunchButton();
-    	updateAttackCostText();
-    	updateAttackInfoText();
-    	updateAttackButton();
+        updateSellButton();
+        updateAttackLaunchButton();
+        updateAttackCostText();
+        updateAttackInfoText();
+        updateAttackButton();
     }
 }
