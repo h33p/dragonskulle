@@ -10,7 +10,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.lambda.LambdaFixedUpdate;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
@@ -183,7 +182,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                 }
                             }));
              */
-            
+
             but.setRectTexture(GameUIAppearance.getSquareButtonTexture());
             go.addComponent(but);
             go.buildChild(

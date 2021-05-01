@@ -24,10 +24,12 @@ public class PredefinedBuildings {
                             new BuildingDescriptor(6, 6, 6, 200, 75, "ui/3_stars.png", "City"),
                             new BuildingDescriptor(5, 3, 1, 225, 150, "ui/5_stars.png", "Barracks"),
                             new BuildingDescriptor(3, 5, 1, 225, 150, "ui/5_stars.png", "Castle"),
-                            new BuildingDescriptor(1, 3, 5, 225, 150, "ui/5_stars.png", "Merchants"),
+                            new BuildingDescriptor(
+                                    1, 3, 5, 225, 150, "ui/5_stars.png", "Merchants"),
                             new BuildingDescriptor(
                                     10, 8, 8, 500, 300, "ui/9_stars.png", "Military Complex"),
-                            new BuildingDescriptor(8, 10, 8, 500, 300, "ui/9_stars.png", "Fortress"),
+                            new BuildingDescriptor(
+                                    8, 10, 8, 500, 300, "ui/9_stars.png", "Fortress"),
                             new BuildingDescriptor(8, 8, 10, 500, 300, "ui/9_stars.png", "Guild")));
 
     /**
