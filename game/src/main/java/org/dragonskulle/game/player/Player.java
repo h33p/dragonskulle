@@ -85,7 +85,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack. */
-    public static final float ATTACK_COOLDOWN = 5f;
+    public static final float ATTACK_COOLDOWN = 4f;
     /** When the last time a player attacked. */
     @Getter private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
@@ -428,6 +428,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
+        // TODO: Increase AI view distance.
+        if(true) {
+        	//building.get().getViewDistance().setLevel(5);
+        	//building.get().getAttack().setLevel(5);
+        }
+        
         return building.get();
     }
 
@@ -1101,7 +1107,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean gameEnd() {
         if (hasLost()) {
-            return true;
+            for (Reference<Building> building : getOwnedBuildings()) {
+            	if(!Reference.isValid(building)) continue;
+            	// Remove the building
+                building.get().remove();
+			}
+        	
+        	return true;
         }
 
         if (!Reference.isValid(mGameState)) {
