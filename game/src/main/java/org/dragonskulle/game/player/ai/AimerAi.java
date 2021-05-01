@@ -61,13 +61,13 @@ public class AimerAi extends AiPlayer {
     private Node mNodePreviouslyOn = null;
 
     /** Whether to use the A* route. */
-    private final float PLAY_A_STAR = 0.9f;
+    private static final float PLAY_A_STAR = 0.9f;
 
     /** The chance to aim at a capital. */
-    private final float AIM_AT_CAPITAL = 0.01f;
+    private static final float AIM_AT_CAPITAL = 0.01f;
 
     /** This is the number of tries we should do before resetting. */
-    private final int TRIES = 10;
+    private static final int TRIES = 10;
 
     protected ProbabilisticAiPlayer mProbabilisticAi = null;
 
@@ -257,7 +257,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will build the next building.
      *
-     * @param nextTile The next {@code HexagonTile} to aim for.
+     * @param tileToBuildOn The next {@code HexagonTile} to aim for.
      * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
@@ -268,7 +268,7 @@ public class AimerAi extends AiPlayer {
     }
 
     /**
-     * Move the Player forward to the first node not owned by them
+     * Move the Player forward to the first node not owned by them.
      *
      * @return The nodeId which we end up at
      */
@@ -300,7 +300,7 @@ public class AimerAi extends AiPlayer {
         return nextNode;
     }
 
-    /** Move the player to a node owned by them */
+    /** Move the player to a node owned by them. */
     private void moveBackwards() {
 
         int previousNode = mGone.pop();
@@ -330,7 +330,7 @@ public class AimerAi extends AiPlayer {
         mGone.push(previousNode);
     }
 
-    /** This is what happens when we start the search and moves from the capital */
+    /** This is what happens when we start the search and moves from the capital. */
     private void atCapital() {
 
         int nextDoor = mPath.pop();
@@ -548,9 +548,9 @@ public class AimerAi extends AiPlayer {
     }
 
     /**
-     * Returns the AI {@code Player}
+     * Returns the AI {@code Player}.
      *
-     * @return The {@code Player} in the {@code Reference} or {@code null} if it does not exist
+     * @return The {@code Player} in the {@code Reference} or {@code null} if it does not exist.
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayer)) {

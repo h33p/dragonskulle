@@ -93,7 +93,7 @@ public class HexagonTile implements INetSerializable {
     private final TileToStoreActions mHandler;
 
     /** This states which land mass this tile is on. Set at -1 when not set */
-    int landMassNumber = -1;
+    int mLandMassNumber = -1;
 
     /**
      * Associated game object.
