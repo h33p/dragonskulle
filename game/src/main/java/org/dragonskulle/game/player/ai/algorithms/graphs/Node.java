@@ -27,14 +27,14 @@ public class Node {
     /** The Connections from this node. */
     @Getter private ArrayList<Connection> mConnections = new ArrayList<Connection>();
 
-    /** The {@code HexagonTile} this refers to. */
+    /** The {@link HexagonTile} this refers to. */
     @Getter private Reference<HexagonTile> mHexTile;
 
     /**
      * The constructor.
      *
      * @param nodeToAdd The node number.
-     * @param tile The {@code HexagonTile} this refers to.
+     * @param tile The {@link HexagonTile} this refers to.
      */
     public Node(int nodeToAdd, HexagonTile tile) {
         mNodeId = nodeToAdd;

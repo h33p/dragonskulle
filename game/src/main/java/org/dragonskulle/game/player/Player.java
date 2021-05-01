@@ -251,7 +251,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Determines if for a given player if this tile is buildable upon.
      *
-     * @param tile The {@code HexagonTile} to check for
+     * @param tile The {@link HexagonTile} to check for
      * @return true if buildable, false otherwise
      */
     private boolean isBuildable(HexagonTile tile) {
@@ -283,7 +283,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * Will create the coordinates to test
      *
      * @param angleBetween The angle to add which states how far away a player should be
-     * @return A {@code Vector2f} with the coordinates to use
+     * @return A {@link Vector2f} with the coordinates to use
      */
     private Vector2f createCoordinates(float angleBetween) {
         final int maxPlayers = mGameState.get().getNumPlayers().get();
@@ -363,6 +363,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param qPos The q position of the building.
      * @param rPos The r position of the building.
+     * @param checkIsland {@code true} when we don't want to place on an Island otherwise {@code
+     *     false}
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
     private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
@@ -605,7 +607,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Check if the {@link HexagonTile}'s owner is the player
      *
-     * @param tile The {@code HexagonTile} to check
+     * @param tile The {@link HexagonTile} to check
      * @return {@code true} if the Player owns the tile
      */
     public boolean isClaimingTile(HexagonTile tile) {
@@ -1076,7 +1078,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This will return whether the game has ended and no further actions can take place.
      *
-     * <p>This method includes {@link hasLost()} check.
+     * <p>This method includes {@link #hasLost()} check.
      *
      * @return {@code true} if the game has has ended, {@code false} if not
      */
