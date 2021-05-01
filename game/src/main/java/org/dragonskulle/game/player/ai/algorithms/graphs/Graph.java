@@ -113,7 +113,6 @@ public class Graph {
 
         for (HexagonTile tileNeighbour : neighbourTiles) {
 
-            // TODO Check if in viewable tiles!
             if (tileNeighbour.getTileType() != TileType.LAND) {
                 continue;
             }
@@ -229,7 +228,6 @@ public class Graph {
      * @return The hash of it
      */
     public int getHash(HexagonTile tile) {
-        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
-        return nodeNum;
+        return (tile.getQ() * mMap.get().getSize()) + tile.getR();
     }
 }

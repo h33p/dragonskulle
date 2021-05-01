@@ -11,9 +11,13 @@ import org.dragonskulle.components.IFrameUpdate;
  */
 public class LambdaFrameUpdate extends Component implements IFrameUpdate {
     private final IFrameUpdate mHandler;
-
-    public LambdaFrameUpdate(IFrameUpdate mHandler) {
-        this.mHandler = mHandler;
+    /**
+     * Constructor.
+     *
+     * @param handler the handler to be ran on frame update
+     */
+    public LambdaFrameUpdate(IFrameUpdate handler) {
+        this.mHandler = handler;
     }
 
     @Override

@@ -1078,7 +1078,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This will return whether the game has ended and no further actions can take place.
      *
-     * <p>This method includes {@link hasLost()} check.
+     * <p>This method includes {@link #hasLost()} check.
      *
      * @return {@code true} if the game has has ended, {@code false} if not
      */

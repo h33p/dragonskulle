@@ -50,6 +50,12 @@ public class PredefinedBuildings {
         return buildings;
     }
 
+    /**
+     * Get a building descriptor by index.
+     *
+     * @param i index of specified building
+     * @return the building descriptor, will return {@link #BASE} if out of range.
+     */
     public static BuildingDescriptor get(int i) {
         if (i <= buildings.size()) {
             return buildings.get(i);
@@ -57,6 +63,12 @@ public class PredefinedBuildings {
         return PredefinedBuildings.BASE;
     }
 
+    /**
+     * Gets the index of a {@link BuildingDescriptor} in {@link #buildings}.
+     *
+     * @param mSelectedBuildingDescriptor the m selected building descriptor
+     * @return the index
+     */
     public static int getIndex(BuildingDescriptor mSelectedBuildingDescriptor) {
         return buildings.indexOf(mSelectedBuildingDescriptor);
     }

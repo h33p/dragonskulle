@@ -38,7 +38,7 @@ public class HeightByMap extends Component implements IFrameUpdate, IOnAwake, IZ
     @Getter @Setter private float mMaxZoomValue = 0.1f;
     /** How fast the height will change. */
     @Getter @Setter private float mLerpSpeed = 5f;
-    /** Current zoom level */
+    /** Current zoom level. */
     @Getter @Setter private float mZoomLevel;
 
     /** Internal reference to the map. */
