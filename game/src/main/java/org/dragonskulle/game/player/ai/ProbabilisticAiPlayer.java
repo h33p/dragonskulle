@@ -9,7 +9,9 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.PredefinedBuildings;
 
 /**
  * This base class will allow AI players to be created and used throughout the game.
@@ -153,6 +155,13 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean tryToAddBuilding(Building building) {
 
+    	List<BuildingDescriptor> options = PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+    	// Test if they can afford to build anything.
+    	if(options.size() == 0) return false;
+    	
+    	int optionIndex = mRandom.nextInt(options.size());
+    	BuildingDescriptor option = options.get(optionIndex);
+    	
         if (building.getBuildableTiles().size() != 0) {
 
             // Get the buildable tiles
@@ -165,8 +174,8 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             while (true) {
                 HexagonTile tile = buildableTiles.get(index);
                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
-                    getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
-                    return true;
+	                	getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile, PredefinedBuildings.getIndex(option)));
+	                    return true;
                 }
                 index++;
                 if (index >= buildableTiles.size()) {

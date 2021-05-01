@@ -11,7 +11,9 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.game.player.ai.algorithms.AStar;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
@@ -259,8 +261,16 @@ public class AimerAi extends AiPlayer {
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
+        
+        List<BuildingDescriptor> options = PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+    	// Test if they can afford to build anything.
+    	if(options.size() == 0) return;
+        
+    	int optionIndex = mRandom.nextInt(options.size());
+    	BuildingDescriptor option = options.get(optionIndex);
+    	
         // BUILD
-        getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
+        getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn, PredefinedBuildings.getIndex(option)));
         mGone.push(nextNode);
     }
 
