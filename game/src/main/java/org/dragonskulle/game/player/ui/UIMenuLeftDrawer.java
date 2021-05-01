@@ -186,31 +186,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      */
     @Override
     public void onStart() {
-        ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mSellConfirmScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> buildingSelectedScreenMenuItems = new ArrayList<>();
         ArrayList<UITextButtonFrame> mPlaceNewBuildingScreenMenuItems = new ArrayList<>();
 
-        // The attack menu.
-        attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
-        attackScreenMenuItems.add(buildCancelAttackButtonFrame());
-        mAttackScreenMenu = buildMenu(attackScreenMenuItems);
+        generateAttackMenu();
         
-        // Move the buttons down.
-        for (GameObject object : mAttackScreenMenu.get().getChildren()) {
-        	TransformUI objectTransform = object.getTransform(TransformUI.class);
-        	objectTransform.translate(0, 0.28f);
-		}
-        
-        // Add an attack cost label.
-        UITextRect attackCost = new UITextRect("Cost: ");
-        GameObject attackObject = new GameObject("attack_cost", new TransformUI(), (object) -> {
-        	object.addComponent(attackCost);
-        });
-        TransformUI costTransform = attackObject.getTransform(TransformUI.class);
-        costTransform.setParentAnchor(0.02f, 0.245f, 1f - 0.02f, 0.245f + 0.08f);
-        mAttackScreenMenu.get().addChild(attackObject);
-
         // The sell confirmation menu.
         mSellConfirmScreenMenuItems.add(buildConfirmSellButtonFrame());
         mSellConfirmScreenMenuItems.add(buildCancelSellButtonFrame());
@@ -245,6 +226,43 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         getGameObject().addComponent(drawer);
     }
 
+    private void generateAttackMenu() {
+    	ArrayList<UITextButtonFrame> attackScreenMenuItems = new ArrayList<>();
+    	
+    	// The attack menu.
+        attackScreenMenuItems.add(buildConfirmAttackButtonFrame());
+        attackScreenMenuItems.add(buildCancelAttackButtonFrame());
+        mAttackScreenMenu = buildMenu(attackScreenMenuItems);
+        
+        // Move the buttons down.
+        for (GameObject object : mAttackScreenMenu.get().getChildren()) {
+        	TransformUI objectTransform = object.getTransform(TransformUI.class);
+        	objectTransform.translate(0, 0.4f);
+		}
+        
+        // Move the 2nd button up slightly.
+        GameObject secondButton = mAttackScreenMenu.get().getChildren().get(1);
+        secondButton.getTransform(TransformUI.class).translate(0, -0.05f);
+        
+        // Add an attack cost label.
+        UITextRect cost = new UITextRect("Cost: ?");
+        GameObject costObject = new GameObject("attack_cost", new TransformUI(), (object) -> {
+        	object.addComponent(cost);
+        });
+        TransformUI costTransform = costObject.getTransform(TransformUI.class);
+        costTransform.setParentAnchor(0.02f, 0.225f, 1f - 0.02f, 0.225f + 0.08f);
+        mAttackScreenMenu.get().addChild(costObject);
+
+        // Add an attack info label.
+        UITextRect attackInfo = new UITextRect("Chance: ------");
+        GameObject attackInfoObject = new GameObject("attack_info", new TransformUI(), (object) -> {
+        	object.addComponent(attackInfo);
+        });
+        TransformUI infoTransform = attackInfoObject.getTransform(TransformUI.class);
+        infoTransform.setParentAnchor(0.02f, 0.315f, 1f - 0.02f, 0.315f + 0.08f);
+        mAttackScreenMenu.get().addChild(attackInfoObject);
+    }
+    
     /**
      * Build the attack button frame.
      *
@@ -640,7 +658,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
     
     private void updateAttackCostText() {
-    	
     	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
     	
     	HexagonTile tile = mGetHexChosen.getHex();
@@ -662,8 +679,61 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 		}
     }
     
-    private void updateAttackButton() {
+    /**
+     * Display the chance of success.
+     */
+    private void updateAttackInfoText() {
+    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
     	
+    	HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building attacker = tile.getBuilding();
+        
+        Reference<Building> defenderReference = mGetBuildingChosen.getBuilding();
+        if(!Reference.isValid(defenderReference)) return;
+        Building defender = defenderReference.get();
+        
+        Player player = mGetPlayer.getPlayer();
+        if (player == null) return;
+        
+        GameObject menu = mAttackScreenMenu.get();
+        for (GameObject child : menu.getChildren()) { 
+        	if(child.getName() != "attack_info") continue;
+        	
+			Reference<UITextRect> textRect = child.getComponent(UITextRect.class);
+			if (!Reference.isValid(textRect)) return;
+			
+			Reference<UIText> text = textRect.get().getLabelText();
+			if (!Reference.isValid(text)) return;
+			 
+			if(player.isBuildingOwner(defender)) {
+				text.get().setText("Chance: ------");
+				break;
+			}
+			
+			int attackLevel = attacker.getAttack().getLevel();
+			int defendLevel = defender.getDefence().getLevel();
+			int difference = attackLevel - defendLevel;
+			String output = "MEDIUM";
+
+			if(difference <= -5) {
+				output = "VERY LOW";
+			} else if(difference <= -3) {
+				output = "LOW";
+			}
+			
+			if(difference >= 5) {
+				output = "VERY HIGH";
+			} else if(difference >= 3) {
+				output = "HIGH";
+			}
+			
+			text.get().setText(String.format("Chance: %s", output));
+			break;
+		}
+    }
+    
+    private void updateAttackButton() {
     	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
     	
     	if (!Reference.isValid(mAttackScreenMenu)) return;
@@ -716,6 +786,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     	updateSellButton();
     	updateAttackLaunchButton();
     	updateAttackCostText();
+    	updateAttackInfoText();
     	updateAttackButton();
     }
 }
