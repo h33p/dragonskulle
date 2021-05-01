@@ -76,8 +76,8 @@ public abstract class Future {
      * @param then functional interface that will be executed repeatedly by returned future.
      * @return the newly constructed {@link AwaitFuture}.
      */
-    public AwaitFuture awaitUntil(IAwaitFuture awaitFn) {
-        AwaitFuture awaiter = new AwaitFuture(mRoot, awaitFn);
+    public AwaitFuture awaitUntil(IAwaitFuture then) {
+        AwaitFuture awaiter = new AwaitFuture(mRoot, then);
         mNextFuture = awaiter;
         return awaiter;
     }
@@ -94,7 +94,7 @@ public abstract class Future {
      *     it succeeds, or timeout is reached.
      * @return the newly constructed {@link AwaitFuture}.
      */
-    public AwaitFuture awaitTimeout(float maxSeconds, IAwaitFuture awaitFn) {
+    public AwaitFuture awaitTimeout(float maxSeconds, IAwaitFuture then) {
         Engine instance = Engine.getInstance();
 
         float endTime = instance.getCurTime() + maxSeconds;
@@ -102,7 +102,7 @@ public abstract class Future {
         return awaitUntil(
                 (scene) -> {
                     assert (instance.getCurTime() <= endTime);
-                    return awaitFn.waitCheck(scene);
+                    return then.waitCheck(scene);
                 });
     }
 

@@ -107,7 +107,7 @@ public class Engine {
      * Runs the engine with a list of futures, until they all finish.
      *
      * <p>Each future will have a scene assigned to them, and be executed at the same time. Note,
-     * that while inside the future context, {@link Scene#getActiveScene()} will always return
+     * that while inside the future context, {@code Scene.getActiveScene()} will always return
      * {@code null}, so you can use the input argument as active scene.
      *
      * @param futures a list of futures to execute.
