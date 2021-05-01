@@ -5,10 +5,13 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Transform3D;
+import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -21,6 +24,7 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
+import org.dragonskulle.game.misc.ArcPath;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
@@ -30,8 +34,14 @@ import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.renderer.Mesh;
+import org.dragonskulle.renderer.components.Renderable;
+import org.dragonskulle.renderer.materials.PBRMaterial;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
+import org.joml.Matrix4fc;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 /**
  * This class will allow a user to interact with game.
@@ -39,6 +49,7 @@ import org.dragonskulle.ui.UIManager;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
+@Log
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     /** The current {@link Screen} being displayed. */
@@ -75,6 +86,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Whether the visuals need to be updated. */
     private boolean mVisualsNeedUpdate = true;
+
+    /** Visual arc path shown on selections */
+    private Reference<ArcPath> mArcPath;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -133,6 +147,29 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             drawer.addComponent(menu);
                         });
         getGameObject().addChild(menuObject);
+
+        ArcPath path = new ArcPath();
+
+        path.setTemplate(
+                new GameObject(
+                        "path",
+                        (handle) -> {
+                            handle.buildChild(
+                                    "cube",
+                                    new Transform3D(),
+                                    (cube) -> {
+                                        cube.addComponent(
+                                                new Renderable(Mesh.CUBE, new PBRMaterial()));
+                                        cube.getTransform(Transform3D.class)
+                                                .scale(0.2f, 0.2f, 0.2f);
+                                    });
+                        }));
+        path.setAmplitude(2f);
+        path.setObjGap(0.05f);
+
+        getGameObject().addComponent(path);
+
+        mArcPath = path.getReference(ArcPath.class);
     }
 
     @Override
@@ -271,7 +308,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Only run if visuals need updating.
         if (!mVisualsNeedUpdate) return;
-        mVisualsNeedUpdate = false;
+        // mVisualsNeedUpdate = false;
 
         if (player.hasLost()) return;
 
@@ -293,6 +330,35 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case ATTACKING_SCREEN:
+                Vector3f posStart = new Vector3f();
+                Vector3f posEnd = new Vector3f();
+
+                if (mHexChosen != null && Reference.isValid(mBuildingChosen)) {
+                    log.info("ARC");
+                    HexagonTile hex = mBuildingChosen.get().getTile();
+                    HexagonTile hexEnd = mHexChosen;
+
+                    mArcPath.get()
+                            .setAmplitude(hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f + 0.5f);
+
+                    TransformHex.axialToCartesian(
+                            new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), posStart);
+                    TransformHex.axialToCartesian(
+                            new Vector2f(hexEnd.getQ(), hexEnd.getR()),
+                            hexEnd.getSurfaceHeight(),
+                            posEnd);
+
+                    HexagonMap map = mPlayer.get().getMap();
+
+                    Matrix4fc mat = map.getGameObject().getTransform().getWorldMatrix();
+
+                    mat.transformPosition(posStart);
+                    mat.transformPosition(posEnd);
+
+                    mArcPath.get().getPosStart().set(posStart);
+                    mArcPath.get().getPosTarget().set(posEnd);
+                }
+
                 effects.setDefaultHighlight(true);
                 effects.setHighlightOverlay(
                         (fx) -> {
