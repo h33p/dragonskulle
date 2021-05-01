@@ -4,7 +4,8 @@ package org.dragonskulle.input;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import lombok.experimental.Accessors;
@@ -59,7 +60,7 @@ public class Cursor {
     private Vector2f mRawDragStart;
     /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledDragStart = new Vector2f(0, 0);
-    /** Maximum amount the cursor was dragged from the starting position */
+    /** Maximum amount the cursor was dragged from the starting position. */
     private float mMaxDragDistance = 0f;
 
     /** Create a new cursor manager. */
@@ -228,7 +229,7 @@ public class Cursor {
     }
 
     /**
-     * Whether the cursor was dragged a little amount
+     * Whether the cursor was dragged a little amount.
      *
      * @return {@code true} if the cursor was dragged a little amount
      */
