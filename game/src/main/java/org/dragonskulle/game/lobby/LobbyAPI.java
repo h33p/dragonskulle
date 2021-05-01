@@ -136,11 +136,11 @@ public class LobbyAPI {
     }
 
     /**
-     * Attempt to get all of the currently up hosts via the API.
+     * Attempt to get all of the currently up hosts asynchronously via the API.
      *
      * @param callback Method to call after the request is completed.
      */
-    public static void getAllHosts(IAsyncCallback callback) {
+    public static void getAllHostsAsync(IAsyncCallback callback) {
         if (url == null) {
             return;
         }
@@ -149,13 +149,13 @@ public class LobbyAPI {
     }
 
     /**
-     * Add a new host to the server list via the API.
+     * Add a new host to the server list asynchronously via the API.
      *
      * @param ip IP address of the host
      * @param port Port that the server is hosted on
      * @param callback Method to call after the request is completed.
      */
-    public static void addNewHost(String ip, int port, IAsyncCallback callback) {
+    public static void addNewHostAsync(String ip, int port, IAsyncCallback callback) {
         if (url == null) {
             return;
         }
@@ -167,21 +167,43 @@ public class LobbyAPI {
     }
 
     /**
-     * Delete an existing host from the server list
+     * Delete an existing host from the server list asynchronously.
      *
      * @param id ID of the entry to be deleted
-     * @param callback Method to call after the requets is completed.
+     * @param callback Method to call after the request is completed.
      */
-    public static void deleteHost(String id, IAsyncCallback callback) {
+    public static void deleteHostAsync(String id, IAsyncCallback callback) {
         if (url == null) {
             return;
         }
 
         try {
-            AsyncRequest request = new AsyncRequest(API_URL + "/" + id, "DELETE", callback);
+            AsyncRequest request = new AsyncRequest(API_URL + "/code/" + id, "DELETE", callback);
             request.start();
         } catch (MalformedURLException e) {
             log.warning("Invalid url for delete request");
+        }
+    }
+
+    /**
+     * Get an existing host from the server list by id. This is done synchronously.
+     *
+     * @param id ID of the entry to find
+     * @param callback Method to call after the request is completed
+     */
+    public static void getHostById(String id, IAsyncCallback callback) {
+        if (url == null) {
+            return;
+        }
+
+        try {
+            AsyncRequest request = new AsyncRequest(API_URL + "/code/" + id, "GET", callback);
+            request.start();
+            request.join();
+        } catch (MalformedURLException e) {
+            log.warning("Invalid url for delete request");
+        } catch (InterruptedException e) {
+            log.warning("Thread interrupted when making request to API");
         }
     }
 }

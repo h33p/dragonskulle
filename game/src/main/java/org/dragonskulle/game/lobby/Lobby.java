@@ -48,8 +48,10 @@ public class Lobby extends Component implements IFrameUpdate {
     @Getter private final GameObject mLobbyUi;
     private final GameObject mHostUi;
     private final GameObject mJoinUi;
-    private final GameObject mServerBrowserUi;
+    private final GameObject mServerListUi;
     private Reference<GameObject> mServerList;
+    private final GameObject mFailedToForwardUi;
+    private Reference<GameObject> mFailedToForward;
     private final GameObject mHostingUi;
     private final GameObject mJoiningUi;
     private final Reference<NetworkManager> mNetworkManager;
@@ -98,7 +100,7 @@ public class Lobby extends Component implements IFrameUpdate {
 
         mServerList = new GameObject("servers", false, new TransformUI(false)).getReference();
 
-        mServerBrowserUi =
+        mServerListUi =
                 new GameObject(
                         "serverBrowserUI",
                         false,
@@ -107,6 +109,16 @@ public class Lobby extends Component implements IFrameUpdate {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                             root.addChild(mServerList.get());
+                        });
+
+        mFailedToForwardUi =
+                new GameObject(
+                        "failedToForwardUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
         mHostingUi =
@@ -170,7 +182,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Start Game",
                                 (__, ___) -> {
                                     mNetworkManager.get().getServerManager().start();
-                                    LobbyAPI.deleteHost(mLobbyId, this::onDeleteHost);
+                                    LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
                                 }),
                         mLobbyIDText,
                         new UIButton(
@@ -183,7 +195,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                         }
                                     }
                                     if (!mLobbyId.equals("")) {
-                                        LobbyAPI.deleteHost(mLobbyId, this::onDeleteHost);
+                                        LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
                                     }
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
@@ -212,7 +224,7 @@ public class Lobby extends Component implements IFrameUpdate {
         buildJoinUi();
         buildHostUi();
         buildServerList();
-        LobbyAPI.getAllHosts(this::onGetAllHosts);
+        LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
     }
 
     /** Builds the "Join" section of the UI. */
@@ -226,7 +238,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Join public lobby",
                                 (__, ___) -> {
-                                    mServerBrowserUi.setEnabled(true);
+                                    mServerListUi.setEnabled(true);
                                     mJoinUi.setEnabled(false);
                                 }),
                         new UIButton(
@@ -268,17 +280,20 @@ public class Lobby extends Component implements IFrameUpdate {
      * updated.
      */
     private void buildServerList() {
-        boolean enabled = mServerList.get().isEnabled();
-        mServerList.get().destroy();
+        boolean enabled = false;
+        if (Reference.isValid(mServerList)) {
+            enabled = mServerList.get().isEnabled();
+            mServerList.get().destroy();
+        }
         mServerList = new GameObject("servers", enabled, new TransformUI(false)).getReference();
 
         final GameObject serverList = mServerList.get();
 
         UIManager.IUIBuildHandler[] uiElements = new UIManager.IUIBuildHandler[mHosts.size() + 3];
 
-        int i = 1;
+        int i = 2;
         for (Map.Entry<String, String> entry : mHosts.entrySet()) {
-            final String id = entry.getKey().substring(0, 10);
+            final String id = entry.getKey();
             final String ip = entry.getValue();
             uiElements[i] =
                     new UIButton(
@@ -295,16 +310,16 @@ public class Lobby extends Component implements IFrameUpdate {
 
                                                     if (netID >= 0) {
                                                         mJoiningUi.setEnabled(true);
-                                                        mServerBrowserUi.setEnabled(false);
+                                                        mServerListUi.setEnabled(false);
                                                     } else {
-                                                        LobbyAPI.getAllHosts(this::onGetAllHosts);
+                                                        LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
                                                     }
                                                 },
                                                 this::onHostStartGame,
                                                 () -> {
-                                                    LobbyAPI.getAllHosts(this::onGetAllHosts);
+                                                    LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
                                                     mJoiningUi.setEnabled(false);
-                                                    mServerBrowserUi.setEnabled(true);
+                                                    mServerListUi.setEnabled(true);
                                                 });
                             });
             i++;
@@ -319,7 +334,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         "Refresh",
                         (button, ___) -> {
                             button.getLabelText().get().setText("Refreshing...");
-                            LobbyAPI.getAllHosts(this::onGetAllHosts);
+                            LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
                         });
 
         uiElements[uiElements.length - 1] =
@@ -327,7 +342,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         "Back",
                         (__, ___) -> {
                             mJoinUi.setEnabled(true);
-                            mServerBrowserUi.setEnabled(false);
+                            mServerListUi.setEnabled(false);
                         });
 
         UIManager.getInstance()
@@ -339,42 +354,51 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Join with ID",
                                 (button, ___) -> {
-                                    for (Map.Entry<String, String> entry : mHosts.entrySet()) {
-                                        if (entry.getKey().startsWith(inputBox.getInput())) {
-                                            final String ip = entry.getKey();
-                                            button.getLabelText().get().setText("Connecting...");
-                                            mNetworkManager
-                                                    .get()
-                                                    .createClient(
-                                                            ip,
-                                                            PORT,
-                                                            (manager, netID) -> {
-                                                                button.getLabelText()
-                                                                        .get()
-                                                                        .setText("Join with ID");
-                                                                if (netID >= 0) {
-                                                                    mJoiningUi.setEnabled(true);
-                                                                    mServerBrowserUi.setEnabled(
-                                                                            false);
-                                                                } else {
-                                                                    LobbyAPI.getAllHosts(
-                                                                            this::onGetAllHosts);
-                                                                }
-                                                            },
-                                                            this::onHostStartGame,
-                                                            () -> {
-                                                                LobbyAPI.getAllHosts(
-                                                                        this::onGetAllHosts);
-                                                                mJoiningUi.setEnabled(false);
-                                                                mServerBrowserUi.setEnabled(true);
-                                                            });
-                                        }
-                                    }
+                                    button.getLabelText().get().setText("Connecting...");
+                                    LobbyAPI.getHostById(inputBox.getInput(),
+                                            (response, success) -> {
+                                                if (success) {
+                                                    JSONParser parser = new JSONParser();
+                                                    try {
+                                                        JSONObject obj = (JSONObject) parser.parse(response);
+                                                        String ip = (String)obj.get("address");
+                                                        int port = Math.toIntExact((Long) obj.get("port"));
+                                                        mNetworkManager
+                                                                .get()
+                                                                .createClient(
+                                                                        ip,
+                                                                        port,
+                                                                        (manager, netID) -> {
+                                                                            if (netID >= 0) {
+                                                                                mJoiningUi.setEnabled(true);
+                                                                                mServerListUi.setEnabled(false);
+                                                                            } else {
+                                                                                LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+                                                                            }
+                                                                        },
+                                                                        this::onHostStartGame,
+                                                                        () -> {
+                                                                            LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+                                                                            mJoiningUi.setEnabled(false);
+                                                                            mServerListUi.setEnabled(true);
+                                                                        });
+
+                                                    } catch (ParseException e) {
+                                                        e.printStackTrace();
+                                                        log.warning("Failed to parse response from get host by id");
+                                                    }
+                                                }
+                                            });
+                                    button.getLabelText().get().setText("Join with ID");
                                 }));
 
         UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, uiElements);
 
-        mServerBrowserUi.addChild(mServerList.get());
+        mServerListUi.addChild(mServerList.get());
+    }
+
+    private void buildFailedToForwardUi() {
+
     }
 
     /** Builds the "Host" section of the UI. */
@@ -390,7 +414,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 (__, ___) -> {
                                     UPnP.addPortMapping(PORT, "TCP");
                                     String ip = UPnP.getExternalIPAddress();
-                                    LobbyAPI.addNewHost(ip, PORT, this::onAddNewHost);
+                                    LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
                                     mNetworkManager
                                             .get()
                                             .createServer(
@@ -437,7 +461,8 @@ public class Lobby extends Component implements IFrameUpdate {
     public void addUiToScene(Scene mainMenu) {
         mainMenu.addRootObject(mLobbyUi);
         mainMenu.addRootObject(mJoinUi);
-        mainMenu.addRootObject(mServerBrowserUi);
+        mainMenu.addRootObject(mServerListUi);
+        mainMenu.addRootObject(mFailedToForwardUi);
         mainMenu.addRootObject(mJoiningUi);
         mainMenu.addRootObject(mHostUi);
         mainMenu.addRootObject(mHostingUi);
@@ -464,7 +489,7 @@ public class Lobby extends Component implements IFrameUpdate {
             for (Object o : array) {
                 JSONObject obj = (JSONObject) o;
 
-                String id = (String) obj.get("_id");
+                String id = (String) obj.get("_code");
                 String ip = (String) obj.get("address");
                 int port = Math.toIntExact((Long) obj.get("port"));
 
@@ -497,7 +522,7 @@ public class Lobby extends Component implements IFrameUpdate {
         JSONParser parser = new JSONParser();
         try {
             JSONObject obj = (JSONObject) parser.parse(response);
-            mLobbyId = (String) obj.get("_id");
+            mLobbyId = (String) obj.get("_code");
             mLobbyIDUpdated.set(true);
         } catch (ParseException e) {
             e.printStackTrace();
@@ -590,14 +615,14 @@ public class Lobby extends Component implements IFrameUpdate {
             buildServerList();
         }
         if (mLobbyIDUpdated.compareAndSet(true, false)) {
-            mLobbyIDText.setText("ID: " + mLobbyId.substring(10));
+            mLobbyIDText.setText("ID: " + mLobbyId);
         }
     }
 
     @Override
     protected void onDestroy() {
         if (!mLobbyId.equals("")) {
-            LobbyAPI.deleteHost(mLobbyId, null);
+            LobbyAPI.deleteHostAsync(mLobbyId, null);
         }
     }
 }
