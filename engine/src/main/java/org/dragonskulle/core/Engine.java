@@ -16,6 +16,7 @@ import org.dragonskulle.components.ILateNetworkUpdate;
 import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
@@ -103,15 +104,30 @@ public class Engine {
     }
 
     /**
-     * Starts only fixed updates of the engine, allows for custom quit condition.
+     * Runs the engine with a list of futures, until they all finish.
      *
-     * <p>Note that this method will not destroy game object references!
+     * <p>Each future will have a scene assigned to them, and be executed at the same time. Note,
+     * that while inside the future context, {@link Scene#getActiveScene()} will always return
+     * {@code null}, so you can use the input argument as active scene.
      *
-     * @param exitCondition customizable exit condition
+     * @param futures a list of futures to execute.
      */
-    public synchronized void startFixedDebug(IEngineExitCondition exitCondition) {
+    public synchronized void startWithFutures(Future... futures) {
+        int cnt = 0;
+        int[] loadedScenes = {0};
+
+        for (Future future : futures) {
+            Scene scene = new Scene("future" + cnt);
+            future.then(this::unloadScene).then((__) -> loadedScenes[0]--).schedule(scene);
+            cnt++;
+            loadedScenes[0]++;
+            activateScene(scene);
+        }
+
         mIsRunning = true;
-        mainLoop(exitCondition, false);
+        mainLoop(() -> loadedScenes[0] != 0, false);
+
+        cleanup();
     }
 
     /**
@@ -560,7 +576,11 @@ public class Engine {
 
         UPnP.deleteAllMappings();
         destroyAllObjects();
-        mGLFWState.free();
+
+        if (mGLFWState != null) {
+            mGLFWState.free();
+            mGLFWState = null;
+        }
     }
 
     /**

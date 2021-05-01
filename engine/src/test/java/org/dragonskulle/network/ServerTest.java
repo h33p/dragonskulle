@@ -10,15 +10,15 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
-import org.dragonskulle.core.EngineTester;
-import org.dragonskulle.core.EngineTester.EngineDoer;
-import org.dragonskulle.core.EngineTester.EngineFuture;
-import org.dragonskulle.core.EngineTester.IEngineAwait;
-import org.dragonskulle.core.EngineTester.IEngineDo;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.core.futures.AwaitFuture.IAwaitFuture;
+import org.dragonskulle.core.futures.Future;
+import org.dragonskulle.core.futures.ThenFuture;
+import org.dragonskulle.core.futures.ThenFuture.IThenFuture;
 import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.ClientNetworkManager.ConnectionState;
 import org.dragonskulle.network.components.NetworkManager;
@@ -27,7 +27,7 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.ServerNetworkManager;
 import org.junit.Test;
 
-/** @author Oscar L */
+/** @author Oscar L, Aurimas Blažulionis */
 @Log
 public class ServerTest {
     private static final long TIMEOUT = 1;
@@ -64,13 +64,13 @@ public class ServerTest {
 
     private static class SceneContext {
         NetworkManager mManager;
-        EngineFuture mFuture;
+        Future mFuture;
 
         public SceneContext(String name) {
             mManager = new NetworkManager(TEMPLATE_MANAGER, (__1, __2) -> new Scene(name));
 
             mFuture =
-                    new EngineDoer(
+                    new ThenFuture(
                             (scene) -> {
                                 scene.addRootObject(
                                         new GameObject(
@@ -78,22 +78,22 @@ public class ServerTest {
                             });
         }
 
-        public SceneContext then(IEngineDo doFn) {
+        public SceneContext then(IThenFuture doFn) {
             mFuture = mFuture.then(doFn);
             return this;
         }
 
-        public SceneContext awaitUntil(IEngineAwait awaitFn) {
+        public SceneContext awaitUntil(IAwaitFuture awaitFn) {
             mFuture = mFuture.awaitUntil(awaitFn);
             return this;
         }
 
-        public SceneContext awaitTimeout(float maxSeconds, IEngineAwait awaitFn) {
+        public SceneContext awaitTimeout(float maxSeconds, IAwaitFuture awaitFn) {
             mFuture = mFuture.awaitTimeout(maxSeconds, awaitFn);
             return this;
         }
 
-        public SceneContext syncWith(EngineFuture future) {
+        public SceneContext syncWith(Future future) {
             mFuture = mFuture.syncWith(future);
             return this;
         }
@@ -123,7 +123,7 @@ public class ServerTest {
             sEngineLock.lock();
 
             try {
-                EngineTester.testEngine(mServer.mFuture, mClient.mFuture);
+                Engine.getInstance().startWithFutures(mServer.mFuture, mClient.mFuture);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw e;
