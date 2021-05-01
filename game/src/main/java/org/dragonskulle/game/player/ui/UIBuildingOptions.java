@@ -49,7 +49,9 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
 	private Reference<UITextRect> mDefenceRef;
 	private Reference<UITextRect> mTokenRef;
 	private Reference<UITextRect> mCostRef;
-    
+	
+	private Reference<UIButton> mBuyButton;
+	
     /**
      * Constructor.
      *
@@ -70,6 +72,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
+    	GameObject buttonObject = new GameObject("build_button", new TransformUI());
+    	UIButton button = new UIButton("Build", this::buildOnClick);
+    	mBuyButton = button.getReference(UIButton.class);
+    	buttonObject.addComponent(button);
+        TransformUI transformUI = buttonObject.getTransform(TransformUI.class);
+        transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
+    	
         getGameObject()
                 .buildChild(
                         "possible_buildings",
@@ -91,18 +100,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                     0.3f,
                                     mBuildingsCanPlaceButtons);
 
-                            self.buildChild(
-                                    "build_selected_tile",
-                                    new TransformUI(true),
-                                    (me) -> {
-                                        UIButton button =
-                                                new UIButton("Build", this::buildOnClick);
-                                        me.addComponent(button);
-                                        TransformUI transformUI =
-                                                me.getTransform(TransformUI.class);
-                                        transformUI.setParentAnchor(
-                                                0.16f, 1.08f, 0.86f, 1.08f + 0.25f);
-                                    });
+                            self.addChild(buttonObject);
                         });
 
         
@@ -228,8 +226,31 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     public void fixedUpdate(float deltaTime) {
         ensurePlayerReference();
         updateTokens();
+        updateBuyButton();
     }
 
+    /** Enable and disable the buy button. */
+    private void updateBuyButton() {
+    	if (!Reference.isValid(mPlayerReference)) return;
+    	if (!Reference.isValid(mBuyButton)) return;
+    	if (mSelectedBuildingDescriptor == null) return;
+    	
+    	Player player = mPlayerReference.get();
+    	UIButton button = mBuyButton.get();
+    	int cost = mSelectedBuildingDescriptor.getCost();
+    	
+    	if(!Reference.isValid(button.getLabelText())) return;
+    	UIText label = button.getLabelText().get();
+    	
+    	if(player.getTokens().get() >= cost) {
+    		button.setEnabled(true);
+    		label.setText("Build");
+    	} else {
+    		button.setEnabled(false);
+    		label.setText("[TOO EXPENSIVE]");
+    	}
+    }
+    
     /** Update the local tokens. */
     private void updateTokens() {
         if (Reference.isValid(mPlayerReference)) {
