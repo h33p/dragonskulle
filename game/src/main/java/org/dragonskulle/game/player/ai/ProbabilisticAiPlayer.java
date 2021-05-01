@@ -12,7 +12,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.Player;
 
 /**
- * This base class will allow AI players to be created and used throughout the game.
+ * This will create AI which will choose an action with a certain probability.
  *
  * @author DragonSkulle
  */
@@ -86,7 +86,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * A function which goes through and checks if you can run code.
      *
      * @param lambdaMethod What to on a building
-     * @return If the stuff is invoked on the server
+     * @return {@code true} if invoked on the server otherwise {@code false}
      */
     protected boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
 

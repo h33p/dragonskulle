@@ -32,7 +32,22 @@ import org.joml.Vector3f;
 @Log
 public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
+    /**
+     * This interface defines what should happen when you reach a node when using the flood fill
+     * algorithm.
+     *
+     * @author DragonSkulle
+     */
     public static interface IFloodFillVisitor {
+
+        /**
+         * The method which states what should happen when reaching a {@code HexagonTile}.
+         *
+         * @param map The {@link HexagonMap} to look through.
+         * @param tile The {@link HexagonTile} to look through.
+         * @param neighbours A {@link List} which will hold the neighbours of the tile.
+         * @param tilesToFill This will hold the {@link HexagonTile}'s which need to be flooded
+         */
         void onVisit(
                 HexagonMap map,
                 HexagonTile tile,
@@ -108,6 +123,13 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         mLandMass++;
     }
 
+    /**
+     * This will perform the flood fill algorithm.
+     *
+     * @param tiles The {@code Deque} to hold the tiles to which need to be visited.
+     * @param visitor The {@code IFloodFillVisitor} which states what needs to be done when visiting
+     *     a node.
+     */
     public void floodFill(Deque<HexagonTile> tiles, IFloodFillVisitor visitor) {
         ArrayList<HexagonTile> neighbours = new ArrayList<>();
 

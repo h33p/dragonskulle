@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -224,26 +225,58 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        Building buildingToBecomeCapital =
-                getMap().getAllTiles()
-                        .map(tile -> createBuilding(tile.getQ(), tile.getR(), true))
-                        .filter(building -> building != null)
-                        .findFirst()
-                        .orElse(null);
-
-        if (buildingToBecomeCapital == null) {
+        List<HexagonTile> buildable =
+                getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
+        if (buildable.isEmpty()) {
             // Cannot add a capital
             setOwnsCapital(false);
             log.severe("Disconnecting");
             getGameObject().destroy();
 
         } else {
+            Random random = new Random();
+            HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
+            Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
+            if (capital == null) {
+                log.info("Failed to create capital");
+                return;
+            }
+            capital.setCapital(true);
 
-            buildingToBecomeCapital.setCapital(true);
             mGameState.get().getNumCapitalsStanding().add(1);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
-            return;
         }
+    }
+
+    /**
+     * Determines if for a given player if this tile is buildable upon.
+     *
+     * @param tile The {@code HexagonTile} to check for
+     * @return true if buildable, false otherwise
+     */
+    private boolean isBuildable(HexagonTile tile) {
+
+        if (getMap() == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (tile.isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (tile.hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        if (getMap().isIsland(tile)) {
+            log.warning("This is an island and a capital cannot be placed here");
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -321,8 +354,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 // Reduce the cumulative time by the TOKEN_TIME.
                 mCumulativeTokenTime -= TOKEN_TIME;
-
-                log.info("Tokens at: " + mTokens.get());
             }
         }
     }
@@ -332,6 +363,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param qPos The q position of the building.
      * @param rPos The r position of the building.
+     * @param checkIsland {@code true} when we don't want to place on an Island otherwise {@code
+     *     false}
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
     private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
@@ -670,8 +703,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
-        log.info("Stats on building to be added: " + building.getAttack()); // NOT DOING THA THING
-        log.info("Added building.");
+        log.warning("Added building.");
         return true;
     }
 
