@@ -180,9 +180,16 @@ public class Settings {
         return (value != null ? value : defaultValue);
     }
 
-    private <T> void recreateSettingsFile(String name, T defaultValue) {
+    /**
+     * Save to the settings file if we have modified a value.
+     *
+     * @param <T> the type of the value to save
+     * @param name the string name for the value
+     * @param value the value to be saved
+     */
+    private <T> void recreateSettingsFile(String name, T value) {
         if (mFilePath == null) mFilePath = mDefaultFilePath;
-        saveValue(name, defaultValue, true);
+        saveValue(name, value, true);
     }
 
     /**
@@ -349,6 +356,7 @@ public class Settings {
         return (value == -1 ? value : defaultValue);
     }
 
+    /** Save the current state of {@link #mSettings} to the file. */
     public void save() {
         try {
             FileOutputStream out = new FileOutputStream(mFilePath);

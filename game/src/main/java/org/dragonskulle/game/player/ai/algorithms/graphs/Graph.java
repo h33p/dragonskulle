@@ -223,13 +223,12 @@ public class Graph {
     }
 
     /**
-     * Gets the hash of a {@code HexagonTile}
+     * Gets the hash of a {@code HexagonTile}.
      *
      * @param tile The {@code HexagonTile} to get a hash for
      * @return The hash of it
      */
     public int getHash(HexagonTile tile) {
-        int nodeNum = (tile.getQ() * mMap.get().getSize()) + tile.getR();
-        return nodeNum;
+        return (tile.getQ() * mMap.get().getSize()) + tile.getR();
     }
 }
