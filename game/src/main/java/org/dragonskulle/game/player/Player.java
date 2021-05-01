@@ -804,8 +804,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         log.info("Attacking");
 
-        // ATTACK!!! (Sorry...)
-        mTokens.subtract(defender.getAttackCost());
+        // ATTACK!
+        mTokens.subtract(attacker.getAttackCost());
         boolean won;
         if (defender.getOwner().hasLost()) won = true;
         else won = attacker.attack(defender);
@@ -864,14 +864,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you have the cash
-        if (mTokens.get() < defender.getAttackCost()) {
-            log.warning("You don't have the cash");
+        if (mTokens.get() < attacker.getAttackCost()) {
+            log.warning("You don't have the cash to attack.");
             return false;
         }
 
         // Checks you own the building
         if (isBuildingOwner(attacker) == false) {
-            log.info("It's not your building");
+            log.info("It's not your building.");
             return false;
         }
 

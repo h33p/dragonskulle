@@ -772,9 +772,9 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * This will create and return a base cost for attacking.
+     * Will generate the cost it takes to attack <b>from</b> this Building. 
      *
-     * @return The cost for attacking
+     * @return The cost to attack from this Building.
      */
     public int getAttackCost() {
 
@@ -783,9 +783,8 @@ public class Building extends NetworkableComponent
 
         // Update cost on different stats
         cost += (mDefence.getLevel() * 3);
-        cost += (mAttack.getLevel() * 2);
+        cost += (mAttack.getLevel() * 3);
         cost += (mTokenGeneration.getLevel());
-        cost += (mViewDistance.getLevel());
 
         if (isCapital()) {
             cost += 10;

@@ -617,6 +617,26 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         
     	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
     	
+    	HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building attacker = tile.getBuilding();
+        
+        GameObject menu = mAttackScreenMenu.get();
+        if (menu.getChildren().size() == 0) return;
+        GameObject child = menu.getChildren().get(0);
+
+        Reference<UIButton> button = child.getComponent(UIButton.class);
+        if (!Reference.isValid(button)) return;
+
+        Reference<UIText> text = button.get().getLabelText();
+        if (!Reference.isValid(text)) return;
+        
+        int cost = attacker.getAttackCost();
+        text.get().setText("Cost: " + cost);
+        
+    	/*
+    	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
+    	
     	if (!Reference.isValid(mAttackScreenMenu)) return;
         if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
         Building building = mGetBuildingChosen.getBuilding().get();
@@ -642,6 +662,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         int cost = building.getAttackCost();
         text.get().setText("Cost: " + cost);
+        */
     }
     
     private void updateAttackButton() {
@@ -649,8 +670,14 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     	if(mLastScreen != Screen.ATTACKING_SCREEN) return;
     	
     	if (!Reference.isValid(mAttackScreenMenu)) return;
-        if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
-        Building building = mGetBuildingChosen.getBuilding().get();
+        
+    	if (!Reference.isValid(mGetBuildingChosen.getBuilding())) return;
+        Building defender = mGetBuildingChosen.getBuilding().get();
+        
+        HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building attacker = tile.getBuilding();
+        
         GameObject menu = mAttackScreenMenu.get();
         if (menu.getChildren().size() < 1) return;
         GameObject child = menu.getChildren().get(1);
@@ -671,13 +698,13 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             return;
         }
         
-        if (player.isBuildingOwner(building)) {
+        if (player.isBuildingOwner(defender)) {
             text.get().setText("[SELECT BUILDING]");
             button.get().setEnabled(false);
             return;
         }
         
-        int cost = building.getAttackCost();
+        int cost = attacker.getAttackCost();
         if (cost <= player.getTokens().get()) {
         	text.get().setText("Attack!");
         	button.get().setEnabled(true);

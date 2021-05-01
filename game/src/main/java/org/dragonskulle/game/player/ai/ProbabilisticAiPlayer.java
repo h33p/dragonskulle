@@ -252,17 +252,18 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether attacking was invoked.
      */
     protected boolean tryToAttack(Building attacker) {
-        ArrayList<Building> buildings = attacker.getAttackableBuildings();
         
+    	// Ensure the player can afford to attack.
+    	if(attacker.getAttackCost() > getPlayer().getTokens().get()) return false;
+    	
+    	ArrayList<Building> buildings = attacker.getAttackableBuildings();
         if(buildings.size() == 0) return false;
         
         int index = mRandom.nextInt(buildings.size());
         final int end = index;
         do {
         	Building defender = buildings.get(index);
-        	
-        	// Ensure the player can afford the attack.
-        	if(defender != null && defender.getAttackCost() <= getPlayer().getTokens().get()) {
+        	if(defender != null) {
         		getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
         		return true;
         	}
