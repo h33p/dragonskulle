@@ -90,7 +90,7 @@ public class Engine {
      */
     public void start(String gameName, Bindings bindings) {
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
-        //
+
         UPnP.initialise();
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);

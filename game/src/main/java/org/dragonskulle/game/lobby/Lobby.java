@@ -246,6 +246,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         mHostUi.setEnabled(true);
                                                     });
                                     mHostingUi.setEnabled(true);
+                                    mFailedToForwardUi.setEnabled(false);
                                 }),
                         new UIButton(
                                 "Try override",
@@ -265,6 +266,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         mHostUi.setEnabled(true);
                                                     });
                                     mHostingUi.setEnabled(true);
+                                    mFailedToForwardUi.setEnabled(false);
                                 }),
                         new UIButton(
                                 "Cancel",
