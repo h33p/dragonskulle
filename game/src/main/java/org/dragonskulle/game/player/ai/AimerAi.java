@@ -231,25 +231,27 @@ public class AimerAi extends AiPlayer {
 
             return;
         }
-
+        
         // This will check for buildings to attack from
         for (Building attacker : building.getAttackableBuildings()) {
+        	
+        	// If the attacker is not ours, continue.
+            if (!getPlayer().isBuildingOwner(attacker)) continue;
+        	
+        	// Ensure the player can afford to attack.
+            if (attacker.getAttackCost() > getPlayer().getTokens().get()) continue;
 
-            // Checks its ours
-            if (getPlayer().isBuildingOwner(attacker)) {
+            // Used so lambdas work
+            final Building defender = nextTile.getBuilding();
+            getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
 
-                // Used so lambdas work
-                final Building defender = nextTile.getBuilding();
-                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
-
-                // Checks if the attack was successful
-                if (nextTilePlayer != null
-                        && nextTilePlayer.getNetworkObject().getOwnerId()
-                                == getPlayer().getNetworkObject().getOwnerId()) {
-                    mGone.push(nextNode);
-                }
-                return;
+            // Checks if the attack was successful
+            if (nextTilePlayer != null
+                    && nextTilePlayer.getNetworkObject().getOwnerId()
+                            == getPlayer().getNetworkObject().getOwnerId()) {
+                mGone.push(nextNode);
             }
+            return;
         }
     }
 

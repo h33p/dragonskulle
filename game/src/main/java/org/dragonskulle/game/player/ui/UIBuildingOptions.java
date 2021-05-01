@@ -43,7 +43,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     private Reference<Player> mPlayerReference;
     @Getter @Setter private int mTokens = 0;
 
-    // Sued for the descriptors:
+    // Used for the descriptors:
     private Reference<UITextRect> mNameRef;
     private Reference<UITextRect> mAttackRef;
     private Reference<UITextRect> mDefenceRef;
