@@ -12,6 +12,11 @@ import org.dragonskulle.components.IFixedUpdate;
 public class LambdaFixedUpdate extends Component implements IFixedUpdate {
     private final IFixedUpdate mHandler;
 
+    /**
+     * Constructor.
+     *
+     * @param handler the handler to be ran on fixed update
+     */
     public LambdaFixedUpdate(IFixedUpdate handler) {
         mHandler = handler;
     }

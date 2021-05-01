@@ -78,9 +78,10 @@ public class HexagonTile implements INetSerializable {
     static final float MOUNTAINS_THRESHOLD = 0.8f;
     static final float WATER_OFF = 0.1f;
 
-    /** This is the axial storage system for each tile. */
+    /** The Axial Coordinate in the Q Position. */
     @Getter private final int mQ;
 
+    /** The Axial Coordinate in the R Position */
     @Getter private final int mR;
 
     @Setter(AccessLevel.PACKAGE)
@@ -92,7 +93,7 @@ public class HexagonTile implements INetSerializable {
     private final TileToStoreActions mHandler;
 
     /** This states which land mass this tile is on. Set at -1 when not set */
-    int landMassNumber = -1;
+    int mLandMassNumber = -1;
 
     /**
      * Associated game object.

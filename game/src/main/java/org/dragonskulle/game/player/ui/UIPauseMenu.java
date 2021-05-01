@@ -13,7 +13,12 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 
 /**
@@ -274,7 +279,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /**
      * End the game.
      *
-     * <p>This is a supermethod for {@link endGame()}, that accepts an optional label to be
+     * <p>This is a supermethod for {@link #endGame()}, that accepts an optional label to be
      * displayed in the end screen.
      *
      * @param label label to display on the end screen.

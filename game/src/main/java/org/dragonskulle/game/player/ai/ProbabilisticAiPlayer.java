@@ -13,7 +13,7 @@ import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
 
 /**
- * This base class will allow AI players to be created and used throughout the game.
+ * This will create AI which will choose an action with a certain probability.
  *
  * @author DragonSkulle
  */
@@ -90,7 +90,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * A function which goes through and checks if you can run code.
      *
      * @param lambdaMethod What to on a building
-     * @return If the stuff is invoked on the server
+     * @return {@code true} if invoked on the server otherwise {@code false}
      */
     protected boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
 
@@ -149,7 +149,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Try and place a {@link Building} from the specified Building.
      *
-     * @param building the {@code Building} to try and build from.
+     * @param building the {@link Building} to try and build from.
      * @return Whether building placement was invoked.
      */
     private boolean tryToAddBuilding(Building building) {

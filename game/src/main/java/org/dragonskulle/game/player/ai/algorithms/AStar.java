@@ -98,7 +98,7 @@ public class AStar {
     /**
      * The constructor which allows you to make the object.
      *
-     * @param graph The {@code Graph} to use A* on.
+     * @param graph The {@link Graph} to use A* on.
      * @param currentNode The start {@code Node}'s nodeId.
      * @param endNode The end {@code Node}'s nodeId.
      */
@@ -110,7 +110,7 @@ public class AStar {
     /**
      * This will perform the A* Search.
      *
-     * @param currentNode The {@code Node}'s nodeId to start from.
+     * @param currentNode The {@link Node}'s nodeId to start from.
      * @param endNode The goal node's nodeId.
      */
     private void aStarAlgorithm(int currentNode, int endNode) {
@@ -171,7 +171,7 @@ public class AStar {
      * This will check through all the connections and add to the frontier.
      *
      * @param currentNode The current node we are at.
-     * @param connections An {@code ArrayList} of {@code Connections}'s which come off the current
+     * @param connections An {@link ArrayList} of {@link Connections}'s which come off the current
      *     node.
      * @param oldFNode The weight to get to the currentNode.
      */

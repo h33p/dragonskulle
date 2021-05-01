@@ -13,7 +13,7 @@ import org.dragonskulle.utils.MathUtils;
 
 /**
  * This class allows to control height of hexagon tiles, smoothly transitioning between different
- * heights
+ * heights.
  *
  * @author Aurimas Blažulionis
  */

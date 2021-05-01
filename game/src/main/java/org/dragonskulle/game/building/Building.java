@@ -1,7 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -65,13 +74,13 @@ public class Building extends NetworkableComponent
     private final SyncBool mIsCapital = new SyncBool(false);
 
     /** The tiles the building claims, including the tile the building is currently on. */
-    @Getter private Set<HexagonTile> mClaimedTiles = new HashSet<>();
+    @Getter private final Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
     /** Tiles that are around {@link #mClaimedTiles}. */
-    private Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
+    private final Map<HexagonTile, Integer> mNeighboringTiles = new HashMap<>();
 
     /** The tiles the building can currently attack (those with claims neighboring our claims). */
-    private ArrayList<HexagonTile> mAttackableTiles = new ArrayList<HexagonTile>();
+    private final ArrayList<HexagonTile> mAttackableTiles = new ArrayList<>();
 
     /** Building templates, used to distinguish the buildings. */
     private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
@@ -206,7 +215,7 @@ public class Building extends NetworkableComponent
         mGenerationMesh = generationMesh.getReference();
     }
 
-    /** Initialise the building only when it is properly on the map and the tile is synced */
+    /** Initialise the building only when it is properly on the map and the tile is synced. */
     void checkInitialise() {
         if (mInitialised) {
             return;
@@ -322,6 +331,7 @@ public class Building extends NetworkableComponent
         setStatsRequireVisualUpdate();
     }
 
+    /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
     private void assignMesh() {
         Map<StatType, Integer> statLevels =
                 getShopStats().stream()
@@ -424,6 +434,11 @@ public class Building extends NetworkableComponent
         }
     }
 
+    /**
+     * Ran on claim tile.
+     *
+     * @param tile the tile
+     */
     public void onClaimTile(HexagonTile tile) {
         if (mClaimedTiles.add(tile)) {
             Player owner = getOwner();
@@ -871,6 +886,11 @@ public class Building extends NetworkableComponent
         return stats;
     }
 
+    /**
+     * Gets the stats to display in the shop.
+     *
+     * @return the shop stats
+     */
     public List<SyncStat> getShopStats() {
         return getShopStatTypes().stream().map(mStats::get).collect(Collectors.toList());
     }

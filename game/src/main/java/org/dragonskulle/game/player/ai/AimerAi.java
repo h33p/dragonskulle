@@ -19,7 +19,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
 /**
- * An AI player which will aim for a {@code Building} of a player when viewed. This is done using
+ * An AI player which will aim for a {@link Building} of a player when viewed. This is done using
  * the A* Algorithm.
  *
  * @author Dragonskulle
@@ -63,13 +63,13 @@ public class AimerAi extends AiPlayer {
     private Node mNodePreviouslyOn = null;
 
     /** Whether to use the A* route. */
-    private final float PLAY_A_STAR = 0.9f;
+    private static final float PLAY_A_STAR = 0.9f;
 
     /** The chance to aim at a capital. */
-    private final float AIM_AT_CAPITAL = 0.01f;
+    private static final float AIM_AT_CAPITAL = 0.01f;
 
     /** This is the number of tries we should do before resetting. */
-    private final int TRIES = 50;
+    private static final int TRIES = 50;
 
     protected ProbabilisticAiPlayer mProbabilisticAi = null;
 
@@ -165,8 +165,8 @@ public class AimerAi extends AiPlayer {
     /**
      * This will attack the next building.
      *
-     * @param nextTile The next {@code HexagonTile} to aim for.
-     * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
+     * @param nextTile The next {@link HexagonTile} to aim for.
+     * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void attack(HexagonTile nextTile, int nextNode) {
         log.info("A* Attacking");
@@ -231,14 +231,14 @@ public class AimerAi extends AiPlayer {
 
             return;
         }
-        
+
         // This will check for buildings to attack from
         for (Building attacker : building.getAttackableBuildings()) {
-        	
-        	// If the attacker is not ours, continue.
+
+            // If the attacker is not ours, continue.
             if (!getPlayer().isBuildingOwner(attacker)) continue;
-        	
-        	// Ensure the player can afford to attack.
+
+            // Ensure the player can afford to attack.
             if (attacker.getAttackCost() > getPlayer().getTokens().get()) continue;
 
             // Used so lambdas work
@@ -258,8 +258,8 @@ public class AimerAi extends AiPlayer {
     /**
      * This will build the next building.
      *
-     * @param nextTile The next {@code HexagonTile} to aim for.
-     * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
+     * @param tileToBuildOn The next {@link HexagonTile} to aim for.
+     * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
@@ -280,7 +280,7 @@ public class AimerAi extends AiPlayer {
     }
 
     /**
-     * Move the Player forward to the first node not owned by them
+     * Move the Player forward to the first node not owned by them.
      *
      * @return The nodeId which we end up at
      */
@@ -312,7 +312,7 @@ public class AimerAi extends AiPlayer {
         return nextNode;
     }
 
-    /** Move the player to a node owned by them */
+    /** Move the player to a node owned by them. */
     private void moveBackwards() {
 
         int previousNode = mGone.pop();
@@ -342,7 +342,7 @@ public class AimerAi extends AiPlayer {
         mGone.push(previousNode);
     }
 
-    /** This is what happens when we start the search and moves from the capital */
+    /** This is what happens when we start the search and moves from the capital. */
     private void atCapital() {
 
         int nextDoor = mPath.pop();
@@ -366,7 +366,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will set the opponent to aim for.
      *
-     * @return The {@code Player} to attack.
+     * @return The {@link Player} to attack.
      */
     private Player findOpponent() {
 
@@ -423,7 +423,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will aim for a building.
      *
-     * @param opponentPlayer The {@code Player} to aim for.
+     * @param opponentPlayer The {@link Player} to aim for.
      */
     private void aimBuilding(Player opponentPlayer) {
         if (opponentPlayer == null) {
@@ -476,8 +476,8 @@ public class AimerAi extends AiPlayer {
     /**
      * Get a tile to aim for.
      *
-     * @param opponentPlayer The {@code Player} to aim for.
-     * @return The {@code HexagonTile} to aim for.
+     * @param opponentPlayer The {@link Player} to aim for.
+     * @return The {@link HexagonTile} to aim for.
      */
     private HexagonTile getTileBuilding(Player opponentPlayer) {
 
@@ -530,7 +530,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will convert the visible tiles into a stream.
      *
-     * @return The visible {@code HexagonTile}'s as a {@code Stream}.
+     * @return The visible {@link HexagonTile}'s as a {@link Stream}.
      */
     public Stream<HexagonTile> getViewableTiles() {
 
@@ -540,11 +540,10 @@ public class AimerAi extends AiPlayer {
     /**
      * This will find the Building node for both your opponent and the capital for you.
      *
-     * @param graph The {@code Graph} to use.
-     * @param opponentPlayer The {@code Player} to aim for.
-     * @param target The target {@code HexagonTile} to aim for.
-     * @return An {@code Object} of type {@code ImportantNodes} which have the {@code Node} to start
-     *     from and go to.
+     * @param graph The {@link Graph} to use.
+     * @param opponentPlayer The {@link Player} to aim for.
+     * @param target The target {@link HexagonTile} to aim for.
+     * @return An {@link ImportantNodes} which have the {@link Node} to start from and go to.
      */
     private ImportantNodes findBuilding(Graph graph, Player opponentPlayer, HexagonTile target) {
 
