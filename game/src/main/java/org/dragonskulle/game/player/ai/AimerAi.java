@@ -88,10 +88,14 @@ public class AimerAi extends AiPlayer {
     @Override
     protected void simulateInput() {
 
-        if (getPlayer() == null) {
-            return;
-        }
+        if (getPlayer() == null) return;
 
+        // If the player can't attack, just go probabilistically.
+        if(getPlayer().inCooldown()) {
+        	mProbabilisticAi.simulateInput();
+        	return;
+        }
+        
         // Checks if we have reached the capital
         if (mPath.size() == 0) {
 
@@ -545,17 +549,5 @@ public class AimerAi extends AiPlayer {
         buildings.mStartNode = mGraph.getNode(getPlayer().getCapital().getTile());
 
         return buildings;
-    }
-
-    /**
-     * Returns the AI {@code Player}
-     *
-     * @return The {@code Player} in the {@code Reference} or {@code null} if it does not exist
-     */
-    private Player getPlayer() {
-        if (!Reference.isValid(mPlayer)) {
-            return null;
-        }
-        return mPlayer.get();
     }
 }

@@ -24,9 +24,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of upgrading an owned {@link Building}. */
     protected float mUpgradeProbability = 0.15f;
     /** Probability of attacking an opponent {@link Building}. */
-    protected float mAttackProbability = 0.15f;
+    protected float mAttackProbability = 0.19f;
     /** Probability of selling an owned {@link Building}. */
-    protected float mSellProbability = 0.05f;
+    protected float mSellProbability = 0.01f;
 
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
@@ -38,7 +38,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     @Override
     protected void simulateInput() {
-
+    	
         // If only one building assumed that its capital
         if (getPlayer().getNumberOfOwnedBuildings() == 1) {
 
@@ -69,7 +69,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 upgradeBuilding();
             } else if (randomNumber
                     <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
-                attack();
+                // Only attempt to attack if you're not in cooldown.
+            	if(!getPlayer().inCooldown()) {
+                	attack();
+                }
             } else if (randomNumber
                     <= mBuildProbability
                             + mUpgradeProbability
@@ -281,18 +284,5 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         }
 
         return false;
-    }
-
-    /**
-     * Gets the player.
-     *
-     * @return The player.
-     */
-    private Player getPlayer() {
-        Player player = mPlayer.get();
-        if (player == null) {
-            log.severe("Reference to mPlayer is null!");
-        }
-        return player;
     }
 }

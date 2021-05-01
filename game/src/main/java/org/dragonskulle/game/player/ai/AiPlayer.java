@@ -78,8 +78,9 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         // If you can play simulate the input
         if (shouldPlayGame(deltaTime)
                 && mServerSide
-                && !mPlayer.get().gameEnd()
-                && mPlayer.get().getNumberOfOwnedBuildings() != 0) {
+                && getPlayer() != null
+                && !getPlayer().gameEnd()
+                && getPlayer().getNumberOfOwnedBuildings() != 0) {
             log.info("Playing game");
             simulateInput();
         }
@@ -90,4 +91,17 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      * have not lost. For the base class this will be done using probability
      */
     protected abstract void simulateInput();
+    
+    /**
+     * Gets the player.
+     *
+     * @return The player.
+     */
+    protected Player getPlayer() {
+        Player player = mPlayer.get();
+        if (player == null) {
+            log.severe("Reference to mPlayer is null!");
+        }
+        return player;
+    }
 }
