@@ -51,7 +51,6 @@ public class Lobby extends Component implements IFrameUpdate {
     private final GameObject mServerListUi;
     private Reference<GameObject> mServerList;
     private final GameObject mFailedToForwardUi;
-    private Reference<GameObject> mFailedToForward;
     private final GameObject mHostingUi;
     private final GameObject mJoiningUi;
     private final Reference<NetworkManager> mNetworkManager;
@@ -221,6 +220,59 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mJoiningUi.setEnabled(false);
                                 }));
 
+        UIManager.getInstance()
+                .buildVerticalUi(
+                        mFailedToForwardUi,
+                        0.05f,
+                        0,
+                        0.2f,
+                        new UITextRect("Automatic port forwarding failed!"),
+                        new UITextRect(
+                                "To play online, please ensure port 17569 is opened and points to your local IP"),
+                        new UIButton(
+                                "Continue anyway",
+                                (__, ___) -> {
+                                    String ip = UPnP.getExternalIPAddress();
+                                    LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
+                                    mNetworkManager
+                                            .get()
+                                            .createServer(
+                                                    PORT,
+                                                    this::onClientLoaded,
+                                                    this::onGameStarted,
+                                                    (____) -> {
+                                                        UPnP.deletePortMapping(PORT, "TCP");
+                                                        mHostingUi.setEnabled(false);
+                                                        mHostUi.setEnabled(true);
+                                                    });
+                                    mHostingUi.setEnabled(true);
+                                }),
+                        new UIButton(
+                                "Try override",
+                                (__, ___) -> {
+                                    UPnP.addPortMapping(PORT, "TCP");
+                                    String ip = UPnP.getExternalIPAddress();
+                                    LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
+                                    mNetworkManager
+                                            .get()
+                                            .createServer(
+                                                    PORT,
+                                                    this::onClientLoaded,
+                                                    this::onGameStarted,
+                                                    (____) -> {
+                                                        UPnP.deletePortMapping(PORT, "TCP");
+                                                        mHostingUi.setEnabled(false);
+                                                        mHostUi.setEnabled(true);
+                                                    });
+                                    mHostingUi.setEnabled(true);
+                                }),
+                        new UIButton(
+                                "Cancel",
+                                (__, ___) -> {
+                                    mHostUi.setEnabled(true);
+                                    mFailedToForwardUi.setEnabled(false);
+                                }));
+
         buildJoinUi();
         buildHostUi();
         buildServerList();
@@ -312,7 +364,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         mJoiningUi.setEnabled(true);
                                                         mServerListUi.setEnabled(false);
                                                     } else {
-                                                        LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+                                                        LobbyAPI.getAllHostsAsync(
+                                                                this::onGetAllHosts);
                                                     }
                                                 },
                                                 this::onHostStartGame,
@@ -355,14 +408,18 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Join with ID",
                                 (button, ___) -> {
                                     button.getLabelText().get().setText("Connecting...");
-                                    LobbyAPI.getHostById(inputBox.getInput(),
+                                    LobbyAPI.getHostById(
+                                            inputBox.getInput(),
                                             (response, success) -> {
                                                 if (success) {
                                                     JSONParser parser = new JSONParser();
                                                     try {
-                                                        JSONObject obj = (JSONObject) parser.parse(response);
-                                                        String ip = (String)obj.get("address");
-                                                        int port = Math.toIntExact((Long) obj.get("port"));
+                                                        JSONObject obj =
+                                                                (JSONObject) parser.parse(response);
+                                                        String ip = (String) obj.get("address");
+                                                        int port =
+                                                                Math.toIntExact(
+                                                                        (Long) obj.get("port"));
                                                         mNetworkManager
                                                                 .get()
                                                                 .createClient(
@@ -370,22 +427,36 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                         port,
                                                                         (manager, netID) -> {
                                                                             if (netID >= 0) {
-                                                                                mJoiningUi.setEnabled(true);
-                                                                                mServerListUi.setEnabled(false);
+                                                                                mJoiningUi
+                                                                                        .setEnabled(
+                                                                                                true);
+                                                                                mServerListUi
+                                                                                        .setEnabled(
+                                                                                                false);
                                                                             } else {
-                                                                                LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+                                                                                LobbyAPI
+                                                                                        .getAllHostsAsync(
+                                                                                                this
+                                                                                                        ::onGetAllHosts);
                                                                             }
                                                                         },
                                                                         this::onHostStartGame,
                                                                         () -> {
-                                                                            LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
-                                                                            mJoiningUi.setEnabled(false);
-                                                                            mServerListUi.setEnabled(true);
+                                                                            LobbyAPI
+                                                                                    .getAllHostsAsync(
+                                                                                            this
+                                                                                                    ::onGetAllHosts);
+                                                                            mJoiningUi.setEnabled(
+                                                                                    false);
+                                                                            mServerListUi
+                                                                                    .setEnabled(
+                                                                                            true);
                                                                         });
 
                                                     } catch (ParseException e) {
                                                         e.printStackTrace();
-                                                        log.warning("Failed to parse response from get host by id");
+                                                        log.warning(
+                                                                "Failed to parse response from get host by id");
                                                     }
                                                 }
                                             });
@@ -395,10 +466,6 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, uiElements);
 
         mServerListUi.addChild(mServerList.get());
-    }
-
-    private void buildFailedToForwardUi() {
-
     }
 
     /** Builds the "Host" section of the UI. */
@@ -412,22 +479,26 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Host public lobby",
                                 (__, ___) -> {
-                                    UPnP.addPortMapping(PORT, "TCP");
-                                    String ip = UPnP.getExternalIPAddress();
-                                    LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        UPnP.deletePortMapping(PORT, "TCP");
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
-                                    mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
+                                    if (!UPnP.isPortAvailable(PORT, "TCP")
+                                            || !UPnP.addPortMapping(PORT, "TCP")) {
+                                        mFailedToForwardUi.setEnabled(true);
+                                    } else {
+                                        String ip = UPnP.getExternalIPAddress();
+                                        LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
+                                        mNetworkManager
+                                                .get()
+                                                .createServer(
+                                                        PORT,
+                                                        this::onClientLoaded,
+                                                        this::onGameStarted,
+                                                        (____) -> {
+                                                            UPnP.deletePortMapping(PORT, "TCP");
+                                                            mHostingUi.setEnabled(false);
+                                                            mHostUi.setEnabled(true);
+                                                        });
+                                        mHostingUi.setEnabled(true);
+                                    }
                                 }),
                         new UIButton(
                                 "Host locally",

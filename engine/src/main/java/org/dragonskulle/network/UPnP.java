@@ -148,10 +148,6 @@ public class UPnP {
         if (!sInitialised) {
             return false;
         }
-        if (!isPortAvailable(port, protocol)) {
-            log.info("Port " + port + " is not available for port forwarding");
-            return false;
-        }
         if (protocol.equals("BOTH")) {
             return addPortMapping(port, "TCP") & addPortMapping(port, "UDP");
         }
