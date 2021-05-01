@@ -250,15 +250,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         HexagonTile selected = map.cursorToTile();
         if (selected == null) return;
 
+        // If in attacking mode, do its own thing.
         if (mCurrentScreen == Screen.ATTACKING_SCREEN) {
             attackSelect(selected);
             return;
         }
 
         mHexChosen = selected;
-
-        // Do not swap screens.
-        // if (mCurrentScreen == Screen.ATTACKING_SCREEN) return;
 
         if (mHexChosen.hasBuilding()) {
             Building building = mHexChosen.getBuilding();

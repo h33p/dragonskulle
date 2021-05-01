@@ -85,9 +85,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /** This Is how often a player can attack. */
-    public static final float ATTACK_COOLDOWN = 2f;
+    private static final float ATTACK_COOLDOWN = 2f;
     /** When the last time a player attacked. */
-    @Getter private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
+    private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
     private static final int TOKEN_RATE = 2;
@@ -428,12 +428,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (!Reference.isValid(building)) {
             log.warning("Unable to create building: Reference to Building component is invalid.");
             return null;
-        }
-
-        // TODO: Increase AI view distance.
-        if (true) {
-            // building.get().getViewDistance().setLevel(5);
-            // building.get().getAttack().setLevel(5);
         }
 
         return building.get();

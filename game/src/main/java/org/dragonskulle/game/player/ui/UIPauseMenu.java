@@ -208,11 +208,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                                             0.1f,
                                             0.9f,
                                             mEndGameRect,
-                                            new UIButton(
-                                                    "View Map",
-                                                    (__, ___) -> {
-                                                        setPaused(false);
-                                                    }),
+                                            new UIButton("View Map", (__, ___) -> setPaused(false)),
                                             new UIButton("Quit", (__, ___) -> onClickQuit()));
                         });
 

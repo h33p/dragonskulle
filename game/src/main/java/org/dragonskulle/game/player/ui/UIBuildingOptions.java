@@ -203,7 +203,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     }
 
     /**
-     * Sets the visible descriptors.
+     * Sets the visible descriptor.
      *
      * @param descriptor the descriptor
      */

@@ -23,11 +23,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of placing a new {@link Building}. */
     protected float mBuildProbability = 0.65f;
     /** Probability of upgrading an owned {@link Building}. */
-    protected float mUpgradeProbability = 0.15f;
+    protected float mUpgradeProbability = 0.155f;
     /** Probability of attacking an opponent {@link Building}. */
     protected float mAttackProbability = 0.19f;
     /** Probability of selling an owned {@link Building}. */
-    protected float mSellProbability = 0.01f;
+    protected float mSellProbability = 0.005f;
 
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
@@ -262,20 +262,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         if (buildings.size() == 0) return false;
 
         int index = mRandom.nextInt(buildings.size());
-        final int end = index;
-        do {
-            Building defender = buildings.get(index);
-            if (defender != null) {
-                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
-                return true;
-            }
-
-            // Go to the next stat.
-            index++;
-            if (index >= buildings.size()) {
-                index = 0;
-            }
-        } while (index != end);
+        Building defender = buildings.get(index);
+        if (defender != null) {
+            getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+            return true;
+        }
 
         return false;
     }
