@@ -46,7 +46,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             if (addBuilding()) {
                 return;
-            } else if (attack()) {
+            } else if (!getPlayer().inCooldown() && attack()) {
                 return;
             } else {
                 upgradeBuilding();
@@ -249,6 +249,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             // Gets the defending and attacking buildings
             int buildingChoice = mRandom.nextInt(builds.size());
             Building defender = builds.stream().skip(buildingChoice).findFirst().orElse(null);
+            if(defender == null) return false;
             getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
 
             return true;
