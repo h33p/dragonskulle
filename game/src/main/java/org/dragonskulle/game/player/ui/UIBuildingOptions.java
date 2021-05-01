@@ -35,17 +35,21 @@ import org.dragonskulle.ui.UITextRect;
 @Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
-    private List<BuildingDescriptor> mBuildingsCanPlace;
+	private List<BuildingDescriptor> mBuildingsCanPlace;
     @Setter private BuildingDescriptor mSelectedBuildingDescriptor;
-    @Setter @Getter private Reference<UITextRect> mDescriptorTextRef = new Reference<>(null);
-    private Reference<GameObject> mPossibleBuildingComponent;
     @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
-    @Setter private Reference<GameObject> mVisibleDescriptorHint = new Reference<>(null);
     @Getter private final UIShopSection mParent;
     private Reference<Player> mPlayerReference;
     @Getter @Setter private int mTokens = 0;
 
+    // Sued for the descriptors:
+    private Reference<UITextRect> mNameRef;
+	private Reference<UITextRect> mAttackRef;
+	private Reference<UITextRect> mDefenceRef;
+	private Reference<UITextRect> mTokenRef;
+	private Reference<UITextRect> mCostRef;
+    
     /**
      * Constructor.
      *
@@ -66,70 +70,78 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
 
-        mPossibleBuildingComponent =
-                getGameObject()
-                        .buildChild(
-                                "possible_buildings",
-                                new TransformUI(),
-                                (self) -> {
-                                    UIManager manager = UIManager.getInstance();
-                                    mBuildingsCanPlace = PredefinedBuildings.getAll();
-                                    mBuildingsCanPlaceButtons =
-                                            mBuildingsCanPlace.stream()
-                                                    .map(this::buildPredefinedBuildingBox)
-                                                    .collect(Collectors.toList());
-
-                                    manager.buildGridUI(
-                                            self,
-                                            3,
-                                            0.07f,
-                                            0.2f,
-                                            0.35f + 0.6f,
-                                            0.3f,
-                                            mBuildingsCanPlaceButtons);
-
-                                    self.buildChild(
-                                            "build_selected_tile",
-                                            new TransformUI(true),
-                                            (me) -> {
-                                                UIButton button =
-                                                        new UIButton("Build", this::buildOnClick);
-                                                me.addComponent(button);
-                                                TransformUI transformUI =
-                                                        me.getTransform(TransformUI.class);
-                                                transformUI.setParentAnchor(
-                                                        0.16f, 1.08f, 0.86f, 1.08f + 0.25f);
-                                            });
-                                });
-
         getGameObject()
                 .buildChild(
-                        "descriptor_hint",
+                        "possible_buildings",
                         new TransformUI(),
                         (self) -> {
-                            TransformUI hintTransform = self.getTransform(TransformUI.class);
-                            hintTransform.setParentAnchor(0.05f, -0.35f, 1f - 0.05f, -0.35f + 0.5f);
+                            UIManager manager = UIManager.getInstance();
+                            mBuildingsCanPlace = PredefinedBuildings.getAll();
+                            mBuildingsCanPlaceButtons =
+                                    mBuildingsCanPlace.stream()
+                                            .map(this::buildPredefinedBuildingBox)
+                                            .collect(Collectors.toList());
 
-                            BuildingDescriptor descriptor = PredefinedBuildings.BASE;
-                            UITextRect component =
-                                    new UITextRect(
-                                            String.format(
-                                                    "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Level: %d\nCost: %d",
-                                                    descriptor.getName().toUpperCase(),
-                                                    descriptor.getAttack(),
-                                                    descriptor.getDefence(),
-                                                    descriptor.getTokenGenerationLevel(),
-                                                    descriptor.getCost()));
-                            component.setRectTexture(
-                                    UIManager.getInstance()
-                                            .getAppearance()
-                                            .getHintTexture()
-                                            .clone());
-                            self.addComponent(component);
-                            setDescriptorTextRef(component.getReference(UITextRect.class));
+                            manager.buildGridUI(
+                                    self,
+                                    3,
+                                    0.07f,
+                                    0.2f,
+                                    0.35f + 0.6f,
+                                    0.3f,
+                                    mBuildingsCanPlaceButtons);
+
+                            self.buildChild(
+                                    "build_selected_tile",
+                                    new TransformUI(true),
+                                    (me) -> {
+                                        UIButton button =
+                                                new UIButton("Build", this::buildOnClick);
+                                        me.addComponent(button);
+                                        TransformUI transformUI =
+                                                me.getTransform(TransformUI.class);
+                                        transformUI.setParentAnchor(
+                                                0.16f, 1.08f, 0.86f, 1.08f + 0.25f);
+                                    });
                         });
+
+        
+        BuildingDescriptor descriptor = PredefinedBuildings.BASE;         
+        
+        UITextRect nameComponent = new UITextRect(descriptor.getName().toUpperCase());
+        mNameRef = nameComponent.getReference(UITextRect.class);
+        TransformUI nameTransform = generateDescriptor(nameComponent, "descriptor_name");
+        nameTransform.setParentAnchor(0.05f, -0.37f, 1f - 0.05f, -0.37f + 0.1f);
+        
+        UITextRect attackComponent = new UITextRect("Attack: " + descriptor.getAttack());
+        mAttackRef = attackComponent.getReference(UITextRect.class);
+        TransformUI attackTransform = generateDescriptor(attackComponent, "descriptor_attack");
+        attackTransform.setParentAnchor(0.05f, -0.25f, 1f - 0.05f, -0.25f + 0.1f);
+        
+        UITextRect defenceComponent = new UITextRect("Defence: " + descriptor.getDefence());
+        mDefenceRef = defenceComponent.getReference(UITextRect.class);
+        TransformUI defenceTransform = generateDescriptor(defenceComponent, "descriptor_defence");
+        defenceTransform.setParentAnchor(0.05f, -0.15f, 1f - 0.05f, -0.15f + 0.1f);
+        
+        UITextRect tokenComponent = new UITextRect("Generation: " + descriptor.getTokenGenerationLevel());
+        mTokenRef = tokenComponent.getReference(UITextRect.class);
+        TransformUI tokenTransform = generateDescriptor(tokenComponent, "descriptor_token");
+        tokenTransform.setParentAnchor(0.05f, -0.05f, 1f - 0.05f, -0.05f + 0.1f);
+        
+        UITextRect costComponent = new UITextRect("COST: " + descriptor.getCost());
+        mCostRef = costComponent.getReference(UITextRect.class);
+        TransformUI costTransform = generateDescriptor(costComponent, "descriptor_cost");
+        costTransform.setParentAnchor(0.05f, 0.07f, 1f - 0.05f, 0.07f + 0.1f);
     }
 
+    private TransformUI generateDescriptor(UITextRect component, String objectName) {    	
+    	GameObject object = new GameObject(objectName, new TransformUI());
+    	object.addComponent(component);
+    	getGameObject().addChild(object);
+    	
+    	return object.getTransform(TransformUI.class);
+    }
+    
     /**
      * Build a graphic from a building descriptor.
      *
@@ -147,7 +159,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                     mPreviousLock.get().setLockPressed(false);
                                 }
                                 if (!mSelectedBuildingDescriptor.equals(descriptor)) {
-                                    showDescriptorHint(descriptor);
+                                    showDescriptor(descriptor);
                                 }
                                 setPreviousLock(me.getReference(UIButton.class));
                                 setSelectedBuildingDescriptor(descriptor);
@@ -191,30 +203,27 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     }
 
     /**
-     * Sets the visible descriptor in the 'hint'ish box.
+     * Sets the visible descriptors.
      *
      * @param descriptor the descriptor
      */
-    private void showDescriptorHint(BuildingDescriptor descriptor) {
-        log.info("showing hint");
-        Reference<UITextRect> descriptorTextRef = getDescriptorTextRef();
-        if (Reference.isValid(descriptorTextRef)) {
-            Reference<UIText> labelText = descriptorTextRef.get().getLabelText();
-            if (Reference.isValid(labelText)) {
-                String txt =
-                        String.format(
-                                "%s\nAttack: %d\nDefence: %d\nToken Generation: %d\nCost: %d",
-                                descriptor.getName().toUpperCase(),
-                                descriptor.getAttack(),
-                                descriptor.getDefence(),
-                                descriptor.getTokenGenerationLevel(),
-                                descriptor.getCost());
-
-                labelText.get().setText(txt);
-            }
-        }
+    private void showDescriptor(BuildingDescriptor descriptor) {    	
+    	updateDescriptor(mNameRef, descriptor.getName().toUpperCase());
+    	updateDescriptor(mAttackRef, "Attack: " + descriptor.getAttack());
+    	updateDescriptor(mDefenceRef, "Defence: " + descriptor.getDefence());
+    	updateDescriptor(mTokenRef, "Generation: " + descriptor.getTokenGenerationLevel());
+    	updateDescriptor(mCostRef, "COST: " + descriptor.getCost());
     }
 
+    private void updateDescriptor(Reference<UITextRect> box, String text) {
+    	if(Reference.isValid(box)) {
+    		Reference<UIText> label = box.get().getLabelText();
+    		if (Reference.isValid(label)) {
+    			label.get().setText(text);
+    		}
+    	}
+    }
+    
     @Override
     public void fixedUpdate(float deltaTime) {
         ensurePlayerReference();
