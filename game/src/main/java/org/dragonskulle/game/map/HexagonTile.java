@@ -17,6 +17,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.TileProp;
 import org.dragonskulle.game.map.HexagonTileStore.TileToStoreActions;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
@@ -32,7 +33,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 @Log
 @Accessors(prefix = "m")
 public class HexagonTile implements INetSerializable {
-
+    @Setter private TileProp mProp = null;
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
     /** Describes a template for land hex tile. */
@@ -49,6 +50,10 @@ public class HexagonTile implements INetSerializable {
     /** Describes a template for water hex tile. */
     static final GameObject MOUNTAIN_TILE =
             TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
+
+    public boolean hasProp() {
+        return mProp != null;
+    }
 
     public static enum TileType {
         LAND((byte) 0),

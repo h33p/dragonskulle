@@ -203,7 +203,7 @@ public class SyncStat extends SyncInt {
         if (!Reference.isValid(mBuilding)) {
             return;
         }
-        mBuilding.get().afterStatChange();
+        mBuilding.get().afterStatChange(this.getType());
     }
 
     /**

@@ -299,9 +299,21 @@ public class Building extends NetworkableComponent
         if (!isCapital()) assignMesh();
 
         setStatsRequireVisualUpdate();
+    }
 
-        if (Reference.isValid(mBuildingProps)) mBuildingProps.get().onStatChange();
-        ;
+    /**
+     * Ensures that changes to stats are reflected in the building.
+     *
+     * <ul>
+     *   <li><b>Needs to manually be called on the server</b> after stats have been changed.
+     *   <li>Automatically called on the client via {@link SyncStat}s.
+     * </ul>
+     *
+     * @param type the stat which has been updated individually
+     */
+    public void afterStatChange(StatType type) {
+        afterStatChange();
+        if (Reference.isValid(mBuildingProps)) mBuildingProps.get().onStatChange(type);
     }
 
     private void assignMesh() {

@@ -65,7 +65,7 @@ public class AttackTest {
 
         stat.set(SyncStat.LEVEL_MAX);
         // Update the building on the server.
-        mAttacker.afterStatChange();
+        mAttacker.afterStatChange(stat.getType());
 
         float percentageOfWins = runAttack(mAttacker, mDefender);
 
@@ -81,7 +81,7 @@ public class AttackTest {
 
         stat.set(SyncStat.LEVEL_MAX);
         // Update the building on the server.
-        mDefender.afterStatChange();
+        mDefender.afterStatChange(stat.getType());
 
         float percentageOfWins = runAttack(mAttacker, mDefender);
 

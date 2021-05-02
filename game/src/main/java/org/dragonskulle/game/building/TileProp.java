@@ -2,21 +2,28 @@
 package org.dragonskulle.game.building;
 
 import lombok.extern.java.Log;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Transform3D;
+import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.building.stat.StatType;
-import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.components.Renderable;
-import org.dragonskulle.renderer.materials.PBRMaterial;
-import org.joml.Vector4f;
 
 @Log
 public class TileProp extends Component implements IOnStart {
     private StatType mType;
-    private Reference<Renderable> mRenderable;
+    private Reference<GameObject> mMesh;
+
+    /** Prop templates, used to distinguish the buildings stat values. */
+    private static final Resource<GLTF> sPropTemplates = GLTF.getResource("prop_templates");
+
+    private final GLTF mGltf;
 
     public TileProp(StatType type) {
+        mGltf = sPropTemplates.get();
+
         mType = type;
     }
 
@@ -25,59 +32,49 @@ public class TileProp extends Component implements IOnStart {
 
     @Override
     public void onStart() {
-        Renderable renderable = getRenderableForType();
-        getGameObject().addComponent(renderable);
+        getGameObject().addChild(getMeshForType());
         log.info("created prop renderable");
     }
 
-    private Renderable getRenderableForType() {
-        Renderable renderable = null;
+    private GameObject getMeshForType() {
+        GameObject mesh = null;
         switch (mType) {
             case ATTACK:
-                renderable =
-                        new Renderable(Mesh.CUBE, new PBRMaterial(new Vector4f(1f, 0f, 0f, 0.5f)));
+                mesh =
+                        GameObject.instantiate(
+                                mGltf.getDefaultScene().findRootObject("attack_prop"));
                 break;
             case DEFENCE:
-                renderable =
-                        new Renderable(Mesh.CUBE, new PBRMaterial(new Vector4f(0f, 1f, 0f, 0.5f)));
+                mesh =
+                        GameObject.instantiate(
+                                mGltf.getDefaultScene().findRootObject("defence_prop"));
                 break;
             case TOKEN_GENERATION:
-                renderable =
-                        new Renderable(Mesh.CUBE, new PBRMaterial(new Vector4f(0f, 0f, 1f, 0.5f)));
+                mesh =
+                        GameObject.instantiate(
+                                mGltf.getDefaultScene().findRootObject("token_generation_prop"));
                 break;
         }
-        assert renderable != null;
-        mRenderable = renderable.getReference(Renderable.class);
-        return renderable;
+        assert mesh != null;
+        mMesh = mesh.getReference();
+        return mesh;
     }
 
-    public void updateProp() {
+    public void updateProp(int value) {
+        // TODO will change to update the prop depending on the value
         log.info("should update prop");
-        if (Reference.isValid(mRenderable)) {
-            PBRMaterial material = mRenderable.get().getMaterial(PBRMaterial.class);
-            Vector4f colour = material.getColour();
-            Renderable newRenderable = null;
-            switch (mType) {
-                case ATTACK:
-                    colour.add(0.2f, 0f, 0f, 0f);
-                    newRenderable = new Renderable(Mesh.CUBE, new PBRMaterial(colour));
-                    break;
-                case DEFENCE:
-                    colour.add(0f, 0.2f, 0f, 0f);
-                    newRenderable = new Renderable(Mesh.CUBE, new PBRMaterial(colour));
-                    break;
-                case TOKEN_GENERATION:
-                    colour.add(0f, 0f, 0.2f, 0f);
-                    newRenderable = new Renderable(Mesh.CUBE, new PBRMaterial(colour));
-                    break;
-            }
-            if (newRenderable != null) swapRenderable(newRenderable);
+        GameObject material = mMesh.get();
+        Transform3D tran = material.getTransform(Transform3D.class);
+        switch (mType) {
+            case ATTACK:
+                tran.translate(0f, 0f, 0.3f);
+                break;
+            case DEFENCE:
+                tran.translate(0f, 0f, 0.3f);
+                break;
+            case TOKEN_GENERATION:
+                tran.translate(0f, 0f, 0.3f);
+                break;
         }
-    }
-
-    private void swapRenderable(Renderable newRenderable) {
-        mRenderable.get().destroy();
-        getGameObject().addComponent(newRenderable);
-        mRenderable = newRenderable.getReference(Renderable.class);
     }
 }
