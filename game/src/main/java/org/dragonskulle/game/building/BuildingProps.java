@@ -48,7 +48,6 @@ public class BuildingProps extends Component {
 
         for (HexagonTile tile : claimedTiles) {
 
-
             mMap.getGameObject()
                     .addChild(GameObject.instantiate(mProps, new TransformHex(tile.getQ(),tile.getR(), 2)));
         }
