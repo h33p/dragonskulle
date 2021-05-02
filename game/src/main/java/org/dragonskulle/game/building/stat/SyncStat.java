@@ -1,16 +1,16 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building.stat;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.network.components.sync.SyncInt;
-
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * Stores a level and calculates the stat's value from this.
@@ -30,6 +30,20 @@ public class SyncStat extends SyncInt {
 
     /** The cost of upgrading a stat if there is an error. */
     private static final int sErrorCost = 9999;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SyncStat syncStat = (SyncStat) o;
+        return mType == syncStat.mType && getValue() == syncStat.getValue();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mType);
+    }
 
     /** An interface for getting the value of a stat at a given level. */
     public static interface IValueCalculator extends Serializable {
@@ -98,19 +112,37 @@ public class SyncStat extends SyncInt {
     }
 
     /**
-     * Get whether the stat is able to be upgraded at this point in time.
+     * Get whether the stat is able to be upgraded at the current time.
      *
      * <p>Will be {@code false} if:
      *
      * <ul>
      *   <li>It is impossible to upgrade the stat (as its value is fixed).
-     *   <li>The current level is at the {@link #LEVEL_MAX}.
+     *   <li>The current level is equal to {@link #LEVEL_MAX}.
      * </ul>
      *
      * @return {@code true} if the stat is able to be further upgraded; otherwise {@code false}.
      */
     public boolean isUpgradeable() {
-        return (mType.isFixedValue()) ? false : getLevel() < LEVEL_MAX;
+        return !(isFixed() || isMaxLevel());
+    }
+
+    /**
+     * Checks if the Stat is a fixed value.
+     *
+     * @return true if fixed
+     */
+    public boolean isFixed() {
+        return mType.isFixedValue();
+    }
+
+    /**
+     * Checks if the Stat is equal to it's maximum level.
+     *
+     * @return true if equal
+     */
+    public boolean isMaxLevel() {
+        return getLevel() == LEVEL_MAX;
     }
 
     /**
@@ -171,13 +203,13 @@ public class SyncStat extends SyncInt {
         if (!Reference.isValid(mBuilding)) {
             return;
         }
-
+        mBuilding.get().afterStatChange();
     }
 
     /**
+     * @return The level.
      * @deprecated Please use #getLevel() for clarity.
      *     <p>Get the stat's current level.
-     * @return The level.
      */
     @Override
     public int get() {
