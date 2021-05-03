@@ -83,7 +83,7 @@ public class Graph {
 
         int nodeNum = getHash(tile);
         // log.info("Node num: " + nodeNum);
-        log.severe("Node number: " + nodeNum + " Q: " + tile.getQ() + " R: " + tile.getR());
+        log.fine("Node number: " + nodeNum + " Q: " + tile.getQ() + " R: " + tile.getR());
 
         addNode(nodeNum, tile);
         int heuristic = tile.distTo(target.getQ(), target.getR());
@@ -105,7 +105,7 @@ public class Graph {
         }
 
         int nodeNum = getHash(tile);
-        log.info("Node num: " + nodeNum);
+        log.fine("Node num: " + nodeNum);
         ArrayList<HexagonTile> neighbourTilesList = new ArrayList<HexagonTile>();
 
         List<HexagonTile> neighbourTiles =

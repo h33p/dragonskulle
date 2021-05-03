@@ -63,6 +63,8 @@ public class ArcPath extends Component implements IFrameUpdate {
             float zmul = 2 * off - 1;
             tmp.z += -amplitude * zmul * zmul + amplitude;
             mTransform.setPosition(tmp);
+            mTransform.setScale(1, 1, 1);
+            mTransform.setRotation(0, 0, 0);
 
             if (Reference.isValid(arcHandler)) {
                 arcHandler.get().handle(id, off, mTransform);

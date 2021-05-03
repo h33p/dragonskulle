@@ -51,6 +51,8 @@ public class App implements NativeResource {
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
 
+    public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
+
     public static final float MENU_BASEWIDTH = 0.2f;
 
     /**

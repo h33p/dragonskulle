@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -16,8 +15,8 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameState.IGameEndEvent;
 import org.dragonskulle.game.building.Building;
@@ -174,10 +173,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     private boolean mArcFadeOut = false;
 
-    static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
-
     static final GameObject SELECTION_TEMPLATE =
-            TEMPLATES.get().getDefaultScene().findRootObject("selection_sphere");
+            App.TEMPLATES.get().getDefaultScene().findRootObject("selection_sphere");
 
     /**
      * Create a {@link HumanPlayer}.

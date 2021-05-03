@@ -179,6 +179,7 @@ public class Scene {
      */
     protected ArrayList<Component> getEnabledComponents() {
         return mComponents.stream()
+                .filter(component -> component.getGameObject() != null)
                 .filter(component -> component.getGameObject().isEnabled())
                 .filter(Component::isEnabled)
                 .collect(Collectors.toCollection(ArrayList::new));

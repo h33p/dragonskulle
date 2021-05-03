@@ -38,7 +38,8 @@
                 4,
                 5,
                 8,
-                9
+                9,
+                10
             ]
         }
     ],
@@ -244,6 +245,15 @@
             },
             "mesh" : 7,
             "name" : "selection_sphere"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 8,
+            "name" : "attack_ball"
         }
     ],
     "materials" : [
@@ -362,6 +372,25 @@
                 "metallicFactor" : 0,
                 "roughnessFactor" : 0.5
             }
+        },
+        {
+            "doubleSided" : true,
+            "emissiveFactor" : [
+                0.6859572529792786,
+                0.16542309522628784,
+                0
+            ],
+            "name" : "Emissive Fire",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.8000000715255737,
+                    0.03882841020822525,
+                    0,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.25
+            }
         }
     ],
     "meshes" : [
@@ -474,6 +503,20 @@
                     },
                     "indices" : 29,
                     "material" : 7
+                }
+            ]
+        },
+        {
+            "name" : "Icosphere",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 30,
+                        "NORMAL" : 31,
+                        "TEXCOORD_0" : 32
+                    },
+                    "indices" : 33,
+                    "material" : 8
                 }
             ]
         }
@@ -738,6 +781,40 @@
             "componentType" : 5123,
             "count" : 2880,
             "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 30,
+            "componentType" : 5126,
+            "count" : 3840,
+            "max" : [
+                0.22135671973228455,
+                0.21775536239147186,
+                0.22533288598060608
+            ],
+            "min" : [
+                -0.23410259187221527,
+                -0.22508639097213745,
+                -0.23015393316745758
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 31,
+            "componentType" : 5126,
+            "count" : 3840,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 32,
+            "componentType" : 5126,
+            "count" : 3840,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 33,
+            "componentType" : 5123,
+            "count" : 3840,
+            "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
@@ -890,11 +967,31 @@
             "buffer" : 0,
             "byteLength" : 5760,
             "byteOffset" : 52912
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 46080,
+            "byteOffset" : 58672
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 46080,
+            "byteOffset" : 104752
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 30720,
+            "byteOffset" : 150832
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 7680,
+            "byteOffset" : 181552
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 58672,
+            "byteLength" : 189232,
             "uri" : "templates.bin"
         }
     ]
