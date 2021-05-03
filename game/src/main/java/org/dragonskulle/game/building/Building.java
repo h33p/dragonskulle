@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -84,6 +85,9 @@ public class Building extends NetworkableComponent
 
     /** Building templates, used to distinguish the buildings. */
     private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
+
+    /** Store a random number generator. */
+    private Random mRandom = new Random();
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -569,16 +573,16 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get a {@link ArrayList} of opponent {@link Building}s that neighbour our tiles.
+     * Get a {@link Set} of opponent {@link Building}s that neighbour our tiles.
      *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
-    public ArrayList<Building> getAttackableBuildings() {
+    public Set<Building> getAttackableBuildings() {
         if (mAttackableTiles.isEmpty()) {
             generateTileLists();
         }
 
-        ArrayList<Building> attackableBuildings = new ArrayList<>();
+        HashSet<Building> attackableBuildings = new HashSet<>();
 
         Player owner = getOwner();
 
@@ -591,6 +595,50 @@ public class Building extends NetworkableComponent
                 });
 
         return attackableBuildings;
+    }
+
+    /**
+     * Get a random attackable opponent {@link Building}.
+     *
+     * @return An opponent Building that can be attacked from this Building; otherwise {@code null}.
+     */
+    public Building getRandomAttackableBuilding() {
+        // Attempt to generate the attackable tiles if they don't exist.
+        if (mAttackableTiles.isEmpty()) {
+            generateTileLists();
+        }
+
+        // If the tiles are still empty, there are no Buildings.
+        if (mAttackableTiles.isEmpty()) return null;
+
+        Player owner = getOwner();
+        if (owner == null) return null;
+
+        // Start at a random point in the list of attackable tiles.
+        int index = mRandom.nextInt(mAttackableTiles.size());
+        final int end = index;
+
+        // Go through the tiles, starting at index and looping round, trying to find an attackable
+        // building.
+        do {
+            HexagonTile tile = mAttackableTiles.get(index);
+
+            if (tile != null && tile.hasBuilding()) {
+                Building building = tile.getBuilding();
+                // Ensure the current player doesn't own the building.
+                if (!owner.isBuildingOwner(building)) {
+                    return building;
+                }
+            }
+
+            // Go to the next tile.
+            index++;
+            if (index >= mAttackableTiles.size()) {
+                index = 0;
+            }
+        } while (index != end);
+
+        return null;
     }
 
     /**

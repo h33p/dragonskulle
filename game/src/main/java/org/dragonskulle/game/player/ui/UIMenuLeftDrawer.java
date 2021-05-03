@@ -25,6 +25,7 @@ import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
+import org.dragonskulle.utils.TextUtils;
 
 /**
  * The menu drawer on the left side of the screen.
@@ -253,7 +254,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         menu.addChild(costObject);
 
         // Add an attack info label.
-        UITextRect attackInfo = new UITextRect("Chance: ------");
+        UITextRect attackInfo = new UITextRect(TextUtils.constructField("Chance", "------", 27));
         mAttackInfo = attackInfo.getReference(UITextRect.class);
 
         GameObject attackInfoObject =
@@ -710,7 +711,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (!Reference.isValid(text)) return;
 
         if (player.isBuildingOwner(defender)) {
-            text.get().setText("Chance: ------");
+            text.get().setText(TextUtils.constructField("Chance", "------", 27));
             return;
         }
 
@@ -731,7 +732,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             output = "HIGH";
         }
 
-        text.get().setText(String.format("Chance: %s", output));
+        text.get().setText(TextUtils.constructField("Chance", output, 27));
     }
 
     private void updateAttackConfirmButton() {
@@ -779,6 +780,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
     }
 
+    /** Exit attack mode if you can't attack. */
     private void checkAttackMode() {
         if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 

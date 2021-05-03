@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Random;
@@ -377,17 +376,15 @@ public class AimerAi extends AiPlayer {
 
         // Goes through the ownedBuildings
         while (true) {
-            Reference<Building> building = ownedBuildings.get(index);
+            Reference<Building> buildingReference = ownedBuildings.get(index);
 
             // Checks the building is valid
-            if (Reference.isValid(building)
-                    && building.get().getAttackableBuildings().size() != 0) {
-                // Check
+            if (Reference.isValid(buildingReference)) {
+                Building buildingToAim = buildingReference.get().getRandomAttackableBuilding();
 
-                ArrayList<Building> attackableBuildings = building.get().getAttackableBuildings();
-                Building buildingToAim =
-                        attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
-                return buildingToAim.getOwner();
+                if (buildingToAim != null) {
+                    return buildingToAim.getOwner();
+                }
             }
             index++;
 

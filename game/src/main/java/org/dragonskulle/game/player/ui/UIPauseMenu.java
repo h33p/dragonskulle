@@ -66,7 +66,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     private GameObject mQuitConfirmContainer;
     /** Used to grey out the background. */
     private UIRenderable mBackground;
-    /** Text displayed at the end screen. */
+    /** TextUtils displayed at the end screen. */
     private UITextRect mEndGameRect;
 
     /** Stores the {@link Screen} the {@link HumanPlayer} was previously on. */
