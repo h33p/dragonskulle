@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.input.Action;
+import org.dragonskulle.input.Cursor;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -387,6 +388,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                             if (mOnClick != null) {
                                 mOnClick.eventHandler(this, deltaTime);
                             }
+                            Cursor.setCursor(CursorType.DEFAULT);
                         }
                     } else if (!mLastMouseDown) {
                         mPressedDown = true;
@@ -394,6 +396,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                         if (mAppearance.getOnPressDown() != null) {
                             mAppearance.getOnPressDown().eventHandler(this, deltaTime);
                         }
+                        Cursor.setCursor(CursorType.INCLICK);
                         if (mOnPressDown != null) {
                             mOnPressDown.eventHandler(this, deltaTime);
                         }
@@ -407,8 +410,11 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                     mouseDown = false;
                 }
 
-                if (!mLastHovered && mOnHover != null) {
-                    mOnHover.eventHandler(this, deltaTime);
+                if (!mLastHovered) {
+                    Cursor.setCursor(CursorType.HOVER);
+                    if (mOnHover != null) {
+                        mOnHover.eventHandler(this, deltaTime);
+                    }
                 }
 
                 mLastHovered = true;
@@ -417,8 +423,11 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                     mWhileHover.eventHandler(this, deltaTime);
                 }
             } else {
-                if (mLastHovered && mOffHover != null) {
-                    mOffHover.eventHandler(this, deltaTime);
+                if (mLastHovered) {
+                    Cursor.setCursor(CursorType.DEFAULT);
+                    if (mOffHover != null) {
+                        mOffHover.eventHandler(this, deltaTime);
+                    }
                 }
 
                 mLastHovered = false;

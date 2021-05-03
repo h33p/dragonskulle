@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
-import java.io.IOException;
 import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
@@ -13,15 +12,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.settings.Settings;
-import org.dragonskulle.ui.BuildHandlerInfo;
-import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIDropDown;
-import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.*;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
-import org.dragonskulle.ui.UISlider;
-import org.dragonskulle.ui.UIText;
-import org.dragonskulle.ui.UITextRect;
 
 /**
  * A component that displays a settings menu.
@@ -216,12 +208,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         0.01f,
                         (__, value) -> { // on slider change
                             settingsInstance.saveValue(Cursor.SETTINGS_STRING, value);
-                            try {
-                                Cursor.setCustomCursor(
-                                        Engine.getInstance().getGLFWState().getWindow(), value);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            Cursor.setCustomCursor(CursorType.DEFAULT);
                         },
                         (__, ___) -> settingsInstance.save() // on button release
                         );
