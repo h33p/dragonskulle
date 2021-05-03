@@ -336,7 +336,7 @@ public class Building extends NetworkableComponent
         final int div = 1;
         final int numFireballs = (mAttack.getLevel() + div - 1) / div;
 
-        if (mPaths.size() == numFireballs) {
+        if (mPaths.size() == numFireballs || mGameObject == null) {
             return;
         }
 
