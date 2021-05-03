@@ -177,6 +177,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                 (__, ___) -> {
                                     mNetworkManager.get().getServerManager().start();
                                     LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
+                                    mLobbyId = "";
+                                    mLobbyIDUpdated.set(true);
                                 }),
                         mLobbyIDText,
                         new UIButton(
@@ -190,6 +192,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                     }
                                     if (!mLobbyId.equals("")) {
                                         LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
+                                        mLobbyId = "";
+                                        mLobbyIDUpdated.set(true);
                                     }
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
@@ -224,9 +228,9 @@ public class Lobby extends Component implements IFrameUpdate {
                         0.1f,
                         0.9f,
                         new UIText(
-                                new Vector4f(0f, 0f, 0f, 0f), "Automatic port forwarding failed!"),
+                                new Vector4f(1f, 1f, 1f, 1f), "Automatic port forwarding failed!"),
                         new UIText(
-                                new Vector4f(0f, 0f, 0f, 0f),
+                                new Vector4f(1f, 1f, 1f, 1f),
                                 "To play online, please ensure port 17569 is opened and points to your local IP"),
                         new UIButton(
                                 "Continue anyway",
