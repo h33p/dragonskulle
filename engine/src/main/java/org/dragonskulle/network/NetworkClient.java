@@ -11,8 +11,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.core.Time;
 import org.dragonskulle.utils.IOUtils;
 
 /**
@@ -48,6 +51,13 @@ public class NetworkClient {
 
     /** Stores all requests from the server once scheduled. */
     private final ConcurrentLinkedQueue<byte[]> mRequests = new ConcurrentLinkedQueue<>();
+
+    private final ConcurrentLinkedQueue<byte[]> mGameRequests = new ConcurrentLinkedQueue<>();
+
+    private final ConcurrentLinkedQueue<TimestampedRequest> mDelayedRequests =
+            new ConcurrentLinkedQueue<>();
+
+    @Getter @Setter private float mSimLatency = 0f;
 
     public DataOutputStream getDataOut() {
         return new NetworkMessageStream(mDataOut);
@@ -145,6 +155,23 @@ public class NetworkClient {
         return mOpen;
     }
 
+    private void queueRequest(byte[] bytes) {
+        if (bytes[0] == NetworkConfig.Codes.MESSAGE_UPDATE_STATE
+                || bytes[0] == NetworkConfig.Codes.MESSAGE_HOST_STARTED) {
+            mRequests.add(bytes);
+        } else {
+            mGameRequests.add(bytes);
+        }
+    }
+
+    private void queueDelayedRequests() {
+        TimestampedRequest r;
+        float time = Time.getTimeInSeconds() - mSimLatency;
+        while ((r = mDelayedRequests.peek()) != null && r.getTimestamp() <= time) {
+            queueRequest(mDelayedRequests.poll().getData());
+        }
+    }
+
     /**
      * This is the thread which is created once the connection is achieved. It is used to handle
      * messages received from the server. It also handles the server disconnection.
@@ -168,7 +195,11 @@ public class NetworkClient {
                     try {
                         short len = input.readShort();
                         byte[] bytes = IOUtils.readExactlyNBytes(input, len);
-                        mRequests.add(bytes);
+                        if (mSimLatency <= 0f) {
+                            queueRequest(bytes);
+                        } else {
+                            mDelayedRequests.add(new TimestampedRequest(bytes));
+                        }
                     } catch (IOException e) {
                         break;
                     }
@@ -190,18 +221,33 @@ public class NetworkClient {
         }
     }
 
-    /** Processes all requests. */
+    public int processAllRequests() {
+        return processRequests() + processGameRequests();
+    }
+
     public int processRequests() {
+
+        queueDelayedRequests();
+
+        return processRequests(mRequests);
+    }
+
+    public int processGameRequests() {
+        return processRequests(mGameRequests);
+    }
+
+    /** Processes all requests. */
+    private int processRequests(ConcurrentLinkedQueue<byte[]> requests) {
 
         if (mDidDispose.get()) {
             return 0;
         }
 
-        log.fine("processing all " + this.mRequests.size() + " requests");
+        log.fine("processing all " + requests.size() + " requests");
         int cnt = 0;
 
-        while (!this.mRequests.isEmpty()) {
-            byte[] requestBytes = mRequests.poll();
+        while (!requests.isEmpty()) {
+            byte[] requestBytes = requests.poll();
             if (requestBytes != null) {
                 try {
                     ByteArrayInputStream bin = new ByteArrayInputStream(requestBytes);
@@ -212,7 +258,6 @@ public class NetworkClient {
                     cnt++;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    // closeAllConnections();
                 }
             }
         }
@@ -248,6 +293,9 @@ public class NetworkClient {
             case NetworkConfig.Codes.MESSAGE_SERVER_EVENT:
                 log.fine("A server object event");
                 mClientListener.objectEvent(stream);
+                break;
+            case NetworkConfig.Codes.MESSAGE_HOST_STARTED:
+                mClientListener.hostStartedGame();
                 break;
             default:
                 log.info("unsure of what to do with message as unknown type byte " + messageType);

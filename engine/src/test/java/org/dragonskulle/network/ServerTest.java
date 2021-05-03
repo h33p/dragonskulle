@@ -54,7 +54,7 @@ public class ServerTest {
                 new GameObject("netman", handle -> handle.addComponent(SERVER_NETWORK_MANAGER)));
     }
 
-    private static ReentrantLock sEngineLock = new ReentrantLock();
+    private static final ReentrantLock sEngineLock = new ReentrantLock();
 
     private static void cleanupNetmans() {
         log.info("Cleanup netmans");
@@ -71,7 +71,7 @@ public class ServerTest {
 
         private Thread mTestThread;
         private boolean mShouldExit;
-        private int mPort;
+        private final int mPort;
 
         private Throwable mToThrow = null;
 
@@ -84,37 +84,32 @@ public class ServerTest {
          * and only then recreate netmans.
          */
         private void ensureNetworkIsRecreated() {
-            boolean closed = false;
-
-            while (!closed) {
-                closed = true;
-
-                sEngineLock.lock();
-                if (CLIENT_NETWORK_MANAGER.getClientManager() != null) closed = false;
-                if (SERVER_NETWORK_MANAGER.getServerManager() != null) closed = false;
-                sEngineLock.unlock();
-            }
-
             sEngineLock.lock();
 
             SERVER_NETWORK_MANAGER.createServer(
                     mPort,
-                    (__, man, id) -> {
-                        log.info("CONNECTED");
+                    (scene, man, client) -> {
+                        log.info("NEW CLIENT");
+                        man.getServerManager().start();
+                    },
+                    (man) -> {
+                        log.info("CLIENT LOADED");
+                        man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
                         man.getServerManager()
-                                .spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
-                        man.getServerManager()
-                                .spawnNetworkObject(id, TEMPLATE_MANAGER.find("capital"));
+                                .spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
                     },
                     null);
 
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",
                     mPort,
-                    (__1, __2, netid) -> {
-                        log.info("CONNECTED CLIENT");
-                        assertTrue(netid >= 0);
-                    });
+                    (man, id) -> {
+                        SERVER_NETWORK_MANAGER.getServerManager().start();
+                        log.info("CONNECTED TO SERVER");
+                        assertTrue(id >= 0);
+                    },
+                    null,
+                    null);
 
             sEngineLock.unlock();
         }
@@ -128,13 +123,29 @@ public class ServerTest {
                                     ensureNetworkIsRecreated();
 
                                     runnable.run();
+
+                                    sEngineLock.lock();
+                                    cleanupNetmans();
+                                    sEngineLock.unlock();
+
+                                    boolean closed = false;
+
+                                    while (!closed) {
+                                        closed = true;
+
+                                        sEngineLock.lock();
+                                        if (CLIENT_NETWORK_MANAGER.getClientManager() != null)
+                                            closed = false;
+                                        if (SERVER_NETWORK_MANAGER.getServerManager() != null)
+                                            closed = false;
+                                        sEngineLock.unlock();
+                                    }
+
                                 } finally {
                                     mShouldExit = true;
                                 }
                             });
             sEngineLock.lock();
-
-            cleanupNetmans();
 
             mTestThread.setUncaughtExceptionHandler(
                     (t, e) -> {

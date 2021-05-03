@@ -29,7 +29,7 @@ public class BuildData implements INetSerializable {
     /**
      * The constructor.
      *
-     * @param hexTileToAdd The {@code HexagonTile} to build on
+     * @param hexTileToAdd The {@link HexagonTile} to build on
      * @param descriptorIndex The index of the relevant {@link BuildingDescriptor}.
      */
     public BuildData(HexagonTile hexTileToAdd, int descriptorIndex) {
