@@ -211,8 +211,10 @@ public class Lobby extends Component implements IFrameUpdate {
                                             manager.getClientManager().disconnect();
                                         }
                                     }
-                                    mJoinUi.setEnabled(true);
-                                    mJoiningUi.setEnabled(false);
+                                    if (mJoiningUi.isEnabled() && !mServerListUi.isEnabled()) {
+                                        mJoinUi.setEnabled(true);
+                                        mJoiningUi.setEnabled(false);
+                                    }
                                 }));
 
         UIManager.getInstance()
@@ -313,8 +315,10 @@ public class Lobby extends Component implements IFrameUpdate {
                                                     },
                                                     this::onHostStartGame,
                                                     () -> {
-                                                        mJoiningUi.setEnabled(false);
-                                                        mJoinUi.setEnabled(true);
+                                                        if (mJoiningUi.isEnabled()) {
+                                                            mJoiningUi.setEnabled(false);
+                                                            mJoinUi.setEnabled(true);
+                                                        }
                                                     });
                                 }),
                         new UIButton(
