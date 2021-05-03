@@ -21,6 +21,7 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
@@ -35,6 +36,7 @@ import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncFloat;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -71,6 +73,14 @@ public class Building extends NetworkableComponent
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
+
+    /**
+     * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
+     *
+     * <p>It is used in attacks to prevent the building from being destroyed, taken over, attacked
+     * twice.
+     */
+    @Getter private final SyncFloat mActionLockTime = new SyncFloat();
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private final Set<HexagonTile> mClaimedTiles = new HashSet<>();
@@ -603,6 +613,15 @@ public class Building extends NetworkableComponent
         }
 
         return mAttackableTiles;
+    }
+
+    /**
+     * Get whether the building is action locked, i.e. should not have any actions happening to it.
+     *
+     * @return {@code true} if building is action locked, {@code false} otherwise.
+     */
+    public boolean isActionLocked() {
+        return mActionLockTime.get() > Engine.getInstance().getCurTime();
     }
 
     /**

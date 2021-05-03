@@ -18,6 +18,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
@@ -403,22 +404,24 @@ public class ServerNetworkManager {
 
         if (mGameState == ServerGameState.STARTING) return;
 
-        mServer.updateClientList();
-        mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
+        try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+            mServer.updateClientList();
+            mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
 
-        mNetworkObjects
-                .entrySet()
-                .removeIf(
-                        entry -> {
-                            NetworkObject obj = entry.getValue().mNetworkObject.get();
-                            if (obj != null) {
-                                obj.beforeNetSerialize();
-                                return false;
-                            }
-                            return true;
-                        });
+            mNetworkObjects
+                    .entrySet()
+                    .removeIf(
+                            entry -> {
+                                NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                if (obj != null) {
+                                    obj.beforeNetSerialize();
+                                    return false;
+                                }
+                                return true;
+                            });
 
-        clientUpdate();
+            clientUpdate();
+        }
     }
 
     /** Late network update, called by {@link NetworkManager}. */
@@ -434,25 +437,27 @@ public class ServerNetworkManager {
 
             mManager.onServerDestroy();
         } else {
-            for (ServerClient c : mServer.getClients()) {
-                if (!c.isInGame()) {
-                    continue;
+            try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+                for (ServerClient c : mServer.getClients()) {
+                    if (!c.isInGame()) {
+                        continue;
+                    }
+                    for (ServerObjectEntry entry : mNetworkObjects.values()) {
+                        entry.updateClient(c);
+                    }
                 }
-                for (ServerObjectEntry entry : mNetworkObjects.values()) {
-                    entry.updateClient(c);
-                }
+                mNetworkObjects
+                        .entrySet()
+                        .removeIf(
+                                entry -> {
+                                    NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                    if (obj != null) {
+                                        obj.resetUpdateMask();
+                                        return false;
+                                    }
+                                    return true;
+                                });
             }
-            mNetworkObjects
-                    .entrySet()
-                    .removeIf(
-                            entry -> {
-                                NetworkObject obj = entry.getValue().mNetworkObject.get();
-                                if (obj != null) {
-                                    obj.resetUpdateMask();
-                                    return false;
-                                }
-                                return true;
-                            });
         }
     }
 

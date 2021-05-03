@@ -69,9 +69,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** Store a reference to the {@link NetworkManager}. */
     private final Reference<NetworkManager> mNetworkManager;
 
-    /** Store a reference to the {@link MapEffects} component. */
-    private Reference<MapEffects> mMapEffects;
-
     /** Store a reference to the {@link UIMenuLeftDrawer}. */
     @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
@@ -382,8 +379,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Ensure Player and MapEffects exist.
         Player player = getPlayer();
-        MapEffects effects = getMapEffects();
-        if (player == null || effects == null) return;
+        if (player == null) return;
+        MapEffects effects = player.getMapEffects();
+        if (effects == null) return;
 
         // Only run if visuals need updating.
         if (!mVisualsNeedUpdate) return;
@@ -403,6 +401,19 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
+
+                            HexagonMap map = player.getMap();
+
+                            if (map == null) {
+                                return;
+                            }
+
+                            fx.pulseHighlight(
+                                    map.cursorToTile(),
+                                    StandardHighlightType.VALID.asSelection(),
+                                    0.6f,
+                                    2f,
+                                    0.05f);
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
@@ -533,23 +544,5 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
 
         return mPlayer.get();
-    }
-
-    /**
-     * Get the {@link MapEffects}.
-     *
-     * <p>If {@link #mMapEffects} is not valid, it will attempt to get a valid MapEffects.
-     *
-     * @return The {@link MapEffects}; otherwise {@code null}.
-     */
-    private MapEffects getMapEffects() {
-        if (!Reference.isValid(mMapEffects)) {
-            MapEffects mapEffects = Scene.getActiveScene().getSingleton(MapEffects.class);
-
-            if (mapEffects == null) return null;
-            mMapEffects = mapEffects.getReference(MapEffects.class);
-        }
-
-        return mMapEffects.get();
     }
 }
