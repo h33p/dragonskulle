@@ -472,7 +472,7 @@ public class GLTF implements NativeResource {
                                 parseFloat(baseFactor.get(2)),
                                 parseFloat(baseFactor.get(3)));
                     }
-                    JSONObject baseTex = (JSONObject) rough.get("baseColourTexture");
+                    JSONObject baseTex = (JSONObject) rough.get("baseColorTexture");
 
                     if (baseTex != null) {
                         Integer texIdx = parseInt(baseTex, "index");
