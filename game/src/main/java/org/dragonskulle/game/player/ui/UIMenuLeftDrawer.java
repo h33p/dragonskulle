@@ -217,7 +217,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         // The attack menu.
         items.add(buildConfirmAttackButtonFrame());
         items.add(buildCancelAttackButtonFrame());
-        mAttackScreenMenu = buildMenu(items);
+        mAttackScreenMenu = buildMenu(items, 0.25f);
 
         if (!Reference.isValid(mAttackScreenMenu)) return;
         GameObject menu = mAttackScreenMenu.get();
@@ -225,12 +225,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         ArrayList<GameObject> children = menu.getChildren();
         if (menu.getChildren().size() == 0) return;
         mAttackConfirm = children.get(0).getComponent(UIButton.class);
-
-        // Move all the buttons down.
-        for (GameObject object : menu.getChildren()) {
-            TransformUI objectTransform = object.getTransform(TransformUI.class);
-            objectTransform.translate(0, 0.4f);
-        }
 
         // Move the 2nd button up slightly.
         if (children.size() >= 1) {
@@ -250,11 +244,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                             object.addComponent(cost);
                         });
         TransformUI costTransform = costObject.getTransform(TransformUI.class);
-        costTransform.setParentAnchor(0.02f, 0.225f, 1f - 0.02f, 0.225f + 0.08f);
+        costTransform.setParentAnchor(0.02f, 0.07f, 1f - 0.02f, 0.07f + 0.08f);
         menu.addChild(costObject);
 
         // Add an attack info label.
-        UITextRect attackInfo = new UITextRect(TextUtils.constructField("Chance", "------", 27));
+        UITextRect attackInfo = new UITextRect(TextUtils.constructField("Chance", "---", 15));
         mAttackInfo = attackInfo.getReference(UITextRect.class);
 
         GameObject attackInfoObject =
@@ -265,7 +259,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                             object.addComponent(attackInfo);
                         });
         TransformUI infoTransform = attackInfoObject.getTransform(TransformUI.class);
-        infoTransform.setParentAnchor(0.02f, 0.315f, 1f - 0.02f, 0.315f + 0.08f);
+        infoTransform.setParentAnchor(0.02f, 0.16f, 1f - 0.02f, 0.16f + 0.08f);
         menu.addChild(attackInfoObject);
     }
 
@@ -274,7 +268,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         items.add(buildConfirmSellButtonFrame());
         items.add(buildCancelSellButtonFrame());
-        mSellConfirmScreenMenu = buildMenu(items);
+        mSellConfirmScreenMenu = buildMenu(items, 0.15f);
 
         if (!Reference.isValid(mSellConfirmScreenMenu)) return;
         GameObject menu = mSellConfirmScreenMenu.get();
@@ -552,9 +546,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      * Build a menu, it is disabled by default.
      *
      * @param mButtonChildren the buttons to be built
+     * @param yOffset How much to offset the y position by.
      * @return reference to the built menu.
      */
-    private Reference<GameObject> buildMenu(List<UITextButtonFrame> mButtonChildren) {
+    private Reference<GameObject> buildMenu(
+            List<UITextButtonFrame> mButtonChildren, float yOffset) {
         UIManager manager = UIManager.getInstance();
         UIButton[] buttons =
                 mButtonChildren.stream()
@@ -572,11 +568,15 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
-            transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1.2f);
+            transform.setParentAnchor(0.1f, -0.1f + yOffset, 1f - 0.1f, 1.2f + yOffset);
         }
 
         menu.setEnabled(false);
         return menu.getReference();
+    }
+
+    private Reference<GameObject> buildMenu(List<UITextButtonFrame> mButtonChildren) {
+        return buildMenu(mButtonChildren, 0f);
     }
 
     /**
@@ -645,10 +645,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         if (!Reference.isValid(mAttackOption)) return;
         UIButton option = mAttackOption.get();
-
-        Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
-        if (!Reference.isValid(buildingRef)) return;
-        Building building = buildingRef.get();
+        
+        HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building building = tile.getBuilding();
 
         Player player = mGetPlayer.getPlayer();
         if (player == null) return;
@@ -664,7 +664,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         int cost = building.getAttackCost();
         if (cost <= player.getTokens().get()) {
-            text.get().setText("Launch Attack for " + cost);
+            text.get().setText("Launch Attack");
             option.setEnabled(true);
         } else {
             text.get().setText(String.format("[TOO EXPENSIVE: %d]", cost));
@@ -711,7 +711,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (!Reference.isValid(text)) return;
 
         if (player.isBuildingOwner(defender)) {
-            text.get().setText(TextUtils.constructField("Chance", "------", 27));
+            text.get().setText(TextUtils.constructField("Chance", "---", 15));
             return;
         }
 
@@ -732,7 +732,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             output = "HIGH";
         }
 
-        text.get().setText(TextUtils.constructField("Chance", output, 27));
+        text.get().setText(TextUtils.constructField("Chance", output, 15));
     }
 
     private void updateAttackConfirmButton() {
