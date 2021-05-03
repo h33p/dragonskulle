@@ -35,11 +35,11 @@ public class Server {
     /** The Port. */
     private int mPort;
     /** The Server listener. */
-    private IServerListener mServerListener;
+    private final IServerListener mServerListener;
 
     private final ServerSocket mServerSocket;
     /** The Server thread. */
-    private Thread mServerThread;
+    private final Thread mServerThread;
     /** The Server runner. */
     private ServerRunner mServerRunner;
 
@@ -124,7 +124,6 @@ public class Server {
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
-            mServerListener.clientActivated(c);
         }
 
         // Now accept new socket connections
