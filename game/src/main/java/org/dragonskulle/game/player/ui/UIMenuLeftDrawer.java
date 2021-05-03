@@ -300,7 +300,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
-            transform.translate(0f, 0.7f);
+            transform.translate(0f, 0.55f);
         }
     }
 
@@ -316,8 +316,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 (handle, __) -> {
                     // Reset the Building back to the HexagonTile's building.
                     mUpdateBuildingSelected.update();
-
-                    setShopState(ShopState.CLOSED, true);
+                    
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -333,7 +332,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 "cancel_sell",
                 "Cancel Sell",
                 (handle, __) -> {
-                	setShopState(ShopState.CLOSED, true);
                 	mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -365,9 +363,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                     player.getClientAttackRequest().invoke(new AttackData(attacking, defending));
 
                     // Reset the Building back to the HexagonTile's building.
-                    mUpdateBuildingSelected.update();
-
-                    mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
+                    // mUpdateBuildingSelected.update();
+                    // mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
     }
@@ -574,7 +571,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
-            transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1f);
+        	transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1.2f);
         }
 
         menu.setEnabled(false);
