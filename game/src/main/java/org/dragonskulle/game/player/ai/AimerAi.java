@@ -69,7 +69,7 @@ public class AimerAi extends AiPlayer {
     private static final float AIM_AT_CAPITAL = 0.01f;
 
     /** This is the number of tries we should do before resetting. */
-    private static final int TRIES = 50;
+    private static final int TRIES = 20;
 
     protected ProbabilisticAiPlayer mProbabilisticAi = null;
 
@@ -265,13 +265,9 @@ public class AimerAi extends AiPlayer {
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
 
-        List<BuildingDescriptor> options =
-                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
-        // Test if they can afford to build anything.
-        if (options.size() == 0) return;
-
-        int optionIndex = mRandom.nextInt(options.size());
-        BuildingDescriptor option = options.get(optionIndex);
+        // Get a building type that they can afford.
+        BuildingDescriptor option = getRandomBuildingType();
+        if (option == null) return;
 
         // BUILD
         getPlayer()

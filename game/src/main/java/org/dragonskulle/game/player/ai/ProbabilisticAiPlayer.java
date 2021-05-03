@@ -154,13 +154,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean tryToAddBuilding(Building building) {
 
-        List<BuildingDescriptor> options =
-                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
-        // Test if they can afford to build anything.
-        if (options.size() == 0) return false;
-
-        int optionIndex = mRandom.nextInt(options.size());
-        BuildingDescriptor option = options.get(optionIndex);
+        // Get a building type that they can afford.
+        BuildingDescriptor option = getRandomBuildingType();
+        if (option == null) return false;
 
         if (building.getBuildableTiles().size() != 0) {
 
