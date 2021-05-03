@@ -193,4 +193,13 @@ public class Scene {
                 .filter(component -> !component.isStarted())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Scene)) {
+            return false;
+        } else {
+            return ((Scene) o).getName().equals(mName);
+        }
+    }
 }

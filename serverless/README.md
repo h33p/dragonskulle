@@ -17,6 +17,6 @@ DELETE /api/hosts/{id} - deletes entry
 
 GET /api/hosts/{id} - retrieves a specific entry
 
-GET /api/code/{code} - gets host by code
+GET /api/hosts/code/{code} - gets host by code
 
-DELETE /api/code/{code} - deletes host by code
+DELETE /api/hosts/code/{code} - deletes host by code
