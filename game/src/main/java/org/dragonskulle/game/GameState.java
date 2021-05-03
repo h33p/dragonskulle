@@ -6,18 +6,22 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
 import org.dragonskulle.network.components.sync.INetSerializable;
 import org.dragonskulle.network.components.sync.SyncInt;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIManager;
 
 /**
  * Stores networked game state.
@@ -45,10 +49,13 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         void handle(int winnerId);
     }
 
-    @Getter private final SyncInt mNumPlayers = new SyncInt(0);
-    @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
+    @Getter
+    private final SyncInt mNumPlayers = new SyncInt(0);
+    @Getter
+    private final SyncInt mNumCapitalsStanding = new SyncInt(0);
 
-    @Getter private boolean mInGame = true;
+    @Getter
+    private boolean mInGame = true;
 
     private transient ServerEvent<GameEndEventData> mGameEndEvent;
 

@@ -3,7 +3,9 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -13,12 +15,15 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
+import org.dragonskulle.game.GameUIAppearance;
+import org.dragonskulle.game.PlayerStats;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.ui.*;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
@@ -40,7 +45,8 @@ public class Lobby extends Component implements IFrameUpdate {
     private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
     private final AtomicBoolean mLobbyIDUpdated = new AtomicBoolean(false);
-    @Getter private final GameObject mLobbyUi;
+    @Getter
+    private final GameObject mLobbyUi;
     private final GameObject mHostUi;
     private final GameObject mJoinUi;
     private final GameObject mServerListUi;
@@ -56,7 +62,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * Default constructor, creates all static UI elements and also GameObjects that will have the
      * dynamic UI elements added to them.
      *
-     * @param mainUi Reference to the main UI object
+     * @param mainUi         Reference to the main UI object
      * @param networkManager NetworkManager for the scene
      */
     public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
@@ -284,7 +290,9 @@ public class Lobby extends Component implements IFrameUpdate {
         LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
     }
 
-    /** Builds the "Join" section of the UI. */
+    /**
+     * Builds the "Join" section of the UI.
+     */
     private void buildJoinUi() {
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -475,7 +483,9 @@ public class Lobby extends Component implements IFrameUpdate {
         mServerListUi.addChild(mServerList.get());
     }
 
-    /** Builds the "Host" section of the UI. */
+    /**
+     * Builds the "Host" section of the UI.
+     */
     private void buildHostUi() {
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -551,7 +561,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * the hosts in the JSON array are added to mHosts.
      *
      * @param response String containing the response from the getAllHosts request
-     * @param success true if the request was successful, false otherwise
+     * @param success  true if the request was successful, false otherwise
      */
     private void onGetAllHosts(String response, boolean success) {
         if (!success) {
@@ -589,7 +599,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * lobby ID for our lobby is stored.
      *
      * @param response String containing the response from the addNewHost request
-     * @param success true if the request was successful, false otherwise
+     * @param success  true if the request was successful, false otherwise
      */
     private void onAddNewHost(String response, boolean success) {
         if (!success) {
@@ -612,7 +622,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * Handles LobbyAPI.deleteHost. If success is true, mLobbyId is set to a blank string.
      *
      * @param response String containing the response from the deleteHost request
-     * @param success true if the request was successful, false otherwise
+     * @param success  true if the request was successful, false otherwise
      */
     private void onDeleteHost(String response, boolean success) {
         if (!success) {
@@ -627,8 +637,8 @@ public class Lobby extends Component implements IFrameUpdate {
      * message.
      *
      * @param gameScene The current game scene
-     * @param manager The network manager
-     * @param netId The network ID of the client
+     * @param manager   The network manager
+     * @param netId     The network ID of the client
      */
     private void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
         GameObject humanPlayer =
@@ -646,8 +656,8 @@ public class Lobby extends Component implements IFrameUpdate {
      * Called on server side when a client has fully loaded and sent the client loaded message to
      * the server.
      *
-     * @param gameScene The current game scene
-     * @param manager The network manager
+     * @param gameScene     The current game scene
+     * @param manager       The network manager
      * @param networkClient The client that sent the loaded message
      */
     private void onClientLoaded(
@@ -685,6 +695,39 @@ public class Lobby extends Component implements IFrameUpdate {
                                         pauseMenu.endGame();
                                     }
                                 }));
+
+        buildServerPlayerView();
+    }
+
+    private void buildServerPlayerView() {
+        UIManager.IUIBuildHandler[] playerInfos = buildPlayerInfos();
+        // things for player thingys
+        mNetworkManager.get().getGameObject()
+                .buildChild(
+                        "game_state",
+                        new TransformUI(true),
+                        (self) -> {
+                            UIManager.getInstance().buildVerticalUi(self, 0.25f, 0.1f, 0.8f, playerInfos);
+                            UIRenderable drawer =
+                                    new UIRenderable(GameUIAppearance.getDrawerTexture());
+                            TransformUI tran = self.getTransform(TransformUI.class);
+                            tran.setMargin(0f, 0f, 0f, 0f);
+                            tran.setPivotOffset(0f, 0f);
+                            tran.setParentAnchor(0f, 0f);
+                            self.addComponent(drawer);
+                        });
+
+    }
+
+    private UIManager.IUIBuildHandler[] buildPlayerInfos() {
+        ServerNetworkManager serverManager = mNetworkManager.get().getServerManager();
+        HashMap<Integer, Reference<NetworkObject>> playerIds = serverManager.getPlayerIds();
+        UIManager.IUIBuildHandler[] playerInfoBox = new UIManager.IUIBuildHandler[playerIds.size()];
+        int i = 0;
+        for (Map.Entry<Integer, Reference<NetworkObject>> playerReference : playerIds.entrySet()) {
+            playerInfoBox[i++] = new PlayerStats(playerReference.getValue(), serverManager);
+        }
+        return playerInfoBox;
     }
 
     @Override

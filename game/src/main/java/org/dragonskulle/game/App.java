@@ -2,6 +2,8 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -26,6 +28,7 @@ import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UISettingsMenu;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
@@ -47,6 +50,7 @@ public class App implements NativeResource {
     private static String sIP = "127.0.0.1";
     private static int sPort = 17569;
     private static boolean sReload = false;
+    private static AtomicInteger mAiCount = new AtomicInteger(1);
 
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
@@ -170,7 +174,7 @@ public class App implements NativeResource {
      * Creates the main scene.
      *
      * @param networkManager the network manager
-     * @param asServer true, if to create as server
+     * @param asServer       true, if to create as server
      * @return the scene created
      */
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
@@ -198,27 +202,26 @@ public class App implements NativeResource {
                                                             "Fill game with AI",
                                                             (a, b) -> {
                                                                 log.info("should fill with ai");
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -1,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aStarAi"));
-
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -2,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aiPlayer"));
+                                                                spawnAi(networkManager, "aStarAi");
+                                                                spawnAi(networkManager, "aiPlayer");
                                                             }));
                                         });
                             });
             mainScene.addRootObject(hostGameUi);
         }
         return mainScene;
+    }
+
+    private static Reference<NetworkObject> spawnAi(NetworkManager networkManager, String type) {
+        int id = -1 * mAiCount.getAndIncrement();
+        Reference<NetworkObject> networkObjectReference = networkManager
+                .getServerManager()
+                .spawnNetworkObject(
+                        id,
+                        networkManager
+                                .findTemplateByName(type));
+        networkManager.getServerManager().storePlayer(id, networkObjectReference);
+        return networkObjectReference;
     }
 
     /**
@@ -381,21 +384,21 @@ public class App implements NativeResource {
         // TODO: actually make a fully fledged console
         // TODO: join it at the end
         new Thread(
-                        () -> {
-                            Scanner in = new Scanner(System.in);
+                () -> {
+                    Scanner in = new Scanner(System.in);
 
-                            String line;
+                    String line;
 
-                            while ((line = in.nextLine()) != null) {
-                                try {
-                                    sPort = in.nextInt();
-                                    sIP = line.trim();
-                                    log.info("Address set successfully!");
-                                } catch (Exception e) {
-                                    log.info("Failed to set IP and port!");
-                                }
-                            }
-                        })
+                    while ((line = in.nextLine()) != null) {
+                        try {
+                            sPort = in.nextInt();
+                            sIP = line.trim();
+                            log.info("Address set successfully!");
+                        } catch (Exception e) {
+                            log.info("Failed to set IP and port!");
+                        }
+                    }
+                })
                 .start();
 
         // Run the game

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -25,6 +26,7 @@ import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
+import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -32,11 +34,17 @@ import org.joml.Vector3f;
  * Server network manager.
  *
  * @author Aurimas Blažulionis
- *     <p>This class is composed in NetworkManager, and handles all things server.
+ * <p>This class is composed in NetworkManager, and handles all things server.
  */
 @Accessors(prefix = "m")
 @Log
 public class ServerNetworkManager {
+    @Getter
+    private final HashMap<Integer, Reference<NetworkObject>> mPlayerIds = new HashMap<>();
+
+    public void storePlayer(int id, Reference<NetworkObject> player) {
+        mPlayerIds.put(id, player);
+    }
 
     public enum ServerGameState {
         IN_PROGRESS,
@@ -45,7 +53,9 @@ public class ServerNetworkManager {
         NONE
     }
 
-    /** Server event listener. */
+    /**
+     * Server event listener.
+     */
     public class Listener implements IServerListener {
         /**
          * Client connected event.
@@ -124,9 +134,12 @@ public class ServerNetworkManager {
     }
 
     public static class ServerObjectEntry {
-        @Getter private final Reference<NetworkObject> mNetworkObject;
-        @Getter private final int mTemplateId;
-        @Getter private final Set<ServerClient> mSpawnedFor;
+        @Getter
+        private final Reference<NetworkObject> mNetworkObject;
+        @Getter
+        private final int mTemplateId;
+        @Getter
+        private final Set<ServerClient> mSpawnedFor;
         private boolean mAwoken = false;
 
         public ServerObjectEntry(Reference<NetworkObject> networkObject, int templateId) {
@@ -168,38 +181,59 @@ public class ServerNetworkManager {
         }
     }
 
-    /** Server event listener. */
+    /**
+     * Server event listener.
+     */
     private final Listener mListener = new Listener();
-    /** Underlying server instance. */
+    /**
+     * Underlying server instance.
+     */
     private Server mServer;
-    /** Back reference to {@link NetworkManager}. */
-    @Getter private final NetworkManager mManager;
-    /** Callback for connected clients. */
+    /**
+     * Back reference to {@link NetworkManager}.
+     */
+    @Getter
+    private final NetworkManager mManager;
+    /**
+     * Callback for connected clients.
+     */
     private final NetworkManager.IClientLoadedEvent mClientLoadedEvent;
-    /** Callback for game start. */
+    /**
+     * Callback for game start.
+     */
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
-    /** Callback for game end. */
+    /**
+     * Callback for game end.
+     */
     private final NetworkManager.IGameEndEvent mGameEndEventHandler;
-    /** The Counter used to assign objects a unique id. */
+    /**
+     * The Counter used to assign objects a unique id.
+     */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
-    /** Describes the current state of the game. */
+    /**
+     * Describes the current state of the game.
+     */
+    @Getter
     private ServerGameState mGameState = ServerGameState.LOBBY;
 
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
-    @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
+    @Getter
+    private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
-    /** Stores per-owner singletons. Can be looked up with getIdSingletons */
+    /**
+     * Stores per-owner singletons. Can be looked up with getIdSingletons
+     */
     private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
 
     /**
      * Constructor for {@link ServerNetworkManager}.
      *
-     * @param manager back reference to {@link NetworkManager}
-     * @param port target port to listen on
-     * @param clientLoadedEvent callback for client connections
+     * @param manager               back reference to {@link NetworkManager}
+     * @param port                  target port to listen on
+     * @param clientLoadedEvent     callback for client connections
      * @param gameStartEventHandler callback for when the game starts
      */
     public ServerNetworkManager(
@@ -222,7 +256,9 @@ public class ServerNetworkManager {
         }
     }
 
-    /** Start the game, load game scene. */
+    /**
+     * Start the game, load game scene.
+     */
     void startGame() {
         Engine engine = Engine.getInstance();
 
@@ -238,9 +274,10 @@ public class ServerNetworkManager {
             mGameStartEventHandler.handle(mManager);
         }
 
+
         for (ServerClient c : mServer.getClients()) {
             try {
-                c.sendBytes(new byte[] {NetworkConfig.Codes.MESSAGE_HOST_STARTED});
+                c.sendBytes(new byte[]{NetworkConfig.Codes.MESSAGE_HOST_STARTED});
             } catch (IOException e) {
                 e.printStackTrace();
                 c.closeSocket();
@@ -251,7 +288,7 @@ public class ServerNetworkManager {
     /**
      * Spawns a network object on server, if linked to a game it will also spawn it on the game.
      *
-     * @param owner target owner of the object
+     * @param owner      target owner of the object
      * @param templateId ID of spawnable template
      * @return reference to the newly spawned network object
      */
@@ -262,10 +299,10 @@ public class ServerNetworkManager {
     /**
      * Spawns a network object on server by ID.
      *
-     * @param ownerId target owner of the object. For server (AI) owned objects, use negative IDs
+     * @param ownerId    target owner of the object. For server (AI) owned objects, use negative IDs
      * @param templateId ID of the spawnable template
      * @return reference to newly spawned network object. {@code null} if invalid template was
-     *     passed.
+     * passed.
      */
     public Reference<NetworkObject> spawnNetworkObject(int ownerId, int templateId) {
         int netId = this.allocateId();
@@ -294,7 +331,7 @@ public class ServerNetworkManager {
     /**
      * Send an event to the clients.
      *
-     * @param event event we send
+     * @param event  event we send
      * @param stream serialized data of the event
      */
     public void sendEvent(ServerEvent<?> event, ByteArrayOutputStream stream) throws IOException {
@@ -335,7 +372,9 @@ public class ServerNetworkManager {
         }
     }
 
-    /** Destroy the server, and tell {@link NetworkManager} about it. */
+    /**
+     * Destroy the server, and tell {@link NetworkManager} about it.
+     */
     public void destroy() {
         if (mServer == null) return;
 
@@ -358,7 +397,7 @@ public class ServerNetworkManager {
      * Get collection of clients connected to the server.
      *
      * @return collection of clients connected to the server. {@code null} if the server has been
-     *     destroyed.
+     * destroyed.
      */
     public Collection<ServerClient> getClients() {
 
@@ -374,7 +413,7 @@ public class ServerNetworkManager {
      *
      * @param ownerId owner of the singletons
      * @return singleton store for the given owner ID. If the store does not exist, a new one gets
-     *     created.
+     * created.
      */
     public SingletonStore getIdSingletons(int ownerId) {
         Integer id = ownerId;
@@ -386,7 +425,9 @@ public class ServerNetworkManager {
         return store;
     }
 
-    /** Network update, called by {@link NetworkManager}. */
+    /**
+     * Network update, called by {@link NetworkManager}.
+     */
     void networkUpdate() {
         if (mServer == null) {
             return;
@@ -421,7 +462,9 @@ public class ServerNetworkManager {
         clientUpdate();
     }
 
-    /** Late network update, called by {@link NetworkManager}. */
+    /**
+     * Late network update, called by {@link NetworkManager}.
+     */
     void lateNetworkUpdate() {
 
         if (mServer == null) {
@@ -465,7 +508,9 @@ public class ServerNetworkManager {
         return mNetworkObjectCounter.getAndIncrement();
     }
 
-    /** Sends updated server state to the clients. */
+    /**
+     * Sends updated server state to the clients.
+     */
     private void clientUpdate() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(bos);
