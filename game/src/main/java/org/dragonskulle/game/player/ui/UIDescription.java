@@ -3,6 +3,7 @@ package org.dragonskulle.game.player.ui;
 
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -17,7 +18,7 @@ import org.dragonskulle.ui.UITextRect;
  *
  * @author Craig Wilbourne
  */
-public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
+public class UIDescription extends Component implements IOnAwake, IFixedUpdate, IFrameUpdate {
 
     // The different fields that are displayed:
     private Reference<UITextRect> mNameRef;
@@ -62,26 +63,59 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
         return component.getReference(UITextRect.class);
     }
 
-    private void updateField(Reference<UITextRect> box, String text, int value) {
-        if (!Reference.isValid(box)) return;
+    /**
+     * Add padding spaces to the end of a string.
+     *
+     * @param input The string to pad.
+     * @param length The desired length.
+     * @return The string with spaces on the end.
+     */
+    private String pad(String input, int length) {
 
-        Reference<UIText> label = box.get().getLabelText();
-        if (!Reference.isValid(label)) return;
+        if (input == null || input.length() >= length || length <= 0) return input;
 
-        label.get().setText(String.format("%s: %d", text, value));
+        int additional = length - input.length();
+
+        if (additional <= 0) return input;
+
+        String output = input + (" ".repeat(additional));
+
+        return output;
+    }
+
+    /**
+     * Construct a String that contains the field's info.
+     *
+     * @param text The name of the field.
+     * @param value The value.
+     * @return The name and value, with a colon and padding added.
+     */
+    private String constructText(String text, int value) {
+        final int desiredLength = 35;
+
+        text += ": ";
+
+        // The text as-is.
+        final String initialText = String.format("%s%d", text, value);
+        final int requiredPadding = desiredLength - initialText.length();
+
+        String paddedText = pad(text, requiredPadding);
+
+        return String.format("%s%d", paddedText, value);
     }
 
     private void updateField(Reference<UITextRect> box, String text) {
         if (!Reference.isValid(box)) return;
 
-        System.out.println("here");
-
         Reference<UIText> label = box.get().getLabelText();
         if (!Reference.isValid(label)) return;
 
-        System.out.println("also here");
+        label.get().setText(text);
 
-        label.get().setText(String.format("%s", text));
+        System.out.println("ran: " + initialised);
+
+        // The initial label text has been set.
+        initialised = true;
     }
 
     /**
@@ -91,19 +125,24 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
      */
     void update(BuildingDescriptor descriptor) {
         updateField(mNameRef, descriptor.getName().toUpperCase());
-        updateField(mAttackRef, "Attack", descriptor.getAttack());
-        updateField(mDefenceRef, "Defence", descriptor.getDefence());
-        updateField(mTokenRef, "Generation", descriptor.getTokenGenerationLevel());
-        updateField(mCostRef, "COST", descriptor.getCost());
+        updateField(mAttackRef, constructText("Attack", descriptor.getAttack()));
+        updateField(mDefenceRef, constructText("Defence", descriptor.getDefence()));
+        updateField(mTokenRef, constructText("Generation", descriptor.getTokenGenerationLevel()));
+        updateField(mCostRef, constructText("COST", descriptor.getCost()));
+    }
+
+    @Override
+    public void fixedUpdate(float deltaTime) {
+        if (initialised) return;
+        update(PredefinedBuildings.BASE);
     }
 
     @Override
     protected void onDestroy() {}
 
     @Override
-    public void fixedUpdate(float deltaTime) {
-        if (initialised) return;
-        update(PredefinedBuildings.BASE);
-        initialised = true;
+    public void frameUpdate(float deltaTime) {
+        // TODO Auto-generated method stub
+
     }
 }
