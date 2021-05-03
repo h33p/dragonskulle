@@ -3,6 +3,7 @@ package org.dragonskulle.game.building;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -21,7 +22,8 @@ import org.dragonskulle.game.map.HexagonTile;
 @Accessors(prefix = "m")
 @Log
 public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, IOnStart {
-    @Setter private Building mBuilding;
+    @Setter
+    private Building mBuilding;
     private TileProp mAttackProp;
     private TileProp mDefenceProp;
     private TileProp mTokenGenProp;
@@ -33,7 +35,7 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
 
     private int mSpawnPropAttempts = 0;
     private final int mPropLimit =
-            20; // hopefully we can remove this, need to delay until the building was created
+            30; // hopefully we can remove this, need to delay until the building was created
 
     public BuildingProps(Building building) {
         mBuilding = building;
@@ -55,7 +57,7 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
                 break;
         }
         if (prop != null) prop.updateProp(newStat.getValue());
-        log.info("ran visuals for stat " + type);
+        log.info("treated stat " + type);
     }
 
     @Override
@@ -67,9 +69,11 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
     }
 
     private void createProps() {
+        if (mBuilding == null) return;
+
         TileProp[] props = {mAttackProp, mDefenceProp, mTokenGenProp};
         StatType[] shopProps = {
-            StatType.ATTACK, StatType.DEFENCE, StatType.TOKEN_GENERATION
+                StatType.ATTACK, StatType.DEFENCE, StatType.TOKEN_GENERATION
         }; // i know theres a getter somewhere
         List<HexagonTile> possibleTriad = getTileTriad();
         if (possibleTriad.size() == 0) {
@@ -81,7 +85,8 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
             HexagonTile tile = possibleTriad.get(i);
             if (tile == null) continue;
             TileProp prop = props[i];
-            if (prop == null) createProp(shopProps[i], tile);
+            SyncStat stat = mBuilding.getStat(shopProps[i]);
+            if (prop == null) createProp(stat, tile);
         }
     }
 
@@ -89,11 +94,11 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
         this.mShouldRespawnProps = state;
     }
 
-    private void createProp(StatType type, HexagonTile dest) {
+    private void createProp(SyncStat stat, HexagonTile dest) {
         if (dest.getTileType() != HexagonTile.TileType.LAND) return;
-        switch (type) {
+        switch (stat.getType()) {
             case ATTACK:
-                mAttackProp = new TileProp(type);
+                mAttackProp = new TileProp(StatType.ATTACK, stat.getLevel());
                 mMap.getGameObject()
                         .buildChild(
                                 "attack_prop",
@@ -102,7 +107,7 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
                 dest.setProp(mAttackProp);
                 break;
             case DEFENCE:
-                mDefenceProp = new TileProp(type);
+                mDefenceProp = new TileProp(StatType.DEFENCE, stat.getLevel());
                 mMap.getGameObject()
                         .buildChild(
                                 "defence_prop",
@@ -111,7 +116,7 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
                 dest.setProp(mAttackProp);
                 break;
             case TOKEN_GENERATION:
-                mTokenGenProp = new TileProp(type);
+                mTokenGenProp = new TileProp(StatType.TOKEN_GENERATION, stat.getLevel());
                 mMap.getGameObject()
                         .buildChild(
                                 "tgen_prop",
@@ -123,7 +128,7 @@ public class BuildingProps extends Component implements IOnAwake, IFrameUpdate, 
     }
 
     private List<HexagonTile>
-            getTileTriad() { // there must be a much simpler way to get the same random unclaimed
+    getTileTriad() { // there must be a much simpler way to get the same random unclaimed
         // tiles on both server and client
         List<HexagonTile> triad =
                 mBuilding.getSurroundingTiles().stream()
