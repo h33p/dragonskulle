@@ -781,6 +781,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         log.info("Attacking");
 
+        mLastAttack.set(getNetworkManager().getServerTime());
+
         // ATTACK!!! (Sorry...)
         mTokens.subtract(defender.getAttackCost());
         boolean won;
@@ -869,8 +871,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
-
-        mLastAttack.set(getNetworkManager().getServerTime());
 
         return true;
     }

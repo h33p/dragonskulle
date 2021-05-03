@@ -23,6 +23,10 @@ public class ArcPath extends Component implements IFrameUpdate {
         void handle(int id, float pathPoint, Transform3D transform);
     }
 
+    public static interface IPathUpdater {
+        void handle(ArcPath path);
+    }
+
     private static class SpawnedEntry {
         private final Reference<GameObject> mObject;
         private final Transform3D mTransform;
@@ -55,12 +59,10 @@ public class ArcPath extends Component implements IFrameUpdate {
 
             mObject.get().setEnabled(true);
 
-            a.lerp(b, mOffset, tmp);
+            a.lerp(b, off, tmp);
             float zmul = 2 * off - 1;
             tmp.z += -amplitude * zmul * zmul + amplitude;
             mTransform.setPosition(tmp);
-
-            log.info("SET TR " + tmp.x + " " + tmp.y + " " + tmp.z);
 
             if (arcHandler != null) {
                 arcHandler.handle(id, off, mTransform);
@@ -97,6 +99,8 @@ public class ArcPath extends Component implements IFrameUpdate {
     @Getter private final Vector3f mPosTarget = new Vector3f();
     private final Vector3f mTmpVec = new Vector3f();
 
+    @Getter @Setter private Reference<IPathUpdater> mUpdater = null;
+
     public void setTemplate(GameObject template) {
         mTemplate = template;
         setDirty();
@@ -123,15 +127,31 @@ public class ArcPath extends Component implements IFrameUpdate {
 
     @Override
     public void frameUpdate(float deltaTime) {
+
+        if (Reference.isValid(mUpdater)) {
+            mUpdater.get().handle(this);
+
+            if (mSpawnedObjects.isEmpty()) {
+                mDirty = true;
+            }
+
+        } else {
+            mDirty = true;
+        }
+
         if (mDirty) {
             mSpawnedObjects.stream().forEach(SpawnedEntry::destroy);
             mSpawnedObjects.clear();
 
-            for (float off = mSpawnStart; off < mSpawnEnd; off += mObjGap) {
-                GameObject go = GameObject.instantiate(mTemplate, new Transform3D());
-                mGameObject.addChild(go);
-                mSpawnedObjects.add(new SpawnedEntry(go, off));
+            if (Reference.isValid(mUpdater)) {
+                for (float off = mSpawnStart; off < mSpawnEnd; off += mObjGap) {
+                    GameObject go = GameObject.instantiate(mTemplate, new Transform3D());
+                    mGameObject.addChild(go);
+                    mSpawnedObjects.add(new SpawnedEntry(go, off));
+                }
             }
+
+            mDirty = false;
         }
 
         int i = 0;

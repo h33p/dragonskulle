@@ -12,6 +12,7 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -25,6 +26,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.misc.ArcPath;
+import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
@@ -39,6 +41,7 @@ import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.PBRMaterial;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -89,6 +92,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Visual arc path shown on selections */
     private Reference<ArcPath> mArcPath;
+
+    /** Updater for mArcPath */
+    private Reference<IPathUpdater> mUpdater;
+
+    private boolean mArcFadeOut = false;
 
     /**
      * Create a {@link HumanPlayer}.
@@ -308,12 +316,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Only run if visuals need updating.
         if (!mVisualsNeedUpdate) return;
-        // mVisualsNeedUpdate = false;
+        mVisualsNeedUpdate = false;
 
         if (player.hasLost()) return;
 
         // Set the player for the effects.
         effects.setActivePlayer(mPlayer);
+
+        if (mCurrentScreen != Screen.ATTACKING_SCREEN && mUpdater != null) {
+            mArcFadeOut = true;
+        }
 
         switch (mCurrentScreen) {
             case DEFAULT_SCREEN:
@@ -330,33 +342,89 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case ATTACKING_SCREEN:
-                Vector3f posStart = new Vector3f();
-                Vector3f posEnd = new Vector3f();
+                mArcFadeOut = false;
 
-                if (mHexChosen != null && Reference.isValid(mBuildingChosen)) {
-                    log.info("ARC");
-                    HexagonTile hex = mBuildingChosen.get().getTile();
-                    HexagonTile hexEnd = mHexChosen;
+                if (!Reference.isValid(mUpdater)) {
+                    boolean[] didSet = {false};
+                    Vector3f posStart = new Vector3f();
+                    Vector3f posEnd = new Vector3f();
+                    float[] lerpedStart = {-1f};
 
-                    mArcPath.get()
-                            .setAmplitude(hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f + 0.5f);
+                    mUpdater =
+                            new Reference<>(
+                                    (arcPath) -> {
+                                        float speed = 10f;
+                                        float deltaTime = Engine.getInstance().getFrameDeltaTime();
+                                        float lerptime = Math.min(1f, deltaTime * speed);
 
-                    TransformHex.axialToCartesian(
-                            new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), posStart);
-                    TransformHex.axialToCartesian(
-                            new Vector2f(hexEnd.getQ(), hexEnd.getR()),
-                            hexEnd.getSurfaceHeight(),
-                            posEnd);
+                                        if (mArcFadeOut
+                                                || mHexChosen == null
+                                                || !Reference.isValid(mBuildingChosen)
+                                                || !mPlayer.get()
+                                                        .attackCheck(
+                                                                mBuildingChosen.get(),
+                                                                mHexChosen.getBuilding())) {
+                                            didSet[0] = false;
+                                            lerpedStart[0] =
+                                                    MathUtils.lerp(lerpedStart[0], -1, lerptime);
 
-                    HexagonMap map = mPlayer.get().getMap();
+                                            arcPath.setSpawnOffset(lerpedStart[0]);
 
-                    Matrix4fc mat = map.getGameObject().getTransform().getWorldMatrix();
+                                            if (mArcFadeOut && lerpedStart[0] <= -1) {
+                                                mUpdater.clear();
+                                            }
 
-                    mat.transformPosition(posStart);
-                    mat.transformPosition(posEnd);
+                                            return;
+                                        } else {
+                                            lerpedStart[0] =
+                                                    MathUtils.lerp(lerpedStart[0], 0, lerptime);
+                                        }
 
-                    mArcPath.get().getPosStart().set(posStart);
-                    mArcPath.get().getPosTarget().set(posEnd);
+                                        arcPath.setSpawnOffset(lerpedStart[0]);
+
+                                        HexagonTile hex = mBuildingChosen.get().getTile();
+                                        HexagonTile hexEnd = mHexChosen;
+
+                                        TransformHex.axialToCartesian(
+                                                new Vector2f(hex.getQ(), hex.getR()),
+                                                hex.getHeight(),
+                                                posStart);
+                                        TransformHex.axialToCartesian(
+                                                new Vector2f(hexEnd.getQ(), hexEnd.getR()),
+                                                hexEnd.getSurfaceHeight(),
+                                                posEnd);
+
+                                        HexagonMap map = mPlayer.get().getMap();
+
+                                        Matrix4fc mat =
+                                                map.getGameObject().getTransform().getWorldMatrix();
+
+                                        mat.transformPosition(posStart);
+                                        mat.transformPosition(posEnd);
+
+                                        float amplitude =
+                                                hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f
+                                                        + 0.5f;
+
+                                        if (!didSet[0]) {
+                                            mArcPath.get().getPosStart().set(posStart);
+                                            mArcPath.get().getPosTarget().set(posEnd);
+
+                                            mArcPath.get().setAmplitude(amplitude);
+
+                                            didSet[0] = true;
+                                        }
+
+                                        arcPath.getPosStart().lerp(posStart, lerptime);
+                                        arcPath.getPosTarget().lerp(posEnd, lerptime);
+                                        arcPath.setAmplitude(
+                                                MathUtils.lerp(
+                                                        arcPath.getAmplitude(),
+                                                        amplitude,
+                                                        lerptime));
+                                    });
+
+                    mArcPath.get().setUpdater(mUpdater);
                 }
 
                 effects.setDefaultHighlight(true);
