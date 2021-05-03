@@ -153,6 +153,7 @@ public class UIManager {
             cnt++;
         }
     }
+    
     /**
      * Build a horizontal UI on the object
      *

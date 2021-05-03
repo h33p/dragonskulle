@@ -221,11 +221,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
      * @param selected The hexagon tile clicked on.
      */
     private void attackSelect(HexagonTile selected) {
-        Player player = getPlayer();
-        if (!selected.hasBuilding()) return;
-        Building building = selected.getBuilding();
+    	Player player = getPlayer();
+    	if (player == null || !selected.hasBuilding()) return;
+        
+    	Building building = selected.getBuilding();
         if (player.isBuildingOwner(building)) return;
-        // mHexChosen = selected;
         mBuildingChosen = building.getReference(Building.class);
     }
 

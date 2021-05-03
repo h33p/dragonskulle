@@ -180,9 +180,6 @@ public class UIShopSection extends Component implements IOnStart {
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         //        0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f when using transform
         tran.setParentAnchor(0.08f, 0.15f, 1 - 0.08f, 1 - 0.15f);
-        UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
-        ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
-        // getGameObject().addComponent(renderable);
         Reference<GameObject> textObj =
                 getGameObject()
                         .buildChild(

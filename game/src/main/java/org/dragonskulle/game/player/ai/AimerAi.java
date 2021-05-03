@@ -90,7 +90,8 @@ public class AimerAi extends AiPlayer {
     @Override
     protected void simulateInput() {
 
-        if (getPlayer() == null) return;
+    	Player player = getPlayer();
+        if (player == null) return;
 
         // Checks if we have reached the capital
         if (mPath.size() == 0) {
@@ -131,7 +132,7 @@ public class AimerAi extends AiPlayer {
 
             HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
             // If the AI wants to attack, then try to ensure its not in cooldown.
-            if (nextTile.isClaimed() && getPlayer().inCooldown()) {
+            if (nextTile.isClaimed() && player.inCooldown()) {
                 return;
             }
 

@@ -111,11 +111,11 @@ public class Building extends NetworkableComponent
     /** The cost to buy a {@link Building}. */
     public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
-    public SyncInt mSellPrice = new SyncInt(2);
+    private SyncInt mSellPrice = new SyncInt(2);
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
-     * Should alwyas be at least {@code 1}.
+     * Should always be at least {@code 1}.
      */
     @Getter private int mStatBaseCost = 10;
 
@@ -773,20 +773,6 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Remove this building from the game.
-     *
-     * <ul>
-     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
-     *   <li>Removes any links to any {@link HexagonTile}s.
-     *   <li>Calls {@link GameObject#destroy()}.
-     * </ul>
-     */
-    public void remove() {
-        // Request that the entire building GameObject should be destroyed.
-        getGameObject().destroy();
-    }
-
-    /**
      * Will generate the cost it takes to attack <b>from</b> this Building.
      *
      * @return The cost to attack from this Building.
@@ -913,6 +899,22 @@ public class Building extends NetworkableComponent
         return mSellPrice.get();
     }
 
+    /**
+     * Remove this building from the game (calls {@link GameObject#destroy()}).
+     */
+    public void remove() {
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
+    }
+    
+	/**
+	 * Destroy the Building. To correctly trigger this, please call {@link #remove()}.
+	 * 
+	 * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     * </ul>
+	 */
     @Override
     protected void onDestroy() {
         Player owner = getOwner();
