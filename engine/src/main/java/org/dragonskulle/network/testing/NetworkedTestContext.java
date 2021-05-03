@@ -16,6 +16,7 @@ import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkManager.IClientLoadedEvent;
 import org.dragonskulle.network.components.NetworkManager.IConnectedClientEvent;
 import org.dragonskulle.network.components.NetworkManager.IConnectionResultEvent;
 import org.dragonskulle.network.components.NetworkManager.IGameStartEvent;
@@ -47,9 +48,16 @@ public class NetworkedTestContext {
             TemplateManager templates,
             ISceneBuilder sceneBuilder,
             IConnectedClientEvent onConnectedOnServer,
+            IClientLoadedEvent onLoadedOnServer,
             IGameStartEvent onGameStart,
             IConnectionResultEvent onClientConnected) {
-        mServer = setupServer(templates, sceneBuilder, onConnectedOnServer, onGameStart);
+        mServer =
+                setupServer(
+                        templates,
+                        sceneBuilder,
+                        onConnectedOnServer,
+                        onLoadedOnServer,
+                        onGameStart);
 
         for (int i = 0; i < numClients; i++) {
             mClients.add(setupClient(templates, sceneBuilder, onClientConnected, mServer));
@@ -60,9 +68,17 @@ public class NetworkedTestContext {
             TemplateManager templates,
             ISceneBuilder sceneBuilder,
             IConnectedClientEvent onConnectedOnServer,
+            IClientLoadedEvent onLoadedOnServer,
             IGameStartEvent onGameStart,
             IConnectionResultEvent onClientConnected) {
-        this(1, templates, sceneBuilder, onConnectedOnServer, onGameStart, onClientConnected);
+        this(
+                1,
+                templates,
+                sceneBuilder,
+                onConnectedOnServer,
+                onLoadedOnServer,
+                onGameStart,
+                onClientConnected);
     }
 
     public NetworkedSceneContext getClient(int i) {
@@ -173,6 +189,7 @@ public class NetworkedTestContext {
             TemplateManager templates,
             ISceneBuilder sceneBuilder,
             IConnectedClientEvent onConnectedOnServer,
+            IClientLoadedEvent onLoadedOnServer,
             IGameStartEvent onGameStart) {
 
         NetworkedSceneContext ctx = new NetworkedSceneContext(templates, sceneBuilder);
@@ -183,7 +200,11 @@ public class NetworkedTestContext {
                                 (__) ->
                                         ctx.getManager()
                                                 .createServer(
-                                                        PORT, onConnectedOnServer, onGameStart))
+                                                        PORT,
+                                                        onConnectedOnServer,
+                                                        onLoadedOnServer,
+                                                        onGameStart,
+                                                        null))
                         .then(
                                 (__) -> {
                                     assert (ctx.getManager().getServerManager() != null);
@@ -208,15 +229,16 @@ public class NetworkedTestContext {
                                         .createClient(
                                                 "127.0.0.1",
                                                 PORT,
-                                                (gameScene, manager, netID) -> {
+                                                (manager, netID) -> {
                                                     if (onClientConnected != null) {
-                                                        onClientConnected.handle(
-                                                                gameScene, manager, netID);
+                                                        onClientConnected.handle(manager, netID);
                                                     }
                                                     log.info("CONNECTED CLIENT");
                                                     assert (netID >= 0);
                                                     called[0] = true;
-                                                }))
+                                                },
+                                                null,
+                                                null))
                 .awaitTimeout(TIMEOUT, (__) -> called[0]);
 
         return ctx;

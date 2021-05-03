@@ -93,7 +93,6 @@ public class Engine {
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
         UPnP.initialise();
-        UPnP.addPortMapping(17569, "TCP");
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
@@ -503,8 +502,7 @@ public class Engine {
             if (mPresentationScene != null) {
 
                 // Deactivate the old presentation scene
-                mInactiveScenes.add(mPresentationScene);
-                mActiveScenes.remove(mPresentationScene);
+                mScenesToDeactivate.add(mPresentationScene);
             }
 
             // And then load the new one

@@ -13,6 +13,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.network.components.ClientNetworkManager.ConnectionState;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.ServerNetworkManager.ServerGameState;
 import org.dragonskulle.network.testing.NetworkedTestContext;
 import org.junit.Test;
 
@@ -53,12 +54,12 @@ public class ServerTest {
         return new NetworkedTestContext(
                 TEMPLATE_MANAGER,
                 (__, isServer) -> new Scene(isServer ? "server_net_test" : "client_net_test"),
-                (__, man, id) -> {
-                    log.info("CONNECTED");
-                    man.getServerManager().spawnNetworkObject(id, TEMPLATE_MANAGER.find("cube"));
-                    man.getServerManager().spawnNetworkObject(id, TEMPLATE_MANAGER.find("capital"));
-                },
+                (__, man, id) -> man.getServerManager().start(),
                 null,
+                (man) -> {
+                    man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
+                    man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
+                },
                 null);
     }
 
@@ -73,7 +74,13 @@ public class ServerTest {
 
     private static void connect(NetworkedTestContext ctx) {
         ctx.getServer()
-                .awaitTimeout(TIMEOUT, (__) -> !ctx.getServerManager().getClients().isEmpty());
+                .awaitTimeout(TIMEOUT, (__) -> !ctx.getServerManager().getClients().isEmpty())
+                .awaitTimeout(
+                        TIMEOUT,
+                        (__) ->
+                                ctx.getServerManager().getGameState()
+                                        == ServerGameState.IN_PROGRESS);
+
         ctx.getClient()
                 .awaitTimeout(
                         TIMEOUT,
