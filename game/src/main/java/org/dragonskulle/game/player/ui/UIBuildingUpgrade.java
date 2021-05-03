@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
@@ -68,8 +66,8 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
     @Override
     public void onAwake() {
         mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
-        mGetHexChosen =  getParent().getParent().mGetHexChosen;
-        
+        mGetHexChosen = getParent().getParent().mGetHexChosen;
+
         createReferences(mLevelTexts);
         createReferences(mCostTexts);
         getGameObject()
@@ -100,18 +98,18 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
                             manager.buildHorizontalUI(
                                     self, 0.05f, 0.22f, 0.22f + 0.2f, unpackReferences(mCostTexts));
                         });
-        
+
         // Cost subtitle.
-		getGameObject().buildChild(
-                "cost_label",
-                new TransformUI(true),
-                g -> {
-                    TransformUI tran =
-                            g.getTransform(TransformUI.class);
-                    tran.setParentAnchor(0.3f, 0f);
-                    tran.setPosition(0f, -0.215f);
-                    g.addComponent(new UIText("COST"));
-                });
+        getGameObject()
+                .buildChild(
+                        "cost_label",
+                        new TransformUI(true),
+                        g -> {
+                            TransformUI tran = g.getTransform(TransformUI.class);
+                            tran.setParentAnchor(0.3f, 0f);
+                            tran.setPosition(0f, -0.215f);
+                            g.addComponent(new UIText("COST"));
+                        });
     }
 
     /**
@@ -205,17 +203,16 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
         if (getParent().didBuild() && mUpdateBuildingSelected != null) {
             mUpdateBuildingSelected.update();
         }
-        
-        if(mGetHexChosen == null) return;
+
+        if (mGetHexChosen == null) return;
         HexagonTile tile = mGetHexChosen.getHex();
-        if(tile.hasBuilding() == false) return;
+        if (tile.hasBuilding() == false) return;
         Building building = tile.getBuilding();
-        
+
         building.getShopStats().forEach(this::updateVisibleStat);
-        
-        int statUpdateCount = building.getStatUpdateCount();        
-        if (statUpdateCount > getBuildingStatUpdateCount()
-                || !building.equals(mLastBuilding)) {
+
+        int statUpdateCount = building.getStatUpdateCount();
+        if (statUpdateCount > getBuildingStatUpdateCount() || !building.equals(mLastBuilding)) {
             setBuildingStatUpdateCount(statUpdateCount);
             getParent().markDidBuild(false);
             mLastBuilding = building;

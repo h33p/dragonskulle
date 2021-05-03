@@ -172,8 +172,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                             || mGetBuildingChosen == null
                             || mSetBuildingChosen == null) return;
 
-                    if(mLastScreen == Screen.ATTACKING_SCREEN) return;
-                    
+                    if (mLastScreen == Screen.ATTACKING_SCREEN) return;
+
                     HexagonTile tile = mGetHexChosen.getHex();
                     if (tile == null) return;
                     Building building = tile.getBuilding();
@@ -316,7 +316,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 (handle, __) -> {
                     // Reset the Building back to the HexagonTile's building.
                     mUpdateBuildingSelected.update();
-                    
+
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -332,7 +332,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 "cancel_sell",
                 "Cancel Sell",
                 (handle, __) -> {
-                	mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
+                    mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
     }
@@ -571,7 +571,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
-        	transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1.2f);
+            transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1.2f);
         }
 
         menu.setEnabled(false);
@@ -599,7 +599,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     /**
-     * Ensure the chosen HexagonTile has a player owned building. If it does not, go to the default screen and close the shop.
+     * Ensure the chosen HexagonTile has a player owned building. If it does not, go to the default
+     * screen and close the shop.
      */
     private void checkOwnership() {
         HexagonTile tile = mGetHexChosen.getHex();
@@ -611,7 +612,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         if (!player.isBuildingOwner(building)) {
             setShopState(ShopState.CLOSED, true);
-        	mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
+            mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
         }
     }
 
@@ -779,17 +780,17 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     private void checkAttackMode() {
-    	if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building attacker = tile.getBuilding();
-        
-        if(attacker.getAttackableBuildings().size() == 0) {
-        	mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
+
+        if (attacker.getAttackableBuildings().size() == 0) {
+            mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
         }
     }
-    
+
     @Override
     public void fixedUpdate(float deltaTime) {
         checkOwnership();

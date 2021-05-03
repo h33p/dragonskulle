@@ -69,7 +69,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private Reference<Building> mCapital = null;
 
     /** The number of tokens the player has, synchronised from server to client. */
-    @Getter private SyncInt mTokens = new SyncInt(9999);
+    @Getter private SyncInt mTokens = new SyncInt(0);
 
     /** The colour of the player. */
     @Getter private final SyncVector3 mPlayerColour = new SyncVector3();

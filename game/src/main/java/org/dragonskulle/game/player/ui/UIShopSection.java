@@ -75,11 +75,11 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
-        	log.info("Setting visible state to " + state);
-        	
-        	String newText = "";
+            log.info("Setting visible state to " + state);
+
+            String newText = "";
             Reference<GameObject> newPanel;
-            
+
             switch (state) {
                 case ATTACK_SCREEN:
                     newPanel = null;
@@ -93,12 +93,12 @@ public class UIShopSection extends Component implements IOnStart {
                     newText = "Upgrade Building";
                     break;
                 case CLOSED:
-                	newPanel = null;
-                	newText = "";
+                    newPanel = null;
+                    newText = "";
                     show(mCurrentPanel, false);
                     show(mUpgradePanel, false);
                     show(mNewBuildingPanel, false);
-                	break;
+                    break;
                 default:
                     if (Reference.isValid(mTitleRef)) {
                         mTitleRef.get().setText("");

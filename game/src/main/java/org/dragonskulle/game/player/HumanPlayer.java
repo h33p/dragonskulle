@@ -392,15 +392,17 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             MapEffects effects,
             StandardHighlightType attackHighlight,
             StandardHighlightType selectHighlight) {
-        if (mHexChosen == null || effects == null || attackHighlight == null || selectHighlight == null)
-            return;
+        if (mHexChosen == null
+                || effects == null
+                || attackHighlight == null
+                || selectHighlight == null) return;
         Player player = getPlayer();
         if (player == null || !mHexChosen.hasBuilding()) return;
         Building myBuilding = mHexChosen.getBuilding();
 
         // Highlight the player's building.
         effects.highlightTile(mHexChosen, selectHighlight.asSelection());
-        
+
         Building targetBuilding = null;
         if (Reference.isValid(mBuildingChosen)) {
             targetBuilding = mBuildingChosen.get();
@@ -411,7 +413,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             // Highlight the building to attack in a different colour.
             if (targetBuilding != null && attackableBuilding.equals(targetBuilding)) {
-            	effects.highlightTile(tile, selectHighlight.asSelection());
+                effects.highlightTile(tile, selectHighlight.asSelection());
                 continue;
             }
 
