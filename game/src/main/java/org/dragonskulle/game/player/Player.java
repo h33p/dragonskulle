@@ -1088,7 +1088,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (!Reference.isValid(mGameState)) {
-            mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+            Scene activeScene = Scene.getActiveScene();
+
+            if (activeScene != null) {
+                mGameState = activeScene.getSingletonRef(GameState.class);
+            }
         }
 
         return Reference.isValid(mGameState) && !mGameState.get().isInGame();

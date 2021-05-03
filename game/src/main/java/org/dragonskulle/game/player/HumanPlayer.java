@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -15,6 +16,7 @@ import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameState.IGameEndEvent;
@@ -26,6 +28,7 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.misc.ArcPath;
+import org.dragonskulle.game.misc.ArcPath.IArcHandler;
 import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
@@ -36,9 +39,6 @@ import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.renderer.Mesh;
-import org.dragonskulle.renderer.components.Renderable;
-import org.dragonskulle.renderer.materials.PBRMaterial;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.utils.MathUtils;
@@ -90,13 +90,97 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** Whether the visuals need to be updated. */
     private boolean mVisualsNeedUpdate = true;
 
+    private class ArcUpdater implements IPathUpdater, IArcHandler {
+
+        private final Vector3f posStart = new Vector3f();
+        private final Vector3f posEnd = new Vector3f();
+
+        private float mLerpedStart = -1;
+        private boolean mDidSet = false;
+
+        public void handle(ArcPath arcPath) {
+            float speed = 10f;
+            float deltaTime = Engine.getInstance().getFrameDeltaTime();
+            float lerptime = Math.min(1f, deltaTime * speed);
+
+            if (mArcFadeOut
+                    || mHexChosen == null
+                    || !Reference.isValid(mBuildingChosen)
+                    || !mPlayer.get()
+                            .attackCheck(mBuildingChosen.get(), mHexChosen.getBuilding())) {
+                mLerpedStart = MathUtils.lerp(mLerpedStart, -1, lerptime);
+
+                arcPath.setSpawnOffset(mLerpedStart);
+
+                if (mLerpedStart <= -1) {
+                    mDidSet = false;
+
+                    if (mArcFadeOut) {
+                        mUpdater.clear();
+                    }
+                }
+
+                return;
+            } else {
+                mLerpedStart = MathUtils.lerp(mLerpedStart, 0, lerptime);
+            }
+
+            arcPath.setSpawnOffset(mLerpedStart);
+
+            HexagonTile hex = mBuildingChosen.get().getTile();
+            HexagonTile hexEnd = mHexChosen;
+
+            TransformHex.axialToCartesian(
+                    new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), posStart);
+            TransformHex.axialToCartesian(
+                    new Vector2f(hexEnd.getQ(), hexEnd.getR()), hexEnd.getSurfaceHeight(), posEnd);
+
+            HexagonMap map = mPlayer.get().getMap();
+
+            Matrix4fc mat = map.getGameObject().getTransform().getWorldMatrix();
+
+            mat.transformPosition(posStart);
+            mat.transformPosition(posEnd);
+
+            float amplitude = hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f + 0.5f;
+
+            if (!mDidSet) {
+                mArcPath.get().getPosStart().set(posStart);
+                mArcPath.get().getPosTarget().set(posEnd);
+
+                mArcPath.get().setAmplitude(amplitude);
+
+                mDidSet = true;
+            }
+
+            arcPath.getPosStart().lerp(posStart, lerptime);
+            arcPath.getPosTarget().lerp(posEnd, lerptime);
+            arcPath.setAmplitude(MathUtils.lerp(arcPath.getAmplitude(), amplitude, lerptime));
+        }
+
+        public void handle(int id, float pathPoint, Transform3D transform) {
+            float factor = 1.6f;
+
+            float mul = factor * pathPoint - 0.5f * factor;
+
+            mul = -(mul * mul) + 1;
+
+            transform.setScale(mul, mul, mul);
+        }
+    }
+
     /** Visual arc path shown on selections */
     private Reference<ArcPath> mArcPath;
 
     /** Updater for mArcPath */
-    private Reference<IPathUpdater> mUpdater;
+    private Reference<ArcUpdater> mUpdater;
 
     private boolean mArcFadeOut = false;
+
+    static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
+
+    static final GameObject SELECTION_TEMPLATE =
+            TEMPLATES.get().getDefaultScene().findRootObject("selection_sphere");
 
     /**
      * Create a {@link HumanPlayer}.
@@ -158,20 +242,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         ArcPath path = new ArcPath();
 
-        path.setTemplate(
-                new GameObject(
-                        "path",
-                        (handle) -> {
-                            handle.buildChild(
-                                    "cube",
-                                    new Transform3D(),
-                                    (cube) -> {
-                                        cube.addComponent(
-                                                new Renderable(Mesh.CUBE, new PBRMaterial()));
-                                        cube.getTransform(Transform3D.class)
-                                                .scale(0.2f, 0.2f, 0.2f);
-                                    });
-                        }));
+        path.setTemplate(SELECTION_TEMPLATE);
         path.setAmplitude(2f);
         path.setObjGap(0.05f);
 
@@ -345,86 +416,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 mArcFadeOut = false;
 
                 if (!Reference.isValid(mUpdater)) {
-                    boolean[] didSet = {false};
-                    Vector3f posStart = new Vector3f();
-                    Vector3f posEnd = new Vector3f();
-                    float[] lerpedStart = {-1f};
-
-                    mUpdater =
-                            new Reference<>(
-                                    (arcPath) -> {
-                                        float speed = 10f;
-                                        float deltaTime = Engine.getInstance().getFrameDeltaTime();
-                                        float lerptime = Math.min(1f, deltaTime * speed);
-
-                                        if (mArcFadeOut
-                                                || mHexChosen == null
-                                                || !Reference.isValid(mBuildingChosen)
-                                                || !mPlayer.get()
-                                                        .attackCheck(
-                                                                mBuildingChosen.get(),
-                                                                mHexChosen.getBuilding())) {
-                                            didSet[0] = false;
-                                            lerpedStart[0] =
-                                                    MathUtils.lerp(lerpedStart[0], -1, lerptime);
-
-                                            arcPath.setSpawnOffset(lerpedStart[0]);
-
-                                            if (mArcFadeOut && lerpedStart[0] <= -1) {
-                                                mUpdater.clear();
-                                            }
-
-                                            return;
-                                        } else {
-                                            lerpedStart[0] =
-                                                    MathUtils.lerp(lerpedStart[0], 0, lerptime);
-                                        }
-
-                                        arcPath.setSpawnOffset(lerpedStart[0]);
-
-                                        HexagonTile hex = mBuildingChosen.get().getTile();
-                                        HexagonTile hexEnd = mHexChosen;
-
-                                        TransformHex.axialToCartesian(
-                                                new Vector2f(hex.getQ(), hex.getR()),
-                                                hex.getHeight(),
-                                                posStart);
-                                        TransformHex.axialToCartesian(
-                                                new Vector2f(hexEnd.getQ(), hexEnd.getR()),
-                                                hexEnd.getSurfaceHeight(),
-                                                posEnd);
-
-                                        HexagonMap map = mPlayer.get().getMap();
-
-                                        Matrix4fc mat =
-                                                map.getGameObject().getTransform().getWorldMatrix();
-
-                                        mat.transformPosition(posStart);
-                                        mat.transformPosition(posEnd);
-
-                                        float amplitude =
-                                                hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f
-                                                        + 0.5f;
-
-                                        if (!didSet[0]) {
-                                            mArcPath.get().getPosStart().set(posStart);
-                                            mArcPath.get().getPosTarget().set(posEnd);
-
-                                            mArcPath.get().setAmplitude(amplitude);
-
-                                            didSet[0] = true;
-                                        }
-
-                                        arcPath.getPosStart().lerp(posStart, lerptime);
-                                        arcPath.getPosTarget().lerp(posEnd, lerptime);
-                                        arcPath.setAmplitude(
-                                                MathUtils.lerp(
-                                                        arcPath.getAmplitude(),
-                                                        amplitude,
-                                                        lerptime));
-                                    });
-
-                    mArcPath.get().setUpdater(mUpdater);
+                    mUpdater = new Reference<>(new ArcUpdater());
+                    mArcPath.get().setUpdater(mUpdater.cast(IPathUpdater.class));
+                    mArcPath.get().setArcHandler(mUpdater.cast(IArcHandler.class));
                 }
 
                 effects.setDefaultHighlight(true);

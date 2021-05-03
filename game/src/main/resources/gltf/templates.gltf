@@ -37,7 +37,8 @@
                 3,
                 4,
                 5,
-                8
+                8,
+                9
             ]
         }
     ],
@@ -234,6 +235,15 @@
                 }
             },
             "name" : "Water Hex"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 7,
+            "name" : "selection_sphere"
         }
     ],
     "materials" : [
@@ -333,6 +343,25 @@
                 "metallicFactor" : 0,
                 "roughnessFactor" : 0.2132352888584137
             }
+        },
+        {
+            "doubleSided" : true,
+            "emissiveFactor" : [
+                1,
+                0.005605391692370176,
+                0.005605391692370176
+            ],
+            "name" : "EmissiveRed",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.8000000715255737,
+                    0.002747548744082451,
+                    0.00599578907713294,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
         }
     ],
     "meshes" : [
@@ -431,6 +460,20 @@
                     },
                     "indices" : 7,
                     "material" : 6
+                }
+            ]
+        },
+        {
+            "name" : "Sphere",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 26,
+                        "NORMAL" : 27,
+                        "TEXCOORD_0" : 28
+                    },
+                    "indices" : 29,
+                    "material" : 7
                 }
             ]
         }
@@ -661,6 +704,40 @@
             "componentType" : 5126,
             "count" : 125,
             "type" : "VEC2"
+        },
+        {
+            "bufferView" : 26,
+            "componentType" : 5126,
+            "count" : 559,
+            "max" : [
+                0.06000004708766937,
+                0.05999995768070221,
+                0.2600000202655792
+            ],
+            "min" : [
+                -0.05999995768070221,
+                -0.06000007688999176,
+                0.13999998569488525
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 27,
+            "componentType" : 5126,
+            "count" : 559,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 28,
+            "componentType" : 5126,
+            "count" : 559,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 29,
+            "componentType" : 5123,
+            "count" : 2880,
+            "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
@@ -793,11 +870,31 @@
             "buffer" : 0,
             "byteLength" : 1000,
             "byteOffset" : 34024
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 6708,
+            "byteOffset" : 35024
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 6708,
+            "byteOffset" : 41732
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 4472,
+            "byteOffset" : 48440
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 5760,
+            "byteOffset" : 52912
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 35024,
+            "byteLength" : 58672,
             "uri" : "templates.bin"
         }
     ]

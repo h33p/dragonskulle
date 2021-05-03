@@ -45,7 +45,7 @@ public class ArcPath extends Component implements IFrameUpdate {
                 float spawnOff,
                 int id,
                 float amplitude,
-                IArcHandler arcHandler) {
+                Reference<IArcHandler> arcHandler) {
             if (!Reference.isValid(mObject)) {
                 return;
             }
@@ -64,8 +64,8 @@ public class ArcPath extends Component implements IFrameUpdate {
             tmp.z += -amplitude * zmul * zmul + amplitude;
             mTransform.setPosition(tmp);
 
-            if (arcHandler != null) {
-                arcHandler.handle(id, off, mTransform);
+            if (Reference.isValid(arcHandler)) {
+                arcHandler.get().handle(id, off, mTransform);
             }
         }
 
@@ -90,7 +90,7 @@ public class ArcPath extends Component implements IFrameUpdate {
 
     @Getter @Setter private float mAmplitude = 1f;
 
-    @Getter @Setter private IArcHandler mArcHandler;
+    @Getter @Setter private Reference<IArcHandler> mArcHandler;
 
     @Getter private float mSpawnStart = 0;
     @Getter private float mSpawnEnd = 1;
