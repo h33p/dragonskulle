@@ -10,10 +10,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIMaterial;
-import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 
 /**

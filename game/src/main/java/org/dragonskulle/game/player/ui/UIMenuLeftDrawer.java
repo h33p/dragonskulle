@@ -55,12 +55,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     private boolean mIsHidden = false;
 
     private TransformUI mTransform;
-	private Reference<UIButton> mAttackConfirm;
-	private Reference<UITextRect> mAttackCost;
-	private Reference<UITextRect> mAttackInfo;
-	private Reference<UIButton> mAttackOption;
-	private Reference<UIButton> mSellOption;
-	private Reference<UIButton> mSellButton;
+    private Reference<UIButton> mAttackConfirm;
+    private Reference<UITextRect> mAttackCost;
+    private Reference<UITextRect> mAttackInfo;
+    private Reference<UIButton> mAttackOption;
+    private Reference<UIButton> mSellOption;
+    private Reference<UIButton> mSellButton;
 
     public void setHidden(boolean hide) {
         if (hide && mIsHidden) return;
@@ -164,17 +164,20 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         this.mSetHexChosen = setHexChosen;
         this.mNotifyScreenChange = notifyScreenChange;
         this.mGetPlayer = getPlayer;
-        
+
         this.mUpdateBuildingSelected =
-                () -> {                    
-                    if(mGetHexChosen == null || mSetHexChosen == null || mGetBuildingChosen == null || mSetBuildingChosen == null) return;
-                    
+                () -> {
+                    if (mGetHexChosen == null
+                            || mSetHexChosen == null
+                            || mGetBuildingChosen == null
+                            || mSetBuildingChosen == null) return;
+
                     HexagonTile tile = mGetHexChosen.getHex();
-                    if(tile == null) return;
+                    if (tile == null) return;
                     Building building = tile.getBuilding();
-                    if(building == null) return;
+                    if (building == null) return;
                     mSetBuildingChosen.setBuilding(building.getReference(Building.class));
-                    
+
                     System.out.println("run!");
                 };
     }
@@ -189,12 +192,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      */
     @Override
     public void onStart() {
-    	// The menu that displays when you select a building.
+        // The menu that displays when you select a building.
         generateBuildingSelectedMenu();
-    	// The menu that displays when you enter attack mode.
+        // The menu that displays when you enter attack mode.
         generateAttackMenu();
         // The sell confirmation menu.
-        generateSellMenu();        
+        generateSellMenu();
 
         setVisibleScreen(Screen.DEFAULT_SCREEN);
         mShop = buildShop();
@@ -215,13 +218,13 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         items.add(buildCancelAttackButtonFrame());
         mAttackScreenMenu = buildMenu(items);
 
-        if(!Reference.isValid(mAttackScreenMenu)) return;
+        if (!Reference.isValid(mAttackScreenMenu)) return;
         GameObject menu = mAttackScreenMenu.get();
-        
+
         ArrayList<GameObject> children = menu.getChildren();
-        if(menu.getChildren().size() == 0) return;
+        if (menu.getChildren().size() == 0) return;
         mAttackConfirm = children.get(0).getComponent(UIButton.class);
-        
+
         // Move all the buttons down.
         for (GameObject object : menu.getChildren()) {
             TransformUI objectTransform = object.getTransform(TransformUI.class);
@@ -229,15 +232,15 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
 
         // Move the 2nd button up slightly.
-        if(children.size() >= 1) {
-        	GameObject secondButton = menu.getChildren().get(1);
-        	secondButton.getTransform(TransformUI.class).translate(0, -0.05f);
+        if (children.size() >= 1) {
+            GameObject secondButton = menu.getChildren().get(1);
+            secondButton.getTransform(TransformUI.class).translate(0, -0.05f);
         }
-        
+
         // Add an attack cost label.
         UITextRect cost = new UITextRect("Cost: ?");
         mAttackCost = cost.getReference(UITextRect.class);
-        
+
         GameObject costObject =
                 new GameObject(
                         "attack_cost",
@@ -252,7 +255,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         // Add an attack info label.
         UITextRect attackInfo = new UITextRect("Chance: ------");
         mAttackInfo = attackInfo.getReference(UITextRect.class);
-        
+
         GameObject attackInfoObject =
                 new GameObject(
                         "attack_info",
@@ -266,41 +269,41 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     }
 
     private void generateSellMenu() {
-    	ArrayList<UITextButtonFrame> items = new ArrayList<>();
-    	
-    	items.add(buildConfirmSellButtonFrame());
-    	items.add(buildCancelSellButtonFrame());
+        ArrayList<UITextButtonFrame> items = new ArrayList<>();
+
+        items.add(buildConfirmSellButtonFrame());
+        items.add(buildCancelSellButtonFrame());
         mSellConfirmScreenMenu = buildMenu(items);
-        
-        if(!Reference.isValid(mSellConfirmScreenMenu)) return;
+
+        if (!Reference.isValid(mSellConfirmScreenMenu)) return;
         GameObject menu = mSellConfirmScreenMenu.get();
-        
+
         ArrayList<GameObject> children = menu.getChildren();
-        if(menu.getChildren().size() == 0) return;
-        mSellButton = children.get(0).getComponent(UIButton.class); 
+        if (menu.getChildren().size() == 0) return;
+        mSellButton = children.get(0).getComponent(UIButton.class);
     }
-    
+
     private void generateBuildingSelectedMenu() {
-    	ArrayList<UITextButtonFrame> items = new ArrayList<>();
-    	
-    	items.add(buildAttackButtonFrame());
-    	items.add(buildSellButtonFrame());
+        ArrayList<UITextButtonFrame> items = new ArrayList<>();
+
+        items.add(buildAttackButtonFrame());
+        items.add(buildSellButtonFrame());
         mBuildScreenMenu = buildMenu(items);
-        
-        if(!Reference.isValid(mBuildScreenMenu)) return;
+
+        if (!Reference.isValid(mBuildScreenMenu)) return;
         GameObject menu = mBuildScreenMenu.get();
-        
+
         ArrayList<GameObject> children = menu.getChildren();
-        if(menu.getChildren().size() == 0) return;
+        if (menu.getChildren().size() == 0) return;
         mAttackOption = children.get(0).getComponent(UIButton.class);
         mSellOption = children.get(1).getComponent(UIButton.class);
-        
+
         TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
             transform.translate(0f, 0.55f);
         }
     }
-    
+
     /**
      * Build the attack button frame.
      *
@@ -311,7 +314,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 "cancel_attack",
                 "Cancel Attack",
                 (handle, __) -> {
-                    // Reset the Building back to the HexagonTile's building.                    
+                    // Reset the Building back to the HexagonTile's building.
                     mUpdateBuildingSelected.update();
 
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
@@ -506,7 +509,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      * @param updateBuilding this will force the parents mSelectedBuilding variable to update
      */
     private void setShopState(ShopState shopState, boolean updateBuilding) {
-    	if(updateBuilding) mUpdateBuildingSelected.update();
+        if (updateBuilding) mUpdateBuildingSelected.update();
         setShopState(shopState);
     }
 
@@ -620,7 +623,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
 
         if (!Reference.isValid(mSellOption)) return;
-        
+
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (!Reference.isValid(buildingRef)) return;
         Building building = buildingRef.get();
@@ -642,8 +645,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
 
         if (!Reference.isValid(mAttackOption)) return;
-        UIButton option = mAttackOption.get(); 
-        
+        UIButton option = mAttackOption.get();
+
         Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
         if (!Reference.isValid(buildingRef)) return;
         Building building = buildingRef.get();
@@ -673,9 +676,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     private void updateAttackCostText() {
         if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 
-        if(!Reference.isValid(mAttackCost)) return;
+        if (!Reference.isValid(mAttackCost)) return;
         UITextRect textRect = mAttackCost.get();
-        
+
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building attacker = tile.getBuilding();
@@ -691,9 +694,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     private void updateAttackInfoText() {
         if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 
-        if(!Reference.isValid(mAttackInfo)) return;
+        if (!Reference.isValid(mAttackInfo)) return;
         UITextRect textRect = mAttackInfo.get();
-        
+
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building attacker = tile.getBuilding();
@@ -738,7 +741,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         if (!Reference.isValid(mAttackConfirm)) return;
         UIButton button = mAttackConfirm.get();
-        
+
         Reference<Building> defenderReference = mGetBuildingChosen.getBuilding();
         if (!Reference.isValid(defenderReference)) return;
         Building defender = defenderReference.get();

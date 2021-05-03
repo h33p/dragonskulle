@@ -90,7 +90,7 @@ public class AimerAi extends AiPlayer {
     @Override
     protected void simulateInput() {
 
-    	Player player = getPlayer();
+        Player player = getPlayer();
         if (player == null) return;
 
         // Checks if we have reached the capital
