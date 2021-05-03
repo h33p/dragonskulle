@@ -300,7 +300,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
-            transform.translate(0f, 0.55f);
+            transform.translate(0f, 0.7f);
         }
     }
 
@@ -317,6 +317,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                     // Reset the Building back to the HexagonTile's building.
                     mUpdateBuildingSelected.update();
 
+                    setShopState(ShopState.CLOSED, true);
                     mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
@@ -332,7 +333,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                 "cancel_sell",
                 "Cancel Sell",
                 (handle, __) -> {
-                    mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
+                	setShopState(ShopState.CLOSED, true);
+                	mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
                 },
                 true);
     }
@@ -566,17 +568,17 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                                                 child.isStartEnabled()))
                         .toArray(UIButton[]::new);
 
-        final GameObject built_menu = new GameObject("build_menu", new TransformUI());
-        manager.buildVerticalUi(built_menu, mOffsetToTop, 0f, 1f, buttons);
-        getGameObject().addChild(built_menu);
+        final GameObject menu = new GameObject("build_menu", new TransformUI());
+        manager.buildVerticalUi(menu, mOffsetToTop, 0f, 1f, buttons);
+        getGameObject().addChild(menu);
 
-        TransformUI transform = built_menu.getTransform(TransformUI.class);
+        TransformUI transform = menu.getTransform(TransformUI.class);
         if (transform != null) {
-            transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1.2f);
+            transform.setParentAnchor(0.1f, -0.1f, 1f - 0.1f, 1f);
         }
 
-        built_menu.setEnabled(false);
-        return built_menu.getReference();
+        menu.setEnabled(false);
+        return menu.getReference();
     }
 
     /**
@@ -599,10 +601,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         return mShop;
     }
 
-    /** Ensure the chosen HexagonTile has a player owned building, if in attack mode. */
+    /**
+     * Ensure the chosen HexagonTile has a player owned building. If it does not, go to the default screen and close the shop.
+     */
     private void checkOwnership() {
 
-        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+        // if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
@@ -612,9 +616,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (player == null) return;
 
         if (!player.isBuildingOwner(building)) {
-            mSetHexChosen.setHex(null);
-            mSetBuildingChosen.setBuilding(null);
-            mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
+            setShopState(ShopState.CLOSED, true);
+        	mNotifyScreenChange.call(Screen.DEFAULT_SCREEN);
         }
     }
 

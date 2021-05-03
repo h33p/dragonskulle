@@ -75,22 +75,14 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
-            String newText = "";
-            if (state.equals(ShopState.CLOSED)) {
-                show(mNewBuildingPanel, false);
-                show(mCurrentPanel, false);
-                setLastState(state);
-                if (Reference.isValid(mTitleRef)) {
-                    mTitleRef.get().setText(newText);
-                }
-                swapPanels(new Reference<>(null));
-                return;
-            }
+        	log.info("Setting visible state to " + state);
+        	
+        	String newText = "";
             Reference<GameObject> newPanel;
-            log.warning("setting visible state to " + state);
+            
             switch (state) {
                 case ATTACK_SCREEN:
-                    newPanel = new Reference<>(null);
+                    newPanel = null;
                     break;
                 case BUILDING_NEW:
                     newPanel = mNewBuildingPanel;
@@ -100,10 +92,16 @@ public class UIShopSection extends Component implements IOnStart {
                     newPanel = mUpgradePanel;
                     newText = "Upgrade Building";
                     break;
+                case CLOSED:
+                	newPanel = null;
+                	newText = "";
+                    show(mCurrentPanel, false);
+                    show(mUpgradePanel, false);
+                    show(mNewBuildingPanel, false);
+                	break;
                 default:
-                    log.warning("Menu hasn't been updated to reflect this screen yet  " + state);
                     if (Reference.isValid(mTitleRef)) {
-                        mTitleRef.get().setText(newText);
+                        mTitleRef.get().setText("");
                     }
                     setState(ShopState.CLOSED);
                     return;

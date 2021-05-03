@@ -299,21 +299,18 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         switch (mCurrentScreen) {
             case DEFAULT_SCREEN:
-                effects.setDefaultHighlight(true);
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
-                effects.setDefaultHighlight(true);
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
                         });
                 break;
             case ATTACKING_SCREEN:
-                effects.setDefaultHighlight(false);
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightAttackableTiles(
@@ -321,10 +318,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         });
                 break;
             case SELLING_SCREEN:
-                effects.setDefaultHighlight(true);
                 break;
             case PLACING_NEW_BUILDING:
-                effects.setDefaultHighlight(true);
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightBuildableTiles(fx, StandardHighlightType.VALID);
@@ -419,8 +414,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             fx.highlightTile(tile, attackHighlight.asSelection());
         }
-
-        mVisualsNeedUpdate = true;
     }
 
     /**
