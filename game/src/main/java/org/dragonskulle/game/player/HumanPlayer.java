@@ -384,20 +384,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /**
      * Highlight surrounding Buildings based on the {@link #mHexChosen}.
      *
-     * @param fx The MapEffects to be used.
+     * @param effects The MapEffects to be used.
      * @param attackHighlight Used to highlight attackable buildings.
      * @param selectHighlight Used when an attackable building is selected.
      */
     private void highlightAttackableTiles(
-            MapEffects fx,
+            MapEffects effects,
             StandardHighlightType attackHighlight,
             StandardHighlightType selectHighlight) {
-        if (mHexChosen == null || fx == null || attackHighlight == null || selectHighlight == null)
+        if (mHexChosen == null || effects == null || attackHighlight == null || selectHighlight == null)
             return;
         Player player = getPlayer();
         if (player == null || !mHexChosen.hasBuilding()) return;
         Building myBuilding = mHexChosen.getBuilding();
 
+        // Highlight the player's building.
+        effects.highlightTile(mHexChosen, selectHighlight.asSelection());
+        
         Building targetBuilding = null;
         if (Reference.isValid(mBuildingChosen)) {
             targetBuilding = mBuildingChosen.get();
@@ -408,11 +411,11 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             // Highlight the building to attack in a different colour.
             if (targetBuilding != null && attackableBuilding.equals(targetBuilding)) {
-                fx.highlightTile(tile, selectHighlight.asSelection());
+            	effects.highlightTile(tile, selectHighlight.asSelection());
                 continue;
             }
 
-            fx.highlightTile(tile, attackHighlight.asSelection());
+            effects.highlightTile(tile, attackHighlight.asSelection());
         }
     }
 

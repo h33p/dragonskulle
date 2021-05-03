@@ -172,13 +172,13 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                             || mGetBuildingChosen == null
                             || mSetBuildingChosen == null) return;
 
+                    if(mLastScreen == Screen.ATTACKING_SCREEN) return;
+                    
                     HexagonTile tile = mGetHexChosen.getHex();
                     if (tile == null) return;
                     Building building = tile.getBuilding();
                     if (building == null) return;
                     mSetBuildingChosen.setBuilding(building.getReference(Building.class));
-
-                    System.out.println("run!");
                 };
     }
 
@@ -602,9 +602,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      * Ensure the chosen HexagonTile has a player owned building. If it does not, go to the default screen and close the shop.
      */
     private void checkOwnership() {
-
-        // if (mLastScreen != Screen.ATTACKING_SCREEN) return;
-
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building building = tile.getBuilding();
@@ -781,9 +778,22 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
     }
 
+    private void checkAttackMode() {
+    	if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+
+        HexagonTile tile = mGetHexChosen.getHex();
+        if (tile == null || !tile.hasBuilding()) return;
+        Building attacker = tile.getBuilding();
+        
+        if(attacker.getAttackableBuildings().size() == 0) {
+        	mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
+        }
+    }
+    
     @Override
     public void fixedUpdate(float deltaTime) {
         checkOwnership();
+        checkAttackMode();
         updateSellOptionButton();
         updateAttackOptionButton();
         updateAttackCostText();
