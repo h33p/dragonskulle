@@ -269,6 +269,7 @@ public class Lobby extends Component implements IFrameUpdate {
                     mHostUi.setEnabled(true);
                 });
 
+        mHostUi.setEnabled(false);
         mHostingUi.setEnabled(true);
         mFailedToForwardUi.setEnabled(false);
     }
@@ -479,7 +480,6 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Host public lobby",
                                 (__, ___) -> {
-                                    mHostUi.setEnabled(false);
                                     if (!UPnP.isPortAvailable(PORT, "TCP")
                                             || !UPnP.addPortMapping(PORT, "TCP")) {
                                         mFailedToForwardUi.setEnabled(true);
