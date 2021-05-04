@@ -603,42 +603,11 @@ public class Building extends NetworkableComponent
      * @return An opponent Building that can be attacked from this Building; otherwise {@code null}.
      */
     public Building getRandomAttackableBuilding() {
-        // Attempt to generate the attackable tiles if they don't exist.
-        if (mAttackableTiles.isEmpty()) {
-            generateTileLists();
-        }
+        List<Building> buildings = new ArrayList<Building>(getAttackableBuildings());
+        if (buildings.size() == 0) return null;
 
-        // If the tiles are still empty, there are no Buildings.
-        if (mAttackableTiles.isEmpty()) return null;
-
-        Player owner = getOwner();
-        if (owner == null) return null;
-
-        // Start at a random point in the list of attackable tiles.
-        int index = mRandom.nextInt(mAttackableTiles.size());
-        final int end = index;
-
-        // Go through the tiles, starting at index and looping round, trying to find an attackable
-        // building.
-        do {
-            HexagonTile tile = mAttackableTiles.get(index);
-
-            if (tile != null && tile.hasBuilding()) {
-                Building building = tile.getBuilding();
-                // Ensure the current player doesn't own the building.
-                if (!owner.isBuildingOwner(building)) {
-                    return building;
-                }
-            }
-
-            // Go to the next tile.
-            index++;
-            if (index >= mAttackableTiles.size()) {
-                index = 0;
-            }
-        } while (index != end);
-
-        return null;
+        int index = mRandom.nextInt(buildings.size());
+        return buildings.get(index);
     }
 
     /**
