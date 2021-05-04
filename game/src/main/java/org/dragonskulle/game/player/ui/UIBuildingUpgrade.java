@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
@@ -42,12 +40,11 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
 
     private final HashMap<StatType, Reference<UITextRect>> mLevelTexts = new HashMap<>();
     private final HashMap<StatType, Reference<UITextRect>> mCostTexts = new HashMap<>();
-    private UIMenuLeftDrawer.IGetBuildingChosen mGetBuildingChosen;
     private UIMenuLeftDrawer.IUpdateBuildingChosen mUpdateBuildingSelected;
+    private UIMenuLeftDrawer.IGetHexChosen mGetHexChosen;
     private Building mLastBuilding = null;
     @Getter @Setter private int mBuildingStatUpdateCount = -1;
     private final HashMap<StatType, Reference<UIButton>> mUpgradeButtonRefs = new HashMap<>();
-    private Reference<GameObject> mCostLabel;
 
     /**
      * Constructor.
@@ -68,8 +65,8 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
      */
     @Override
     public void onAwake() {
-        mGetBuildingChosen = getParent().getParent().mGetBuildingChosen;
         mUpdateBuildingSelected = getParent().getParent().mUpdateBuildingSelected;
+        mGetHexChosen = getParent().getParent().mGetHexChosen;
 
         createReferences(mLevelTexts);
         createReferences(mCostTexts);
@@ -81,33 +78,37 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
                             UIManager manager = UIManager.getInstance();
 
                             manager.buildHorizontalUI(
-                                    self, 0.05f, 0.2f, 0.4f, unpackReferences(mLevelTexts));
+                                    self,
+                                    0.05f,
+                                    -0.4f,
+                                    -0.4f + 0.2f,
+                                    unpackReferences(mLevelTexts));
 
                             manager.buildHorizontalUI(
                                     self,
                                     0.05f,
-                                    0.4f,
-                                    0.9f,
+                                    -0.2f,
+                                    0.3f,
                                     buildStatUpgrade(StatType.ATTACK, "ui/attack_symbol.png"),
                                     buildStatUpgrade(StatType.DEFENCE, "ui/defence_symbol.png"),
                                     buildStatUpgrade(
                                             StatType.TOKEN_GENERATION,
                                             "ui/token_generation_symbol.png"));
 
-                            mCostLabel =
-                                    self.buildChild(
-                                            "cost_label",
-                                            new TransformUI(true),
-                                            g -> {
-                                                TransformUI tran =
-                                                        g.getTransform(TransformUI.class);
-                                                tran.setParentAnchor(0.3f, 0.38f);
-                                                tran.setPosition(0f, 0.145f);
-                                                g.addComponent(new UIText("COST"));
-                                            });
-
                             manager.buildHorizontalUI(
-                                    self, 0.05f, 0.65f, 1.15f, unpackReferences(mCostTexts));
+                                    self, 0.05f, 0.22f, 0.22f + 0.2f, unpackReferences(mCostTexts));
+                        });
+
+        // Cost subtitle.
+        getGameObject()
+                .buildChild(
+                        "cost_label",
+                        new TransformUI(true),
+                        g -> {
+                            TransformUI tran = g.getTransform(TransformUI.class);
+                            tran.setParentAnchor(0.3f, 0f);
+                            tran.setPosition(0f, -0.215f);
+                            g.addComponent(new UIText("COST"));
                         });
     }
 
@@ -202,47 +203,19 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
         if (getParent().didBuild() && mUpdateBuildingSelected != null) {
             mUpdateBuildingSelected.update();
         }
-        if (mGetBuildingChosen != null) {
-            Reference<Building> buildingRef = mGetBuildingChosen.getBuilding();
-            if (Reference.isValid(buildingRef)) {
-                Building building = buildingRef.get();
-                int statUpdateCount = building.getStatUpdateCount();
-                hideMaxStats(building);
-                if (statUpdateCount > getBuildingStatUpdateCount()
-                        || !building.equals(mLastBuilding)) {
-                    setBuildingStatUpdateCount(statUpdateCount);
-                    getParent().markDidBuild(false);
-                    mLastBuilding = building;
-                    building.getShopStats().forEach(this::updateVisibleStat);
-                }
-            }
-        }
-    }
 
-    /**
-     * Hides the {@link #mCostLabel} if all the stats in the shop are their max value.
-     *
-     * @param building the building the shop is looking at
-     */
-    private void hideMaxStats(Building building) {
-        // This is atomic as its being used inside a forEach loop.
-        AtomicInteger numberOfMaxStats = new AtomicInteger();
-        building.getShopStats()
-                .forEach(
-                        (s) -> {
-                            Reference<UIButton> uiButtonReference =
-                                    mUpgradeButtonRefs.get(s.getType());
-                            if (Reference.isValid(uiButtonReference)) {
-                                boolean maxLevel = s.isMaxLevel();
-                                if (maxLevel) numberOfMaxStats.getAndIncrement();
-                                uiButtonReference.get().setEnabled(!maxLevel);
-                            }
-                        });
+        if (mGetHexChosen == null) return;
+        HexagonTile tile = mGetHexChosen.getHex();
+        if (tile.hasBuilding() == false) return;
+        Building building = tile.getBuilding();
 
-        if (Reference.isValid(mCostLabel)) {
-            mCostLabel
-                    .get()
-                    .setEnabled(numberOfMaxStats.get() != Building.getNumberOfShopStatTypes());
+        building.getShopStats().forEach(this::updateVisibleStat);
+
+        int statUpdateCount = building.getStatUpdateCount();
+        if (statUpdateCount > getBuildingStatUpdateCount() || !building.equals(mLastBuilding)) {
+            setBuildingStatUpdateCount(statUpdateCount);
+            getParent().markDidBuild(false);
+            mLastBuilding = building;
         }
     }
 
@@ -298,9 +271,4 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
             textRef.get().setText(value);
         }
     }
-    //
-    //    @Override
-    //    public void onAwake() {
-    //
-    //    }
 }

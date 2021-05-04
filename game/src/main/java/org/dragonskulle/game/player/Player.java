@@ -96,7 +96,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
-    private static final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 2;
     /** How frequently the tokens should be added. */
     private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
@@ -662,6 +662,24 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
+     * Get whether the player is currently in the attack cooldown.
+     *
+     * @return Whether the player is in the attack cooldown period.
+     */
+    public boolean inCooldown() {
+        return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+    }
+
+    /**
+     * Get the time left in the cooldown period.
+     *
+     * @return The remaining time to wait.
+     */
+    public float getRemainingCooldown() {
+        return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
+    }
+
+    /**
      * Process and parse an event in which the <b>client</b> player wishes to place a {@link
      * Building}.
      *
@@ -720,6 +738,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
+        building.setSellPrice(descriptor.getSellPrice());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
         log.warning("Added building.");
@@ -834,8 +853,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         mLastAttack.set(getNetworkManager().getServerTime());
 
-        // ATTACK!!! (Sorry...)
-        mTokens.subtract(defender.getAttackCost());
+        // ATTACK!
+        mTokens.subtract(attacker.getAttackCost());
 
         float lockTime = Engine.getInstance().getCurTime() + 1f;
 
@@ -904,14 +923,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you have the cash
-        if (mTokens.get() < defender.getAttackCost()) {
-            log.warning("You don't have the cash");
+        if (mTokens.get() < attacker.getAttackCost()) {
+            log.warning("You don't have the cash to attack.");
             return false;
         }
 
         // Checks you own the building
         if (isBuildingOwner(attacker) == false) {
-            log.info("It's not your building");
+            log.info("It's not your building.");
             return false;
         }
 
@@ -933,7 +952,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks if you're in cooldown
-        if (getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN) {
+        if (inCooldown()) {
             log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
@@ -987,7 +1006,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Adds the tokens
-        mTokens.add(Building.SELL_PRICE);
+        mTokens.add(building.getSellPrice());
 
         // Remove the building
         building.remove();
@@ -1160,6 +1179,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean gameEnd() {
         if (hasLost()) {
+            for (Reference<Building> building : getOwnedBuildings()) {
+                if (!Reference.isValid(building)) continue;
+                // Remove the building
+                building.get().remove();
+            }
+
             return true;
         }
 

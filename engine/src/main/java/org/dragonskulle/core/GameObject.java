@@ -75,6 +75,8 @@ public class GameObject implements Serializable {
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
+         *
+         * @param go The {@link GameObject}.
          */
         void handleBuild(GameObject go);
     }
@@ -199,6 +201,7 @@ public class GameObject implements Serializable {
      *
      * @param name name of the object
      * @param enabled controls whether the object is enabled by default
+     * @param transform The transform to be used.
      * @param handler handler callback that allows to do initial setup
      */
     public GameObject(String name, boolean enabled, Transform transform, IBuildHandler handler) {
@@ -210,6 +213,7 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
+     * @param transform The transform to be used.
      * @param handler handler callback that allows to do initial setup
      */
     public GameObject(String name, Transform transform, IBuildHandler handler) {
@@ -316,6 +320,8 @@ public class GameObject implements Serializable {
      * <p>Doesn't return a list of references as this method should only be used by the engine which
      * is responsible for the destroying of objects and therefore won't keep any strong references
      * to destroyed objects.
+     *
+     * @param ret The List that will be populated with children.
      */
     protected void getAllChildren(List<GameObject> ret) {
         for (GameObject child : mChildren) {
@@ -405,6 +411,7 @@ public class GameObject implements Serializable {
      *
      * @param name name of the object
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(String name, IBuildHandler handler) {
         return buildChild(name, mEnabled, handler);
@@ -415,7 +422,9 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param enabled Whether the object is enabled.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(String name, boolean enabled, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled);
@@ -429,7 +438,9 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param transform The transform for the object.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(
             String name, Transform transform, IBuildHandler handler) {
@@ -441,7 +452,10 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param enabled Whether the object is enabled.
+     * @param transform The transform for the object.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(
             String name, boolean enabled, Transform transform, IBuildHandler handler) {
@@ -521,7 +535,7 @@ public class GameObject implements Serializable {
     /**
      * Getter for mChildren.
      *
-     * @return mChildren
+     * @return mChildren The children of the GameObject.
      */
     public ArrayList<GameObject> getChildren() {
         return new ArrayList<>(mChildren);
@@ -530,6 +544,8 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform with cast.
      *
+     * @param <T> A type of the {@link Transform}.
+     * @param type The class of the transform.
      * @return mTransform cast to type if cast is valid, null otherwise
      */
     public <T extends Transform> T getTransform(Class<T> type) {
@@ -570,7 +586,9 @@ public class GameObject implements Serializable {
     /**
      * Setter for mDepth.
      *
-     * <p>This method will recursively update mDepth for all mChildren
+     * <p>This method will recursively update mDepth for all mChildre
+     *
+     * @param newDepth The new depth value.
      */
     protected void setDepth(int newDepth) {
         mDepth = newDepth;

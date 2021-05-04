@@ -14,20 +14,23 @@ import java.util.stream.Collectors;
 public class PredefinedBuildings {
     /** The Base building. */
     public static final BuildingDescriptor BASE =
-            new BuildingDescriptor(1, 1, 1, 1, 1, 1, 1, "ui/0_stars.png", "Stock");
+            new BuildingDescriptor(1, 1, 1, 20, 10, "ui/1_stars.png", "Camp");
     /** The predefined buildings. */
     private static final List<BuildingDescriptor> buildings =
             new ArrayList<>(
                     Arrays.asList(
                             BASE,
-                            new BuildingDescriptor(1, 1, 1, 1, 1, 10, 2, "ui/1_stars.png", "Oscar"),
-                            new BuildingDescriptor(2, 3, 2, 2, 3, 30, 2, "ui/2_stars.png", "Auri"),
-                            new BuildingDescriptor(5, 3, 4, 2, 3, 31, 2, "ui/3_stars.png", "Harry"),
-                            new BuildingDescriptor(8, 3, 6, 2, 3, 32, 2, "ui/4_stars.png", "Auri"),
+                            new BuildingDescriptor(3, 3, 3, 75, 25, "ui/2_stars.png", "Town"),
+                            new BuildingDescriptor(6, 6, 6, 200, 75, "ui/3_stars.png", "City"),
+                            new BuildingDescriptor(5, 3, 1, 225, 150, "ui/5_stars.png", "Barracks"),
+                            new BuildingDescriptor(3, 5, 1, 225, 150, "ui/5_stars.png", "Castle"),
                             new BuildingDescriptor(
-                                    10, 3, 8, 2, 3, 33, 2, "ui/5_stars.png", "Leela"),
+                                    1, 3, 5, 225, 150, "ui/5_stars.png", "Merchants"),
                             new BuildingDescriptor(
-                                    4, 1, 10, 1, 1, 25, 2, "ui/6_stars.png", "Craig")));
+                                    10, 8, 8, 500, 300, "ui/9_stars.png", "Military Complex"),
+                            new BuildingDescriptor(
+                                    8, 10, 8, 500, 300, "ui/9_stars.png", "Fortress"),
+                            new BuildingDescriptor(8, 8, 10, 500, 300, "ui/9_stars.png", "Guild")));
 
     /**
      * Gets all the buildings which can be placed filtered by the cost of the building.
