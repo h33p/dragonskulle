@@ -134,8 +134,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final Vector4fc VALID_MATERIAL = highlightSelectionFromColour(0.1f, 0.6f, 0f);
     public static final Vector4fc INVALID_MATERIAL = highlightSelectionFromColour(1f, 0f, 0f, 0.1f);
     public static final Vector4fc PLAIN_MATERIAL = highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
-    public static final Vector4fc ATTACK_MATERIAL = highlightSelectionFromColour(0.9f, 0.3f, 0.3f, 0.5f);
-    public static final Vector4fc BUILD_MATERIAL = highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
+    public static final Vector4fc ATTACK_MATERIAL =
+            highlightSelectionFromColour(0.9f, 0.3f, 0.3f, 0.5f);
+    public static final Vector4fc BUILD_MATERIAL =
+            highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
     public static final Vector4fc FOG_MATERIAL = highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
     public static final Vector4fc PLACE_MATERIAL = highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
     public static final Vector4fc CLEARED_MATERIAL = new Vector4f(0f);
@@ -172,8 +174,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param alpha The alpha.
      * @return The new HighlightSelection.
      */
-    public static Vector4f highlightSelectionFromColour(
-            float r, float g, float b, float alpha) {
+    public static Vector4f highlightSelectionFromColour(float r, float g, float b, float alpha) {
         return new Vector4f(r, g, b, alpha);
     }
 
