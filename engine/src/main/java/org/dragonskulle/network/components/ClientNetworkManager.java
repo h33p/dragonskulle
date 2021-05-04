@@ -14,6 +14,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
@@ -307,7 +308,9 @@ public class ClientNetworkManager {
                 requestsProcessed = mClient.processRequests();
                 break;
             case JOINED_GAME:
-                requestsProcessed = mClient.processAllRequests();
+                try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+                    requestsProcessed = mClient.processAllRequests();
+                }
                 break;
             default:
                 break;

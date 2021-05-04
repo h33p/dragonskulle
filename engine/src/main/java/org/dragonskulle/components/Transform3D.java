@@ -259,6 +259,27 @@ public class Transform3D extends Transform {
     }
 
     /**
+     * Scale the object.
+     *
+     * @param v Scale factor to apply
+     */
+    public void scale(float v) {
+        scale(v, v, v);
+    }
+
+    /**
+     * Set object's scale.
+     *
+     * @param x Scale in the X-axis
+     * @param y Scale in the Y-axis
+     * @param z Scale in the Z-axis
+     */
+    public void setScale(float x, float y, float z) {
+        mScale.set(x, y, z);
+        setUpdateFlag();
+    }
+
+    /**
      * Get the transformation matrix relative to the parent transform.
      *
      * @return A constant reference to the local matrix

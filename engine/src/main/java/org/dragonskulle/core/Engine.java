@@ -69,6 +69,7 @@ public class Engine {
     private ArrayList<IScheduledEvent> mEventsToConsume = new ArrayList<>();
 
     @Getter private float mCurTime = 0f;
+    @Getter private float mFrameDeltaTime = 0f;
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
     private final ArrayList<Light> mTmpLights = new ArrayList<>();
@@ -268,6 +269,8 @@ public class Engine {
             double deltaTime = curTime - prevTime;
             prevTime = curTime;
             double cumulativeDeltaTime = deltaTime;
+
+            mFrameDeltaTime = (float) deltaTime;
 
             cumulativeTime += deltaTime;
 
