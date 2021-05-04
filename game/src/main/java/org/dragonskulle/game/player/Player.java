@@ -210,7 +210,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
             Vector2f axial = createCoordinates(angleBetween);
             if (axial == null) {
-            	continue;
+                continue;
             }
             int x = (int) axial.x;
             int y = (int) axial.y;
@@ -289,11 +289,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return A {@link Vector2f} with the coordinates to use
      */
     private Vector2f createCoordinates(float angleBetween) {
-    	
-    	if (Reference.isInvalid(mGameState)) {
-    		log.warning("Game State does not exist");
-    		return null;
-    	}
+
+        if (Reference.isInvalid(mGameState)) {
+            log.warning("Game State does not exist");
+            return null;
+        }
         final int maxPlayers = mGameState.get().getNumPlayers().get();
 
         float angleOfCircle = 360f / (maxPlayers + 1);
