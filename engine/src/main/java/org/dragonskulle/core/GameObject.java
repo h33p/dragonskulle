@@ -75,6 +75,8 @@ public class GameObject implements Serializable {
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
+         *
+         * @param go The {@link GameObject}.
          */
         void handleBuild(GameObject go);
     }
@@ -199,6 +201,7 @@ public class GameObject implements Serializable {
      *
      * @param name name of the object
      * @param enabled controls whether the object is enabled by default
+     * @param transform The transform to be used.
      * @param handler handler callback that allows to do initial setup
      */
     public GameObject(String name, boolean enabled, Transform transform, IBuildHandler handler) {
@@ -210,6 +213,7 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
+     * @param transform The transform to be used.
      * @param handler handler callback that allows to do initial setup
      */
     public GameObject(String name, Transform transform, IBuildHandler handler) {
@@ -540,6 +544,7 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform with cast.
      *
+     * @param <T> A type of the {@link Transform}.
      * @param type The class of the transform.
      * @return mTransform cast to type if cast is valid, null otherwise
      */
@@ -581,7 +586,9 @@ public class GameObject implements Serializable {
     /**
      * Setter for mDepth.
      *
-     * <p>This method will recursively update mDepth for all mChildren
+     * <p>This method will recursively update mDepth for all mChildre
+     *
+     * @param newDepth The new depth value.
      */
     protected void setDepth(int newDepth) {
         mDepth = newDepth;
@@ -597,7 +604,6 @@ public class GameObject implements Serializable {
      * @param type Class object of T
      * @param <T> Type of component to be returned
      * @param ret List that will store the components found
-     * @return The components of type T.
      */
     public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
         mComponents.stream()
