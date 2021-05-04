@@ -290,10 +290,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private Vector2f createCoordinates(float angleBetween) {
 
-        if (Reference.isInvalid(mGameState)) {
+        if (!Reference.isValid(mGameState)) {
             log.warning("Game State does not exist");
             return null;
         }
+
         final int maxPlayers = mGameState.get().getNumPlayers().get();
 
         float angleOfCircle = 360f / (maxPlayers + 1);
