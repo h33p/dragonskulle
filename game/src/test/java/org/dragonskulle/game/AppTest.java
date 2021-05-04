@@ -10,6 +10,15 @@ import org.junit.Test;
 
 /** Unit test for simple App. */
 public class AppTest {
+
+    /**
+     * Build a game testing context.
+     *
+     * <p>This context sets up the scene into the game scene for a number of clients given.
+     *
+     * @param numClients number of clients.
+     * @param app instance of {@link App}.
+     */
     public static NetworkedTestContext buildTestContext(int numClients, App app) {
 
         int[] cnt = {0};
@@ -46,15 +55,24 @@ public class AppTest {
         return ctx;
     }
 
+    /**
+     * Build a game testing context.
+     *
+     * <p>This context sets up the scene into the game scene for one client given.
+     *
+     * @param app instance of {@link App}.
+     */
     public static NetworkedTestContext buildTestContext(App app) {
         return buildTestContext(1, app);
     }
 
+    /** Test if one client can connect to the game. */
     @Test
     public void testGameConnect() {
         buildTestContext(new App()).execute();
     }
 
+    /** Test if 8 clients can connect to the game. */
     @Test
     public void testMultipleGameConnect() {
         buildTestContext(8, new App()).execute();

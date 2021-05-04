@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
+import static org.dragonskulle.network.testing.NetworkedTestContext.TIMEOUT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -20,8 +21,6 @@ import org.junit.Test;
 /** @author Oscar L, Aurimas Blažulionis */
 @Log
 public class ServerTest {
-    public static final long TIMEOUT = 3;
-
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
     private static final Scene CLIENT_NETMAN_SCENE = new Scene("client_netman_test");
     private static final NetworkManager CLIENT_NETWORK_MANAGER =
@@ -64,6 +63,7 @@ public class ServerTest {
                 null);
     }
 
+    /** Test if connecting is possible over the network. */
     @Test
     public void testConnect() {
         NetworkedTestContext ctx = buildTestContext();
@@ -90,6 +90,7 @@ public class ServerTest {
                                         == ConnectionState.JOINED_GAME);
     }
 
+    /** Test if spawning is possible over the network. */
     @Test
     public void testSpawnObject() {
         NetworkedTestContext ctx = buildTestContext();
@@ -143,6 +144,7 @@ public class ServerTest {
         ctx.getClient().syncWith(ctx.getServer());
     }
 
+    /** Test if modifying components is possible over the network. */
     @Test
     public void testModifyTestComp() {
         NetworkedTestContext ctx = buildTestContext();
@@ -188,6 +190,7 @@ public class ServerTest {
         ctx.getServer().syncWith(ctx.getClient());
     }
 
+    /** Test if client can submit requests over the network. */
     @Test
     public void testSubmitRequest() {
         NetworkedTestContext ctx = buildTestContext();
@@ -214,6 +217,7 @@ public class ServerTest {
         ctx.getServer().syncWith(ctx.getClient());
     }
 
+    /** Test if objects are destroyed over the network. */
     @Test
     public void testDestroy() {
         NetworkedTestContext ctx = buildTestContext();
@@ -244,6 +248,7 @@ public class ServerTest {
         ctx.getServer().syncWith(ctx.getClient());
     }
 
+    /** Test if object owner IDs are set over the network. */
     @Test
     public void testSetOwnerId() {
         NetworkedTestContext ctx = buildTestContext();
