@@ -9,6 +9,20 @@ package org.dragonskulle.utils;
 public class TextUtils {
 
     /**
+     * Get a set amount of space characters, used for padding.
+     *
+     * @param length The number of spaces.
+     * @return A String containing the desired number of spaces.
+     */
+    private static String getPadding(int length) {
+        String output = "";
+        for (int i = 0; i < length; i++) {
+            output += " ";
+        }
+        return output;
+    }
+
+    /**
      * Add padding spaces to the end of a string.
      *
      * <p>If the input is larger than the desired length, no padding will be added.
@@ -23,7 +37,7 @@ public class TextUtils {
         final int additional = length - input.length();
         if (additional <= 0) return input;
 
-        final String output = input + (" ".repeat(additional));
+        final String output = input + getPadding(additional);
         return output;
     }
 
@@ -42,7 +56,7 @@ public class TextUtils {
         final int additional = length - input.length();
         if (additional <= 0) return input;
 
-        final String output = (" ".repeat(additional)) + input;
+        final String output = getPadding(additional) + input;
         return output;
     }
 
