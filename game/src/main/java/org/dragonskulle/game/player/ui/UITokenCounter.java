@@ -46,7 +46,7 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
     public void onAwake() {
         final TransformUI transform = getGameObject().getTransform(TransformUI.class);
         transform.setMaintainAspect(false);
-        transform.setParentAnchor(0.37f, 0.08f, 0.37f, 0.08f);
+        transform.setParentAnchor(0.37f, 0.08f, 0.62f, 0.08f);
         transform.setMargin(-0.285f, -0.034f, 0.285f, 0.034f);
 
         UITextRect textRect = new UITextRect(String.format("Tokens: %5d", 0));
@@ -60,7 +60,7 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
     @Override
     public void fixedUpdate(float deltaTime) {
         if (mCurTokens == mTargetTokens) return;
-        float step = Math.abs(mTargetTokens - mCurTokens) / 100;
+        float step = Math.abs(mTargetTokens - mCurTokens) / 2;
         float incrToken = mCurTokens + (mCurTokens < mTargetTokens ? step : -step);
         setTokens(incrToken);
     }

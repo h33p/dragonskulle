@@ -93,7 +93,7 @@ public class SyncStat extends SyncInt {
             return sErrorCost;
         }
 
-        return (getLevel() / 2) + mBuilding.get().getStatBaseCost();
+        return (getLevel() * 3) + mBuilding.get().getStatBaseCost();
     }
 
     /**

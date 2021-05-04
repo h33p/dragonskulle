@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -43,6 +44,7 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
+import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -101,6 +103,9 @@ public class Building extends NetworkableComponent
     /** Building templates, used to distinguish the buildings. */
     private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
 
+    /** Store a random number generator. */
+    private Random mRandom = new Random();
+
     static final GameObject FIREBALL_TEMPLATE =
             App.TEMPLATES.get().getDefaultScene().findRootObject("attack_ball");
 
@@ -127,16 +132,15 @@ public class Building extends NetworkableComponent
     /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
     private static final int NEIGHBOUR_BOUND = 5;
 
-    /** The cost to buy a {@link Building}. */
-    public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
-    public static final int SELL_PRICE = 2;
+    private SyncInt mSellPrice = new SyncInt(2);
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
-     * Should alwyas be at least {@code 1}.
+     *
+     * <p>Calculated in {@link #generateStatBaseCost()}.
      */
-    @Getter private int mStatBaseCost = 1;
+    @Getter private int mStatBaseCost = 0;
 
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
@@ -454,7 +458,7 @@ public class Building extends NetworkableComponent
             totalUpgrades += stat.getLevel() - SyncStat.LEVEL_MIN;
         }
 
-        mStatBaseCost = 1 + totalUpgrades / 2;
+        mStatBaseCost = 1 + totalUpgrades * 3;
     }
 
     /** Claim the tiles around the building and the tile the building is on. */
@@ -675,8 +679,8 @@ public class Building extends NetworkableComponent
     /**
      * Attack an opponent building.
      *
-     * <p><b> Currently has no effect other than the basic calculations (i.e. it does not transfer
-     * ownership of Buildings). </b>
+     * <p><b> Has no effect other than the basic calculations (i.e. it does not transfer ownership
+     * of Buildings). </b>
      *
      * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
      * attacking building and the defence stats of the opponent building.
@@ -722,7 +726,7 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get a {@link HashSet} of opponent {@link Building}s that neighbour our tiles.
+     * Get a {@link Set} of opponent {@link Building}s that neighbour our tiles.
      *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
@@ -744,6 +748,19 @@ public class Building extends NetworkableComponent
                 });
 
         return attackableBuildings;
+    }
+
+    /**
+     * Get a random attackable opponent {@link Building}.
+     *
+     * @return An opponent Building that can be attacked from this Building; otherwise {@code null}.
+     */
+    public Building getRandomAttackableBuilding() {
+        List<Building> buildings = new ArrayList<Building>(getAttackableBuildings());
+        if (buildings.size() == 0) return null;
+
+        int index = mRandom.nextInt(buildings.size());
+        return buildings.get(index);
     }
 
     /**
@@ -935,23 +952,9 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Remove this building from the game.
+     * Will generate the cost it takes to attack <b>from</b> this Building.
      *
-     * <ul>
-     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
-     *   <li>Removes any links to any {@link HexagonTile}s.
-     *   <li>Calls {@link GameObject#destroy()}.
-     * </ul>
-     */
-    public void remove() {
-        // Request that the entire building GameObject should be destroyed.
-        getGameObject().destroy();
-    }
-
-    /**
-     * This will create and return a base cost for attacking.
-     *
-     * @return The cost for attacking
+     * @return The cost to attack from this Building.
      */
     public int getAttackCost() {
 
@@ -960,9 +963,8 @@ public class Building extends NetworkableComponent
 
         // Update cost on different stats
         cost += (mDefence.getLevel() * 3);
-        cost += (mAttack.getLevel() * 2);
+        cost += (mAttack.getLevel() * 3);
         cost += (mTokenGeneration.getLevel());
-        cost += (mViewDistance.getLevel());
 
         if (isCapital()) {
             cost += 10;
@@ -1058,6 +1060,38 @@ public class Building extends NetworkableComponent
         return getShopStatTypes().stream().map(mStats::get).collect(Collectors.toList());
     }
 
+    /**
+     * Set the sell price.
+     *
+     * @param price The price.
+     */
+    public void setSellPrice(int price) {
+        mSellPrice.set(price);
+    }
+
+    /**
+     * Get the sell price.
+     *
+     * @return The sell price.
+     */
+    public int getSellPrice() {
+        return mSellPrice.get();
+    }
+
+    /** Remove this building from the game (calls {@link GameObject#destroy()}). */
+    public void remove() {
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
+    }
+
+    /**
+     * Destroy the Building. To correctly trigger this, please call {@link #remove()}.
+     *
+     * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     * </ul>
+     */
     @Override
     protected void onDestroy() {
         Player owner = getOwner();
