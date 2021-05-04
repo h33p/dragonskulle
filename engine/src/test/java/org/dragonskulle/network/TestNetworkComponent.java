@@ -17,7 +17,7 @@ import org.dragonskulle.network.components.sync.SyncString;
  */
 @Accessors(prefix = "m")
 @Log
-public class TestCapitalBuilding extends NetworkableComponent {
+public class TestNetworkComponent extends NetworkableComponent {
 
     /** A syncable field. */
     @Getter private SyncBool mSyncMe = new SyncBool(false);

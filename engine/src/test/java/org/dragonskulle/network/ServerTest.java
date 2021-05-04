@@ -39,9 +39,9 @@ public class ServerTest {
                             handle.addComponent(new NetworkedTransform());
                         }),
                 new GameObject(
-                        "capital",
+                        "test_comp",
                         (handle) -> {
-                            handle.addComponent(new TestCapitalBuilding());
+                            handle.addComponent(new TestNetworkComponent());
                         }));
 
         CLIENT_NETMAN_SCENE.addRootObject(
@@ -58,7 +58,8 @@ public class ServerTest {
                 null,
                 (man) -> {
                     man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
-                    man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
+                    man.getServerManager()
+                            .spawnNetworkObject(0, TEMPLATE_MANAGER.find("test_comp"));
                 },
                 null);
     }
@@ -104,32 +105,34 @@ public class ServerTest {
                 .then(
                         (__) ->
                                 assertTrue(
-                                        ctx.getServerComponent(TestCapitalBuilding.class) != null));
+                                        ctx.getServerComponent(TestNetworkComponent.class)
+                                                != null));
 
         ctx.getClient()
                 .syncWith(ctx.getServer())
                 .awaitTimeout(
-                        TIMEOUT, (__) -> ctx.getClientComponent(TestCapitalBuilding.class) != null)
+                        TIMEOUT, (__) -> ctx.getClientComponent(TestNetworkComponent.class) != null)
                 .then(
                         (__) -> {
-                            Reference<TestCapitalBuilding> clientCapital =
-                                    ctx.getClientComponent(TestCapitalBuilding.class);
-                            assertNotNull(clientCapital);
-                            Reference<TestCapitalBuilding> serverCapital =
-                                    ctx.getServerComponent(TestCapitalBuilding.class);
-                            assertNotNull(serverCapital);
+                            Reference<TestNetworkComponent> clientTestComp =
+                                    ctx.getClientComponent(TestNetworkComponent.class);
+                            assertNotNull(clientTestComp);
+                            Reference<TestNetworkComponent> serverTestComp =
+                                    ctx.getServerComponent(TestNetworkComponent.class);
+                            assertNotNull(serverTestComp);
 
-                            int capitalId = clientCapital.get().getNetworkObject().getId();
+                            int testCompId = clientTestComp.get().getNetworkObject().getId();
 
                             log.info(
                                     "\t-----> "
-                                            + capitalId
+                                            + testCompId
                                             + " "
-                                            + serverCapital.get().getNetworkObject().getId());
-                            assertEquals(capitalId, serverCapital.get().getNetworkObject().getId());
-                            log.info("\t-----> " + capitalId);
-                            assert (serverCapital.get().getSyncMe().get() == false);
-                            assert (serverCapital
+                                            + serverTestComp.get().getNetworkObject().getId());
+                            assertEquals(
+                                    testCompId, serverTestComp.get().getNetworkObject().getId());
+                            log.info("\t-----> " + testCompId);
+                            assert (serverTestComp.get().getSyncMe().get() == false);
+                            assert (serverTestComp
                                     .get()
                                     .getSyncMeAlso()
                                     .get()
@@ -141,22 +144,22 @@ public class ServerTest {
     }
 
     @Test
-    public void testModifyCapital() {
+    public void testModifyTestComp() {
         NetworkedTestContext ctx = buildTestContext();
 
         connect(ctx);
         spawnObject(ctx);
-        modifyCapital(ctx);
+        modifyTestComp(ctx);
 
         ctx.execute();
     }
 
-    private void modifyCapital(NetworkedTestContext ctx) {
+    private void modifyTestComp(NetworkedTestContext ctx) {
         ctx.getClient()
                 .then(
                         (__) -> {
-                            TestCapitalBuilding component =
-                                    ctx.getClientComponent(TestCapitalBuilding.class).get();
+                            TestNetworkComponent component =
+                                    ctx.getClientComponent(TestNetworkComponent.class).get();
                             assertFalse(component.getSyncMe().get());
                             assertFalse(component.getSyncMeAlso().get().equals("Goodbye World"));
                         });
@@ -165,8 +168,8 @@ public class ServerTest {
                 .syncWith(ctx.getClient())
                 .then(
                         (__) -> {
-                            TestCapitalBuilding component =
-                                    ctx.getServerComponent(TestCapitalBuilding.class).get();
+                            TestNetworkComponent component =
+                                    ctx.getServerComponent(TestNetworkComponent.class).get();
                             component.setBooleanSyncMe(true);
                             component.setStringSyncMeAlso("Goodbye World");
                         });
@@ -176,8 +179,8 @@ public class ServerTest {
                 .awaitTimeout(
                         TIMEOUT,
                         (__) -> {
-                            TestCapitalBuilding component =
-                                    ctx.getClientComponent(TestCapitalBuilding.class).get();
+                            TestNetworkComponent component =
+                                    ctx.getClientComponent(TestNetworkComponent.class).get();
                             return component.getSyncMe().get()
                                     && component.getSyncMeAlso().get().equals("Goodbye World");
                         });
@@ -197,16 +200,16 @@ public class ServerTest {
     }
 
     private void submitRequest(NetworkedTestContext ctx) {
-        TestCapitalBuilding[] cap = {null};
+        TestNetworkComponent[] comp = {null};
 
         ctx.getClient()
                 .then(
                         (__) -> {
-                            cap[0] = ctx.getClientComponent(TestCapitalBuilding.class).get();
-                            cap[0].mPasswordRequest.invoke(
-                                    new TestAttackData(TestCapitalBuilding.CORRECT_PASSWORD, 354));
+                            comp[0] = ctx.getClientComponent(TestNetworkComponent.class).get();
+                            comp[0].mPasswordRequest.invoke(
+                                    new TestAttackData(TestNetworkComponent.CORRECT_PASSWORD, 354));
                         })
-                .awaitTimeout(TIMEOUT, (__) -> cap[0].getClientToggled().get() == 354);
+                .awaitTimeout(TIMEOUT, (__) -> comp[0].getClientToggled().get() == 354);
 
         ctx.getServer().syncWith(ctx.getClient());
     }
@@ -226,7 +229,7 @@ public class ServerTest {
         ctx.getServer()
                 .then(
                         (__) ->
-                                ctx.getServerComponent(TestCapitalBuilding.class)
+                                ctx.getServerComponent(TestNetworkComponent.class)
                                         .get()
                                         .getGameObject()
                                         .destroy());
@@ -236,7 +239,7 @@ public class ServerTest {
                         TIMEOUT,
                         (__) ->
                                 !Reference.isValid(
-                                        ctx.getClientComponent(TestCapitalBuilding.class)));
+                                        ctx.getClientComponent(TestNetworkComponent.class)));
 
         ctx.getServer().syncWith(ctx.getClient());
     }
@@ -254,35 +257,35 @@ public class ServerTest {
 
     private void setOwnerId(NetworkedTestContext ctx) {
         int[] ownerId = {-10000};
-        TestCapitalBuilding[] serverCap = {null};
-        TestCapitalBuilding[] clientCap = {null};
+        TestNetworkComponent[] serverComp = {null};
+        TestNetworkComponent[] clientComp = {null};
 
         ctx.getServer()
                 .then(
                         (__) ->
-                                serverCap[0] =
-                                        ctx.getServerComponent(TestCapitalBuilding.class).get())
-                .then((__) -> ownerId[0] = serverCap[0].getNetworkObject().getOwnerId());
+                                serverComp[0] =
+                                        ctx.getServerComponent(TestNetworkComponent.class).get())
+                .then((__) -> ownerId[0] = serverComp[0].getNetworkObject().getOwnerId());
 
         ctx.getClient()
                 .syncWith(ctx.getServer())
                 .then(
                         (__) ->
-                                clientCap[0] =
-                                        ctx.getClientComponent(TestCapitalBuilding.class).get())
+                                clientComp[0] =
+                                        ctx.getClientComponent(TestNetworkComponent.class).get())
                 .then(
                         (__) -> {
-                            assertEquals(ownerId[0], clientCap[0].getNetworkObject().getOwnerId());
+                            assertEquals(ownerId[0], clientComp[0].getNetworkObject().getOwnerId());
                         });
 
         ctx.getServer()
                 .syncWith(ctx.getClient())
-                .then((__) -> serverCap[0].getNetworkObject().setOwnerId(ownerId[0] + 1));
+                .then((__) -> serverComp[0].getNetworkObject().setOwnerId(ownerId[0] + 1));
 
         ctx.getClient()
                 .awaitTimeout(
                         TIMEOUT,
-                        (__) -> clientCap[0].getNetworkObject().getOwnerId() == ownerId[0] + 1);
+                        (__) -> clientComp[0].getNetworkObject().getOwnerId() == ownerId[0] + 1);
 
         ctx.getServer().syncWith(ctx.getClient());
     }
