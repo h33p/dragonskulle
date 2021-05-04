@@ -9,7 +9,7 @@ import org.dragonskulle.core.ResourceManager;
 @Accessors(prefix = "m")
 public enum CursorType {
     DEFAULT("ui/cursor.png", 10, 10),
-    HOVER("ui/cursor_hover.png", 16, 8),
+    HOVER("ui/cursor_hover.png", 18, 10),
     INCLICK("ui/cursor_inclick.png", 20, 9);
 
     @Getter private final String mPath;

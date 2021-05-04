@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.input.Action;
-import org.dragonskulle.input.Cursor;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
@@ -388,7 +387,6 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                             if (mOnClick != null) {
                                 mOnClick.eventHandler(this, deltaTime);
                             }
-                            Cursor.setCursor(CursorType.DEFAULT);
                         }
                     } else if (!mLastMouseDown) {
                         mPressedDown = true;
@@ -396,7 +394,6 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                         if (mAppearance.getOnPressDown() != null) {
                             mAppearance.getOnPressDown().eventHandler(this, deltaTime);
                         }
-                        Cursor.setCursor(CursorType.INCLICK);
                         if (mOnPressDown != null) {
                             mOnPressDown.eventHandler(this, deltaTime);
                         }
@@ -411,20 +408,17 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                 }
 
                 if (!mLastHovered) {
-                    Cursor.setCursor(CursorType.HOVER);
                     if (mOnHover != null) {
                         mOnHover.eventHandler(this, deltaTime);
                     }
                 }
 
                 mLastHovered = true;
-
                 if (mWhileHover != null) {
                     mWhileHover.eventHandler(this, deltaTime);
                 }
             } else {
                 if (mLastHovered) {
-                    Cursor.setCursor(CursorType.DEFAULT);
                     if (mOffHover != null) {
                         mOffHover.eventHandler(this, deltaTime);
                     }
@@ -436,11 +430,13 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
             // Transition color interpolation value depending on the state of button press
             if (mPressedDown || mLockPressed) {
+                UIManager.setNextCursor(CursorType.INCLICK);
                 mCurTimer += deltaTime;
                 if (mCurTimer > 2f * mTransitionTime) {
                     mCurTimer = 2f * mTransitionTime;
                 }
             } else if (mLastHovered) {
+                UIManager.setNextCursor(CursorType.HOVER);
                 if (mCurTimer > mTransitionTime) {
                     mCurTimer -= deltaTime;
                     if (mCurTimer < mTransitionTime) {
