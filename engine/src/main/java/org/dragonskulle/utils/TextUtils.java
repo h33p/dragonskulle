@@ -66,7 +66,7 @@ public class TextUtils {
      *
      * <p>Will be formatted like "NAME: VALUE", with padding added to meet the desired length.
      *
-     * @param text The name of the field.
+     * @param name The name of the field.
      * @param value The value.
      * @param length The desired length of the output.
      * @return The name and value, with a colon and padding added.
@@ -88,7 +88,7 @@ public class TextUtils {
      *
      * <p>Will be formatted like "NAME: VALUE", with padding added to meet the desired length.
      *
-     * @param text The name of the field.
+     * @param name The name of the field.
      * @param value The value as an int.
      * @param length The desired length of the output.
      * @return The name and value, with a colon and padding added.
