@@ -22,6 +22,10 @@ import org.dragonskulle.input.Cursor;
  */
 @Accessors(prefix = "m")
 public class UIManager {
+    @Setter
+    @Accessors(prefix = "s")
+    public static CursorType sNextCursor = CursorType.DEFAULT;
+
     public static final UIManager SINGLETON = new UIManager();
 
     /**
@@ -38,7 +42,7 @@ public class UIManager {
      *
      * @param components a list of currently enabled components
      */
-    public void updateHover(Collection<Component> components) {
+    public void uiUpdate(Collection<Component> components) {
         mHoveredObject = null;
 
         Cursor cursor = Actions.getCursor();
@@ -46,6 +50,9 @@ public class UIManager {
         if (cursor == null) {
             return;
         }
+
+        Cursor.setCursor(sNextCursor);
+        setNextCursor(CursorType.DEFAULT);
 
         int curDepth = 0;
 

@@ -15,6 +15,7 @@ import org.dragonskulle.core.GLFWState;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.dragonskulle.settings.Settings;
+import org.dragonskulle.ui.CursorType;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -67,6 +68,15 @@ public class Cursor {
     public Cursor() {}
 
     /**
+     * Sets the cursor to display differently depending on the state.
+     *
+     * @param type the type of cursor to display
+     */
+    public static void setCursor(CursorType type) {
+        setCustomCursor(type);
+    }
+
+    /**
      * Attach this cursor to a window.
      *
      * <p>Required to allow this cursor to access to this window.
@@ -86,21 +96,33 @@ public class Cursor {
 
         GLFW.glfwSetCursorPosCallback(window, listener);
 
-        setCustomCursor(window);
-
-        // Set the cursor on a window
+        setCustomCursor(window, CursorType.DEFAULT);
     }
 
     /**
      * Sets custom cursor using the scale saved in settings.
      *
-     * @param window the window
+     * @param cursorType the cursor type to display
      */
-    public static void setCustomCursor(long window) {
+    public static void setCustomCursor(CursorType cursorType) {
+        Engine engine = Engine.getInstance();
+        if (engine == null) return;
+        GLFWState glfwState = engine.getGLFWState();
+        if (glfwState == null) return;
+        setCustomCursor(glfwState.getWindow(), cursorType);
+    }
+
+    /**
+     * Sets custom cursor using the scale saved in settings.
+     *
+     * @param window the gltf window offset
+     * @param cursorType the cursor type to display
+     */
+    public static void setCustomCursor(long window, CursorType cursorType) {
         Settings instance = Settings.getInstance();
         float scale = instance.retrieveFloat(SETTINGS_STRING, 0.4f);
         try {
-            setCustomCursor(window, scale);
+            setCustomCursor(window, scale, cursorType);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,9 +135,10 @@ public class Cursor {
      * @param scale the scale of the cursor
      * @throws IOException thrown if the cursor file doesn't exist
      */
-    public static void setCustomCursor(long window, float scale) throws IOException {
+    public static void setCustomCursor(long window, float scale, CursorType cursorType)
+            throws IOException {
         Resource<BufferedImage> fcursor =
-                ResourceManager.getResource(BufferedImage.class, "ui/cursor.png");
+                ResourceManager.getResource(BufferedImage.class, cursorType.getPath());
         BufferedImage bImage = fcursor.get();
         Image scaledImage =
                 bImage.getScaledInstance(
@@ -137,7 +160,6 @@ public class Cursor {
         // end
         int width = bImage.getWidth();
         int height = bImage.getHeight();
-        int cursorPos = (int) (10 * scale);
 
         int[] pixels = new int[width * height];
         bImage.getRGB(0, 0, width, height, pixels, 0, width);
@@ -145,7 +167,11 @@ public class Cursor {
         MathUtils.intARGBtoByteRGBA(pixels, height, width, buffer);
         GLFWImage image = GLFWImage.create();
         image.set(width, height, buffer);
-        long cursor = GLFW.glfwCreateCursor(image, cursorPos, cursorPos);
+        long cursor =
+                GLFW.glfwCreateCursor(
+                        image,
+                        (int) (cursorType.getXHot() * scale),
+                        (int) (cursorType.getYHot() * scale));
 
         GLFW.glfwSetCursor(window, cursor);
     }

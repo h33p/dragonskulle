@@ -407,18 +407,21 @@ public class UIButton extends UITextRect implements IFrameUpdate {
                     mouseDown = false;
                 }
 
-                if (!mLastHovered && mOnHover != null) {
-                    mOnHover.eventHandler(this, deltaTime);
+                if (!mLastHovered) {
+                    if (mOnHover != null) {
+                        mOnHover.eventHandler(this, deltaTime);
+                    }
                 }
 
                 mLastHovered = true;
-
                 if (mWhileHover != null) {
                     mWhileHover.eventHandler(this, deltaTime);
                 }
             } else {
-                if (mLastHovered && mOffHover != null) {
-                    mOffHover.eventHandler(this, deltaTime);
+                if (mLastHovered) {
+                    if (mOffHover != null) {
+                        mOffHover.eventHandler(this, deltaTime);
+                    }
                 }
 
                 mLastHovered = false;
@@ -427,11 +430,13 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
             // Transition color interpolation value depending on the state of button press
             if (mPressedDown || mLockPressed) {
+                UIManager.setNextCursor(CursorType.INCLICK);
                 mCurTimer += deltaTime;
                 if (mCurTimer > 2f * mTransitionTime) {
                     mCurTimer = 2f * mTransitionTime;
                 }
             } else if (mLastHovered) {
+                UIManager.setNextCursor(CursorType.HOVER);
                 if (mCurTimer > mTransitionTime) {
                     mCurTimer -= deltaTime;
                     if (mCurTimer < mTransitionTime) {
