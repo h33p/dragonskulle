@@ -111,14 +111,14 @@ public class Building extends NetworkableComponent
 
     /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
     private static final int NEIGHBOUR_BOUND = 5;
-    
+
     /** The reimbursement from selling a {@link Building}. */
     private SyncInt mSellPrice = new SyncInt(2);
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
-     * <p>
-     * Calculated in {@link #generateStatBaseCost()}.
+     *
+     * <p>Calculated in {@link #generateStatBaseCost()}.
      */
     @Getter private int mStatBaseCost = 0;
 
