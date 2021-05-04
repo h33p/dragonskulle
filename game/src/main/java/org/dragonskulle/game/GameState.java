@@ -4,8 +4,8 @@ package org.dragonskulle.game;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -14,7 +14,10 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.ServerClient;
+import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
@@ -22,6 +25,7 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
 
 /**
  * Stores networked game state.
@@ -93,5 +97,43 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         if (Reference.isValid(e)) {
             mGameEndListeners.add(e);
         }
+    }
+
+    public void buildServerPlayerView() {
+        UIManager.IUIBuildHandler[] playerInfos = buildPlayerInfos();
+        // things for player thingys
+        getGameObject()
+                .buildChild(
+                        "game_state",
+                        new TransformUI(true),
+                        (self) -> {
+                            UIManager.getInstance().buildVerticalUi(self, 0.25f, 0.1f, 0.8f, playerInfos);
+                            UIRenderable drawer =
+                                    new UIRenderable(GameUIAppearance.getDrawerTexture());
+                            TransformUI tran = self.getTransform(TransformUI.class);
+                            tran.setMargin(0f, 0f, 0f, 0f);
+                            tran.setPivotOffset(0f, 0f);
+                            tran.setParentAnchor(0f, 0f);
+                            self.addComponent(drawer);
+                        });
+
+    }
+
+    private UIManager.IUIBuildHandler[] buildPlayerInfos() {
+        NetworkManager networkManager = getNetworkManager();
+        ServerNetworkManager serverManager = networkManager.getServerManager();
+        Set<Integer> playerIds = serverManager.getNonHumanPlayerIds();
+        playerIds.addAll(serverManager.getClients().stream().map(ServerClient::getNetworkID).collect(Collectors.toList()));
+        UIManager.IUIBuildHandler[] playerInfoBox = new UIManager.IUIBuildHandler[mNumPlayers.get()];
+        Iterator<Integer> playerIterator = playerIds.iterator();
+        for (int j = 0; j < mNumPlayers.get(); j++) {
+            try {
+                Integer next = playerIterator.next();
+                playerInfoBox[j] = new PlayerStats(serverManager, next);
+            } catch (NoSuchElementException e) {
+                playerInfoBox[j] = new PlayerStats(serverManager, null);
+            }
+        }
+        return playerInfoBox;
     }
 }

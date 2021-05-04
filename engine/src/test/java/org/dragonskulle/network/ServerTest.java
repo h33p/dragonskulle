@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+
 import lombok.extern.java.Log;
 import org.dragonskulle.components.lambda.LambdaOnStart;
 import org.dragonskulle.core.Engine;
@@ -21,7 +22,9 @@ import org.dragonskulle.network.components.NetworkableComponent;
 import org.junit.Test;
 import org.lwjgl.system.NativeResource;
 
-/** @author Oscar L */
+/**
+ * @author Oscar L
+ */
 @Log
 public class ServerTest {
     private static final long TIMEOUT = 1;
@@ -92,13 +95,12 @@ public class ServerTest {
                         log.info("NEW CLIENT");
                         man.getServerManager().start();
                     },
+                    null,
                     (man) -> {
                         log.info("CLIENT LOADED");
                         man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
-                        man.getServerManager()
-                                .spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
-                    },
-                    null);
+                        man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
+                    });
 
             CLIENT_NETWORK_MANAGER.createClient(
                     "127.0.0.1",

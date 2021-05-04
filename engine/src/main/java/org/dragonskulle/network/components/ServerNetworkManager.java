@@ -6,10 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Getter;
@@ -26,7 +23,6 @@ import org.dragonskulle.network.Server;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
-import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -40,11 +36,7 @@ import org.joml.Vector3f;
 @Log
 public class ServerNetworkManager {
     @Getter
-    private final HashMap<Integer, Reference<NetworkObject>> mPlayerIds = new HashMap<>();
-
-    public void storePlayer(int id, Reference<NetworkObject> player) {
-        mPlayerIds.put(id, player);
-    }
+    private final Set<Integer> mNonHumanPlayerIds = new HashSet<>();
 
     public enum ServerGameState {
         IN_PROGRESS,
@@ -326,6 +318,29 @@ public class ServerNetworkManager {
         networkObject.networkInitialize();
 
         return ref;
+    }
+
+    public enum PlayerType {
+        Human("player", true),
+        Probabilistic("aiPlayer", false),
+        Aimer("aStarAi", false);
+
+        @Getter
+        private final String mTemplateName;
+
+        @Getter()
+        private final boolean mHuman;
+
+        PlayerType(String templateName, boolean mIsHuman) {
+            this.mTemplateName = templateName;
+            this.mHuman = mIsHuman;
+        }
+    }
+
+    public Reference<NetworkObject> spawnPlayer(int ownerId, PlayerType type) {
+        if (!type.isHuman()) mNonHumanPlayerIds.add(ownerId);
+        int templateId = mManager.findTemplateByName(type.getTemplateName());
+        return spawnNetworkObject(ownerId, templateId);
     }
 
     /**

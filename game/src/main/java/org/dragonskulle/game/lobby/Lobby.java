@@ -3,7 +3,6 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.Getter;
@@ -15,15 +14,14 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
-import org.dragonskulle.game.GameUIAppearance;
-import org.dragonskulle.game.PlayerStats;
+import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.network.components.ServerNetworkManager;
+import org.dragonskulle.network.components.ServerNetworkManager.PlayerType;
 import org.dragonskulle.ui.*;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
@@ -57,6 +55,7 @@ public class Lobby extends Component implements IFrameUpdate {
     private final Reference<NetworkManager> mNetworkManager;
     private String mLobbyId = "";
     private final UIInputBox mLobbyIDText;
+    private Reference<GameState> mGameState;
 
     /**
      * Default constructor, creates all static UI elements and also GameObjects that will have the
@@ -243,17 +242,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 (__, ___) -> {
                                     String ip = UPnP.getExternalIPAddress();
                                     LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        UPnP.deletePortMapping(PORT, "TCP");
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
+                                    createServer(true);
                                     mHostingUi.setEnabled(true);
                                     mFailedToForwardUi.setEnabled(false);
                                 }),
@@ -263,17 +252,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     UPnP.addPortMapping(PORT, "TCP");
                                     String ip = UPnP.getExternalIPAddress();
                                     LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        UPnP.deletePortMapping(PORT, "TCP");
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
+                                    createServer(true);
                                     mHostingUi.setEnabled(true);
                                     mFailedToForwardUi.setEnabled(false);
                                 }),
@@ -503,33 +482,14 @@ public class Lobby extends Component implements IFrameUpdate {
                                     } else {
                                         String ip = UPnP.getExternalIPAddress();
                                         LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                        mNetworkManager
-                                                .get()
-                                                .createServer(
-                                                        PORT,
-                                                        this::onClientLoaded,
-                                                        this::onGameStarted,
-                                                        (____) -> {
-                                                            UPnP.deletePortMapping(PORT, "TCP");
-                                                            mHostingUi.setEnabled(false);
-                                                            mHostUi.setEnabled(true);
-                                                        });
+                                        createServer(true);
                                         mHostingUi.setEnabled(true);
                                     }
                                 }),
                         new UIButton(
                                 "Host locally",
                                 (__, ___) -> {
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
+                                    createServer(false);
                                     mHostingUi.setEnabled(true);
                                     mHostUi.setEnabled(false);
                                 }),
@@ -539,6 +499,20 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mHostUi.setEnabled(false);
                                     mLobbyUi.setEnabled(true);
                                 }));
+    }
+
+    private void createServer(boolean deleteMapping) {
+        mNetworkManager
+                .get()
+                .createServer(
+                        PORT,
+                        this::onClientLoaded,
+                        this::onGameStarted,
+                        (____) -> {
+                            if (deleteMapping) UPnP.deletePortMapping(PORT, "TCP");
+                            mHostingUi.setEnabled(false);
+                            mHostUi.setEnabled(true);
+                        });
     }
 
     /**
@@ -664,7 +638,7 @@ public class Lobby extends Component implements IFrameUpdate {
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
         int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
+        manager.getServerManager().spawnPlayer(id, PlayerType.Human);
     }
 
     /**
@@ -679,13 +653,13 @@ public class Lobby extends Component implements IFrameUpdate {
                 manager.getServerManager()
                         .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
 
-        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
+        mGameState = obj.get().getGameObject().getComponent(GameState.class);
 
         // 6 players for now
-        gameState.get().getNumPlayers().set(6);
+        GameState gameState = mGameState.get();
+        gameState.getNumPlayers().set(6);
 
         gameState
-                .get()
                 .registerGameEndListener(
                         new Reference<>(
                                 (__) -> {
@@ -696,38 +670,8 @@ public class Lobby extends Component implements IFrameUpdate {
                                     }
                                 }));
 
-        buildServerPlayerView();
-    }
+        gameState.buildServerPlayerView();
 
-    private void buildServerPlayerView() {
-        UIManager.IUIBuildHandler[] playerInfos = buildPlayerInfos();
-        // things for player thingys
-        mNetworkManager.get().getGameObject()
-                .buildChild(
-                        "game_state",
-                        new TransformUI(true),
-                        (self) -> {
-                            UIManager.getInstance().buildVerticalUi(self, 0.25f, 0.1f, 0.8f, playerInfos);
-                            UIRenderable drawer =
-                                    new UIRenderable(GameUIAppearance.getDrawerTexture());
-                            TransformUI tran = self.getTransform(TransformUI.class);
-                            tran.setMargin(0f, 0f, 0f, 0f);
-                            tran.setPivotOffset(0f, 0f);
-                            tran.setParentAnchor(0f, 0f);
-                            self.addComponent(drawer);
-                        });
-
-    }
-
-    private UIManager.IUIBuildHandler[] buildPlayerInfos() {
-        ServerNetworkManager serverManager = mNetworkManager.get().getServerManager();
-        HashMap<Integer, Reference<NetworkObject>> playerIds = serverManager.getPlayerIds();
-        UIManager.IUIBuildHandler[] playerInfoBox = new UIManager.IUIBuildHandler[playerIds.size()];
-        int i = 0;
-        for (Map.Entry<Integer, Reference<NetworkObject>> playerReference : playerIds.entrySet()) {
-            playerInfoBox[i++] = new PlayerStats(playerReference.getValue(), serverManager);
-        }
-        return playerInfoBox;
     }
 
     @Override

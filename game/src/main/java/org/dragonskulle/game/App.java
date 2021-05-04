@@ -29,6 +29,8 @@ import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UISettingsMenu;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.ServerNetworkManager;
+import org.dragonskulle.network.components.ServerNetworkManager.PlayerType;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
@@ -202,8 +204,8 @@ public class App implements NativeResource {
                                                             "Fill game with AI",
                                                             (a, b) -> {
                                                                 log.info("should fill with ai");
-                                                                spawnAi(networkManager, "aStarAi");
-                                                                spawnAi(networkManager, "aiPlayer");
+                                                                spawnAi(networkManager, PlayerType.Aimer);
+                                                                spawnAi(networkManager, PlayerType.Probabilistic);
                                                             }));
                                         });
                             });
@@ -212,16 +214,9 @@ public class App implements NativeResource {
         return mainScene;
     }
 
-    private static Reference<NetworkObject> spawnAi(NetworkManager networkManager, String type) {
+    private static Reference<NetworkObject> spawnAi(NetworkManager networkManager, PlayerType type) {
         int id = -1 * mAiCount.getAndIncrement();
-        Reference<NetworkObject> networkObjectReference = networkManager
-                .getServerManager()
-                .spawnNetworkObject(
-                        id,
-                        networkManager
-                                .findTemplateByName(type));
-        networkManager.getServerManager().storePlayer(id, networkObjectReference);
-        return networkObjectReference;
+        return networkManager.getServerManager().spawnPlayer(id, type);
     }
 
     /**
