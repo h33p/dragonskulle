@@ -39,10 +39,25 @@ public class NetworkedTestContext {
     private final NetworkedSceneContext mServer;
     private final List<NetworkedSceneContext> mClients = new ArrayList<>();
 
-    public static final float TIMEOUT = 1;
+    /** Public timeout for timed waits. */
+    public static final float TIMEOUT = 5;
+    /** Port used for tests. */
+    private static int PORT = 7000;
 
     private static final ReentrantLock sEngineLock = new ReentrantLock();
 
+    /**
+     * Constructor for {@link NetworkedTestContext}.
+     *
+     * @param numClients number of clients to create.
+     * @param templates networked templates to use.
+     * @param sceneBuilder game scene builder.
+     * @param onConnectedOnServer callback to be called when a client connects to server.
+     * @param onLoadedOnServer callback to be called when a client informs the server about loading
+     *     into the game.
+     * @param onGameStart callback to be called on server when the game is fully loaded.
+     * @param onClientConnected callback to be called on clients when the client fully connects.
+     */
     public NetworkedTestContext(
             int numClients,
             TemplateManager templates,
@@ -64,6 +79,19 @@ public class NetworkedTestContext {
         }
     }
 
+    /**
+     * Constructor for {@link NetworkedTestContext}.
+     *
+     * <p>This will create a context with 1 client.
+     *
+     * @param templates networked templates to use.
+     * @param sceneBuilder game scene builder.
+     * @param onConnectedOnServer callback to be called when a client connects to server.
+     * @param onLoadedOnServer callback to be called when a client informs the server about loading
+     *     into the game.
+     * @param onGameStart callback to be called on server when the game is fully loaded.
+     * @param onClientConnected callback to be called on clients when the client fully connects.
+     */
     public NetworkedTestContext(
             TemplateManager templates,
             ISceneBuilder sceneBuilder,
@@ -81,14 +109,26 @@ public class NetworkedTestContext {
                 onClientConnected);
     }
 
+    /**
+     * Get a client context by index.
+     *
+     * @param i index of the client.
+     * @return {@link NetworkedSceneContext} for the particular client.
+     */
     public NetworkedSceneContext getClient(int i) {
         return mClients.get(i);
     }
 
+    /**
+     * Get the first client's context.
+     *
+     * @return {@link NetworkedSceneContext} for the first client.
+     */
     public NetworkedSceneContext getClient() {
         return mClients.get(0);
     }
 
+    /** Execute all futures in the context, and close the system. */
     public void execute() {
         for (NetworkedSceneContext client : mClients) {
             client.syncWith(mServer).then((__) -> client.getManager().closeInstance());
@@ -133,42 +173,100 @@ public class NetworkedTestContext {
         }
     }
 
+    /**
+     * Get a server manager.
+     *
+     * @return server's server manager.
+     */
     public ServerNetworkManager getServerManager() {
         return mServer.getManager().getServerManager();
     }
 
-    public Scene getServerScene(int i) {
+    /**
+     * Get server's game scene.
+     *
+     * @return server's game scene.
+     */
+    public Scene getServerScene() {
         return mServer.getManager().getGameScene();
     }
 
+    /**
+     * Get a client manager.
+     *
+     * @param i client's index.
+     * @return client's client manager.
+     */
     public ClientNetworkManager getClientManager(int i) {
         return getClient(i).getManager().getClientManager();
     }
 
+    /**
+     * Get client's scene.
+     *
+     * @param i client's index.
+     * @return client's game scene.
+     */
     public Scene getClientScene(int i) {
         return getClient(i).getManager().getGameScene();
     }
 
+    /**
+     * Get first client's scene.
+     *
+     * @return first client's game scene.
+     */
     public Scene getClientScene() {
         return getClientScene(0);
     }
 
+    /**
+     * Get first client's manager.
+     *
+     * @return first client's client manager.
+     */
     public ClientNetworkManager getClientManager() {
         return getClientManager(0);
     }
 
+    /**
+     * Get a server component.
+     *
+     * @param type component's type.
+     * @return reference to the component, if one exists. {@code null} otherwise.
+     */
     public <T extends NetworkableComponent> Reference<T> getServerComponent(Class<T> type) {
         return getNetworkComponent(mServer.getManager(), type);
     }
 
+    /**
+     * Get a client component.
+     *
+     * @param i client's index.
+     * @param type component's type.
+     * @return reference to the component, if one exists. {@code null} otherwise.
+     */
     public <T extends NetworkableComponent> Reference<T> getClientComponent(int i, Class<T> type) {
         return getNetworkComponent(getClient(i).getManager(), type);
     }
 
+    /**
+     * Get a client component on the first client.
+     *
+     * @param type component's type.
+     * @return reference to the component, if one exists. {@code null} otherwise.
+     */
     public <T extends NetworkableComponent> Reference<T> getClientComponent(Class<T> type) {
         return getClientComponent(0, type);
     }
 
+    /**
+     * Get a network component.
+     *
+     * @param manager network manager to get the component from.
+     * @param type type of the component.
+     * @return reference to the component. {@code null} if does not exist.
+     */
     private static <T extends NetworkableComponent> Reference<T> getNetworkComponent(
             NetworkManager manager, Class<T> type) {
 
@@ -184,8 +282,17 @@ public class NetworkedTestContext {
                 .orElse(null);
     }
 
-    private static int PORT = 7000;
-
+    /**
+     * Setup a server's {@link NetworkedSceneContext}.
+     *
+     * @param templates networked templates to use.
+     * @param sceneBuilder game scene builder.
+     * @param onConnectedOnServer callback to be called when a client connects to server.
+     * @param onLoadedOnServer callback to be called when a client informs the server about loading
+     *     into the game.
+     * @param onGameStart callback to be called on server when the game is fully loaded.
+     * @return server's networked scene context.
+     */
     private static NetworkedSceneContext setupServer(
             TemplateManager templates,
             ISceneBuilder sceneBuilder,
@@ -214,6 +321,15 @@ public class NetworkedTestContext {
         return ctx;
     }
 
+    /**
+     * Setup a client's {@link NetworkedSceneContext}.
+     *
+     * @param templates networked templates to use.
+     * @param sceneBuilder game scene builder.
+     * @param onClientConnected callback to be called on clients when the client fully connects.
+     * @param serverSync context to synchronize against.
+     * @return server's networked scene context.
+     */
     private static NetworkedSceneContext setupClient(
             TemplateManager templates,
             ISceneBuilder sceneBuilder,

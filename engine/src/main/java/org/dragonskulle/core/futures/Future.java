@@ -38,6 +38,14 @@ public abstract class Future {
         mRoot = root == null ? this : root;
     }
 
+    /**
+     * Invoke a future.
+     *
+     * <p>This will execute the future. A future implementing this method should schedule an end of
+     * loop event that invokes the next future in the chain.
+     *
+     * @param scene scene context to execute the future in.
+     */
     protected abstract void invoke(Scene scene);
 
     /**
@@ -50,6 +58,16 @@ public abstract class Future {
      */
     public void schedule(Scene scene) {
         Engine.getInstance().scheduleEndOfLoopEvent(() -> mRoot.invoke(scene));
+    }
+
+    /**
+     * Schedule the future chain on active scene.
+     *
+     * <p>This will schedule an event at the end of engine's main loop to process the entire future
+     * chain.
+     */
+    public void schedule() {
+        schedule(Scene.getActiveScene());
     }
 
     /**

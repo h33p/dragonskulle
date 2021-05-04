@@ -26,7 +26,7 @@ public class AwaitFuture extends Future {
          * Perform the completion check.
          *
          * @param scene scene context of the future.
-         * @return {@code true}, if the await future should complete. {@code false otherwise}.
+         * @return {@code true}, if the await future should complete. {@code false} otherwise.
          */
         boolean waitCheck(Scene scene);
     }
