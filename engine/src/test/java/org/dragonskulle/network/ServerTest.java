@@ -20,7 +20,7 @@ import org.junit.Test;
 /** @author Oscar L, Aurimas Blažulionis */
 @Log
 public class ServerTest {
-    public static final long TIMEOUT = 1;
+    public static final long TIMEOUT = 3;
 
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
     private static final Scene CLIENT_NETMAN_SCENE = new Scene("client_netman_test");
@@ -109,9 +109,7 @@ public class ServerTest {
         ctx.getClient()
                 .syncWith(ctx.getServer())
                 .awaitTimeout(
-                        TIMEOUT, (__) -> ctx.getClientComponent(TestCapitalBuilding.class) != null);
-
-        ctx.getClient()
+                        TIMEOUT, (__) -> ctx.getClientComponent(TestCapitalBuilding.class) != null)
                 .then(
                         (__) -> {
                             Reference<TestCapitalBuilding> clientCapital =
@@ -139,6 +137,7 @@ public class ServerTest {
                         });
 
         ctx.getServer().syncWith(ctx.getClient());
+        ctx.getClient().syncWith(ctx.getServer());
     }
 
     @Test

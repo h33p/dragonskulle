@@ -275,7 +275,7 @@ public class Lobby extends Component implements IFrameUpdate {
     }
 
     public static void createServer(NetworkManager manager, IGameEndEvent endEvent) {
-        manager.createServer(PORT, Lobby::onClientLoaded, null, Lobby::onGameStarted, endEvent);
+        manager.createServer(PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
     }
 
     /** Builds the "Join" section of the UI. */

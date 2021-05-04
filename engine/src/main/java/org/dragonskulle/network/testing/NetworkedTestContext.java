@@ -102,6 +102,7 @@ public class NetworkedTestContext {
 
         for (NetworkedSceneContext client : mClients) {
             client.awaitTimeout(TIMEOUT, (__) -> !client.getManager().isClient());
+            mServer.syncWith(client);
         }
 
         mServer.awaitTimeout(TIMEOUT, (__) -> !mServer.getManager().isServer());
