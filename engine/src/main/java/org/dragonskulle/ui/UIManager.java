@@ -202,6 +202,7 @@ public class UIManager {
      * @param height consistent anchor based height to keep.
      * @param offsetX how much each element will be offset from one another on X axis.
      * @param offsetY how much each element will be offset from one another on Y axis.
+     * @param elems A list of {@link IUIBuildHandler}s.
      */
     public void buildWithAnchorOffset(
             GameObject go,
