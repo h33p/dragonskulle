@@ -21,7 +21,7 @@ import org.dragonskulle.game.player.ai.AimerAi;
 public class Graph {
 
     /** The hash map which will hold the node id to the Node. */
-    protected HashMap<Integer, Node> mGraph;
+    protected HashMap<Integer, Node> mGraph = new HashMap<>();;
 
     /** The {@link HexagonMap} which is used. */
     private Reference<HexagonMap> mMap;
@@ -56,6 +56,9 @@ public class Graph {
         aimer.getViewableTiles().forEach(this::addConnections);
     }
 
+    /** Basic Constructor. */
+    public Graph() {}
+
     /**
      * This is the variables set up in both constructors.
      *
@@ -65,7 +68,6 @@ public class Graph {
     private void initialise(HexagonMap map, HexagonTile tileAiming) {
 
         mMap = map.getReference(HexagonMap.class);
-        mGraph = new HashMap<Integer, Node>();
     }
 
     /**

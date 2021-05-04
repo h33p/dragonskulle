@@ -39,16 +39,12 @@ import org.lwjgl.system.NativeResource;
 @Log
 public class App implements NativeResource {
     private static final Settings mSettings = Settings.getInstance().loadSettings();
-    private static final int BGM_ID = AudioManager.getInstance().loadSound("game_background.wav");
-    private static final int BGM2_ID =
-            AudioManager.getInstance().loadSound("country_background_short.wav");
 
-    private static String sIP = "127.0.0.1";
-    private static int sPort = 17569;
     private static boolean sReload = false;
 
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
+    private static final String BGM_SOUND = "game_background.wav";
 
     public static final float MENU_BASEWIDTH = 0.2f;
 
@@ -146,7 +142,7 @@ public class App implements NativeResource {
                             AudioSource bgm = new AudioSource();
                             bgm.setVolume(0.1f);
                             bgm.setLooping(true);
-                            bgm.playSound(BGM_ID);
+                            bgm.playSound(BGM_SOUND);
                             audio.addComponent(bgm);
                         });
         mainScene.addRootObject(audioObject);
@@ -267,7 +263,7 @@ public class App implements NativeResource {
                             AudioSource bgm = new AudioSource();
                             bgm.setVolume(0.1f);
                             bgm.setLooping(true);
-                            bgm.playSound(BGM_ID);
+                            bgm.playSound(BGM_SOUND);
 
                             audio.addComponent(bgm);
                             audio.addComponent(new AudioListener());
