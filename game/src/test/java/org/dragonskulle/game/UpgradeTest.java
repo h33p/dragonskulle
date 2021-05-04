@@ -22,9 +22,9 @@ public class UpgradeTest {
         building.onConnectedSyncvars();
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
 
-        assertEquals(1, stats.get(0).getCost());
-        assertEquals(1, stats.get(1).getCost());
-        assertEquals(1, stats.get(2).getCost());
+        assertEquals(4, stats.get(0).getCost());
+        assertEquals(4, stats.get(1).getCost());
+        assertEquals(4, stats.get(2).getCost());
     }
 
     /** This will upgrade one stat to max level. */
@@ -38,37 +38,86 @@ public class UpgradeTest {
 
         // Lvl 1
         assertEquals(1, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 2
-        attack.increaseLevel();
         assertEquals(3, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 3
-        attack.increaseLevel();
         assertEquals(6, attack.getCost());
-
-        // Lvl 4
         attack.increaseLevel();
+        building.afterStatChange();
+
+        // Lvl 4;
         assertEquals(9, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 5
-        attack.increaseLevel();
         assertEquals(12, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 6
-        attack.increaseLevel();
         assertEquals(15, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 7
-        attack.increaseLevel();
         assertEquals(18, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 8
-        attack.increaseLevel();
         assertEquals(21, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
 
         // Lvl 9
-        attack.increaseLevel();
         assertEquals(24, attack.getCost());
+        attack.increaseLevel();
+        building.afterStatChange();
+    }
+
+    /** Checks if stat cost increases when other stats increase. */
+    @Test
+    public void inequalAdding() {
+        Building building = new Building();
+        building.onConnectedSyncvars();
+        ArrayList<SyncStat> stats = building.getUpgradeableStats();
+
+        SyncStat attack = stats.get(0);
+        SyncStat defence = stats.get(1);
+        SyncStat tokenGeneration = stats.get(2);
+
+        assertEquals(1, attack);
+        assertEquals(1, defence);
+        assertEquals(1, tokenGeneration);
+
+        // Increase attack lvl
+        attack.increaseLevel();
+        building.afterStatChange();
+
+        assertEquals(4, defence.getCost());
+
+        // Increase token generation lvl
+        tokenGeneration.increaseLevel();
+        building.afterStatChange();
+
+        assertEquals(8, defence.getCost());
+
+        // Increase attack lvl
+        attack.increaseLevel();
+        building.afterStatChange();
+        assertEquals(8, defence.getCost());
+
+        // Increase token generation lvl
+        tokenGeneration.increaseLevel();
+        building.afterStatChange();
+
+        assertEquals(8, defence.getCost());
     }
 }
