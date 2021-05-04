@@ -17,11 +17,11 @@ DELETE /api/hosts/{id} - deletes entry
 
 GET /api/hosts/{id} - retrieves a specific entry
 
-GET /api/code/{code} - gets host by code
+GET /api/hosts/code/{code} - gets host by code
 
-DELETE /api/code/{code} - deletes host by code
+DELETE /api/hosts/code/{code} - deletes host by code
 
-GET /api/config - gets the current config values
+GET /api/hosts/config - gets the current config values
 
 POST /api/config - sets the values
 You must also provide `token` in the headers with the API Key.
@@ -49,3 +49,4 @@ You must also provide `token` in the headers with the API Key.
   }
 }
 ```
+DELETE /api/hosts/code/{code} - deletes host by code

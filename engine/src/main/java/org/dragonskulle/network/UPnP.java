@@ -217,6 +217,36 @@ public class UPnP {
         }
     }
 
+    /**
+     * Check if a given port and protocol is already mapped to an address.
+     *
+     * @param port The port to check
+     * @param protocol The protocol to check. Either TCP, UDP or BOTH
+     * @return true if the port is not mapped, false is the port is already mapped to an address. If
+     *     the protocol is BOTH, true is only returned if both TCP AND UDP are available. If the
+     *     port is mapped to the current address already, false is still returned.
+     */
+    public static boolean isPortAvailable(int port, String protocol) {
+        if (!sInitialised) {
+            return false;
+        }
+        if (protocol.equals("BOTH")) {
+            return isPortAvailable(port, "TCP") & isPortAvailable(port, "UDP");
+        }
+
+        Map<String, String> out =
+                executeCommand(
+                        "GetSpecificPortMappingEntry",
+                        "NewRemoteHost",
+                        "",
+                        "NewExternalPort",
+                        Integer.toString(port),
+                        "NewProtocol",
+                        protocol);
+
+        return out == null;
+    }
+
     /** Delete all port mappings that were added at runtime */
     public static void deleteAllMappings() {
         if (!sInitialised) {

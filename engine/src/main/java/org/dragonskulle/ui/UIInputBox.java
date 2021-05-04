@@ -57,6 +57,10 @@ public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrame
         return mText.get().getText();
     }
 
+    public void setText(String text) {
+        mText.get().setText(text);
+    }
+
     private boolean clickedSomethingElse() {
         if (!UIButton.UI_PRESS.isActivated()) {
             return false;
