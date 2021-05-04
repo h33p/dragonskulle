@@ -21,9 +21,8 @@ import org.dragonskulle.ui.UIManager;
  */
 public class GameUIAppearance {
 
-    private static final int BUTTON_DOWN_SFX_ID =
-            AudioManager.getInstance().loadSound("button-down.wav");
-    private static final int BUTTON_SFX_ID = AudioManager.getInstance().loadSound("button-up.wav");
+    private static final String BUTTON_DOWN_SOUND = "button-down";
+    private static final String BUTTON_UP_SOUND = "button-up";
 
     public static final int INFO_BOX = 0;
     public static final int DRAWER = 1;
@@ -102,7 +101,7 @@ public class GameUIAppearance {
         AudioSource source = getSource();
 
         if (source != null) {
-            source.playSound(BUTTON_SFX_ID);
+            source.playSound(BUTTON_UP_SOUND);
         }
     }
 
@@ -111,7 +110,7 @@ public class GameUIAppearance {
         AudioSource source = getSource();
 
         if (source != null) {
-            source.playSound(BUTTON_DOWN_SFX_ID);
+            source.playSound(BUTTON_DOWN_SOUND);
         }
     }
 
