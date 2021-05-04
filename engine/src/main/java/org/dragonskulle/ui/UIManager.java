@@ -103,6 +103,8 @@ public class UIManager {
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
+         *
+         * @param go The {@link GameObject}.
          */
         void handleUIBuild(GameObject go);
     }

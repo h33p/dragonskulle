@@ -316,6 +316,8 @@ public class GameObject implements Serializable {
      * <p>Doesn't return a list of references as this method should only be used by the engine which
      * is responsible for the destroying of objects and therefore won't keep any strong references
      * to destroyed objects.
+     *
+     * @param ret The List that will be populated with children.
      */
     protected void getAllChildren(List<GameObject> ret) {
         for (GameObject child : mChildren) {
@@ -405,6 +407,7 @@ public class GameObject implements Serializable {
      *
      * @param name name of the object
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(String name, IBuildHandler handler) {
         return buildChild(name, mEnabled, handler);
@@ -415,7 +418,9 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param enabled Whether the object is enabled.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(String name, boolean enabled, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled);
@@ -429,7 +434,9 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param transform The transform for the object.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(
             String name, Transform transform, IBuildHandler handler) {
@@ -441,7 +448,10 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param enabled Whether the object is enabled.
+     * @param transform The transform for the object.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(
             String name, boolean enabled, Transform transform, IBuildHandler handler) {
@@ -521,7 +531,7 @@ public class GameObject implements Serializable {
     /**
      * Getter for mChildren.
      *
-     * @return mChildren
+     * @return mChildren The children of the GameObject.
      */
     public ArrayList<GameObject> getChildren() {
         return new ArrayList<>(mChildren);
@@ -530,6 +540,7 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform with cast.
      *
+     * @param type The class of the transform.
      * @return mTransform cast to type if cast is valid, null otherwise
      */
     public <T extends Transform> T getTransform(Class<T> type) {
@@ -586,6 +597,7 @@ public class GameObject implements Serializable {
      * @param type Class object of T
      * @param <T> Type of component to be returned
      * @param ret List that will store the components found
+     * @return The components of type T.
      */
     public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
         mComponents.stream()
