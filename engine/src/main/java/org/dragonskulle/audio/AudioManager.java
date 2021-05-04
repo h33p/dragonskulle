@@ -68,10 +68,12 @@ public class AudioManager {
     }
 
     /**
-     * Get a WaveSound resource from the ResourceManager
+     * Get a sound resource from the resource manager.
      *
-     * @param name Name of the sound resource to get
-     * @return The resource if we could get it or null if not
+     * @param type Class object of the sound to get
+     * @param name Name of the resource to get
+     * @param <T> Type of the sound to get
+     * @return The resource object if we got it, or null
      */
     public static <T> Resource<T> getResource(Class<T> type, String name) {
         return ResourceManager.getResource(type, name);
