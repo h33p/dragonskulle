@@ -108,7 +108,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                 arcPath.setSpawnOffset(mLerpedStart);
 
-                if (mLerpedStart <= -1) {
+                if (mLerpedStart <= -0.95f) {
                     mDidSet = false;
 
                     if (mArcFadeOut) {
