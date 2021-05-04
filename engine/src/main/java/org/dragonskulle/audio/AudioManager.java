@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -10,12 +9,15 @@ import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.apache.commons.io.FilenameUtils;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.audio.formats.Sound;
 import org.dragonskulle.audio.formats.WaveSound;
 import org.dragonskulle.components.Transform;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
+import org.dragonskulle.core.ResourceManager;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.settings.Settings;
 import org.joml.Vector3f;
@@ -58,6 +60,32 @@ public class AudioManager {
             Settings.getInstance().retrieveBoolean(SETTINGS_MUTE_STRING, false);
 
     @Getter private boolean mInitialized = false;
+
+    static {
+        ResourceManager.registerResource(
+                Sound.class,
+                (args) -> String.format("audio/%s", args.getName()),
+                (buffer, args) -> {
+                    final String extension = FilenameUtils.getExtension(args.getName());
+                    switch (extension) {
+                        case "wav":
+                            return new WaveSound(buffer);
+                        default:
+                            log.warning("Attempted to load unsupported audio file");
+                            return null;
+                    }
+                });
+    }
+
+    /**
+     * Get a sound resource from the resource manager.
+     *
+     * @param name Name of the resource to get
+     * @return The resource object if we got it, or null
+     */
+    public static Resource<Sound> getResource(String name) {
+        return ResourceManager.getResource(Sound.class, name);
+    }
 
     /**
      * Constructor for AudioManager. It's private as AudioManager is designed as a singleton. Opens
@@ -144,6 +172,10 @@ public class AudioManager {
         }
     }
 
+    /**
+     * Initialise the audio manager by opening a device, creating a context and then creating as
+     * many sources as possible.
+     */
     public void initAudioManager() {
         if (mAlDev != -1 || mAlCtx != -1) {
             return;
@@ -183,64 +215,6 @@ public class AudioManager {
         mInitialized = true;
 
         log.info("Initialize AudioManager: " + mSources.size() + " sources available");
-    }
-
-    /**
-     * Load a sound and give it an ID.
-     *
-     * @param file .wav File to be loaded
-     * @return The id of the loaded sound, or -1 if there was an error loading
-     */
-    public int loadSound(String file) {
-
-        String[] searchPaths = {
-            "engine/src/main/resources/audio/", "game/src/main/resources/audio/"
-        };
-
-        for (String p : searchPaths) {
-            File f = new File(p + file).getAbsoluteFile();
-            if (f.exists()) {
-                return loadSound(f);
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Load a sound and give it an ID.
-     *
-     * @param file .wav File to be loaded
-     * @return The id of the loaded sound, or -1 if there was an error loading
-     */
-    public int loadSound(File file) {
-        if (mAlDev == -1) {
-            return -1;
-        }
-
-        Sound sound = WaveSound.loadWave(file);
-
-        if (sound == null) {
-            return -1;
-        }
-
-        int id = mSounds.size();
-        mSounds.add(sound);
-
-        return id;
-    }
-
-    /**
-     * Attempt to get a loaded sound by id.
-     *
-     * @param id Integer of id that the sound was loaded with
-     * @return A WaveSound object representing the sound, or null if there was no sound with that id
-     */
-    public Sound getSound(int id) {
-        if (id < 0 || id >= mSounds.size()) {
-            return null;
-        } else {
-            return mSounds.get(id);
-        }
     }
 
     /**
