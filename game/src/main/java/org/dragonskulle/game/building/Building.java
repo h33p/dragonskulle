@@ -4,6 +4,7 @@ package org.dragonskulle.game.building;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -21,22 +22,30 @@ import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
+import org.dragonskulle.game.App;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
+import org.dragonskulle.game.misc.ArcPath;
+import org.dragonskulle.game.misc.ArcPath.IArcHandler;
+import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncInt;
+import org.dragonskulle.network.components.sync.SyncFloat;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -74,6 +83,14 @@ public class Building extends NetworkableComponent
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
 
+    /**
+     * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
+     *
+     * <p>It is used in attacks to prevent the building from being destroyed, taken over, attacked
+     * twice.
+     */
+    @Getter private final SyncFloat mActionLockTime = new SyncFloat();
+
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private final Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
@@ -88,6 +105,9 @@ public class Building extends NetworkableComponent
 
     /** Store a random number generator. */
     private Random mRandom = new Random();
+
+    static final GameObject FIREBALL_TEMPLATE =
+            App.TEMPLATES.get().getDefaultScene().findRootObject("attack_ball");
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -315,6 +335,30 @@ public class Building extends NetworkableComponent
         assignMesh();
     }
 
+    /** Checks whether arc paths need updating, and updates them. */
+    private void checkPaths() {
+        final int div = 1;
+        final int numFireballs = (mAttack.getLevel() + div - 1) / div;
+
+        if (mPaths.size() == numFireballs || mGameObject == null) {
+            return;
+        }
+
+        mPaths.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .forEach(mGameObject::removeComponent);
+
+        mPaths.clear();
+
+        for (int i = 0; i < numFireballs; i++) {
+            ArcPath path = new ArcPath();
+            path.setTemplate(FIREBALL_TEMPLATE);
+            getGameObject().addComponent(path);
+            mPaths.add(path.getReference(ArcPath.class));
+        }
+    }
+
     /**
      * Ensures that changes to stats are reflected in the building.
      *
@@ -332,6 +376,8 @@ public class Building extends NetworkableComponent
         if (!isCapital()) assignMesh();
 
         setStatsRequireVisualUpdate();
+
+        checkPaths();
     }
 
     /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
@@ -522,6 +568,114 @@ public class Building extends NetworkableComponent
                 });
     }
 
+    private class ArcUpdater implements IPathUpdater, IArcHandler {
+        private final float mAttackStart;
+        private final float mAttackTime;
+
+        private final float mRotx;
+        private final float mRoty;
+        private final float mRotz;
+
+        public ArcUpdater(float attackTime) {
+            mAttackStart = Engine.getInstance().getCurTime();
+            mAttackTime = attackTime;
+            mRotx = (float) Math.random() * 360f;
+            mRoty = (float) Math.random() * 360f;
+            mRotz = (float) Math.random() * 360f;
+        }
+
+        public void handle(ArcPath arcPath) {
+            float curtime = Engine.getInstance().getCurTime();
+
+            float lerptime = (curtime - mAttackStart) / mAttackTime;
+
+            if (lerptime >= 1f) {
+                mUpdater.clear();
+                return;
+            }
+
+            arcPath.setSpawnOffset(lerptime);
+        }
+
+        public void handle(int id, float pathPoint, Transform3D transform) {
+            transform.rotateDeg(pathPoint * mRotx, pathPoint * mRoty, pathPoint * mRotz);
+        }
+    }
+
+    private final List<Reference<ArcPath>> mPaths = new ArrayList<>();
+    private Reference<ArcUpdater> mUpdater = null;
+
+    /**
+     * Show a visual effect representing an attack.
+     *
+     * @param defender defending building to attack
+     * @param attackTime how long should the effect last
+     */
+    public void attackEffect(Building defender, float attackTime) {
+        if (Reference.isValid(mUpdater)) {
+            mUpdater.clear();
+        }
+
+        if (mPaths.isEmpty()) {
+            checkPaths();
+        }
+
+        HexagonTile defenderTile = defender.getTile();
+        HexagonTile tile = getTile();
+
+        if (defenderTile == null || tile == null) {
+            return;
+        }
+
+        mUpdater = new Reference<>(new ArcUpdater(attackTime));
+
+        List<HexagonTile> tiles = defender.getClaimedTiles().stream().collect(Collectors.toList());
+        Collections.shuffle(tiles);
+
+        int o = -2;
+
+        Vector3f cartesianDelta = new Vector3f();
+        Vector2f axialCoords = new Vector2f();
+
+        for (Reference<ArcPath> pathRef : mPaths) {
+            if (!Reference.isValid(pathRef)) {
+                continue;
+            }
+
+            ArcPath path = pathRef.get();
+
+            HexagonTile targetTile = defenderTile;
+
+            if (++o >= 0) {
+                if (o >= tiles.size() || tiles.get(o) == defenderTile) {
+                    continue;
+                }
+
+                targetTile = tiles.get(o);
+            }
+
+            axialCoords.set(targetTile.getQ() - tile.getQ(), targetTile.getR() - tile.getR());
+
+            TransformHex.axialToCartesian(
+                    axialCoords,
+                    targetTile.getSurfaceHeight() - targetTile.getHeight(),
+                    cartesianDelta);
+
+            path.setObjGap(1f);
+            path.setUpdater(mUpdater.cast(IPathUpdater.class));
+            path.setArcHandler(mUpdater.cast(IArcHandler.class));
+
+            path.getPosStart().set(0, 0, 0);
+            path.getPosTarget().set(cartesianDelta);
+
+            float amplitude =
+                    (targetTile.distTo(tile.getQ(), tile.getR()) + (float) Math.random() * 2) * 0.4f
+                            + 0.2f;
+
+            path.setAmplitude(amplitude);
+        }
+    }
+
     /**
      * Attack an opponent building.
      *
@@ -620,6 +774,15 @@ public class Building extends NetworkableComponent
         }
 
         return mAttackableTiles;
+    }
+
+    /**
+     * Get whether the building is action locked, i.e. should not have any actions happening to it.
+     *
+     * @return {@code true} if building is action locked, {@code false} otherwise.
+     */
+    public boolean isActionLocked() {
+        return mActionLockTime.get() > Engine.getInstance().getCurTime();
     }
 
     /**

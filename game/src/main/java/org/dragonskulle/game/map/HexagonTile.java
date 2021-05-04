@@ -10,12 +10,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
+import org.dragonskulle.game.App;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTileStore.TileToStoreActions;
 import org.dragonskulle.game.materials.HighlightControls;
@@ -33,22 +32,21 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 @Accessors(prefix = "m")
 public class HexagonTile implements INetSerializable {
 
-    static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
-
     /** Describes a template for land hex tile. */
     static final GameObject LAND_TILE =
-            TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
+            App.TEMPLATES.get().getDefaultScene().findRootObject("Land Hex");
 
     /** Describes a template for land hex tile. */
-    static final GameObject FOG_TILE = TEMPLATES.get().getDefaultScene().findRootObject("Fog Hex");
+    static final GameObject FOG_TILE =
+            App.TEMPLATES.get().getDefaultScene().findRootObject("Fog Hex");
 
     /** Describes a template for water hex tile. */
     static final GameObject WATER_TILE =
-            TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
+            App.TEMPLATES.get().getDefaultScene().findRootObject("Water Hex");
 
     /** Describes a template for water hex tile. */
     static final GameObject MOUNTAIN_TILE =
-            TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
+            App.TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
 
     public static enum TileType {
         LAND((byte) 0),

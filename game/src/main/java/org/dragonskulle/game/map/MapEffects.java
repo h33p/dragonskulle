@@ -2,17 +2,22 @@
 package org.dragonskulle.game.map;
 
 import java.util.HashMap;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 /**
  * @author Aurimas Blažulionis
@@ -38,7 +43,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             this.mValue = type;
         }
 
-        public HighlightSelection asSelection() {
+        public Vector4fc asSelection() {
             switch (this) {
                 case VALID:
                     return VALID_MATERIAL;
@@ -56,29 +61,63 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         }
     }
 
-    /** A class describing a sleection. Value of null means ignoring */
-    public static class HighlightSelection {
-        private boolean mClear = false;
-        private Vector4f mOverlay = new Vector4f();
+    /** Class controlling pulsating highlighting */
+    private static class PulseHighlight {
+        private Vector4fc mTargetColour;
+        private float mInvPeriod;
+        private float mMinLerp;
+        private final float mStartTime;
+        private float mEndTime;
 
-        public static final HighlightSelection CLEARED = cleared();
-
-        private HighlightSelection() {}
-
-        public static HighlightSelection ignored() {
-            return null;
+        /**
+         * Constructor for {@link PulseHighlight}.
+         *
+         * @param targetColour target colour of the highlight
+         * @param period period for one oscillation of the highlight
+         * @param minVal minimum value of oscillation
+         * @param startTime when the pulsating stated
+         * @param endTime when the pulsating will end (used by {@link MapEffects} to remove from the
+         *     list)
+         */
+        public PulseHighlight(
+                Vector4fc targetColour,
+                float period,
+                float minVal,
+                float startTime,
+                float endTime) {
+            mStartTime = startTime;
+            updateValues(targetColour, period, minVal, endTime);
         }
 
-        public static HighlightSelection with(Vector4f overlay) {
-            HighlightSelection ret = new HighlightSelection();
-            ret.mOverlay.set(overlay);
-            return ret;
+        /**
+         * Set variables for {@link PulseHighlight}.
+         *
+         * @param targetColour target colour of the highlight
+         * @param period period for one oscillation of the highlight
+         * @param minVal minimum value of oscillation
+         * @param endTime when the pulsating will end (used by {@link MapEffects} to remove from the
+         *     list)
+         */
+        public void updateValues(
+                Vector4fc targetColour, float period, float minVal, float endTime) {
+            mTargetColour = targetColour;
+            mInvPeriod = 1f / period;
+            mMinLerp = minVal;
+            mEndTime = endTime;
         }
 
-        private static HighlightSelection cleared() {
-            HighlightSelection ret = new HighlightSelection();
-            ret.mClear = true;
-            return ret;
+        /**
+         * Handle pulsating.
+         *
+         * <p>This method will interpolate the given colour value to have pulsating.
+         *
+         * @param curtime current engine time
+         * @param out output colour
+         */
+        private void handle(float curtime, Vector4f out) {
+            float periods = (curtime - mStartTime) * mInvPeriod;
+            float lerp = (float) Math.sin(Math.PI * (periods - 0.5f)) * 0.5f + 0.5f;
+            out.lerp(mTargetColour, MathUtils.lerp(mMinLerp, 1, lerp));
         }
     }
 
@@ -89,31 +128,26 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
-        public HighlightSelection handleTile(HexagonTile tile, HighlightSelection currentSelection);
+        public Vector4fc handleTile(HexagonTile tile, Vector4f currentSelection);
     }
 
-    public static final HighlightSelection VALID_MATERIAL =
-            highlightSelectionFromColour(0.1f, 0.6f, 0f);
-    public static final HighlightSelection INVALID_MATERIAL =
-            highlightSelectionFromColour(1f, 0f, 0f, 0.1f);
-    public static final HighlightSelection PLAIN_MATERIAL =
-            highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
-    public static final HighlightSelection ATTACK_MATERIAL =
-            highlightSelectionFromColour(0.9f, 0.1f, 0.1f, 0.5f);
-    public static final HighlightSelection BUILD_MATERIAL =
-            highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
-    public static final HighlightSelection FOG_MATERIAL =
-            highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
-    public static final HighlightSelection PLACE_MATERIAL =
-            highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
+    public static final Vector4fc VALID_MATERIAL = highlightSelectionFromColour(0.1f, 0.6f, 0f);
+    public static final Vector4fc INVALID_MATERIAL = highlightSelectionFromColour(1f, 0f, 0f, 0.1f);
+    public static final Vector4fc PLAIN_MATERIAL = highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
+    public static final Vector4fc ATTACK_MATERIAL = highlightSelectionFromColour(0.9f, 0.3f, 0.3f, 0.5f);
+    public static final Vector4fc BUILD_MATERIAL = highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
+    public static final Vector4fc FOG_MATERIAL = highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
+    public static final Vector4fc PLACE_MATERIAL = highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
+    public static final Vector4fc CLEARED_MATERIAL = new Vector4f(0f);
 
-    private HashMap<HexagonTile, HighlightSelection> mHighlightedTiles = new HashMap<>();
     private Reference<HexagonMap> mMapReference = null;
 
     /** Turn on to enable default highlighting (territory bounds). */
     @Getter @Setter private boolean mDefaultHighlight = true;
     /** This interface gets called to allow overlaying any selections on top. */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
+
+    private final Map<HexagonTile, PulseHighlight> mPulseHighlights = new HashMap<>();
 
     @Getter @Setter private Reference<Player> mActivePlayer;
 
@@ -125,7 +159,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param b The blue.
      * @return The new HighlightSelection.
      */
-    public static HighlightSelection highlightSelectionFromColour(float r, float g, float b) {
+    public static Vector4f highlightSelectionFromColour(float r, float g, float b) {
         return highlightSelectionFromColour(r, g, b, 0.25f);
     }
 
@@ -138,9 +172,9 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param alpha The alpha.
      * @return The new HighlightSelection.
      */
-    public static HighlightSelection highlightSelectionFromColour(
+    public static Vector4f highlightSelectionFromColour(
             float r, float g, float b, float alpha) {
-        return HighlightSelection.with(new Vector4f(r, g, b, alpha));
+        return new Vector4f(r, g, b, alpha);
     }
 
     /**
@@ -149,27 +183,16 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param tile tile to select
      * @param selection type of highlight to use
      */
-    public void highlightTile(HexagonTile tile, HighlightSelection selection) {
+    public void highlightTile(HexagonTile tile, Vector4fc selection) {
         highlightTile(tile, selection, true);
     }
 
-    private void highlightTile(HexagonTile tile, HighlightSelection selection, boolean removeOld) {
+    private void highlightTile(HexagonTile tile, Vector4fc selection, boolean removeOld) {
 
         if (tile == null || selection == null) {
             return;
         }
 
-        if (removeOld) {
-            mHighlightedTiles.remove(tile);
-        }
-        if (selection.mClear) {
-            Reference<HighlightControls> controls = tile.getHighlightControls();
-
-            if (Reference.isValid(controls)) {
-                controls.get().setHighlight(0, 0, 0, 0);
-            }
-            return;
-        }
         if (!ensureMapReference()) {
             return;
         }
@@ -177,10 +200,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         Reference<HighlightControls> controls = tile.getHighlightControls();
 
         if (Reference.isValid(controls)) {
-            controls.get().setHighlight(selection.mOverlay);
+            controls.get().setHighlight(selection);
         }
-
-        mHighlightedTiles.put(tile, selection);
     }
 
     /**
@@ -195,7 +216,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         mMapReference
                 .get()
                 .getAllTiles()
-                .forEach(t -> highlightTile(t, selector.handleTile(t, mHighlightedTiles.get(t))));
+                .forEach(t -> highlightTile(t, selector.handleTile(t, getTileHighlight(t))));
     }
 
     /**
@@ -206,7 +227,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param tile tile to deselect
      */
     public void unhighlightTile(HexagonTile tile) {
-        highlightTile(tile, HighlightSelection.CLEARED);
+        highlightTile(tile, CLEARED_MATERIAL);
     }
 
     /**
@@ -215,31 +236,77 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * <p>This will clear any selection that currently takes place
      */
     public void unhighlightAllTiles() {
-        for (HexagonTile tile : mHighlightedTiles.keySet()) {
-            highlightTile(tile, HighlightSelection.CLEARED, false);
+        if (!ensureMapReference()) {
+            return;
         }
-        mHighlightedTiles.clear();
+
+        mMapReference.get().getAllTiles().forEach(this::unhighlightTile);
     }
 
     /**
      * Check whether tile is highlighted.
      *
      * @param tile tile to check
-     * @return {@code true} if the tile is currently selected, {@code false} otherwise.
+     * @return The {@link Vector4f} if the tile has any highlighting, {@code null} otherwise.
      */
-    public boolean isTileHighlighted(HexagonTile tile) {
-        return mHighlightedTiles.containsKey(tile);
+    public Vector4f getTileHighlight(HexagonTile tile) {
+        Reference<HighlightControls> controls = tile.getHighlightControls();
+
+        if (Reference.isValid(controls)) {
+            return controls.get().getTargetColour();
+        }
+
+        return null;
     }
 
     /**
-     * Check whether tile is highlighted.
+     * Highlight all tiles of a building, and make them pulse.
      *
-     * @param tile tile to check
-     * @return The {@link HighlightSelection} if the tile is currently highlighted, {@code false}
-     *     otherwise.
+     * @param building building tiles to highlight
+     * @param colour colour of the highlight
+     * @param minVal minimum interpolation to the colour
+     * @param period how long does one oscillation take
+     * @param duration how long should the highlight be active for
      */
-    public HighlightSelection getTileHighlight(HexagonTile tile) {
-        return isTileHighlighted(tile) ? mHighlightedTiles.get(tile) : null;
+    public void pulseHighlight(
+            Building building, Vector4fc colour, float minVal, float period, float duration) {
+        if (building == null) {
+            return;
+        }
+
+        building.getClaimedTiles()
+                .forEach(t -> pulseHighlight(t, colour, minVal, period, duration));
+    }
+
+    /**
+     * Highlight a single tile, and make it pulse.
+     *
+     * @param tile tile to highlight
+     * @param colour colour of the highlight
+     * @param minVal minimum interpolation to the colour
+     * @param period how long does one oscillation take
+     * @param duration how long should the highlight be active for
+     */
+    public void pulseHighlight(
+            HexagonTile tile, Vector4fc colour, float minVal, float period, float duration) {
+
+        if (tile == null) {
+            return;
+        }
+
+        mPulseHighlights.compute(
+                tile,
+                (__, v) -> {
+                    float curtime = Engine.getInstance().getCurTime();
+                    if (v == null) {
+                        return new PulseHighlight(
+                                colour, period, minVal, curtime, curtime + duration);
+                    }
+
+                    v.updateValues(colour, period, minVal, curtime + duration);
+
+                    return v;
+                });
     }
 
     /**
@@ -248,7 +315,6 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * <p>This option essentially draws map bounds of different player teritories
      */
     private void defaultHighlight() {
-
         Player activePlayer = Reference.isValid(mActivePlayer) ? mActivePlayer.get() : null;
 
         highlightTiles(
@@ -263,7 +329,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     if (owner != null) {
                         return owner.getPlayerHighlightSelection();
                     }
-                    return HighlightSelection.CLEARED;
+                    return CLEARED_MATERIAL;
                 });
     }
 
@@ -283,6 +349,26 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         } else if (mHighlightOverlay != null) {
             mHighlightOverlay.onOverlay(this);
         }
+
+        float curtime = Engine.getInstance().getCurTime();
+
+        highlightTiles(
+                (tile, curval) -> {
+                    PulseHighlight hl = mPulseHighlights.get(tile);
+
+                    if (hl == null) {
+                        return null;
+                    }
+
+                    if (hl.mEndTime < curtime) {
+                        mPulseHighlights.remove(tile);
+                        return null;
+                    }
+
+                    hl.handle(curtime, curval);
+
+                    return curval;
+                });
     }
 
     @Override
@@ -300,6 +386,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         if (Reference.isValid(mMapReference)) {
             return true;
         }
+
+        if (Scene.getActiveScene() == null) {
+            return false;
+        }
+
         mMapReference = Scene.getActiveScene().getSingletonRef(HexagonMap.class);
         return Reference.isValid(mMapReference);
     }

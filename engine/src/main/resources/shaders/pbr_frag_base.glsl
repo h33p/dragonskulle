@@ -30,6 +30,7 @@ layout(location = 5) in float fragAlphaCutoff;
 layout(location = 6) in float fragMetallic;
 layout(location = 7) in float fragRoughness;
 layout(location = 8) in float fragNormalMul;
+layout(location = 9) in vec3 fragEmissionCol;
 layout(location = 10) in vec3 fragLightDir[NUM_LIGHTS];
 layout(location = 10 + NUM_LIGHTS) in vec3 fragLightCol[NUM_LIGHTS];
 #define LAST_IN_LOCATION (10 + 2 * NUM_LIGHTS)
@@ -96,7 +97,7 @@ vec4 pbr_base() {
 
 	vec3 ambient = vec3(0.05) * albedo;
 
-	vec3 color = ambient + accum;
+	vec3 color = ambient + accum + fragEmissionCol;
 
 	return vec4(color, alpha);
 }

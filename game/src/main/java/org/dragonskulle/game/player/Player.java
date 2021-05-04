@@ -16,6 +16,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -27,7 +28,7 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.map.MapEffects.HighlightSelection;
+import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -35,6 +36,7 @@ import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -44,6 +46,7 @@ import org.joml.Matrix2f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.joml.Vector4f;
 
 /**
  * This is the class which contains all the needed data to play a game.
@@ -74,7 +77,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** The colour of the player. */
     @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
 
-    @Getter private HighlightSelection mPlayerHighlightSelection;
+    @Getter private Vector4f mPlayerHighlightSelection;
+
+    /** Store a reference to the {@link MapEffects} component. */
+    private Reference<MapEffects> mMapEffects;
 
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = null;
@@ -107,6 +113,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter private transient ClientRequest<StatData> mClientStatRequest;
     /** Used by the client to request that a building be sold. */
     @Getter private transient ClientRequest<SellData> mClientSellRequest;
+    /** Sent by the server to tell clients that an attack is happening. */
+    @Getter private transient ServerEvent<AttackData> mServerAttackEvent;
 
     /** The base constructor for player. */
     public Player() {}
@@ -128,6 +136,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
         mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
         mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
+
+        mServerAttackEvent = new ServerEvent<>(new AttackData(), this::attackEffect);
 
         getNetworkManager().getIdSingletons(getNetworkObject().getOwnerId()).register(this);
 
@@ -209,6 +219,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 angleBetween = 0;
             }
             Vector2f axial = createCoordinates(angleBetween);
+            if (axial == null) {
+                continue;
+            }
             int x = (int) axial.x;
             int y = (int) axial.y;
             Building buildingToBecomeCapital = createBuilding(x, y, true);
@@ -286,6 +299,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return A {@link Vector2f} with the coordinates to use
      */
     private Vector2f createCoordinates(float angleBetween) {
+
+        if (!Reference.isValid(mGameState)) {
+            log.warning("Game State does not exist");
+            return null;
+        }
+
         final int maxPlayers = mGameState.get().getNumPlayers().get();
 
         float angleOfCircle = 360f / (maxPlayers + 1);
@@ -745,6 +764,38 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return tile.isBuildable(this);
     }
 
+    /** Invoke animation when an attack is being performed. */
+    void attackEffect(AttackData data) {
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse AttackData: Map is null.");
+            return;
+        }
+
+        Building attacker = data.getAttacker(map);
+        if (attacker == null) {
+            log.warning("Unable to parse AttackData: attacking building is null.");
+            return;
+        }
+
+        Building defender = data.getDefender(map);
+        if (defender == null) {
+            log.warning("Unable to parse AttackData: defending building is null.");
+            return;
+        }
+
+        MapEffects fx = getMapEffects();
+
+        if (fx == null) {
+            log.warning("Map effects was null.");
+            return;
+        }
+
+        fx.pulseHighlight(attacker, StandardHighlightType.PLACE.asSelection(), 0.2f, 0.5f, 2f);
+        fx.pulseHighlight(defender, StandardHighlightType.INVALID.asSelection(), 0.2f, 0.5f, 2f);
+        attacker.attackEffect(defender, 1.5f);
+    }
+
     /**
      * Process and parse an event in which the <b>client</b> player wishes to attack a {@link
      * Building} from another Building.
@@ -800,8 +851,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         log.info("Attacking");
 
+        mLastAttack.set(getNetworkManager().getServerTime());
+
         // ATTACK!
         mTokens.subtract(attacker.getAttackCost());
+
+        float lockTime = Engine.getInstance().getCurTime() + 1f;
+
+        attacker.getActionLockTime().set(lockTime);
+        defender.getActionLockTime().set(lockTime);
+
+        mServerAttackEvent.invoke((data) -> data.setData(attacker, defender));
+
+        // TODO: use Future to delay the actual attack until the animation plays
+
         boolean won;
         if (defender.getOwner().hasLost()) won = true;
         else won = attacker.attack(defender);
@@ -883,13 +946,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        if (attacker.isActionLocked() || defender.isActionLocked()) {
+            log.fine("One of the buildings is action locked.");
+            return false;
+        }
+
         // Checks if you're in cooldown
         if (inCooldown()) {
             log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
-
-        mLastAttack.set(getNetworkManager().getServerTime());
 
         return true;
     }
@@ -961,6 +1027,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        if (building.isActionLocked()) {
+            log.fine("Action locked.");
+            return false;
+        }
+
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
             log.info("You do not own the building.");
@@ -1023,7 +1094,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to change the stat was successful.
      */
     private boolean statAttempt(Building building, StatType statType) {
-        if (statCheck(building, statType) == false) {
+        if (!statCheck(building, statType)) {
             log.info("Unable to pass stat check.");
             return false;
         }
@@ -1050,6 +1121,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (building == null) {
             log.warning("Building is null.");
+            return false;
+        }
+
+        if (building.isActionLocked()) {
+            log.fine("Action locked.");
             return false;
         }
 
@@ -1113,7 +1189,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (!Reference.isValid(mGameState)) {
-            mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+            Scene activeScene = Scene.getActiveScene();
+
+            if (activeScene != null) {
+                mGameState = activeScene.getSingletonRef(GameState.class);
+            }
         }
 
         return Reference.isValid(mGameState) && !mGameState.get().isInGame();
@@ -1146,5 +1226,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .orElse(null);
 
         return mCapital != null ? mCapital.get() : null;
+    }
+
+    /**
+     * Get the {@link MapEffects}.
+     *
+     * <p>If {@link #mMapEffects} is not valid, it will attempt to get a valid MapEffects.
+     *
+     * @return The {@link MapEffects}; otherwise {@code null}.
+     */
+    public MapEffects getMapEffects() {
+        if (!Reference.isValid(mMapEffects)) {
+            MapEffects mapEffects = Scene.getActiveScene().getSingleton(MapEffects.class);
+
+            if (mapEffects == null) return null;
+            mMapEffects = mapEffects.getReference(MapEffects.class);
+        }
+
+        return mMapEffects.get();
     }
 }

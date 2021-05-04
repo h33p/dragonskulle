@@ -1,14 +1,17 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.materials;
 
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
+import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.PBRMaterial;
+import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
@@ -17,11 +20,12 @@ import org.joml.Vector4fc;
  */
 @Accessors(prefix = "m")
 @Log
-public class HighlightControls extends Component implements IOnAwake {
+public class HighlightControls extends Component implements IOnAwake, IFrameUpdate {
 
     private Reference<Renderable> mRenderable = new Reference<>(null);
     private final String mChildName;
     private PBRHighlightMaterial mHighlightMaterial;
+    @Getter private final Vector4f mTargetColour = new Vector4f();
 
     public HighlightControls() {
         this(null);
@@ -35,7 +39,7 @@ public class HighlightControls extends Component implements IOnAwake {
         if (mHighlightMaterial == null) {
             return;
         }
-        mHighlightMaterial.getOverlayColour().set(r, g, b, a);
+        mTargetColour.set(r, g, b, a);
     }
 
     public void setHighlight(Vector4fc col) {
@@ -65,6 +69,16 @@ public class HighlightControls extends Component implements IOnAwake {
                 mRenderable.get().setMaterial(mHighlightMaterial.incRefCount());
             }
         }
+    }
+
+    @Override
+    public void frameUpdate(float deltaTime) {
+
+        if (mHighlightMaterial == null) {
+            return;
+        }
+
+        mHighlightMaterial.getOverlayColour().lerp(mTargetColour, Math.min(1, deltaTime * 10f));
     }
 
     @Override
