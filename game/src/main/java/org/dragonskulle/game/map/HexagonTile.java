@@ -114,10 +114,14 @@ public class HexagonTile implements INetSerializable {
     private Reference<HighlightControls> mHighlightControls;
 
     /** Reference to the {@link Building} that is on the tile. */
-    private Reference<Building> mBuilding = new Reference<Building>(null);
+    private Reference<Building> mBuilding = null;
+
+    private int mNextBuilding = -1;
 
     /** A reference to the building that claims the tile, or {@code null}. */
     private Reference<Building> mClaimedBy = null;
+
+    private int mNextClaimedBy = -1;
 
     /**
      * Constructor that creates the HexagonTile.
@@ -223,6 +227,7 @@ public class HexagonTile implements INetSerializable {
         if (!isClaimed()) {
             return null;
         }
+
         return mClaimedBy.get().getOwner();
     }
 
@@ -235,6 +240,14 @@ public class HexagonTile implements INetSerializable {
         if (!isClaimed()) {
             return null;
         }
+
+        // This should never occur on the server.
+        //
+        // However, on clients this is a perfectly valid occurance
+        if (!Reference.isValid(mClaimedBy)) {
+            return null;
+        }
+
         return mClaimedBy.get();
     }
 
@@ -388,56 +401,73 @@ public class HexagonTile implements INetSerializable {
 
         NetworkManager manager = mHandler.getNetworkManager();
 
-        int buildingId = stream.readInt();
+        mNextBuilding = stream.readInt();
 
-        if (buildingId != -1) {
-            // We need to schedule an event here, because the capital may have spawned (will have
-            // spawned) after the data update message
-            Engine.getInstance()
-                    .scheduleEndOfLoopEvent(
-                            () -> {
-                                NetworkObject obj = manager.getObjectById(buildingId);
-
-                                Reference<Building> b =
-                                        obj == null
-                                                ? null
-                                                : obj.getGameObject().getComponent(Building.class);
-
-                                if (!Reference.isValid(b)) {
-                                    log.severe(
-                                            "Deserialized a building, but did not find it locally!");
-                                } else if (b != mBuilding) {
-                                    setBuilding(b.get());
-                                }
-                            });
+        if (mNextBuilding >= 0) {
+            onBuildingChange(manager);
         } else if (Reference.isValid(mBuilding)) {
             setBuilding(null);
         }
 
-        int claimId = stream.readInt();
+        mNextClaimedBy = stream.readInt();
 
-        if (claimId != -1) {
-            // Same here
-            Engine.getInstance()
-                    .scheduleEndOfLoopEvent(
-                            () -> {
-                                NetworkObject obj = manager.getObjectById(claimId);
-
-                                Reference<Building> b =
-                                        obj == null
-                                                ? null
-                                                : obj.getGameObject().getComponent(Building.class);
-
-                                if (!Reference.isValid(b)) {
-                                    log.severe(
-                                            "Deserialized a claimant, but did not find it locally!");
-                                } else if (b != mClaimedBy) {
-                                    removeClaim();
-                                    setClaimedBy(b.get());
-                                }
-                            });
+        if (mNextClaimedBy >= 0) {
+            onClaimChange(manager);
         } else if (Reference.isValid(mClaimedBy)) {
             removeClaim();
+        }
+    }
+
+    /**
+     * Invoked on the client whenever there is a building change on the tile.
+     *
+     * @param manager network manager to use
+     */
+    private void onBuildingChange(NetworkManager manager) {
+
+        if (mNextBuilding < 0) {
+            return;
+        }
+
+        NetworkObject obj = manager.getObjectById(mNextBuilding);
+
+        Reference<Building> b =
+                obj == null ? null : obj.getGameObject().getComponent(Building.class);
+
+        if (!Reference.isValid(b)) {
+            // This could occur when spawn event happens after this update.
+            Engine.getInstance().scheduleEndOfLoopEvent(() -> onBuildingChange(manager));
+            log.fine("Deserialized a building, but did not find it locally!");
+        } else if (b != mBuilding) {
+            setBuilding(b.get());
+            mNextBuilding = -1;
+        }
+    }
+
+    /**
+     * Invoked on the client whenever there is a claimant change on the tile.
+     *
+     * @param manager network manager to use
+     */
+    private void onClaimChange(NetworkManager manager) {
+
+        if (mNextClaimedBy < 0) {
+            return;
+        }
+
+        NetworkObject obj = manager.getObjectById(mNextClaimedBy);
+
+        Reference<Building> b =
+                obj == null ? null : obj.getGameObject().getComponent(Building.class);
+
+        if (!Reference.isValid(b)) {
+            // This could occur when spawn event happens after this update.
+            Engine.getInstance().scheduleEndOfLoopEvent(() -> onClaimChange(manager));
+            log.fine("Deserialized a claimant, but did not find it locally!");
+        } else if (b != mClaimedBy) {
+            removeClaim();
+            setClaimedBy(b.get());
+            mNextClaimedBy = -1;
         }
     }
 
