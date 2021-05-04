@@ -11,11 +11,10 @@ import org.dragonskulle.core.Scene;
  *     <p>This future executes an input condition interface repeatedly until it returns {@code
  *     true}.
  *     <p>There are several ways to build an {@link AwaitFuture}. The base layer is {@link
- *     Future#awaitUntil(IAwaitFuture)}, which will call the function raw. Another way is {@link
- *     Future#awaitTimeout(float, IAwaitFuture)}, which will assertion fail, if execution fails.
- *     Preferably only use in tests. Third way is {@link Future#syncWith(Future)}, which is meant to
- *     wait until another input future completes. This is useful to sync client-server communication
- *     in tests.
+ *     Future#awaitUntil}, which will call the function raw. Another way is {@link
+ *     Future#awaitTimeout}, which will assertion fail, if execution fails. Preferably only use in
+ *     tests. Third way is {@link Future#syncWith}, which is meant to wait until another input
+ *     future completes. This is useful to sync client-server communication in tests.
  *     <p>After completion, this future will schedule the next future for execution.
  */
 public class AwaitFuture extends Future {

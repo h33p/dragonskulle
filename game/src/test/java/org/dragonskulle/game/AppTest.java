@@ -18,6 +18,7 @@ public class AppTest {
      *
      * @param numClients number of clients.
      * @param app instance of {@link App}.
+     * @return ready to use networked test context.
      */
     public static NetworkedTestContext buildTestContext(int numClients, App app) {
 
@@ -61,6 +62,7 @@ public class AppTest {
      * <p>This context sets up the scene into the game scene for one client given.
      *
      * @param app instance of {@link App}.
+     * @return ready to use networked test context.
      */
     public static NetworkedTestContext buildTestContext(App app) {
         return buildTestContext(1, app);

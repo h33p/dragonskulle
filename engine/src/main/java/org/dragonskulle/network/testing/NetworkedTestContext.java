@@ -232,6 +232,7 @@ public class NetworkedTestContext {
     /**
      * Get a server component.
      *
+     * @param <T> type of the input type class.
      * @param type component's type.
      * @return reference to the component, if one exists. {@code null} otherwise.
      */
@@ -242,6 +243,7 @@ public class NetworkedTestContext {
     /**
      * Get a client component.
      *
+     * @param <T> type of the input type class.
      * @param i client's index.
      * @param type component's type.
      * @return reference to the component, if one exists. {@code null} otherwise.
@@ -253,6 +255,7 @@ public class NetworkedTestContext {
     /**
      * Get a client component on the first client.
      *
+     * @param <T> type of the input type class.
      * @param type component's type.
      * @return reference to the component, if one exists. {@code null} otherwise.
      */
@@ -263,6 +266,7 @@ public class NetworkedTestContext {
     /**
      * Get a network component.
      *
+     * @param <T> type of the input type class.
      * @param manager network manager to get the component from.
      * @param type type of the component.
      * @return reference to the component. {@code null} if does not exist.
