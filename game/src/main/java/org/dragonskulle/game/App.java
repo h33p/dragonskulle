@@ -47,6 +47,8 @@ public class App implements NativeResource {
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
     private static final String BGM_SOUND = "game_background.wav";
 
+    public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
+
     public static final float MENU_BASEWIDTH = 0.2f;
 
     /**

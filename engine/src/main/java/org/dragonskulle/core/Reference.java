@@ -33,6 +33,14 @@ public class Reference<T> implements Serializable {
         mObject = null;
     }
 
+    @SuppressWarnings("unchecked")
+    public <F> Reference<F> cast(Class<F> type) {
+        if (type.isInstance(mObject)) {
+            return (Reference<F>) this;
+        }
+        return null;
+    }
+
     /**
      * Get the referenced object.
      *
