@@ -142,7 +142,6 @@ public class WaveSound extends Sound implements Serializable {
      * Parses a .wav file from a byte array. This is slow so should only be done at program start.
      *
      * @param data byte array containing the wave data
-     * @return A WaveSound object
      */
     public WaveSound(byte[] data) {
         try {
