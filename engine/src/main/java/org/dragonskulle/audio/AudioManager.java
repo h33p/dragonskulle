@@ -9,6 +9,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.apache.commons.io.FilenameUtils;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.audio.formats.Sound;
@@ -62,21 +63,28 @@ public class AudioManager {
 
     static {
         ResourceManager.registerResource(
-                WaveSound.class,
-                (args) -> String.format("audio/%s.wav", args.getName()),
-                (buffer, __) -> new WaveSound(buffer));
+                Sound.class,
+                (args) -> String.format("audio/%s", args.getName()),
+                (buffer, args) -> {
+                    final String extension = FilenameUtils.getExtension(args.getName());
+                    switch (extension) {
+                        case "wav":
+                            return new WaveSound(buffer);
+                        default:
+                            log.warning("Attempted to load unsupported audio file");
+                            return null;
+                    }
+                });
     }
 
     /**
      * Get a sound resource from the resource manager.
      *
-     * @param type Class object of the sound to get
      * @param name Name of the resource to get
-     * @param <T> Type of the sound to get
      * @return The resource object if we got it, or null
      */
-    public static <T> Resource<T> getResource(Class<T> type, String name) {
-        return ResourceManager.getResource(type, name);
+    public static Resource<Sound> getResource(String name) {
+        return ResourceManager.getResource(Sound.class, name);
     }
 
     /**

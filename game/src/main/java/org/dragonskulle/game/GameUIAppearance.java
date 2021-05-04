@@ -21,8 +21,8 @@ import org.dragonskulle.ui.UIManager;
  */
 public class GameUIAppearance {
 
-    private static final String BUTTON_DOWN_SOUND = "button-down";
-    private static final String BUTTON_UP_SOUND = "button-up";
+    private static final String BUTTON_DOWN_SOUND = "button-down.wav";
+    private static final String BUTTON_UP_SOUND = "button-up.wav";
 
     public static final int INFO_BOX = 0;
     public static final int DRAWER = 1;

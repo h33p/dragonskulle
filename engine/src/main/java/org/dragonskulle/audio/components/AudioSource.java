@@ -7,7 +7,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.Source;
 import org.dragonskulle.audio.formats.Sound;
-import org.dragonskulle.audio.formats.WaveSound;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
@@ -126,7 +125,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
      * @param name Name of the sound to play
      */
     public void playSound(String name) {
-        playSound(AudioManager.getResource(WaveSound.class, name));
+        playSound(AudioManager.getResource(name));
     }
 
     /**
@@ -135,7 +134,7 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
      *
      * @param sound Sound resource to play
      */
-    public void playSound(Resource<WaveSound> sound) {
+    public void playSound(Resource<Sound> sound) {
         if (sound == null) {
             return;
         }
