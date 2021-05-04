@@ -154,7 +154,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     @Getter @Setter private Reference<Player> mActivePlayer;
 
     /**
-     * Create a new {@link HighlightSelection} with the specified values.
+     * Create a new {@link Vector4f} with the specified values.
      *
      * @param r The red.
      * @param g The green.
@@ -166,7 +166,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     }
 
     /**
-     * Create a new {@link HighlightSelection} with the specified values.
+     * Create a new {@link Vector4f} with the specified values.
      *
      * @param r The red.
      * @param g The green.
