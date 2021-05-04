@@ -645,7 +645,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
         if (!Reference.isValid(mAttackOption)) return;
         UIButton option = mAttackOption.get();
-        
+
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building building = tile.getBuilding();
