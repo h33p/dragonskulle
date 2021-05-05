@@ -73,11 +73,11 @@ public class UIAppearance implements NativeResource {
     /** The cursor to be displayed when hovering over a button. */
     @Accessors(prefix = "s")
     @Getter
-    private static CursorType sHoverCursor = new CursorType("ui/cursor_hover.png", 22, 10);
+    private static CursorType sHoverCursor = new CursorType("ui/cursor_hover.png", 26, 10);
     /** The cursor to be displayed when a button is clicked. */
     @Accessors(prefix = "s")
     @Getter
-    private static CursorType sInClickCursor = new CursorType("ui/cursor_inclick.png", 26, 9);
+    private static CursorType sInClickCursor = new CursorType("ui/cursor_inclick.png", 35, 10);
 
     public void setTextFont(Resource<Font> textFont) {
         if (mTextFont != null) {
