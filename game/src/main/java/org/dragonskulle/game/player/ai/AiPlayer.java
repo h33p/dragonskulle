@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ai;
 
+import java.util.List;
 import java.util.Random;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
@@ -8,7 +9,9 @@ import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.network.components.NetworkManager;
 
 /**
@@ -85,14 +88,14 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        // If you can play simulate the input
-        if (shouldPlayGame(deltaTime)
-                && mServerSide
-                && !mPlayer.get().gameEnd()
-                && mPlayer.get().getNumberOfOwnedBuildings() != 0) {
-            log.info("Playing game");
-            simulateInput();
-        }
+        // Ensure the AI only runs on the server, and if it is its time to run.
+        if (!mServerSide || !shouldPlayGame(deltaTime)) return;
+
+        // Ensure the player exists and hasn't lost.
+        Player player = getPlayer();
+        if (player == null || player.gameEnd() || player.getNumberOfOwnedBuildings() == 0) return;
+
+        simulateInput();
     }
 
     /**
@@ -100,4 +103,33 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      * have not lost. For the base class this will be done using probability
      */
     protected abstract void simulateInput();
+
+    /**
+     * Get a random {@link BuildingDescriptor} for a building that the {@link Player} can afford.
+     *
+     * @return A {@link BuildingDescriptor} the Player can afford, or {@code null} if they cannot
+     *     afford a building.
+     */
+    protected BuildingDescriptor getRandomBuildingType() {
+        List<BuildingDescriptor> options =
+                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+        // Test if they can afford to build anything.
+        if (options.size() == 0) return null;
+
+        int optionIndex = mRandom.nextInt(options.size());
+        return options.get(optionIndex);
+    }
+
+    /**
+     * Gets the player.
+     *
+     * @return The player.
+     */
+    protected Player getPlayer() {
+        Player player = mPlayer.get();
+        if (player == null) {
+            log.severe("Reference to mPlayer is null!");
+        }
+        return player;
+    }
 }

@@ -24,13 +24,14 @@ layout(location = 8) in vec3 inLightDir[NUM_LIGHTS];
 layout(location = 8 + NUM_LIGHTS) in vec3 inLightCol[NUM_LIGHTS];
 
 layout(location = 8 + DNUM_LIGHTS) in vec4 instColor;
-layout(location = 9 + DNUM_LIGHTS) in vec3 inCam;
+layout(location = 9 + DNUM_LIGHTS) in vec3 emissionCol;
+layout(location = 10 + DNUM_LIGHTS) in vec3 inCam;
 
-layout(location = 10 + DNUM_LIGHTS) in float alphaCutoff;
-layout(location = 11 + DNUM_LIGHTS) in float metallic;
-layout(location = 12 + DNUM_LIGHTS) in float roughness;
-layout(location = 13 + DNUM_LIGHTS) in float normalMul;
-#define LAST_IN_LOCATION (13 + DNUM_LIGHTS)
+layout(location = 11 + DNUM_LIGHTS) in float alphaCutoff;
+layout(location = 12 + DNUM_LIGHTS) in float metallic;
+layout(location = 13 + DNUM_LIGHTS) in float roughness;
+layout(location = 14 + DNUM_LIGHTS) in float normalMul;
+#define LAST_IN_LOCATION (14 + DNUM_LIGHTS)
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragUV;
@@ -42,6 +43,7 @@ layout(location = 5) out float fragAlphaCutoff;
 layout(location = 6) out float fragMetallic;
 layout(location = 7) out float fragRoughness;
 layout(location = 8) out float fragNormalMul;
+layout(location = 9) out vec3 fragEmissionCol;
 
 layout(location = 10) out vec3 fragLightDir[NUM_LIGHTS];
 layout(location = 10 + NUM_LIGHTS) out vec3 fragLightCol[NUM_LIGHTS];
@@ -60,6 +62,8 @@ void pbr_base() {
 	fragMetallic = metallic;
 	fragRoughness = roughness;
 	fragNormalMul = normalMul;
+
+	fragEmissionCol = emissionCol;
 
 	for (int i = 0; i < NUM_LIGHTS; i++) {
 		fragLightDir[i] = inLightDir[i];

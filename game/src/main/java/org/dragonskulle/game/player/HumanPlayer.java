@@ -5,13 +5,18 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Transform3D;
+import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameState.IGameEndEvent;
 import org.dragonskulle.game.building.Building;
@@ -21,6 +26,9 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.MapEffects;
 import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
+import org.dragonskulle.game.misc.ArcPath;
+import org.dragonskulle.game.misc.ArcPath.IArcHandler;
+import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
@@ -32,6 +40,10 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.utils.MathUtils;
+import org.joml.Matrix4fc;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 /**
  * This class will allow a user to interact with game.
@@ -39,6 +51,7 @@ import org.dragonskulle.ui.UIManager;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
+@Log
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     /** The current {@link Screen} being displayed. */
@@ -54,9 +67,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Store a reference to the {@link NetworkManager}. */
     private final Reference<NetworkManager> mNetworkManager;
-
-    /** Store a reference to the {@link MapEffects} component. */
-    private Reference<MapEffects> mMapEffects;
 
     /** Store a reference to the {@link UIMenuLeftDrawer}. */
     @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
@@ -75,6 +85,96 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     /** Whether the visuals need to be updated. */
     private boolean mVisualsNeedUpdate = true;
+
+    private class ArcUpdater implements IPathUpdater, IArcHandler {
+
+        private final Vector3f posStart = new Vector3f();
+        private final Vector3f posEnd = new Vector3f();
+
+        private float mLerpedStart = -1;
+        private boolean mDidSet = false;
+
+        public void handle(ArcPath arcPath) {
+            float speed = 10f;
+            float deltaTime = Engine.getInstance().getFrameDeltaTime();
+            float lerptime = Math.min(1f, deltaTime * speed);
+
+            if (mArcFadeOut
+                    || mHexChosen == null
+                    || !Reference.isValid(mBuildingChosen)
+                    || !mPlayer.get()
+                            .attackCheck(mBuildingChosen.get(), mHexChosen.getBuilding())) {
+                mLerpedStart = MathUtils.lerp(mLerpedStart, -1, lerptime);
+
+                arcPath.setSpawnOffset(mLerpedStart);
+
+                if (mLerpedStart <= -0.95f) {
+                    mDidSet = false;
+
+                    if (mArcFadeOut) {
+                        mUpdater.clear();
+                    }
+                }
+
+                return;
+            } else {
+                mLerpedStart = MathUtils.lerp(mLerpedStart, 0, lerptime);
+            }
+
+            arcPath.setSpawnOffset(mLerpedStart);
+
+            HexagonTile hex = mBuildingChosen.get().getTile();
+            HexagonTile hexEnd = mHexChosen;
+
+            TransformHex.axialToCartesian(
+                    new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), posStart);
+            TransformHex.axialToCartesian(
+                    new Vector2f(hexEnd.getQ(), hexEnd.getR()), hexEnd.getSurfaceHeight(), posEnd);
+
+            HexagonMap map = mPlayer.get().getMap();
+
+            Matrix4fc mat = map.getGameObject().getTransform().getWorldMatrix();
+
+            mat.transformPosition(posStart);
+            mat.transformPosition(posEnd);
+
+            float amplitude = hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f + 0.5f;
+
+            if (!mDidSet) {
+                mArcPath.get().getPosStart().set(posStart);
+                mArcPath.get().getPosTarget().set(posEnd);
+
+                mArcPath.get().setAmplitude(amplitude);
+
+                mDidSet = true;
+            }
+
+            arcPath.getPosStart().lerp(posStart, lerptime);
+            arcPath.getPosTarget().lerp(posEnd, lerptime);
+            arcPath.setAmplitude(MathUtils.lerp(arcPath.getAmplitude(), amplitude, lerptime));
+        }
+
+        public void handle(int id, float pathPoint, Transform3D transform) {
+            float factor = 1.6f;
+
+            float mul = factor * pathPoint - 0.5f * factor;
+
+            mul = -(mul * mul) + 1;
+
+            transform.setScale(mul, mul, mul);
+        }
+    }
+
+    /** Visual arc path shown on selections */
+    private Reference<ArcPath> mArcPath;
+
+    /** Updater for mArcPath */
+    private Reference<ArcUpdater> mUpdater;
+
+    private boolean mArcFadeOut = false;
+
+    static final GameObject SELECTION_TEMPLATE =
+            App.TEMPLATES.get().getDefaultScene().findRootObject("selection_sphere");
 
     /**
      * Create a {@link HumanPlayer}.
@@ -133,6 +233,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                             drawer.addComponent(menu);
                         });
         getGameObject().addChild(menuObject);
+
+        ArcPath path = new ArcPath();
+
+        path.setTemplate(SELECTION_TEMPLATE);
+        path.setAmplitude(2f);
+        path.setObjGap(0.05f);
+
+        getGameObject().addComponent(path);
+
+        mArcPath = path.getReference(ArcPath.class);
     }
 
     @Override
@@ -215,6 +325,20 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         updateVisuals();
     }
 
+    /**
+     * Only allow the player to select opponent buildings.
+     *
+     * @param selected The hexagon tile clicked on.
+     */
+    private void attackSelect(HexagonTile selected) {
+        Player player = getPlayer();
+        if (player == null || !selected.hasBuilding()) return;
+
+        Building building = selected.getBuilding();
+        if (player.isBuildingOwner(building)) return;
+        mBuildingChosen = building.getReference(Building.class);
+    }
+
     /** If the user selects a tile, swap to the relevant screen. */
     private void detectTileSelection() {
         Player player = getPlayer();
@@ -233,11 +357,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (map == null) return;
 
         // Select a tile.
-        mHexChosen = map.cursorToTile();
-        if (mHexChosen == null) return;
+        HexagonTile selected = map.cursorToTile();
+        if (selected == null) return;
 
-        // Do not swap screens.
-        if (mCurrentScreen == Screen.ATTACKING_SCREEN) return;
+        // If in attacking mode, do its own thing.
+        if (mCurrentScreen == Screen.ATTACKING_SCREEN) {
+            attackSelect(selected);
+            return;
+        }
+
+        mHexChosen = selected;
 
         if (mHexChosen.hasBuilding()) {
             Building building = mHexChosen.getBuilding();
@@ -266,8 +395,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
         // Ensure Player and MapEffects exist.
         Player player = getPlayer();
-        MapEffects effects = getMapEffects();
-        if (player == null || effects == null) return;
+        if (player == null) return;
+        MapEffects effects = player.getMapEffects();
+        if (effects == null) return;
 
         // Only run if visuals need updating.
         if (!mVisualsNeedUpdate) return;
@@ -278,32 +408,54 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Set the player for the effects.
         effects.setActivePlayer(mPlayer);
 
+        if (mCurrentScreen != Screen.ATTACKING_SCREEN && mUpdater != null) {
+            mArcFadeOut = true;
+        }
+
         switch (mCurrentScreen) {
             case DEFAULT_SCREEN:
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
+
+                            HexagonMap map = player.getMap();
+
+                            if (map == null) {
+                                return;
+                            }
+
+                            fx.pulseHighlight(
+                                    map.cursorToTile(),
+                                    StandardHighlightType.VALID.asSelection(),
+                                    0.6f,
+                                    2f,
+                                    0.05f);
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
-                            highlightAttackableTiles(fx, StandardHighlightType.PLAIN);
                         });
                 break;
             case ATTACKING_SCREEN:
-                effects.setDefaultHighlight(true);
+                mArcFadeOut = false;
+
+                if (!Reference.isValid(mUpdater)) {
+                    mUpdater = new Reference<>(new ArcUpdater());
+                    mArcPath.get().setUpdater(mUpdater.cast(IPathUpdater.class));
+                    mArcPath.get().setArcHandler(mUpdater.cast(IArcHandler.class));
+                }
+
                 effects.setHighlightOverlay(
                         (fx) -> {
-                            highlightAttackableTiles(fx, StandardHighlightType.ATTACK);
-                            highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            highlightAttackableTiles(
+                                    fx, StandardHighlightType.ATTACK, StandardHighlightType.VALID);
                         });
                 break;
             case SELLING_SCREEN:
                 break;
             case PLACING_NEW_BUILDING:
-                effects.setDefaultHighlight(true);
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightBuildableTiles(fx, StandardHighlightType.VALID);
@@ -365,11 +517,43 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 });
     }
 
-    private void highlightAttackableTiles(MapEffects fx, StandardHighlightType highlight) {
-        if (!Reference.isValid(mBuildingChosen) || fx == null || highlight == null) return;
+    /**
+     * Highlight surrounding Buildings based on the {@link #mHexChosen}.
+     *
+     * @param effects The MapEffects to be used.
+     * @param attackHighlight Used to highlight attackable buildings.
+     * @param selectHighlight Used when an attackable building is selected.
+     */
+    private void highlightAttackableTiles(
+            MapEffects effects,
+            StandardHighlightType attackHighlight,
+            StandardHighlightType selectHighlight) {
+        if (mHexChosen == null
+                || effects == null
+                || attackHighlight == null
+                || selectHighlight == null) return;
+        Player player = getPlayer();
+        if (player == null || !mHexChosen.hasBuilding()) return;
+        Building myBuilding = mHexChosen.getBuilding();
 
-        for (Building attackableBuilding : mBuildingChosen.get().getAttackableBuildings()) {
-            fx.highlightTile(attackableBuilding.getTile(), highlight.asSelection());
+        // Highlight the player's building.
+        effects.highlightTile(mHexChosen, selectHighlight.asSelection());
+
+        Building targetBuilding = null;
+        if (Reference.isValid(mBuildingChosen)) {
+            targetBuilding = mBuildingChosen.get();
+        }
+
+        for (Building attackableBuilding : myBuilding.getAttackableBuildings()) {
+            HexagonTile tile = attackableBuilding.getTile();
+
+            // Highlight the building to attack in a different colour.
+            if (targetBuilding != null && attackableBuilding.equals(targetBuilding)) {
+                effects.highlightTile(tile, selectHighlight.asSelection());
+                continue;
+            }
+
+            effects.highlightTile(tile, attackHighlight.asSelection());
         }
     }
 
@@ -405,23 +589,5 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
 
         return mPlayer.get();
-    }
-
-    /**
-     * Get the {@link MapEffects}.
-     *
-     * <p>If {@link #mMapEffects} is not valid, it will attempt to get a valid MapEffects.
-     *
-     * @return The {@link MapEffects}; otherwise {@code null}.
-     */
-    private MapEffects getMapEffects() {
-        if (!Reference.isValid(mMapEffects)) {
-            MapEffects mapEffects = Scene.getActiveScene().getSingleton(MapEffects.class);
-
-            if (mapEffects == null) return null;
-            mMapEffects = mapEffects.getReference(MapEffects.class);
-        }
-
-        return mMapEffects.get();
     }
 }

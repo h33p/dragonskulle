@@ -438,24 +438,35 @@ public class GLTF implements NativeResource {
 
         JSONArray materials = (JSONArray) decoded.get("materials");
 
-        Vector4f baseColor = new Vector4f(1f);
+        Vector4f baseColour = new Vector4f(1f);
+        Vector3f emissionColour = new Vector3f(0f);
 
         if (materials != null) {
             for (Object obj : materials) {
                 JSONObject mat = (JSONObject) obj;
                 float metallic = 1f;
                 float roughness = 1f;
-                baseColor.set(1f);
+                baseColour.set(1f);
+                emissionColour.set(0);
                 SampledTexture baseSampled = null;
                 SampledTexture metallicSampled = null;
 
                 String alphaMode = (String) mat.get("alphaMode");
 
+                JSONArray emission = (JSONArray) mat.get("emissiveFactor");
+
+                if (emission != null) {
+                    emissionColour.set(
+                            parseFloat(emission.get(0)),
+                            parseFloat(emission.get(1)),
+                            parseFloat(emission.get(2)));
+                }
+
                 JSONObject rough = (JSONObject) mat.get("pbrMetallicRoughness");
                 if (rough != null) {
                     JSONArray baseFactor = (JSONArray) rough.get("baseColorFactor");
                     if (baseFactor != null) {
-                        baseColor.set(
+                        baseColour.set(
                                 parseFloat(baseFactor.get(0)),
                                 parseFloat(baseFactor.get(1)),
                                 parseFloat(baseFactor.get(2)),
@@ -495,7 +506,7 @@ public class GLTF implements NativeResource {
                     // TODO: TEXCOORD
                 }
 
-                PBRMaterial pbrMat = new PBRMaterial(baseColor);
+                PBRMaterial pbrMat = new PBRMaterial(baseColour);
 
                 if (alphaMode != null) {
                     switch (alphaMode) {
@@ -519,6 +530,7 @@ public class GLTF implements NativeResource {
                 pbrMat.setMetallic(metallic);
                 pbrMat.setRoughness(roughness);
                 pbrMat.setNormal(normal);
+                pbrMat.getEmissionColour().set(emissionColour);
 
                 mMaterials.add(pbrMat);
             }

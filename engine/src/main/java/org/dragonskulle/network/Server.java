@@ -124,6 +124,7 @@ public class Server {
         // Secondly accept all clients that already connected
         while ((c = mPendingConnectedClients.poll()) != null) {
             mClients.put(c.getNetworkID(), c);
+            mServerListener.clientFullyConnected(c);
         }
 
         // Now accept new socket connections

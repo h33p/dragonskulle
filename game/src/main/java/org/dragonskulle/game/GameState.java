@@ -107,7 +107,7 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         "game_state",
                         new TransformUI(true),
                         (self) -> {
-                            UIManager.getInstance().buildVerticalUi(self, 0.25f, 0.1f, 0.8f, playerInfos);
+                            UIManager.getInstance().buildVerticalUi(self, 0.1f, 0f, 1f, playerInfos);
                             UIRenderable drawer =
                                     new UIRenderable(GameUIAppearance.getDrawerTexture());
                             TransformUI tran = self.getTransform(TransformUI.class);
