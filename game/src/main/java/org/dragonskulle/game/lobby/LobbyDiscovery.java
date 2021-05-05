@@ -81,10 +81,11 @@ public class LobbyDiscovery {
 
     /** Creates a new Listener thread if there isn't one already running */
     public static void openLocalLobby() {
-        if (mListener == null) {
-            mListener = new Listener();
-            mListener.start();
+        if (mListener != null) {
+            mListener.close();
         }
+        mListener = new Listener();
+        mListener.start();
     }
 
     /** Stops the Listener thread if there is one running */
@@ -151,7 +152,7 @@ public class LobbyDiscovery {
             try {
                 DatagramPacket response =
                         new DatagramPacket(UDP_CONNECT_RESPONSE, UDP_CONNECT_RESPONSE.length);
-                // socket.setSoTimeout(1000);
+                socket.setSoTimeout(1000);
                 socket.receive(response);
                 if (Arrays.equals(response.getData(), UDP_CONNECT_RESPONSE)) {
                     log.info("Discovered a server!");
