@@ -664,15 +664,16 @@ public class Lobby extends Component implements IFrameUpdate {
         for (int i = -1; i >= -1 * numOfAi; i--) {
             Random random = new Random();
 
-            Reference<NetworkObject> player = manager.getServerManager().spawnNetworkObject(i, manager.findTemplateByName("player"));
+            Reference<NetworkObject> player =
+                    manager.getServerManager()
+                            .spawnNetworkObject(i, manager.findTemplateByName("player"));
             GameObject playerObj = player.get().getGameObject();
             playerObj.addComponent(new ProbabilisticAiPlayer());
-            
+
             // Randomly select which AI to use
             if (random.nextFloat() > 0.5) {
-            	playerObj.addComponent(new AimerAi());
-                
-            } 
+                playerObj.addComponent(new AimerAi());
+            }
         }
     }
 
