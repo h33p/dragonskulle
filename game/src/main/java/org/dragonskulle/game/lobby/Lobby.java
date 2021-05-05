@@ -16,27 +16,35 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.PlayerType;
+import org.dragonskulle.game.player.ai.AimerAi;
+import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkManager.IGameEndEvent;
 import org.dragonskulle.network.components.NetworkObject;
-import org.dragonskulle.network.components.ServerNetworkManager.PlayerType;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIInputBox;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-@Log
-@Accessors(prefix = "m")
 /**
- * Class that handles the creation, deletion, joining and leaving of game lobbies
+ * Class that handles the creation, deletion, joining and leaving of game lobbies.
  *
  * @author Harry Stoltz
  */
+@Log
+@Accessors(prefix = "m")
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
@@ -628,7 +636,26 @@ public class Lobby extends Component implements IFrameUpdate {
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
         int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnPlayer(id, PlayerType.Human);
+        spawnPlayer(id, new PlayerType(PlayerType.PlayerStyle.HUMAN, null), manager);
+    }
+
+    /**
+     * Spawns a player.
+     *
+     * @param ownerId the owner id
+     * @param playerStyle    the playerStyle
+     * @param manager the manager
+     */
+    private static void spawnPlayer(int ownerId, PlayerType playerStyle, NetworkManager manager) {
+        Reference<NetworkObject> playerObj = manager.getServerManager().spawnNetworkObject(ownerId, manager.findTemplateByName("player"));
+        if (!playerStyle.isHuman()) {
+            manager.getServerManager().getNonHumanPlayerIds().add(ownerId);
+            if (Reference.isValid(playerObj)) {
+                if (!playerStyle.isHuman()) {
+                    playerObj.get().getGameObject().addComponent(playerStyle.getComponent());
+                }
+            }
+        }
     }
 
     /**
@@ -682,9 +709,9 @@ public class Lobby extends Component implements IFrameUpdate {
             Random random = new Random();
             // Randomly select which AI to use
             if (random.nextFloat() > 0.5) {
-                manager.getServerManager().spawnPlayer(i, PlayerType.Aimer);
+                spawnPlayer(i, new PlayerType(PlayerType.PlayerStyle.AIMER, new AimerAi()), manager);
             } else {
-                manager.getServerManager().spawnPlayer(i, PlayerType.Probabilistic);
+                spawnPlayer(i, new PlayerType(PlayerType.PlayerStyle.PROBABILISTIC, new ProbabilisticAiPlayer()), manager);
             }
         }
     }

@@ -39,8 +39,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         @Getter
         private final int mValue;
 
-        StandardHighlightType(int type) {
-            this.mValue = type;
+        StandardHighlightType(int playerStyle) {
+            this.mValue = playerStyle;
         }
 
         public Vector4fc asSelection() {
@@ -182,7 +182,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * Select a single tile, overriding previous selection.
      *
      * @param tile tile to select
-     * @param selection type of highlight to use
+     * @param selection playerStyle of highlight to use
      */
     public void highlightTile(HexagonTile tile, Vector4fc selection) {
         highlightTile(tile, selection, true);

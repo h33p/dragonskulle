@@ -55,7 +55,7 @@ public enum StatType {
     @Getter private final boolean mFixedValue;
 
     /**
-     * Create a new type of stat.
+     * Create a new playerStyle of stat.
      *
      * @param valueCalculator The method used to turn a level into a value.
      */
@@ -65,7 +65,7 @@ public enum StatType {
     }
 
     /**
-     * Create a new type of stat.
+     * Create a new playerStyle of stat.
      *
      * @param valueCalculator The method used to turn a level into a value.
      */
@@ -76,7 +76,7 @@ public enum StatType {
     }
 
     /**
-     * Create a new type of stat that is permanently one value.
+     * Create a new playerStyle of stat that is permanently one value.
      *
      * @param value The value of the stat, regardless of level.
      */
@@ -93,12 +93,12 @@ public enum StatType {
      * default name.
      *
      * @param name the nice name to retrieve from
-     * @return the corresponding stat type.
+     * @return the corresponding stat playerStyle.
      */
     public static StatType fromNiceName(String name) {
-        for (StatType type : StatType.values()) {
-            if (type.mNiceName != null && type.mNiceName.equals(name)) {
-                return type;
+        for (StatType playerStyle : StatType.values()) {
+            if (playerStyle.mNiceName != null && playerStyle.mNiceName.equals(name)) {
+                return playerStyle;
             }
         }
         return StatType.valueOf(name);

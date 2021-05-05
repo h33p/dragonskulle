@@ -167,7 +167,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      */
     private boolean tryToAddBuilding(Building building) {
 
-        // Get a building type that they can afford.
+        // Get a building playerStyle that they can afford.
         BuildingDescriptor option = getRandomBuildingType();
         if (option == null) return false;
 

@@ -269,16 +269,16 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get the first component of type T found.
+     * Get the first component of playerStyle T found.
      *
-     * @param type Class object of T
+     * @param playerStyle Class object of T
      * @param <T> Type of component to be returned
-     * @return The first component of type T found, or null if none were found
+     * @return The first component of playerStyle T found, or null if none were found
      */
-    public <T extends Component> Reference<T> getComponent(Class<T> type) {
+    public <T extends Component> Reference<T> getComponent(Class<T> playerStyle) {
         return mComponents.stream()
-                .filter(type::isInstance)
-                .map(component -> component.getReference(type))
+                .filter(playerStyle::isInstance)
+                .map(component -> component.getReference(playerStyle))
                 .filter(Reference::isValid)
                 .findFirst()
                 .orElse(null);
@@ -299,17 +299,17 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get a list of all components of a specific type in all children of this GameObject.
+     * Get a list of all components of a specific playerStyle in all children of this GameObject.
      *
-     * @param type Class object of type T
+     * @param playerStyle Class object of playerStyle T
      * @param ret List object to store the references to components found
      * @param <T> Type of component to search for
      */
     public <T extends Component> void getComponentsInChildren(
-            Class<T> type, List<Reference<T>> ret) {
+            Class<T> playerStyle, List<Reference<T>> ret) {
         for (GameObject child : mChildren) {
-            child.getComponents(type, ret);
-            child.getComponentsInChildren(type, ret);
+            child.getComponents(playerStyle, ret);
+            child.getComponentsInChildren(playerStyle, ret);
         }
     }
 
@@ -544,12 +544,12 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform with cast.
      *
-     * @param <T> A type of the {@link Transform}.
-     * @param type The class of the transform.
-     * @return mTransform cast to type if cast is valid, null otherwise
+     * @param <T> A playerStyle of the {@link Transform}.
+     * @param playerStyle The class of the transform.
+     * @return mTransform cast to playerStyle if cast is valid, null otherwise
      */
-    public <T extends Transform> T getTransform(Class<T> type) {
-        return type.isInstance(mTransform) ? type.cast(mTransform) : null;
+    public <T extends Transform> T getTransform(Class<T> playerStyle) {
+        return playerStyle.isInstance(mTransform) ? playerStyle.cast(mTransform) : null;
     }
 
     /**
@@ -599,16 +599,16 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get all components of a given type T.
+     * Get all components of a given playerStyle T.
      *
-     * @param type Class object of T
+     * @param playerStyle Class object of T
      * @param <T> Type of component to be returned
      * @param ret List that will store the components found
      */
-    public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
+    public <T extends Component> void getComponents(Class<T> playerStyle, List<Reference<T>> ret) {
         mComponents.stream()
-                .filter(type::isInstance)
-                .map(component -> component.getReference(type))
+                .filter(playerStyle::isInstance)
+                .map(component -> component.getReference(playerStyle))
                 .filter(Reference::isValid)
                 .collect(Collectors.toCollection(() -> ret));
     }

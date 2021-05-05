@@ -978,41 +978,41 @@ public class Building extends NetworkableComponent
      * the properties of the StatType, and be stored in {@link #mStats} under the StatType.
      *
      * @param stat The SyncStat.
-     * @param type The type of stat the SyncStat should be.
+     * @param playerStyle The playerStyle of stat the SyncStat should be.
      */
-    private void initiliseStat(SyncStat stat, StatType type) {
+    private void initiliseStat(SyncStat stat, StatType playerStyle) {
         // Initialise the SyncStat.
-        stat.initialise(type);
+        stat.initialise(playerStyle);
         // Store the stat.
-        storeStat(type, stat);
+        storeStat(playerStyle, stat);
     }
 
     /**
      * Store a {@link SyncStat} in {@link #mStats} using a {@link StatType} as the key.
      *
-     * @param type The type of stat to be stored.
+     * @param playerStyle The playerStyle of stat to be stored.
      * @param stat The relevant SyncStat.
      */
-    private void storeStat(StatType type, SyncStat stat) {
-        if (type == null || stat == null) {
-            log.warning("Unable to store stat: type or SyncStat is null.");
+    private void storeStat(StatType playerStyle, SyncStat stat) {
+        if (playerStyle == null || stat == null) {
+            log.warning("Unable to store stat: playerStyle or SyncStat is null.");
             return;
         }
-        mStats.put(type, stat);
+        mStats.put(playerStyle, stat);
     }
 
     /**
-     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant type.
+     * Get the {@link SyncStat} stored in {@link #mStats} under the relevant playerStyle.
      *
-     * @param type The type of the desired stat.
+     * @param playerStyle The playerStyle of the desired stat.
      * @return The SyncStat, otherwise {@code null}.
      */
-    public SyncStat getStat(StatType type) {
-        if (type == null) {
-            log.warning("Unable to get stat: type is null.");
+    public SyncStat getStat(StatType playerStyle) {
+        if (playerStyle == null) {
+            log.warning("Unable to get stat: playerStyle is null.");
             return null;
         }
-        return mStats.get(type);
+        return mStats.get(playerStyle);
     }
 
     /**
@@ -1025,8 +1025,8 @@ public class Building extends NetworkableComponent
         ArrayList<SyncStat> stats = new ArrayList<SyncStat>();
 
         for (SyncStat stat : mStats.values()) {
-            StatType type = stat.getType();
-            if (type != null && type.isFixedValue() == false) {
+            StatType playerStyle = stat.getType();
+            if (playerStyle != null && playerStyle.isFixedValue() == false) {
                 stats.add(stat);
             }
         }

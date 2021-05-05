@@ -236,7 +236,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         mSwapchainSupport = new SwapchainSupportDetails(mDevice, surface);
     }
 
-    /** Find a suitable memory type for the GPU. */
+    /** Find a suitable memory playerStyle for the GPU. */
     public int findMemoryType(int filterBits, int properties) {
         try (MemoryStack stack = stackPush()) {
             VkPhysicalDeviceMemoryProperties memProperties =
@@ -251,7 +251,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 }
             }
 
-            throw new RuntimeException("Failed to find suitable memory type!");
+            throw new RuntimeException("Failed to find suitable memory playerStyle!");
         }
     }
 

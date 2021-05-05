@@ -264,7 +264,7 @@ public class AimerAi extends AiPlayer {
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
 
-        // Get a building type that they can afford.
+        // Get a building playerStyle that they can afford.
         BuildingDescriptor option = getRandomBuildingType();
         if (option == null) return;
 

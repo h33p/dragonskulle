@@ -53,13 +53,13 @@ public abstract class Component implements Serializable {
     /**
      * Getter for mReference.
      *
-     * <p>This getter type checks and casts the reference to a more concrete type
+     * <p>This getter playerStyle checks and casts the reference to a more concrete playerStyle
      *
-     * @param type type to try cast into
-     * @return mReference cast into the type, if valid. Null otherwise.
+     * @param playerStyle playerStyle to try cast into
+     * @return mReference cast into the playerStyle, if valid. Null otherwise.
      */
-    public final <T extends Component> Reference<T> getReference(Class<T> type) {
-        return mReference.cast(type);
+    public final <T extends Component> Reference<T> getReference(Class<T> playerStyle) {
+        return mReference.cast(playerStyle);
     }
 
     public final void recreateReference() {

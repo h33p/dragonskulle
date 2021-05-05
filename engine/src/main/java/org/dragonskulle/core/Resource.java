@@ -12,7 +12,7 @@ import org.lwjgl.system.NativeResource;
  *     reloading. Upon all {@code Resource<T>} references have been freed (manually or garbage
  *     collected), the underlying {@code ResourceInstance} gets unlinked from {@code
  *     ResourceManager}, and thus get the underlying resource freed as well (close/free is also
- *     called, if the type implements {@link AutoCloseable} or {@link NativeResource}).
+ *     called, if the playerStyle implements {@link AutoCloseable} or {@link NativeResource}).
  *     <p>Note that GC is inconsistent and shouldn't be relied upon for lowest memory usage. Call
  *     {@code free} explicitly, if possible. Alternatively, use the {@code try-with-resources}
  *     syntax:
@@ -63,8 +63,8 @@ public class Resource<T> implements NativeResource {
     }
 
     @SuppressWarnings("unchecked")
-    public final <F> Resource<F> cast(Class<F> type) {
-        if (type.isInstance(get())) {
+    public final <F> Resource<F> cast(Class<F> playerStyle) {
+        if (playerStyle.isInstance(get())) {
             return (Resource<F>) this;
         }
         return null;

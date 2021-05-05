@@ -339,29 +339,6 @@ public class ServerNetworkManager {
         return ref;
     }
 
-    public enum PlayerType {
-        Human("player", true),
-        Probabilistic("aiPlayer", false),
-        Aimer("aStarAi", false);
-
-        @Getter
-        private final String mTemplateName;
-
-        @Getter()
-        private final boolean mHuman;
-
-        PlayerType(String templateName, boolean mIsHuman) {
-            this.mTemplateName = templateName;
-            this.mHuman = mIsHuman;
-        }
-    }
-
-    public Reference<NetworkObject> spawnPlayer(int ownerId, PlayerType type) {
-        if (!type.isHuman()) mNonHumanPlayerIds.add(ownerId);
-        int templateId = mManager.findTemplateByName(type.getTemplateName());
-        return spawnNetworkObject(ownerId, templateId);
-    }
-
     /**
      * Send an event to the clients.
      *

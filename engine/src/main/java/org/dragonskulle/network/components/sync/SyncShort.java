@@ -6,11 +6,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * The type Sync short.
+ * The playerStyle Sync short.
  *
  * @author Aurimas B
- *     <p>The type Sync short.
- *     <p>This primitve type is implemented manually more space savings.
+ *     <p>The playerStyle Sync short.
+ *     <p>This primitve playerStyle is implemented manually more space savings.
  */
 public class SyncShort extends BaseSyncVar {
     /** The Data. */

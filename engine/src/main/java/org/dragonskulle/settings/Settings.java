@@ -73,7 +73,7 @@ public class Settings {
     /**
      * Saves a key value pair in the settings without saving to disk.
      *
-     * @param <T> the type of the value to be saved
+     * @param <T> the playerStyle of the value to be saved
      * @param name the name
      * @param value the value
      */
@@ -85,7 +85,7 @@ public class Settings {
      * Saves a key value pair in the settings. If {@code saveFile} is true we will also save to
      * disk.
      *
-     * @param <T> the type of the value to be saved
+     * @param <T> the playerStyle of the value to be saved
      * @param name the name
      * @param value the value
      * @param saveFile true if we should save to the physical file
@@ -183,7 +183,7 @@ public class Settings {
     /**
      * Save to the settings file if we have modified a value.
      *
-     * @param <T> the type of the value to save
+     * @param <T> the playerStyle of the value to save
      * @param name the string name for the value
      * @param value the value to be saved
      */

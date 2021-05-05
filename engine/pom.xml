@@ -334,7 +334,7 @@
                 <artifactId>lwjgl-bom</artifactId>
                 <version>${lwjgl.version}</version>
                 <scope>import</scope>
-                <type>pom</type>
+                <playerStyle>pom</playerStyle>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -406,7 +406,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.3.0</version>
-            <type>maven-plugin</type>
+            <playerStyle>maven-plugin</playerStyle>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->

@@ -202,10 +202,10 @@ public class GameObjectTest {
         Assert.assertEquals(
                 "Child did not contain the component", 1, clonedObjectChild.getComponents().size());
 
-        // Check that the type of the component is correct
+        // Check that the playerStyle of the component is correct
         Component clonedComponent = clonedObjectChild.getComponents().get(0);
 
         Assert.assertTrue(
-                "Component had the incorrect type", clonedComponent instanceof TestComponent);
+                "Component had the incorrect playerStyle", clonedComponent instanceof TestComponent);
     }
 }

@@ -27,27 +27,27 @@ public class SingletonStore {
      *     singleton.
      */
     public boolean register(Component comp) {
-        Class<?> type = comp.getClass();
-        Reference<Component> current = mSingletons.get(type);
+        Class<?> playerStyle = comp.getClass();
+        Reference<Component> current = mSingletons.get(playerStyle);
 
         if (Reference.isValid(current)) {
             return false;
         }
 
         current = comp.getReference();
-        mSingletons.put(type, current);
+        mSingletons.put(playerStyle, current);
         return true;
     }
 
     /**
-     * Retrieves a singleton for type if there is any.
+     * Retrieves a singleton for playerStyle if there is any.
      *
-     * @param type type to retrieve the reference to
+     * @param playerStyle playerStyle to retrieve the reference to
      * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed
      */
     @SuppressWarnings("unchecked")
-    public <T extends Component> T get(Class<T> type) {
-        Reference<Component> current = mSingletons.get(type);
+    public <T extends Component> T get(Class<T> playerStyle) {
+        Reference<Component> current = mSingletons.get(playerStyle);
         if (!Reference.isValid(current)) {
             return null;
         }
@@ -55,25 +55,25 @@ public class SingletonStore {
     }
 
     /**
-     * Retrieves a singleton reference for type if there is any.
+     * Retrieves a singleton reference for playerStyle if there is any.
      *
-     * @param type type to retrieve the reference to
+     * @param playerStyle playerStyle to retrieve the reference to
      * @return reference to the singleton. For invalid entries, it may be null, but may also be a
      *     non-null invalid reference.
      */
     @SuppressWarnings("unchecked")
-    public <T extends Component> Reference<T> getRef(Class<T> type) {
-        Reference<Component> current = mSingletons.get(type);
+    public <T extends Component> Reference<T> getRef(Class<T> playerStyle) {
+        Reference<Component> current = mSingletons.get(playerStyle);
         return (Reference<T>) current;
     }
 
     /**
      * Unregisters a singleton.
      *
-     * @param type type to unregister
+     * @param playerStyle playerStyle to unregister
      * @return component reference if there was a singleton
      */
-    public Reference<Component> unregister(Class<?> type) {
-        return mSingletons.remove(type);
+    public Reference<Component> unregister(Class<?> playerStyle) {
+        return mSingletons.remove(playerStyle);
     }
 }

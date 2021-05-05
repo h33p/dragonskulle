@@ -20,7 +20,7 @@
                         1
                     ],
                     "intensity" : 1000,
-                    "type" : "point",
+                    "playerStyle" : "point",
                     "name" : "Light"
                 }
             ]
@@ -194,7 +194,7 @@
                 "zfar" : 100,
                 "znear" : 0.10000000149011612
             },
-            "type" : "perspective"
+            "playerStyle" : "perspective"
         }
     ],
     "materials" : [
@@ -293,25 +293,25 @@
                 -1.0000003576278687,
                 -1
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
             "count" : 1984,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
             "count" : 1984,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
             "count" : 2880,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 4,
@@ -327,25 +327,25 @@
                 -1,
                 -1
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 5,
             "componentType" : 5126,
             "count" : 24,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 6,
             "componentType" : 5126,
             "count" : 24,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 7,
             "componentType" : 5123,
             "count" : 36,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 8,
@@ -361,25 +361,25 @@
                 -0.8515625,
                 -0.984375
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 9,
             "componentType" : 5126,
             "count" : 1966,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 10,
             "componentType" : 5126,
             "count" : 1966,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 11,
             "componentType" : 5123,
             "count" : 2904,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 12,
@@ -395,25 +395,25 @@
                 -1.3004485368728638,
                 -0.4192190170288086
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 13,
             "componentType" : 5126,
             "count" : 112,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 14,
             "componentType" : 5126,
             "count" : 112,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 15,
             "componentType" : 5123,
             "count" : 546,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         }
     ],
     "bufferViews" : [

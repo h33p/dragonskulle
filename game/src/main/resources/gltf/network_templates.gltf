@@ -20,7 +20,7 @@
                         1
                     ],
                     "intensity" : 10,
-                    "type" : "directional",
+                    "playerStyle" : "directional",
                     "name" : "Light"
                 }
             ]
@@ -36,9 +36,7 @@
                 2,
                 3,
                 4,
-                5,
-                6,
-                7
+                5
             ]
         }
     ],
@@ -141,29 +139,6 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.Player",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "name" : "aiPlayer",
-            "translation" : [
-                -8,
-                0,
-                0
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D",
                     "components" : [
                         {
@@ -222,33 +197,6 @@
                 0,
                 0
             ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.player.Player",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "name" : "aStarAi",
-            "translation" : [
-                -12,
-                0,
-                0
-            ]
         }
     ],
     "cameras" : [
@@ -260,7 +208,7 @@
                 "zfar" : 100,
                 "znear" : 0.10000000149011612
             },
-            "type" : "perspective"
+            "playerStyle" : "perspective"
         }
     ],
     "materials" : [
@@ -332,25 +280,25 @@
                 -0.36093583703041077,
                 0
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
             "count" : 241,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
             "count" : 241,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
             "count" : 798,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 4,
@@ -366,25 +314,25 @@
                 -0.40454527735710144,
                 0.5847399830818176
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 5,
             "componentType" : 5126,
             "count" : 816,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 6,
             "componentType" : 5126,
             "count" : 816,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 7,
             "componentType" : 5123,
             "count" : 3090,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         }
     ],
     "bufferViews" : [

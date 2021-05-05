@@ -20,7 +20,7 @@
                         1
                     ],
                     "intensity" : 1,
-                    "type" : "directional",
+                    "playerStyle" : "directional",
                     "name" : "Sun"
                 }
             ]
@@ -536,25 +536,25 @@
                 -0.9942233562469482,
                 -6.79408597946167
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
             "count" : 126,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
             "count" : 126,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
             "count" : 498,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 4,
@@ -570,25 +570,25 @@
                 -0.9895658493041992,
                 -1.5641555786132812
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 5,
             "componentType" : 5126,
             "count" : 125,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 6,
             "componentType" : 5126,
             "count" : 125,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 7,
             "componentType" : 5123,
             "count" : 300,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 8,
@@ -604,19 +604,19 @@
                 -0.9895658493041992,
                 -1.5641555786132812
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 9,
             "componentType" : 5126,
             "count" : 125,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 10,
             "componentType" : 5126,
             "count" : 125,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 11,
@@ -632,25 +632,25 @@
                 -0.9324566125869751,
                 1.2431238889694214
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 12,
             "componentType" : 5126,
             "count" : 279,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 13,
             "componentType" : 5126,
             "count" : 279,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 14,
             "componentType" : 5123,
             "count" : 1356,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 15,
@@ -666,25 +666,25 @@
                 -0.9882842898368835,
                 -1.5641555786132812
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 16,
             "componentType" : 5126,
             "count" : 145,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 17,
             "componentType" : 5126,
             "count" : 145,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 18,
             "componentType" : 5123,
             "count" : 450,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 19,
@@ -700,25 +700,25 @@
                 -1,
                 0
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 20,
             "componentType" : 5126,
             "count" : 6,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 21,
             "componentType" : 5126,
             "count" : 6,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 22,
             "componentType" : 5123,
             "count" : 12,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 23,
@@ -734,19 +734,19 @@
                 -0.9895658493041992,
                 -1.5641555786132812
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 24,
             "componentType" : 5126,
             "count" : 125,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 25,
             "componentType" : 5126,
             "count" : 125,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 26,
@@ -762,25 +762,25 @@
                 -0.06000007688999176,
                 0.13999998569488525
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 27,
             "componentType" : 5126,
             "count" : 559,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 28,
             "componentType" : 5126,
             "count" : 559,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 29,
             "componentType" : 5123,
             "count" : 2880,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         },
         {
             "bufferView" : 30,
@@ -796,25 +796,25 @@
                 -0.22508639097213745,
                 -0.23015393316745758
             ],
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 31,
             "componentType" : 5126,
             "count" : 3840,
-            "type" : "VEC3"
+            "playerStyle" : "VEC3"
         },
         {
             "bufferView" : 32,
             "componentType" : 5126,
             "count" : 3840,
-            "type" : "VEC2"
+            "playerStyle" : "VEC2"
         },
         {
             "bufferView" : 33,
             "componentType" : 5123,
             "count" : 3840,
-            "type" : "SCALAR"
+            "playerStyle" : "SCALAR"
         }
     ],
     "bufferViews" : [

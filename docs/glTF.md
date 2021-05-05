@@ -80,7 +80,7 @@ Once a component is added, you can control its enabled state, change its class, 
 
 ![Screenshot from 2021-03-26 15-24-56](./images/gltf/18_added.jpg)
 
-The first three are trivial, meanwhile adding a customized property is similar to adding a component. You can either add from a parsed property list, or choose a manual name and type:
+The first three are trivial, meanwhile adding a customized property is similar to adding a component. You can either add from a parsed property list, or choose a manual name and playerStyle:
 
 ![Screenshot from 2021-03-26 15-26-54](./images/gltf/19_add_property.jpg)
 
@@ -88,7 +88,7 @@ Here we have an even higher probability of missing properties. In an event where
 
 ![Screenshot from 2021-03-26 15-29-36](./images/gltf/20_type_property.jpg)
 
-Choose a matching type, currently only numbers, booleans, vectors and strings are supported. On java side, the variable either has to be a direct type (primitive, String, Vector3f), or a Sync type (SyncInt, SyncFloat, SyncVector3, etc.):
+Choose a matching playerStyle, currently only numbers, booleans, vectors and strings are supported. On java side, the variable either has to be a direct playerStyle (primitive, String, Vector3f), or a Sync playerStyle (SyncInt, SyncFloat, SyncVector3, etc.):
 
 ![Screenshot from 2021-03-26 15-29-12](./images/gltf/21_prop_type.jpg)
 

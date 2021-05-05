@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * The type Sync bool.
+ * The playerStyle Sync bool.
  *
- * @author Oscar L The type Sync bool.
+ * @author Oscar L The playerStyle Sync bool.
  */
 public class SyncBool extends BaseSyncVar {
 

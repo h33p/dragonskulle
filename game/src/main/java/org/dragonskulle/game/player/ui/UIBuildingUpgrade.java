@@ -156,14 +156,14 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
     /**
      * Build a stat upgrader with a custom texture.
      *
-     * @param type the stat type
+     * @param playerStyle the stat playerStyle
      * @param textureName the texture file path
      * @return the builder
      */
-    private UIManager.IUIBuildHandler buildStatUpgrade(StatType type, String textureName) {
+    private UIManager.IUIBuildHandler buildStatUpgrade(StatType playerStyle, String textureName) {
         return (go) -> {
             go.getTransform(TransformUI.class).setPivotOffset(0.5f, 0f);
-            UIButton but = new UIButton((__, ___) -> purchaseUpgrade(type));
+            UIButton but = new UIButton((__, ___) -> purchaseUpgrade(playerStyle));
             but.setRectTexture(GameUIAppearance.getSquareButtonTexture());
             go.addComponent(but);
             go.buildChild(
@@ -175,16 +175,16 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
                                 new UIFlatImage(new SampledTexture(textureName), false));
                     });
 
-            mUpgradeButtonRefs.put(type, but.getReference(UIButton.class));
+            mUpgradeButtonRefs.put(playerStyle, but.getReference(UIButton.class));
         };
     }
 
     /**
      * Invoke a purchase for the selected stat.
      *
-     * @param type the type
+     * @param playerStyle the playerStyle
      */
-    private void purchaseUpgrade(StatType type) {
+    private void purchaseUpgrade(StatType playerStyle) {
         Reference<Player> player =
                 getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
         if (Reference.isValid(player)) {
@@ -192,7 +192,7 @@ public class UIBuildingUpgrade extends Component implements IFixedUpdate, IOnAwa
             if (hex != null) {
                 Building building = hex.getBuilding();
                 if (building != null) {
-                    player.get().getClientStatRequest().invoke(new StatData(building, type));
+                    player.get().getClientStatRequest().invoke(new StatData(building, playerStyle));
                 }
             }
         }

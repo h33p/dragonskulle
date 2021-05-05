@@ -83,13 +83,13 @@ public class GLTF implements NativeResource {
         }
 
         public static GLTFAccessor<?> fromStringType(
-                String type, int componentType, ByteBuffer buffer, int count) {
+                String playerStyle, int componentType, ByteBuffer buffer, int count) {
 
             int position = buffer.position();
 
             IGetObj<?> getObj = null;
 
-            switch (type) {
+            switch (playerStyle) {
                 case "SCALAR":
                     switch (componentType) {
                         case 5120: // BYTE
@@ -571,11 +571,11 @@ public class GLTF implements NativeResource {
                 JSONObject accessor = (JSONObject) obj;
                 int view = parseInt(accessor, "bufferView");
                 int count = parseInt(accessor, "count");
-                String type = accessor.get("type").toString();
+                String playerStyle = accessor.get("playerStyle").toString();
                 int componentType = parseInt(accessor, "componentType");
                 accessorList.add(
                         GLTFAccessor.fromStringType(
-                                type, componentType, bufferViewList.get(view), count));
+                                playerStyle, componentType, bufferViewList.get(view), count));
             }
         }
 
@@ -645,12 +645,12 @@ public class GLTF implements NativeResource {
         if (cameras != null) {
             for (Object obj : cameras) {
                 JSONObject cam = (JSONObject) obj;
-                String type = cam.get("type").toString();
+                String playerStyle = cam.get("playerStyle").toString();
 
                 Camera camera = new Camera();
                 // Blender cameras look down.
                 camera.getViewDirection().set(0, 0, -1);
-                switch (type) {
+                switch (playerStyle) {
                     case "perspective":
                         {
                             JSONObject persp = (JSONObject) cam.get("perspective");
@@ -695,9 +695,9 @@ public class GLTF implements NativeResource {
 
                         addLight.setIntensity(parseFloat(light, "intensity", 1f));
 
-                        String type = (String) light.get("type");
+                        String playerStyle = (String) light.get("playerStyle");
 
-                        switch (type) {
+                        switch (playerStyle) {
                             default:
                                 break;
                         }
@@ -868,11 +868,11 @@ public class GLTF implements NativeResource {
      */
     private Transform parseTransform(
             String name, Vector3f position, Quaternionf rotation, Vector3f scale) {
-        Class<?> type = Transform3D.class;
+        Class<?> playerStyle = Transform3D.class;
 
         if (name != null) {
             try {
-                type = Class.forName(name);
+                playerStyle = Class.forName(name);
             } catch (ClassNotFoundException ignored) {
             }
         }
@@ -880,7 +880,7 @@ public class GLTF implements NativeResource {
         Transform instance;
 
         try {
-            instance = (Transform) type.getConstructor().newInstance();
+            instance = (Transform) playerStyle.getConstructor().newInstance();
         } catch (Exception e) {
             e.printStackTrace();
             instance = new Transform3D();
@@ -905,18 +905,18 @@ public class GLTF implements NativeResource {
         }
 
         try {
-            Class<?> type = Class.forName(className);
+            Class<?> playerStyle = Class.forName(className);
 
             // Make sure we are parsing a component
             // Avoid adding transform as a component
-            if (!Component.class.isAssignableFrom(type) || Transform.class.isAssignableFrom(type)) {
+            if (!Component.class.isAssignableFrom(playerStyle) || Transform.class.isAssignableFrom(playerStyle)) {
                 return;
             }
 
             Component comp = null;
 
             try {
-                comp = (Component) type.getConstructor().newInstance();
+                comp = (Component) playerStyle.getConstructor().newInstance();
             } catch (Exception e) {
                 log.warning("Failed to instantiate: " + className);
                 return;
@@ -988,14 +988,14 @@ public class GLTF implements NativeResource {
      * @param value string value of the field
      */
     private void writeField(Object obj, Field f, Object value) throws IllegalAccessException {
-        Class<?> type = f.getType();
+        Class<?> playerStyle = f.getType();
 
-        if (type.isPrimitive()) {
+        if (playerStyle.isPrimitive()) {
             writePrimitiveField(obj, f, value);
         } else {
             // Check here whether it's a Vec, or SyncVar
-            if (ISyncVar.class.isAssignableFrom(type)) {
-                Field[] syncFields = type.getDeclaredFields();
+            if (ISyncVar.class.isAssignableFrom(playerStyle)) {
+                Field[] syncFields = playerStyle.getDeclaredFields();
                 for (Field sf : syncFields) {
                     Class<?> sfType = sf.getType();
                     if (sfType.isPrimitive() || Vector3f.class.isAssignableFrom(sfType)) {
@@ -1005,9 +1005,9 @@ public class GLTF implements NativeResource {
                         break;
                     }
                 }
-            } else if (String.class.isAssignableFrom(type)) {
+            } else if (String.class.isAssignableFrom(playerStyle)) {
                 f.set(obj, value.toString());
-            } else if (Vector3f.class.isAssignableFrom(type)) {
+            } else if (Vector3f.class.isAssignableFrom(playerStyle)) {
                 Vector3f vec = (Vector3f) f.get(obj);
                 JSONArray values = (JSONArray) value;
                 vec.set(
@@ -1027,21 +1027,21 @@ public class GLTF implements NativeResource {
      */
     private void writePrimitiveField(Object obj, Field f, Object value)
             throws IllegalAccessException {
-        Class<?> type = f.getType();
+        Class<?> playerStyle = f.getType();
 
-        if (type == int.class) {
+        if (playerStyle == int.class) {
             f.setInt(obj, Integer.parseInt(value.toString()));
-        } else if (type == long.class) {
+        } else if (playerStyle == long.class) {
             f.setLong(obj, Long.parseLong(value.toString()));
-        } else if (type == short.class) {
+        } else if (playerStyle == short.class) {
             f.setShort(obj, Short.parseShort(value.toString()));
-        } else if (type == byte.class) {
+        } else if (playerStyle == byte.class) {
             f.setByte(obj, Byte.parseByte(value.toString()));
-        } else if (type == float.class) {
+        } else if (playerStyle == float.class) {
             f.setFloat(obj, Float.parseFloat(value.toString()));
-        } else if (type == double.class) {
+        } else if (playerStyle == double.class) {
             f.setDouble(obj, Double.parseDouble(value.toString()));
-        } else if (type == boolean.class) {
+        } else if (playerStyle == boolean.class) {
             f.setBoolean(obj, Boolean.parseBoolean(value.toString()));
         }
     }

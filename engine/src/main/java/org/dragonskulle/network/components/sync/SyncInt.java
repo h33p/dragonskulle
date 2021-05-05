@@ -6,10 +6,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * The type Sync int.
+ * The playerStyle Sync int.
  *
- * @author Aurimas B The type Sync int.
- *     <p>This primitve type is implemented manually more space savings.
+ * @author Aurimas B The playerStyle Sync int.
+ *     <p>This primitve playerStyle is implemented manually more space savings.
  */
 public class SyncInt extends BaseSyncVar {
     /** The Data. */

@@ -25,7 +25,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.utils.IOUtils;
 
 /**
- * The type Network object.
+ * The playerStyle Network object.
  *
  * @author Oscar L The NetworkObject deals with any networked variables.
  */
