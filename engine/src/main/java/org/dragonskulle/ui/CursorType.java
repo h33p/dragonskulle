@@ -7,11 +7,7 @@ import org.dragonskulle.core.ResourceManager;
 
 /** CursorType allows us to declare different images and xhot/yhot offsets for the image. */
 @Accessors(prefix = "m")
-public enum CursorType {
-    DEFAULT("ui/cursor.png", 10, 10),
-    HOVER("ui/cursor_hover.png", 18, 10),
-    INCLICK("ui/cursor_inclick.png", 20, 9);
-
+public class CursorType {
     @Getter private final String mPath;
     @Getter private final int mXHot;
     @Getter private final int mYHot;

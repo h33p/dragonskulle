@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -20,11 +21,14 @@ import org.dragonskulle.input.Cursor;
  *
  * @author Aurimas Blažulionis
  */
+@Log
 @Accessors(prefix = "m")
 public class UIManager {
     @Setter
     @Accessors(prefix = "s")
-    public static CursorType sNextCursor = CursorType.DEFAULT;
+    public static CursorType sNextCursor = UIAppearance.getDefaultCursor();
+
+    private static CursorType sCurrentCursor = null;
 
     public static final UIManager SINGLETON = new UIManager();
 
@@ -51,8 +55,11 @@ public class UIManager {
             return;
         }
 
-        Cursor.setCursor(sNextCursor);
-        setNextCursor(CursorType.DEFAULT);
+        if (sCurrentCursor != sNextCursor) {
+            sCurrentCursor = sNextCursor;
+            Cursor.setCursor(sCurrentCursor);
+        }
+        setNextCursor(UIAppearance.getDefaultCursor());
 
         int curDepth = 0;
 
@@ -160,6 +167,7 @@ public class UIManager {
             cnt++;
         }
     }
+
     /**
      * Build a horizontal UI on the object
      *

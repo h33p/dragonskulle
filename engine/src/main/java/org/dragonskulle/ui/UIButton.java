@@ -430,13 +430,13 @@ public class UIButton extends UITextRect implements IFrameUpdate {
 
             // Transition color interpolation value depending on the state of button press
             if (mPressedDown || mLockPressed) {
-                UIManager.setNextCursor(CursorType.INCLICK);
+                UIManager.setNextCursor(UIAppearance.getInClickCursor());
                 mCurTimer += deltaTime;
                 if (mCurTimer > 2f * mTransitionTime) {
                     mCurTimer = 2f * mTransitionTime;
                 }
             } else if (mLastHovered) {
-                UIManager.setNextCursor(CursorType.HOVER);
+                UIManager.setNextCursor(UIAppearance.getHoverCursor());
                 if (mCurTimer > mTransitionTime) {
                     mCurTimer -= deltaTime;
                     if (mCurTimer < mTransitionTime) {
