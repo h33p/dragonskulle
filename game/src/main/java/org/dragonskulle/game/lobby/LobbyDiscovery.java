@@ -7,7 +7,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
-import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -51,9 +50,8 @@ public class LobbyDiscovery {
         public void run() {
             try {
                 final int discoverLength = UDP_DISCOVER_MAGIC.length;
-                MulticastSocket socket = new MulticastSocket(DISCOVER_PORT);
-                InetAddress group = InetAddress.getByName("230.0.0.0");
-                socket.joinGroup(group);
+                DatagramSocket socket = new DatagramSocket(DISCOVER_PORT);
+                socket.setBroadcast(true);
                 log.info("Local lobby starting, waiting for UDP packets");
                 while (mRunning.get()) {
                     DatagramPacket packet =
@@ -97,18 +95,55 @@ public class LobbyDiscovery {
         }
     }
 
+    private static ArrayList<InetSocketAddress> getBroadcastAddresses() {
+        ArrayList<InetSocketAddress> addresses = new ArrayList<>();
+        addresses.add(new InetSocketAddress("255.255.255.255", DISCOVER_PORT));
+
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+
+                if (iface.isLoopback()) {
+                    continue;
+                }
+
+                for (InterfaceAddress address : iface.getInterfaceAddresses()) {
+                    InetAddress broadcast = address.getBroadcast();
+                    if (broadcast == null) {
+                        continue;
+                    }
+
+                    addresses.add(new InetSocketAddress(broadcast, DISCOVER_PORT));
+                }
+            }
+        } catch (SocketException e) {
+            log.warning("Failed to enumerate network interfaces");
+        }
+
+        return addresses;
+    }
+
     /**
-     * Attempt to discover a lobby on the local network.
+     * Attempt to discover a lobby on the local network. Currently only broadcasts to the default
+     * broadcast address.
      *
-     * @return The INetAddress that responded to the discover packet, or null if nothing responded
+     * @return The INetAddress that responded to the broadcast, or null if nothing responded
      */
     public static InetAddress discoverLobby() {
+        // TODO: Iterate through network interfaces and broadcast to all broadcast addresses
+
+        ArrayList<InetSocketAddress> broadcastAddresses = getBroadcastAddresses();
+
         try {
             DatagramSocket socket = new DatagramSocket();
-            InetAddress group = InetAddress.getByName("230.0.0.0");
-            DatagramPacket discoverPacket = new DatagramPacket(UDP_DISCOVER_MAGIC,
-                    UDP_DISCOVER_MAGIC.length, group, DISCOVER_PORT);
-            socket.send(discoverPacket);
+            socket.setBroadcast(true);
+            for (InetSocketAddress address : broadcastAddresses) {
+                DatagramPacket packet =
+                        new DatagramPacket(UDP_DISCOVER_MAGIC, UDP_DISCOVER_MAGIC.length, address);
+                socket.send(packet);
+                log.info("Sent discovery packet to " + address.getHostString());
+            }
 
             try {
                 DatagramPacket response =
