@@ -1,12 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +20,7 @@ import org.dragonskulle.components.Transform3D;
  *     itself in the world and other GameObjects.
  */
 @Accessors(prefix = "m")
-public class GameObject implements Serializable {
+public class GameObject {
 
     @Getter private Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
@@ -103,42 +97,6 @@ public class GameObject implements Serializable {
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
-        transform.setGameObject(instance);
-        instance.mTransform = transform;
-        return instance;
-    }
-
-    /**
-     * Create a game object from its byte data.
-     *
-     * @param objectData data to deserialize
-     * @return instantiated object
-     */
-    public static GameObject instantiate(byte[] objectData) {
-        if (objectData != null) {
-            try {
-                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
-                return (GameObject) new ObjectInputStream(bais).readObject();
-            } catch (ClassCastException | ClassNotFoundException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Create a clone of a GameObject, providing a new transform for the object.
-     *
-     * @param objectData data of the object
-     * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
-     *     instance)
-     * @return The new instance of the GameObject
-     */
-    public static GameObject instantiate(byte[] objectData, Transform transform) {
-        GameObject instance = instantiate(objectData);
-        if (instance == null) {
-            return null;
-        }
         transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
@@ -503,29 +461,6 @@ public class GameObject implements Serializable {
         for (GameObject c : mChildren) {
             c.recreateReferences();
         }
-    }
-
-    /**
-     * Serialize a game object to bytes.
-     *
-     * @return byte representation of the object
-     */
-    public byte[] serialize() {
-        byte[] objectData = null;
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(this);
-            oos.flush();
-            oos.close();
-            baos.close();
-            objectData = baos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return objectData;
     }
 
     public GameObject createClone() {

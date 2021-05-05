@@ -98,7 +98,8 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     /** Registered spawnable templates. */
-    @Getter() protected final TemplateManager mSpawnableTemplates;
+    @Getter(AccessLevel.PACKAGE)
+    protected final TemplateManager mSpawnableTemplates;
     /** Target game scene. */
     @Getter private Scene mGameScene;
 
@@ -252,9 +253,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         Stream<Reference<NetworkObject>> obj = null;
 
         if (mServerManager != null) {
-            obj =
-                    mServerManager.getNetworkObjects().values().stream()
-                            .map(e -> e.getNetworkObject());
+            obj = mServerManager.getNetworkObjects();
         } else if (mClientManager != null) {
             obj = mClientManager.getNetworkObjects();
         }

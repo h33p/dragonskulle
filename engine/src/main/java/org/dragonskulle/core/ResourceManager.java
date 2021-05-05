@@ -295,6 +295,7 @@ public class ResourceManager {
             byte[] buffer = readAllBytes(inputStream);
             return castLoader.loadFromBuffer(buffer, arguments);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }

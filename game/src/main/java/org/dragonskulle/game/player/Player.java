@@ -131,7 +131,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * We need to initialise client requests here, since java does not like to serialise lambdas.
      */
     @Override
-    protected void onNetworkInitialize() {
+    protected void onNetworkInitialise() {
         mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
         mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
