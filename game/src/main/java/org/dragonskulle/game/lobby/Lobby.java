@@ -3,6 +3,7 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -14,6 +15,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.ai.AimerAi;
+import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
@@ -637,7 +640,9 @@ public class Lobby extends Component implements IFrameUpdate {
         Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
 
         // 6 players for now
-        gameState.get().getNumPlayers().set(6);
+        int maxPlayers = 6;
+
+        gameState.get().getNumPlayers().set(maxPlayers);
 
         gameState
                 .get()
@@ -650,6 +655,26 @@ public class Lobby extends Component implements IFrameUpdate {
                                         pauseMenu.endGame();
                                     }
                                 }));
+
+        // Get the number of clients and thus the number of AI needed
+        int clientNumber = manager.getServerManager().getClients().size();
+        int numOfAi = maxPlayers - clientNumber;
+
+        // Add the AI
+        for (int i = -1; i >= -1 * numOfAi; i--) {
+            Random random = new Random();
+
+            Reference<NetworkObject> player =
+                    manager.getServerManager()
+                            .spawnNetworkObject(i, manager.findTemplateByName("player"));
+            GameObject playerObj = player.get().getGameObject();
+            playerObj.addComponent(new ProbabilisticAiPlayer());
+
+            // Randomly select which AI to use
+            if (random.nextFloat() > 0.5) {
+                playerObj.addComponent(new AimerAi());
+            }
+        }
     }
 
     @Override
