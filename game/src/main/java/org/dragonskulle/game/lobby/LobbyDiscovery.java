@@ -51,6 +51,7 @@ public class LobbyDiscovery {
             try {
                 final int discoverLength = UDP_DISCOVER_MAGIC.length;
                 DatagramSocket socket = new DatagramSocket(DISCOVER_PORT);
+                socket.setBroadcast(true);
                 log.info("Local lobby starting, waiting for UDP packets");
                 while (mRunning.get()) {
                     DatagramPacket packet =
@@ -136,6 +137,7 @@ public class LobbyDiscovery {
 
         try {
             DatagramSocket socket = new DatagramSocket();
+            socket.setBroadcast(true);
             for (InetSocketAddress address : broadcastAddresses) {
                 DatagramPacket packet =
                         new DatagramPacket(UDP_DISCOVER_MAGIC, UDP_DISCOVER_MAGIC.length, address);
