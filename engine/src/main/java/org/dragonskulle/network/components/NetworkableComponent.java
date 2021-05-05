@@ -87,10 +87,10 @@ public abstract class NetworkableComponent extends Component {
         onConnectedSyncvars();
     }
 
-    /** Event called whenever object is spawned and is being initialized by the network manager. */
+    /** Event called whenever object is spawned and is being initialised by the network manager. */
     protected void onNetworkInitialise() {}
 
-    /** Event called after {@link onNetworkInitialize}, when all syncvars have been initialized. */
+    /** Event called after {@link onNetworkInitialise}, when all syncvars have been initialised. */
     protected void onConnectedSyncvars() {}
 
     /** Event called before serialization takes place. */
