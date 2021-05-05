@@ -55,6 +55,18 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     /** Simple server client connection handler interface. */
+    public static interface IConnectedClientEvent {
+        /**
+         * Handle client connection on the server.
+         *
+         * @param gameScene scene in which the game will be run
+         * @param manager network manager which the event is called from
+         * @param client newly connected network client
+         */
+        void handle(Scene gameScene, NetworkManager manager, ServerClient client);
+    }
+
+    /** Simple server client connection handler interface. */
     public interface IClientLoadedEvent {
         /**
          * Handle client connection on the server.
@@ -183,18 +195,26 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
+     * @param loadHandler callback that gets called on every client connection when it loads into
+     *     game scene.
      * @param startEventHandler callback that gets called when the game starts
      */
     public void createServer(
             int port,
-            IClientLoadedEvent connectionHandler,
+            IConnectedClientEvent connectionHandler,
+            IClientLoadedEvent loadHandler,
             IGameStartEvent startEventHandler,
             IGameEndEvent endEventHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
                 mServerManager =
                         new ServerNetworkManager(
-                                this, port, connectionHandler, startEventHandler, endEventHandler);
+                                this,
+                                port,
+                                connectionHandler,
+                                loadHandler,
+                                startEventHandler,
+                                endEventHandler);
             } catch (IOException e) {
                 e.printStackTrace();
             }

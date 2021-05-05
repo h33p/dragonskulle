@@ -36,7 +36,7 @@ import org.joml.Vector3f;
 public class ClientNetworkManager {
 
     /** Describes client connection state. */
-    private enum ConnectionState {
+    public static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,

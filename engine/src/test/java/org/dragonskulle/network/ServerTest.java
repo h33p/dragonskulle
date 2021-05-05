@@ -1,31 +1,26 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
+import static org.dragonskulle.network.testing.NetworkedTestContext.TIMEOUT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.java.Log;
-import org.dragonskulle.components.lambda.LambdaOnStart;
-import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.TemplateManager;
+import org.dragonskulle.network.components.ClientNetworkManager.ConnectionState;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.ServerNetworkManager.ServerGameState;
+import org.dragonskulle.network.testing.NetworkedTestContext;
 import org.junit.Test;
-import org.lwjgl.system.NativeResource;
 
-/** @author Oscar L */
+/** @author Oscar L, Aurimas Blažulionis */
 @Log
 public class ServerTest {
-    private static final long TIMEOUT = 1;
-
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
     private static final Scene CLIENT_NETMAN_SCENE = new Scene("client_netman_test");
     private static final NetworkManager CLIENT_NETWORK_MANAGER =
@@ -43,9 +38,9 @@ public class ServerTest {
                             handle.addComponent(new NetworkedTransform());
                         }),
                 new GameObject(
-                        "capital",
+                        "test_comp",
                         (handle) -> {
-                            handle.addComponent(new TestCapitalBuilding());
+                            handle.addComponent(new TestNetworkComponent());
                         }));
 
         CLIENT_NETMAN_SCENE.addRootObject(
@@ -54,372 +49,249 @@ public class ServerTest {
                 new GameObject("netman", handle -> handle.addComponent(SERVER_NETWORK_MANAGER)));
     }
 
-    private static final ReentrantLock sEngineLock = new ReentrantLock();
-
-    private static void cleanupNetmans() {
-        log.info("Cleanup netmans");
-        if (CLIENT_NETWORK_MANAGER.getClientManager() != null) {
-            CLIENT_NETWORK_MANAGER.getClientManager().disconnect();
-        }
-        if (SERVER_NETWORK_MANAGER.getServerManager() != null) {
-            SERVER_NETWORK_MANAGER.getServerManager().destroy();
-        }
-        log.info("CLEANED UP");
+    private static NetworkedTestContext buildTestContext() {
+        return new NetworkedTestContext(
+                TEMPLATE_MANAGER,
+                (__, isServer) -> new Scene(isServer ? "server_net_test" : "client_net_test"),
+                (__, man, id) -> man.getServerManager().start(),
+                null,
+                (man) -> {
+                    man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
+                    man.getServerManager()
+                            .spawnNetworkObject(0, TEMPLATE_MANAGER.find("test_comp"));
+                },
+                null);
     }
 
-    private static class TestContext implements NativeResource {
-
-        private Thread mTestThread;
-        private boolean mShouldExit;
-        private final int mPort;
-
-        private Throwable mToThrow = null;
-
-        public TestContext(int port) {
-            mPort = port;
-        }
-
-        /**
-         * Network manager destruction does not occur immediately, wait until that stage is reached,
-         * and only then recreate netmans.
-         */
-        private void ensureNetworkIsRecreated() {
-            sEngineLock.lock();
-
-            SERVER_NETWORK_MANAGER.createServer(
-                    mPort,
-                    (scene, man, client) -> {
-                        log.info("NEW CLIENT");
-                        man.getServerManager().start();
-                    },
-                    (man) -> {
-                        log.info("CLIENT LOADED");
-                        man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
-                        man.getServerManager()
-                                .spawnNetworkObject(0, TEMPLATE_MANAGER.find("capital"));
-                    },
-                    null);
-
-            CLIENT_NETWORK_MANAGER.createClient(
-                    "127.0.0.1",
-                    mPort,
-                    (man, id) -> {
-                        SERVER_NETWORK_MANAGER.getServerManager().start();
-                        log.info("CONNECTED TO SERVER");
-                        assertTrue(id >= 0);
-                    },
-                    null,
-                    null);
-
-            sEngineLock.unlock();
-        }
-
-        public synchronized void run(Runnable runnable) throws Throwable {
-            mTestThread =
-                    new Thread(
-                            () -> {
-                                try {
-
-                                    ensureNetworkIsRecreated();
-
-                                    runnable.run();
-
-                                    sEngineLock.lock();
-                                    cleanupNetmans();
-                                    sEngineLock.unlock();
-
-                                    boolean closed = false;
-
-                                    while (!closed) {
-                                        closed = true;
-
-                                        sEngineLock.lock();
-                                        if (CLIENT_NETWORK_MANAGER.getClientManager() != null)
-                                            closed = false;
-                                        if (SERVER_NETWORK_MANAGER.getServerManager() != null)
-                                            closed = false;
-                                        sEngineLock.unlock();
-                                    }
-
-                                } finally {
-                                    mShouldExit = true;
-                                }
-                            });
-            sEngineLock.lock();
-
-            mTestThread.setUncaughtExceptionHandler(
-                    (t, e) -> {
-                        mToThrow = e;
-                    });
-            mTestThread.start();
-
-            Engine.getInstance().loadScene(CLIENT_NETMAN_SCENE, true);
-            Engine.getInstance().loadScene(SERVER_NETMAN_SCENE, true);
-            Engine.getInstance().startFixedDebug(this::shouldExit);
-
-            try {
-                mTestThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (mToThrow != null) {
-                throw mToThrow;
-            }
-        }
-
-        private boolean shouldExit() {
-
-            sEngineLock.unlock();
-
-            if (mShouldExit) {
-                return false;
-            }
-
-            sEngineLock.lock();
-
-            return true;
-        }
-
-        @Override
-        public void free() {
-            sEngineLock.lock();
-            cleanupNetmans();
-            mShouldExit = true;
-            sEngineLock.unlock();
-        }
-
-        public <T extends NetworkableComponent> Reference<T> getServerComponent(Class<T> type) {
-            sEngineLock.lock();
-            Reference<T> ret =
-                    SERVER_NETWORK_MANAGER.getServerManager().getNetworkObjects().values().stream()
-                            .map(c -> c.getNetworkObject().get().getGameObject().getComponent(type))
-                            .filter(Objects::nonNull)
-                            .findFirst()
-                            .orElse(null);
-            sEngineLock.unlock();
-            return ret;
-        }
-
-        public <T extends NetworkableComponent> Reference<T> getClientComponent(Class<T> type) {
-            sEngineLock.lock();
-            Reference<T> ret =
-                    CLIENT_NETWORK_MANAGER
-                            .getClientManager()
-                            .getNetworkObjects()
-                            .map(c -> c.get().getGameObject().getComponent(type))
-                            .filter(Objects::nonNull)
-                            .findFirst()
-                            .orElse(null);
-            sEngineLock.unlock();
-            return ret;
-        }
-
-        private Reference<TestCapitalBuilding> testCapitalSpawnDefaultServer() {
-            await().atMost(6, SECONDS)
-                    .until(() -> getServerComponent(TestCapitalBuilding.class) != null);
-            await().atMost(TIMEOUT * 2, SECONDS)
-                    .until(() -> getClientComponent(TestCapitalBuilding.class) != null);
-
-            Reference<TestCapitalBuilding> clientCapital =
-                    getClientComponent(TestCapitalBuilding.class);
-            assertNotNull(clientCapital);
-            Reference<TestCapitalBuilding> serverCapital =
-                    getServerComponent(TestCapitalBuilding.class);
-            assertNotNull(serverCapital);
-
-            sEngineLock.lock();
-            int capitalId = clientCapital.get().getNetworkObject().getId();
-            log.info(
-                    "\t-----> " + capitalId + " " + serverCapital.get().getNetworkObject().getId());
-            assertEquals(capitalId, serverCapital.get().getNetworkObject().getId());
-            log.info("\t-----> " + capitalId);
-            assert (serverCapital.get().getSyncMe().get() == false);
-            assert (serverCapital.get().getSyncMeAlso().get().equals("Hello World"));
-            sEngineLock.unlock();
-            return serverCapital;
-        }
-
-        private void modifyServerCapital() {
-            TestCapitalBuilding component = getServerComponent(TestCapitalBuilding.class).get();
-            sEngineLock.lock();
-            component.setBooleanSyncMe(true);
-            component.setStringSyncMeAlso("Goodbye World");
-            sEngineLock.unlock();
-        }
-
-        private void testSubmitRequest() {
-            testCapitalSpawnDefaultServer();
-            TestCapitalBuilding cap = getClientComponent(TestCapitalBuilding.class).get();
-            sEngineLock.lock();
-            cap.getGameObject()
-                    .addComponent(
-                            new LambdaOnStart(
-                                    () -> {
-                                        cap.mPasswordRequest.invoke(
-                                                new TestAttackData(
-                                                        TestCapitalBuilding.CORRECT_PASSWORD, 354));
-                                    }));
-            sEngineLock.unlock();
-            await().atMost(TIMEOUT, SECONDS)
-                    .until(
-                            () -> {
-                                sEngineLock.lock();
-                                boolean ret = cap.getClientToggled().get() == 354;
-                                sEngineLock.unlock();
-                                return ret;
-                            });
-        }
-
-        private void testCanDestroy() {
-            testCapitalSpawnDefaultServer();
-            TestCapitalBuilding cap = getServerComponent(TestCapitalBuilding.class).get();
-            sEngineLock.lock();
-            cap.getGameObject()
-                    .addComponent(new LambdaOnStart(() -> cap.getGameObject().destroy()));
-            sEngineLock.unlock();
-            await().atMost(TIMEOUT, SECONDS)
-                    .until(
-                            () -> {
-                                sEngineLock.lock();
-                                boolean ret = getClientComponent(TestCapitalBuilding.class) == null;
-                                sEngineLock.unlock();
-                                return ret;
-                            });
-        }
-
-        private void testSetOwnerId() {
-            testCapitalSpawnDefaultServer();
-            TestCapitalBuilding cap = getServerComponent(TestCapitalBuilding.class).get();
-            TestCapitalBuilding clientCap = getClientComponent(TestCapitalBuilding.class).get();
-            sEngineLock.lock();
-            int ownerId = cap.getNetworkObject().getOwnerId();
-            int clientOwnerId = clientCap.getNetworkObject().getOwnerId();
-            cap.getNetworkObject().setOwnerId(ownerId + 1);
-            assert (ownerId != cap.getNetworkObject().getOwnerId());
-            sEngineLock.unlock();
-            assert (ownerId == clientOwnerId);
-            await().atMost(TIMEOUT, SECONDS)
-                    .until(
-                            () -> {
-                                sEngineLock.lock();
-                                boolean ret = clientCap.getNetworkObject().getOwnerId() != ownerId;
-                                sEngineLock.unlock();
-                                return ret;
-                            });
-        }
-    }
-
+    /** Test if connecting is possible over the network. */
     @Test
-    public void testCapitalSpawnedServer() throws Throwable {
-        try (TestContext ctx = new TestContext(7002)) {
-            ctx.run(ctx::testCapitalSpawnDefaultServer);
-        }
+    public void testConnect() {
+        NetworkedTestContext ctx = buildTestContext();
+
+        connect(ctx);
+
+        ctx.execute();
     }
 
-    @Test
-    public void testCapitalUpdatedServer() throws Throwable {
-        try (TestContext ctx = new TestContext(7003)) {
-            ctx.run(
-                    () -> {
-                        Reference<TestCapitalBuilding> nc = ctx.testCapitalSpawnDefaultServer();
-                        ctx.modifyServerCapital();
-                        await().atMost(TIMEOUT, SECONDS)
-                                .until(
-                                        () -> {
-                                            sEngineLock.lock();
-                                            boolean ret = nc.get().getSyncMe().get() == true;
-                                            sEngineLock.unlock();
-                                            return ret;
-                                        });
-                        sEngineLock.lock();
-                        assert (nc.get().getSyncMe().get() == true);
-                        sEngineLock.unlock();
-                        await().atMost(TIMEOUT, SECONDS)
-                                .until(
-                                        () -> {
-                                            sEngineLock.lock();
-                                            boolean ret =
-                                                    nc.get()
-                                                            .getSyncMeAlso()
-                                                            .get()
-                                                            .equals("Goodbye World");
-                                            sEngineLock.unlock();
-                                            return ret;
-                                        });
-                        sEngineLock.lock();
-                        assert (nc.get().getSyncMeAlso().get().equals("Goodbye World"));
-                        sEngineLock.unlock();
-                    });
-        }
+    private static void connect(NetworkedTestContext ctx) {
+        ctx.getServer()
+                .awaitTimeout(TIMEOUT, (__) -> !ctx.getServerManager().getClients().isEmpty())
+                .awaitTimeout(
+                        TIMEOUT,
+                        (__) ->
+                                ctx.getServerManager().getGameState()
+                                        == ServerGameState.IN_PROGRESS);
+
+        ctx.getClient()
+                .awaitTimeout(
+                        TIMEOUT,
+                        (__) ->
+                                ctx.getClientManager().getConnectionState()
+                                        == ConnectionState.JOINED_GAME);
     }
 
+    /** Test if spawning is possible over the network. */
     @Test
-    public void testCapitalUpdatedClient() throws Throwable {
-        try (TestContext ctx = new TestContext(7005)) {
-            ctx.run(
-                    () -> {
-                        ctx.testCapitalSpawnDefaultServer();
-                        ctx.modifyServerCapital();
-                        Reference<TestCapitalBuilding> nc =
-                                ctx.getClientComponent(TestCapitalBuilding.class);
-                        await().atMost(TIMEOUT, SECONDS)
-                                .until(
-                                        () -> {
-                                            sEngineLock.lock();
-                                            boolean ret = nc.get().getSyncMe().get() == true;
-                                            sEngineLock.unlock();
-                                            return ret;
-                                        });
-                        sEngineLock.lock();
-                        assert (nc.get().getSyncMe().get() == true);
-                        sEngineLock.unlock();
-                        await().atMost(TIMEOUT, SECONDS)
-                                .until(
-                                        () -> {
-                                            sEngineLock.lock();
-                                            boolean ret =
-                                                    nc.get()
-                                                            .getSyncMeAlso()
-                                                            .get()
-                                                            .equals("Goodbye World");
-                                            sEngineLock.unlock();
-                                            return ret;
-                                        });
-                        sEngineLock.lock();
-                        assert (nc.get().getSyncMeAlso().get().equals("Goodbye World"));
-                        sEngineLock.unlock();
-                    });
-        }
+    public void testSpawnObject() {
+        NetworkedTestContext ctx = buildTestContext();
+
+        connect(ctx);
+        spawnObject(ctx);
+
+        ctx.execute();
     }
 
-    @Test
-    public void testComponentCanSubmitActionRequest() throws Throwable {
-        try (TestContext ctx = new TestContext(7006)) {
-            ctx.run(ctx::testSubmitRequest);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    private static void spawnObject(NetworkedTestContext ctx) {
+        ctx.getServer()
+                .then(
+                        (__) ->
+                                assertTrue(
+                                        ctx.getServerComponent(TestNetworkComponent.class)
+                                                != null));
+
+        ctx.getClient()
+                .syncWith(ctx.getServer())
+                .awaitTimeout(
+                        TIMEOUT, (__) -> ctx.getClientComponent(TestNetworkComponent.class) != null)
+                .then(
+                        (__) -> {
+                            Reference<TestNetworkComponent> clientTestComp =
+                                    ctx.getClientComponent(TestNetworkComponent.class);
+                            assertNotNull(clientTestComp);
+                            Reference<TestNetworkComponent> serverTestComp =
+                                    ctx.getServerComponent(TestNetworkComponent.class);
+                            assertNotNull(serverTestComp);
+
+                            int testCompId = clientTestComp.get().getNetworkObject().getId();
+
+                            log.info(
+                                    "\t-----> "
+                                            + testCompId
+                                            + " "
+                                            + serverTestComp.get().getNetworkObject().getId());
+                            assertEquals(
+                                    testCompId, serverTestComp.get().getNetworkObject().getId());
+                            log.info("\t-----> " + testCompId);
+                            assert (serverTestComp.get().getSyncMe().get() == false);
+                            assert (serverTestComp
+                                    .get()
+                                    .getSyncMeAlso()
+                                    .get()
+                                    .equals("Hello World"));
+                        });
+
+        ctx.getServer().syncWith(ctx.getClient());
+        ctx.getClient().syncWith(ctx.getServer());
     }
 
+    /** Test if modifying components is possible over the network. */
     @Test
-    public void testCanDestroy() throws Throwable {
-        try (TestContext ctx = new TestContext(7007)) {
-            ctx.run(ctx::testCanDestroy);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public void testModifyTestComp() {
+        NetworkedTestContext ctx = buildTestContext();
+
+        connect(ctx);
+        spawnObject(ctx);
+        modifyTestComp(ctx);
+
+        ctx.execute();
     }
 
+    private void modifyTestComp(NetworkedTestContext ctx) {
+        ctx.getClient()
+                .then(
+                        (__) -> {
+                            TestNetworkComponent component =
+                                    ctx.getClientComponent(TestNetworkComponent.class).get();
+                            assertFalse(component.getSyncMe().get());
+                            assertFalse(component.getSyncMeAlso().get().equals("Goodbye World"));
+                        });
+
+        ctx.getServer()
+                .syncWith(ctx.getClient())
+                .then(
+                        (__) -> {
+                            TestNetworkComponent component =
+                                    ctx.getServerComponent(TestNetworkComponent.class).get();
+                            component.setBooleanSyncMe(true);
+                            component.setStringSyncMeAlso("Goodbye World");
+                        });
+
+        ctx.getClient()
+                .syncWith(ctx.getServer())
+                .awaitTimeout(
+                        TIMEOUT,
+                        (__) -> {
+                            TestNetworkComponent component =
+                                    ctx.getClientComponent(TestNetworkComponent.class).get();
+                            return component.getSyncMe().get()
+                                    && component.getSyncMeAlso().get().equals("Goodbye World");
+                        });
+
+        ctx.getServer().syncWith(ctx.getClient());
+    }
+
+    /** Test if client can submit requests over the network. */
     @Test
-    public void testSetOwnerId() throws Throwable {
-        try (TestContext ctx = new TestContext(7007)) {
-            ctx.run(ctx::testSetOwnerId);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public void testSubmitRequest() {
+        NetworkedTestContext ctx = buildTestContext();
+
+        connect(ctx);
+        spawnObject(ctx);
+        submitRequest(ctx);
+
+        ctx.execute();
+    }
+
+    private void submitRequest(NetworkedTestContext ctx) {
+        TestNetworkComponent[] comp = {null};
+
+        ctx.getClient()
+                .then(
+                        (__) -> {
+                            comp[0] = ctx.getClientComponent(TestNetworkComponent.class).get();
+                            comp[0].mPasswordRequest.invoke(
+                                    new TestAttackData(TestNetworkComponent.CORRECT_PASSWORD, 354));
+                        })
+                .awaitTimeout(TIMEOUT, (__) -> comp[0].getClientToggled().get() == 354);
+
+        ctx.getServer().syncWith(ctx.getClient());
+    }
+
+    /** Test if objects are destroyed over the network. */
+    @Test
+    public void testDestroy() {
+        NetworkedTestContext ctx = buildTestContext();
+
+        connect(ctx);
+        spawnObject(ctx);
+        destroy(ctx);
+
+        ctx.execute();
+    }
+
+    private void destroy(NetworkedTestContext ctx) {
+        ctx.getServer()
+                .then(
+                        (__) ->
+                                ctx.getServerComponent(TestNetworkComponent.class)
+                                        .get()
+                                        .getGameObject()
+                                        .destroy());
+        ctx.getClient()
+                .syncWith(ctx.getServer())
+                .awaitTimeout(
+                        TIMEOUT,
+                        (__) ->
+                                !Reference.isValid(
+                                        ctx.getClientComponent(TestNetworkComponent.class)));
+
+        ctx.getServer().syncWith(ctx.getClient());
+    }
+
+    /** Test if object owner IDs are set over the network. */
+    @Test
+    public void testSetOwnerId() {
+        NetworkedTestContext ctx = buildTestContext();
+
+        connect(ctx);
+        spawnObject(ctx);
+        setOwnerId(ctx);
+
+        ctx.execute();
+    }
+
+    private void setOwnerId(NetworkedTestContext ctx) {
+        int[] ownerId = {-10000};
+        TestNetworkComponent[] serverComp = {null};
+        TestNetworkComponent[] clientComp = {null};
+
+        ctx.getServer()
+                .then(
+                        (__) ->
+                                serverComp[0] =
+                                        ctx.getServerComponent(TestNetworkComponent.class).get())
+                .then((__) -> ownerId[0] = serverComp[0].getNetworkObject().getOwnerId());
+
+        ctx.getClient()
+                .syncWith(ctx.getServer())
+                .then(
+                        (__) ->
+                                clientComp[0] =
+                                        ctx.getClientComponent(TestNetworkComponent.class).get())
+                .then(
+                        (__) -> {
+                            assertEquals(ownerId[0], clientComp[0].getNetworkObject().getOwnerId());
+                        });
+
+        ctx.getServer()
+                .syncWith(ctx.getClient())
+                .then((__) -> serverComp[0].getNetworkObject().setOwnerId(ownerId[0] + 1));
+
+        ctx.getClient()
+                .awaitTimeout(
+                        TIMEOUT,
+                        (__) -> clientComp[0].getNetworkObject().getOwnerId() == ownerId[0] + 1);
+
+        ctx.getServer().syncWith(ctx.getClient());
     }
 }

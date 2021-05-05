@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import java.util.Scanner;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -78,7 +77,7 @@ public class App implements NativeResource {
      * @param networkManager the network manager
      * @return the scene created
      */
-    private static Scene createMainScene(NetworkManager networkManager) {
+    static Scene createMainScene(NetworkManager networkManager) {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -171,7 +170,7 @@ public class App implements NativeResource {
      * @param asServer true, if to create as server
      * @return the scene created
      */
-    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
+    static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
         Scene mainScene = createMainScene(networkManager);
         if (asServer) {
             log.info("I am the server");
@@ -220,14 +219,12 @@ public class App implements NativeResource {
     }
 
     /**
-     * Creates the main menu scene.
+     * Creates a collection of templates used by the game.
      *
-     * @return the scene created
+     * @return a new template manager containing all networked templates from network templates glTF
+     *     file.
      */
-    private Scene createMainMenu() {
-        Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
-        addDebugUi(mainMenu);
-
+    TemplateManager createTemplateManager() {
         TemplateManager templates = new TemplateManager();
 
         for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
@@ -238,8 +235,20 @@ public class App implements NativeResource {
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
 
+        return templates;
+    }
+
+    /**
+     * Creates the main menu scene.
+     *
+     * @return the scene created
+     */
+    private Scene createMainMenu() {
+        Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
+        addDebugUi(mainMenu);
+
         Reference<NetworkManager> networkManager =
-                new NetworkManager(templates, App::createMainScene)
+                new NetworkManager(createTemplateManager(), App::createMainScene)
                         .getReference(NetworkManager.class);
 
         GameObject networkManagerObject =
@@ -374,25 +383,6 @@ public class App implements NativeResource {
 
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
-
-        // Load dev console
-        // TODO: actually make a fully fledged console
-        // TODO: join it at the end
-        new Thread(
-                        () -> {
-                            Scanner in = new Scanner(System.in);
-
-                            String line;
-
-                            while ((line = in.nextLine()) != null) {
-                                try {
-                                    log.info("Address set successfully!");
-                                } catch (Exception e) {
-                                    log.info("Failed to set IP and port!");
-                                }
-                            }
-                        })
-                .start();
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());

@@ -63,7 +63,7 @@ public class ResourceManager {
                 if (AutoCloseable.class.isInstance(mResource)) {
                     try {
                         ((AutoCloseable) mResource).close();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         e.printStackTrace();
                     }
                 }
@@ -119,7 +119,7 @@ public class ResourceManager {
             if (AutoCloseable.class.isInstance(mResource)) {
                 try {
                     ((AutoCloseable) mResource).close();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
@@ -294,8 +294,7 @@ public class ResourceManager {
         try (InputStream inputStream = CLASS_LOADER.getResourceAsStream(path)) {
             byte[] buffer = readAllBytes(inputStream);
             return castLoader.loadFromBuffer(buffer, arguments);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
             return null;
         }
     }
