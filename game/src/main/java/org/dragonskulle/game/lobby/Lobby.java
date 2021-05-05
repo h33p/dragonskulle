@@ -3,6 +3,7 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -637,7 +638,9 @@ public class Lobby extends Component implements IFrameUpdate {
         Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
 
         // 6 players for now
-        gameState.get().getNumPlayers().set(6);
+        int maxPlayers = 6;
+
+        gameState.get().getNumPlayers().set(maxPlayers);
 
         gameState
                 .get()
@@ -650,6 +653,24 @@ public class Lobby extends Component implements IFrameUpdate {
                                         pauseMenu.endGame();
                                     }
                                 }));
+
+        // Get the number of clients and thus the number of AI needed
+        int clientNumber = manager.getServerManager().getClients().size();
+        int numOfAi = maxPlayers - clientNumber;
+
+        // Add the AI
+        for (int i = -1; i >= -1 * numOfAi; i--) {
+            Random random = new Random();
+
+            // Randomly select which AI to use
+            if (random.nextFloat() > 0.5) {
+                manager.getServerManager()
+                        .spawnNetworkObject(i, manager.findTemplateByName("aStarAi"));
+            } else {
+                manager.getServerManager()
+                        .spawnNetworkObject(i, manager.findTemplateByName("aiPlayer"));
+            }
+        }
     }
 
     @Override
