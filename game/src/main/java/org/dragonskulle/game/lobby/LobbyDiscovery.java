@@ -6,8 +6,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.java.Log;
 
@@ -90,6 +94,35 @@ public class LobbyDiscovery {
         }
     }
 
+    private static ArrayList<InetSocketAddress> getBroadcastAddresses() {
+        ArrayList<InetSocketAddress> addresses = new ArrayList<>();
+        addresses.add(new InetSocketAddress("255.255.255.255", DISCOVER_PORT));
+
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+
+                if (iface.isLoopback()) {
+                    continue;
+                }
+
+                for (InterfaceAddress address : iface.getInterfaceAddresses()) {
+                    InetAddress broadcast = address.getBroadcast();
+                    if (broadcast == null) {
+                        continue;
+                    }
+
+                    addresses.add(new InetSocketAddress(broadcast, DISCOVER_PORT));
+                }
+            }
+        } catch (SocketException e) {
+            log.warning("Failed to enumerate network interfaces");
+        }
+
+        return addresses;
+    }
+
     /**
      * Attempt to discover a lobby on the local network. Currently only broadcasts to the default
      * broadcast address.
@@ -98,15 +131,18 @@ public class LobbyDiscovery {
      */
     public static InetAddress discoverLobby() {
         // TODO: Iterate through network interfaces and broadcast to all broadcast addresses
+
+        ArrayList<InetSocketAddress> broadcastAddresses = getBroadcastAddresses();
+
         try {
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket packet =
-                    new DatagramPacket(
-                            UDP_DISCOVER_MAGIC,
-                            UDP_DISCOVER_MAGIC.length,
-                            new InetSocketAddress("255.255.255.255", DISCOVER_PORT));
-            socket.send(packet);
-            log.info("Sent discovery packet to default broadcast ip");
+            for (InetSocketAddress address : broadcastAddresses) {
+                DatagramPacket packet =
+                        new DatagramPacket(UDP_DISCOVER_MAGIC, UDP_DISCOVER_MAGIC.length, address);
+                socket.send(packet);
+                log.info("Sent discovery packet to " + address.getHostString());
+            }
+
             try {
                 DatagramPacket response =
                         new DatagramPacket(UDP_CONNECT_RESPONSE, UDP_CONNECT_RESPONSE.length);
