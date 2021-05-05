@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.lobby;
 
+import com.google.common.net.InetAddresses;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +47,7 @@ public class Lobby extends Component implements IFrameUpdate {
     private final GameObject mHostUi;
     private final GameObject mJoinUi;
     private final GameObject mServerListUi;
+    private final GameObject mJoinIPUi;
     private Reference<GameObject> mServerList;
     private final GameObject mFailedToForwardUi;
     private final GameObject mHostingUi;
@@ -104,6 +107,16 @@ public class Lobby extends Component implements IFrameUpdate {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                             root.addChild(mServerList.get());
+                        });
+
+        mJoinIPUi =
+                new GameObject(
+                        "joinIPUI",
+                        false,
+                        new TransformUI(false),
+                        (root) -> {
+                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
+                            root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
         mFailedToForwardUi =
@@ -180,6 +193,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                     LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
                                     mLobbyId = "";
                                     mLobbyIDUpdated.set(true);
+                                    LobbyDiscovery.closeLocalLobby();
                                 }),
                         mLobbyIDText,
                         new UIButton(
@@ -196,6 +210,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                         mLobbyId = "";
                                         mLobbyIDUpdated.set(true);
                                     }
+                                    LobbyDiscovery.closeLocalLobby();
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
                                     UPnP.deletePortMapping(PORT, "TCP");
@@ -220,6 +235,54 @@ public class Lobby extends Component implements IFrameUpdate {
                                         mJoinUi.setEnabled(true);
                                         mJoiningUi.setEnabled(false);
                                     }
+                                }));
+
+        UIInputBox ipInput = new UIInputBox("Enter IP");
+
+        UIManager.getInstance()
+                .buildVerticalUi(
+                        mJoinIPUi,
+                        0.05f,
+                        0,
+                        0.2f,
+                        ipInput,
+                        new UIButton(
+                                "Connect",
+                                (button, ___) -> {
+                                    final String ip = ipInput.getInput();
+                                    if (!InetAddresses.isInetAddress(ip)) {
+                                        ipInput.setText("Invalid IP!");
+                                        return;
+                                    }
+                                    button.getLabelText().get().setText("Connecting...");
+                                    mNetworkManager
+                                            .get()
+                                            .createClient(
+                                                    ip,
+                                                    PORT,
+                                                    (manager, netID) -> {
+                                                        button.getLabelText()
+                                                                .get()
+                                                                .setText("Connect");
+
+                                                        if (netID >= 0) {
+                                                            mJoiningUi.setEnabled(true);
+                                                            mJoinIPUi.setEnabled(false);
+                                                        }
+                                                    },
+                                                    Lobby::onHostStartGame,
+                                                    () -> {
+                                                        if (mJoiningUi.isEnabled()) {
+                                                            mJoiningUi.setEnabled(false);
+                                                            mJoinUi.setEnabled(true);
+                                                        }
+                                                    });
+                                }),
+                        new UIButton(
+                                "Back",
+                                (__, ___) -> {
+                                    mJoinIPUi.setEnabled(false);
+                                    mJoinUi.setEnabled(true);
                                 }));
 
         UIManager.getInstance()
@@ -254,7 +317,9 @@ public class Lobby extends Component implements IFrameUpdate {
     }
 
     private void createServer(boolean isLocal, boolean removePort) {
-        if (!isLocal) {
+        if (isLocal) {
+            LobbyDiscovery.openLocalLobby();
+        } else {
             String ip = UPnP.getExternalIPAddress();
             LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
         }
@@ -293,31 +358,35 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mJoinUi.setEnabled(false);
                                 }),
                         new UIButton(
+                                "Join by IP",
+                                (__, ___) -> {
+                                    mJoinIPUi.setEnabled(true);
+                                    mJoinUi.setEnabled(false);
+                                }),
+                        new UIButton(
                                 "Join locally",
                                 (button, __) -> {
                                     button.getLabelText().get().setText("Connecting...");
-                                    mNetworkManager
-                                            .get()
-                                            .createClient(
-                                                    "127.0.0.1",
-                                                    PORT,
-                                                    (manager, netID) -> {
-                                                        button.getLabelText()
-                                                                .get()
-                                                                .setText("Join locally");
-
-                                                        if (netID >= 0) {
-                                                            mJoiningUi.setEnabled(true);
-                                                            mJoinUi.setEnabled(false);
-                                                        }
-                                                    },
-                                                    Lobby::onHostStartGame,
-                                                    () -> {
-                                                        if (mJoiningUi.isEnabled()) {
+                                    final InetAddress address = LobbyDiscovery.discoverLobby();
+                                    if (address != null) {
+                                        mNetworkManager
+                                                .get()
+                                                .createClient(
+                                                        address.getHostAddress(),
+                                                        PORT,
+                                                        (manager, netID) -> {
+                                                            button.getLabelText()
+                                                                    .get()
+                                                                    .setText("Join locally");
+                                                        },
+                                                        Lobby::onHostStartGame,
+                                                        () -> {
                                                             mJoiningUi.setEnabled(false);
-                                                            mJoinUi.setEnabled(true);
-                                                        }
-                                                    });
+                                                            mServerListUi.setEnabled(true);
+                                                        });
+                                    } else {
+                                        button.getLabelText().get().setText("Join locally");
+                                    }
                                 }),
                         new UIButton(
                                 "Back",
@@ -487,7 +556,11 @@ public class Lobby extends Component implements IFrameUpdate {
                                         createServer(false, true);
                                     }
                                 }),
-                        new UIButton("Host locally", (__, ___) -> createServer(true, false)),
+                        new UIButton(
+                                "Host locally",
+                                (__, ___) -> {
+                                    createServer(true, false);
+                                }),
                         new UIButton(
                                 "Back",
                                 (__, ___) -> {
@@ -505,6 +578,7 @@ public class Lobby extends Component implements IFrameUpdate {
         mainMenu.addRootObject(mLobbyUi);
         mainMenu.addRootObject(mJoinUi);
         mainMenu.addRootObject(mServerListUi);
+        mainMenu.addRootObject(mJoinIPUi);
         mainMenu.addRootObject(mFailedToForwardUi);
         mainMenu.addRootObject(mJoiningUi);
         mainMenu.addRootObject(mHostUi);
