@@ -97,7 +97,6 @@ public class LobbyDiscovery {
 
     private static ArrayList<InetSocketAddress> getBroadcastAddresses() {
         ArrayList<InetSocketAddress> addresses = new ArrayList<>();
-        addresses.add(new InetSocketAddress("255.255.255.255", DISCOVER_PORT));
 
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -119,6 +118,10 @@ public class LobbyDiscovery {
             }
         } catch (SocketException e) {
             log.warning("Failed to enumerate network interfaces");
+        }
+
+        if (addresses.size() == 0) {
+            addresses.add(new InetSocketAddress("255.255.255.255", DISCOVER_PORT));
         }
 
         return addresses;
@@ -148,7 +151,7 @@ public class LobbyDiscovery {
             try {
                 DatagramPacket response =
                         new DatagramPacket(UDP_CONNECT_RESPONSE, UDP_CONNECT_RESPONSE.length);
-                //socket.setSoTimeout(1000);
+                // socket.setSoTimeout(1000);
                 socket.receive(response);
                 if (Arrays.equals(response.getData(), UDP_CONNECT_RESPONSE)) {
                     log.info("Discovered a server!");

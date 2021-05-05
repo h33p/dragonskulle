@@ -385,7 +385,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         Lobby::onHostStartGame,
                                                         () -> {
                                                             mJoiningUi.setEnabled(false);
-                                                            mServerListUi.setEnabled(true);
+                                                            mJoinUi.setEnabled(true);
                                                         });
                                     } else {
                                         button.getLabelText().get().setText("Join locally");
