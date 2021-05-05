@@ -136,6 +136,7 @@ public class LobbyDiscovery {
 
         try {
             DatagramSocket socket = new DatagramSocket();
+            socket.setBroadcast(true);
             for (InetSocketAddress address : broadcastAddresses) {
                 DatagramPacket packet =
                         new DatagramPacket(UDP_DISCOVER_MAGIC, UDP_DISCOVER_MAGIC.length, address);
