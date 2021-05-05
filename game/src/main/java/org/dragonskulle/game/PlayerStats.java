@@ -9,6 +9,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.ServerNetworkManager;
+import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
@@ -35,25 +36,38 @@ public class PlayerStats implements UIManager.IUIBuildHandler {
 
     @Override
     public void handleUIBuild(GameObject go) {
-        final String[] content = {""};
-        final Reference[] contents = new Reference[]{new Reference<UITextRect>(null)};
+        String playerId = "";
+        String tokens = "";
+        String numberOfBuildings = "";
+        String hasLost = "";
+        String[] contents = {playerId, tokens, numberOfBuildings, hasLost};
+
+        UITextRect rect = new UITextRect("");
+        rect.setRectTexture(UIManager.getInstance().getAppearance().getHintTexture());
+        final TransformUI tran = go.getTransform(TransformUI.class);
+        tran.setMaintainAspect(false);
+        tran.setMargin(0f, 0.08f);
         ensurePlayerReference();
         if (Reference.isValid(mPlayerReference)) {
             Player player = mPlayerReference.get();
-            content[0] =
-                    String.format(
-                            "Player %d\nTokens: %d\nBuildings: %d\nIs Playing: %b",
-                            getId(),
-                            player.getTokens().get(),
-                            player.getNumberOfOwnedBuildings(),
-                            !player.hasLost());
+            playerId = getId().toString();
+            tokens = String.valueOf(player.getTokens().get());
+            numberOfBuildings = String.valueOf(player.getNumberOfOwnedBuildings());
+            hasLost = String.valueOf(player.hasLost());
         } else {
             log.info("mplayer is null");
         }
+//
+//        //create text elements for each
+        UIText playerText = new UIText("Player " + playerId);
+        UIText tokenText = new UIText("Tokens " + tokens);
+        UIText buildingCounterText = new UIText("Owned Buildings " + numberOfBuildings);
+        UIText hasLostText = new UIText("Has Lost " + hasLost);
+//
+        UIText[] labels = new UIText[]{playerText, tokenText, buildingCounterText, hasLostText};
+        go.addComponent(rect);
+        UIManager.getInstance().buildVerticalUi(go, 0.2f, 0f, 1f, labels);
 
-        UITextRect text = new UITextRect(content[0]);
-        go.addComponent(text);
-        contents[0] = text.getLabelText();
         if (mId != null) {
             LambdaFrameUpdate updater =
                     new LambdaFrameUpdate(
@@ -68,22 +82,24 @@ public class PlayerStats implements UIManager.IUIBuildHandler {
                                         && Reference.isValid(mPlayerReference)) {
                                     if (Reference.isValid(mPlayerReference)) {
                                         Player player = mPlayerReference.get();
-                                        String newContent =
-                                                String.format(
-                                                        "Player %d\nTokens: %d\nBuildings: %d\nIs Playing: %b",
-                                                        getId(),
-                                                        player.getTokens().get(),
-                                                        player.getNumberOfOwnedBuildings(),
-                                                        !player.hasLost());
-                                        if (Reference.isValid(contents[0])) {
-                                            ((UIText) contents[0].get()).setText(newContent);
-                                        } else {
-                                            contents[0] = text.getLabelText();
-                                        }
+                                        contents[0] = "Player " + getId().toString();
+                                        contents[1] = "Tokens " + player.getTokens().get();
+                                        contents[2] = "Owned Buildings " + player.getNumberOfOwnedBuildings();
+                                        contents[3] = "Has Lost " + player.hasLost();
+                                        setLabel(labels, contents);
                                     }
                                 }
                             });
             go.addComponent(updater);
         }
     }
+
+    private void setLabel(UIText[] labels, String[] contents) {
+        if (labels.length != contents.length) return;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i].setText(contents[i]);
+        }
+    }
 }
+
+
