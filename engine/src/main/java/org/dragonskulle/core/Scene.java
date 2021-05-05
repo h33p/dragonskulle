@@ -30,6 +30,20 @@ public class Scene {
     @Setter(AccessLevel.PACKAGE)
     private static Scene sActiveScene = null;
 
+    public static class SceneOverride implements AutoCloseable {
+        private final Scene mPrevScene;
+
+        public SceneOverride(Scene newScene) {
+            mPrevScene = sActiveScene;
+            sActiveScene = newScene;
+        }
+
+        @Override
+        public void close() {
+            sActiveScene = mPrevScene;
+        }
+    }
+
     /**
      * Constructor for a Scene.
      *
@@ -165,6 +179,7 @@ public class Scene {
      */
     protected ArrayList<Component> getEnabledComponents() {
         return mComponents.stream()
+                .filter(component -> component.getGameObject() != null)
                 .filter(component -> component.getGameObject().isEnabled())
                 .filter(Component::isEnabled)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -192,5 +207,14 @@ public class Scene {
                 .filter(Component::isEnabled)
                 .filter(component -> !component.isStarted())
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Scene)) {
+            return false;
+        } else {
+            return ((Scene) o).getName().equals(mName);
+        }
     }
 }

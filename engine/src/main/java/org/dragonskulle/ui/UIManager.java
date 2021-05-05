@@ -103,6 +103,8 @@ public class UIManager {
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
+         *
+         * @param go The {@link GameObject}.
          */
         void handleUIBuild(GameObject go);
     }
@@ -153,6 +155,7 @@ public class UIManager {
             cnt++;
         }
     }
+
     /**
      * Build a horizontal UI on the object
      *
@@ -201,6 +204,7 @@ public class UIManager {
      * @param height consistent anchor based height to keep.
      * @param offsetX how much each element will be offset from one another on X axis.
      * @param offsetY how much each element will be offset from one another on Y axis.
+     * @param elems A list of {@link IUIBuildHandler}s.
      */
     public void buildWithAnchorOffset(
             GameObject go,

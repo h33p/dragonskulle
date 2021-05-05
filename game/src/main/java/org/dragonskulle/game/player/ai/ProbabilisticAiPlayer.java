@@ -3,16 +3,17 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.PredefinedBuildings;
 
 /**
- * This base class will allow AI players to be created and used throughout the game.
+ * This will create AI which will choose an action with a certain probability.
  *
  * @author DragonSkulle
  */
@@ -22,11 +23,11 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /** Probability of placing a new {@link Building}. */
     protected float mBuildProbability = 0.65f;
     /** Probability of upgrading an owned {@link Building}. */
-    protected float mUpgradeProbability = 0.15f;
+    protected float mUpgradeProbability = 0.155f;
     /** Probability of attacking an opponent {@link Building}. */
-    protected float mAttackProbability = 0.15f;
+    protected float mAttackProbability = 0.19f;
     /** Probability of selling an owned {@link Building}. */
-    protected float mSellProbability = 0.05f;
+    protected float mSellProbability = 0.005f;
 
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
@@ -46,7 +47,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             if (addBuilding()) {
                 return;
-            } else if (attack()) {
+            } else if (!getPlayer().inCooldown() && attack()) {
                 return;
             } else {
                 upgradeBuilding();
@@ -69,7 +70,10 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 upgradeBuilding();
             } else if (randomNumber
                     <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
-                attack();
+                // Only attempt to attack if you're not in cooldown.
+                if (!getPlayer().inCooldown()) {
+                    attack();
+                }
             } else if (randomNumber
                     <= mBuildProbability
                             + mUpgradeProbability
@@ -86,7 +90,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * A function which goes through and checks if you can run code.
      *
      * @param lambdaMethod What to on a building
-     * @return If the stuff is invoked on the server
+     * @return {@code true} if invoked on the server otherwise {@code false}
      */
     protected boolean attemptRunEvent(IRunBuildingEvent lambdaMethod) {
 
@@ -145,10 +149,14 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     /**
      * Try and place a {@link Building} from the specified Building.
      *
-     * @param building the {@code Building} to try and build from.
+     * @param building the {@link Building} to try and build from.
      * @return Whether building placement was invoked.
      */
     private boolean tryToAddBuilding(Building building) {
+
+        // Get a building type that they can afford.
+        BuildingDescriptor option = getRandomBuildingType();
+        if (option == null) return false;
 
         if (building.getBuildableTiles().size() != 0) {
 
@@ -162,7 +170,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             while (true) {
                 HexagonTile tile = buildableTiles.get(index);
                 if (tile.isClaimed() == false && tile.hasBuilding() == false) {
-                    getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tile));
+                    getPlayer()
+                            .getClientBuildRequest()
+                            .invoke((d) -> d.setTile(tile, PredefinedBuildings.getIndex(option)));
                     return true;
                 }
                 index++;
@@ -240,17 +250,16 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether attacking was invoked.
      */
     protected boolean tryToAttack(Building attacker) {
-        Set<Building> builds = attacker.getAttackableBuildings();
 
-        if (builds.size() != 0) {
-            // Gets the defending and attacking buildings
-            int buildingChoice = mRandom.nextInt(builds.size());
-            Building defender = builds.stream().skip(buildingChoice).findFirst().orElse(null);
-            getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+        // Ensure the player can afford to attack.
+        if (attacker == null || attacker.getAttackCost() > getPlayer().getTokens().get())
+            return false;
 
-            return true;
-        }
-        return false;
+        Building defender = attacker.getRandomAttackableBuilding();
+        if (defender == null) return false;
+
+        getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+        return true;
     }
 
     /**
@@ -281,18 +290,5 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         }
 
         return false;
-    }
-
-    /**
-     * Gets the player.
-     *
-     * @return The player.
-     */
-    private Player getPlayer() {
-        Player player = mPlayer.get();
-        if (player == null) {
-            log.severe("Reference to mPlayer is null!");
-        }
-        return player;
     }
 }

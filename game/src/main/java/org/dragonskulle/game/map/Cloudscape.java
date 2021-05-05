@@ -5,15 +5,14 @@ import java.util.HashMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.App;
 import org.dragonskulle.game.NoiseUtil;
 import org.dragonskulle.game.player.Player;
 
@@ -28,10 +27,8 @@ public class Cloudscape extends Component implements IOnStart, ILateFrameUpdate 
     private Reference<HexagonMap> mMapReference = null;
     @Getter @Setter private Reference<Player> mActivePlayer;
 
-    static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
-
     private static final GameObject FOG_OBJECT =
-            TEMPLATES.get().getDefaultScene().findRootObject("Cloud Hex");
+            App.TEMPLATES.get().getDefaultScene().findRootObject("Cloud Hex");
 
     private static final float[][] OCTAVES = {
         {0.07f, 1f, 0.5f},

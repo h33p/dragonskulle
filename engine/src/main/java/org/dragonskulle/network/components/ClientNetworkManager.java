@@ -14,9 +14,11 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IClientListener;
 import org.dragonskulle.network.NetworkClient;
+import org.dragonskulle.network.NetworkConfig;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -34,10 +36,11 @@ import org.joml.Vector3f;
 public class ClientNetworkManager {
 
     /** Describes client connection state. */
-    private static enum ConnectionState {
+    public static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,
+        JOINING_GAME,
         JOINED_GAME,
         CONNECTION_ERROR,
         CLEAN_DISCONNECTED
@@ -72,6 +75,11 @@ public class ClientNetworkManager {
         public void connectedToServer(int netId) {
             mNetId = netId;
             mNextConnectionState.set(ConnectionState.CONNECTED);
+        }
+
+        @Override
+        public void hostStartedGame() {
+            mNextConnectionState.set(ConnectionState.JOINING_GAME);
         }
 
         @Override
@@ -164,9 +172,14 @@ public class ClientNetworkManager {
     /** Current connection state. */
     @Getter private ConnectionState mConnectionState;
     /** Next connection state (set by the listener). */
-    private AtomicReference<ConnectionState> mNextConnectionState = new AtomicReference<>(null);
+    private final AtomicReference<ConnectionState> mNextConnectionState =
+            new AtomicReference<>(null);
     /** Callback for connection result processing. */
-    private NetworkManager.IConnectionResultEvent mConnectionHandler;
+    private final NetworkManager.IConnectionResultEvent mConnectionHandler;
+    /** Callback for when host has started game. */
+    private final NetworkManager.IHostStartedGameEvent mHostStartedHandler;
+    /** Callback for when host has ended game. */
+    private final NetworkManager.IHostClosedGameEvent mHostClosedHandler;
     /** Back reference to the network manager. */
     private final NetworkManager mManager;
     /** How many ticks elapsed without any updates. */
@@ -194,11 +207,15 @@ public class ClientNetworkManager {
             NetworkManager manager,
             String ip,
             int port,
-            NetworkManager.IConnectionResultEvent handler) {
+            NetworkManager.IConnectionResultEvent handler,
+            NetworkManager.IHostStartedGameEvent startHandler,
+            NetworkManager.IHostClosedGameEvent closedHandler) {
         mManager = manager;
         mConnectionState = ConnectionState.CONNECTING;
         mClient = new NetworkClient(ip, port, mListener);
         mConnectionHandler = handler;
+        mHostStartedHandler = startHandler;
+        mHostClosedHandler = closedHandler;
     }
 
     /**
@@ -253,6 +270,10 @@ public class ClientNetworkManager {
         mConnectionState = ConnectionState.NOT_CONNECTED;
         mClient.dispose();
 
+        if (mHostClosedHandler != null) {
+            mHostClosedHandler.handle();
+        }
+
         mNetworkObjectReferences.values().stream()
                 .map(e -> e.mNetworkObject)
                 .filter(Reference::isValid)
@@ -281,16 +302,28 @@ public class ClientNetworkManager {
 
     /** Network update method, called by {@link NetworkManager}. */
     void networkUpdate() {
-        if (mConnectionState == ConnectionState.JOINED_GAME) {
-            if (mClient.processRequests() <= 0) {
-                mTicksWithoutRequests++;
-                if (mTicksWithoutRequests > 3200) {
-                    disconnect();
-                } else if (mTicksWithoutRequests == 1000) {
-                    log.info("1000 ticks without updates! 2200 more till disconnect!");
+        int requestsProcessed = 0;
+        switch (mConnectionState) {
+            case CONNECTED:
+                requestsProcessed = mClient.processRequests();
+                break;
+            case JOINED_GAME:
+                try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+                    requestsProcessed = mClient.processAllRequests();
                 }
-            } else mTicksWithoutRequests = 0;
+                break;
+            default:
+                break;
         }
+
+        if (requestsProcessed <= 0) {
+            mTicksWithoutRequests++;
+            if (mTicksWithoutRequests > 3200) {
+                disconnect();
+            } else if (mTicksWithoutRequests == 1000) {
+                log.info("1000 ticks without updates! 2200 more till disconnect!");
+            }
+        } else mTicksWithoutRequests = 0;
 
         mNetworkObjectReferences
                 .entrySet()
@@ -306,29 +339,34 @@ public class ClientNetworkManager {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
         if (nextState != null) {
-            log.info(nextState.toString());
             log.info(mConnectionState.toString());
+            log.info(nextState.toString());
 
-            if (mConnectionState == ConnectionState.CONNECTING) {
-                switch (nextState) {
-                    case CONNECTED:
-                        joinGame();
-                        if (mConnectionHandler != null) {
-                            mConnectionHandler.handle(mManager.getGameScene(), mManager, mNetId);
-                        }
-                        break;
-                    case CONNECTION_ERROR:
-                        if (mConnectionHandler != null) {
-                            mConnectionHandler.handle(mManager.getGameScene(), mManager, -1);
-                        }
-                        disconnect();
-                        break;
-                    default:
-                        break;
-                }
-            } else if (mConnectionState == ConnectionState.JOINED_GAME) {
-                // TODO: handle lobby -> game transition here
+            if (mConnectionState == ConnectionState.JOINED_GAME) {
                 disconnect();
+            }
+            switch (nextState) {
+                case CONNECTED:
+                    joinLobby();
+                    if (mConnectionHandler != null) {
+                        mConnectionHandler.handle(mManager, mNetId);
+                    }
+                    break;
+                case CONNECTION_ERROR:
+                    if (mConnectionHandler != null
+                            && mConnectionState == ConnectionState.CONNECTING) {
+                        mConnectionHandler.handle(mManager, -1);
+                    }
+                    disconnect();
+                    break;
+                case JOINING_GAME:
+                    joinGame();
+                    if (mHostStartedHandler != null) {
+                        mHostStartedHandler.handle(mManager.getGameScene(), mManager, mNetId);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -345,8 +383,9 @@ public class ClientNetworkManager {
         }
     }
 
-    // TODO: implement lobby
-    // private void joinLobby() {}
+    private void joinLobby() {
+        mConnectionState = ConnectionState.CONNECTED;
+    }
 
     /** Join the game map. */
     private void joinGame() {
@@ -361,6 +400,7 @@ public class ClientNetworkManager {
         }
 
         mConnectionState = ConnectionState.JOINED_GAME;
+        mClient.sendBytes(new byte[] {NetworkConfig.Codes.MESSAGE_CLIENT_LOADED});
     }
 
     /**

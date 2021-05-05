@@ -18,6 +18,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
@@ -55,13 +56,25 @@ public class ServerNetworkManager {
          */
         @Override
         public int clientConnected(ServerClient client) {
+            if (mGameState != ServerGameState.LOBBY) {
+                return -1;
+            }
+
             return mServer.addConnectedClient(client);
         }
 
         @Override
-        public void clientActivated(ServerClient client) {
-            if (mConnectedClientHandler != null) {
-                mConnectedClientHandler.handle(mManager.getGameScene(), mManager, client);
+        public void clientFullyConnected(ServerClient client) {
+            if (mClientConnectedEvent != null) {
+                mClientConnectedEvent.handle(mManager.getGameScene(), mManager, client);
+            }
+        }
+
+        @Override
+        public void clientLoaded(ServerClient client) {
+            client.setInGame(true);
+            if (mClientLoadedEvent != null) {
+                mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
             }
         }
 
@@ -176,13 +189,17 @@ public class ServerNetworkManager {
     /** Back reference to {@link NetworkManager}. */
     @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
-    private final NetworkManager.IConnectedClientEvent mConnectedClientHandler;
+    private final NetworkManager.IConnectedClientEvent mClientConnectedEvent;
+    /** Callback for connected clients. */
+    private final NetworkManager.IClientLoadedEvent mClientLoadedEvent;
     /** Callback for game start. */
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
+    /** Callback for game end. */
+    private final NetworkManager.IGameEndEvent mGameEndEventHandler;
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
-    private ServerGameState mGameState = ServerGameState.STARTING;
+    @Getter private ServerGameState mGameState = ServerGameState.LOBBY;
 
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
@@ -198,23 +215,34 @@ public class ServerNetworkManager {
      *
      * @param manager back reference to {@link NetworkManager}
      * @param port target port to listen on
-     * @param connectedClientHandler callback for client connections
+     * @param clientLoadedEvent callback for client connections
      * @param gameStartEventHandler callback for when the game starts
      */
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
-            NetworkManager.IConnectedClientEvent connectedClientHandler,
-            NetworkManager.IGameStartEvent gameStartEventHandler)
+            NetworkManager.IConnectedClientEvent clientConnectedEvent,
+            NetworkManager.IClientLoadedEvent clientLoadedEvent,
+            NetworkManager.IGameStartEvent gameStartEventHandler,
+            NetworkManager.IGameEndEvent gameEndEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
-        mConnectedClientHandler = connectedClientHandler;
+        mClientConnectedEvent = clientConnectedEvent;
+        mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
+        mGameEndEventHandler = gameEndEventHandler;
+    }
+
+    public void start() {
+        if (mGameState == ServerGameState.LOBBY) {
+            mGameState = ServerGameState.STARTING;
+        }
     }
 
     /** Start the game, load game scene. */
     void startGame() {
+
         Engine engine = Engine.getInstance();
 
         mManager.createGameScene(true);
@@ -227,6 +255,15 @@ public class ServerNetworkManager {
 
         if (mGameStartEventHandler != null) {
             mGameStartEventHandler.handle(mManager);
+        }
+
+        for (ServerClient c : mServer.getClients()) {
+            try {
+                c.sendBytes(new byte[] {NetworkConfig.Codes.MESSAGE_HOST_STARTED});
+            } catch (IOException e) {
+                e.printStackTrace();
+                c.closeSocket();
+            }
         }
     }
 
@@ -321,6 +358,10 @@ public class ServerNetworkManager {
     public void destroy() {
         if (mServer == null) return;
 
+        if (mGameEndEventHandler != null) {
+            mGameEndEventHandler.handle(mManager);
+        }
+
         mServer.dispose();
         mServer = null;
 
@@ -381,22 +422,24 @@ public class ServerNetworkManager {
 
         if (mGameState == ServerGameState.STARTING) return;
 
-        mServer.updateClientList();
-        mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
+        try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+            mServer.updateClientList();
+            mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
 
-        mNetworkObjects
-                .entrySet()
-                .removeIf(
-                        entry -> {
-                            NetworkObject obj = entry.getValue().mNetworkObject.get();
-                            if (obj != null) {
-                                obj.beforeNetSerialize();
-                                return false;
-                            }
-                            return true;
-                        });
+            mNetworkObjects
+                    .entrySet()
+                    .removeIf(
+                            entry -> {
+                                NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                if (obj != null) {
+                                    obj.beforeNetSerialize();
+                                    return false;
+                                }
+                                return true;
+                            });
 
-        clientUpdate();
+            clientUpdate();
+        }
     }
 
     /** Late network update, called by {@link NetworkManager}. */
@@ -412,23 +455,27 @@ public class ServerNetworkManager {
 
             mManager.onServerDestroy();
         } else {
-            for (ServerClient c : mServer.getClients()) {
-                for (ServerObjectEntry entry : mNetworkObjects.values()) {
-                    entry.updateClient(c);
+            try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+                for (ServerClient c : mServer.getClients()) {
+                    if (!c.isInGame()) {
+                        continue;
+                    }
+                    for (ServerObjectEntry entry : mNetworkObjects.values()) {
+                        entry.updateClient(c);
+                    }
                 }
+                mNetworkObjects
+                        .entrySet()
+                        .removeIf(
+                                entry -> {
+                                    NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                    if (obj != null) {
+                                        obj.resetUpdateMask();
+                                        return false;
+                                    }
+                                    return true;
+                                });
             }
-
-            mNetworkObjects
-                    .entrySet()
-                    .removeIf(
-                            entry -> {
-                                NetworkObject obj = entry.getValue().mNetworkObject.get();
-                                if (obj != null) {
-                                    obj.resetUpdateMask();
-                                    return false;
-                                }
-                                return true;
-                            });
         }
     }
 

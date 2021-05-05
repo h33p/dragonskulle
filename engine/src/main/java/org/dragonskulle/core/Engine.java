@@ -16,6 +16,7 @@ import org.dragonskulle.components.ILateNetworkUpdate;
 import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
@@ -62,11 +63,13 @@ public class Engine {
     /** Engine's GLFW window state. */
     @Getter private GLFWState mGLFWState = null;
 
-    private final ArrayList<IScheduledEvent> mFrameEvents = new ArrayList<>();
-    private final ArrayList<IScheduledEvent> mEndOfLoopEvents = new ArrayList<>();
-    private final ArrayList<IScheduledEvent> mFixedUpdateEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mFrameEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mEndOfLoopEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mFixedUpdateEvents = new ArrayList<>();
+    private ArrayList<IScheduledEvent> mEventsToConsume = new ArrayList<>();
 
     @Getter private float mCurTime = 0f;
+    @Getter private float mFrameDeltaTime = 0f;
 
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
     private final ArrayList<Light> mTmpLights = new ArrayList<>();
@@ -88,12 +91,9 @@ public class Engine {
      * @param bindings User input bindings
      */
     public void start(String gameName, Bindings bindings) {
-
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
         UPnP.initialise();
-        log.info(UPnP.getExternalIPAddress());
-        UPnP.addPortMapping(17569, "TCP");
 
         mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
 
@@ -104,15 +104,30 @@ public class Engine {
     }
 
     /**
-     * Starts only fixed updates of the engine, allows for custom quit condition.
+     * Runs the engine with a list of futures, until they all finish.
      *
-     * <p>Note that this method will not destroy game object references!
+     * <p>Each future will have a scene assigned to them, and be executed at the same time. Note,
+     * that while inside the future context, {@code Scene.getActiveScene()} will always return
+     * {@code null}, so you can use the input argument as active scene.
      *
-     * @param exitCondition customizable exit condition
+     * @param futures a list of futures to execute.
      */
-    public synchronized void startFixedDebug(IEngineExitCondition exitCondition) {
+    public synchronized void startWithFutures(Future... futures) {
+        int cnt = 0;
+        int[] loadedScenes = {0};
+
+        for (Future future : futures) {
+            Scene scene = new Scene("future" + cnt);
+            future.then(this::unloadScene).then((__) -> loadedScenes[0]--).schedule(scene);
+            cnt++;
+            loadedScenes[0]++;
+            activateScene(scene);
+        }
+
         mIsRunning = true;
-        mainLoop(exitCondition, false);
+        mainLoop(() -> loadedScenes[0] != 0, false);
+
+        cleanup();
     }
 
     /**
@@ -255,6 +270,8 @@ public class Engine {
             prevTime = curTime;
             double cumulativeDeltaTime = deltaTime;
 
+            mFrameDeltaTime = (float) deltaTime;
+
             cumulativeTime += deltaTime;
 
             boolean triggerFixedUpdate = cumulativeTime > UPDATE_TIME;
@@ -312,11 +329,9 @@ public class Engine {
                 lateNetworkUpdate();
             }
 
-            for (IScheduledEvent event : mEndOfLoopEvents) {
-                event.invoke();
-            }
-
-            mEndOfLoopEvents.clear();
+            ArrayList<IScheduledEvent> toConsume = mEndOfLoopEvents;
+            mEndOfLoopEvents = mEventsToConsume;
+            consumeEvents(toConsume);
 
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
@@ -354,6 +369,14 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
+    private void consumeEvents(ArrayList<IScheduledEvent> toConsume) {
+        mEventsToConsume = toConsume;
+        for (IScheduledEvent event : mEventsToConsume) {
+            event.invoke();
+        }
+        mEventsToConsume.clear();
+    }
+
     /**
      * Do all frameUpdates on components that implement it. Only components in the presentation
      * scene have frame update called
@@ -361,11 +384,9 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void frameUpdate(float deltaTime) {
-        for (IScheduledEvent event : mFrameEvents) {
-            event.invoke();
-        }
-
-        mFrameEvents.clear();
+        ArrayList<IScheduledEvent> toConsume = mFrameEvents;
+        mFrameEvents = mEventsToConsume;
+        consumeEvents(toConsume);
 
         for (Component component : mPresentationScene.getEnabledComponents()) {
             if (component instanceof IFrameUpdate) {
@@ -376,11 +397,9 @@ public class Engine {
 
     /** Do all Fixed Updates on components that implement it. */
     private void fixedUpdate() {
-        for (IScheduledEvent event : mFixedUpdateEvents) {
-            event.invoke();
-        }
-
-        mFixedUpdateEvents.clear();
+        ArrayList<IScheduledEvent> toConsume = mFixedUpdateEvents;
+        mFixedUpdateEvents = mEventsToConsume;
+        consumeEvents(toConsume);
 
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
@@ -486,8 +505,7 @@ public class Engine {
             if (mPresentationScene != null) {
 
                 // Deactivate the old presentation scene
-                mInactiveScenes.add(mPresentationScene);
-                mActiveScenes.remove(mPresentationScene);
+                mScenesToDeactivate.add(mPresentationScene);
             }
 
             // And then load the new one
@@ -513,7 +531,6 @@ public class Engine {
         // Unload all scenes that need to be unloaded and flag all gameobjects for destruction
         for (Scene s : mScenesToUnload) {
             if (s == null) continue;
-            mScenesToUnload.remove(s);
             mActiveScenes.remove(s);
             mInactiveScenes.remove(s);
             if (mPresentationScene != null && mPresentationScene == s) {
@@ -523,6 +540,7 @@ public class Engine {
                 r.destroy();
             }
         }
+        mScenesToUnload.clear();
     }
 
     /** Destroy all game objects and components in all scenes. Used for cleanup */
@@ -559,7 +577,11 @@ public class Engine {
 
         UPnP.deleteAllMappings();
         destroyAllObjects();
-        mGLFWState.free();
+
+        if (mGLFWState != null) {
+            mGLFWState.free();
+            mGLFWState = null;
+        }
     }
 
     /**

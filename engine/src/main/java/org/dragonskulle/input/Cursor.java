@@ -4,7 +4,8 @@ package org.dragonskulle.input;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import lombok.experimental.Accessors;
@@ -39,6 +40,8 @@ import org.lwjgl.glfw.GLFWImage;
 @Log
 @Accessors(prefix = "m")
 public class Cursor {
+    public static final String SETTINGS_STRING = "cursorScale";
+
     static {
         ResourceManager.registerResource(
                 BufferedImage.class,
@@ -57,7 +60,7 @@ public class Cursor {
     private Vector2f mRawDragStart;
     /** Scaled mouse drag start position in the range [[-1, 1], [-1, 1]]. */
     private Vector2f mScaledDragStart = new Vector2f(0, 0);
-    /** Maximum amount the cursor was dragged from the starting position */
+    /** Maximum amount the cursor was dragged from the starting position. */
     private float mMaxDragDistance = 0f;
 
     /** Create a new cursor manager. */
@@ -95,7 +98,7 @@ public class Cursor {
      */
     public static void setCustomCursor(long window) {
         Settings instance = Settings.getInstance();
-        float scale = instance.retrieveFloat("cursorScale", 0.4f);
+        float scale = instance.retrieveFloat(SETTINGS_STRING, 0.4f);
         try {
             setCustomCursor(window, scale);
         } catch (IOException e) {
@@ -226,7 +229,7 @@ public class Cursor {
     }
 
     /**
-     * Whether the cursor was dragged a little amount
+     * Whether the cursor was dragged a little amount.
      *
      * @return {@code true} if the cursor was dragged a little amount
      */

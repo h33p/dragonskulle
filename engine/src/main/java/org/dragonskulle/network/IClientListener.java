@@ -31,6 +31,9 @@ public interface IClientListener {
      */
     void connectedToServer(int netID);
 
+    /** Host started the game. */
+    void hostStartedGame();
+
     /**
      * Error.
      *

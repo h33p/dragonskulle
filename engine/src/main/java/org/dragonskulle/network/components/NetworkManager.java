@@ -28,15 +28,30 @@ import org.dragonskulle.network.ServerClient;
 public class NetworkManager extends Component implements INetworkUpdate, ILateNetworkUpdate {
 
     /** Simple client connection result handler. */
-    public static interface IConnectionResultEvent {
+    public interface IConnectionResultEvent {
         /**
          * Handle the connection result event.
          *
-         * @param gameScene scene in which the game will be
          * @param manager network manager which the event is called from
          * @param netID allocated network ID. If it's negative, connection failed
          */
+        void handle(NetworkManager manager, int netID);
+    }
+
+    public interface IHostStartedGameEvent {
+        /**
+         * Handle the host started game event
+         *
+         * @param gameScene scene in which the game will be
+         * @param manager network manager which the event is called from
+         * @param netID allocated network ID.
+         */
         void handle(Scene gameScene, NetworkManager manager, int netID);
+    }
+
+    public interface IHostClosedGameEvent {
+        /** Handle the host ended game event */
+        void handle();
     }
 
     /** Simple server client connection handler interface. */
@@ -51,8 +66,20 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(Scene gameScene, NetworkManager manager, ServerClient client);
     }
 
+    /** Simple server client connection handler interface. */
+    public interface IClientLoadedEvent {
+        /**
+         * Handle client connection on the server.
+         *
+         * @param gameScene scene in which the game will be run
+         * @param manager network manager which the event is called from
+         * @param client newly connected network client
+         */
+        void handle(Scene gameScene, NetworkManager manager, ServerClient client);
+    }
+
     /** Ran on game start. */
-    public static interface IGameStartEvent {
+    public interface IGameStartEvent {
         /**
          * Handle game start event.
          *
@@ -61,8 +88,17 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(NetworkManager manager);
     }
 
+    public interface IGameEndEvent {
+        /**
+         * Handle game end event.
+         *
+         * @param manager network manager which the event is called from
+         */
+        void handle(NetworkManager manager);
+    }
+
     /** Builder interface, used for networked scene building. */
-    public static interface ISceneBuilder {
+    public interface ISceneBuilder {
         /**
          * Build a scene.
          *
@@ -114,8 +150,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
 
     @Override
     public void lateNetworkUpdate() {
-        if (mServerManager != null) mServerManager.lateNetworkUpdate();
-        else if (mClientManager != null) mClientManager.lateNetworkUpdate();
+        if (mServerManager != null) {
+            mServerManager.lateNetworkUpdate();
+        } else if (mClientManager != null) {
+            mClientManager.lateNetworkUpdate();
+        }
     }
 
     /**
@@ -137,9 +176,16 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      * @param port network port to connect to
      * @param resultHandler connection result callback
      */
-    public void createClient(String ip, int port, IConnectionResultEvent resultHandler) {
+    public void createClient(
+            String ip,
+            int port,
+            IConnectionResultEvent resultHandler,
+            IHostStartedGameEvent startHandler,
+            IHostClosedGameEvent closedHandler) {
         if (mClientManager == null && mServerManager == null) {
-            mClientManager = new ClientNetworkManager(this, ip, port, resultHandler);
+            mClientManager =
+                    new ClientNetworkManager(
+                            this, ip, port, resultHandler, startHandler, closedHandler);
         }
     }
 
@@ -148,14 +194,26 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
+     * @param loadHandler callback that gets called on every client connection when it loads into
+     *     game scene.
      * @param startEventHandler callback that gets called when the game starts
      */
     public void createServer(
-            int port, IConnectedClientEvent connectionHandler, IGameStartEvent startEventHandler) {
+            int port,
+            IConnectedClientEvent connectionHandler,
+            IClientLoadedEvent loadHandler,
+            IGameStartEvent startEventHandler,
+            IGameEndEvent endEventHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
                 mServerManager =
-                        new ServerNetworkManager(this, port, connectionHandler, startEventHandler);
+                        new ServerNetworkManager(
+                                this,
+                                port,
+                                connectionHandler,
+                                loadHandler,
+                                startEventHandler,
+                                endEventHandler);
             } catch (IOException e) {
                 e.printStackTrace();
             }

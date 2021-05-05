@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -15,6 +16,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -26,7 +28,7 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.map.MapEffects.HighlightSelection;
+import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -34,6 +36,7 @@ import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -43,6 +46,7 @@ import org.joml.Matrix2f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.joml.Vector4f;
 
 /**
  * This is the class which contains all the needed data to play a game.
@@ -73,7 +77,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** The colour of the player. */
     @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
 
-    @Getter private HighlightSelection mPlayerHighlightSelection;
+    @Getter private Vector4f mPlayerHighlightSelection;
+
+    /** Store a reference to the {@link MapEffects} component. */
+    private Reference<MapEffects> mMapEffects;
 
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = null;
@@ -89,7 +96,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
-    private static final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 2;
     /** How frequently the tokens should be added. */
     private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
@@ -106,6 +113,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter private transient ClientRequest<StatData> mClientStatRequest;
     /** Used by the client to request that a building be sold. */
     @Getter private transient ClientRequest<SellData> mClientSellRequest;
+    /** Sent by the server to tell clients that an attack is happening. */
+    @Getter private transient ServerEvent<AttackData> mServerAttackEvent;
 
     /** The base constructor for player. */
     public Player() {}
@@ -127,6 +136,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
         mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
         mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
+
+        mServerAttackEvent = new ServerEvent<>(new AttackData(), this::attackEffect);
 
         getNetworkManager().getIdSingletons(getNetworkObject().getOwnerId()).register(this);
 
@@ -208,6 +219,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 angleBetween = 0;
             }
             Vector2f axial = createCoordinates(angleBetween);
+            if (axial == null) {
+                continue;
+            }
             int x = (int) axial.x;
             int y = (int) axial.y;
             Building buildingToBecomeCapital = createBuilding(x, y, true);
@@ -224,35 +238,73 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        Building buildingToBecomeCapital =
-                getMap().getAllTiles()
-                        .map(tile -> createBuilding(tile.getQ(), tile.getR(), true))
-                        .filter(building -> building != null)
-                        .findFirst()
-                        .orElse(null);
-
-        if (buildingToBecomeCapital == null) {
+        List<HexagonTile> buildable =
+                getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
+        if (buildable.isEmpty()) {
             // Cannot add a capital
             setOwnsCapital(false);
             log.severe("Disconnecting");
             getGameObject().destroy();
 
         } else {
+            Random random = new Random();
+            HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
+            Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
+            if (capital == null) {
+                log.info("Failed to create capital");
+                return;
+            }
+            capital.setCapital(true);
 
-            buildingToBecomeCapital.setCapital(true);
             mGameState.get().getNumCapitalsStanding().add(1);
             log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
-            return;
         }
+    }
+
+    /**
+     * Determines if for a given player if this tile is buildable upon.
+     *
+     * @param tile The {@link HexagonTile} to check for
+     * @return true if buildable, false otherwise
+     */
+    private boolean isBuildable(HexagonTile tile) {
+
+        if (getMap() == null) {
+            log.warning("Map is null.");
+            return false;
+        }
+
+        if (tile.isClaimed()) {
+            log.info("Tile already claimed.");
+            return false;
+        }
+
+        if (tile.hasBuilding()) {
+            log.info("Building already on tile.");
+            return false;
+        }
+
+        if (getMap().isIsland(tile)) {
+            log.warning("This is an island and a capital cannot be placed here");
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Will create the coordinates to test
      *
      * @param angleBetween The angle to add which states how far away a player should be
-     * @return A {@code Vector2f} with the coordinates to use
+     * @return A {@link Vector2f} with the coordinates to use
      */
     private Vector2f createCoordinates(float angleBetween) {
+
+        if (!Reference.isValid(mGameState)) {
+            log.warning("Game State does not exist");
+            return null;
+        }
+
         final int maxPlayers = mGameState.get().getNumPlayers().get();
 
         float angleOfCircle = 360f / (maxPlayers + 1);
@@ -321,8 +373,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                 // Reduce the cumulative time by the TOKEN_TIME.
                 mCumulativeTokenTime -= TOKEN_TIME;
-
-                log.info("Tokens at: " + mTokens.get());
             }
         }
     }
@@ -332,6 +382,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param qPos The q position of the building.
      * @param rPos The r position of the building.
+     * @param checkIsland {@code true} when we don't want to place on an Island otherwise {@code
+     *     false}
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
     private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
@@ -574,7 +626,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Check if the {@link HexagonTile}'s owner is the player
      *
-     * @param tile The {@code HexagonTile} to check
+     * @param tile The {@link HexagonTile} to check
      * @return {@code true} if the Player owns the tile
      */
     public boolean isClaimingTile(HexagonTile tile) {
@@ -607,6 +659,24 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public HexagonMap getMap() {
         if (!Reference.isValid(mMap)) return null;
         return mMap.get();
+    }
+
+    /**
+     * Get whether the player is currently in the attack cooldown.
+     *
+     * @return Whether the player is in the attack cooldown period.
+     */
+    public boolean inCooldown() {
+        return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+    }
+
+    /**
+     * Get the time left in the cooldown period.
+     *
+     * @return The remaining time to wait.
+     */
+    public float getRemainingCooldown() {
+        return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
     }
 
     /**
@@ -668,10 +738,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
+        building.setSellPrice(descriptor.getSellPrice());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
-        log.info("Stats on building to be added: " + building.getAttack()); // NOT DOING THA THING
-        log.info("Added building.");
+        log.warning("Added building.");
         return true;
     }
 
@@ -692,6 +762,38 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
         return tile.isBuildable(this);
+    }
+
+    /** Invoke animation when an attack is being performed. */
+    void attackEffect(AttackData data) {
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse AttackData: Map is null.");
+            return;
+        }
+
+        Building attacker = data.getAttacker(map);
+        if (attacker == null) {
+            log.warning("Unable to parse AttackData: attacking building is null.");
+            return;
+        }
+
+        Building defender = data.getDefender(map);
+        if (defender == null) {
+            log.warning("Unable to parse AttackData: defending building is null.");
+            return;
+        }
+
+        MapEffects fx = getMapEffects();
+
+        if (fx == null) {
+            log.warning("Map effects was null.");
+            return;
+        }
+
+        fx.pulseHighlight(attacker, StandardHighlightType.PLACE.asSelection(), 0.2f, 0.5f, 2f);
+        fx.pulseHighlight(defender, StandardHighlightType.INVALID.asSelection(), 0.2f, 0.5f, 2f);
+        attacker.attackEffect(defender, 1.5f);
     }
 
     /**
@@ -749,8 +851,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         log.info("Attacking");
 
-        // ATTACK!!! (Sorry...)
-        mTokens.subtract(defender.getAttackCost());
+        mLastAttack.set(getNetworkManager().getServerTime());
+
+        // ATTACK!
+        mTokens.subtract(attacker.getAttackCost());
+
+        float lockTime = Engine.getInstance().getCurTime() + 1f;
+
+        attacker.getActionLockTime().set(lockTime);
+        defender.getActionLockTime().set(lockTime);
+
+        mServerAttackEvent.invoke((data) -> data.setData(attacker, defender));
+
+        // TODO: use Future to delay the actual attack until the animation plays
+
         boolean won;
         if (defender.getOwner().hasLost()) won = true;
         else won = attacker.attack(defender);
@@ -809,14 +923,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you have the cash
-        if (mTokens.get() < defender.getAttackCost()) {
-            log.warning("You don't have the cash");
+        if (mTokens.get() < attacker.getAttackCost()) {
+            log.warning("You don't have the cash to attack.");
             return false;
         }
 
         // Checks you own the building
         if (isBuildingOwner(attacker) == false) {
-            log.info("It's not your building");
+            log.info("It's not your building.");
             return false;
         }
 
@@ -832,13 +946,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // Checks if you're in cooldown
-        if (getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN) {
-            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
+        if (attacker.isActionLocked() || defender.isActionLocked()) {
+            log.fine("One of the buildings is action locked.");
             return false;
         }
 
-        mLastAttack.set(getNetworkManager().getServerTime());
+        // Checks if you're in cooldown
+        if (inCooldown()) {
+            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
+            return false;
+        }
 
         return true;
     }
@@ -889,7 +1006,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Adds the tokens
-        mTokens.add(Building.SELL_PRICE);
+        mTokens.add(building.getSellPrice());
 
         // Remove the building
         building.remove();
@@ -907,6 +1024,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (building == null) {
             log.warning("building is null.");
+            return false;
+        }
+
+        if (building.isActionLocked()) {
+            log.fine("Action locked.");
             return false;
         }
 
@@ -972,7 +1094,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to change the stat was successful.
      */
     private boolean statAttempt(Building building, StatType statType) {
-        if (statCheck(building, statType) == false) {
+        if (!statCheck(building, statType)) {
             log.info("Unable to pass stat check.");
             return false;
         }
@@ -999,6 +1121,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (building == null) {
             log.warning("Building is null.");
+            return false;
+        }
+
+        if (building.isActionLocked()) {
+            log.fine("Action locked.");
             return false;
         }
 
@@ -1046,17 +1173,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This will return whether the game has ended and no further actions can take place.
      *
-     * <p>This method includes {@link hasLost()} check.
+     * <p>This method includes {@link #hasLost()} check.
      *
      * @return {@code true} if the game has has ended, {@code false} if not
      */
     public boolean gameEnd() {
         if (hasLost()) {
+            for (Reference<Building> building : getOwnedBuildings()) {
+                if (!Reference.isValid(building)) continue;
+                // Remove the building
+                building.get().remove();
+            }
+
             return true;
         }
 
         if (!Reference.isValid(mGameState)) {
-            mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+            Scene activeScene = Scene.getActiveScene();
+
+            if (activeScene != null) {
+                mGameState = activeScene.getSingletonRef(GameState.class);
+            }
         }
 
         return Reference.isValid(mGameState) && !mGameState.get().isInGame();
@@ -1089,5 +1226,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .orElse(null);
 
         return mCapital != null ? mCapital.get() : null;
+    }
+
+    /**
+     * Get the {@link MapEffects}.
+     *
+     * <p>If {@link #mMapEffects} is not valid, it will attempt to get a valid MapEffects.
+     *
+     * @return The {@link MapEffects}; otherwise {@code null}.
+     */
+    public MapEffects getMapEffects() {
+        if (!Reference.isValid(mMapEffects)) {
+            MapEffects mapEffects = Scene.getActiveScene().getSingleton(MapEffects.class);
+
+            if (mapEffects == null) return null;
+            mMapEffects = mapEffects.getReference(MapEffects.class);
+        }
+
+        return mMapEffects.get();
     }
 }

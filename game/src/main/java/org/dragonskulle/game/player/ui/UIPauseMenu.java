@@ -13,7 +13,12 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 
 /**
@@ -61,7 +66,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     private GameObject mQuitConfirmContainer;
     /** Used to grey out the background. */
     private UIRenderable mBackground;
-    /** Text displayed at the end screen. */
+    /** TextUtils displayed at the end screen. */
     private UITextRect mEndGameRect;
 
     /** Stores the {@link Screen} the {@link HumanPlayer} was previously on. */
@@ -93,6 +98,11 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mEndGameContainer.setEnabled(mPaused && state == State.END_GAME);
         mQuitConfirmContainer.setEnabled(mPaused && state == State.QUIT_CONFIRM);
         mCurrentState = state;
+
+        if (state == State.END_GAME && Reference.isValid(mHumanPlayer)) {
+            mPreviousScreen = Screen.DEFAULT_SCREEN;
+            mHumanPlayer.get().switchScreen(Screen.DEFAULT_SCREEN);
+        }
     }
 
     /** Toggle the main pause menu visibility. */
@@ -149,7 +159,12 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                             switchToState(State.SETTINGS);
                         });
 
-        UIButton exit = new UIButton("Quit", (__, ___) -> onClickQuit());
+        String leaveText = "Quit";
+        if (Reference.isValid(mNetworkManager) && mNetworkManager.get().isServer()) {
+            leaveText = "End Game";
+        }
+
+        UIButton exit = new UIButton(leaveText, (__, ___) -> onClickQuit());
 
         UIManager.getInstance()
                 .buildVerticalUi(mMenuContainer, 0.3f, 0, 1f, title, resume, settings, exit);
@@ -212,13 +227,12 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
                                             0.3f,
                                             0.7f,
                                             new UITextRect("Are you sure?"),
-                                            new UIText("Unsaved progress will be lost."),
+                                            new UIText("Any progress will be lost."),
                                             new UIButton(
                                                     "Yes",
                                                     (__, ___) -> {
                                                         if (Reference.isValid(mNetworkManager)) {
                                                             mNetworkManager.get().closeInstance();
-                                                            ;
                                                         } else {
                                                             log.severe(
                                                                     "Unable to get network manager.");
@@ -261,7 +275,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /**
      * End the game.
      *
-     * <p>This is a supermethod for {@link endGame()}, that accepts an optional label to be
+     * <p>This is a supermethod for {@link #endGame()}, that accepts an optional label to be
      * displayed in the end screen.
      *
      * @param label label to display on the end screen.
@@ -270,6 +284,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         if (Reference.isValid(mEndGameRect.getLabelText())) {
             mEndGameRect.getLabelText().get().setText(label);
         }
+
         endGame();
     }
 

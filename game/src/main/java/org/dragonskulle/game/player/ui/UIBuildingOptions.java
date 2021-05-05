@@ -3,6 +3,7 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -10,7 +11,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
-import org.dragonskulle.components.lambda.LambdaFixedUpdate;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
@@ -25,7 +25,6 @@ import org.dragonskulle.ui.UIFlatImage;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.ui.UIText;
-import org.dragonskulle.ui.UITextRect;
 
 /**
  * The UI Component to display the pre-defined placeable buildings.
@@ -36,15 +35,21 @@ import org.dragonskulle.ui.UITextRect;
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Setter private BuildingDescriptor mSelectedBuildingDescriptor;
-    @Setter @Getter private Reference<UITextRect> mDescriptorTextRef = new Reference<>(null);
-    private Reference<GameObject> mPossibleBuildingComponent;
-    @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
+    @Setter
+    private BuildingDescriptor mSelectedBuildingDescriptor = PredefinedBuildings.BASE;
+    @Setter
+    private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
-    @Setter private Reference<GameObject> mVisibleDescriptorHint = new Reference<>(null);
-    @Getter private final UIShopSection mParent;
+    @Getter
+    private final UIShopSection mParent;
     private Reference<Player> mPlayerReference;
-    @Getter @Setter private int mTokens = 0;
+    @Getter
+    @Setter
+    private int mTokens = 0;
+
+    private Reference<UIButton> mBuyButton;
+
+    private Reference<UIDescription> mDescription;
 
     /**
      * Constructor.
@@ -55,7 +60,9 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
+    /**
+     * User-defined destroy method, this is what needs to be overridden instead of destroy.
+     */
     @Override
     protected void onDestroy() {}
 
@@ -65,68 +72,42 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     @Override
     public void onStart() {
-        mPossibleBuildingComponent =
-                getGameObject()
-                        .buildChild(
-                                "possible_buildings",
-                                new TransformUI(),
-                                (self) -> {
-                                    TransformUI t = self.getTransform(TransformUI.class);
-                                    UIManager manager = UIManager.getInstance();
-                                    mBuildingsCanPlace = PredefinedBuildings.getAll();
-                                    mBuildingsCanPlaceButtons =
-                                            mBuildingsCanPlace.stream()
-                                                    .map(this::buildPredefinedBuildingBox)
-                                                    .collect(Collectors.toList());
+        // Add the buy button.
+        GameObject buttonObject = new GameObject("build_button", new TransformUI());
+        UIButton button = new UIButton("Build", this::buildOnClick);
+        mBuyButton = button.getReference(UIButton.class);
+        buttonObject.addComponent(button);
+        TransformUI transformUI = buttonObject.getTransform(TransformUI.class);
+        transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
 
-                                    manager.buildGridUI(
-                                            self,
-                                            4,
-                                            -0.08f,
-                                            0.2f,
-                                            0.41f,
-                                            0.25f,
-                                            mBuildingsCanPlaceButtons);
+        // Add the description box.
+        UIDescription description = new UIDescription();
+        mDescription = description.getReference(UIDescription.class);
+        getGameObject().addComponent(description);
 
-                                    self.buildChild(
-                                            "build_selected_tile",
-                                            new TransformUI(true),
-                                            (me) -> {
-                                                UIButton button =
-                                                        new UIButton("Build", this::buildOnClick);
-                                                me.addComponent(button);
-                                                TransformUI transformUI =
-                                                        me.getTransform(TransformUI.class);
-                                                transformUI.setParentAnchor(
-                                                        0.16f, 0.6f, 0.86f, 1.1f);
-                                            });
-                                });
-
+        // Add the building selection buttons.
         getGameObject()
                 .buildChild(
-                        "descriptor_hint",
+                        "possible_buildings",
                         new TransformUI(),
                         (self) -> {
-                            TransformUI hintTransform = self.getTransform(TransformUI.class);
-                            hintTransform.setParentAnchor(-0.05f, -0.7f, 1.05f, -0.05f);
+                            UIManager manager = UIManager.getInstance();
+                            mBuildingsCanPlace = PredefinedBuildings.getAll();
+                            mBuildingsCanPlaceButtons =
+                                    mBuildingsCanPlace.stream()
+                                            .map(this::buildPredefinedBuildingBox)
+                                            .collect(Collectors.toList());
 
-                            BuildingDescriptor descriptor = PredefinedBuildings.BASE;
-                            UITextRect component =
-                                    new UITextRect(
-                                            String.format(
-                                                    "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Level: %d\nCost: %d",
-                                                    descriptor.getName().toUpperCase(),
-                                                    descriptor.getAttack(),
-                                                    descriptor.getDefence(),
-                                                    descriptor.getTokenGenerationLevel(),
-                                                    descriptor.getCost()));
-                            component.setRectTexture(
-                                    UIManager.getInstance()
-                                            .getAppearance()
-                                            .getHintTexture()
-                                            .clone());
-                            self.addComponent(component);
-                            setDescriptorTextRef(component.getReference(UITextRect.class));
+                            manager.buildGridUI(
+                                    self,
+                                    3,
+                                    0.07f,
+                                    0.2f,
+                                    0.35f + 0.6f,
+                                    0.3f,
+                                    mBuildingsCanPlaceButtons);
+
+                            self.addChild(buttonObject);
                         });
     }
 
@@ -147,7 +128,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                                     mPreviousLock.get().setLockPressed(false);
                                 }
                                 if (!mSelectedBuildingDescriptor.equals(descriptor)) {
-                                    showDescriptorHint(descriptor);
+                                    updateDescription(descriptor);
                                 }
                                 setPreviousLock(me.getReference(UIButton.class));
                                 setSelectedBuildingDescriptor(descriptor);
@@ -161,15 +142,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
                 setSelectedBuildingDescriptor(descriptor);
                 but.setLockPressed(true);
             }
-            go.addComponent(
-                    new LambdaFixedUpdate(
-                            (dt) -> {
-                                if (descriptor.getCost() > mTokens) {
-                                    but.disable();
-                                } else {
-                                    but.enable();
-                                }
-                            }));
 
             but.setRectTexture(GameUIAppearance.getSquareButtonTexture());
             go.addComponent(but);
@@ -191,73 +163,100 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     }
 
     /**
-     * Sets the visible descriptor in the 'hint'ish box.
+     * Update the description.
      *
-     * @param descriptor the descriptor
+     * @param descriptor The descriptor to be shown.
      */
-    private void showDescriptorHint(BuildingDescriptor descriptor) {
-        log.info("showing hint");
-        Reference<UITextRect> descriptorTextRef = getDescriptorTextRef();
-        if (Reference.isValid(descriptorTextRef)) {
-            Reference<UIText> labelText = descriptorTextRef.get().getLabelText();
-            if (Reference.isValid(labelText)) {
-                String txt =
-                        String.format(
-                                "%s\nAttack Strength: %d\nDefence Strength: %d\nGeneration Value: %d\nCost: %d",
-                                descriptor.getName().toUpperCase(),
-                                descriptor.getAttack(),
-                                descriptor.getDefence(),
-                                descriptor.getTokenGenerationLevel(),
-                                descriptor.getCost());
-
-                labelText.get().setText(txt);
-            }
-        }
+    private void updateDescription(BuildingDescriptor descriptor) {
+        if (!Reference.isValid(mDescription)) return;
+        UIDescription description = mDescription.get();
+        description.update(descriptor);
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        ensurePlayerReference();
         updateTokens();
+        updateBuyButton();
     }
 
-    /** Update the local tokens. */
+    /**
+     * Enable and disable the buy button.
+     */
+    private void updateBuyButton() {
+        Player player = getPlayer();
+        if (player == null) return;
+
+        if (!Reference.isValid(mBuyButton)) return;
+        if (mSelectedBuildingDescriptor == null) return;
+
+        UIButton button = mBuyButton.get();
+        int cost = mSelectedBuildingDescriptor.getCost();
+
+        if (!Reference.isValid(button.getLabelText())) return;
+        UIText label = button.getLabelText().get();
+
+        if (player.getTokens().get() >= cost) {
+            button.setEnabled(true);
+            label.setText("Build");
+        } else {
+            button.setEnabled(false);
+            label.setText("[TOO EXPENSIVE]");
+        }
+    }
+
+    /**
+     * Update the local tokens.
+     */
     private void updateTokens() {
-        if (Reference.isValid(mPlayerReference)) {
-            setTokens(mPlayerReference.get().getTokens().get());
-        }
-    }
-
-    /** Ensure that the player reference isValid, otherwise fetch. */
-    private void ensurePlayerReference() {
-        if (Reference.isInvalid(mPlayerReference)) {
-            mPlayerReference =
-                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
-        }
+        Player player = getPlayer();
+        if (player == null) return;
+        setTokens(player.getTokens().get());
     }
 
     /**
      * The onClick handler for the build button.
      *
-     * @param __ ignored
+     * @param __  ignored
      * @param ___ ignored
      */
     private void buildOnClick(UIButton __, float ___) {
         if (getParent().getParent().mGetHexChosen.getHex() != null) {
-            Reference<Player> player =
-                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
-            if (Reference.isValid(player)) {
-                player.get()
-                        .getClientBuildRequest()
-                        .invoke(
-                                new BuildData(
-                                        getParent().getParent().mGetHexChosen.getHex(),
-                                        PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
+            Player player = getParent().getParent().mGetPlayer.getPlayer();
+            if (player == null) return;
 
-                getParent().markDidBuild(true);
-            }
+            // Ensure the player can afford to build.
+            int cost = mSelectedBuildingDescriptor.getCost();
+            if (cost > player.getTokens().get()) return;
+
+            player.getClientBuildRequest()
+                    .invoke(
+                            new BuildData(
+                                    getParent().getParent().mGetHexChosen.getHex(),
+                                    PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
+
+            getParent().markDidBuild(true);
 
             getParent().getParent().mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
         }
+    }
+
+    /**
+     * Get the player.
+     *
+     * @return The {@link Player}, or {@code null}.
+     */
+    private Player getPlayer() {
+        if (!Reference.isValid(mPlayerReference)) {
+            // Attempt to get a valid reference.
+            Player player = getParent().getParent().mGetPlayer.getPlayer();
+            if (player == null) return null;
+            mPlayerReference = player.getReference(Player.class);
+
+            // If the reference is still invalid, return null.
+            if (!Reference.isValid(mPlayerReference)) return null;
+        }
+
+        // Return the Player.
+        return mPlayerReference.get();
     }
 }
