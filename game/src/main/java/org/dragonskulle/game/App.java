@@ -211,11 +211,6 @@ public class App implements NativeResource {
         addDebugUi(mainMenu);
 
         TemplateManager templates = new TemplateManager();
-
-        for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
-            log.info(obj.getName());
-        }
-
         templates.addAllObjects(
                 mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
                         .toArray(GameObject[]::new));
