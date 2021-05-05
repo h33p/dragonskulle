@@ -6,7 +6,6 @@ import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_VERTEX;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import org.joml.Vector2fc;
 import org.joml.Vector3fc;
@@ -17,7 +16,7 @@ import org.joml.Vector4fc;
  *
  * @author Aurimas Blažulionis
  */
-public abstract class Vertexc implements Serializable {
+public abstract class Vertexc {
     public static final int POS_OFFSET = 0;
     public static final int NORMAL_OFFSET = POS_OFFSET + 3 * 4;
     public static final int COL_OFFSET = NORMAL_OFFSET + 3 * 4;

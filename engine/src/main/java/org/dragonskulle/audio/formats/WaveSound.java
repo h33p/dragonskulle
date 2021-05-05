@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -26,7 +25,7 @@ import org.lwjgl.openal.AL11;
  *     then buffered using alBufferData.
  */
 @Log
-public class WaveSound extends Sound implements Serializable {
+public class WaveSound extends Sound {
 
     private int mSampleRate;
     private int mFormat;

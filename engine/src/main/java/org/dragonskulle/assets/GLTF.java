@@ -657,10 +657,10 @@ public class GLTF implements NativeResource {
                             float fov = parseFloat(persp, "yfov", 45f);
                             float zfar = parseFloat(persp, "zfar", 100f);
                             float znear = parseFloat(persp, "znear", 0.01f);
-                            camera.mProjection = Camera.Projection.PERSPECTIVE;
-                            camera.mFov = fov;
-                            camera.mFarPlane = zfar;
-                            camera.mNearPlane = znear;
+                            camera.setProjection(Camera.Projection.PERSPECTIVE);
+                            camera.setFov(fov);
+                            camera.setFarPlane(zfar);
+                            camera.setNearPlane(znear);
                         }
                         break;
                     case "orthographic":
@@ -669,10 +669,10 @@ public class GLTF implements NativeResource {
                             float size = parseFloat(persp, "ymag", 10f);
                             float zfar = parseFloat(persp, "zfar", 100f);
                             float znear = parseFloat(persp, "znear", 0.01f);
-                            camera.mProjection = Camera.Projection.ORTHOGRAPHIC;
-                            camera.mOrthographicSize = size;
-                            camera.mFarPlane = zfar;
-                            camera.mNearPlane = znear;
+                            camera.setProjection(Camera.Projection.ORTHOGRAPHIC);
+                            camera.setOrthographicSize(size);
+                            camera.setFarPlane(zfar);
+                            camera.setNearPlane(znear);
                         }
                         break;
                     default:

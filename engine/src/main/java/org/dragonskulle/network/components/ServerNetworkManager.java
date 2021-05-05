@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -205,7 +206,7 @@ public class ServerNetworkManager {
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
-    @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
+    private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
     /** Stores per-owner singletons. Can be looked up with getIdSingletons */
     private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
@@ -403,6 +404,15 @@ public class ServerNetworkManager {
             mIdSingletons.put(id, store);
         }
         return store;
+    }
+
+    /**
+     * Get a stream of network objects on the server.
+     *
+     * @return a stream containing unfiltered references to network objects.
+     */
+    public Stream<Reference<NetworkObject>> getNetworkObjects() {
+        return mNetworkObjects.values().stream().map(ServerObjectEntry::getNetworkObject);
     }
 
     /** Network update, called by {@link NetworkManager}. */

@@ -327,7 +327,7 @@ public class AimerAi extends AiPlayer {
             if (!hexagonTile.get().isClaimed()) {
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
-            } else if (!getPlayer().isClaimingTile(hexagonTile.get())) {
+            } else if (!getPlayer().hasClaimedTile(hexagonTile.get())) {
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
             } else {
@@ -348,7 +348,7 @@ public class AimerAi extends AiPlayer {
             mPath.push(firstElement);
             return;
         }
-        if (getPlayer().isClaimingTile(mGraph.getNode(firstElement).getHexTile().get())) {
+        if (getPlayer().hasClaimedTile(mGraph.getNode(firstElement).getHexTile().get())) {
 
             mGone.push(firstElement);
             mNodePreviouslyOn = mGraph.getNode(firstElement);
@@ -490,7 +490,7 @@ public class AimerAi extends AiPlayer {
                                 tile -> {
                                     if (tile.hasBuilding()
                                             && tile.getBuilding().isCapital()
-                                            && opponentPlayer.isClaimingTile(tile)) {
+                                            && opponentPlayer.hasClaimedTile(tile)) {
                                         tileToAim[0] = tile;
                                         return true;
                                     } else {
@@ -505,7 +505,7 @@ public class AimerAi extends AiPlayer {
                             .anyMatch(
                                     tile -> {
                                         if (tile.hasBuilding()
-                                                && opponentPlayer.isClaimingTile(tile)) {
+                                                && opponentPlayer.hasClaimedTile(tile)) {
                                             tileToAim[0] = tile;
                                             return true;
                                         } else {

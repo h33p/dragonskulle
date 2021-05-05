@@ -352,7 +352,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     }
 
     @Override
-    protected void onNetworkInitialize() {
+    protected void onNetworkInitialise() {
         Random rand = new Random();
         mTiles = new HexagonTileStore(mSize, rand.nextInt(), this);
         checkIslands();

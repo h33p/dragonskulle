@@ -131,11 +131,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * We need to initialise client requests here, since java does not like to serialise lambdas.
      */
     @Override
-    protected void onNetworkInitialize() {
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
-        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
+    protected void onNetworkInitialise() {
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildRequest);
+        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackRequest);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::statRequest);
+        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellRequest);
 
         mServerAttackEvent = new ServerEvent<>(new AttackData(), this::attackEffect);
 
@@ -629,7 +629,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The {@link HexagonTile} to check
      * @return {@code true} if the Player owns the tile
      */
-    public boolean isClaimingTile(HexagonTile tile) {
+    public boolean hasClaimedTile(HexagonTile tile) {
         if (tile == null) {
             return false;
         }
@@ -680,15 +680,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to place a {@link
-     * Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #buildAttempt(HexagonTile)}.
+     * Process and parse a request in which the player wishes to place a {@link Building}.
      *
      * @param data The {@link BuildData} sent by the client.
      */
-    void buildEvent(BuildData data) {
+    private void buildRequest(BuildData data) {
         if (gameEnd()) {
             return;
         }
@@ -797,15 +793,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to attack a {@link
-     * Building} from another Building.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #attackAttempt(Building, Building)}.
+     * Process and parse a request in which the player wishes to attack a {@link Building} from
+     * another Building.
      *
      * @param data The {@link AttackData} sent by the client.
      */
-    void attackEvent(AttackData data) {
+    private void attackRequest(AttackData data) {
 
         HexagonMap map = getMap();
         if (map == null) {
@@ -961,15 +954,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to sell a {@link
-     * Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #sellAttempt(Building)}.
+     * Process and parse a request in which the player wishes to sell a {@link Building}.
      *
      * @param data The {@link SellData} sent by the client.
      */
-    void sellEvent(SellData data) {
+    private void sellRequest(SellData data) {
 
         if (gameEnd()) {
             return;
@@ -1047,15 +1036,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to increase a specific
-     * {@link StatType} of a {@link Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #statAttempt(Building, StatType)}.
+     * Process and parse a request in which the player wishes to increase a specific {@link
+     * StatType} of a {@link Building}.
      *
      * @param data The {@link StatData} sent by the client.
      */
-    void statEvent(StatData data) {
+    private void statRequest(StatData data) {
 
         if (gameEnd()) {
             return;
