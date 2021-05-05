@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ui;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -35,17 +34,12 @@ import org.dragonskulle.ui.UIText;
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
-    @Setter
-    private BuildingDescriptor mSelectedBuildingDescriptor = PredefinedBuildings.BASE;
-    @Setter
-    private Reference<UIButton> mPreviousLock = new Reference<>(null);
+    @Setter private BuildingDescriptor mSelectedBuildingDescriptor = PredefinedBuildings.BASE;
+    @Setter private Reference<UIButton> mPreviousLock = new Reference<>(null);
     private List<IUIBuildHandler> mBuildingsCanPlaceButtons;
-    @Getter
-    private final UIShopSection mParent;
+    @Getter private final UIShopSection mParent;
     private Reference<Player> mPlayerReference;
-    @Getter
-    @Setter
-    private int mTokens = 0;
+    @Getter @Setter private int mTokens = 0;
 
     private Reference<UIButton> mBuyButton;
 
@@ -60,9 +54,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         this.mParent = mParent;
     }
 
-    /**
-     * User-defined destroy method, this is what needs to be overridden instead of destroy.
-     */
+    /** User-defined destroy method, this is what needs to be overridden instead of destroy. */
     @Override
     protected void onDestroy() {}
 
@@ -179,9 +171,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         updateBuyButton();
     }
 
-    /**
-     * Enable and disable the buy button.
-     */
+    /** Enable and disable the buy button. */
     private void updateBuyButton() {
         Player player = getPlayer();
         if (player == null) return;
@@ -204,9 +194,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         }
     }
 
-    /**
-     * Update the local tokens.
-     */
+    /** Update the local tokens. */
     private void updateTokens() {
         Player player = getPlayer();
         if (player == null) return;
@@ -216,7 +204,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     /**
      * The onClick handler for the build button.
      *
-     * @param __  ignored
+     * @param __ ignored
      * @param ___ ignored
      */
     private void buildOnClick(UIButton __, float ___) {
