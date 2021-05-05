@@ -21,23 +21,19 @@ import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
+import org.dragonskulle.game.lobby.Lobby;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UISettingsMenu;
-import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
-import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
-import org.dragonskulle.ui.UIInputBox;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
-import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
@@ -49,7 +45,7 @@ public class App implements NativeResource {
             AudioManager.getInstance().loadSound("country_background_short.wav");
 
     private static String sIP = "127.0.0.1";
-    private static int sPort = 7000;
+    private static int sPort = 17569;
     private static boolean sReload = false;
 
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
@@ -181,7 +177,6 @@ public class App implements NativeResource {
         Scene mainScene = createMainScene(networkManager);
         if (asServer) {
             log.info("I am the server");
-
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
@@ -221,7 +216,6 @@ public class App implements NativeResource {
                                                             }));
                                         });
                             });
-
             mainScene.addRootObject(hostGameUi);
         }
         return mainScene;
@@ -295,24 +289,15 @@ public class App implements NativeResource {
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
                         });
 
-        GameObject joinUi =
-                new GameObject(
-                        "joinUi",
-                        false,
-                        new TransformUI(false),
-                        (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
-                        });
+        Reference<Lobby> lobby =
+                new Lobby(mainUi.getReference(), networkManager).getReference(Lobby.class);
 
-        GameObject hostUi =
+        GameObject lobbyObject =
                 new GameObject(
-                        "hostUi",
-                        false,
-                        new TransformUI(false),
+                        "lobby",
+                        true,
                         (root) -> {
-                            root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            root.getTransform(TransformUI.class).setParentAnchor(0f);
+                            root.addComponent(lobby.get());
                         });
 
         GameObject settingsUI =
@@ -339,17 +324,10 @@ public class App implements NativeResource {
                 0,
                 MENU_BASEWIDTH,
                 new UIButton(
-                        "Join Game",
+                        "Play Game",
                         (__, ___) -> {
                             mainUi.setEnabled(false);
-                            joinUi.setEnabled(true);
-                            hostUi.setEnabled(false);
-                        }),
-                new UIButton(
-                        "Host Game",
-                        (__, ___) -> {
-                            mainUi.setEnabled(false);
-                            hostUi.setEnabled(true);
+                            lobby.get().getLobbyUi().setEnabled(true);
                         }),
                 new UIButton(
                         "Settings",
@@ -359,95 +337,14 @@ public class App implements NativeResource {
                         }),
                 new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()));
 
-        final UITextRect connectingText = new UITextRect("");
-        connectingText.setEnabled(false);
-        connectingText.setOverrideAspectRatio(4f);
-        connectingText.getColour().set(0f);
-
-        UIInputBox ibox = new UIInputBox(sIP + ":" + sPort);
-
-        uiManager.buildVerticalUi(
-                joinUi,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                ibox,
-                new UIButton(
-                        "Join (Temporary)",
-                        (uiButton, __) -> {
-                            int port = sPort;
-
-                            connectingText.setEnabled(true);
-                            connectingText.getGameObject().setEnabled(true);
-
-                            try {
-                                String text = ibox.getInput();
-                                String[] elems = text.split(":");
-                                String ip = elems[0];
-                                String portText = elems.length > 1 ? elems[1] : null;
-
-                                if (portText != null) {
-                                    port = Integer.parseInt(portText);
-                                }
-
-                                connectingText.getLabelText().get().setText("Connecting...");
-
-                                networkManager
-                                        .get()
-                                        .createClient(
-                                                ip,
-                                                port,
-                                                (gameScene, manager, netID) -> {
-                                                    if (netID >= 0) {
-                                                        onConnectedClient(gameScene, manager);
-                                                    } else {
-                                                        connectingText.setEnabled(false);
-                                                        connectingText
-                                                                .getGameObject()
-                                                                .setEnabled(false);
-                                                    }
-                                                });
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                connectingText.getLabelText().get().setText("Invalid input!");
-                            }
-                        }),
-                connectingText,
-                new UIButton(
-                        "Cancel",
-                        (uiButton, __) -> {
-                            joinUi.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }));
-
-        uiManager.buildVerticalUi(
-                hostUi,
-                0.05f,
-                0f,
-                MENU_BASEWIDTH,
-                new UIButton(
-                        "Host (Temporary)",
-                        (__, ___) -> {
-                            networkManager
-                                    .get()
-                                    .createServer(
-                                            sPort, this::onClientConnected, this::onGameStarted);
-                        }),
-                new UIButton(
-                        "Cancel",
-                        (uiButton, __) -> {
-                            hostUi.setEnabled(false);
-                            mainUi.setEnabled(true);
-                        }));
-
         mainMenu.addRootObject(networkManagerObject);
 
         mainMenu.addRootObject(audioObject);
         mainMenu.addRootObject(gameTitle);
+        mainMenu.addRootObject(lobbyObject);
 
         mainMenu.addRootObject(mainUi);
-        mainMenu.addRootObject(hostUi);
-        mainMenu.addRootObject(joinUi);
+        lobby.get().addUiToScene(mainMenu);
         mainMenu.addRootObject(settingsUI);
 
         return mainMenu;
@@ -503,62 +400,6 @@ public class App implements NativeResource {
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());
-    }
-
-    private void onConnectedClient(Scene gameScene, NetworkManager manager) {
-        log.info("CONNECTING.");
-
-        HumanPlayer humanPlayer = new HumanPlayer(manager.getReference(NetworkManager.class));
-
-        GameObject humanPlayerObject =
-                new GameObject(
-                        "human player",
-                        (handle) -> {
-                            handle.addComponent(humanPlayer);
-                        });
-
-        gameScene.addRootObject(humanPlayerObject);
-
-        gameScene.registerSingleton(humanPlayer);
-        log.info("Registered HumanPlayer as singleton.");
-    }
-
-    /**
-     * Ran on client connected on the server.
-     *
-     * @param gameScene the game scene to run on
-     * @param manager the manager
-     * @param networkClient the network client
-     */
-    private void onClientConnected(
-            Scene gameScene, NetworkManager manager, ServerClient networkClient) {
-        int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
-    }
-
-    private void onGameStarted(NetworkManager manager) {
-        log.severe("Game Start");
-        log.warning("Spawning 'Server' Owned objects");
-        Reference<NetworkObject> obj =
-                manager.getServerManager()
-                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
-
-        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
-
-        // 6 players for now
-        gameState.get().getNumPlayers().set(6);
-
-        gameState
-                .get()
-                .registerGameEndListener(
-                        new Reference<>(
-                                (__) -> {
-                                    UIPauseMenu pauseMenu =
-                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
-                                    if (pauseMenu != null) {
-                                        pauseMenu.endGame();
-                                    }
-                                }));
     }
 
     @Override

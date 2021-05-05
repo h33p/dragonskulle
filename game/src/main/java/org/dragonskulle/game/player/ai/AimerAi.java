@@ -17,7 +17,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
 
 /**
- * An AI player which will aim for a {@code Building} of a player when viewed. This is done using
+ * An AI player which will aim for a {@link Building} of a player when viewed. This is done using
  * the A* Algorithm.
  *
  * @author Dragonskulle
@@ -161,8 +161,8 @@ public class AimerAi extends AiPlayer {
     /**
      * This will attack the next building.
      *
-     * @param nextTile The next {@code HexagonTile} to aim for.
-     * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
+     * @param nextTile The next {@link HexagonTile} to aim for.
+     * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void attack(HexagonTile nextTile, int nextNode) {
         log.info("A* Attacking");
@@ -257,8 +257,8 @@ public class AimerAi extends AiPlayer {
     /**
      * This will build the next building.
      *
-     * @param tileToBuildOn The next {@code HexagonTile} to aim for.
-     * @param nextNode The {@code Node} number for the next {@code HexagonTile}.
+     * @param tileToBuildOn The next {@link HexagonTile} to aim for.
+     * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
@@ -354,7 +354,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will set the opponent to aim for.
      *
-     * @return The {@code Player} to attack.
+     * @return The {@link Player} to attack.
      */
     private Player findOpponent() {
 
@@ -412,7 +412,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will aim for a building.
      *
-     * @param opponentPlayer The {@code Player} to aim for.
+     * @param opponentPlayer The {@link Player} to aim for.
      */
     private void aimBuilding(Player opponentPlayer) {
         if (opponentPlayer == null) {
@@ -465,8 +465,8 @@ public class AimerAi extends AiPlayer {
     /**
      * Get a tile to aim for.
      *
-     * @param opponentPlayer The {@code Player} to aim for.
-     * @return The {@code HexagonTile} to aim for.
+     * @param opponentPlayer The {@link Player} to aim for.
+     * @return The {@link HexagonTile} to aim for.
      */
     private HexagonTile getTileBuilding(Player opponentPlayer) {
 
@@ -519,7 +519,7 @@ public class AimerAi extends AiPlayer {
     /**
      * This will convert the visible tiles into a stream.
      *
-     * @return The visible {@code HexagonTile}'s as a {@code Stream}.
+     * @return The visible {@link HexagonTile}'s as a {@link Stream}.
      */
     public Stream<HexagonTile> getViewableTiles() {
 
@@ -529,11 +529,10 @@ public class AimerAi extends AiPlayer {
     /**
      * This will find the Building node for both your opponent and the capital for you.
      *
-     * @param graph The {@code Graph} to use.
-     * @param opponentPlayer The {@code Player} to aim for.
-     * @param target The target {@code HexagonTile} to aim for.
-     * @return An {@code Object} of type {@code ImportantNodes} which have the {@code Node} to start
-     *     from and go to.
+     * @param graph The {@link Graph} to use.
+     * @param opponentPlayer The {@link Player} to aim for.
+     * @param target The target {@link HexagonTile} to aim for.
+     * @return An {@link ImportantNodes} which have the {@link Node} to start from and go to.
      */
     private ImportantNodes findBuilding(Graph graph, Player opponentPlayer, HexagonTile target) {
 
@@ -548,9 +547,9 @@ public class AimerAi extends AiPlayer {
     }
 
     /**
-     * Returns the AI {@code Player}.
+     * Returns the AI {@link Player}
      *
-     * @return The {@code Player} in the {@code Reference} or {@code null} if it does not exist.
+     * @return The {@link Player} in the {@link Reference} or {@code null} if it does not exist
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayer)) {
