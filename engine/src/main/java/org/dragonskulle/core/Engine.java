@@ -292,7 +292,7 @@ public class Engine {
 
             if (present) {
                 Scene.setActiveScene(mPresentationScene);
-                UIManager.getInstance().updateHover(mPresentationScene.getEnabledComponents());
+                UIManager.getInstance().uiUpdate(mPresentationScene.getEnabledComponents());
 
                 // Call FrameUpdate on the presentation scene
                 frameUpdate((float) deltaTime);
