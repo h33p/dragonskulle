@@ -52,12 +52,12 @@ public class LobbyDiscovery {
                 final int discoverLength = UDP_DISCOVER_MAGIC.length;
                 DatagramSocket socket = new DatagramSocket(DISCOVER_PORT);
                 socket.setBroadcast(true);
-                log.info("Local lobby starting, waiting for UDP packets");
+                log.fine("Local lobby starting, waiting for UDP packets");
                 while (mRunning.get()) {
                     DatagramPacket packet =
                             new DatagramPacket(new byte[discoverLength], discoverLength);
                     socket.receive(packet);
-                    log.info("Received packet from " + packet.getAddress().getHostAddress());
+                    log.fine("Received packet from " + packet.getAddress().getHostAddress());
                     if (Arrays.equals(packet.getData(), UDP_DISCOVER_MAGIC)) {
                         DatagramPacket response =
                                 new DatagramPacket(
@@ -66,9 +66,9 @@ public class LobbyDiscovery {
                                         packet.getAddress(),
                                         packet.getPort());
                         socket.send(response);
-                        log.info("Packet was a discover packet for us, response sent");
+                        log.fine("Packet was a discover packet for us, response sent");
                     } else {
-                        log.info("Packet was not meant for us, or was corrupt");
+                        log.fine("Packet was not meant for us, or was corrupt");
                     }
                 }
             } catch (SocketException e) {
@@ -146,7 +146,7 @@ public class LobbyDiscovery {
                 DatagramPacket packet =
                         new DatagramPacket(UDP_DISCOVER_MAGIC, UDP_DISCOVER_MAGIC.length, address);
                 socket.send(packet);
-                log.info("Sent discovery packet to " + address.getHostString());
+                log.fine("Sent discovery packet to " + address.getHostString());
             }
 
             try {
@@ -155,7 +155,7 @@ public class LobbyDiscovery {
                 socket.setSoTimeout(1000);
                 socket.receive(response);
                 if (Arrays.equals(response.getData(), UDP_CONNECT_RESPONSE)) {
-                    log.info("Discovered a server!");
+                    log.fine("Discovered a server!");
                     return response.getAddress();
                 }
             } catch (IOException e) {
