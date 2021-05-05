@@ -27,9 +27,9 @@ public class PlayerType {
     }
 
     @Getter
-    private final Component mComponent;
+    private final Component[] mComponent;
 
-    public PlayerType(PlayerStyle playerStyle, Component component) {
+    public PlayerType(PlayerStyle playerStyle, Component[] component) {
         mPlayerStyle = playerStyle;
         mComponent = component;
     }

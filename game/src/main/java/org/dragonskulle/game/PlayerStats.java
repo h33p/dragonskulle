@@ -36,7 +36,7 @@ public class PlayerStats implements UIManager.IUIBuildHandler {
     @Override
     public void handleUIBuild(GameObject go) {
         final String[] content = {""};
-        final Reference[] contents = new Reference[]{new Reference<UIText>(null)};
+        final Reference[] contents = new Reference[]{new Reference<UITextRect>(null)};
         ensurePlayerReference();
         if (Reference.isValid(mPlayerReference)) {
             Player player = mPlayerReference.get();
@@ -52,7 +52,6 @@ public class PlayerStats implements UIManager.IUIBuildHandler {
         }
 
         UITextRect text = new UITextRect(content[0]);
-
         go.addComponent(text);
         contents[0] = text.getLabelText();
         if (mId != null) {

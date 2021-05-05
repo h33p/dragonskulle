@@ -48,6 +48,8 @@ import org.json.simple.parser.ParseException;
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
+    private static PlayerType mAimerAiType = new PlayerType(PlayerType.PlayerStyle.AIMER, new Component[]{new ProbabilisticAiPlayer(), new AimerAi()});
+    private static PlayerType mProbabilisticAiType = new PlayerType(PlayerType.PlayerStyle.PROBABILISTIC, new Component[]{new ProbabilisticAiPlayer()});
 
     private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
@@ -642,9 +644,9 @@ public class Lobby extends Component implements IFrameUpdate {
     /**
      * Spawns a player.
      *
-     * @param ownerId the owner id
-     * @param playerStyle    the playerStyle
-     * @param manager the manager
+     * @param ownerId     the owner id
+     * @param playerStyle the playerStyle
+     * @param manager     the manager
      */
     private static void spawnPlayer(int ownerId, PlayerType playerStyle, NetworkManager manager) {
         Reference<NetworkObject> playerObj = manager.getServerManager().spawnNetworkObject(ownerId, manager.findTemplateByName("player"));
@@ -652,7 +654,9 @@ public class Lobby extends Component implements IFrameUpdate {
             manager.getServerManager().getNonHumanPlayerIds().add(ownerId);
             if (Reference.isValid(playerObj)) {
                 if (!playerStyle.isHuman()) {
-                    playerObj.get().getGameObject().addComponent(playerStyle.getComponent());
+                    for (Component component : playerStyle.getComponent()) {
+                        playerObj.get().getGameObject().addComponent(component);
+                    }
                 }
             }
         }
@@ -709,9 +713,9 @@ public class Lobby extends Component implements IFrameUpdate {
             Random random = new Random();
             // Randomly select which AI to use
             if (random.nextFloat() > 0.5) {
-                spawnPlayer(i, new PlayerType(PlayerType.PlayerStyle.AIMER, new AimerAi()), manager);
+                spawnPlayer(i, mAimerAiType, manager);
             } else {
-                spawnPlayer(i, new PlayerType(PlayerType.PlayerStyle.PROBABILISTIC, new ProbabilisticAiPlayer()), manager);
+                spawnPlayer(i, mProbabilisticAiType, manager);
             }
         }
     }
