@@ -13,6 +13,7 @@ import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkObject;
 
 /**
  * This {@code abstract} class contains all the needed methods and variables which are needed by all
@@ -32,9 +33,6 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     /** Will hold how long the AI player has to wait until playing. */
     protected int mTimeToWait;
 
-    /** This is whether the AiPlayer is being ran on the server. */
-    private boolean mServerSide = false;
-
     /** The Random Number Generator. */
     protected Random mRandom = new Random();
 
@@ -46,11 +44,6 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
     @Override
     public void onStart() {
-
-        NetworkManager manager = Scene.getActiveScene().getSingleton(NetworkManager.class);
-        if (manager != null && manager.isServer()) {
-            mServerSide = true;
-        }
 
         // Sets up all unitialised variables
         mPlayer = getGameObject().getComponent(Player.class);
@@ -89,19 +82,12 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     @Override
     public void fixedUpdate(float deltaTime) {
         // Ensure the AI only runs on the server, and if it is its time to run.
-    	log.info("We are here.  Are we server:  " + !mServerSide );
-    	
-    	NetworkManager manager = Scene.getActiveScene().getSingleton(NetworkManager.class);
-        if (manager != null && manager.isServer()) {
-            mServerSide = true;
-        }
-        if (!mServerSide || !shouldPlayGame(deltaTime)) return;
+    	if (!shouldPlayGame(deltaTime)) return;
 
-        log.info("We aren't server");
         // Ensure the player exists and hasn't lost.
         Player player = getPlayer();
         if (player == null || player.gameEnd() || player.getNumberOfOwnedBuildings() == 0) return;
-        log.info("Are we even here");
+        
         simulateInput();
     }
 

@@ -15,6 +15,8 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.ai.AimerAi;
+import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
@@ -662,14 +664,15 @@ public class Lobby extends Component implements IFrameUpdate {
         for (int i = -1; i >= -1 * numOfAi; i--) {
             Random random = new Random();
 
+            Reference<NetworkObject> player = manager.getServerManager().spawnNetworkObject(i, manager.findTemplateByName("player"));
+            GameObject playerObj = player.get().getGameObject();
+            playerObj.addComponent(new ProbabilisticAiPlayer());
+            
             // Randomly select which AI to use
             if (random.nextFloat() > 0.5) {
-                manager.getServerManager()
-                        .spawnNetworkObject(i, manager.findTemplateByName("aStarAi"));
-            } else {
-                manager.getServerManager()
-                        .spawnNetworkObject(i, manager.findTemplateByName("aiPlayer"));
-            }
+            	playerObj.addComponent(new AimerAi());
+                
+            } 
         }
     }
 

@@ -36,9 +36,7 @@
                 2,
                 3,
                 4,
-                5,
-                6,
-                7
+                5
             ]
         }
     ],
@@ -141,29 +139,6 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.Player",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "name" : "aiPlayer",
-            "translation" : [
-                -8,
-                0,
-                0
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D",
                     "components" : [
                         {
@@ -219,33 +194,6 @@
             "name" : "building",
             "translation" : [
                 -4,
-                0,
-                0
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.player.Player",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "name" : "aStarAi",
-            "translation" : [
-                -12,
                 0,
                 0
             ]
