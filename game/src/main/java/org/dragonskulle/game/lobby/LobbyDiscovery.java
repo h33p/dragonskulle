@@ -148,7 +148,7 @@ public class LobbyDiscovery {
             try {
                 DatagramPacket response =
                         new DatagramPacket(UDP_CONNECT_RESPONSE, UDP_CONNECT_RESPONSE.length);
-                socket.setSoTimeout(1000);
+                //socket.setSoTimeout(1000);
                 socket.receive(response);
                 if (Arrays.equals(response.getData(), UDP_CONNECT_RESPONSE)) {
                     log.info("Discovered a server!");
