@@ -51,9 +51,9 @@ public class TileProp extends Component implements IOnStart {
     }
 
     /**
-     * Fix transform because blender is stupid.
+     * Fix transform dependant on {@link org.dragonskulle.game.map.HexagonTile} height.
      *
-     * @param obj the obj
+     * @param obj the obj to fix the transform on
      */
     private void fixTransform(GameObject obj) {
         Transform3D tran = obj.getTransform(Transform3D.class);
