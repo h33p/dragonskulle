@@ -47,12 +47,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
             if (addBuilding()) {
                 return;
-            } else if (!getPlayer().inCooldown() && attack()) {
+            }/* else if (!getPlayer().inCooldown() && attack()) {
                 return;
             } else {
                 upgradeBuilding();
                 return;
-            }
+            }*/
 
         } else {
             log.info(
