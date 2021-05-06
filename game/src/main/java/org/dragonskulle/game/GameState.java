@@ -13,7 +13,6 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
-import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -107,9 +106,9 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         "game_state",
                         new TransformUI(true),
                         (self) -> {
-                            UIManager.getInstance().buildVerticalUi(self, 0.12f, 0f, 1f, playerInfos);
-                            UIRenderable drawer =
-                                    new UIRenderable(GameUIAppearance.getDrawerTexture());
+//                            UIManager.getInstance().buildVerticalUi(self, 0.25f, -0.5f, 1.5f, playerInfos);
+                            UIManager.getInstance().buildWithAnchorOffset(self, 0.1f, 0f, 0.8f, 0.4f, 0f, 0.12f, playerInfos);
+                            UIRenderable drawer = new UIRenderable(GameUIAppearance.getDrawerTexture());
                             TransformUI tran = self.getTransform(TransformUI.class);
                             tran.setMargin(0f, 0f, 0f, 0f);
                             tran.setPivotOffset(0f, 0f);
@@ -129,9 +128,9 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         for (int j = 0; j < mNumPlayers.get(); j++) {
             try {
                 Integer next = playerIterator.next();
-                playerInfoBox[j] = new PlayerStats(serverManager, next);
+                playerInfoBox[j] = new PlayerStats(serverManager, next, j);
             } catch (NoSuchElementException e) {
-                playerInfoBox[j] = new PlayerStats(serverManager, null);
+                playerInfoBox[j] = new PlayerStats(serverManager, null, j);
             }
         }
         return playerInfoBox;
