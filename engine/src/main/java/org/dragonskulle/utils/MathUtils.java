@@ -34,6 +34,7 @@ public class MathUtils {
      *
      * @param val value to get the logarithm of
      * @param base base to calculate the logarithm in
+     * @return The calculated logarithm.
      */
     public static int log(int val, int base) {
         return (int) (Math.log(val) / Math.log(base));

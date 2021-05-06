@@ -1,8 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.io.Serializable;
-
 /**
  * Used for referencing GameObjects and Components.
  *
@@ -12,12 +10,9 @@ import java.io.Serializable;
  *     Components maintaining a strong reference to the GameObject or Component and stopping it from
  *     being garbage collected
  */
-public class Reference<T> implements Serializable {
+public class Reference<T> {
 
     private T mObject;
-
-    // Make the default constructor private as the object referenced cannot be changed
-    private Reference() {}
 
     /**
      * Constructor for Reference.
@@ -31,6 +26,14 @@ public class Reference<T> implements Serializable {
     /** Clear the referenced object. */
     public void clear() {
         mObject = null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <F> Reference<F> cast(Class<F> type) {
+        if (type.isInstance(mObject)) {
+            return (Reference<F>) this;
+        }
+        return null;
     }
 
     /**

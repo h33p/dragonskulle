@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -18,7 +17,7 @@ import org.dragonskulle.core.Reference;
  *     user-defined variables on a component
  */
 @Accessors(prefix = "m")
-public abstract class Component implements Serializable {
+public abstract class Component {
 
     @Getter private Reference<Component> mReference = new Reference<>(this);
 
@@ -58,12 +57,8 @@ public abstract class Component implements Serializable {
      * @param type type to try cast into
      * @return mReference cast into the type, if valid. Null otherwise.
      */
-    @SuppressWarnings("unchecked")
     public final <T extends Component> Reference<T> getReference(Class<T> type) {
-        if (type.isInstance(this)) {
-            return (Reference<T>) mReference;
-        }
-        return null;
+        return mReference.cast(type);
     }
 
     public final void recreateReference() {

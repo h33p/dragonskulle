@@ -3,6 +3,7 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -14,10 +15,13 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
+import org.dragonskulle.game.player.ai.AimerAi;
+import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
+import org.dragonskulle.network.components.NetworkManager.IGameEndEvent;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.ui.*;
 import org.joml.Vector4f;
@@ -232,44 +236,12 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIText(
                                 new Vector4f(1f, 1f, 1f, 1f),
                                 "To play online, please ensure port 17569 is opened and points to your local IP"),
-                        new UIButton(
-                                "Continue anyway",
-                                (__, ___) -> {
-                                    String ip = UPnP.getExternalIPAddress();
-                                    LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        UPnP.deletePortMapping(PORT, "TCP");
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
-                                    mHostingUi.setEnabled(true);
-                                    mFailedToForwardUi.setEnabled(false);
-                                }),
+                        new UIButton("Continue anyway", (__, ___) -> createServer(false, true)),
                         new UIButton(
                                 "Try override",
                                 (__, ___) -> {
                                     UPnP.addPortMapping(PORT, "TCP");
-                                    String ip = UPnP.getExternalIPAddress();
-                                    LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        UPnP.deletePortMapping(PORT, "TCP");
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
-                                    mHostingUi.setEnabled(true);
-                                    mFailedToForwardUi.setEnabled(false);
+                                    createServer(false, true);
                                 }),
                         new UIButton(
                                 "Cancel",
@@ -282,6 +254,31 @@ public class Lobby extends Component implements IFrameUpdate {
         buildHostUi();
         buildServerList();
         LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+    }
+
+    private void createServer(boolean isLocal, boolean removePort) {
+        if (!isLocal) {
+            String ip = UPnP.getExternalIPAddress();
+            LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
+        }
+
+        createServer(
+                mNetworkManager.get(),
+                (____) -> {
+                    if (removePort) {
+                        UPnP.deletePortMapping(PORT, "TCP");
+                    }
+                    mHostingUi.setEnabled(false);
+                    mHostUi.setEnabled(true);
+                });
+
+        mHostUi.setEnabled(false);
+        mHostingUi.setEnabled(true);
+        mFailedToForwardUi.setEnabled(false);
+    }
+
+    public static void createServer(NetworkManager manager, IGameEndEvent endEvent) {
+        manager.createServer(PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
     }
 
     /** Builds the "Join" section of the UI. */
@@ -317,7 +314,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                             mJoinUi.setEnabled(false);
                                                         }
                                                     },
-                                                    this::onHostStartGame,
+                                                    Lobby::onHostStartGame,
                                                     () -> {
                                                         if (mJoiningUi.isEnabled()) {
                                                             mJoiningUi.setEnabled(false);
@@ -375,7 +372,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                 this::onGetAllHosts);
                                                     }
                                                 },
-                                                this::onHostStartGame,
+                                                Lobby::onHostStartGame,
                                                 () -> {
                                                     LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
                                                     mJoiningUi.setEnabled(false);
@@ -447,7 +444,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                                                         ::onGetAllHosts);
                                                                             }
                                                                         },
-                                                                        this::onHostStartGame,
+                                                                        Lobby::onHostStartGame,
                                                                         () -> {
                                                                             LobbyAPI
                                                                                     .getAllHostsAsync(
@@ -486,43 +483,14 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Host public lobby",
                                 (__, ___) -> {
-                                    mHostUi.setEnabled(false);
                                     if (!UPnP.isPortAvailable(PORT, "TCP")
                                             || !UPnP.addPortMapping(PORT, "TCP")) {
                                         mFailedToForwardUi.setEnabled(true);
                                     } else {
-                                        String ip = UPnP.getExternalIPAddress();
-                                        LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
-                                        mNetworkManager
-                                                .get()
-                                                .createServer(
-                                                        PORT,
-                                                        this::onClientLoaded,
-                                                        this::onGameStarted,
-                                                        (____) -> {
-                                                            UPnP.deletePortMapping(PORT, "TCP");
-                                                            mHostingUi.setEnabled(false);
-                                                            mHostUi.setEnabled(true);
-                                                        });
-                                        mHostingUi.setEnabled(true);
+                                        createServer(false, true);
                                     }
                                 }),
-                        new UIButton(
-                                "Host locally",
-                                (__, ___) -> {
-                                    mNetworkManager
-                                            .get()
-                                            .createServer(
-                                                    PORT,
-                                                    this::onClientLoaded,
-                                                    this::onGameStarted,
-                                                    (____) -> {
-                                                        mHostingUi.setEnabled(false);
-                                                        mHostUi.setEnabled(true);
-                                                    });
-                                    mHostingUi.setEnabled(true);
-                                    mHostUi.setEnabled(false);
-                                }),
+                        new UIButton("Host locally", (__, ___) -> createServer(true, false)),
                         new UIButton(
                                 "Back",
                                 (__, ___) -> {
@@ -630,7 +598,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * @param manager The network manager
      * @param netId The network ID of the client
      */
-    private void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
+    private static void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
         GameObject humanPlayer =
                 new GameObject(
                         "human player",
@@ -650,7 +618,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * @param manager The network manager
      * @param networkClient The client that sent the loaded message
      */
-    private void onClientLoaded(
+    public static void onClientLoaded(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
         int id = networkClient.getNetworkID();
@@ -662,7 +630,7 @@ public class Lobby extends Component implements IFrameUpdate {
      *
      * @param manager The network manager.
      */
-    private void onGameStarted(NetworkManager manager) {
+    public static void onGameStarted(NetworkManager manager) {
         log.fine("Game Start");
         log.fine("Spawning 'Server' Owned objects");
         Reference<NetworkObject> obj =
@@ -672,7 +640,9 @@ public class Lobby extends Component implements IFrameUpdate {
         Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
 
         // 6 players for now
-        gameState.get().getNumPlayers().set(6);
+        int maxPlayers = 6;
+
+        gameState.get().getNumPlayers().set(maxPlayers);
 
         gameState
                 .get()
@@ -685,6 +655,26 @@ public class Lobby extends Component implements IFrameUpdate {
                                         pauseMenu.endGame();
                                     }
                                 }));
+
+        // Get the number of clients and thus the number of AI needed
+        int clientNumber = manager.getServerManager().getClients().size();
+        int numOfAi = maxPlayers - clientNumber;
+
+        // Add the AI
+        for (int i = -1; i >= -1 * numOfAi; i--) {
+            Random random = new Random();
+
+            Reference<NetworkObject> player =
+                    manager.getServerManager()
+                            .spawnNetworkObject(i, manager.findTemplateByName("player"));
+            GameObject playerObj = player.get().getGameObject();
+            playerObj.addComponent(new ProbabilisticAiPlayer());
+
+            // Randomly select which AI to use
+            if (random.nextFloat() > 0.5) {
+                playerObj.addComponent(new AimerAi());
+            }
+        }
     }
 
     @Override

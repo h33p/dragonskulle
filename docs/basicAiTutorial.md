@@ -35,5 +35,5 @@ Here are what all the variables which you need to worry about are set at
 - **ProbabilisticAiPlayer** 
 	- `mBuildingProbability` = 0.65
 	- `mAttackProbability` = 0.15
-	- `mUpgradeProbability` = 0.15
-	- `mSellProbability` = 0.05
+	- `mUpgradeProbability` = 0.19
+	- `mSellProbability` = 0.01

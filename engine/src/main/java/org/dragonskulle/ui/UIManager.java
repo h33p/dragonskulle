@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -20,8 +21,15 @@ import org.dragonskulle.input.Cursor;
  *
  * @author Aurimas Blažulionis
  */
+@Log
 @Accessors(prefix = "m")
 public class UIManager {
+    @Setter
+    @Accessors(prefix = "s")
+    public static CursorType sNextCursor = UIAppearance.getDefaultCursor();
+
+    private static CursorType sCurrentCursor = null;
+
     public static final UIManager SINGLETON = new UIManager();
 
     /**
@@ -38,7 +46,7 @@ public class UIManager {
      *
      * @param components a list of currently enabled components
      */
-    public void updateHover(Collection<Component> components) {
+    public void uiUpdate(Collection<Component> components) {
         mHoveredObject = null;
 
         Cursor cursor = Actions.getCursor();
@@ -46,6 +54,12 @@ public class UIManager {
         if (cursor == null) {
             return;
         }
+
+        if (sCurrentCursor != sNextCursor) {
+            sCurrentCursor = sNextCursor;
+            Cursor.setCursor(sCurrentCursor);
+        }
+        setNextCursor(UIAppearance.getDefaultCursor());
 
         int curDepth = 0;
 
@@ -103,6 +117,8 @@ public class UIManager {
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
+         *
+         * @param go The {@link GameObject}.
          */
         void handleUIBuild(GameObject go);
     }
@@ -153,6 +169,7 @@ public class UIManager {
             cnt++;
         }
     }
+
     /**
      * Build a horizontal UI on the object
      *
@@ -201,6 +218,7 @@ public class UIManager {
      * @param height consistent anchor based height to keep.
      * @param offsetX how much each element will be offset from one another on X axis.
      * @param offsetY how much each element will be offset from one another on Y axis.
+     * @param elems A list of {@link IUIBuildHandler}s.
      */
     public void buildWithAnchorOffset(
             GameObject go,

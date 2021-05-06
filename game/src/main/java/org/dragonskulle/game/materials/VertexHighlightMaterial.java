@@ -4,7 +4,6 @@ package org.dragonskulle.game.materials;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32_SFLOAT;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.List;
 import lombok.Getter;
@@ -35,7 +34,7 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class VertexHighlightMaterial implements IMaterial, IColouredMaterial, Serializable {
+public class VertexHighlightMaterial implements IMaterial, IColouredMaterial {
     public static class MatShaderSet extends ShaderSet {
         public MatShaderSet() {
             mVertexShader = ShaderBuf.getResource("vertex_highlight", ShaderKind.VERTEX_SHADER);

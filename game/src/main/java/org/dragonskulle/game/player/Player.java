@@ -16,6 +16,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -27,7 +28,7 @@ import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.map.MapEffects;
-import org.dragonskulle.game.map.MapEffects.HighlightSelection;
+import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -35,6 +36,7 @@ import org.dragonskulle.game.player.network_data.StatData;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ClientRequest;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -44,6 +46,7 @@ import org.joml.Matrix2f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.joml.Vector4f;
 
 /**
  * This is the class which contains all the needed data to play a game.
@@ -74,7 +77,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** The colour of the player. */
     @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
 
-    @Getter private HighlightSelection mPlayerHighlightSelection;
+    @Getter private Vector4f mPlayerHighlightSelection;
+
+    /** Store a reference to the {@link MapEffects} component. */
+    private Reference<MapEffects> mMapEffects;
 
     /** Reference to the HexagonMap being used by the Player. */
     private Reference<HexagonMap> mMap = null;
@@ -90,7 +96,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
     /** The base rate of tokens which will always be added. */
-    private static final int TOKEN_RATE = 5;
+    private static final int TOKEN_RATE = 2;
     /** How frequently the tokens should be added. */
     private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
@@ -107,6 +113,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     @Getter private transient ClientRequest<StatData> mClientStatRequest;
     /** Used by the client to request that a building be sold. */
     @Getter private transient ClientRequest<SellData> mClientSellRequest;
+    /** Sent by the server to tell clients that an attack is happening. */
+    @Getter private transient ServerEvent<AttackData> mServerAttackEvent;
 
     /** The base constructor for player. */
     public Player() {}
@@ -123,11 +131,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * We need to initialise client requests here, since java does not like to serialise lambdas.
      */
     @Override
-    protected void onNetworkInitialize() {
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
-        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
+    protected void onNetworkInitialise() {
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildRequest);
+        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackRequest);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::statRequest);
+        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellRequest);
+
+        mServerAttackEvent = new ServerEvent<>(new AttackData(), this::attackEffect);
 
         getNetworkManager().getIdSingletons(getNetworkObject().getOwnerId()).register(this);
 
@@ -619,7 +629,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The {@link HexagonTile} to check
      * @return {@code true} if the Player owns the tile
      */
-    public boolean isClaimingTile(HexagonTile tile) {
+    public boolean hasClaimedTile(HexagonTile tile) {
         if (tile == null) {
             return false;
         }
@@ -652,15 +662,29 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to place a {@link
-     * Building}.
+     * Get whether the player is currently in the attack cooldown.
      *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #buildAttempt(HexagonTile)}.
+     * @return Whether the player is in the attack cooldown period.
+     */
+    public boolean inCooldown() {
+        return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+    }
+
+    /**
+     * Get the time left in the cooldown period.
+     *
+     * @return The remaining time to wait.
+     */
+    public float getRemainingCooldown() {
+        return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
+    }
+
+    /**
+     * Process and parse a request in which the player wishes to place a {@link Building}.
      *
      * @param data The {@link BuildData} sent by the client.
      */
-    void buildEvent(BuildData data) {
+    private void buildRequest(BuildData data) {
         if (gameEnd()) {
             return;
         }
@@ -710,6 +734,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
+        building.setSellPrice(descriptor.getSellPrice());
         // Subtract the cost.
         mTokens.subtract(descriptor.getCost());
         log.warning("Added building.");
@@ -735,16 +760,45 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return tile.isBuildable(this);
     }
 
+    /** Invoke animation when an attack is being performed. */
+    void attackEffect(AttackData data) {
+        HexagonMap map = getMap();
+        if (map == null) {
+            log.warning("Unable to parse AttackData: Map is null.");
+            return;
+        }
+
+        Building attacker = data.getAttacker(map);
+        if (attacker == null) {
+            log.warning("Unable to parse AttackData: attacking building is null.");
+            return;
+        }
+
+        Building defender = data.getDefender(map);
+        if (defender == null) {
+            log.warning("Unable to parse AttackData: defending building is null.");
+            return;
+        }
+
+        MapEffects fx = getMapEffects();
+
+        if (fx == null) {
+            log.warning("Map effects was null.");
+            return;
+        }
+
+        fx.pulseHighlight(attacker, StandardHighlightType.PLACE.asSelection(), 0.2f, 0.5f, 2f);
+        fx.pulseHighlight(defender, StandardHighlightType.INVALID.asSelection(), 0.2f, 0.5f, 2f);
+        attacker.attackEffect(defender, 1.5f);
+    }
+
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to attack a {@link
-     * Building} from another Building.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #attackAttempt(Building, Building)}.
+     * Process and parse a request in which the player wishes to attack a {@link Building} from
+     * another Building.
      *
      * @param data The {@link AttackData} sent by the client.
      */
-    void attackEvent(AttackData data) {
+    private void attackRequest(AttackData data) {
 
         HexagonMap map = getMap();
         if (map == null) {
@@ -790,8 +844,20 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         log.info("Attacking");
 
-        // ATTACK!!! (Sorry...)
-        mTokens.subtract(defender.getAttackCost());
+        mLastAttack.set(getNetworkManager().getServerTime());
+
+        // ATTACK!
+        mTokens.subtract(attacker.getAttackCost());
+
+        float lockTime = Engine.getInstance().getCurTime() + 1f;
+
+        attacker.getActionLockTime().set(lockTime);
+        defender.getActionLockTime().set(lockTime);
+
+        mServerAttackEvent.invoke((data) -> data.setData(attacker, defender));
+
+        // TODO: use Future to delay the actual attack until the animation plays
+
         boolean won;
         if (defender.getOwner().hasLost()) won = true;
         else won = attacker.attack(defender);
@@ -850,14 +916,14 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Checks you have the cash
-        if (mTokens.get() < defender.getAttackCost()) {
-            log.warning("You don't have the cash");
+        if (mTokens.get() < attacker.getAttackCost()) {
+            log.warning("You don't have the cash to attack.");
             return false;
         }
 
         // Checks you own the building
         if (isBuildingOwner(attacker) == false) {
-            log.info("It's not your building");
+            log.info("It's not your building.");
             return false;
         }
 
@@ -873,27 +939,26 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // Checks if you're in cooldown
-        if (getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN) {
-            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
+        if (attacker.isActionLocked() || defender.isActionLocked()) {
+            log.fine("One of the buildings is action locked.");
             return false;
         }
 
-        mLastAttack.set(getNetworkManager().getServerTime());
+        // Checks if you're in cooldown
+        if (inCooldown()) {
+            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
+            return false;
+        }
 
         return true;
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to sell a {@link
-     * Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #sellAttempt(Building)}.
+     * Process and parse a request in which the player wishes to sell a {@link Building}.
      *
      * @param data The {@link SellData} sent by the client.
      */
-    void sellEvent(SellData data) {
+    private void sellRequest(SellData data) {
 
         if (gameEnd()) {
             return;
@@ -930,7 +995,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Adds the tokens
-        mTokens.add(Building.SELL_PRICE);
+        mTokens.add(building.getSellPrice());
 
         // Remove the building
         building.remove();
@@ -951,6 +1016,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
+        if (building.isActionLocked()) {
+            log.fine("Action locked.");
+            return false;
+        }
+
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
             log.info("You do not own the building.");
@@ -966,15 +1036,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to increase a specific
-     * {@link StatType} of a {@link Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #statAttempt(Building, StatType)}.
+     * Process and parse a request in which the player wishes to increase a specific {@link
+     * StatType} of a {@link Building}.
      *
      * @param data The {@link StatData} sent by the client.
      */
-    void statEvent(StatData data) {
+    private void statRequest(StatData data) {
 
         if (gameEnd()) {
             return;
@@ -1013,7 +1080,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to change the stat was successful.
      */
     private boolean statAttempt(Building building, StatType statType) {
-        if (statCheck(building, statType) == false) {
+        if (!statCheck(building, statType)) {
             log.info("Unable to pass stat check.");
             return false;
         }
@@ -1040,6 +1107,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         if (building == null) {
             log.warning("Building is null.");
+            return false;
+        }
+
+        if (building.isActionLocked()) {
+            log.fine("Action locked.");
             return false;
         }
 
@@ -1093,11 +1165,21 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean gameEnd() {
         if (hasLost()) {
+            for (Reference<Building> building : getOwnedBuildings()) {
+                if (!Reference.isValid(building)) continue;
+                // Remove the building
+                building.get().remove();
+            }
+
             return true;
         }
 
         if (!Reference.isValid(mGameState)) {
-            mGameState = Scene.getActiveScene().getSingletonRef(GameState.class);
+            Scene activeScene = Scene.getActiveScene();
+
+            if (activeScene != null) {
+                mGameState = activeScene.getSingletonRef(GameState.class);
+            }
         }
 
         return Reference.isValid(mGameState) && !mGameState.get().isInGame();
@@ -1130,5 +1212,23 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .orElse(null);
 
         return mCapital != null ? mCapital.get() : null;
+    }
+
+    /**
+     * Get the {@link MapEffects}.
+     *
+     * <p>If {@link #mMapEffects} is not valid, it will attempt to get a valid MapEffects.
+     *
+     * @return The {@link MapEffects}; otherwise {@code null}.
+     */
+    public MapEffects getMapEffects() {
+        if (!Reference.isValid(mMapEffects)) {
+            MapEffects mapEffects = Scene.getActiveScene().getSingleton(MapEffects.class);
+
+            if (mapEffects == null) return null;
+            mMapEffects = mapEffects.getReference(MapEffects.class);
+        }
+
+        return mMapEffects.get();
     }
 }

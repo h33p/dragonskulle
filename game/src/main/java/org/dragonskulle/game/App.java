@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import java.util.Scanner;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -47,6 +46,8 @@ public class App implements NativeResource {
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
     private static final String BGM_SOUND = "game_background.wav";
 
+    public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
+
     public static final float MENU_BASEWIDTH = 0.2f;
 
     /**
@@ -76,7 +77,7 @@ public class App implements NativeResource {
      * @param networkManager the network manager
      * @return the scene created
      */
-    private static Scene createMainScene(NetworkManager networkManager) {
+    static Scene createMainScene(NetworkManager networkManager) {
         // Create a scene
         Scene mainScene = new Scene("game");
 
@@ -122,7 +123,7 @@ public class App implements NativeResource {
 
                                                     // Make sure it's an actual camera
                                                     Camera cam = new Camera();
-                                                    cam.mFarPlane = 200;
+                                                    cam.setFarPlane(200);
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
@@ -169,52 +170,29 @@ public class App implements NativeResource {
      * @param asServer true, if to create as server
      * @return the scene created
      */
-    private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
+    static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
         Scene mainScene = createMainScene(networkManager);
-        if (asServer) {
-            log.info("I am the server");
-            GameObject hostGameUi =
-                    new GameObject(
-                            "hostGameUi",
-                            new TransformUI(false),
-                            (root) -> {
-                                // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
-                                // 0.1f)));
-                                root.getTransform(TransformUI.class).setParentAnchor(0f);
-                                root.buildChild(
-                                        "populate_with_ai",
-                                        new TransformUI(true),
-                                        (box) -> {
-                                            box.getTransform(TransformUI.class)
-                                                    .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
-                                            box.getTransform(TransformUI.class)
-                                                    .setMargin(0f, 0f, 0f, 0.07f);
-                                            box.addComponent(
-                                                    new UIButton(
-                                                            "Fill game with AI",
-                                                            (a, b) -> {
-                                                                log.info("should fill with ai");
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -1,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aStarAi"));
-
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -2,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aiPlayer"));
-                                                            }));
-                                        });
-                            });
-            mainScene.addRootObject(hostGameUi);
-        }
         return mainScene;
+    }
+
+    /**
+     * Creates a collection of templates used by the game.
+     *
+     * @return a new template manager containing all networked templates from network templates glTF
+     *     file.
+     */
+    TemplateManager createTemplateManager() {
+        TemplateManager templates = new TemplateManager();
+
+        for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
+            log.info(obj.getName());
+        }
+
+        templates.addAllObjects(
+                mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
+                        .toArray(GameObject[]::new));
+
+        return templates;
     }
 
     /**
@@ -226,18 +204,8 @@ public class App implements NativeResource {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
         addDebugUi(mainMenu);
 
-        TemplateManager templates = new TemplateManager();
-
-        for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
-            log.info(obj.getName());
-        }
-
-        templates.addAllObjects(
-                mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects().stream()
-                        .toArray(GameObject[]::new));
-
         Reference<NetworkManager> networkManager =
-                new NetworkManager(templates, App::createMainScene)
+                new NetworkManager(createTemplateManager(), App::createMainScene)
                         .getReference(NetworkManager.class);
 
         GameObject networkManagerObject =
@@ -372,25 +340,6 @@ public class App implements NativeResource {
 
         // Load the mainMenu as the presentation scene
         Engine.getInstance().loadPresentationScene(mainMenu);
-
-        // Load dev console
-        // TODO: actually make a fully fledged console
-        // TODO: join it at the end
-        new Thread(
-                        () -> {
-                            Scanner in = new Scanner(System.in);
-
-                            String line;
-
-                            while ((line = in.nextLine()) != null) {
-                                try {
-                                    log.info("Address set successfully!");
-                                } catch (Exception e) {
-                                    log.info("Failed to set IP and port!");
-                                }
-                            }
-                        })
-                .start();
 
         // Run the game
         Engine.getInstance().start("Hex Wars", new GameBindings());

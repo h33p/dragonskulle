@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -18,6 +19,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.network.IServerListener;
 import org.dragonskulle.network.NetworkConfig;
@@ -55,13 +57,26 @@ public class ServerNetworkManager {
          */
         @Override
         public int clientConnected(ServerClient client) {
+            if (mGameState != ServerGameState.LOBBY) {
+                return -1;
+            }
+
             return mServer.addConnectedClient(client);
+        }
+
+        @Override
+        public void clientFullyConnected(ServerClient client) {
+            if (mClientConnectedEvent != null) {
+                mClientConnectedEvent.handle(mManager.getGameScene(), mManager, client);
+            }
         }
 
         @Override
         public void clientLoaded(ServerClient client) {
             client.setInGame(true);
-            mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
+            if (mClientLoadedEvent != null) {
+                mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
+            }
         }
 
         /**
@@ -175,6 +190,8 @@ public class ServerNetworkManager {
     /** Back reference to {@link NetworkManager}. */
     @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
+    private final NetworkManager.IConnectedClientEvent mClientConnectedEvent;
+    /** Callback for connected clients. */
     private final NetworkManager.IClientLoadedEvent mClientLoadedEvent;
     /** Callback for game start. */
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
@@ -183,13 +200,13 @@ public class ServerNetworkManager {
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
-    private ServerGameState mGameState = ServerGameState.LOBBY;
+    @Getter private ServerGameState mGameState = ServerGameState.LOBBY;
 
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
-    @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
+    private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
     /** Stores per-owner singletons. Can be looked up with getIdSingletons */
     private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
@@ -205,12 +222,14 @@ public class ServerNetworkManager {
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
+            NetworkManager.IConnectedClientEvent clientConnectedEvent,
             NetworkManager.IClientLoadedEvent clientLoadedEvent,
             NetworkManager.IGameStartEvent gameStartEventHandler,
             NetworkManager.IGameEndEvent gameEndEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
+        mClientConnectedEvent = clientConnectedEvent;
         mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
         mGameEndEventHandler = gameEndEventHandler;
@@ -224,6 +243,7 @@ public class ServerNetworkManager {
 
     /** Start the game, load game scene. */
     void startGame() {
+
         Engine engine = Engine.getInstance();
 
         mManager.createGameScene(true);
@@ -386,6 +406,15 @@ public class ServerNetworkManager {
         return store;
     }
 
+    /**
+     * Get a stream of network objects on the server.
+     *
+     * @return a stream containing unfiltered references to network objects.
+     */
+    public Stream<Reference<NetworkObject>> getNetworkObjects() {
+        return mNetworkObjects.values().stream().map(ServerObjectEntry::getNetworkObject);
+    }
+
     /** Network update, called by {@link NetworkManager}. */
     void networkUpdate() {
         if (mServer == null) {
@@ -403,22 +432,24 @@ public class ServerNetworkManager {
 
         if (mGameState == ServerGameState.STARTING) return;
 
-        mServer.updateClientList();
-        mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
+        try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+            mServer.updateClientList();
+            mServer.processClientRequests(NetworkConfig.MAX_CLIENT_REQUESTS);
 
-        mNetworkObjects
-                .entrySet()
-                .removeIf(
-                        entry -> {
-                            NetworkObject obj = entry.getValue().mNetworkObject.get();
-                            if (obj != null) {
-                                obj.beforeNetSerialize();
-                                return false;
-                            }
-                            return true;
-                        });
+            mNetworkObjects
+                    .entrySet()
+                    .removeIf(
+                            entry -> {
+                                NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                if (obj != null) {
+                                    obj.beforeNetSerialize();
+                                    return false;
+                                }
+                                return true;
+                            });
 
-        clientUpdate();
+            clientUpdate();
+        }
     }
 
     /** Late network update, called by {@link NetworkManager}. */
@@ -434,25 +465,27 @@ public class ServerNetworkManager {
 
             mManager.onServerDestroy();
         } else {
-            for (ServerClient c : mServer.getClients()) {
-                if (!c.isInGame()) {
-                    continue;
+            try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+                for (ServerClient c : mServer.getClients()) {
+                    if (!c.isInGame()) {
+                        continue;
+                    }
+                    for (ServerObjectEntry entry : mNetworkObjects.values()) {
+                        entry.updateClient(c);
+                    }
                 }
-                for (ServerObjectEntry entry : mNetworkObjects.values()) {
-                    entry.updateClient(c);
-                }
+                mNetworkObjects
+                        .entrySet()
+                        .removeIf(
+                                entry -> {
+                                    NetworkObject obj = entry.getValue().mNetworkObject.get();
+                                    if (obj != null) {
+                                        obj.resetUpdateMask();
+                                        return false;
+                                    }
+                                    return true;
+                                });
             }
-            mNetworkObjects
-                    .entrySet()
-                    .removeIf(
-                            entry -> {
-                                NetworkObject obj = entry.getValue().mNetworkObject.get();
-                                if (obj != null) {
-                                    obj.resetUpdateMask();
-                                    return false;
-                                }
-                                return true;
-                            });
         }
     }
 

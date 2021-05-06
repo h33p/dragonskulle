@@ -17,7 +17,7 @@ import org.dragonskulle.network.components.sync.SyncString;
  */
 @Accessors(prefix = "m")
 @Log
-public class TestCapitalBuilding extends NetworkableComponent {
+public class TestNetworkComponent extends NetworkableComponent {
 
     /** A syncable field. */
     @Getter private SyncBool mSyncMe = new SyncBool(false);
@@ -39,7 +39,7 @@ public class TestCapitalBuilding extends NetworkableComponent {
 
     /** We need to initialize requests here, since java does not like to serialize lambdas. */
     @Override
-    protected void onNetworkInitialize() {
+    protected void onNetworkInitialise() {
         mPasswordRequest = new ClientRequest<>(new TestAttackData(), this::handleEvent);
     }
     /**
