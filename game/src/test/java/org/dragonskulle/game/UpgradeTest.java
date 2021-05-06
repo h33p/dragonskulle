@@ -93,9 +93,9 @@ public class UpgradeTest {
         SyncStat defence = stats.get(1);
         SyncStat tokenGeneration = stats.get(2);
 
-        assertEquals(1, attack);
-        assertEquals(1, defence);
-        assertEquals(1, tokenGeneration);
+        assertEquals(1, attack.getLevel());
+        assertEquals(1, defence.getLevel());
+        assertEquals(1, tokenGeneration.getLevel());
 
         // Increase attack lvl
         attack.increaseLevel();

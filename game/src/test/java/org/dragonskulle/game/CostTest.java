@@ -51,6 +51,7 @@ public class CostTest {
     public void attackCost() {
         Building building = new Building();
         building.onConnectedSyncvars();
+        building.afterStatChange();
 
         assertEquals(27, building.getAttackCost());
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
@@ -59,7 +60,7 @@ public class CostTest {
         attack.increaseLevel();
 
         building.afterStatChange();
-        assertEquals(29, building.getAttackCost());
+        assertEquals(30, building.getAttackCost());
 
         attack.increaseLevel();
         attack.increaseLevel();
@@ -71,23 +72,29 @@ public class CostTest {
 
         building.afterStatChange();
 
-        assertEquals(39, building.getAttackCost());
+        assertEquals(42, building.getAttackCost());
+        
+        building.setCapital(true);
+        
+        assertEquals(52, building.getAttackCost());
     }
 
     /** This will test that the cost increases when stats are upgraded */
     @Test
     public void upgradeStats() {
         Building building = new Building();
+        
         building.onConnectedSyncvars();
+        building.afterStatChange();
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
 
-        assertEquals(1, stats.get(0).getCost());
+        assertEquals(4, stats.get(0).getCost());
         stats.get(0).increaseLevel();
         building.afterStatChange();
-        assertEquals(2, stats.get(0).getCost());
+        assertEquals(9, stats.get(0).getCost());
         stats.get(1).increaseLevel();
         stats.get(1).increaseLevel();
         building.afterStatChange();
-        assertEquals(3, stats.get(0).getCost());
+        assertEquals(18, stats.get(0).getCost());
     }
 }
