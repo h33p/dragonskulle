@@ -62,7 +62,7 @@ public class HexagonTile implements INetSerializable {
             mValue = value;
         }
 
-        static TileType getTile(byte value) {
+        public static TileType getTile(byte value) {
             for (TileType t : VALUES) {
                 if (t.mValue == value) {
                     return t;

@@ -60,7 +60,7 @@ public class PredefinedBuildings {
      * @return the building descriptor, will return {@link #BASE} if out of range.
      */
     public static BuildingDescriptor get(int i) {
-        if (i <= buildings.size()) {
+        if (i >= 0 && i < buildings.size()) {
             return buildings.get(i);
         }
         return PredefinedBuildings.BASE;
