@@ -1,10 +1,13 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.INetSerializable;
@@ -12,9 +15,33 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 /** Configurable game properties. */
 @Accessors(prefix = "m")
 @Getter
+@Setter
 public class GameConfig implements INetSerializable {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    public String toJson() {
+        try {
+            return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public GameConfig() {}
+
+    public static GameConfig fromJson(String jsonData) {
+        try {
+            return MAPPER.readValue(jsonData, GameConfig.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class GlobalConfig implements INetSerializable {
         /** Global price inflation rate (per second). */
@@ -25,6 +52,10 @@ public class GameConfig implements INetSerializable {
         public GlobalConfig(float inflation, int mapSize) {
             mInflation = inflation;
             mMapSize = mapSize;
+        }
+
+        public GlobalConfig() {
+            this(1.002f, 51);
         }
 
         @Override
@@ -41,6 +72,7 @@ public class GameConfig implements INetSerializable {
     }
 
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class PlayerConfig implements INetSerializable {
         private float mAttackCooldown;
@@ -60,6 +92,10 @@ public class GameConfig implements INetSerializable {
             mTokenTime = tokenTime;
             mInflationPerBuilding = inflationPerBuilding;
             mAttackHeightMul = attackHeightMul;
+        }
+
+        public PlayerConfig() {
+            this(2, 5, 1, 1.05f, 1);
         }
 
         @Override
@@ -82,6 +118,7 @@ public class GameConfig implements INetSerializable {
     }
 
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class AiConfig implements INetSerializable {
         private float mLowerBoundTime;
@@ -90,6 +127,10 @@ public class GameConfig implements INetSerializable {
         public AiConfig(float lowerBoundTime, float upperBoundTime) {
             mLowerBoundTime = lowerBoundTime;
             mUpperBoundTime = upperBoundTime;
+        }
+
+        public AiConfig() {
+            this(1, 2);
         }
 
         @Override
@@ -106,6 +147,7 @@ public class GameConfig implements INetSerializable {
     }
 
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class ProbabilisticAiConfig implements INetSerializable {
         private float mBuildProbability;
@@ -122,6 +164,10 @@ public class GameConfig implements INetSerializable {
             mUpgradeProbability = upgradeProbability;
             mAttackProbability = attackProbability;
             mSellProbability = sellProbability;
+        }
+
+        public ProbabilisticAiConfig() {
+            this(0.65f, 0.15f, 0.15f, 0.05f);
         }
 
         @Override
@@ -142,6 +188,7 @@ public class GameConfig implements INetSerializable {
     }
 
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class AiAimerConfig implements INetSerializable {
         private float mPlayAStar;
@@ -152,6 +199,10 @@ public class GameConfig implements INetSerializable {
             mPlayAStar = playAStar;
             mAimAtCapital = aimAtCapital;
             mTries = tries;
+        }
+
+        public AiAimerConfig() {
+            this(0.9f, 0.01f, 10);
         }
 
         @Override
@@ -176,6 +227,7 @@ public class GameConfig implements INetSerializable {
      * multiplier.
      */
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class StatBonusConfig implements INetSerializable {
         private TileType mBonusTile;
@@ -184,6 +236,10 @@ public class GameConfig implements INetSerializable {
         public StatBonusConfig(TileType bonusTile, float multiplier) {
             mBonusTile = bonusTile;
             mMultiplier = multiplier;
+        }
+
+        public StatBonusConfig() {
+            this(null, 0);
         }
 
         @Override
@@ -207,13 +263,14 @@ public class GameConfig implements INetSerializable {
      * <p>{@code clamp(mBaseValue + level * mMulLevel, mMinValue, mMaxValue) + bonus()}
      */
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class StatValueConfig implements INetSerializable {
         private float mBaseValue;
         private float mMulLevel;
         private float mMinValue;
         private float mMaxValue;
-        private final StatBonusConfig mBonus;
+        private StatBonusConfig mBonus;
 
         public StatValueConfig(
                 float baseValue,
@@ -227,6 +284,10 @@ public class GameConfig implements INetSerializable {
             mMinValue = minValue;
             mMaxValue = maxValue;
             mBonus = new StatBonusConfig(bonusTile, bonusMultiplier);
+        }
+
+        public StatValueConfig() {
+            this(0, 1, 0, 100, null, 0);
         }
 
         @Override
@@ -248,6 +309,9 @@ public class GameConfig implements INetSerializable {
         }
     }
 
+    @Getter
+    @Setter
+    @Accessors(prefix = "m")
     public static class StatCostConfig implements INetSerializable {
         private float mSelfLevelMultiplier;
         private float mCombinedLevelMultiplier;
@@ -255,6 +319,10 @@ public class GameConfig implements INetSerializable {
         public StatCostConfig(float selfLevelMultiplier, float combinedLevelMultiplier) {
             mSelfLevelMultiplier = selfLevelMultiplier;
             mCombinedLevelMultiplier = combinedLevelMultiplier;
+        }
+
+        public StatCostConfig() {
+            this(0.5f, 0.5f);
         }
 
         @Override
@@ -271,20 +339,11 @@ public class GameConfig implements INetSerializable {
     }
 
     @Getter
+    @Setter
     @Accessors(prefix = "m")
     public static class StatConfig implements INetSerializable {
-        private final StatValueConfig mValue;
-        private final StatCostConfig mCost;
-
-        public StatConfig(
-                float baseValue,
-                float mulLevel,
-                float minValue,
-                float maxValue,
-                TileType bonusTile,
-                float bonusMultiplier) {
-            this(baseValue, mulLevel, minValue, maxValue, bonusTile, bonusMultiplier, 0.5f, 0.5f);
-        }
+        private StatValueConfig mValue;
+        private StatCostConfig mCost;
 
         public StatConfig(
                 float baseValue,
@@ -301,6 +360,24 @@ public class GameConfig implements INetSerializable {
             mCost = new StatCostConfig(selfLevelMultiplier, combinedLevelMultiplier);
         }
 
+        public StatConfig(
+                float baseValue,
+                float mulLevel,
+                float minValue,
+                float maxValue,
+                TileType bonusTile,
+                float bonusMultiplier) {
+            mValue =
+                    new StatValueConfig(
+                            baseValue, mulLevel, minValue, maxValue, bonusTile, bonusMultiplier);
+            mCost = new StatCostConfig();
+        }
+
+        public StatConfig() {
+            mValue = new StatValueConfig();
+            mCost = new StatCostConfig();
+        }
+
         @Override
         public void serialize(DataOutput stream, int clientId) throws IOException {
             mValue.serialize(stream, clientId);
@@ -314,20 +391,19 @@ public class GameConfig implements INetSerializable {
         }
     }
 
-    private final GlobalConfig mGlobal = new GlobalConfig(1.002f, 51);
-    private final PlayerConfig mPlayer = new PlayerConfig(2, 5, 1, 1.05f, 1);
+    private GlobalConfig mGlobal = new GlobalConfig();
+    private PlayerConfig mPlayer = new PlayerConfig();
 
-    private final AiConfig mAi = new AiConfig(1, 2);
-    private final ProbabilisticAiConfig mProbabilisticAi =
-            new ProbabilisticAiConfig(0.65f, 0.15f, 0.15f, 0.05f);
-    private final AiAimerConfig mAiAimer = new AiAimerConfig(0.9f, 0.01f, 10);
+    private AiConfig mAi = new AiConfig();
+    private ProbabilisticAiConfig mProbabilisticAi = new ProbabilisticAiConfig();
+    private AiAimerConfig mAiAimer = new AiAimerConfig();
 
-    private final StatConfig mAttackStat = new StatConfig(0, 1, 0, 100, null, 0);
-    private final StatConfig mBuildDistanceStat = new StatConfig(2, 0, 0, 100, null, 0);
-    private final StatConfig mClaimDistanceStat = new StatConfig(1, 0, 0, 100, null, 0);
-    private final StatConfig mDefenceStat = new StatConfig(-1, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
-    private final StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 1f);
-    private final StatConfig mViewDistanceStat = new StatConfig(3, 0, 0, 3, null, 0);
+    private StatConfig mAttackStat = new StatConfig(0, 1, 0, 100, null, 0);
+    private StatConfig mBuildDistanceStat = new StatConfig(2, 0, 0, 100, null, 0);
+    private StatConfig mClaimDistanceStat = new StatConfig(1, 0, 0, 100, null, 0);
+    private StatConfig mDefenceStat = new StatConfig(-1, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
+    private StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 1f);
+    private StatConfig mViewDistanceStat = new StatConfig(3, 0, 0, 3, null, 0);
 
     @Override
     public void serialize(DataOutput stream, int clientId) throws IOException {

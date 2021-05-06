@@ -1,28 +1,130 @@
 const mongoose = require('mongoose');
 var Float = require('mongoose-float').loadType(mongoose, 3);
-const ConfigSchema = new mongoose.Schema({
-    SyncStat: {
-        LEVEL_MIN: Number,
-        LEVEL_MAX: Number
+const ConfigSchema = new mongoose.Schema(
+{
+  global : {
+    inflation : Float,
+    mapSize : NUMBER
+  },
+  player : {
+    attackCooldown : Float,
+    tokenRate : Float,
+    tokenTime : Float,
+    inflationPerBuilding : Float,
+    attackHeightMul : Float
+  },
+  ai : {
+    lowerBoundTime : Float,
+    upperBoundTime : Float
+  },
+  probabilisticAi : {
+    buildProbability : Float,
+    upgradeProbability : Float,
+    sellProbability : Float,
+    attackProbability : Float
+  },
+  aiAimer : {
+    playAStar : Float,
+    aimAtCapital : Float,
+    tries : NUMBER
+  },
+  attackStat : {
+    value : {
+      bonus : {
+        multiplier : Float,
+        bonusTile : String
+      },
+      baseValue : Float,
+      mulLevel : Float,
+      minValue : Float,
+      maxValue : Float
     },
-    Player: {
-        ATTACK_COOLDOWN: Float,
-        TOKEN_RATE: Float,
-        TOKEN_TIME: Number
-    },
-    ProbabilisticAiPlayer: {
-        mBuildProbability: Float,
-        mUpgradeProbability: Float,
-        mAttackProbability: Float,
-        mSellProbability: Float
-    },
-    AiAimer: {
-        PLAY_A_STAR: Float,
-        AIM_AT_CAPITAL: Float,
-        TRIES: Number
+    cost : {
+      selfLevelMultiplier : Float,
+      combinedLevelMultiplier : Float
     }
-},
-    { timestamps: true }
+  },
+  buildDistanceStat : {
+    value : {
+      bonus : {
+        multiplier : Float,
+        bonusTile : String
+      },
+      baseValue : Float,
+      mulLevel : Float,
+      minValue : Float,
+      maxValue : Float
+    },
+    cost : {
+      selfLevelMultiplier : Float,
+      combinedLevelMultiplier : Float
+    }
+  },
+  claimDistanceStat : {
+    value : {
+      bonus : {
+        multiplier : Float,
+        bonusTile : String
+      },
+      baseValue : Float,
+      mulLevel : Float,
+      minValue : Float,
+      maxValue : Float
+    },
+    cost : {
+      selfLevelMultiplier : Float,
+      combinedLevelMultiplier : Float
+    }
+  },
+  defenceStat : {
+    value : {
+      bonus : {
+        multiplier : Float,
+        bonusTile : String
+      },
+      baseValue : Float,
+      mulLevel : Float,
+      minValue : Float,
+      maxValue : Float
+    },
+    cost : {
+      selfLevelMultiplier : Float,
+      combinedLevelMultiplier : Float
+    }
+  },
+  generationStat : {
+    value : {
+      bonus : {
+        multiplier : Float,
+        bonusTile : String
+      },
+      baseValue : Float,
+      mulLevel : Float,
+      minValue : Float,
+      maxValue : Float
+    },
+    cost : {
+      selfLevelMultiplier : Float,
+      combinedLevelMultiplier : Float
+    }
+  },
+  viewDistanceStat : {
+    value : {
+      bonus : {
+        multiplier : Float,
+        bonusTile : String
+      },
+      baseValue : Float,
+      mulLevel : Float,
+      minValue : Float,
+      maxValue : Float
+    },
+    cost : {
+      selfLevelMultiplier : Float,
+      combinedLevelMultiplier : Float
+    }
+  }
+}, { timestamps: false }
 );
 
 module.exports = mongoose.models.Config || mongoose.model('Config', ConfigSchema);

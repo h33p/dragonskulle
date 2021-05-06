@@ -1,22 +1,124 @@
 {
-    "SyncStat": {
-      "LEVEL_MIN": 1,
-      "LEVEL_MAX": 10
+  "global" : {
+    "inflation" : 1.002,
+    "mapSize" : 51
+  },
+  "player" : {
+    "attackCooldown" : 2.0,
+    "tokenRate" : 5.0,
+    "tokenTime" : 1.0,
+    "inflationPerBuilding" : 1.05,
+    "attackHeightMul" : 1.0
+  },
+  "ai" : {
+    "lowerBoundTime" : 1.0,
+    "upperBoundTime" : 2.0
+  },
+  "probabilisticAi" : {
+    "buildProbability" : 0.65,
+    "upgradeProbability" : 0.15,
+    "sellProbability" : 0.05,
+    "attackProbability" : 0.15
+  },
+  "aiAimer" : {
+    "playAStar" : 0.9,
+    "aimAtCapital" : 0.01,
+    "tries" : 10
+  },
+  "attackStat" : {
+    "value" : {
+      "bonus" : {
+        "multiplier" : 0.0,
+        "bonusTile" : null
+      },
+      "baseValue" : 0.0,
+      "mulLevel" : 1.0,
+      "minValue" : 0.0,
+      "maxValue" : 100.0
     },
-    "Player": {
-      "ATTACK_COOLDOWN": 2,
-      "TOKEN_RATE": 5,
-      "TOKEN_TIME": 1
+    "cost" : {
+      "selfLevelMultiplier" : 0.5,
+      "combinedLevelMultiplier" : 0.5
+    }
+  },
+  "buildDistanceStat" : {
+    "value" : {
+      "bonus" : {
+        "multiplier" : 0.0,
+        "bonusTile" : null
+      },
+      "baseValue" : 2.0,
+      "mulLevel" : 0.0,
+      "minValue" : 0.0,
+      "maxValue" : 100.0
     },
-    "ProbabilisticAiPlayer": {
-      "mBuildProbability": 0.65,
-      "mUpgradeProbability": 0.15,
-      "mAttackProbability": 0.15,
-      "mSellProbability": 0.05
+    "cost" : {
+      "selfLevelMultiplier" : 0.5,
+      "combinedLevelMultiplier" : 0.5
+    }
+  },
+  "claimDistanceStat" : {
+    "value" : {
+      "bonus" : {
+        "multiplier" : 0.0,
+        "bonusTile" : null
+      },
+      "baseValue" : 1.0,
+      "mulLevel" : 0.0,
+      "minValue" : 0.0,
+      "maxValue" : 100.0
     },
-    "AiAimer": {
-      "PLAY_A_STAR": 0.9,
-      "AIM_AT_CAPITAL": 0.01,
-      "TRIES": 10
+    "cost" : {
+      "selfLevelMultiplier" : 0.5,
+      "combinedLevelMultiplier" : 0.5
+    }
+  },
+  "defenceStat" : {
+    "value" : {
+      "bonus" : {
+        "multiplier" : 0.5,
+        "bonusTile" : "MOUNTAIN"
+      },
+      "baseValue" : -1.0,
+      "mulLevel" : 1.0,
+      "minValue" : 0.0,
+      "maxValue" : 100.0
+    },
+    "cost" : {
+      "selfLevelMultiplier" : 0.5,
+      "combinedLevelMultiplier" : 0.5
+    }
+  },
+  "generationStat" : {
+    "value" : {
+      "bonus" : {
+        "multiplier" : 1.0,
+        "bonusTile" : "WATER"
+      },
+      "baseValue" : -1.0,
+      "mulLevel" : 1.0,
+      "minValue" : 0.0,
+      "maxValue" : 100.0
+    },
+    "cost" : {
+      "selfLevelMultiplier" : 0.5,
+      "combinedLevelMultiplier" : 0.5
+    }
+  },
+  "viewDistanceStat" : {
+    "value" : {
+      "bonus" : {
+        "multiplier" : 0.0,
+        "bonusTile" : null
+      },
+      "baseValue" : 3.0,
+      "mulLevel" : 0.0,
+      "minValue" : 0.0,
+      "maxValue" : 3.0
+    },
+    "cost" : {
+      "selfLevelMultiplier" : 0.5,
+      "combinedLevelMultiplier" : 0.5
     }
   }
+}
