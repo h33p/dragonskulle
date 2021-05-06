@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.building.stat;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -180,7 +180,7 @@ public class SyncStat extends SyncInt {
     }
 
     @Override
-    public void deserialize(DataInputStream in) throws IOException {
+    public void deserialize(DataInput in) throws IOException {
         super.deserialize(in);
 
         // The stats have changed, so call the building's afterStatChange.

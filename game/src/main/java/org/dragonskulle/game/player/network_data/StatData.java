@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.network_data;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.building.Building;
@@ -50,14 +50,14 @@ public class StatData implements INetSerializable {
     }
 
     @Override
-    public void serialize(DataOutputStream stream, int clientId) throws IOException {
+    public void serialize(DataOutput stream, int clientId) throws IOException {
         stream.writeInt(mQ);
         stream.writeInt(mR);
         stream.writeInt(mStatTypeID);
     }
 
     @Override
-    public void deserialize(DataInputStream stream) throws IOException {
+    public void deserialize(DataInput stream) throws IOException {
         mQ = stream.readInt();
         mR = stream.readInt();
         mStatTypeID = stream.readInt();

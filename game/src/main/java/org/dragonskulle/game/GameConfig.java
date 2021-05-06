@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -28,13 +28,13 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mInflation);
             stream.writeInt(mMapSize);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mInflation = stream.readFloat();
             mMapSize = stream.readInt();
         }
@@ -49,7 +49,12 @@ public class GameConfig implements INetSerializable {
         private float mInflationPerBuilding;
         private float mAttackHeightMul;
 
-        public PlayerConfig(float attackCooldown, float tokenRate, float tokenTime, float inflationPerBuilding, float attackHeightMul) {
+        public PlayerConfig(
+                float attackCooldown,
+                float tokenRate,
+                float tokenTime,
+                float inflationPerBuilding,
+                float attackHeightMul) {
             mAttackCooldown = attackCooldown;
             mTokenRate = tokenRate;
             mTokenTime = tokenTime;
@@ -58,7 +63,7 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mAttackCooldown);
             stream.writeFloat(mTokenRate);
             stream.writeFloat(mTokenTime);
@@ -67,7 +72,7 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mAttackCooldown = stream.readFloat();
             mTokenRate = stream.readFloat();
             mTokenTime = stream.readFloat();
@@ -88,13 +93,13 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mLowerBoundTime);
             stream.writeFloat(mUpperBoundTime);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mLowerBoundTime = stream.readFloat();
             mUpperBoundTime = stream.readFloat();
         }
@@ -108,7 +113,11 @@ public class GameConfig implements INetSerializable {
         private float mAttackProbability;
         private float mSellProbability;
 
-        public ProbabilisticAiConfig(float buildProbability, float upgradeProbability, float attackProbability, float sellProbability) {
+        public ProbabilisticAiConfig(
+                float buildProbability,
+                float upgradeProbability,
+                float attackProbability,
+                float sellProbability) {
             mBuildProbability = buildProbability;
             mUpgradeProbability = upgradeProbability;
             mAttackProbability = attackProbability;
@@ -116,7 +125,7 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mBuildProbability);
             stream.writeFloat(mUpgradeProbability);
             stream.writeFloat(mAttackProbability);
@@ -124,7 +133,7 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mBuildProbability = stream.readFloat();
             mUpgradeProbability = stream.readFloat();
             mAttackProbability = stream.readFloat();
@@ -146,14 +155,14 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mPlayAStar);
             stream.writeFloat(mAimAtCapital);
             stream.writeInt(mTries);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mPlayAStar = stream.readFloat();
             mAimAtCapital = stream.readFloat();
             mTries = stream.readInt();
@@ -178,13 +187,13 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeByte(mBonusTile == null ? -1 : mBonusTile.getValue());
             stream.writeFloat(mMultiplier);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mBonusTile = TileType.getTile(stream.readByte());
             mMultiplier = stream.readFloat();
         }
@@ -221,7 +230,7 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mBaseValue);
             stream.writeFloat(mMulLevel);
             stream.writeFloat(mMinValue);
@@ -230,7 +239,7 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mBaseValue = stream.readFloat();
             mMulLevel = stream.readFloat();
             mMinValue = stream.readFloat();
@@ -249,13 +258,13 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mSelfLevelMultiplier);
             stream.writeFloat(mCombinedLevelMultiplier);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mSelfLevelMultiplier = stream.readFloat();
             mCombinedLevelMultiplier = stream.readFloat();
         }
@@ -293,13 +302,13 @@ public class GameConfig implements INetSerializable {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             mValue.serialize(stream, clientId);
             mCost.serialize(stream, clientId);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mValue.deserialize(stream);
             mCost.deserialize(stream);
         }
@@ -309,7 +318,8 @@ public class GameConfig implements INetSerializable {
     private final PlayerConfig mPlayer = new PlayerConfig(2, 5, 1, 1.05f, 1);
 
     private final AiConfig mAi = new AiConfig(1, 2);
-    private final ProbabilisticAiConfig mProbabilisticAi = new ProbabilisticAiConfig(0.65f, 0.15f, 0.15f, 0.05f);
+    private final ProbabilisticAiConfig mProbabilisticAi =
+            new ProbabilisticAiConfig(0.65f, 0.15f, 0.15f, 0.05f);
     private final AiAimerConfig mAiAimer = new AiAimerConfig(0.9f, 0.01f, 10);
 
     private final StatConfig mAttackStat = new StatConfig(0, 1, 0, 100, null, 0);
@@ -320,7 +330,7 @@ public class GameConfig implements INetSerializable {
     private final StatConfig mViewDistanceStat = new StatConfig(3, 0, 0, 3, null, 0);
 
     @Override
-    public void serialize(DataOutputStream stream, int clientId) throws IOException {
+    public void serialize(DataOutput stream, int clientId) throws IOException {
         mGlobal.serialize(stream, clientId);
         mPlayer.serialize(stream, clientId);
 
@@ -337,7 +347,7 @@ public class GameConfig implements INetSerializable {
     }
 
     @Override
-    public void deserialize(DataInputStream stream) throws IOException {
+    public void deserialize(DataInput stream) throws IOException {
         mGlobal.deserialize(stream);
         mPlayer.deserialize(stream);
 

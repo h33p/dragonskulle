@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import lombok.AccessLevel;
@@ -355,7 +355,7 @@ public class HexagonTile implements INetSerializable {
     }
 
     @Override
-    public void serialize(DataOutputStream stream, int clientId) throws IOException {
+    public void serialize(DataOutput stream, int clientId) throws IOException {
         stream.writeFloat(mHeight);
         stream.writeByte(mTileType.getValue());
 
@@ -382,7 +382,7 @@ public class HexagonTile implements INetSerializable {
     }
 
     @Override
-    public void deserialize(DataInputStream stream) throws IOException {
+    public void deserialize(DataInput stream) throws IOException {
         float height = stream.readFloat();
         TileType newType = TileType.getTile(stream.readByte());
 

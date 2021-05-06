@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +31,12 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         private int mWinnerId;
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeInt(mWinnerId);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mWinnerId = stream.readInt();
         }
     }
