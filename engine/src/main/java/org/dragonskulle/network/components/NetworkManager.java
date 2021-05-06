@@ -3,7 +3,6 @@ package org.dragonskulle.network.components;
 
 import java.io.IOException;
 import java.util.stream.Stream;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -22,21 +21,19 @@ import org.dragonskulle.network.ServerClient;
  *
  * @author Aurimas Blažulionis
  * @author Oscar L
- * <p>Network manager stores internal link to either server or client network managers, which
- * actually manage internal game state. This manager provides common interface between the two.
+ *     <p>Network manager stores internal link to either server or client network managers, which
+ *     actually manage internal game state. This manager provides common interface between the two.
  */
 @Accessors(prefix = "m")
 public class NetworkManager extends Component implements INetworkUpdate, ILateNetworkUpdate {
 
-    /**
-     * Simple client connection result handler.
-     */
+    /** Simple client connection result handler. */
     public interface IConnectionResultEvent {
         /**
          * Handle the connection result event.
          *
          * @param manager network manager which the event is called from
-         * @param netID   allocated network ID. If it's negative, connection failed
+         * @param netID allocated network ID. If it's negative, connection failed
          */
         void handle(NetworkManager manager, int netID);
     }
@@ -46,23 +43,18 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
          * Handle the host started game event
          *
          * @param gameScene scene in which the game will be
-         * @param manager   network manager which the event is called from
-         * @param netID     allocated network ID.
+         * @param manager network manager which the event is called from
+         * @param netID allocated network ID.
          */
         void handle(Scene gameScene, NetworkManager manager, int netID);
     }
 
     public interface IHostClosedGameEvent {
-        /**
-         * Handle the host ended game event
-         */
+        /** Handle the host ended game event */
         void handle();
     }
 
-
-    /**
-     * Simple server client connection handler interface.
-     */
+    /** Simple server client connection handler interface. */
     public static interface IConnectedClientEvent {
         /**
          * Handle client connection on the server.
@@ -80,15 +72,13 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
          * Handle client connection on the server.
          *
          * @param gameScene scene in which the game will be run
-         * @param manager   network manager which the event is called from
-         * @param client    newly connected network client
+         * @param manager network manager which the event is called from
+         * @param client newly connected network client
          */
         void handle(Scene gameScene, NetworkManager manager, ServerClient client);
     }
 
-    /**
-     * Ran on game start.
-     */
+    /** Ran on game start. */
     public interface IGameStartEvent {
         /**
          * Handle game start event.
@@ -107,50 +97,36 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(NetworkManager manager);
     }
 
-    /**
-     * Builder interface, used for networked scene building.
-     */
+    /** Builder interface, used for networked scene building. */
     public interface ISceneBuilder {
         /**
          * Build a scene.
          *
-         * @param manager  network manager which the event is called from
+         * @param manager network manager which the event is called from
          * @param isServer if we are building as the server, or the client
          * @return built scene to be used as networked scene
          */
         Scene buildScene(NetworkManager manager, boolean isServer);
     }
 
-    /**
-     * Registered spawnable templates.
-     */
-    @Getter()
-    protected final TemplateManager mSpawnableTemplates;
-    /**
-     * Target game scene.
-     */
-    @Getter
-    private Scene mGameScene;
+    /** Registered spawnable templates. */
+    @Getter() protected final TemplateManager mSpawnableTemplates;
+    /** Target game scene. */
+    @Getter private Scene mGameScene;
 
     @Getter(AccessLevel.PACKAGE)
     private final ISceneBuilder mGameSceneBuilder;
-    /**
-     * Client manager. Exists when there is a client connection
-     */
-    @Getter
-    private transient ClientNetworkManager mClientManager;
-    /**
-     * Server manager. Exists when there is a server instance
-     */
-    @Getter
-    private transient ServerNetworkManager mServerManager;
+    /** Client manager. Exists when there is a client connection */
+    @Getter private transient ClientNetworkManager mClientManager;
+    /** Server manager. Exists when there is a server instance */
+    @Getter private transient ServerNetworkManager mServerManager;
 
     /**
      * Constructor for network manager.
      *
      * @param templates spawnable templates for objects in the game. Each object has a unique ID,
-     *                  and it can be looked up by name using {@link findTemplateByName} method
-     * @param builder   builder which will be used to build the game scene.
+     *     and it can be looked up by name using {@link findTemplateByName} method
+     * @param builder builder which will be used to build the game scene.
      */
     public NetworkManager(TemplateManager templates, ISceneBuilder builder) {
         mSpawnableTemplates = templates;
@@ -196,8 +172,8 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /**
      * Create a network client.
      *
-     * @param ip            IP address to connect to
-     * @param port          network port to connect to
+     * @param ip IP address to connect to
+     * @param port network port to connect to
      * @param resultHandler connection result callback
      */
     public void createClient(
@@ -216,7 +192,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /**
      * Create a network server.
      *
-     * @param port              network port to bind
+     * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
      * @param loadHandler callback that gets called on every client connection when it loads into
      *     game scene.
@@ -277,7 +253,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      * Gets the server's time.
      *
      * @return server's time. Note that it does not account for latency or anything like that. If
-     * there is no client or server active, {@code -1f} is returned.
+     *     there is no client or server active, {@code -1f} is returned.
      */
     public float getServerTime() {
         if (mServerManager != null) {
@@ -312,7 +288,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param ownerId target owner to yield the objects for
      * @return stream of network objects whose owner is {@code ownerId}. {@code null}, if there is
-     * no networked game active.
+     *     no networked game active.
      */
     public Stream<NetworkObject> getObjectsOwnedBy(int ownerId) {
         Stream<NetworkObject> obj = getNetworkObjects();
@@ -337,7 +313,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param ownerId owner of the singletons
      * @return singleton store for the given owner ID. If the store does not exist, a new one gets
-     * created. {@code null} if no client or server is running.
+     *     created. {@code null} if no client or server is running.
      */
     public SingletonStore getIdSingletons(int ownerId) {
         if (mServerManager != null) {
@@ -349,9 +325,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         }
     }
 
-    /**
-     * Close any active client/server instances.
-     */
+    /** Close any active client/server instances. */
     public void closeInstance() {
         if (mServerManager != null) {
             mServerManager.destroy();
@@ -361,16 +335,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         }
     }
 
-    /**
-     * Called whenever client disconnects.
-     */
+    /** Called whenever client disconnects. */
     void onClientDisconnect() {
         mClientManager = null;
     }
 
-    /**
-     * Called whenever server is destroyed.
-     */
+    /** Called whenever server is destroyed. */
     void onServerDestroy() {
         mServerManager = null;
     }
@@ -389,6 +359,4 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         }
         mGameScene = null;
     }
-
-
 }

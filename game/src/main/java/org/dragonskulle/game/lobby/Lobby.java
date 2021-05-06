@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -48,14 +47,19 @@ import org.json.simple.parser.ParseException;
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
-    private static PlayerType mAimerAiType = new PlayerType(PlayerType.PlayerStyle.AIMER, new Component[]{new ProbabilisticAiPlayer(), new AimerAi()});
-    private static PlayerType mProbabilisticAiType = new PlayerType(PlayerType.PlayerStyle.PROBABILISTIC, new Component[]{new ProbabilisticAiPlayer()});
+    private static PlayerType mAimerAiType =
+            new PlayerType(
+                    PlayerType.PlayerStyle.AIMER,
+                    new Component[] {new ProbabilisticAiPlayer(), new AimerAi()});
+    private static PlayerType mProbabilisticAiType =
+            new PlayerType(
+                    PlayerType.PlayerStyle.PROBABILISTIC,
+                    new Component[] {new ProbabilisticAiPlayer()});
 
     private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
     private final AtomicBoolean mLobbyIDUpdated = new AtomicBoolean(false);
-    @Getter
-    private final GameObject mLobbyUi;
+    @Getter private final GameObject mLobbyUi;
     private final GameObject mHostUi;
     private final GameObject mJoinUi;
     private final GameObject mServerListUi;
@@ -72,7 +76,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * Default constructor, creates all static UI elements and also GameObjects that will have the
      * dynamic UI elements added to them.
      *
-     * @param mainUi         Reference to the main UI object
+     * @param mainUi Reference to the main UI object
      * @param networkManager NetworkManager for the scene
      */
     public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
@@ -293,9 +297,7 @@ public class Lobby extends Component implements IFrameUpdate {
         manager.createServer(PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
     }
 
-    /**
-     * Builds the "Join" section of the UI.
-     */
+    /** Builds the "Join" section of the UI. */
     private void buildJoinUi() {
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -486,9 +488,7 @@ public class Lobby extends Component implements IFrameUpdate {
         mServerListUi.addChild(mServerList.get());
     }
 
-    /**
-     * Builds the "Host" section of the UI.
-     */
+    /** Builds the "Host" section of the UI. */
     private void buildHostUi() {
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -535,7 +535,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * the hosts in the JSON array are added to mHosts.
      *
      * @param response String containing the response from the getAllHosts request
-     * @param success  true if the request was successful, false otherwise
+     * @param success true if the request was successful, false otherwise
      */
     private void onGetAllHosts(String response, boolean success) {
         if (!success) {
@@ -573,7 +573,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * lobby ID for our lobby is stored.
      *
      * @param response String containing the response from the addNewHost request
-     * @param success  true if the request was successful, false otherwise
+     * @param success true if the request was successful, false otherwise
      */
     private void onAddNewHost(String response, boolean success) {
         if (!success) {
@@ -596,7 +596,7 @@ public class Lobby extends Component implements IFrameUpdate {
      * Handles LobbyAPI.deleteHost. If success is true, mLobbyId is set to a blank string.
      *
      * @param response String containing the response from the deleteHost request
-     * @param success  true if the request was successful, false otherwise
+     * @param success true if the request was successful, false otherwise
      */
     private void onDeleteHost(String response, boolean success) {
         if (!success) {
@@ -611,8 +611,8 @@ public class Lobby extends Component implements IFrameUpdate {
      * message.
      *
      * @param gameScene The current game scene
-     * @param manager   The network manager
-     * @param netId     The network ID of the client
+     * @param manager The network manager
+     * @param netId The network ID of the client
      */
     private static void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
         GameObject humanPlayer =
@@ -630,8 +630,8 @@ public class Lobby extends Component implements IFrameUpdate {
      * Called on server side when a client has fully loaded and sent the client loaded message to
      * the server.
      *
-     * @param gameScene     The current game scene
-     * @param manager       The network manager
+     * @param gameScene The current game scene
+     * @param manager The network manager
      * @param networkClient The client that sent the loaded message
      */
     public static void onClientLoaded(
@@ -644,12 +644,14 @@ public class Lobby extends Component implements IFrameUpdate {
     /**
      * Spawns a player.
      *
-     * @param ownerId     the owner id
+     * @param ownerId the owner id
      * @param playerStyle the playerStyle
-     * @param manager     the manager
+     * @param manager the manager
      */
     private static void spawnPlayer(int ownerId, PlayerType playerStyle, NetworkManager manager) {
-        Reference<NetworkObject> playerObj = manager.getServerManager().spawnNetworkObject(ownerId, manager.findTemplateByName("player"));
+        Reference<NetworkObject> playerObj =
+                manager.getServerManager()
+                        .spawnNetworkObject(ownerId, manager.findTemplateByName("player"));
         if (!playerStyle.isHuman()) {
             manager.getServerManager().getNonHumanPlayerIds().add(ownerId);
             if (Reference.isValid(playerObj)) {
@@ -682,7 +684,8 @@ public class Lobby extends Component implements IFrameUpdate {
 
         gameState.get().getNumPlayers().set(maxPlayers);
 
-        gameState.get()
+        gameState
+                .get()
                 .registerGameEndListener(
                         new Reference<>(
                                 (__) -> {
@@ -693,15 +696,13 @@ public class Lobby extends Component implements IFrameUpdate {
                                     }
                                 }));
 
-
         gameState.get().buildServerPlayerView();
-
     }
 
     /**
      * Populate lobby with ai.
      *
-     * @param manager    the manager
+     * @param manager the manager
      * @param maxPlayers the max players for the lobby
      */
     private static void populateLobbyWithAi(NetworkManager manager, int maxPlayers) {

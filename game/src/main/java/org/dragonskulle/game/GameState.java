@@ -6,7 +6,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -52,13 +51,10 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         void handle(int winnerId);
     }
 
-    @Getter
-    private final SyncInt mNumPlayers = new SyncInt(0);
-    @Getter
-    private final SyncInt mNumCapitalsStanding = new SyncInt(0);
+    @Getter private final SyncInt mNumPlayers = new SyncInt(0);
+    @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
 
-    @Getter
-    private boolean mInGame = true;
+    @Getter private boolean mInGame = true;
 
     private transient ServerEvent<GameEndEventData> mGameEndEvent;
 
@@ -106,24 +102,36 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         "game_state",
                         new TransformUI(true),
                         (self) -> {
-//                            UIManager.getInstance().buildVerticalUi(self, 0.25f, -0.5f, 1.5f, playerInfos);
-                            UIManager.getInstance().buildWithAnchorOffset(self, 0.1f, 0f, 0.8f, 0.4f, 0f, 0.12f, playerInfos);
-                            UIRenderable drawer = new UIRenderable(GameUIAppearance.getDrawerTexture());
+                            UIManager.getInstance()
+                                    .buildWithAnchorOffset(
+                                            self,
+                                            0.1f,
+                                            0.012f,
+                                            0.8f,
+                                            0.15f,
+                                            0f,
+                                            0.161f,
+                                            playerInfos);
+                            UIRenderable drawer =
+                                    new UIRenderable(GameUIAppearance.getDrawerTexture());
                             TransformUI tran = self.getTransform(TransformUI.class);
                             tran.setMargin(0f, 0f, 0f, 0f);
                             tran.setPivotOffset(0f, 0f);
                             tran.setParentAnchor(0f, 0f);
                             self.addComponent(drawer);
                         });
-
     }
 
     private UIManager.IUIBuildHandler[] buildPlayerInfos() {
         NetworkManager networkManager = getNetworkManager();
         ServerNetworkManager serverManager = networkManager.getServerManager();
         Set<Integer> playerIds = serverManager.getNonHumanPlayerIds();
-        playerIds.addAll(serverManager.getClients().stream().map(ServerClient::getNetworkID).collect(Collectors.toList()));
-        UIManager.IUIBuildHandler[] playerInfoBox = new UIManager.IUIBuildHandler[mNumPlayers.get()];
+        playerIds.addAll(
+                serverManager.getClients().stream()
+                        .map(ServerClient::getNetworkID)
+                        .collect(Collectors.toList()));
+        UIManager.IUIBuildHandler[] playerInfoBox =
+                new UIManager.IUIBuildHandler[mNumPlayers.get()];
         Iterator<Integer> playerIterator = playerIds.iterator();
         for (int j = 0; j < mNumPlayers.get(); j++) {
             try {

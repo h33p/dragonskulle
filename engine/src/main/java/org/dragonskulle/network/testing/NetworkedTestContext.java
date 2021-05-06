@@ -248,7 +248,8 @@ public class NetworkedTestContext {
      * @param playerStyle component's playerStyle.
      * @return reference to the component, if one exists. {@code null} otherwise.
      */
-    public <T extends NetworkableComponent> Reference<T> getClientComponent(int i, Class<T> playerStyle) {
+    public <T extends NetworkableComponent> Reference<T> getClientComponent(
+            int i, Class<T> playerStyle) {
         return getNetworkComponent(getClient(i).getManager(), playerStyle);
     }
 

@@ -167,7 +167,7 @@ public class App implements NativeResource {
      * Creates the main scene.
      *
      * @param networkManager the network manager
-     * @param asServer       true, if to create as server
+     * @param asServer true, if to create as server
      * @return the scene created
      */
     static Scene createMainScene(NetworkManager networkManager, boolean asServer) {

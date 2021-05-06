@@ -3,7 +3,6 @@ package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
@@ -21,33 +20,21 @@ import org.dragonskulle.game.player.PredefinedBuildings;
 @Log
 public class ProbabilisticAiPlayer extends AiPlayer {
 
-    /**
-     * Probability of placing a new {@link Building}.
-     */
+    /** Probability of placing a new {@link Building}. */
     protected float mBuildProbability = 0.65f;
-    /**
-     * Probability of upgrading an owned {@link Building}.
-     */
+    /** Probability of upgrading an owned {@link Building}. */
     protected float mUpgradeProbability = 0.155f;
-    /**
-     * Probability of attacking an opponent {@link Building}.
-     */
+    /** Probability of attacking an opponent {@link Building}. */
     protected float mAttackProbability = 0.19f;
-    /**
-     * Probability of selling an owned {@link Building}.
-     */
+    /** Probability of selling an owned {@link Building}. */
     protected float mSellProbability = 0.005f;
 
-    /**
-     * Used to run events for building and attacking.
-     */
+    /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
         public boolean runEvent(Building building);
     }
 
-    /**
-     * A Constructor for an AI Player.
-     */
+    /** A Constructor for an AI Player. */
     public ProbabilisticAiPlayer() {}
 
     @Override
@@ -89,9 +76,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                 }
             } else if (randomNumber
                     <= mBuildProbability
-                    + mUpgradeProbability
-                    + mAttackProbability
-                    + mSellProbability) {
+                            + mUpgradeProbability
+                            + mAttackProbability
+                            + mSellProbability) {
                 sell();
             } else {
                 log.info("AI probabilites do not sum to one- no action performed.");

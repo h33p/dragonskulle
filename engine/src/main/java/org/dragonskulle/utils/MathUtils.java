@@ -2,6 +2,8 @@
 package org.dragonskulle.utils;
 
 import java.nio.ByteBuffer;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Basic additional math utilities.
@@ -109,5 +111,17 @@ public class MathUtils {
             }
         }
         dest.flip();
+    }
+
+    public static Vector3fc blendColour(Vector3fc a, Vector3f b) {
+        return new Vector3f(
+                blendSingleColour(a.x(), b.x()),
+                blendSingleColour(a.y(), b.y()),
+                blendSingleColour(a.z(), b.z()));
+    }
+
+    // using photon flux
+    public static float blendSingleColour(float a, float b) {
+        return (float) Math.sqrt(Math.pow(a, 2) * Math.pow(b, 2));
     }
 }

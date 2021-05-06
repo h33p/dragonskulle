@@ -909,7 +909,8 @@ public class GLTF implements NativeResource {
 
             // Make sure we are parsing a component
             // Avoid adding transform as a component
-            if (!Component.class.isAssignableFrom(playerStyle) || Transform.class.isAssignableFrom(playerStyle)) {
+            if (!Component.class.isAssignableFrom(playerStyle)
+                    || Transform.class.isAssignableFrom(playerStyle)) {
                 return;
             }
 

@@ -206,6 +206,7 @@ public class GameObjectTest {
         Component clonedComponent = clonedObjectChild.getComponents().get(0);
 
         Assert.assertTrue(
-                "Component had the incorrect playerStyle", clonedComponent instanceof TestComponent);
+                "Component had the incorrect playerStyle",
+                clonedComponent instanceof TestComponent);
     }
 }

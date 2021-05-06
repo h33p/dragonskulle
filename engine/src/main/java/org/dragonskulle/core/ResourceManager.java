@@ -166,8 +166,8 @@ public class ResourceManager {
     /**
      * Register a resource loader in a composite way
      *
-     * <p>This method is purely for convenience to allow to easily specify the {@code F} playerStyle, but
-     * does exactly the same as the above method.
+     * <p>This method is purely for convenience to allow to easily specify the {@code F}
+     * playerStyle, but does exactly the same as the above method.
      *
      * @param playerStyle playerStyle of the resource
      * @param argType playerStyle of the argument
@@ -224,7 +224,8 @@ public class ResourceManager {
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
      *     {@code null} is returned if the object playerStyle does not match the input {@code name}
      */
-    public static <T, F> Resource<T> getResource(Class<T> playerStyle, String name, F additionalArgs) {
+    public static <T, F> Resource<T> getResource(
+            Class<T> playerStyle, String name, F additionalArgs) {
         return getResource(new ResourceArguments<>(playerStyle, name, additionalArgs));
     }
 

@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
 import lombok.Getter;
@@ -26,12 +27,10 @@ public class PlayerType {
         }
     }
 
-    @Getter
-    private final Component[] mComponent;
+    @Getter private final Component[] mComponent;
 
     public PlayerType(PlayerStyle playerStyle, Component[] component) {
         mPlayerStyle = playerStyle;
         mComponent = component;
     }
 }
-

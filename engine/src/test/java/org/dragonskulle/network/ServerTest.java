@@ -7,8 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -23,7 +21,7 @@ import org.junit.Test;
 /**
  * @author Oscar L
  * @author Aurimas Blažulionis
- * */
+ */
 @Log
 public class ServerTest {
     private static final TemplateManager TEMPLATE_MANAGER = new TemplateManager();
