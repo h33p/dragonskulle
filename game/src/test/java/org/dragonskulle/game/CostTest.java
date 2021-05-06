@@ -53,6 +53,7 @@ public class CostTest {
         building.onConnectedSyncvars();
         building.afterStatChange();
 
+        // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
         assertEquals(27, building.getAttackCost());
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
 
@@ -60,6 +61,8 @@ public class CostTest {
         attack.increaseLevel();
 
         building.afterStatChange();
+
+        // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
         assertEquals(30, building.getAttackCost());
 
         attack.increaseLevel();
@@ -72,10 +75,12 @@ public class CostTest {
 
         building.afterStatChange();
 
+        // Lvl 4 Attack Lvl 3 Defence Lvl 1 TGen
         assertEquals(42, building.getAttackCost());
-        
+
         building.setCapital(true);
-        
+
+        // Lvl 4 Attack Lvl 3 Defence Lvl 1 TGen Also Capital
         assertEquals(52, building.getAttackCost());
     }
 
@@ -83,18 +88,23 @@ public class CostTest {
     @Test
     public void upgradeStats() {
         Building building = new Building();
-        
+
         building.onConnectedSyncvars();
         building.afterStatChange();
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
 
+        // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
         assertEquals(4, stats.get(0).getCost());
         stats.get(0).increaseLevel();
         building.afterStatChange();
+
+        // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
         assertEquals(9, stats.get(0).getCost());
         stats.get(1).increaseLevel();
         stats.get(1).increaseLevel();
         building.afterStatChange();
+
+        // Lvl 2 Attack Lvl 3 Defence Lvl 1 TGen
         assertEquals(18, stats.get(0).getCost());
     }
 }
