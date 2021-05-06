@@ -255,8 +255,10 @@ public class ServerNetworkManager {
             engine.activateScene(mManager.getGameScene());
         }
 
-        if (mGameStartEventHandler != null) {
-            mGameStartEventHandler.handle(mManager);
+        try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+            if (mGameStartEventHandler != null) {
+                mGameStartEventHandler.handle(mManager);
+            }
         }
 
         for (ServerClient c : mServer.getClients()) {

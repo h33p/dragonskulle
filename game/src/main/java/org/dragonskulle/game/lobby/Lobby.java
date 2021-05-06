@@ -633,28 +633,28 @@ public class Lobby extends Component implements IFrameUpdate {
     public static void onGameStarted(NetworkManager manager) {
         log.fine("Game Start");
         log.fine("Spawning 'Server' Owned objects");
-        Reference<NetworkObject> obj =
-                manager.getServerManager()
-                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
 
-        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
+        manager.getServerManager()
+                .spawnNetworkObject(-10000, manager.findTemplateByName("game_state"));
+
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+
+        GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
         // 6 players for now
         int maxPlayers = 6;
 
-        gameState.get().getNumPlayers().set(maxPlayers);
+        gameState.getNumPlayers().set(maxPlayers);
 
-        gameState
-                .get()
-                .registerGameEndListener(
-                        new Reference<>(
-                                (__) -> {
-                                    UIPauseMenu pauseMenu =
-                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
-                                    if (pauseMenu != null) {
-                                        pauseMenu.endGame();
-                                    }
-                                }));
+        gameState.registerGameEndListener(
+                new Reference<>(
+                        (__) -> {
+                            UIPauseMenu pauseMenu =
+                                    manager.getGameScene().getSingleton(UIPauseMenu.class);
+                            if (pauseMenu != null) {
+                                pauseMenu.endGame();
+                            }
+                        }));
 
         // Get the number of clients and thus the number of AI needed
         int clientNumber = manager.getServerManager().getClients().size();

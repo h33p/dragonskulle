@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
-import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -25,8 +23,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Log
-public class GameState extends NetworkableComponent implements IOnAwake {
+public class GameState extends NetworkableComponent {
     private static class GameEndEventData implements INetSerializable {
         private int mWinnerId;
 
@@ -45,6 +42,7 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         void handle(int winnerId);
     }
 
+    @Getter private GameConfig mConfig = new GameConfig();
     @Getter private final SyncInt mNumPlayers = new SyncInt(0);
     @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
 
@@ -68,10 +66,7 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         },
                         EventRecipients.ALL_CLIENTS,
                         EventTimeframe.INSTANT);
-    }
 
-    @Override
-    public void onAwake() {
         Scene.getActiveScene().registerSingleton(this);
     }
 

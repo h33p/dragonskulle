@@ -11,12 +11,13 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.INetSerializable;
+import org.dragonskulle.network.components.sync.ISyncVar;
 
 /** Configurable game properties. */
 @Accessors(prefix = "m")
 @Getter
 @Setter
-public class GameConfig implements INetSerializable {
+public class GameConfig implements ISyncVar {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -45,9 +46,9 @@ public class GameConfig implements INetSerializable {
     @Accessors(prefix = "m")
     public static class GlobalConfig implements INetSerializable {
         /** Global price inflation rate (per second). */
-        private float mInflation = 1.002f;
+        private float mInflation;
         /** Map to size spawn. */
-        private int mMapSize = 51;
+        private int mMapSize;
 
         public GlobalConfig(float inflation, int mapSize) {
             mInflation = inflation;
@@ -437,5 +438,11 @@ public class GameConfig implements INetSerializable {
         mDefenceStat.deserialize(stream);
         mGenerationStat.deserialize(stream);
         mViewDistanceStat.deserialize(stream);
+    }
+
+    @Override
+    public boolean isDirty(int clientId) {
+        // Always false, because config is only meant to be synced once.
+        return false;
     }
 }
